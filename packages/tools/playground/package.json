@@ -15,6 +15,7 @@
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
         "@dev/core": "1.0.0",
+        "@pmmmwh/react-refresh-webpack-plugin": "^0.6.0",
         "@svgr/webpack": "^7.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
@@ -27,6 +28,8 @@
         "monaco-editor-webpack-plugin": "^4.2.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-refresh": "^0.17.0",
+        "react-refresh-typescript": "^2.0.10",
         "sass-loader": "^16.0.0",
         "style-loader": "^3.3.0",
         "ts-debounce": "4.0.0",

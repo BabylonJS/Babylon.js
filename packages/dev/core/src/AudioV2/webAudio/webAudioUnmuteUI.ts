@@ -8,6 +8,7 @@ import type { _WebAudioEngine } from "./webAudioEngine";
  */
 export class _WebAudioUnmuteUI {
     private _button: Nullable<HTMLButtonElement> = null;
+    private _enabled: boolean = true;
     private _engine: _WebAudioEngine;
     private _style: Nullable<HTMLStyleElement> = null;
 
@@ -50,15 +51,47 @@ export class _WebAudioUnmuteUI {
         this._engine.stateChangedObservable.removeCallback(this._onStateChanged);
     }
 
+    /** @internal */
+    public get enabled(): boolean {
+        return this._enabled;
+    }
+
+    public set enabled(value: boolean) {
+        this._enabled = value;
+        if (value) {
+            if (this._engine.state !== "running") {
+                this._show();
+            }
+        } else {
+            this._hide();
+        }
+    }
+
+    private _show(): void {
+        if (!this._button) {
+            return;
+        }
+
+        this._button.style.display = "block";
+    }
+
+    private _hide(): void {
+        if (!this._button) {
+            return;
+        }
+
+        this._button.style.display = "none";
+    }
+
     private _onStateChanged = () => {
         if (!this._button) {
             return;
         }
 
         if (this._engine.state === "running") {
-            this._button.style.display = "none";
+            this._hide();
         } else {
-            this._button.style.display = "block";
+            this._show();
         }
     };
 }

@@ -59,12 +59,13 @@ import {
     DefaultTranslation,
     DefaultScale,
     DefaultRotation,
+    ConvertToRightHandedTransformMatrix,
 } from "./glTFUtilities";
 import { IsNoopNode } from "../../exportUtils";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Logger } from "core/Misc/logger";
 import { EnumerateFloatValues, AreIndices32Bits } from "core/Buffers/bufferUtils";
@@ -654,7 +655,7 @@ export class GLTFExporter {
         }
 
         const rotationQuaternion =
-            babylonTransformNode.rotationQuaternion ||
+            babylonTransformNode.rotationQuaternion?.clone() ||
             Quaternion.FromEulerAngles(babylonTransformNode.rotation.x, babylonTransformNode.rotation.y, babylonTransformNode.rotation.z);
 
         if (!rotationQuaternion.equalsWithEpsilon(DefaultRotation, Epsilon)) {
@@ -739,7 +740,7 @@ export class GLTFExporter {
         }
     }
 
-    // Builds all skins in the skins array so nodes can reference it during node parsing.
+    // Collects all skins in a skins map so nodes can reference it during node parsing.
     private _listAvailableSkeletons(): void {
         for (const skeleton of this._babylonScene.skeletons) {
             if (skeleton.bones.length <= 0) {
@@ -751,21 +752,20 @@ export class GLTFExporter {
         }
     }
 
-    private _exportAndAssignSkeletons() {
+    private _exportAndAssignSkeletons(leftHandNodes: Set<Node>): void {
         for (const skeleton of this._babylonScene.skeletons) {
             if (skeleton.bones.length <= 0) {
                 continue;
             }
 
             const skin = this._skinMap.get(skeleton);
-
             if (skin == undefined) {
                 continue;
             }
 
+            // The bones (joints) of a skeleton (skin) must be exported in the same order as they appear in vertex attributes,
+            // which is indicated by getIndex and may not match a bone's index in skeleton.bones
             const boneIndexMap: { [index: number]: Bone } = {};
-            const inverseBindMatrices: Matrix[] = [];
-
             let maxBoneIndex = -1;
             for (let i = 0; i < skeleton.bones.length; ++i) {
                 const bone = skeleton.bones[i];
@@ -778,43 +778,43 @@ export class GLTFExporter {
                 }
             }
 
-            // Set joints index to scene node.
+            // Set joints indices to scene nodes.
+            const inverseBindMatrices: Matrix[] = [];
             for (let boneIndex = 0; boneIndex <= maxBoneIndex; ++boneIndex) {
-                const bone = boneIndexMap[boneIndex];
-                inverseBindMatrices.push(bone.getAbsoluteInverseBindMatrix());
+                const bone = boneIndexMap[boneIndex]; // Assumes no gaps in bone indices
                 const transformNode = bone.getTransformNode();
-
-                if (transformNode !== null) {
-                    const nodeID = this._nodeMap.get(transformNode);
-                    if (transformNode && nodeID !== null && nodeID !== undefined) {
-                        skin.joints.push(nodeID);
-                    } else {
-                        Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
-                    }
-                } else {
-                    Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
+                const nodeIndex = transformNode ? this._nodeMap.get(transformNode) : undefined;
+                if (nodeIndex === undefined) {
+                    Tools.Warn("Exporting a bone without a linked transform node is currently unsupported.");
+                    continue; // The indices may be out-of-sync after this and break the skinning.
                 }
+                skin.joints.push(nodeIndex);
+
+                const boneMatrix = bone.getAbsoluteInverseBindMatrix().clone();
+                if (leftHandNodes.has(transformNode!)) {
+                    ConvertToRightHandedTransformMatrix(boneMatrix);
+                }
+                inverseBindMatrices.push(boneMatrix);
             }
 
             // Nodes that use this skin.
-            const skinedNodes = this._nodesSkinMap.get(skin);
+            const skinnedNodes = this._nodesSkinMap.get(skin);
 
-            // Only create skeleton if it has at least one joint and is used by a mesh.
-            if (skin.joints.length > 0 && skinedNodes !== undefined) {
-                // Put IBM data into TypedArraybuffer view
-                const byteLength = inverseBindMatrices.length * 64; // Always a 4 x 4 matrix of 32 bit float
-                const inverseBindMatricesData = new Float32Array(byteLength / 4);
+            // Only export the skin if it has at least one joint and is used by a mesh.
+            if (skin.joints.length > 0 && skinnedNodes !== undefined) {
+                const inverseBindMatricesData = new Float32Array(inverseBindMatrices.length * 16); // Always a 4 x 4 matrix of 32 bit float
                 inverseBindMatrices.forEach((mat: Matrix, index: number) => {
                     inverseBindMatricesData.set(mat.m, index * 16);
                 });
-                // Create buffer view and accessor
+
                 const bufferView = this._bufferManager.createBufferView(inverseBindMatricesData);
                 this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length));
                 skin.inverseBindMatrices = this._accessors.length - 1;
 
                 this._skins.push(skin);
-                for (const skinedNode of skinedNodes) {
-                    skinedNode.skin = this._skins.length - 1;
+                const skinIndex = this._skins.length - 1;
+                for (const skinnedNode of skinnedNodes) {
+                    skinnedNode.skin = skinIndex;
                 }
             }
         }
@@ -865,7 +865,7 @@ export class GLTFExporter {
         }
 
         this._exportAndAssignCameras();
-        this._exportAndAssignSkeletons();
+        this._exportAndAssignSkeletons(stateLH.getNodesSet());
 
         if (this._babylonScene.animationGroups.length) {
             _GLTFAnimation._CreateNodeAndMorphAnimationFromAnimationGroups(
@@ -1088,7 +1088,7 @@ export class GLTFExporter {
 
             if (floatMatricesIndices.size !== 0) {
                 Logger.Warn(
-                    `Joints conversion needed: some joints are stored as floats in Babylon but GLTF requires UNSIGNED BYTES. We will perform the conversion but this might lead to unused data in the buffer.`
+                    `Joint indices conversion needed: some joint indices are stored as floats in Babylon but GLTF requires UNSIGNED BYTES. We will perform the conversion but this might lead to unused data in the buffer.`
                 );
             }
 
@@ -1418,7 +1418,7 @@ export class GLTFExporter {
         if (materialIndex === undefined) {
             const hasUVs = vertexBuffers && Object.keys(vertexBuffers).some((kind) => kind.startsWith("uv"));
             babylonMaterial = babylonMaterial instanceof MultiMaterial ? babylonMaterial.subMaterials[subMesh.materialIndex]! : babylonMaterial;
-            if (babylonMaterial instanceof PBRMaterial) {
+            if (babylonMaterial instanceof PBRBaseMaterial) {
                 materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
             } else if (babylonMaterial instanceof StandardMaterial) {
                 materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);

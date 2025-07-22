@@ -2,7 +2,8 @@ import { makeStyles, SpinButton as FluentSpinButton } from "@fluentui/react-comp
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
 import { useCallback, useState } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { BaseComponentProps, PropertyLineProps } from "../hoc/propertyLines/propertyLine";
+import { PropertyLine } from "../hoc/propertyLines/propertyLine";
 
 const useSpinStyles = makeStyles({
     base: {
@@ -11,19 +12,24 @@ const useSpinStyles = makeStyles({
     },
 });
 
-export type SpinButtonProps = BaseComponentProps<number>;
+export type SpinButtonProps = BaseComponentProps<number> & {
+    precision?: number; // Optional precision for the spin button
+    step?: number; // Optional step value for the spin button
+    min?: number;
+    max?: number;
+};
 
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const classes = useSpinStyles();
 
-    const [spinButtonValue, setSpinButtonValue] = useState<number | null>(props.value);
+    const [spinButtonValue, setSpinButtonValue] = useState(props.value);
 
     const onSpinButtonChange = useCallback(
         (_ev: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {
             // Stop propagation of the event to prevent it from bubbling up
             _ev.stopPropagation();
 
-            if (data.value !== undefined) {
+            if (data.value != null) {
                 setSpinButtonValue(data.value);
             } else if (data.displayValue !== undefined) {
                 const newValue = parseFloat(data.displayValue);
@@ -37,7 +43,13 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
 
     return (
         <div className={classes.base}>
-            <FluentSpinButton value={spinButtonValue} onChange={onSpinButtonChange} />
+            <FluentSpinButton {...props} value={spinButtonValue} onChange={onSpinButtonChange} />
         </div>
     );
 };
+
+export const SpinButtonPropertyLine: FunctionComponent<SpinButtonProps & PropertyLineProps> = (props) => (
+    <PropertyLine {...props}>
+        <SpinButton {...props} />
+    </PropertyLine>
+);

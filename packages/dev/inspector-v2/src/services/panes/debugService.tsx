@@ -1,6 +1,6 @@
 import type { IDisposable, Scene } from "core/index";
 
-import type { AccordionSection, AccordionSectionContent } from "../../components/accordionPane";
+import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
 import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { ISceneContext } from "../sceneContext";
 import type { IShellService } from "../shellService";
@@ -23,13 +23,13 @@ export interface IDebugService extends IService<typeof DebugServiceIdentity> {
      * Adds a new section.
      * @param section A description of the section to add.
      */
-    addSection(section: AccordionSection): IDisposable;
+    addSection(section: DynamicAccordionSection): IDisposable;
 
     /**
      * Adds content to one or more sections.
      * @param content A description of the content to add.
      */
-    addSectionContent(content: AccordionSectionContent<Scene>): IDisposable;
+    addSectionContent(content: DynamicAccordionSectionContent<Scene>): IDisposable;
 }
 
 export const DebugServiceDefinition: ServiceDefinition<[IDebugService], [IShellService, ISceneContext]> = {
@@ -37,8 +37,8 @@ export const DebugServiceDefinition: ServiceDefinition<[IDebugService], [IShellS
     produces: [DebugServiceIdentity],
     consumes: [ShellServiceIdentity, SceneContextIdentity],
     factory: (shellService, sceneContext) => {
-        const sectionsCollection = new ObservableCollection<AccordionSection>();
-        const sectionContentCollection = new ObservableCollection<AccordionSectionContent<Scene>>();
+        const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
+        const sectionContentCollection = new ObservableCollection<DynamicAccordionSectionContent<Scene>>();
 
         const registration = shellService.addSidePane({
             key: "Debug",

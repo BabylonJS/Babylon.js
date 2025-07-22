@@ -444,6 +444,7 @@ export class NodeRenderGraphBlock {
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
+        serializationObject.comments = this.comments;
         serializationObject.visibleOnFrame = this.visibleOnFrame;
         serializationObject.disabled = this.disabled;
         if (this._additionalConstructionParameters) {

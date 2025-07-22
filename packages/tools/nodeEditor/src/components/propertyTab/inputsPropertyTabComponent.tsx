@@ -21,7 +21,22 @@ interface IInputsPropertyTabComponentProps {
     lockObject: LockObject;
 }
 
-export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
+/**
+ * NOTE if being used within a PropertyTabComponentBase (which is a wrapper for Accordion), call as a function rather than
+ * rendering as a component. This will avoid a wrapper JSX element existing before the lineContainerComponent and will ensure
+ * the lineContainerComponent gets properly rendered as a child of the Accordion
+ * @param props
+ * @returns
+ */
+export function GetInputProperties(props: IInputsPropertyTabComponentProps) {
+    return (
+        <LineContainerComponent title="INPUTS">
+            <InputsPropertyContent {...props} />
+        </LineContainerComponent>
+    );
+}
+
+class InputsPropertyContent extends React.Component<IInputsPropertyTabComponentProps> {
     constructor(props: IInputsPropertyTabComponentProps) {
         super(props);
     }
@@ -137,15 +152,11 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
     }
 
     override render() {
-        return (
-            <LineContainerComponent title="INPUTS">
-                {this.props.inputs.map((ib) => {
-                    if (!ib.isUniform || ib.isSystemValue || !ib.name) {
-                        return null;
-                    }
-                    return this.renderInputBlock(ib);
-                })}
-            </LineContainerComponent>
-        );
+        return this.props.inputs.map((ib) => {
+            if (!ib.isUniform || ib.isSystemValue || !ib.name) {
+                return null;
+            }
+            return this.renderInputBlock(ib);
+        });
     }
 }

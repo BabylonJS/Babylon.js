@@ -12,9 +12,9 @@ import { CreateGround } from "core/Meshes/Builders/groundBuilder";
 import { Tools } from "core/Misc/tools";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
 import { GridMaterial } from "materials/grid/gridMaterial";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
-
-import { AccordionPane, AccordionPaneSection } from "../accordionPane";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { ExtensibleAccordion } from "../extensibleAccordion";
 import { BoundProperty } from "../properties/boundProperty";
 
 export const HelpersDebugSectionIdentity = Symbol("Helpers");
@@ -140,7 +140,7 @@ const SwitchNameViewerAsync = async function (scene: Scene) {
     }
 };
 
-export const DebugPane: typeof AccordionPane<Scene> = (props) => {
+export const DebugPane: typeof ExtensibleAccordion<Scene> = (props) => {
     const scene = props.context;
 
     if (!scene.reservedDataStore) {
@@ -164,8 +164,8 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
     });
 
     return (
-        <AccordionPane {...props}>
-            <AccordionPaneSection identity={HelpersDebugSectionIdentity}>
+        <ExtensibleAccordion {...props}>
+            <AccordionSection title="Helpers">
                 <SwitchPropertyLine label="Grid" description="Display a ground grid." value={!!scene.reservedDataStore.gridMesh} onChange={() => SwitchGrid(scene)} />
                 <SwitchPropertyLine
                     label="Physics"
@@ -179,8 +179,8 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                     value={!!scene.reservedDataStore.textRenderersHook}
                     onChange={() => void SwitchNameViewerAsync(scene)}
                 />
-            </AccordionPaneSection>
-            <AccordionPaneSection identity={TextureChannelsDebugSectionIdentity}>
+            </AccordionSection>
+            <AccordionSection title="Texture Channels">
                 <BoundProperty component={SwitchPropertyLine} key="Diffuse" label="Diffuse" target={StandardMaterial} propertyKey="DiffuseTextureEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Ambient" label="Ambient" target={StandardMaterial} propertyKey="AmbientTextureEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Specular" label="Specular" target={StandardMaterial} propertyKey="SpecularTextureEnabled" />
@@ -193,8 +193,8 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                 <BoundProperty component={SwitchPropertyLine} key="Fresnel" label="Fresnel" target={StandardMaterial} propertyKey="FresnelEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Detail" label="Detail" target={MaterialFlags} propertyKey="DetailTextureEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Decal" label="Decal" target={MaterialFlags} propertyKey="DecalMapEnabled" />
-            </AccordionPaneSection>
-            <AccordionPaneSection identity={FeaturesDebugSectionIdentity}>
+            </AccordionSection>
+            <AccordionSection title="Features">
                 <BoundProperty component={SwitchPropertyLine} key="Animations" label="Animations" target={scene} propertyKey="animationsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Physics" label="Physics" target={scene} propertyKey="physicsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Collisions" label="Collisions" target={scene} propertyKey="collisionsEnabled" />
@@ -210,7 +210,7 @@ export const DebugPane: typeof AccordionPane<Scene> = (props) => {
                 <BoundProperty component={SwitchPropertyLine} key="Shadows" label="Shadows" target={scene} propertyKey="shadowsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Skeletons" label="Skeletons" target={scene} propertyKey="skeletonsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Sprites" label="Sprites" target={scene} propertyKey="spritesEnabled" />
-            </AccordionPaneSection>
-        </AccordionPane>
+            </AccordionSection>
+        </ExtensibleAccordion>
     );
 };

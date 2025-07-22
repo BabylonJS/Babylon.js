@@ -50,7 +50,7 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     /**
      * A function that returns the root entities for this section.
      */
-    getRootEntities: (scene: Scene) => readonly T[];
+    getRootEntities: () => readonly T[];
 
     /**
      * An optional function that returns the children of a given entity.
@@ -77,17 +77,17 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     /**
      * A function that returns an array of observables for when entities are added to the scene.
      */
-    getEntityAddedObservables: (scene: Scene) => readonly IReadonlyObservable<T>[];
+    getEntityAddedObservables: () => readonly IReadonlyObservable<T>[];
 
     /**
      * A function that returns an array of observables for when entities are removed from the scene.
      */
-    getEntityRemovedObservables: (scene: Scene) => readonly IReadonlyObservable<T>[];
+    getEntityRemovedObservables: () => readonly IReadonlyObservable<T>[];
 
     /**
      * A function that returns an array of observables for when entities are moved (e.g. re-parented) within the scene.
      */
-    getEntityMovedObservables?: (scene: Scene) => readonly IReadonlyObservable<T>[];
+    getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
 }>;
 
 type EntityCommandBase<T extends EntityBase> = Readonly<{
@@ -281,12 +281,12 @@ export const SceneExplorer: FunctionComponent<{
             }
         };
 
-        const addObservers = sections.flatMap((section) => section.getEntityAddedObservables(scene).map((observable) => observable.add(onSceneItemAdded)));
-        const removeObservers = sections.flatMap((section) => section.getEntityRemovedObservables(scene).map((observable) => observable.add(onSceneItemRemoved)));
+        const addObservers = sections.flatMap((section) => section.getEntityAddedObservables().map((observable) => observable.add(onSceneItemAdded)));
+        const removeObservers = sections.flatMap((section) => section.getEntityRemovedObservables().map((observable) => observable.add(onSceneItemRemoved)));
         const moveObservers = sections
             .map((section) => section.getEntityMovedObservables)
             .filter((getEntityMovedObservable) => !!getEntityMovedObservable)
-            .flatMap((getEntityMovedObservable) => getEntityMovedObservable(scene).map((observable) => observable.add(onSceneItemAdded)));
+            .flatMap((getEntityMovedObservable) => getEntityMovedObservable().map((observable) => observable.add(onSceneItemAdded)));
 
         return () => {
             for (const observer of addObservers) {
@@ -311,7 +311,7 @@ export const SceneExplorer: FunctionComponent<{
         });
 
         for (const section of sections) {
-            const rootEntities = section.getRootEntities(scene);
+            const rootEntities = section.getRootEntities();
 
             visibleItems.push({
                 type: "section",

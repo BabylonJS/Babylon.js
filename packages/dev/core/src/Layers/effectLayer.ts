@@ -23,6 +23,7 @@ import { _WarnImport } from "../Misc/devTools";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinEffectLayer } from "./thinEffectLayer";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -116,6 +117,11 @@ export abstract class EffectLayer {
     public static set ForceGLSL(value: boolean) {
         ThinEffectLayer.ForceGLSL = value;
     }
+
+    /**
+     * The unique id of the layer
+     */
+    public readonly uniqueId = UniqueIdGenerator.UniqueId;
 
     /**
      * The name of the layer
@@ -310,7 +316,7 @@ export abstract class EffectLayer {
 
         this._engine = this._scene.getEngine();
         this._maxSize = this._engine.getCaps().maxTextureSize;
-        this._scene.effectLayers.push(this);
+        this._scene.addEffectLayer(this);
 
         this._thinEffectLayer.onDisposeObservable.add(() => {
             this.onDisposeObservable.notifyObservers(this);
@@ -642,10 +648,7 @@ export abstract class EffectLayer {
         this._disposeTextureAndPostProcesses();
 
         // Remove from scene
-        const index = this._scene.effectLayers.indexOf(this, 0);
-        if (index > -1) {
-            this._scene.effectLayers.splice(index, 1);
-        }
+        this._scene.removeEffectLayer(this);
 
         // Callback
         this.onDisposeObservable.clear();

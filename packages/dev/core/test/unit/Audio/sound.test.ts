@@ -103,7 +103,7 @@ describe("Sound", () => {
         expect(sound.useCustomAttenuation).toBe(false);
         expect(sound.getAudioBuffer()).toBe(audioSample.audioBuffer);
         expect(sound.getPlaybackRate()).toBe(1);
-        expect(sound.getSoundGain()).toBe(mock.audioContext.createGain.mock.results[1].value);
+        expect(sound.getSoundGain()).toBe(mock.audioContext.createGain.mock.results[0].value);
         expect(sound.getVolume()).toBe(1);
 
         expect(sound._scene).toBe(scene);

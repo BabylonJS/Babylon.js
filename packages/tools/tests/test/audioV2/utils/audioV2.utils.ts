@@ -1,5 +1,5 @@
 import type { Nullable } from "@dev/core/types";
-import { test, Page, TestInfo } from "@playwright/test";
+import { expect, test, Page, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
 export type AudioContextType = "Realtime" | "Offline";
@@ -15,6 +15,9 @@ export const enum Channel {
 
 /** The number of decimal places used for volume comparisons using `expect(...).toBeCloseTo(...)`. */
 export const VolumePrecision = 1;
+
+/** The range of acceptable volume values for realtime audio tests. */
+const RealtimeVolumeRange = 0.2;
 
 export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
@@ -279,4 +282,15 @@ export async function EvaluateAudioContextType(page: Page): Promise<AudioContext
             throw new Error("Unknown audio context type");
         }
     })) as AudioContextType;
+}
+
+export async function ExpectValueToBeCloseTo(page: Page, actual: number, expected: number, precision = VolumePrecision, realtimeRange = RealtimeVolumeRange): Promise<void> {
+    if ((await EvaluateAudioContextType(page)) === "Offline") {
+        expect(actual).toBeCloseTo(expected, precision);
+    } else {
+        // For "Realtime" contexts, expect larger range due to timing variations.
+        const halfRange = realtimeRange / 2;
+        expect(actual).toBeGreaterThanOrEqual(expected - halfRange);
+        expect(actual).toBeLessThanOrEqual(expected + halfRange);
+    }
 }

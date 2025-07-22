@@ -14,6 +14,7 @@ import { Logger } from "core/Misc/logger";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import type { ShadowLight } from "core/Lights/shadowLight";
 import { Epsilon } from "core/Maths/math.constants";
+import { ConvertHandednessMatrix } from "../../exportUtils";
 
 // Default values for comparison.
 export const DefaultTranslation = Vector3.Zero();
@@ -190,6 +191,12 @@ export function NormalizeTangent(tangent: Vector4 | Vector3) {
 export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
     value.x *= -1;
     return value;
+}
+
+/** @internal */
+export function ConvertToRightHandedTransformMatrix(matrix: Matrix): Matrix {
+    ConvertHandednessMatrix.invertToRef(TmpVectors.Matrix[0]).multiplyToRef(matrix, matrix).multiplyToRef(ConvertHandednessMatrix, matrix);
+    return matrix;
 }
 
 /**
