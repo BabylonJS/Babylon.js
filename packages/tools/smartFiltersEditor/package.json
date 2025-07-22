@@ -1,0 +1,43 @@
+{
+    "name": "@tools/smart-filters-editor",
+    "private": true,
+    "version": "1.0.0",
+    "description": "The Smart Filters Editor tool is a web-based tool that allows you to create and edit Smart Filters for Babylon.js.",
+    "license": "MIT",
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "build:deployment": "npm run clean && webpack --env mode=production",
+        "compile": "tsc -b tsconfig.build.json",
+        "serve": "webpack serve",
+        "serve:prod": "webpack serve --env mode=production",
+        "serve:https": "webpack serve --env mode=development --server-type https --host ::",
+        "serve:dev": "webpack serve --env mode=development --env watch=all",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g"
+    },
+    "devDependencies": {
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
+        "@fortawesome/fontawesome-svg-core": "^6.1.0",
+        "@fortawesome/free-solid-svg-icons": "^6.1.0",
+        "@fortawesome/react-fontawesome": "^0.2.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "css-loader": "^7.1.0",
+        "file-loader": "^6.2.0",
+        "sass": "^1.62.0",
+        "sass-loader": "^16.0.0",
+        "source-map-loader": "^4.0.0",
+        "style-loader": "^3.3.0",
+        "ts-loader": "^9.2.6",
+        "url-loader": "^4.1.1",
+        "webpack": "^5.98.0",
+        "webpack-cli": "^5.1.0",
+        "webpack-dev-server": "^4.7.4",
+        "webpack-bundle-analyzer": "^4.10.0",
+        "@dev/core": "^1.0.0",
+        "@dev/shared-ui-components": "^1.0.0",
+        "@dev/smart-filters": "^1.0.0",
+        "@dev/smart-filters-blocks": "^1.0.0",
+        "@tools/smart-filters-editor-control": "^1.0.0"
+    }
+}
