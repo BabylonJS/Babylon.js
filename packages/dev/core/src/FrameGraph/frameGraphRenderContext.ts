@@ -114,11 +114,12 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param backBuffer Defines if the back buffer must be cleared
      * @param depth Defines if the depth buffer must be cleared
      * @param stencil Defines if the stencil buffer must be cleared
+     * @param stencilClearValue Defines the value to use to clear the stencil buffer (default is 0)
      */
-    public clearAttachments(color: Nullable<IColor4Like>, attachments: number[], backBuffer: boolean, depth: boolean, stencil?: boolean): void {
+    public clearAttachments(color: Nullable<IColor4Like>, attachments: number[], backBuffer: boolean, depth: boolean, stencil?: boolean, stencilClearValue = 0): void {
         this._applyRenderTarget();
         this._engine.bindAttachments(attachments);
-        this._engine.clear(color, backBuffer, depth, stencil);
+        this._engine.clear(color, backBuffer, depth, stencil, stencilClearValue);
     }
 
     /**
