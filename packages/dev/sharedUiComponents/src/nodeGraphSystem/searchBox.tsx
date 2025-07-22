@@ -3,7 +3,7 @@ import type { StateManager } from "./stateManager";
 import "./searchBox.scss";
 import { NodeLedger } from "./nodeLedger";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
-import { PositionedPopover } from "../fluent/primitives/searchBox";
+import { PositionedPopover } from "../fluent/primitives/positionedPopover";
 import { SearchBox } from "../fluent/primitives/searchBox";
 
 export interface ISearchBoxComponentProps {
