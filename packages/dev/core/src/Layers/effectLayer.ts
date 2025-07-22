@@ -76,6 +76,7 @@ export interface IEffectLayerOptions {
  */
 export abstract class EffectLayer {
     private _effectLayerOptions: IEffectLayerOptions;
+    private _mainTextureCreatedSize: ISize = {width: 0, height: 0};
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;
@@ -533,10 +534,10 @@ export abstract class EffectLayer {
         }
 
         // Handle size changes.
-        const size = this._mainTexture.getSize();
         this._setMainTextureSize();
         if (
-            (size.width !== this._mainTextureDesiredSize.width || size.height !== this._mainTextureDesiredSize.height) &&
+            (this._mainTextureCreatedSize.width !== this._mainTextureDesiredSize.width ||
+                this._mainTextureCreatedSize.height !== this._mainTextureDesiredSize.height) &&
             this._mainTextureDesiredSize.width !== 0 &&
             this._mainTextureDesiredSize.height !== 0
         ) {
@@ -545,6 +546,8 @@ export abstract class EffectLayer {
             this._disposeTextureAndPostProcesses();
             this._createMainTexture();
             this._createTextureAndPostProcesses();
+            this._mainTextureCreatedSize.width = this._mainTextureDesiredSize.width;
+            this._mainTextureCreatedSize.height = this._mainTextureDesiredSize.height;
         }
     }
 
