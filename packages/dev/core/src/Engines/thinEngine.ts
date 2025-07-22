@@ -122,7 +122,7 @@ export class ThinEngine extends AbstractEngine {
         { key: "Chrome/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
-        { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        // { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
         { key: "Chrome/12\\d\\..+?Mobile", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
         // desktop osx safari 15.4
         { key: ".*AppleWebKit.*(15.4).*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
