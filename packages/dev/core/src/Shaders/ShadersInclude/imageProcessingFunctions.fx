@@ -176,7 +176,7 @@ vec4 applyImageProcessing(vec4 result) {
 
 	// Apply Color Transform
 #ifdef COLORGRADING
-	vec3 colorTransformInput = max(result.rgb, 0.) * colorTransformSettings.xxx + colorTransformSettings.yyy;
+	vec3 colorTransformInput = result.rgb * colorTransformSettings.xxx + colorTransformSettings.yyy;
 	#ifdef COLORGRADING3D
 		vec3 colorTransformOutput = texture(txColorTransform, colorTransformInput).rgb;
 	#else
