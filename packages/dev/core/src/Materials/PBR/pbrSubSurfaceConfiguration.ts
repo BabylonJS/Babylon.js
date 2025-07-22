@@ -428,6 +428,12 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                     }
                 }
 
+                if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled) {
+                    if (!this._refractionIntensityTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+
                 if (this._translucencyColorTexture && MaterialFlags.TranslucencyColorTextureEnabled) {
                     if (!this._translucencyColorTexture.isReadyOrNotBlocking()) {
                         return false;
@@ -775,6 +781,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             activeTextures.push(this._refractionTexture);
         }
 
+        if (this._refractionIntensityTexture) {
+            activeTextures.push(this._refractionIntensityTexture);
+        }
+
         if (this._translucencyColorTexture) {
             activeTextures.push(this._translucencyColorTexture);
         }
@@ -791,6 +801,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
         if (this._refractionTexture && this._refractionTexture.animations && this._refractionTexture.animations.length > 0) {
             animatables.push(this._refractionTexture);
+        }
+
+        if (this._refractionIntensityTexture && this._refractionIntensityTexture.animations && this._refractionIntensityTexture.animations.length > 0) {
+            animatables.push(this._refractionIntensityTexture);
         }
 
         if (this._translucencyColorTexture && this._translucencyColorTexture.animations && this._translucencyColorTexture.animations.length > 0) {
@@ -810,6 +824,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
             if (this._refractionTexture) {
                 this._refractionTexture.dispose();
+            }
+
+            if (this._refractionIntensityTexture) {
+                this._refractionIntensityTexture.dispose();
             }
 
             if (this._translucencyColorTexture) {

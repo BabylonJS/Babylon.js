@@ -268,7 +268,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                 );
 
                 ubo.updateFloat3("morphTargetTextureInfo", manager._textureVertexStride, manager._textureWidth, manager._textureHeight);
-                ubo.updateInt("morphTargetCount", manager.numInfluencers);
+                ubo.updateFloat("morphTargetCount", manager.numInfluencers);
                 ubo.update();
             }
 

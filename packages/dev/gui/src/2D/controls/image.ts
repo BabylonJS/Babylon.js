@@ -621,6 +621,10 @@ export class Image extends Control {
     }
 
     private _sanitizeSVG(svgString: string) {
+        if (svgString.indexOf("<svg") === -1) {
+            return svgString; // Not an SVG, return as is
+        }
+
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgString, "image/svg+xml");
 
