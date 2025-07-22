@@ -23,6 +23,7 @@ import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
 import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
+import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
 import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
@@ -198,6 +199,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
             // Properties pane tab and related services.
             PropertiesServiceDefinition,
+            TexturePropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
             TransformPropertiesServiceDefinition,
             AnimationPropertiesServiceDefinition,
