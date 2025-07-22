@@ -16,7 +16,7 @@ import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 import "./nodeList.scss";
 import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { Accordion } from "shared-ui-components/fluent/primitives/accordion";
-import { SearchBox } from "shared-ui-components/fluent/primitives/searchBox";
+import { SearchBar } from "shared-ui-components/fluent/primitives/searchBar";
 
 interface INodeListComponentProps {
     globalState: GlobalState;
@@ -333,7 +333,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     renderFluent(blockMenu: JSX.Element[]) {
         return (
             <div>
-                <SearchBox placeholder="Filter" onChange={(val) => this.filterContent(val.toString())} />
+                <SearchBar placeholder="Filter" onChange={(val) => this.filterContent(val.toString())} />
                 <Accordion>{blockMenu}</Accordion>
             </div>
         );

@@ -2,7 +2,7 @@
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
-import type { Material } from "core/Materials/material";
+import { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -115,17 +115,16 @@ function BuildMeshVertexCount(geometry: Geometry) {
 }
 
 function BuildMeshVertexIndices(geometry: Geometry) {
-    const index = geometry.getIndices();
-    const array = [];
+    const indices = geometry.getIndices();
+    const count = indices?.length ?? geometry.getTotalVertices();
 
-    if (index !== null) {
-        for (let i = 0; i < index.length; i++) {
-            array.push(index[i]);
+    const array: number[] = [];
+    if (indices !== null) {
+        for (let i = 0; i < count; i++) {
+            array.push(indices[i]);
         }
     } else {
-        const length = geometry.getTotalVertices();
-
-        for (let i = 0; i < length; i++) {
+        for (let i = 0; i < count; i++) {
             array.push(i);
         }
     }
@@ -133,11 +132,11 @@ function BuildMeshVertexIndices(geometry: Geometry) {
     return array.join(", ");
 }
 
-function BuildVector3Array(attribute: FloatArray, options: IUSDZExportOptions, stride = 3) {
-    const array = [];
+function BuildVector3Array(attribute: FloatArray, options: IUSDZExportOptions, stride = 3, convertToRightHanded = false) {
+    const array: string[] = [];
 
     for (let i = 0; i < attribute.length / stride; i++) {
-        const x = attribute[i * stride];
+        const x = attribute[i * stride] * (convertToRightHanded ? -1 : 1);
         const y = attribute[i * stride + 1];
         const z = attribute[i * stride + 2];
 
@@ -148,7 +147,7 @@ function BuildVector3Array(attribute: FloatArray, options: IUSDZExportOptions, s
 }
 
 function BuildVector2Array(attribute: FloatArray, options: IUSDZExportOptions) {
-    const array = [];
+    const array: string[] = [];
 
     for (let i = 0; i < attribute.length / 2; i++) {
         const x = attribute[i * 2];
@@ -189,7 +188,7 @@ function BuildAdditionalAttributes(geometry: Geometry, options: IUSDZExportOptio
     return string;
 }
 
-function BuildMesh(geometry: Geometry, options: IUSDZExportOptions) {
+function BuildMesh(geometry: Geometry, options: IUSDZExportOptions, windingOrder: string, convertToRightHanded: boolean) {
     const name = "Geometry";
     const position = geometry.getVerticesData(VertexBuffer.PositionKind);
     const normal = geometry.getVerticesData(VertexBuffer.NormalKind);
@@ -201,24 +200,25 @@ function BuildMesh(geometry: Geometry, options: IUSDZExportOptions) {
     return `
 	def Mesh "${name}"
 	{
+        uniform token orientation = "${windingOrder}"
 		int[] faceVertexCounts = [${BuildMeshVertexCount(geometry)}]
 		int[] faceVertexIndices = [${BuildMeshVertexIndices(geometry)}]
-		normal3f[] normals = [${BuildVector3Array(normal, options)}] (
+		normal3f[] normals = [${BuildVector3Array(normal, options, undefined, convertToRightHanded)}] (
 			interpolation = "vertex"
 		)
-		point3f[] points = [${BuildVector3Array(position, options)}]
+		point3f[] points = [${BuildVector3Array(position, options, undefined, convertToRightHanded)}]
         ${BuildAdditionalAttributes(geometry, options)}
 		uniform token subdivisionScheme = "none"
 	}
 `;
 }
 
-function BuildMeshObject(geometry: Geometry, options: IUSDZExportOptions) {
-    const mesh = BuildMesh(geometry, options);
+function BuildMeshObject(geometry: Geometry, options: IUSDZExportOptions, windingOrder: string, convertToRightHanded: boolean) {
+    const meshObject = BuildMesh(geometry, options, windingOrder, convertToRightHanded);
     return `
         def "Geometry"
         {
-        ${mesh}
+        ${meshObject}
         }
         `;
 }
@@ -227,29 +227,6 @@ function BuildUSDFileAsString(dataToInsert: string) {
     let output = BuildHeader();
     output += dataToInsert;
     return fflate.strToU8(output);
-}
-
-function GetMeshWorldMatrix(mesh: Mesh) {
-    const matrix = mesh.getWorldMatrix().clone();
-
-    // If there's a LH->RH __root__ conversion node, cancel out its effect
-    const useRightHandedSystem = mesh.getScene().useRightHandedSystem;
-    if (!useRightHandedSystem) {
-        let current = mesh.parent;
-        while (current) {
-            if (IsNoopNode(current, useRightHandedSystem)) {
-                matrix.multiplyToRef(current.getWorldMatrix().invert(), matrix);
-                break;
-            }
-            current = current.parent;
-        }
-    }
-
-    if (matrix.determinant() < 0) {
-        Tools.Warn(`Exporting mesh ${mesh.name} with negative scale. Result may look incorrect in destination engine.`);
-    }
-
-    return matrix;
 }
 
 function BuildMatrix(matrix: Matrix) {
@@ -262,9 +239,8 @@ function BuildMatrixRow(array: number[], offset: number) {
     return `(${array[offset + 0]}, ${array[offset + 1]}, ${array[offset + 2]}, ${array[offset + 3]})`;
 }
 
-function BuildXform(mesh: Mesh) {
+function BuildXform(mesh: Mesh, matrix: Matrix) {
     const name = "Object_" + mesh.uniqueId;
-    const matrix = GetMeshWorldMatrix(mesh);
     const transform = BuildMatrix(matrix);
 
     return `def Xform "${name}" (
@@ -282,7 +258,7 @@ function BuildXform(mesh: Mesh) {
 }
 
 function BuildMaterials(materials: { [key: string]: Material }, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
-    const array = [];
+    const array: string[] = [];
 
     for (const uuid in materials) {
         const material = materials[uuid];
@@ -375,7 +351,7 @@ function BuildTexture(
         asset inputs:file = @textures/Texture_${id}.png@
         float2 inputs:st.connect = </Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
         ${color ? "float4 inputs:scale = " + BuildColor4(color) : ""}
-        token inputs:sourceColorSpace = "${texture.gammaSpace ? "raw" : "sRGB"}"
+        token inputs:sourceColorSpace = "${texture.gammaSpace ? "sRGB" : "raw"}"
         token inputs:wrapS = "${BuildWrapping(texture.wrapU)}"
         token inputs:wrapT = "${BuildWrapping(texture.wrapV)}"
         float outputs:r
@@ -633,6 +609,39 @@ function BuildCamera(camera: Camera, options: IUSDZExportOptions) {
     }
 }
 
+function ExtractMeshInformations(mesh: Mesh) {
+    const matrix = mesh.getWorldMatrix().clone();
+    const sceneIsRightHanded = mesh.getScene().useRightHandedSystem;
+    let sideOrientation = mesh.material?._getEffectiveOrientation(mesh) ?? mesh.sideOrientation;
+    let convertToRightHanded = !sceneIsRightHanded;
+
+    // Search for a root conversion node from the glTF loader in the mesh's ancestors.
+    let current = mesh.parent;
+    while (current) {
+        if (IsNoopNode(current, sceneIsRightHanded) && current.parent === null) {
+            if (!sceneIsRightHanded) {
+                // If it's a RH->LH node, cancel out its inversion effect on the mesh's matrix and winding order.
+                matrix.multiplyToRef(current.getWorldMatrix().invert(), matrix);
+                sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+            }
+            convertToRightHanded = false;
+            break;
+        }
+        current = current.parent;
+    }
+
+    if (matrix.determinant() < 0) {
+        // RealityKit doesn't seem to automatically flip faces of a mesh with negative scale, like other engines do (including us).
+        Tools.Warn(`Mesh ${mesh} has a negative scale, which may look incorrect in destinations like QuickLook.`);
+    }
+
+    return {
+        matrix,
+        windingOrder: sideOrientation === Material.ClockWiseSideOrientation ? "leftHanded" : "rightHanded",
+        convertToRightHanded,
+    };
+}
+
 /**
  *
  * @param scene scene to export
@@ -689,9 +698,10 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
 
         if (supportedMaterials.indexOf(material.getClassName()) !== -1) {
             const geometryFileName = "geometries/Geometry_" + geometry.uniqueId + ".usda";
+            const { matrix, windingOrder, convertToRightHanded } = ExtractMeshInformations(mesh);
 
             if (!(geometryFileName in files)) {
-                const meshObject = BuildMeshObject(geometry, localOptions);
+                const meshObject = BuildMeshObject(geometry, localOptions, windingOrder, convertToRightHanded);
                 files[geometryFileName] = BuildUSDFileAsString(meshObject);
             }
 
@@ -699,7 +709,7 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
                 materialToExports[material.uniqueId] = material;
             }
 
-            output += BuildXform(mesh);
+            output += BuildXform(mesh, matrix);
         } else {
             Tools.Warn("USDZExportAsync does not support this material type: " + material.getClassName());
         }
