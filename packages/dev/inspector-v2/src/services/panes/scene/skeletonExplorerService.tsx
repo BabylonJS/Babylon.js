@@ -9,10 +9,11 @@ import { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const SkeletonHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Skeleton Hierarchy",
+export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "Skeleton Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -24,7 +25,7 @@ export const SkeletonHierarchyServiceDefinition: ServiceDefinition<[], [ISceneEx
 
         const sectionRegistration = sceneExplorerService.addSection<Skeleton | Bone>({
             displayName: "Skeletons",
-            order: 200,
+            order: DefaultSectionsOrder.Skeletons,
             predicate: (entity) => entity instanceof Skeleton || entity instanceof Bone,
             getRootEntities: () => scene.skeletons,
             getEntityChildren: (skeletonOrBone) => skeletonOrBone.getChildren(),

@@ -1,4 +1,4 @@
-import type { ComponentType, FunctionComponent, PropsWithChildren } from "react";
+import type { ComponentType, PropsWithChildren } from "react";
 
 import type { AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";
 
@@ -7,11 +7,11 @@ import { Children, isValidElement, useMemo, useState } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
-export type AccordionSection = Readonly<{
+export type DynamicAccordionSection = Readonly<{
     /**
      * A unique identity for the section, which can be referenced by section content.
      */
-    identity: symbol;
+    identity: string;
 
     /**
      * An optional order for the section, relative to other sections.
@@ -26,7 +26,7 @@ export type AccordionSection = Readonly<{
     collapseByDefault?: boolean;
 }>;
 
-export type AccordionSectionContent<ContextT> = Readonly<{
+export type DynamicAccordionSectionContent<ContextT> = Readonly<{
     /**
      * A unique key for the the content.
      */
@@ -35,7 +35,7 @@ export type AccordionSectionContent<ContextT> = Readonly<{
     /**
      * The section this content belongs to.
      */
-    section: symbol;
+    section: string;
 
     /**
      * An optional order for the content within the section.
@@ -59,24 +59,10 @@ const useStyles = makeStyles({
     },
 });
 
-export type AccordionPaneSectionProps = {
-    identity: symbol;
-};
-
-export const AccordionPaneSection: FunctionComponent<PropsWithChildren<AccordionSectionProps | AccordionPaneSectionProps>> = (props) => {
-    const { title, identity, collapseByDefault, children } = props as PropsWithChildren<Partial<AccordionSectionProps> & Partial<AccordionPaneSectionProps>>;
-
-    return (
-        <AccordionSection title={title ?? identity?.description ?? ""} collapseByDefault={collapseByDefault}>
-            {children}
-        </AccordionSection>
-    );
-};
-
-export function AccordionPane<ContextT = unknown>(
+export function ExtensibleAccordion<ContextT = unknown>(
     props: PropsWithChildren<{
-        sections: readonly AccordionSection[];
-        sectionContent: readonly AccordionSectionContent<ContextT>[];
+        sections: readonly DynamicAccordionSection[];
+        sectionContent: readonly DynamicAccordionSectionContent<ContextT>[];
         context: ContextT;
     }>
 ) {
@@ -85,13 +71,13 @@ export function AccordionPane<ContextT = unknown>(
     const { children, sections, sectionContent, context } = props;
 
     const defaultSections = useMemo(() => {
-        const defaultSections: AccordionSection[] = [];
+        const defaultSections: DynamicAccordionSection[] = [];
         if (children) {
             Children.forEach(children, (child) => {
                 if (isValidElement(child)) {
-                    const childProps = child.props as Partial<AccordionSectionProps> & Partial<AccordionPaneSectionProps>;
+                    const childProps = child.props as AccordionSectionProps;
                     defaultSections.push({
-                        identity: childProps.identity ?? Symbol(childProps.title),
+                        identity: childProps.title,
                         collapseByDefault: childProps.collapseByDefault,
                     });
                 }
@@ -101,7 +87,7 @@ export function AccordionPane<ContextT = unknown>(
     }, [children]);
 
     const defaultSectionContent = useMemo(() => {
-        const defaultSectionContent: AccordionSectionContent<ContextT>[] = [];
+        const defaultSectionContent: DynamicAccordionSectionContent<ContextT>[] = [];
         if (children) {
             Children.forEach(children, (child, index) => {
                 if (isValidElement(child)) {
@@ -117,8 +103,40 @@ export function AccordionPane<ContextT = unknown>(
         return defaultSectionContent;
     }, [children, defaultSections]);
 
-    const mergedSections = useMemo(() => [...defaultSections, ...sections], [defaultSections, sections]);
-    const mergedSectionContent = useMemo(() => [...defaultSectionContent, ...sectionContent], [defaultSectionContent, sectionContent]);
+    const mergedSectionContent = useMemo(
+        () =>
+            [...defaultSectionContent, ...sectionContent]
+                .map((content, index) => {
+                    return {
+                        ...content,
+                        order: content.order ?? index,
+                    };
+                })
+                .sort((a, b) => a.order - b.order),
+        [defaultSectionContent, sectionContent]
+    );
+
+    const mergedSections = useMemo(() => {
+        const mergedSections = [...defaultSections, ...sections];
+
+        // Check for implicit sections (e.g. sections that were not explicitly defined, but referenced by content).
+        const implicitSections: DynamicAccordionSection[] = [];
+        for (const sectionContent of mergedSectionContent) {
+            if (!mergedSections.some((s) => s.identity === sectionContent.section) && !implicitSections.some((s) => s.identity === sectionContent.section)) {
+                implicitSections.push({ identity: sectionContent.section });
+            }
+        }
+
+        return [...implicitSections, ...defaultSections, ...sections]
+            .map((section, index) => {
+                return {
+                    ...section,
+                    order: section.order ?? index,
+                    collapseByDefault: section.collapseByDefault ?? false,
+                };
+            })
+            .sort((a, b) => a.order - b.order);
+    }, [defaultSections, sections, mergedSectionContent]);
 
     const [version, setVersion] = useState(0);
 
@@ -140,9 +158,6 @@ export function AccordionPane<ContextT = unknown>(
                     return null; // No content for this section
                 }
 
-                // Sort the content for this section by order, defaulting to 0 if not specified.
-                contentForSection.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
                 // Return the section with its identity, collapseByDefault flag, and the content components to render.
                 return {
                     identity: section.identity,
@@ -159,11 +174,7 @@ export function AccordionPane<ContextT = unknown>(
                 <Accordion key={version}>
                     {...visibleSections.map((section) => {
                         return (
-                            <AccordionSection
-                                key={section.identity.description}
-                                title={section.identity.description ?? section.identity.toString()}
-                                collapseByDefault={section.collapseByDefault}
-                            >
+                            <AccordionSection key={section.identity} title={section.identity} collapseByDefault={section.collapseByDefault}>
                                 {section.components}
                             </AccordionSection>
                         );

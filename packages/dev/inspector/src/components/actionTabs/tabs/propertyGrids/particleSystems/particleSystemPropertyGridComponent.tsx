@@ -44,6 +44,7 @@ import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
 import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { AttractorsGridComponent } from "./attractorsGridComponent";
+import { ConvertToNodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet.helper";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -328,6 +329,26 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         );
     }
 
+    view() {
+        const systemSet = ConvertToNodeParticleSystemSet("source", [this.props.system as ParticleSystem]);
+
+        if (!systemSet) {
+            return;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        systemSet.editAsync({ nodeEditorConfig: { backgroundColor: this.props.system.getScene()!.clearColor } });
+    }
+
+    edit() {
+        if (!this.props.system.isNodeGenerated) {
+            return;
+        }
+        const clone = (this.props.system as ParticleSystem).source!.clone("clone");
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        clone.editAsync({ nodeEditorConfig: { backgroundColor: this.props.system.getScene()!.clearColor } });
+    }
+
     override render() {
         const system = this.props.system;
 
@@ -433,6 +454,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             system.dispose();
                         }}
                     />
+                </LineContainerComponent>
+                <LineContainerComponent title="NODE PARTICLE EDITOR" selection={this.props.globalState}>
+                    {isFromNode && <ButtonLineComponent label="Edit" onClick={() => this.edit()} />}
+                    {!isFromNode && <ButtonLineComponent label="View in NPE" onClick={() => this.view()} />}
                 </LineContainerComponent>
                 {!isFromNode && (
                     <>

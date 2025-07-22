@@ -3,7 +3,7 @@ import type { ChangeEvent, FunctionComponent } from "react";
 
 import { makeStyles, Switch as FluentSwitch } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
 
 const useSwitchStyles = makeStyles({
     switch: {

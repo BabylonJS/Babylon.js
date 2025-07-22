@@ -1,7 +1,7 @@
 import type { TextareaProps as FluentTextareaProps } from "@fluentui/react-components";
 import { Textarea as FluentTextarea, makeStyles } from "@fluentui/react-components";
 import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
 
 const useInputStyles = makeStyles({
     textarea: {},

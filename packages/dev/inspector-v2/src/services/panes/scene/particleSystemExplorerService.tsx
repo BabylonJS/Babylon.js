@@ -8,10 +8,11 @@ import { DropRegular } from "@fluentui/react-icons";
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Particle System Hierarchy",
+    friendlyName: "Particle System Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,7 +22,7 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Particle Systems",
-            order: 600,
+            order: DefaultSectionsOrder.ParticleSystems,
             predicate: (entity): entity is IParticleSystem => scene.particleSystems.includes(entity as IParticleSystem),
             getRootEntities: () => scene.particleSystems,
             getEntityDisplayInfo: (particleSystem) => {

@@ -1211,7 +1211,9 @@ export class TransformNode extends Node {
                 // Get camera view matrix
                 TmpVectors.Matrix[1].copyFrom(camera.getViewMatrix());
 
-                if (this.getScene().useRightHandedSystem) {
+                const isRH = this.getScene().useRightHandedSystem;
+
+                if (isRH) {
                     // This operation is necessary to cancel out the scaling component of the matrix without decomposing it.
                     // It's a trick to extract only the rotation part.
                     TmpVectors.Matrix[1].multiplyToRef(TransformNode._TmpRHRestore, TmpVectors.Matrix[1]);
@@ -1236,6 +1238,10 @@ export class TransformNode extends Node {
 
                     if ((this.billboardMode & TransformNode.BILLBOARDMODE_Z) !== TransformNode.BILLBOARDMODE_Z) {
                         eulerAngles.z = 0;
+                    }
+
+                    if (isRH) {
+                        eulerAngles.y += Math.PI; // Yaw correction
                     }
 
                     Matrix.RotationYawPitchRollToRef(eulerAngles.y, eulerAngles.x, eulerAngles.z, TmpVectors.Matrix[0]);

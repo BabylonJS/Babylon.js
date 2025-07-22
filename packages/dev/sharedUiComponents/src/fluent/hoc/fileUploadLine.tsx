@@ -1,9 +1,10 @@
 import { useRef } from "react";
 import type { FunctionComponent } from "react";
 import { ButtonLine } from "./buttonLine";
-import type { ButtonLineProps } from "./buttonLine";
+import type { ButtonProps } from "../primitives/button";
+import { ArrowUploadRegular } from "@fluentui/react-icons";
 
-type FileUploadLineProps = Omit<ButtonLineProps, "onClick"> & {
+type FileUploadLineProps = Omit<ButtonProps, "onClick"> & {
     onClick: (files: FileList) => void;
     accept: string;
 };
@@ -25,7 +26,7 @@ export const FileUploadLine: FunctionComponent<FileUploadLineProps> = (props) =>
 
     return (
         <>
-            <ButtonLine onClick={handleButtonClick} label={props.label}></ButtonLine>
+            <ButtonLine onClick={handleButtonClick} icon={ArrowUploadRegular} label={props.label}></ButtonLine>
             <input ref={inputRef} type="file" accept={props.accept} style={{ display: "none" }} onChange={handleChange} />
         </>
     );

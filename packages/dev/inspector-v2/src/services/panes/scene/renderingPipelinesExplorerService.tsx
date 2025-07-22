@@ -6,12 +6,13 @@ import { PipelineRegular } from "@fluentui/react-icons";
 
 import { PostProcessRenderPipeline } from "core/PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
-export const RenderingPipelineHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Rendering Pipeline Hierarchy",
+export const RenderingPipelineExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "Rendering Pipeline Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -19,9 +20,9 @@ export const RenderingPipelineHierarchyServiceDefinition: ServiceDefinition<[], 
             return undefined;
         }
 
-        const sectionRegistration = sceneExplorerService.addSection<PostProcessRenderPipeline>({
+        const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Rendering Pipelines",
-            order: 500,
+            order: DefaultSectionsOrder.RenderingPipelines,
             predicate: (entity) => entity instanceof PostProcessRenderPipeline,
             getRootEntities: () => scene.postProcessRenderPipelineManager.supportedPipelines ?? [],
             getEntityDisplayInfo: (pipeline) => {

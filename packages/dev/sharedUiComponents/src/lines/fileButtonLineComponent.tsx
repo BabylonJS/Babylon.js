@@ -30,7 +30,8 @@ export class FileButtonLine extends React.Component<IFileButtonLineProps> {
     }
 
     renderFluent() {
-        return <FileUploadLine {...this.props} onClick={(file) => this.props.onClick(file[0])} />;
+        const { icon, ...fileProps } = this.props;
+        return <FileUploadLine {...fileProps} onClick={(file) => this.props.onClick(file[0])} />;
     }
 
     renderOriginal() {

@@ -1,6 +1,6 @@
 import { EvaluateAbstractAudioNodeTestAsync } from "../utils/abstractAudioNode.utils";
 import type { AudioNodeType } from "../utils/audioV2.utils";
-import { Channel, EvaluateAudioContextType, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, VolumePrecision } from "../utils/audioV2.utils";
+import { Channel, EvaluateErrorMessageAsync, EvaluateVolumesAtTimeAsync, ExpectValueToBeCloseTo } from "../utils/audioV2.utils";
 
 import { expect, test } from "@playwright/test";
 
@@ -19,7 +19,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-            expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+            await ExpectValueToBeCloseTo(page, volumes[Channel.L], 1);
         });
 
         test("Setting `volume` to 0.5 should play sound at 0.5x volume", async ({ page }) => {
@@ -36,7 +36,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-            expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+            await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
         });
 
         test("Setting `volume` to 2 should play sound at 2x volume", async ({ page }) => {
@@ -53,7 +53,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-            expect(volumes[Channel.L]).toBeCloseTo(2, 0);
+            await ExpectValueToBeCloseTo(page, volumes[Channel.L], 2);
         });
 
         test("Calling `setVolume` with value 0.5 should play sound at 0.5x volume", async ({ page }) => {
@@ -70,7 +70,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-            expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+            await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
         });
 
         test("Calling `setVolume` with value 2 should play sound at 2x volume", async ({ page }) => {
@@ -87,13 +87,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
             const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-            if ((await EvaluateAudioContextType(page)) === "Offline") {
-                expect(volumes[Channel.L]).toBeCloseTo(2, VolumePrecision);
-            } else {
-                // Expect larger range due to timing variations.
-                expect(volumes[Channel.L]).toBeGreaterThanOrEqual(1.9);
-                expect(volumes[Channel.L]).toBeLessThanOrEqual(2.1);
-            }
+            await ExpectValueToBeCloseTo(page, volumes[Channel.L], 2);
         });
 
         test.describe("Default ramp", () => {
@@ -115,7 +109,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.1, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.1);
             });
 
             test("Ramping volume from 0 to 1 over 1 second should play sound at 0.5x volume at 0.5 seconds with default linear shape", async ({ page }) => {
@@ -136,7 +130,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
             });
 
             test("Ramping volume from 0 to 1 over 1 second should play sound at 0.9x volume at 0.9 seconds with default linear shape", async ({ page }) => {
@@ -157,7 +151,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.9, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.9);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.9x volume at 0.1 seconds with default linear shape", async ({ page }) => {
@@ -176,7 +170,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.9, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.9);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.5x volume at 0.5 seconds with default linear shape", async ({ page }) => {
@@ -195,7 +189,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.1x volume at 0.9 seconds with default linear shape", async ({ page }) => {
@@ -214,7 +208,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.1, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.1);
             });
         });
 
@@ -237,7 +231,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.1, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.1);
             });
 
             test("Ramping volume from 0 to 1 over 1 second should play sound at 0.5x volume at 0.5 seconds with shape set to linear", async ({ page }) => {
@@ -258,7 +252,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
             });
 
             test("Ramping volume from 0 to 1 over 1 second should play sound at 0.9x volume at 0.9 seconds with shape set to linear", async ({ page }) => {
@@ -279,7 +273,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.9, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.9);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.9x volume at 0.1 seconds with shape set to linear", async ({ page }) => {
@@ -298,7 +292,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.9, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.9);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.5x volume at 0.5 seconds with shape set to linear", async ({ page }) => {
@@ -317,7 +311,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.1x volume at 0.9 seconds with shape set to linear", async ({ page }) => {
@@ -336,7 +330,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.1, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.1);
             });
         });
 
@@ -359,7 +353,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0);
             });
 
             test("Ramping volume from 0 to 1 over 1 second should play sound at 0 volume at 0.5 seconds with shape set to exponential", async ({ page }) => {
@@ -380,7 +374,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0);
             });
 
             test("Ramping volume from 0 to 1 over 1 second should play sound at 0.3x volume at 0.9 seconds with shape set to exponential", async ({ page }) => {
@@ -401,13 +395,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                if ((await EvaluateAudioContextType(page)) === "Offline") {
-                    expect(volumes[Channel.L]).toBeCloseTo(0.3, VolumePrecision);
-                } else {
-                    // Expect larger range due to timing variations.
-                    expect(volumes[Channel.L]).toBeGreaterThan(0.23);
-                    expect(volumes[Channel.L]).toBeLessThan(0.4);
-                }
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.3);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.3x volume at 0.1 seconds with shape set to exponential", async ({ page }) => {
@@ -426,13 +414,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                if ((await EvaluateAudioContextType(page)) === "Offline") {
-                    expect(volumes[Channel.L]).toBeCloseTo(0.3, VolumePrecision);
-                } else {
-                    // Expect larger range due to timing variations.
-                    expect(volumes[Channel.L]).toBeGreaterThan(0.25);
-                    expect(volumes[Channel.L]).toBeLessThan(0.4);
-                }
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.3);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at close to 0 volume at 0.5 seconds with shape set to exponential", async ({ page }) => {
@@ -451,7 +433,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at close to 0 volume at 0.9 seconds with shape set to exponential", async ({ page }) => {
@@ -470,7 +452,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0);
             });
         });
 
@@ -493,7 +475,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
             });
 
             test("Ramping volume from 0 to 1 over 1 second should play sound at 0.85x volume at 0.5 seconds with shape set to logarithmic", async ({ page }) => {
@@ -514,7 +496,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.85, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.85);
             });
 
             test("Ramping volume from 0 to 1 over 1 second should play sound at 1x volume at 0.9 seconds with shape set to logarithmic", async ({ page }) => {
@@ -535,7 +517,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 1);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 1x volume at 0.1 seconds with shape set to logarithmic", async ({ page }) => {
@@ -556,7 +538,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.1);
 
-                expect(volumes[Channel.L]).toBeCloseTo(1, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 1);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.85x volume at 0.5 seconds with shape set to logarithmic", async ({ page }) => {
@@ -575,7 +557,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.5);
 
-                expect(volumes[Channel.L]).toBeCloseTo(0.85, VolumePrecision);
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.85);
             });
 
             test("Ramping volume from 1 to 0 over 1 second should play sound at 0.5x volume at 0.9 seconds with shape set to logarithmic", async ({ page }) => {
@@ -594,13 +576,7 @@ export const AddSharedAbstractAudioNodeVolumeTests = (audioNodeType: AudioNodeTy
 
                 const volumes = await EvaluateVolumesAtTimeAsync(page, 0.9);
 
-                if ((await EvaluateAudioContextType(page)) === "Offline") {
-                    expect(volumes[Channel.L]).toBeCloseTo(0.5, VolumePrecision);
-                } else {
-                    // Expect larger range due to timing variations.
-                    expect(volumes[Channel.L]).toBeGreaterThanOrEqual(0.45);
-                    expect(volumes[Channel.L]).toBeLessThanOrEqual(0.56);
-                }
+                await ExpectValueToBeCloseTo(page, volumes[Channel.L], 0.5);
             });
         });
 

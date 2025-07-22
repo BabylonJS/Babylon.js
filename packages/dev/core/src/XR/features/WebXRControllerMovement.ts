@@ -338,7 +338,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
 
         // synchronized from feature setter properties
         this._featureContext = {
-            movementEnabled: options.movementEnabled || true,
+            movementEnabled: options.movementEnabled ?? true,
             movementOrientationFollowsViewerPose: options.movementOrientationFollowsViewerPose ?? true,
             movementOrientationFollowsController: options.movementOrientationFollowsController ?? false,
             orientationPreferredHandedness: options.orientationPreferredHandedness,

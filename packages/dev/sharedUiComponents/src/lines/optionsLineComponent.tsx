@@ -4,7 +4,7 @@ import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 import copyIcon from "../imgs/copy.svg";
-import { PropertyLine } from "../fluent/hoc/propertyLine";
+import { PropertyLine } from "../fluent/hoc/propertyLines/propertyLine";
 import { Dropdown } from "../fluent/primitives/dropdown";
 import type { AcceptedDropdownValue } from "../fluent/primitives/dropdown";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";

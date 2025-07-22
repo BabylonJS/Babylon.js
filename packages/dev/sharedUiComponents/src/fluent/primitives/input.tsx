@@ -2,7 +2,7 @@ import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 
 import { Input as FluentInput, makeStyles } from "@fluentui/react-components";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
 
 const useInputStyles = makeStyles({
     text: {

@@ -73,9 +73,9 @@ const FormatMimeTypes: { [key: string]: string } = {
 /** @internal */
 export class _WebAudioEngine extends AudioEngineV2 {
     private _audioContextStarted = false;
+    private _destinationNode: Nullable<AudioNode> = null;
     private _invalidFormats = new Set<string>();
     private _isUpdating = false;
-    private readonly _isUsingOfflineAudioContext: boolean = false;
     private _listener: Nullable<_SpatialAudioListener> = null;
     private readonly _listenerAutoUpdate: boolean = true;
     private readonly _listenerMinUpdateTime: number = 0;
@@ -94,6 +94,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
     /** @internal */
     public readonly _audioContext: AudioContext;
+
+    /** @internal */
+    public readonly _isUsingOfflineAudioContext: boolean = false;
 
     /** @internal */
     public readonly isReadyPromise: Promise<void> = new Promise((resolve) => {
@@ -191,6 +194,32 @@ export class _WebAudioEngine extends AudioEngineV2 {
 
         if (this._mainOut) {
             this._mainOut.volume = value;
+        }
+    }
+
+    /**
+     * This property should only be used by the legacy audio engine.
+     * @internal
+     * */
+    public get _audioDestination(): AudioNode {
+        return this._destinationNode ? this._destinationNode : (this._destinationNode = this._audioContext.destination);
+    }
+
+    public set _audioDestination(value: Nullable<AudioNode>) {
+        this._destinationNode = value;
+    }
+
+    /**
+     * This property should only be used by the legacy audio engine.
+     * @internal
+     */
+    public get _unmuteUIEnabled(): boolean {
+        return this._unmuteUI ? this._unmuteUI.enabled : false;
+    }
+
+    public set _unmuteUIEnabled(value: boolean) {
+        if (this._unmuteUI) {
+            this._unmuteUI.enabled = value;
         }
     }
 

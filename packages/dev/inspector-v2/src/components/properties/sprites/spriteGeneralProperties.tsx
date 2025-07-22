@@ -2,8 +2,8 @@ import type { Sprite } from "core/index";
 
 import type { FunctionComponent } from "react";
 
-import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/linkPropertyLine";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/switchPropertyLine";
+import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { BoundProperty } from "../boundProperty";
 
 export const SpriteGeneralProperties: FunctionComponent<{ sprite: Sprite; setSelectedEntity: (entity: unknown) => void }> = (props) => {

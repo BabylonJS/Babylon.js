@@ -412,10 +412,12 @@ export class MorphTargetManager implements IDisposable {
      */
     public clone(): MorphTargetManager {
         const copy = new MorphTargetManager(this._scene);
+        copy.areUpdatesFrozen = true;
 
         for (const target of this._targets) {
             copy.addTarget(target.clone());
         }
+        copy.areUpdatesFrozen = false;
 
         copy.enablePositionMorphing = this.enablePositionMorphing;
         copy.enableNormalMorphing = this.enableNormalMorphing;

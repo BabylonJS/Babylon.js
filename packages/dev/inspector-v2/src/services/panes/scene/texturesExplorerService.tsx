@@ -2,16 +2,18 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { ImageRegular } from "@fluentui/react-icons";
+import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
 
-import { Texture } from "core/Materials/Textures/texture";
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Texture Hierarchy",
+export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "Texture Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,9 +23,9 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Textures",
-            order: 400,
-            predicate: (entity) => entity instanceof Texture,
-            getRootEntities: () => scene.textures,
+            order: DefaultSectionsOrder.Textures,
+            predicate: (entity): entity is BaseTexture => entity instanceof BaseTexture && entity.getClassName() !== "AdvancedDynamicTexture",
+            getRootEntities: () => scene.textures.filter((texture) => texture.getClassName() !== "AdvancedDynamicTexture"),
             getEntityDisplayInfo: (texture) => {
                 const onChangeObservable = new Observable<void>();
 
@@ -44,7 +46,7 @@ export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExp
                     },
                 };
             },
-            entityIcon: () => <ImageRegular />,
+            entityIcon: ({ entity: texture }) => (texture instanceof DynamicTexture ? <ImageEditRegular /> : <ImageRegular />),
             getEntityAddedObservables: () => [scene.onNewTextureAddedObservable],
             getEntityRemovedObservables: () => [scene.onTextureRemovedObservable],
         });

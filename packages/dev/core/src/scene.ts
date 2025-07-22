@@ -907,6 +907,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onFrameGraphRemovedObservable = new Observable<FrameGraph>();
 
     /**
+     * An event triggered when a post process is created
+     */
+    public onNewPostProcessAddedObservable = new Observable<PostProcess>();
+
+    /**
+     * An event triggered when a post process is removed
+     */
+    public onPostProcessRemovedObservable = new Observable<PostProcess>();
+
+    /**
+     * An event triggered when an effect layer is created
+     */
+    public onNewEffectLayerAddedObservable = new Observable<EffectLayer>();
+
+    /**
+     * An event triggered when an effect layer is removed
+     */
+    public onEffectLayerRemovedObservable = new Observable<EffectLayer>();
+
+    /**
      * An event triggered when render targets are about to be rendered
      * Can happen multiple times per frame.
      */
@@ -3063,6 +3083,36 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * Removes the given post-process from this scene.
+     * @param toRemove The post-process to remove
+     * @returns The index of the removed post-process
+     */
+    public removePostProcess(toRemove: PostProcess): number {
+        const index = this.postProcesses.indexOf(toRemove);
+        if (index !== -1) {
+            this.postProcesses.splice(index, 1);
+        }
+        this.onPostProcessRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
+     * Removes the given layer from this scene.
+     * @param toRemove The layer to remove
+     * @returns The index of the removed layer
+     */
+    public removeEffectLayer(toRemove: EffectLayer): number {
+        const index = this.effectLayers.indexOf(toRemove);
+        if (index !== -1) {
+            this.effectLayers.splice(index, 1);
+        }
+        this.onEffectLayerRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
      * Adds the given light to this scene
      * @param newLight The light to add
      */
@@ -3265,6 +3315,34 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.frameGraphs.push(newFrameGraph);
         Tools.SetImmediate(() => {
             this.onNewFrameGraphAddedObservable.notifyObservers(newFrameGraph);
+        });
+    }
+
+    /**
+     * Adds the given post process to this scene.
+     * @param newPostProcess The post process to add
+     */
+    public addPostProcess(newPostProcess: PostProcess): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+        this.postProcesses.push(newPostProcess);
+        Tools.SetImmediate(() => {
+            this.onNewPostProcessAddedObservable.notifyObservers(newPostProcess);
+        });
+    }
+
+    /**
+     * Adds the given effect layer to this scene.
+     * @param newEffectLayer The effect layer to add
+     */
+    public addEffectLayer(newEffectLayer: EffectLayer): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+        this.effectLayers.push(newEffectLayer);
+        Tools.SetImmediate(() => {
+            this.onNewEffectLayerAddedObservable.notifyObservers(newEffectLayer);
         });
     }
 

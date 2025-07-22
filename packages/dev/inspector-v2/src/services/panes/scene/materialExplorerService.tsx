@@ -8,10 +8,11 @@ import { Material } from "core/Materials/material";
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
-    friendlyName: "Material Hierarchy",
+    friendlyName: "Material Explorer",
     consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
     factory: (sceneExplorerService, sceneContext) => {
         const scene = sceneContext.currentScene;
@@ -21,7 +22,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
 
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Materials",
-            order: 300,
+            order: DefaultSectionsOrder.Materials,
             predicate: (entity) => entity instanceof Material,
             getRootEntities: () => scene.materials,
             getEntityDisplayInfo: (material) => {
