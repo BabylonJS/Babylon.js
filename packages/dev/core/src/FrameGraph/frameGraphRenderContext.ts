@@ -12,6 +12,7 @@ import type {
     FrameGraphRenderTarget,
     InternalTexture,
     UtilityLayerRenderer,
+    IStencilState,
 } from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
@@ -24,6 +25,7 @@ import { FrameGraphContext } from "./frameGraphContext";
  */
 export class FrameGraphRenderContext extends FrameGraphContext {
     private readonly _effectRenderer: EffectRenderer;
+    private readonly _effectRendererBack: EffectRenderer;
     private _currentRenderTarget: FrameGraphRenderTarget | undefined;
     private _debugMessageWhenTargetBound: string | undefined;
     private _debugMessageHasBeenPushed = false;
@@ -38,6 +40,10 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     constructor(engine: AbstractEngine, textureManager: FrameGraphTextureManager, scene: Scene) {
         super(engine, textureManager, scene);
         this._effectRenderer = new EffectRenderer(this._engine);
+        this._effectRendererBack = new EffectRenderer(this._engine, {
+            positions: [1, 1, -1, 1, -1, -1, 1, -1],
+            indices: [0, 2, 1, 0, 3, 2],
+        });
         this._copyTexture = new CopyTextureToTexture(this._engine);
     }
 
@@ -202,9 +208,20 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * Applies a full-screen effect to the current render target
      * @param drawWrapper The draw wrapper containing the effect to apply
      * @param customBindings The custom bindings to use when applying the effect (optional)
+     * @param stencilState The stencil state to use when applying the effect (optional)
+     * @param disableColorWrite If true, color write will be disabled when applying the effect (optional)
+     * @param drawBackFace If true, the fullscreen quad will be drawn as a back face (in CW - optional)
+     * @param depthTest If true, depth testing will be enabled when applying the effect (default is false)
      * @returns True if the effect was applied, otherwise false (effect not ready)
      */
-    public applyFullScreenEffect(drawWrapper: DrawWrapper, customBindings?: () => void): boolean {
+    public applyFullScreenEffect(
+        drawWrapper: DrawWrapper,
+        customBindings?: () => void,
+        stencilState?: IStencilState,
+        disableColorWrite?: boolean,
+        drawBackFace?: boolean,
+        depthTest?: boolean
+    ): boolean {
         if (!drawWrapper.effect?.isReady()) {
             return false;
         }
@@ -213,18 +230,26 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
         const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
 
-        this._effectRenderer.saveStates();
-        this._effectRenderer.setViewport();
+        const effectRenderer = drawBackFace ? this._effectRendererBack : this._effectRenderer;
+
+        effectRenderer.saveStates();
+        effectRenderer.setViewport();
 
         this._engine.enableEffect(drawWrapper);
-        this._engine.setState(false);
-        this._engine.setDepthBuffer(false);
+        this._engine.setState(false, undefined, undefined, undefined, undefined, stencilState);
+        this._engine.setDepthBuffer(!!depthTest);
+        if (disableColorWrite) {
+            this._engine.setColorWrite(false);
+        }
         this._engine.setDepthWrite(false);
 
-        this._effectRenderer.bindBuffers(drawWrapper.effect);
+        effectRenderer.bindBuffers(drawWrapper.effect);
         customBindings?.();
-        this._effectRenderer.draw();
-        this._effectRenderer.restoreStates();
+        effectRenderer.draw();
+        effectRenderer.restoreStates();
+        if (disableColorWrite) {
+            this._engine.setColorWrite(true);
+        }
         this._engine.setDepthWrite(engineDepthMask);
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
@@ -343,6 +368,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     /** @internal */
     public _dispose() {
         this._effectRenderer.dispose();
+        this._effectRendererBack.dispose();
         this._copyTexture.dispose();
     }
 }
