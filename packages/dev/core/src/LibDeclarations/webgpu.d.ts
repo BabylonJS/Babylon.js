@@ -871,8 +871,8 @@ interface GPURenderPassDepthStencilAttachment {
     view: GPUTextureView;
 
     depthClearValue?: number /* default=0 */;
-    depthLoadOp: GPULoadOp;
-    depthStoreOp: GPUStoreOp;
+    depthLoadOp?: GPULoadOp;
+    depthStoreOp?: GPUStoreOp;
     depthReadOnly?: boolean /* default=false */;
 
     stencilClearValue?: GPUStencilValue /* default=0 */;

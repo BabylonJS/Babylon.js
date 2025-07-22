@@ -22,6 +22,23 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
      * If not supplied, a texture with the same configuration as the source texture will be created.
      */
     public targetTexture?: FrameGraphTextureHandle;
+    /**
+     * If true, the depth attachment will be read-only.
+     * This means that the post process will not write to the depth buffer.
+     * Setting depthReadOnly and stencilReadOnly to true is useful when you want to also be able to bind this same depth/stencil attachment to a shader.
+     * Note that it will only work in WebGPU, as WebGL does not support read-only depth/stencil attachments.
+     */
+    public depthReadOnly = false;
+
+    /**
+     * If true, the stencil attachment will be read-only.
+     * This means that the post process will not write to the stencil buffer.
+     * Setting depthReadOnly and stencilReadOnly to true is useful when you want to also be able to bind this same depth/stencil attachment to a shader.
+     * Note that it will only work in WebGPU, as WebGL does not support read-only depth/stencil attachments.
+     */
+    public stencilReadOnly = false;
+
+    /**
 
     /**
      * The output texture of the post process.
@@ -99,6 +116,9 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
+        pass.depthReadOnly = this.depthReadOnly;
+        pass.stencilReadOnly = this.stencilReadOnly;
+
         pass.addDependencies(this.sourceTexture);
 
         pass.setRenderTarget(this.outputTexture);
@@ -113,6 +133,9 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+
+            passDisabled.depthReadOnly = this.depthReadOnly;
+            passDisabled.stencilReadOnly = this.stencilReadOnly;
 
             passDisabled.addDependencies(this.sourceTexture);
 

@@ -74,14 +74,18 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param name Name of the render target wrapper
      * @param renderTargets Render target handles (textures) to use
      * @param renderTargetDepth Render target depth handle (texture) to use
+     * @param depthReadOnly If true, the depth buffer will be read-only
+     * @param stencilReadOnly If true, the stencil buffer will be read-only
      * @returns The created render target wrapper
      */
     public createRenderTarget(
         name: string,
         renderTargets?: FrameGraphTextureHandle | FrameGraphTextureHandle[],
-        renderTargetDepth?: FrameGraphTextureHandle
+        renderTargetDepth?: FrameGraphTextureHandle,
+        depthReadOnly?: boolean,
+        stencilReadOnly?: boolean
     ): FrameGraphRenderTarget {
-        return this._textureManager.createRenderTarget(name, renderTargets, renderTargetDepth);
+        return this._textureManager.createRenderTarget(name, renderTargets, renderTargetDepth, depthReadOnly, stencilReadOnly);
     }
 
     /**
@@ -90,10 +94,11 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param backBuffer Defines if the back buffer must be cleared
      * @param depth Defines if the depth buffer must be cleared
      * @param stencil Defines if the stencil buffer must be cleared
+     * @param stencilClearValue Defines the value to use to clear the stencil buffer (default is 0)
      */
-    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean, stencilClearValue = 0): void {
         this._applyRenderTarget();
-        this._engine.clear(color, backBuffer, depth, stencil);
+        this._engine.clear(color, backBuffer, depth, stencil, stencilClearValue);
     }
 
     /**

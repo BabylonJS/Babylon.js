@@ -3212,15 +3212,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     ? {
                           view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                           depthClearValue: mustClearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : undefined,
-                          depthLoadOp: mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
-                          depthStoreOp: WebGPUConstants.StoreOp.Store,
+                          depthLoadOp: rtWrapper.depthReadOnly ? undefined : mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
+                          depthStoreOp: rtWrapper.depthReadOnly ? undefined : WebGPUConstants.StoreOp.Store,
+                          depthReadOnly: rtWrapper.depthReadOnly,
                           stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
-                          stencilLoadOp: !depthTextureHasStencil
+                          stencilLoadOp: rtWrapper.stencilReadOnly
                               ? undefined
-                              : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                                ? WebGPUConstants.LoadOp.Clear
-                                : WebGPUConstants.LoadOp.Load,
-                          stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
+                              : !depthTextureHasStencil
+                                ? undefined
+                                : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
+                                  ? WebGPUConstants.LoadOp.Clear
+                                  : WebGPUConstants.LoadOp.Load,
+                          stencilStoreOp: rtWrapper.stencilReadOnly ? undefined : !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
+                          stencilReadOnly: rtWrapper.stencilReadOnly,
                       }
                     : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
