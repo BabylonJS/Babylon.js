@@ -4,7 +4,7 @@ import "./searchBox.scss";
 import { NodeLedger } from "./nodeLedger";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 import { PositionedPopover } from "../fluent/primitives/searchBox";
-import { ComboBox } from "../fluent/primitives/comboBox";
+import { SearchBox } from "../fluent/primitives/searchBox";
 
 export interface ISearchBoxComponentProps {
     stateManager: StateManager;
@@ -78,9 +78,10 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
     }
 
     renderFluent() {
+        // Note this function no longer uses other helpers from this file for easy non-fluent removal
+
         // Sort and deduplicate the node names.
         this._nodes = Array.from(new Set(NodeLedger.RegisteredNodeNames.sort()));
-
         const formattedNodes = this._nodes.map((name) => NodeLedger.NameFormatter(name));
 
         return (
@@ -92,7 +93,7 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
                     this.props.stateManager.modalIsDisplayed = false;
                 }}
             >
-                {/* <SearchBox
+                <SearchBox
                     items={formattedNodes}
                     onItemSelected={(item: string) => {
                         const originalName = this._nodes[formattedNodes.indexOf(item)];
@@ -105,20 +106,6 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
                         });
                     }}
                     title="Add a node"
-                /> */}
-                <ComboBox
-                    value={formattedNodes}
-                    label="Add a node"
-                    onChange={(value: string) => {
-                        const originalName = this._nodes[formattedNodes.indexOf(value)];
-                        this.props.stateManager.onNewBlockRequiredObservable.notifyObservers({
-                            type: originalName,
-                            targetX: this._targetX,
-                            targetY: this._targetY,
-                            needRepositioning: true,
-                            smartAdd: true,
-                        });
-                    }}
                 />
             </PositionedPopover>
         );
