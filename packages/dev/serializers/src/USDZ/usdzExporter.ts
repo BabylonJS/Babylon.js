@@ -118,7 +118,7 @@ function BuildMeshVertexIndices(geometry: Geometry) {
     const indices = geometry.getIndices();
     const count = indices?.length ?? geometry.getTotalVertices();
 
-    const array = [];
+    const array: number[] = [];
     if (indices !== null) {
         for (let i = 0; i < count; i++) {
             array.push(indices[i]);
@@ -133,7 +133,7 @@ function BuildMeshVertexIndices(geometry: Geometry) {
 }
 
 function BuildVector3Array(attribute: FloatArray, options: IUSDZExportOptions, stride = 3, convertToRightHanded = false) {
-    const array = [];
+    const array: string[] = [];
 
     for (let i = 0; i < attribute.length / stride; i++) {
         const x = attribute[i * stride] * (convertToRightHanded ? -1 : 1);
@@ -147,7 +147,7 @@ function BuildVector3Array(attribute: FloatArray, options: IUSDZExportOptions, s
 }
 
 function BuildVector2Array(attribute: FloatArray, options: IUSDZExportOptions) {
-    const array = [];
+    const array: string[] = [];
 
     for (let i = 0; i < attribute.length / 2; i++) {
         const x = attribute[i * 2];
@@ -258,7 +258,7 @@ function BuildXform(mesh: Mesh, matrix: Matrix) {
 }
 
 function BuildMaterials(materials: { [key: string]: Material }, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
-    const array = [];
+    const array: string[] = [];
 
     for (const uuid in materials) {
         const material = materials[uuid];
