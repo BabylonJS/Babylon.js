@@ -781,7 +781,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             activeTextures.push(this._refractionTexture);
         }
 
-        if(this._refractionIntensityTexture) {
+        if (this._refractionIntensityTexture) {
             activeTextures.push(this._refractionIntensityTexture);
         }
 
@@ -803,7 +803,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             animatables.push(this._refractionTexture);
         }
 
-        if(this._refractionIntensityTexture && this._refractionIntensityTexture.animations && this._refractionIntensityTexture.animations.length > 0) {
+        if (this._refractionIntensityTexture && this._refractionIntensityTexture.animations && this._refractionIntensityTexture.animations.length > 0) {
             animatables.push(this._refractionIntensityTexture);
         }
 
@@ -826,7 +826,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                 this._refractionTexture.dispose();
             }
 
-            if(this._refractionIntensityTexture) {
+            if (this._refractionIntensityTexture) {
                 this._refractionIntensityTexture.dispose();
             }
 
