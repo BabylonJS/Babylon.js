@@ -5,8 +5,8 @@ import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import type { Effect } from "core/Materials/effect";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { TmpColors } from "core/Maths/math.color";
-import { Matrix, TmpVectors, Vector3 } from "core/Maths/math.vector";
-import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
+import { Vector3 } from "core/Maths/math.vector";
+import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { _WarnImport } from "core/Misc/devTools";
 import { Logger } from "core/Misc/logger";
@@ -107,27 +107,24 @@ export class ClusteredLight extends Light {
         this._disposeTileMask();
     }
 
-    private readonly _proxyMaterial: LightProxyMaterial;
-    private readonly _proxyMatrixBuffer: Float32Array;
-    private _proxyMesh: Mesh;
-    private _proxyRenderId = -1;
+    private _lightProxy: Mesh;
 
-    private _proxySegments = 4;
-    public get proxySegments(): number {
-        return this._proxySegments;
+    private _proxyTesselation = 8;
+    public get proxyTesselation(): number {
+        return this._proxyTesselation;
     }
 
-    public set proxySegments(segments: number) {
-        if (this._proxySegments === segments) {
+    public set proxyTesselation(tesselation: number) {
+        if (this._proxyTesselation === tesselation) {
             return;
         }
-        this._proxySegments = segments;
-        this._proxyMesh.dispose();
+        this._proxyTesselation = tesselation;
+        this._lightProxy.dispose(false, true);
         this._createProxyMesh();
-        this._proxyMaterial._updateUniforms();
     }
 
     private _maxRange = 16383;
+    private _minInverseSquaredRange = 1 / (this._maxRange * this._maxRange);
     public get maxRange(): number {
         return this._maxRange;
     }
@@ -137,16 +134,13 @@ export class ClusteredLight extends Light {
             return;
         }
         this._maxRange = range;
-        // Cause the matrix buffer to update
-        this._proxyRenderId = -1;
+        this._minInverseSquaredRange = 1 / (range * range);
     }
 
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
         this.maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
 
-        this._proxyMaterial = new LightProxyMaterial("ProxyMaterial", this);
-        this._proxyMatrixBuffer = new Float32Array(this.maxLights * 16);
         this._createProxyMesh();
 
         if (this.maxLights > 0) {
@@ -164,45 +158,6 @@ export class ClusteredLight extends Light {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
         return LightConstants.LIGHTTYPEID_CLUSTERED;
-    }
-
-    private _updateMatrixBuffer(): void {
-        const renderId = this._scene.getRenderId();
-        if (this._proxyRenderId === renderId) {
-            // Prevent updates in the same render
-            return;
-        }
-        this._proxyRenderId = renderId;
-
-        const len = Math.min(this._lights.length, this.maxLights);
-        if (len === 0) {
-            // Nothing to render
-            this._proxyMesh.isVisible = false;
-            return;
-        }
-
-        this._proxyMesh.isVisible = true;
-        this._proxyMesh.thinInstanceCount = len;
-        for (let i = 0; i < len; i += 1) {
-            const light = this._lights[i];
-            let matrix = light.getWorldMatrix();
-
-            // TODO
-            // if (light instanceof SpotLight) {
-            //     // Rotate spotlights to face direction
-            //     const quat = Quaternion.FromUnitVectorsToRef(Vector3.UpReadOnly, light.direction, TmpVectors.Quaternion[0]);
-            //     const rotation = Matrix.FromQuaternionToRef(quat, TmpVectors.Matrix[0]);
-            //     matrix = rotation.multiplyToRef(matrix, TmpVectors.Matrix[1]);
-            // }
-
-            // Scale by the range of the light
-            const range = Math.min(light.range, this.maxRange);
-            const scaling = Matrix.ScalingToRef(range, range, range, TmpVectors.Matrix[0]);
-            matrix = scaling.multiplyToRef(matrix, TmpVectors.Matrix[2]);
-
-            matrix.copyToArray(this._proxyMatrixBuffer, i * 16);
-        }
-        this._proxyMesh.thinInstanceBufferUpdated("matrix");
     }
 
     /** @internal */
@@ -223,9 +178,7 @@ export class ClusteredLight extends Light {
         this._tileMaskTexture.renderParticles = false;
         this._tileMaskTexture.renderSprites = false;
         this._tileMaskTexture.noPrePassRenderer = true;
-        this._tileMaskTexture.renderList = [this._proxyMesh];
-
-        this._tileMaskTexture.onBeforeBindObservable.add(() => this._updateMatrixBuffer());
+        this._tileMaskTexture.renderList = [this._lightProxy];
 
         this._tileMaskTexture.onClearObservable.add(() => {
             // Clear the storage buffer if it exists
@@ -239,8 +192,6 @@ export class ClusteredLight extends Light {
             this._tileMaskBuffer = new StorageBuffer(<WebGPUEngine>engine, bufferSize);
         }
 
-        // If the tile mask was disposed it means the tile counts have changed
-        this._proxyMaterial._updateUniforms();
         return this._tileMaskTexture;
     }
 
@@ -252,23 +203,29 @@ export class ClusteredLight extends Light {
     }
 
     private _createProxyMesh(): void {
-        // Compute the lowest point in the sphere and expand the diameter accordingly
-        const rotationZ = Matrix.RotationZ(-Math.PI / (2 + this._proxySegments));
-        const rotationY = Matrix.RotationY(Math.PI / this._proxySegments);
-        const start = Vector3.Up();
-        const afterRotZ = Vector3.TransformCoordinates(start, rotationZ);
-        const end = Vector3.TransformCoordinates(afterRotZ, rotationY);
-        const midPoint = Vector3.Lerp(start, end, 0.5);
-        this._proxyMesh = CreateSphere("ProxyMesh", { diameter: 2 / midPoint.length(), segments: this._proxySegments }, this._scene);
+        // The disc is made of `tesselation` isoceles triangles, and the lowest radius is the height of one of those triangles
+        // We can get the height from half the angle of that triangle (assuming a side length of 1)
+        const lowRadius = Math.cos(Math.PI / this._proxyTesselation);
+        // We scale up the disc so the lowest radius still wraps the light
+        this._lightProxy = CreateDisc("LightProxy", { radius: 1 / lowRadius, tessellation: this._proxyTesselation });
 
         // Make sure it doesn't render for the default scene
-        this._scene.removeMesh(this._proxyMesh);
+        this._scene.removeMesh(this._lightProxy);
         if (this._tileMaskTexture) {
-            this._tileMaskTexture.renderList = [this._proxyMesh];
+            this._tileMaskTexture.renderList = [this._lightProxy];
         }
 
-        this._proxyMesh.material = this._proxyMaterial;
-        this._proxyMesh.thinInstanceSetBuffer("matrix", this._proxyMatrixBuffer, 16, false);
+        this._lightProxy.material = new LightProxyMaterial("LightProxyMaterial", this);
+        // We don't actually use the matrix data but we need enough capacity for the lights
+        this._lightProxy.thinInstanceSetBuffer("matrix", new Float32Array(this.maxLights * 16));
+        this._updateProxyMesh();
+    }
+
+    private _updateProxyMesh(): void {
+        const len = Math.min(this._lights.length, this.maxLights);
+        this._lightProxy.thinInstanceCount = len;
+        // Hide the mesh if theres no instances
+        this._lightProxy.isVisible = len > 0;
     }
 
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
@@ -278,7 +235,7 @@ export class ClusteredLight extends Light {
 
         this._disposeTileMask();
 
-        this._proxyMesh.dispose(doNotRecurse, disposeMaterialAndTextures);
+        this._lightProxy.dispose(doNotRecurse, disposeMaterialAndTextures);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
@@ -292,8 +249,7 @@ export class ClusteredLight extends Light {
         }
         this._scene.removeLight(light);
         this._lights.push(<PointLight | SpotLight>light);
-        // Cause the matrix buffer to update
-        this._proxyRenderId = -1;
+        this._updateProxyMesh();
     }
 
     protected override _buildUniformLayout(): void {
@@ -335,18 +291,20 @@ export class ClusteredLight extends Light {
             this._uniformBuffer.updateFloat4(struct + "position", position.x, position.y, position.z, exponent, lightIndex);
 
             const scaledIntensity = light.getScaledIntensity();
+            const range = Math.min(light.range, this.maxRange);
             light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-            this._uniformBuffer.updateColor4(struct + "diffuse", TmpColors.Color3[0], light.range, lightIndex);
+            this._uniformBuffer.updateColor4(struct + "diffuse", TmpColors.Color3[0], range, lightIndex);
             light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
             this._uniformBuffer.updateColor4(struct + "specular", TmpColors.Color3[1], light.radius, lightIndex);
 
+            const inverseSquaredRange = Math.max(light._inverseSquaredRange, this._minInverseSquaredRange);
             if (light instanceof SpotLight) {
                 const direction = Vector3.Normalize(computed ? light.transformedDirection : light.direction);
                 this._uniformBuffer.updateFloat4(struct + "direction", direction.x, direction.y, direction.z, light._cosHalfAngle, lightIndex);
-                this._uniformBuffer.updateFloat4(struct + "falloff", light.range, light._inverseSquaredRange, light._lightAngleScale, light._lightAngleOffset, lightIndex);
+                this._uniformBuffer.updateFloat4(struct + "falloff", range, inverseSquaredRange, light._lightAngleScale, light._lightAngleOffset, lightIndex);
             } else {
                 this._uniformBuffer.updateFloat4(struct + "direction", 0, 1, 0, -1, lightIndex);
-                this._uniformBuffer.updateFloat4(struct + "falloff", light.range, light._inverseSquaredRange, 0.5, 0.5, lightIndex);
+                this._uniformBuffer.updateFloat4(struct + "falloff", range, inverseSquaredRange, 0.5, 0.5, lightIndex);
             }
         }
         return this;
@@ -373,6 +331,6 @@ export class ClusteredLight extends Light {
     }
 
     public override _isReady(): boolean {
-        return this._proxyMesh.isReady(true, true);
+        return this._lightProxy.isReady(true, true);
     }
 }
