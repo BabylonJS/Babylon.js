@@ -536,8 +536,7 @@ export abstract class EffectLayer {
         // Handle size changes.
         this._setMainTextureSize();
         if (
-            (this._mainTextureCreatedSize.width !== this._mainTextureDesiredSize.width ||
-                this._mainTextureCreatedSize.height !== this._mainTextureDesiredSize.height) &&
+            (this._mainTextureCreatedSize.width !== this._mainTextureDesiredSize.width || this._mainTextureCreatedSize.height !== this._mainTextureDesiredSize.height) &&
             this._mainTextureDesiredSize.width !== 0 &&
             this._mainTextureDesiredSize.height !== 0
         ) {
