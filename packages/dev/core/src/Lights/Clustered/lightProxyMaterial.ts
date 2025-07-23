@@ -30,7 +30,9 @@ export class LightProxyMaterial extends ShaderMaterial {
         });
 
         this._clusteredLight = clusteredLight;
+        // Cull front faces so it still shows when intersecting with the camera
         this.cullBackFaces = false;
+        // Additive blending is for merging masks on WebGL
         this.transparencyMode = ShaderMaterial.MATERIAL_ALPHABLEND;
         this.alphaMode = Constants.ALPHA_ADD;
 
