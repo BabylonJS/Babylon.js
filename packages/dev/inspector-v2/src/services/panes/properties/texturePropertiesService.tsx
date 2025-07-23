@@ -1,16 +1,40 @@
+import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
 import type { ISelectionService } from "../../selectionService";
+import type { IPropertiesService } from "./propertiesService";
 
-import { PropertiesServiceIdentity } from "./propertiesService";
-import { SelectionServiceIdentity } from "../../selectionService";
+import { Spinner } from "@fluentui/react-components";
+import { lazy, Suspense } from "react";
 
-import { ThinTexture } from "core/Materials/Textures/thinTexture";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
+import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Texture } from "core/Materials/Textures/texture";
-import { TexturePreviewProperties } from "../../../components/properties/textures/textureProperties";
+import { ThinTexture } from "core/Materials/Textures/thinTexture";
+import {
+    BaseTextureCharacteristicProperties,
+    BaseTextureGeneralProperties,
+    BaseTexturePreviewProperties,
+    BaseTextureTransformProperties,
+} from "../../../components/properties/textures/baseTextureProperties";
+import { MultiRenderTargetGeneralProperties } from "../../../components/properties/textures/multiRenderTargetProperties";
+import { RenderTargetTextureGeneralProperties } from "../../../components/properties/textures/renderTargetTextureProperties";
+import { TextureGeneralProperties, TexturePreviewProperties } from "../../../components/properties/textures/textureProperties";
 import { ThinTextureGeneralProperties } from "../../../components/properties/textures/thinTextureProperties";
-import { BaseTexturePreviewProperties, BaseTextureGeneralProperties, BaseTextureCharacteristicProperties } from "../../../components/properties/textures/baseTextureProperties";
+import { SelectionServiceIdentity } from "../../selectionService";
+import { PropertiesServiceIdentity } from "./propertiesService";
+
+// Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
+function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTexture {
+    return (entity as AdvancedDynamicTexture)?.constructor?.name === "AdvancedDynamicTexture";
+}
+
+const AdvancedDynamicTextureGeneralProperties = lazy(async () => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { AdvancedDynamicTextureGeneralProperties } = await import("../../../components/properties/textures/advancedDynamicTextureProperties");
+    // await new Promise((resolve) => setTimeout(resolve, 5000));
+    return { default: AdvancedDynamicTextureGeneralProperties };
+});
 
 export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Texture Properties",
@@ -33,6 +57,10 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                     section: "General",
                     order: 200,
                     component: ({ context }) => <BaseTextureCharacteristicProperties texture={context} />,
+                },
+                {
+                    section: "Transform",
+                    component: ({ context }) => <BaseTextureTransformProperties texture={context} />,
                 },
             ],
         });
@@ -57,11 +85,58 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                     section: "Preview",
                     component: ({ context }) => <TexturePreviewProperties texture={context} />,
                 },
+                {
+                    section: "General",
+                    order: 300,
+                    component: ({ context }) => <TextureGeneralProperties texture={context} />,
+                },
+            ],
+        });
+
+        const renderTargetTextureContentRegistration = propertiesService.addSectionContent({
+            key: "Render Target Texture Properties",
+            predicate: (entity: unknown) => entity instanceof RenderTargetTexture,
+            content: [
+                {
+                    section: "Render Target",
+                    component: ({ context }) => <RenderTargetTextureGeneralProperties texture={context} />,
+                },
+            ],
+        });
+
+        const multiRenderTargetContentRegistration = propertiesService.addSectionContent({
+            key: "Multi Render Target Properties",
+            predicate: (entity: unknown) => entity instanceof MultiRenderTarget,
+            content: [
+                {
+                    section: "Render Target",
+                    order: 100,
+                    component: ({ context }) => <MultiRenderTargetGeneralProperties texture={context} />,
+                },
+            ],
+        });
+
+        const advancedDynamicTextureContentRegistration = propertiesService.addSectionContent({
+            key: "Advanced Dynamic Texture Properties",
+            predicate: (entity: unknown) => IsAdvancedDynamicTexture(entity),
+            content: [
+                {
+                    section: "Advanced Dynamic Texture",
+                    order: 100,
+                    component: ({ context }) => (
+                        <Suspense fallback={<Spinner size="extra-tiny" label="Loading..." />}>
+                            <AdvancedDynamicTextureGeneralProperties texture={context} />
+                        </Suspense>
+                    ),
+                },
             ],
         });
 
         return {
             dispose: () => {
+                advancedDynamicTextureContentRegistration.dispose();
+                multiRenderTargetContentRegistration.dispose();
+                renderTargetTextureContentRegistration.dispose();
                 textureContentRegistration.dispose();
                 baseTextureContentRegistration.dispose();
                 thinTextureProperties.dispose();

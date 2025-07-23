@@ -9,7 +9,7 @@ import type { PropertyLineProps } from "./propertyLine";
  * @returns A PropertyLine component with a PresenceBadge indicating the boolean state.
  */
 export const BooleanBadgePropertyLine: FunctionComponent<PropertyLineProps & { value: boolean }> = (props) => (
-    <PropertyLine label={props.label}>
+    <PropertyLine {...props}>
         <PresenceBadge status={props.value ? "available" : "do-not-disturb"} outOfOffice={true} />
     </PropertyLine>
 );

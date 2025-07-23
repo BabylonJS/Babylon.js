@@ -112,6 +112,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
             [...defaultSectionContent, ...sectionContent].map((content, index) => {
                 return {
                     ...content,
+                    key: `${content.key}-${index}`,
                     order: content.order ?? index,
                 } as const;
             })

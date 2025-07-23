@@ -1,6 +1,7 @@
 import type { FunctionComponent } from "react";
 
 import type { BaseTexture } from "core/index";
+import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
 import { useCallback } from "react";
 
@@ -8,14 +9,18 @@ import { Constants } from "core/Engines/constants";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { ReadFile } from "core/Misc/fileTools";
-import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
-import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
-import { BoundProperty } from "../boundProperty";
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { BoundProperty } from "../boundProperty";
+import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
 
 export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
     const { texture } = props;
@@ -78,78 +83,49 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 export const BaseTextureGeneralProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
     const { texture } = props;
 
+    const internalTexture = useProperty(texture, "_texture");
+    const internalUniqueId = useProperty(internalTexture, "uniqueId");
+
     return (
         <>
             <BoundProperty component={TextInputPropertyLine} label="Display Name" target={texture} propertyKey="displayName" />
+            {internalUniqueId != null && <TextPropertyLine label="Internal Unique ID" description="The unique ID of the internal texture." value={internalUniqueId.toString()} />}
+            {internalUniqueId == null && <BooleanBadgePropertyLine label="Internal Unique ID" description="This texture has no internal texture." value={false} />}
         </>
     );
 };
 
-const TextureFormat = [
-    { label: "Alpha", normalizable: false, value: Constants.TEXTUREFORMAT_ALPHA },
-    { label: "Luminance", normalizable: false, value: Constants.TEXTUREFORMAT_LUMINANCE },
-    { label: "Luminance/Alpha", normalizable: false, value: Constants.TEXTUREFORMAT_LUMINANCE_ALPHA },
-    { label: "RGB", normalizable: true, value: Constants.TEXTUREFORMAT_RGB },
-    { label: "RGBA", normalizable: true, value: Constants.TEXTUREFORMAT_RGBA },
-    { label: "R (red)", normalizable: true, value: Constants.TEXTUREFORMAT_RED },
-    { label: "RG (red/green)", normalizable: true, value: Constants.TEXTUREFORMAT_RG },
-    { label: "R (red) integer", normalizable: false, value: Constants.TEXTUREFORMAT_RED_INTEGER },
-    { label: "RG (red/green) integer", normalizable: false, value: Constants.TEXTUREFORMAT_RG_INTEGER },
-    { label: "RGB integer", normalizable: false, value: Constants.TEXTUREFORMAT_RGB_INTEGER },
-    { label: "RGBA integer", normalizable: false, value: Constants.TEXTUREFORMAT_RGBA_INTEGER },
-    { label: "BGRA", normalizable: true, value: Constants.TEXTUREFORMAT_BGRA },
-    { label: "Depth24/Stencil8", normalizable: false, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 },
-    { label: "Depth32 float", normalizable: false, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32_FLOAT },
-    { label: "Depth16", normalizable: false, value: Constants.TEXTUREFORMAT_DEPTH16 },
-    { label: "Depth24", normalizable: false, value: Constants.TEXTUREFORMAT_DEPTH24 },
-    { label: "Depth24Unorm/Stencil8", normalizable: false, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8 },
-    { label: "Depth32Float/Stencil8", normalizable: false, hideType: true, value: Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 },
-    { label: "RGBA BPTC UNorm", normalizable: false, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM },
-    { label: "RGB BPTC UFloat", normalizable: false, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT },
-    { label: "RGB BPTC SFloat", normalizable: false, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT },
-    { label: "RGBA S3TC DXT5", normalizable: false, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 },
-    { label: "RGBA S3TC DXT3", normalizable: false, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 },
-    { label: "RGBA S3TC DXT1", normalizable: false, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 },
-    { label: "RGB S3TC DXT1", normalizable: false, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1 },
-    { label: "RGBA ASTC 4x4", normalizable: false, compressed: true, value: Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 },
-];
+const CoordinatesMode = [
+    { label: "Explicit", value: Texture.EXPLICIT_MODE },
+    { label: "Cubic", value: Texture.CUBIC_MODE },
+    { label: "Inverse cubic", value: Texture.INVCUBIC_MODE },
+    { label: "Equirectangular", value: Texture.EQUIRECTANGULAR_MODE },
+    { label: "Fixed equirectangular", value: Texture.FIXED_EQUIRECTANGULAR_MODE },
+    { label: "Fixed equirectangular mirrored", value: Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE },
+    { label: "Planar", value: Texture.PLANAR_MODE },
+    { label: "Projection", value: Texture.PROJECTION_MODE },
+    { label: "Skybox", value: Texture.SKYBOX_MODE },
+    { label: "Spherical", value: Texture.SPHERICAL_MODE },
+] as const satisfies DropdownOption[];
 
-function FindTextureFormat(format: number) {
-    for (let i = 0; i < TextureFormat.length; ++i) {
-        if (TextureFormat[i].value === format) {
-            return TextureFormat[i];
-        }
-    }
-    return null;
-}
+const SamplingMode = [
+    { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
+    { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
 
-const TextureType = [
-    { label: "unsigned byte", normalizable: true, value: Constants.TEXTURETYPE_UNSIGNED_BYTE },
-    { label: "32-bit float", normalizable: false, value: Constants.TEXTURETYPE_FLOAT },
-    { label: "16-bit float", normalizable: false, value: Constants.TEXTURETYPE_HALF_FLOAT },
-    { label: "signed byte", normalizable: true, value: Constants.TEXTURETYPE_BYTE },
-    { label: "signed short", normalizable: false, value: Constants.TEXTURETYPE_SHORT },
-    { label: "unsigned short", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_SHORT },
-    { label: "signed int", normalizable: false, value: Constants.TEXTURETYPE_INT },
-    { label: "unsigned int", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_INTEGER },
-    { label: "unsigned 4/4/4/4 short", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4 },
-    { label: "unsigned 5/5/5/1 short", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1 },
-    { label: "unsigned 5/6/5 short", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5 },
-    { label: "unsigned 2/10/10/10 int", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV },
-    { label: "unsigned 24/8 int", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_INT_24_8 },
-    { label: "unsigned 10f/11f/11f int", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV },
-    { label: "unsigned 5/9/9/9 int", normalizable: false, value: Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV },
-    { label: "32-bits with only 8-bit used (stencil)", normalizable: false, value: Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV },
-];
+    { label: "Linear & linear mip", value: Texture.LINEAR_LINEAR_MIPLINEAR }, // 3
+    { label: "Linear & nearest mip", value: Texture.LINEAR_LINEAR_MIPNEAREST }, // 11
 
-function FindTextureType(type: number) {
-    for (let i = 0; i < TextureType.length; ++i) {
-        if (TextureType[i].value === type) {
-            return TextureType[i];
-        }
-    }
-    return null;
-}
+    { label: "Nearest & linear mip", value: Texture.NEAREST_NEAREST_MIPLINEAR }, // 8
+    { label: "Nearest & nearest mip", value: Texture.NEAREST_NEAREST_MIPNEAREST }, // 4
+
+    { label: "Nearest/Linear", value: Texture.NEAREST_LINEAR }, // 7
+    { label: "Nearest/Linear & linear mip", value: Texture.NEAREST_LINEAR_MIPLINEAR }, // 6
+    { label: "Nearest/Linear & nearest mip", value: Texture.NEAREST_LINEAR_MIPNEAREST }, // 5
+
+    { label: "Linear/Nearest", value: Texture.LINEAR_NEAREST }, // 12
+    { label: "Linear/Nearest & linear mip", value: Texture.LINEAR_NEAREST_MIPLINEAR }, // 10
+    { label: "Linear/Nearest & nearest mip", value: Texture.LINEAR_NEAREST_MIPNEAREST }, // 9
+] as const satisfies DropdownOption[];
 
 export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
     const { texture } = props;
@@ -167,22 +143,6 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
         <>
             {texture.is2DArray && <TextPropertyLine label="Layers" value={depth?.toString() ?? "?"} />}
             {texture.is3D && <TextPropertyLine label="Depth" value={depth?.toString() ?? "?"} />}
-            {texture.isRenderTarget && (
-                <ButtonLine
-                    label="Scale up"
-                    onClick={() => {
-                        texture.scale(2);
-                    }}
-                />
-            )}
-            {texture.isRenderTarget && (
-                <ButtonLine
-                    label="Scale down"
-                    onClick={() => {
-                        texture.scale(0.5);
-                    }}
-                />
-            )}
             <TextPropertyLine label="Format" value={displayFormat?.label ?? "unknown"} />
             {!displayFormat?.hideType && !displayFormat?.compressed && <TextPropertyLine label="Type" value={displayType?.label ?? "unknown"} />}
             {!!displayFormat?.normalizable && !displayFormat?.compressed && displayType?.normalizable != undefined && (
@@ -191,6 +151,42 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
             <BooleanBadgePropertyLine label="Compressed" value={displayFormat?.compressed ?? false} />
             <BooleanBadgePropertyLine label="sRGB Buffers" value={useSRGBBuffer ?? false} />
             <BoundProperty component={BooleanBadgePropertyLine} label="Gamma Space" target={texture} propertyKey="gammaSpace" />
+            <BoundProperty component={BooleanBadgePropertyLine} label="Has Alpha" target={texture} propertyKey="hasAlpha" />
+            <BoundProperty component={SwitchPropertyLine} label="Alpha from RGB" target={texture} propertyKey="getAlphaFromRGB" />
+            <BooleanBadgePropertyLine label="3D" value={texture.is3D} />
+            <BooleanBadgePropertyLine label="2D Array" value={texture.is2DArray} />
+            <BooleanBadgePropertyLine label="Cube" value={texture.isCube} />
+            <BooleanBadgePropertyLine label="Render Target" value={texture.isRenderTarget} />
+            <BooleanBadgePropertyLine label="Mipmaps" value={!texture.noMipmap} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="UV Set" target={texture} propertyKey="coordinatesIndex" min={0} max={3} step={1} />
+            <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="coordinatesMode" options={CoordinatesMode} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Level" target={texture} propertyKey="level" min={0} max={2} step={0.01} />
+            <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="samplingMode" options={SamplingMode} />
+        </>
+    );
+};
+
+export const BaseTextureTransformProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
+    const { texture } = props;
+
+    return (
+        <>
+            {texture.canRescale && (
+                <ButtonLine
+                    label="Scale up"
+                    onClick={() => {
+                        texture.scale(2);
+                    }}
+                />
+            )}
+            {texture.canRescale && (
+                <ButtonLine
+                    label="Scale down"
+                    onClick={() => {
+                        texture.scale(0.5);
+                    }}
+                />
+            )}
         </>
     );
 };

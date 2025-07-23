@@ -4,6 +4,7 @@ import type { FunctionComponent } from "react";
 
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 
 export const TexturePreviewProperties: FunctionComponent<{ texture: Texture }> = (props) => {
     const { texture } = props;
@@ -20,6 +21,16 @@ export const TexturePreviewProperties: FunctionComponent<{ texture: Texture }> =
                     texture.updateURL(value);
                 }}
             />
+        </>
+    );
+};
+
+export const TextureGeneralProperties: FunctionComponent<{ texture: Texture }> = (props) => {
+    const { texture } = props;
+
+    return (
+        <>
+            <BooleanBadgePropertyLine label="Invert Y" description="If true, the texture is stored as inverted on Y" value={texture.invertY} />
         </>
     );
 };
