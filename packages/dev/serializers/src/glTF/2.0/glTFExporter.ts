@@ -1310,10 +1310,8 @@ export class GLTFExporter {
 
         primitive.mode = GetPrimitiveMode(fillMode);
 
-        // Flip if triangle winding order is not CCW as glTF is always CCW.
-        const flip = sideOrientation !== Material.CounterClockWiseSideOrientation && IsTriangleFillMode(fillMode);
-
-        if (flip) {
+        // Flip indices if triangle winding order is not CCW, as glTF is always CCW.
+        if (sideOrientation !== Material.CounterClockWiseSideOrientation && IsTriangleFillMode(fillMode)) {
             if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
                 throw new Error("Triangle strip/fan fill mode is not implemented");
             }
