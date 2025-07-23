@@ -48,6 +48,9 @@ export class ClusteredLight extends Light {
         } else if (light.shadowEnabled && light._scene.shadowsEnabled && light.getShadowGenerators()) {
             // Shadows are not supported
             return false;
+        } else if (light.falloffType !== Light.FALLOFF_DEFAULT) {
+            // Only the default falloff is supported
+            return false;
         } else if (light instanceof PointLight) {
             return true;
         } else if (light instanceof SpotLight) {
@@ -184,12 +187,19 @@ export class ClusteredLight extends Light {
             const light = this._lights[i];
             let matrix = light.getWorldMatrix();
 
+            // TODO
+            // if (light instanceof SpotLight) {
+            //     // Rotate spotlights to face direction
+            //     const quat = Quaternion.FromUnitVectorsToRef(Vector3.UpReadOnly, light.direction, TmpVectors.Quaternion[0]);
+            //     const rotation = Matrix.FromQuaternionToRef(quat, TmpVectors.Matrix[0]);
+            //     matrix = rotation.multiplyToRef(matrix, TmpVectors.Matrix[1]);
+            // }
+
             // Scale by the range of the light
             const range = Math.min(light.range, this.maxRange);
             const scaling = Matrix.ScalingToRef(range, range, range, TmpVectors.Matrix[0]);
-            matrix = scaling.multiplyToRef(matrix, TmpVectors.Matrix[1]);
+            matrix = scaling.multiplyToRef(matrix, TmpVectors.Matrix[2]);
 
-            // TODO: rotate spotlights to face direction
             matrix.copyToArray(this._proxyMatrixBuffer, i * 16);
         }
         this._proxyMesh.thinInstanceBufferUpdated("matrix");
@@ -297,9 +307,9 @@ export class ClusteredLight extends Light {
             // These technically don't have to match the field name but also why not
             const struct = `vLights[${i}].`;
             this._uniformBuffer.addUniform(struct + "position", 4);
-            this._uniformBuffer.addUniform(struct + "direction", 4);
             this._uniformBuffer.addUniform(struct + "diffuse", 4);
             this._uniformBuffer.addUniform(struct + "specular", 4);
+            this._uniformBuffer.addUniform(struct + "direction", 4);
             this._uniformBuffer.addUniform(struct + "falloff", 4);
         }
         this._uniformBuffer.addUniform("shadowsInfo", 3);
