@@ -15,8 +15,8 @@ export class LightProxyMaterial extends ShaderMaterial {
         const webgpu = clusteredLight.getEngine().isWebGPU;
         super(name, clusteredLight._scene, shader, {
             attributes: ["position"],
-            uniforms: ["world", "angleBias", "positionBias"],
-            uniformBuffers: ["Scene", "Mesh", "Light0"],
+            uniforms: ["halfTileRes"],
+            uniformBuffers: ["Scene", "Light0"],
             storageBuffers: ["tileMaskBuffer0"],
             defines: ["LIGHT0", "CLUSTLIGHT0", "CLUSTLIGHT_WRITE", `CLUSTLIGHT_MAX ${clusteredLight.maxLights}`],
             shaderLanguage: webgpu ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
@@ -30,29 +30,16 @@ export class LightProxyMaterial extends ShaderMaterial {
         });
 
         this._clusteredLight = clusteredLight;
-        // Cull front faces so it still shows when intersecting with the camera
-        this.cullBackFaces = false;
         // Additive blending is for merging masks on WebGL
         this.transparencyMode = ShaderMaterial.MATERIAL_ALPHABLEND;
         this.alphaMode = Constants.ALPHA_ADD;
-
-        this._updateUniforms();
-    }
-
-    /** @internal */
-    public _updateUniforms(): void {
-        // Bias the angle by one sphere segment so the spotlight is slightly too large instead of slightly too small
-        const angleBias = -Math.PI / (this._clusteredLight.proxySegments + 2);
-        this.setFloat("angleBias", angleBias);
-        // Bias the NDC position by one tile so all tiles it overlaps with gets filled (in lieu of conservative rendering)
-        // We also add a little extra offset just to counteract any inaccuracies
-        const positionBias = new Vector2(2 / this._clusteredLight.horizontalTiles + 0.001, 2 / this._clusteredLight.verticalTiles + 0.001);
-        this.setVector2("positionBias", positionBias);
     }
 
     public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         if (subMesh.effect) {
             this._clusteredLight._bindLight(0, this.getScene(), subMesh.effect, false, false);
+
+            subMesh.effect.setFloat2("halfTileRes", this._clusteredLight.horizontalTiles / 2, this._clusteredLight.verticalTiles / 2);
         }
         super.bindForSubMesh(world, mesh, subMesh);
     }
