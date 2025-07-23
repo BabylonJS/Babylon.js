@@ -1,11 +1,10 @@
 import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
 import { Link } from "../../primitives/link";
-import type { PropertyLineProps } from "./propertyLine";
+import type { PrimitiveProps, PropertyLineProps } from "../../index";
 import type { FunctionComponent } from "react";
 
-type LinkProps = {
-    value: string;
+type LinkProps = PrimitiveProps<string, false> & {
     tooltip?: string;
     onLink?: () => void;
     url?: string;
@@ -16,7 +15,7 @@ type LinkProps = {
  * @param props - PropertyLineProps and LinkProps
  * @returns property-line wrapped link
  */
-export const LinkPropertyLine: FunctionComponent<PropertyLineProps & LinkProps> = (props) => {
+export const LinkPropertyLine: FunctionComponent<PropertyLineProps<string> & LinkProps> = (props) => {
     return (
         <PropertyLine {...props}>
             <Link inline appearance="subtle" onClick={() => props.onLink?.()} href={props.url} title={props.tooltip}>

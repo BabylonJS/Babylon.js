@@ -2,7 +2,7 @@ import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 
 import { Input as FluentInput, makeStyles } from "@fluentui/react-components";
-import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
+import type { PrimitiveProps } from "./primitive";
 
 const useInputStyles = makeStyles({
     text: {
@@ -16,7 +16,7 @@ const useInputStyles = makeStyles({
     },
 });
 
-export type InputProps<T extends string | number> = BaseComponentProps<T> & {
+export type InputProps<T extends string | number> = PrimitiveProps<T> & {
     step?: number;
     placeholder?: string;
     min?: number;

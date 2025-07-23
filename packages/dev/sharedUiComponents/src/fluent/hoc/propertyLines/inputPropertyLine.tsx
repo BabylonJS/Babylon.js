@@ -9,7 +9,7 @@ import type { InputProps } from "../../primitives/input";
  * @param props - PropertyLineProps and InputProps
  * @returns property-line wrapped input component
  */
-export const TextInputPropertyLine: FunctionComponent<InputProps<string> & PropertyLineProps> = (props) => (
+export const TextInputPropertyLine: FunctionComponent<InputProps<string> & PropertyLineProps<string>> = (props) => (
     <PropertyLine {...props}>
         <TextInput {...props} />
     </PropertyLine>
@@ -20,7 +20,7 @@ export const TextInputPropertyLine: FunctionComponent<InputProps<string> & Prope
  * @param props - PropertyLineProps and InputProps
  * @returns property-line wrapped input component
  */
-export const NumberInputPropertyLine: FunctionComponent<InputProps<number> & PropertyLineProps> = (props) => (
+export const NumberInputPropertyLine: FunctionComponent<InputProps<number> & PropertyLineProps<number>> = (props) => (
     <PropertyLine {...props}>
         <NumberInput {...props} />
     </PropertyLine>

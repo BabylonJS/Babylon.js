@@ -1,7 +1,7 @@
 import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-components";
 import { useEffect, useMemo, useState } from "react";
 import type { FunctionComponent } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
+import type { PrimitiveProps } from "./primitive";
 import type { Nullable } from "core/types";
 
 const useDropdownStyles = makeStyles({
@@ -25,7 +25,7 @@ export type DropdownOption = {
     value: DropdownOptionValue;
 };
 
-export type DropdownProps<V extends AcceptedDropdownValue> = BaseComponentProps<V> & {
+export type DropdownProps<V extends AcceptedDropdownValue> = PrimitiveProps<V> & {
     options: readonly DropdownOption[];
 
     includeNullAs?: "null" | "undefined"; // If supplied, adds an option with label 'Not Defined' and later sets value either null or undefined
