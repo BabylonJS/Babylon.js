@@ -231,6 +231,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public CAMERA_ORTHOGRAPHIC = false;
     public CAMERA_PERSPECTIVE = false;
     public AREALIGHTSUPPORTED = true;
+    public USE_VERTEX_PULLING = false;
 
     /**
      * If the reflection texture on this material is in linear color space
@@ -1247,7 +1248,8 @@ export class StandardMaterial extends PushMaterial {
             this.fogEnabled,
             this.needAlphaTestingForMesh(mesh),
             defines,
-            this._applyDecalMapAfterDetailMap
+            this._applyDecalMapAfterDetailMap,
+            this._useVertexPulling
         );
 
         // Values that need to be evaluated on every frame

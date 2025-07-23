@@ -880,6 +880,10 @@ export class ShaderMaterial extends PushMaterial {
             shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
+        if (this.useVertexPulling) {
+            defines.push("#define USE_VERTEX_PULLING");
+        }
+
         const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper(undefined, true) : this._drawWrapper;
         const previousEffect = drawWrapper?.effect ?? null;
         const previousDefines = drawWrapper?.defines ?? null;
