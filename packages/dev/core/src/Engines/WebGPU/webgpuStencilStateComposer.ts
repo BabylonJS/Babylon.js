@@ -162,9 +162,9 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
     }
 
     public override apply() {
-        const stencilMaterialEnabled = this.stencilMaterial?.enabled;
+        const stencilMaterialEnabled = !this.useStencilGlobalOnly && !!this.stencilMaterial?.enabled;
 
-        this.enabled = stencilMaterialEnabled !== undefined ? this.stencilMaterial!.enabled : this.stencilGlobal.enabled;
+        this.enabled = stencilMaterialEnabled ? this.stencilMaterial!.enabled : this.stencilGlobal.enabled;
         if (!this.enabled) {
             return;
         }
