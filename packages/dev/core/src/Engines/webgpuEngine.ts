@@ -347,7 +347,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public override _currentDrawContext: WebGPUDrawContext;
     /** @internal */
-    public _currentMaterialContext: WebGPUMaterialContext;
+    public override _currentMaterialContext: WebGPUMaterialContext;
     private _currentVertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
