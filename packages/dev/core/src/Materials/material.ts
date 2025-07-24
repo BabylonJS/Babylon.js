@@ -560,7 +560,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Stores the value of the alpha mode
      */
-    private _alphaMode: number[] = [Constants.ALPHA_COMBINE];
+    protected _alphaMode: number[] = [Constants.ALPHA_COMBINE];
 
     /**
      * Sets the value of the alpha mode.
