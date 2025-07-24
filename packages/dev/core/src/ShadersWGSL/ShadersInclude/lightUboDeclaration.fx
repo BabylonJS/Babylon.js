@@ -12,7 +12,7 @@
 		#elif defined(HEMILIGHT{X})
 			vLightGround: vec3f,
 		#elif defined(CLUSTLIGHT{X})
-			vLights: array<SpotLight, CLUSTLIGHT_MAX>,
+			vNumLights: f32,
 		#endif
 		#if defined(AREALIGHT{X})
 			vLightWidth: vec4f,
@@ -36,11 +36,8 @@ var<uniform> light{X} : Light{X};
 #endif
 
 #ifdef CLUSTLIGHT{X}
-#ifdef CLUSTLIGHT_WRITE
-	var<storage, read_write> tileMaskBuffer{X}: array<atomic<u32>>;
-#else
+	var lightDataTexture{X}: texture_2d<f32>;
 	var<storage, read> tileMaskBuffer{X}: array<u32>;
-#endif
 #endif
 
 #ifdef SHADOW{X}
