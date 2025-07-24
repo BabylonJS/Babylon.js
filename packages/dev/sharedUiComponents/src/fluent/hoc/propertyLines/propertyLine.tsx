@@ -58,7 +58,7 @@ const usePropertyLineStyles = makeStyles({
     expandedContent: {},
 });
 
-export type PropertyLineProps<ValueT> = {
+type BasePropertyLineProps = {
     /**
      * The name of the property to display in the property line.
      */
@@ -75,46 +75,40 @@ export type PropertyLineProps<ValueT> = {
      * Link to the documentation for this property, available from the info icon either linked from the description (if provided) or default 'docs' text
      */
     docLink?: string;
-} & (
-    | // Only require value/onChange/defaultValue props if nullable is true
-    {
-          nullable?: false | never;
-      }
-    | {
-          nullable: true;
-          /** Nullable support */
-          value: ValueT;
-          onChange: (value: ValueT) => void;
-          defaultValue?: ValueT;
-      }
-) &
-    (
-        | // If expanded content is undefined, don't expect expandByDefault prop
-        {
-              expandedContent?: undefined;
-              expandByDefault?: never;
-          }
-        | {
-              /**
-               * If supplied, an 'expand' icon will be shown which, when clicked, renders this component within the property line.
-               */
-              expandedContent: JSX.Element;
+};
 
-              /**
-               * If true, the expanded content will be shown by default.
-               */
-              expandByDefault?: boolean;
-          }
-    );
+// Only require value/onChange/defaultValue props if nullable is true
+type NullableProperty<ValueT> = {
+    nullable: true;
+    value: ValueT;
+    onChange: (value: ValueT) => void;
+    defaultValue?: ValueT;
+};
 
-export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement>>>((props, ref) => {
-    const classes = usePropertyLineStyles();
-    return (
-        <div ref={ref} className={classes.container} {...props}>
-            {props.children}
-        </div>
-    );
-});
+type NonNullableProperty = {
+    nullable?: false | never;
+};
+
+// Only expect optional expandByDefault prop if expandedContent is defined
+type ExpandableProperty = {
+    /**
+     * If supplied, an 'expand' icon will be shown which, when clicked, renders this component within the property line.
+     */
+    expandedContent: JSX.Element;
+
+    /**
+     * If true, the expanded content will be shown by default.
+     */
+    expandByDefault?: boolean;
+};
+
+// If expanded content is undefined, don't expect expandByDefault prop
+type NonExpandableProperty = {
+    expandedContent?: undefined;
+    expandByDefault?: never;
+};
+
+export type PropertyLineProps<ValueT> = BasePropertyLineProps & (NullableProperty<ValueT> | NonNullableProperty) & (ExpandableProperty | NonExpandableProperty);
 
 /**
  * A reusable component that renders a property line with a label and child content, and an optional description, copy button, and expandable section.
@@ -193,6 +187,15 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                 <div className={classes.expandedContent}>{expandedContent}</div>
             </Collapse>
         </LineContainer>
+    );
+});
+
+export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement>>>((props, ref) => {
+    const classes = usePropertyLineStyles();
+    return (
+        <div ref={ref} className={classes.container} {...props}>
+            {props.children}
+        </div>
     );
 });
 
