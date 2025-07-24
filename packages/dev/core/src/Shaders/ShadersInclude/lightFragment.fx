@@ -6,8 +6,7 @@
         vec4 diffuse{X} = light{X}.vLightDiffuse;
         #define CUSTOM_LIGHT{X}_COLOR // Use to modify light color. Currently only supports diffuse.
 
-        #ifdef PBR
-        #if defined(CLUSTLIGHT{X}) && CLUSTLIGHT_MAX > 0
+        #if defined(PBR) && defined(CLUSTLIGHT{X}) && CLUSTLIGHT_MAX > 0
             info = computeClusteredLighting{X}(
                 viewDirectionW,
                 normalW,
@@ -19,7 +18,6 @@
                     , subSurfaceOut
                 #endif
                 #ifdef SPECULARTERM
-                    , light{X}.vLightSpecular.rgb
                     , AARoughnessFactors.x
                 #endif
                 #ifdef ANISOTROPIC
@@ -32,7 +30,7 @@
                     , clearcoatOut
                 #endif
             );
-        #else
+        #elif defined(PBR)
 
             // Compute Pre Lighting infos
             #ifdef SPOTLIGHT{X}
@@ -213,8 +211,7 @@
                     #endif
                 #endif
             #endif
-        #endif // CLUSTLIGHT{X}
-        #else  // PBR
+        #else
             #ifdef SPOTLIGHT{X}
                 #ifdef IESLIGHTTEXTURE{X}
                     info = computeIESSpotLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDirection, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, diffuse{X}.a, glossiness, iesLightTexture{X});

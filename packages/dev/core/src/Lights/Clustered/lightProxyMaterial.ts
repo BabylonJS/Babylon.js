@@ -1,7 +1,7 @@
 import { Constants } from "core/Engines/constants";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
-import { Vector2, type Matrix } from "core/Maths/math.vector";
+import type { Matrix } from "core/Maths/math.vector";
 import type { Mesh } from "core/Meshes/mesh";
 import type { SubMesh } from "core/Meshes/subMesh";
 
