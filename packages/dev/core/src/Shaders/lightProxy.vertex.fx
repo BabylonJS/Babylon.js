@@ -3,7 +3,7 @@ flat varying vec2 vLimits;
 flat varying highp uint vMask;
 
 // Uniforms
-#include<sceneUboDeclaration>
+#include<__decl__sceneVertex>
 
 uniform sampler2D lightDataTexture;
 uniform vec3 tileMaskResolution;
