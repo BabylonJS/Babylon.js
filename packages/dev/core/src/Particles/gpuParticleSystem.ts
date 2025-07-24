@@ -2121,6 +2121,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         serializationObject.randomTextureSize = this._randomTextureSize;
         serializationObject.customShader = this.customShader;
 
+        serializationObject.preventAutoStart = this.preventAutoStart;
+        serializationObject.worldOffset = this.worldOffset.asArray();
+
         return serializationObject;
     }
 
@@ -2180,6 +2183,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         ParticleSystem._Parse(parsedParticleSystem, particleSystem, sceneOrEngine, rootUrl);
+
+        if (parsedParticleSystem.worldOffset) {
+            particleSystem.worldOffset = Vector3.FromArray(parsedParticleSystem.worldOffset);
+        }
 
         // Auto start
         if (parsedParticleSystem.preventAutoStart) {

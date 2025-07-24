@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/inspector",
-    "version": "8.13.0",
+    "version": "8.17.2",
     "module": "dist/babylon.inspector.bundle.js",
     "main": "dist/babylon.inspector.bundle.js",
     "esnext": "dist/babylon.inspector.bundle.js",
@@ -11,7 +11,7 @@
         "license.md"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
@@ -34,13 +34,13 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/addons": "^8.13.0",
-        "@babylonjs/core": "^8.13.0",
-        "@babylonjs/gui": "^8.13.0",
-        "@babylonjs/gui-editor": "^8.13.0",
-        "@babylonjs/loaders": "^8.13.0",
-        "@babylonjs/materials": "^8.13.0",
-        "@babylonjs/serializers": "^8.13.0",
+        "@babylonjs/addons": "^8.17.2",
+        "@babylonjs/core": "^8.17.2",
+        "@babylonjs/gui": "^8.17.2",
+        "@babylonjs/gui-editor": "^8.17.2",
+        "@babylonjs/loaders": "^8.17.2",
+        "@babylonjs/materials": "^8.17.2",
+        "@babylonjs/serializers": "^8.17.2",
         "@lts/gui": "1.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"

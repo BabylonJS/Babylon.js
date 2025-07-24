@@ -1,5 +1,5 @@
 import type { Nullable } from "@dev/core/types";
-import { test, Page, TestInfo } from "@playwright/test";
+import { expect, test, Page, TestInfo } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
 export type AudioContextType = "Realtime" | "Offline";
@@ -15,6 +15,9 @@ export const enum Channel {
 
 /** The number of decimal places used for volume comparisons using `expect(...).toBeCloseTo(...)`. */
 export const VolumePrecision = 1;
+
+/** The range of acceptable volume values for realtime audio tests. */
+const RealtimeVolumeRange = 0.2;
 
 export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
@@ -42,17 +45,27 @@ export class AudioTestResult {
 
 // Declarations for babylonServer/public/audiov2-test.js
 declare global {
+    let audioContext: AudioContext | OfflineAudioContext;
     let audioTestConfig: AudioTestConfig;
     let audioTestResult: AudioTestResult;
+    let errorMessage: string;
 
     class AudioV2Test {
-        public static AfterEachAsync(): Promise<void>;
-        public static BeforeEachAsync(): Promise<void>;
+        public static AfterEach(): void;
+        public static BeforeEach(): void;
         public static CreateAbstractSoundAndOutputNodeAsync(
             audioNodeType: AudioNodeType,
             source: string | string[],
             options?: Partial<BABYLON.IStaticSoundOptions | BABYLON.IStreamingSoundOptions> | Partial<BABYLON.IAudioBusOptions>
-        ): Promise<{ sound: { play(): void; stop(): void }; outputNode: { spatial: BABYLON.AbstractSpatialAudio; stereo: BABYLON.AbstractStereoAudio; volume: number } }>;
+        ): Promise<{
+            sound: { play(): void; stop(): void };
+            outputNode: {
+                spatial: BABYLON.AbstractSpatialAudio;
+                stereo: BABYLON.AbstractStereoAudio;
+                volume: number;
+                setVolume: (value: number, options?: Partial<BABYLON.IAudioParameterRampOptions>) => void;
+            };
+        }>;
         public static CreateAbstractSoundAsync(
             soundType: SoundType,
             source: string | string[],
@@ -67,10 +80,12 @@ declare global {
         public static CreateSoundAsync(source: string | string[] | BABYLON.StaticSoundBuffer, options?: Partial<BABYLON.IStaticSoundOptions>): Promise<BABYLON.StaticSound>;
         public static CreateSoundSourceAsync(source: string, options?: Partial<BABYLON.ISoundSourceOptions>): Promise<BABYLON.AbstractSoundSource>;
         public static CreateStreamingSoundAsync(source: string | string[], options?: Partial<BABYLON.IStreamingSoundOptions>): Promise<BABYLON.StreamingSound>;
+        public static GetErrorMessageAsync(): Promise<string>;
         public static GetPulseCountsAsync(): Promise<number[][]>;
         public static GetResultAsync(): Promise<AudioTestResult>;
         public static GetVolumesAtTimeAsync(time: number): Promise<number[]>;
         public static WaitAsync(seconds: number, callback?: () => void): Promise<void>;
+        public static WaitForParameterRampDurationAsync(callback?: () => void): Promise<void>;
     }
 }
 
@@ -103,6 +118,10 @@ export const InitAudioV2Tests = () => {
             },
             { config: new AudioTestConfig() }
         );
+
+        await page.evaluate(() => {
+            AudioV2Test.BeforeEach();
+        });
     });
 
     test.afterEach(async ({ page }) => {
@@ -114,13 +133,19 @@ export const InitAudioV2Tests = () => {
             SaveAudioTestResult(test.info(), result);
         }
 
-        await page.evaluate(async () => {
-            await AudioV2Test.AfterEachAsync();
+        await page.evaluate(() => {
+            AudioV2Test.AfterEach();
         });
 
-        // await page.close();
+        await page.close();
     });
 };
+
+export async function EvaluateErrorMessageAsync(page: Page): Promise<string> {
+    return await page.evaluate(async () => {
+        return await AudioV2Test.GetErrorMessageAsync();
+    });
+}
 
 /**
  * Gets the pulse counts of the given result's samples.
@@ -244,5 +269,28 @@ export function SaveAudioTestResult(testInfo: TestInfo, result: AudioTestResult)
                 contentType: "audio/wav",
             });
         }
+    }
+}
+
+export async function EvaluateAudioContextType(page: Page): Promise<AudioContextType> {
+    return (await page.evaluate(() => {
+        if (audioContext instanceof OfflineAudioContext) {
+            return "Offline";
+        } else if (audioContext instanceof AudioContext) {
+            return "Realtime";
+        } else {
+            throw new Error("Unknown audio context type");
+        }
+    })) as AudioContextType;
+}
+
+export async function ExpectValueToBeCloseTo(page: Page, actual: number, expected: number, precision = VolumePrecision, realtimeRange = RealtimeVolumeRange): Promise<void> {
+    if ((await EvaluateAudioContextType(page)) === "Offline") {
+        expect(actual).toBeCloseTo(expected, precision);
+    } else {
+        // For "Realtime" contexts, expect larger range due to timing variations.
+        const halfRange = realtimeRange / 2;
+        expect(actual).toBeGreaterThanOrEqual(expected - halfRange);
+        expect(actual).toBeLessThanOrEqual(expected + halfRange);
     }
 }

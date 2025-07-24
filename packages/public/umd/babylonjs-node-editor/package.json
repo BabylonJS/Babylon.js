@@ -1,20 +1,20 @@
 {
     "name": "babylonjs-node-editor",
-    "version": "8.13.0",
+    "version": "8.17.2",
     "main": "babylon.nodeEditor.js",
     "types": "babylon.nodeEditor.module.d.ts",
     "files": [
         "*"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^8.13.0"
+        "babylonjs": "^8.17.2"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

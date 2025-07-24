@@ -136,10 +136,10 @@ export class ParticleRandomBlock extends NodeParticleBlock {
                     const min = this.min.getConnectedValue(state) || new Color4(0, 0, 0, 0);
                     const max = this.max.getConnectedValue(state) || new Color4(1, 1, 1, 1);
                     return new Color4(
-                        min.x + Math.random() * (max.x - min.x),
-                        min.y + Math.random() * (max.y - min.y),
-                        min.z + Math.random() * (max.z - min.z),
-                        min.w + Math.random() * (max.w - min.w)
+                        min.r + Math.random() * (max.r - min.r),
+                        min.g + Math.random() * (max.g - min.g),
+                        min.b + Math.random() * (max.b - min.b),
+                        min.a + Math.random() * (max.a - min.a)
                     );
                 };
                 break;

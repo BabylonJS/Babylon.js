@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as React from "react";
 import type { Scene } from "core/scene";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -9,7 +10,6 @@ import { MessageLineComponent } from "shared-ui-components/lines/messageLineComp
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 // TODO - does it still work if loading the modules from the correct files?
-// eslint-disable-next-line import/no-internal-modules
 import { GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "loaders/glTF/index";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";

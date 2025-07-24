@@ -307,6 +307,14 @@ export class GaussianSplattingMesh extends Mesh {
     // batch size between 2 yield calls during the PLY to splat conversion.
     private static _PlyConversionBatchSize = 32768;
     private _shDegree = 0;
+    private _viewDirectionFactor = new Vector3(1, 1, -1);
+
+    /**
+     * View direction factor used to compute the SH view direction in the shader.
+     */
+    public get viewDirectionFactor() {
+        return this._viewDirectionFactor;
+    }
 
     /**
      * SH degree. 0 = no sh (default). 1 = 3 parameters. 2 = 8 parameters. 3 = 15 parameters.
@@ -931,8 +939,8 @@ export class GaussianSplattingMesh extends Mesh {
                         const compressedChunk = compressedChunks![chunkIndex];
                         Unpack111011(value, temp3);
                         position[0] = Scalar.Lerp(compressedChunk.min.x, compressedChunk.max.x, temp3.x);
-                        position[1] = -Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
-                        position[2] = -Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
+                        position[1] = Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
+                        position[2] = Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
                     }
                     break;
                 case PLYValue.PACKED_ROTATION:
@@ -941,8 +949,8 @@ export class GaussianSplattingMesh extends Mesh {
 
                         r0 = q.x;
                         r1 = q.y;
-                        r2 = -q.z;
-                        r3 = -q.w;
+                        r2 = q.z;
+                        r3 = q.w;
                     }
                     break;
                 case PLYValue.PACKED_SCALE:
@@ -967,10 +975,10 @@ export class GaussianSplattingMesh extends Mesh {
                     position[0] = value;
                     break;
                 case PLYValue.Y:
-                    position[1] = -value;
+                    position[1] = value;
                     break;
                 case PLYValue.Z:
-                    position[2] = -value;
+                    position[2] = value;
                     break;
                 case PLYValue.SCALE_0:
                     scale[0] = Math.exp(value);
@@ -1012,10 +1020,10 @@ export class GaussianSplattingMesh extends Mesh {
                     r1 = value;
                     break;
                 case PLYValue.ROT_2:
-                    r2 = -value;
+                    r2 = value;
                     break;
                 case PLYValue.ROT_3:
-                    r3 = -value;
+                    r3 = value;
                     break;
             }
             if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {

@@ -1,8 +1,7 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./systemBlock";
 export * from "./particleInputBlock";
 export * from "./particleSourceTextureBlock";
-export * from "./randomRangeBlock";
 export * from "./particleMathBlock";
 export * from "./particleLerpBlock";
 export * from "./Update/updateDirectionBlock";
@@ -14,6 +13,7 @@ export * from "./Update/basicPositionUpdateBlock";
 export * from "./Update/basicSpriteUpdateBlock";
 export * from "./Update/updateSpriteCellIndexBlock";
 export * from "./Update/updateFlowMapBlock";
+export * from "./Update/updateAttractorBlock";
 export * from "./Emitters/index";
 export * from "./particleGradientValueBlock";
 export * from "./particleGradientBlock";

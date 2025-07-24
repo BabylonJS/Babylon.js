@@ -2,10 +2,9 @@
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
-import type { Material } from "core/Materials/material";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { PBRMetallicRoughnessMaterial } from "core/Materials/PBR/pbrMetallicRoughnessMaterial";
-import type { StandardMaterial } from "core/Materials/standardMaterial";
+import { Material } from "core/Materials/material";
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Texture } from "core/Materials/Textures/texture";
 import { Color3 } from "core/Maths/math.color";
@@ -16,6 +15,7 @@ import { DumpTools } from "core/Misc/dumpTools";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import type { FloatArray, Nullable } from "core/types";
+import { IsNoopNode } from "../exportUtils";
 
 /**
  * Ported from https://github.com/mrdoob/three.js/blob/master/examples/jsm/exporters/USDZExporter.js
@@ -115,17 +115,16 @@ function BuildMeshVertexCount(geometry: Geometry) {
 }
 
 function BuildMeshVertexIndices(geometry: Geometry) {
-    const index = geometry.getIndices();
-    const array = [];
+    const indices = geometry.getIndices();
+    const count = indices?.length ?? geometry.getTotalVertices();
 
-    if (index !== null) {
-        for (let i = 0; i < index.length; i++) {
-            array.push(index[i]);
+    const array: number[] = [];
+    if (indices !== null) {
+        for (let i = 0; i < count; i++) {
+            array.push(indices[i]);
         }
     } else {
-        const length = geometry.getTotalVertices();
-
-        for (let i = 0; i < length; i++) {
+        for (let i = 0; i < count; i++) {
             array.push(i);
         }
     }
@@ -133,11 +132,11 @@ function BuildMeshVertexIndices(geometry: Geometry) {
     return array.join(", ");
 }
 
-function BuildVector3Array(attribute: FloatArray, options: IUSDZExportOptions, stride = 3) {
-    const array = [];
+function BuildVector3Array(attribute: FloatArray, options: IUSDZExportOptions, stride = 3, convertToRightHanded = false) {
+    const array: string[] = [];
 
     for (let i = 0; i < attribute.length / stride; i++) {
-        const x = attribute[i * stride];
+        const x = attribute[i * stride] * (convertToRightHanded ? -1 : 1);
         const y = attribute[i * stride + 1];
         const z = attribute[i * stride + 2];
 
@@ -148,7 +147,7 @@ function BuildVector3Array(attribute: FloatArray, options: IUSDZExportOptions, s
 }
 
 function BuildVector2Array(attribute: FloatArray, options: IUSDZExportOptions) {
-    const array = [];
+    const array: string[] = [];
 
     for (let i = 0; i < attribute.length / 2; i++) {
         const x = attribute[i * 2];
@@ -189,7 +188,7 @@ function BuildAdditionalAttributes(geometry: Geometry, options: IUSDZExportOptio
     return string;
 }
 
-function BuildMesh(geometry: Geometry, options: IUSDZExportOptions) {
+function BuildMesh(geometry: Geometry, options: IUSDZExportOptions, windingOrder: string, convertToRightHanded: boolean) {
     const name = "Geometry";
     const position = geometry.getVerticesData(VertexBuffer.PositionKind);
     const normal = geometry.getVerticesData(VertexBuffer.NormalKind);
@@ -201,24 +200,25 @@ function BuildMesh(geometry: Geometry, options: IUSDZExportOptions) {
     return `
 	def Mesh "${name}"
 	{
+        uniform token orientation = "${windingOrder}"
 		int[] faceVertexCounts = [${BuildMeshVertexCount(geometry)}]
 		int[] faceVertexIndices = [${BuildMeshVertexIndices(geometry)}]
-		normal3f[] normals = [${BuildVector3Array(normal, options)}] (
+		normal3f[] normals = [${BuildVector3Array(normal, options, undefined, convertToRightHanded)}] (
 			interpolation = "vertex"
 		)
-		point3f[] points = [${BuildVector3Array(position, options)}]
+		point3f[] points = [${BuildVector3Array(position, options, undefined, convertToRightHanded)}]
         ${BuildAdditionalAttributes(geometry, options)}
 		uniform token subdivisionScheme = "none"
 	}
 `;
 }
 
-function BuildMeshObject(geometry: Geometry, options: IUSDZExportOptions) {
-    const mesh = BuildMesh(geometry, options);
+function BuildMeshObject(geometry: Geometry, options: IUSDZExportOptions, windingOrder: string, convertToRightHanded: boolean) {
+    const meshObject = BuildMesh(geometry, options, windingOrder, convertToRightHanded);
     return `
         def "Geometry"
         {
-        ${mesh}
+        ${meshObject}
         }
         `;
 }
@@ -239,13 +239,8 @@ function BuildMatrixRow(array: number[], offset: number) {
     return `(${array[offset + 0]}, ${array[offset + 1]}, ${array[offset + 2]}, ${array[offset + 3]})`;
 }
 
-function BuildXform(mesh: Mesh) {
+function BuildXform(mesh: Mesh, matrix: Matrix) {
     const name = "Object_" + mesh.uniqueId;
-    const matrix = mesh.getWorldMatrix().clone();
-
-    if (matrix.determinant() < 0) {
-        Tools.Warn(`Exporting mesh ${mesh.name} with negative scale. Result may look incorrect in destination engine.`);
-    }
     const transform = BuildMatrix(matrix);
 
     return `def Xform "${name}" (
@@ -263,7 +258,7 @@ function BuildXform(mesh: Mesh) {
 }
 
 function BuildMaterials(materials: { [key: string]: Material }, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
-    const array = [];
+    const array: string[] = [];
 
     for (const uuid in materials) {
         const material = materials[uuid];
@@ -356,7 +351,7 @@ function BuildTexture(
         asset inputs:file = @textures/Texture_${id}.png@
         float2 inputs:st.connect = </Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
         ${color ? "float4 inputs:scale = " + BuildColor4(color) : ""}
-        token inputs:sourceColorSpace = "${texture.gammaSpace ? "raw" : "sRGB"}"
+        token inputs:sourceColorSpace = "${texture.gammaSpace ? "sRGB" : "raw"}"
         token inputs:wrapS = "${BuildWrapping(texture.wrapU)}"
         token inputs:wrapT = "${BuildWrapping(texture.wrapV)}"
         float outputs:r
@@ -368,104 +363,71 @@ function BuildTexture(
 }
 
 function ExtractTextureInformations(material: Material) {
-    const className = material.getClassName();
+    const defaults = {
+        diffuseMap: null,
+        diffuse: null,
+        alphaCutOff: 0,
+        emissiveMap: null,
+        emissive: null,
+        normalMap: null,
+        roughnessMap: null,
+        roughnessChannel: "a",
+        roughness: 0,
+        metalnessMap: null,
+        metalnessChannel: "r",
+        metalness: 0,
+        aoMap: null,
+        aoMapChannel: "rgb",
+        aoMapIntensity: 0,
+        alphaMap: null,
+        ior: 1,
+        clearCoatEnabled: false,
+        clearCoat: 0,
+        clearCoatMap: null,
+        clearCoatRoughness: 0,
+        clearCoatRoughnessMap: null,
+    };
 
-    switch (className) {
-        case "StandardMaterial":
-            return {
-                diffuseMap: (material as StandardMaterial).diffuseTexture,
-                diffuse: (material as StandardMaterial).diffuseColor,
-                alphaCutOff: (material as StandardMaterial).alphaCutOff,
-                emissiveMap: (material as StandardMaterial).emissiveTexture,
-                emissive: (material as StandardMaterial).emissiveColor,
-                roughnessMap: null,
-                normalMap: null,
-                metalnessMap: null,
-                roughness: 1,
-                metalness: 0,
-                aoMap: null,
-                aoMapIntensity: 0,
-                alphaMap: (material as StandardMaterial).opacityTexture,
-                ior: 1,
-                clearCoat: 0,
-                clearCoatMap: null,
-                clearCoatRoughness: 0,
-                clearCoatRoughnessMap: null,
-            };
-        case "PBRMaterial":
-            return {
-                diffuseMap: (material as PBRMaterial).albedoTexture,
-                diffuse: (material as PBRMaterial).albedoColor,
-                alphaCutOff: (material as PBRMaterial).alphaCutOff,
-                emissiveMap: (material as PBRMaterial).emissiveTexture,
-                emissive: (material as PBRMaterial).emissiveColor,
-                normalMap: (material as PBRMaterial).bumpTexture,
-                roughnessMap: (material as PBRMaterial).metallicTexture,
-                roughnessChannel: (material as PBRMaterial).useRoughnessFromMetallicTextureAlpha ? "a" : "g",
-                roughness: (material as PBRMaterial).roughness || 1,
-                metalnessMap: (material as PBRMaterial).metallicTexture,
-                metalnessChannel: (material as PBRMaterial).useMetallnessFromMetallicTextureBlue ? "b" : "r",
-                metalness: (material as PBRMaterial).metallic || 0,
-                aoMap: (material as PBRMaterial).ambientTexture,
-                aoMapChannel: (material as PBRMaterial).useAmbientInGrayScale ? "r" : "rgb",
-                aoMapIntensity: (material as PBRMaterial).ambientTextureStrength,
-                alphaMap: (material as PBRMaterial).opacityTexture,
-                ior: (material as PBRMaterial).indexOfRefraction,
-                clearCoat: (material as PBRMaterial).clearCoat.intensity,
-                clearCoatMap: (material as PBRMaterial).clearCoat.texture,
-                clearCoatRoughness: (material as PBRMaterial).clearCoat.roughness,
-                clearCoatRoughnessMap: (material as PBRMaterial).clearCoat.useRoughnessFromMainTexture
-                    ? (material as PBRMaterial).clearCoat.texture
-                    : (material as PBRMaterial).clearCoat.textureRoughness,
-            };
-        case "PBRMetallicRoughnessMaterial":
-            return {
-                diffuseMap: (material as PBRMetallicRoughnessMaterial).baseTexture,
-                diffuse: (material as PBRMetallicRoughnessMaterial).baseColor,
-                alphaCutOff: (material as PBRMetallicRoughnessMaterial).alphaCutOff,
-                emissiveMap: (material as PBRMetallicRoughnessMaterial).emissiveTexture,
-                emissive: (material as PBRMetallicRoughnessMaterial).emissiveColor,
-                normalMap: (material as PBRMetallicRoughnessMaterial).normalTexture,
-                roughnessMap: (material as PBRMaterial).metallicTexture,
-                roughnessChannel: (material as PBRMaterial).useRoughnessFromMetallicTextureAlpha ? "a" : "g",
-                roughness: (material as PBRMetallicRoughnessMaterial).roughness || 1,
-                metalnessMap: (material as PBRMaterial).metallicTexture,
-                metalnessChannel: (material as PBRMaterial).useMetallnessFromMetallicTextureBlue ? "b" : "r",
-                metalness: (material as PBRMetallicRoughnessMaterial).metallic || 0,
-                aoMap: (material as PBRMaterial).ambientTexture,
-                aoMapChannel: (material as PBRMaterial).useAmbientInGrayScale ? "r" : "rgb",
-                aoMapIntensity: (material as PBRMaterial).ambientTextureStrength,
-                alphaMap: (material as PBRMaterial).opacityTexture,
-                ior: (material as PBRMaterial).indexOfRefraction,
-                clearCoat: (material as PBRMetallicRoughnessMaterial).clearCoat.intensity,
-                clearCoatMap: (material as PBRMetallicRoughnessMaterial).clearCoat.texture,
-                clearCoatRoughness: (material as PBRMetallicRoughnessMaterial).clearCoat.roughness,
-                clearCoatRoughnessMap: (material as PBRMetallicRoughnessMaterial).clearCoat.useRoughnessFromMainTexture
-                    ? (material as PBRMetallicRoughnessMaterial).clearCoat.texture
-                    : (material as PBRMetallicRoughnessMaterial).clearCoat.textureRoughness,
-            };
-        default:
-            return {
-                diffuseMap: null,
-                diffuse: null,
-                emissiveMap: null,
-                emissemissiveiveColor: null,
-                normalMap: null,
-                roughnessMap: null,
-                metalnessMap: null,
-                alphaCutOff: 0,
-                roughness: 0,
-                metalness: 0,
-                aoMap: null,
-                aoMapIntensity: 0,
-                alphaMap: null,
-                ior: 1,
-                clearCoat: 0,
-                clearCoatMap: null,
-                clearCoatRoughness: 0,
-                clearCoatRoughnessMap: null,
-            };
+    if (material instanceof StandardMaterial) {
+        return {
+            ...defaults,
+            diffuseMap: material.diffuseTexture,
+            diffuse: material.diffuseColor,
+            alphaCutOff: material.alphaCutOff,
+            emissiveMap: material.emissiveTexture,
+            emissive: material.emissiveColor,
+            roughness: 1,
+            alphaMap: material.opacityTexture,
+        };
     }
+    if (material instanceof PBRBaseMaterial) {
+        return {
+            ...defaults,
+            diffuseMap: material._albedoTexture,
+            diffuse: material._albedoColor,
+            alphaCutOff: material._alphaCutOff,
+            emissiveMap: material._emissiveTexture,
+            emissive: material._emissiveColor,
+            normalMap: material._bumpTexture,
+            roughnessMap: material._metallicTexture,
+            roughnessChannel: material._useRoughnessFromMetallicTextureAlpha ? "a" : "g",
+            roughness: material._roughness ?? 1,
+            metalnessMap: material._metallicTexture,
+            metalnessChannel: material._useMetallnessFromMetallicTextureBlue ? "b" : "r",
+            metalness: material._metallic ?? 0,
+            aoMap: material._ambientTexture,
+            aoMapChannel: material._useAmbientInGrayScale ? "r" : "rgb",
+            aoMapIntensity: material._ambientTextureStrength,
+            alphaMap: material._opacityTexture,
+            ior: material.subSurface.indexOfRefraction,
+            clearCoatEnabled: material.clearCoat.isEnabled,
+            clearCoat: material.clearCoat.intensity,
+            clearCoatMap: material.clearCoat.texture,
+            clearCoatRoughness: material.clearCoat.roughness,
+            clearCoatRoughnessMap: material.clearCoat.useRoughnessFromMainTexture ? material.clearCoat.texture : material.clearCoat.textureRoughness,
+        };
+    }
+    return defaults;
 }
 
 function BuildMaterial(material: Material, textureToExports: { [key: string]: BaseTexture }, options: IUSDZExportOptions) {
@@ -493,6 +455,7 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
         aoMapIntensity,
         alphaMap,
         ior,
+        clearCoatEnabled,
         clearCoat,
         clearCoatMap,
         clearCoatRoughness,
@@ -559,29 +522,31 @@ function BuildMaterial(material: Material, textureToExports: { [key: string]: Ba
         inputs.push(`${pad}float inputs:opacity = ${material.alpha}`);
     }
 
-    if (clearCoatMap !== null) {
-        inputs.push(`${pad}float inputs:clearcoat.connect = </Materials/Material_${material.uniqueId}/Texture_${clearCoatMap.uniqueId}_clearcoat.outputs:r>`);
-        samplers.push(BuildTexture(clearCoatMap as Texture, material, "clearcoat", new Color3(clearCoat, clearCoat, clearCoat), textureToExports, options));
-    } else {
-        inputs.push(`${pad}float inputs:clearcoat = ${clearCoat}`);
-    }
+    if (clearCoatEnabled) {
+        if (clearCoatMap !== null) {
+            inputs.push(`${pad}float inputs:clearcoat.connect = </Materials/Material_${material.uniqueId}/Texture_${clearCoatMap.uniqueId}_clearcoat.outputs:r>`);
+            samplers.push(BuildTexture(clearCoatMap as Texture, material, "clearcoat", new Color3(clearCoat, clearCoat, clearCoat), textureToExports, options));
+        } else {
+            inputs.push(`${pad}float inputs:clearcoat = ${clearCoat}`);
+        }
 
-    if (clearCoatRoughnessMap !== null) {
-        inputs.push(
-            `${pad}float inputs:clearcoatRoughness.connect = </Materials/Material_${material.uniqueId}/Texture_${clearCoatRoughnessMap.uniqueId}_clearcoatRoughness.outputs:g>`
-        );
-        samplers.push(
-            BuildTexture(
-                clearCoatRoughnessMap as Texture,
-                material,
-                "clearcoatRoughness",
-                new Color3(clearCoatRoughness, clearCoatRoughness, clearCoatRoughness),
-                textureToExports,
-                options
-            )
-        );
-    } else {
-        inputs.push(`${pad}float inputs:clearcoatRoughness = ${clearCoatRoughness}`);
+        if (clearCoatRoughnessMap !== null) {
+            inputs.push(
+                `${pad}float inputs:clearcoatRoughness.connect = </Materials/Material_${material.uniqueId}/Texture_${clearCoatRoughnessMap.uniqueId}_clearcoatRoughness.outputs:g>`
+            );
+            samplers.push(
+                BuildTexture(
+                    clearCoatRoughnessMap as Texture,
+                    material,
+                    "clearcoatRoughness",
+                    new Color3(clearCoatRoughness, clearCoatRoughness, clearCoatRoughness),
+                    textureToExports,
+                    options
+                )
+            );
+        } else {
+            inputs.push(`${pad}float inputs:clearcoatRoughness = ${clearCoatRoughness}`);
+        }
     }
 
     inputs.push(`${pad}float inputs:ior = ${ior}`);
@@ -644,6 +609,39 @@ function BuildCamera(camera: Camera, options: IUSDZExportOptions) {
     }
 }
 
+function ExtractMeshInformations(mesh: Mesh) {
+    const matrix = mesh.getWorldMatrix().clone();
+    const sceneIsRightHanded = mesh.getScene().useRightHandedSystem;
+    let sideOrientation = mesh.material?._getEffectiveOrientation(mesh) ?? mesh.sideOrientation;
+    let convertToRightHanded = !sceneIsRightHanded;
+
+    // Search for a root conversion node from the glTF loader in the mesh's ancestors.
+    let current = mesh.parent;
+    while (current) {
+        if (IsNoopNode(current, sceneIsRightHanded) && current.parent === null) {
+            if (!sceneIsRightHanded) {
+                // If it's a RH->LH node, cancel out its inversion effect on the mesh's matrix and winding order.
+                matrix.multiplyToRef(current.getWorldMatrix().invert(), matrix);
+                sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+            }
+            convertToRightHanded = false;
+            break;
+        }
+        current = current.parent;
+    }
+
+    if (matrix.determinant() < 0) {
+        // RealityKit doesn't seem to automatically flip faces of a mesh with negative scale, like other engines do (including us).
+        Tools.Warn(`Mesh ${mesh} has a negative scale, which may look incorrect in destinations like QuickLook.`);
+    }
+
+    return {
+        matrix,
+        windingOrder: sideOrientation === Material.ClockWiseSideOrientation ? "leftHanded" : "rightHanded",
+        convertToRightHanded,
+    };
+}
+
 /**
  *
  * @param scene scene to export
@@ -700,9 +698,10 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
 
         if (supportedMaterials.indexOf(material.getClassName()) !== -1) {
             const geometryFileName = "geometries/Geometry_" + geometry.uniqueId + ".usda";
+            const { matrix, windingOrder, convertToRightHanded } = ExtractMeshInformations(mesh);
 
             if (!(geometryFileName in files)) {
-                const meshObject = BuildMeshObject(geometry, localOptions);
+                const meshObject = BuildMeshObject(geometry, localOptions, windingOrder, convertToRightHanded);
                 files[geometryFileName] = BuildUSDFileAsString(meshObject);
             }
 
@@ -710,7 +709,7 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
                 materialToExports[material.uniqueId] = material;
             }
 
-            output += BuildXform(mesh);
+            output += BuildXform(mesh, matrix);
         } else {
             Tools.Warn("USDZExportAsync does not support this material type: " + material.getClassName());
         }

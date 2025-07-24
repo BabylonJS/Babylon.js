@@ -1,4 +1,6 @@
 import * as React from "react";
+import { FileUploadLine } from "../fluent/hoc/fileUploadLine";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 interface IFileButtonLineProps {
     label: string;
@@ -27,7 +29,12 @@ export class FileButtonLine extends React.Component<IFileButtonLineProps> {
         evt.target.value = "";
     }
 
-    override render() {
+    renderFluent() {
+        const { icon, ...fileProps } = this.props;
+        return <FileUploadLine {...fileProps} onClick={(file) => this.props.onClick(file[0])} />;
+    }
+
+    renderOriginal() {
         return (
             <div className="buttonLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}
@@ -37,5 +44,8 @@ export class FileButtonLine extends React.Component<IFileButtonLineProps> {
                 <input ref={this._uploadInputRef} id={"file-upload" + this._id} type="file" accept={this.props.accept} onChange={(evt) => this.onChange(evt)} />
             </div>
         );
+    }
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

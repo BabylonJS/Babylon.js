@@ -212,9 +212,9 @@ export abstract class AbstractEngine {
     /** @internal */
     public _alphaState = new AlphaState();
     /** @internal */
-    public _alphaMode = Constants.ALPHA_ADD;
+    public _alphaMode = Array(8).fill(-1);
     /** @internal */
-    public _alphaEquation = Constants.ALPHA_DISABLE;
+    public _alphaEquation = Array(8).fill(-1);
 
     protected _activeRequests: IFileRequest[] = [];
 
@@ -337,8 +337,16 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+    public _getShaderProcessor(_shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
         return this._shaderProcessor;
+    }
+
+    /**
+     * @internal
+     */
+    public _resetAlphaMode(): void {
+        this._alphaMode.fill(-1);
+        this._alphaEquation.fill(-1);
     }
 
     /**
@@ -1896,14 +1904,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.13.0";
+        return "babylonjs@8.17.2";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.13.0";
+        return "8.17.2";
     }
 
     /**

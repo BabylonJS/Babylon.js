@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle, InternalTexture, FrameGraphRenderContext } from "core/index";
 import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";

@@ -45,9 +45,11 @@ export class LinesMesh extends Mesh {
      */
     public intersectionThreshold: number;
 
-    private _lineMaterial: Material;
+    private _isShaderMaterial(shader: Nullable<Material>): shader is ShaderMaterial {
+        if (!shader) {
+            return false;
+        }
 
-    private _isShaderMaterial(shader: Material): shader is ShaderMaterial {
         return shader.getClassName() === "ShaderMaterial";
     }
 
@@ -143,14 +145,6 @@ export class LinesMesh extends Mesh {
         }
     }
 
-    public override isReady() {
-        if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage || this.hasThinInstances)) {
-            return false;
-        }
-
-        return super.isReady();
-    }
-
     /**
      * @returns the string "LineMesh"
      */
@@ -161,16 +155,18 @@ export class LinesMesh extends Mesh {
     /**
      * @internal
      */
-    public override get material(): Material {
-        return this._lineMaterial;
+    public override get material(): Nullable<Material> {
+        return this._internalAbstractMeshDataInfo._material as Material;
     }
 
     /**
      * @internal
      */
-    public override set material(value: Material) {
-        this._lineMaterial = value;
-        this._lineMaterial.fillMode = Material.LineListDrawMode;
+    public override set material(value: Nullable<Material>) {
+        this._setMaterial(value);
+        if (this.material) {
+            this.material.fillMode = Material.LineListDrawMode;
+        }
     }
 
     /**
@@ -201,10 +197,10 @@ export class LinesMesh extends Mesh {
         }
 
         // Color
-        if (!this.useVertexColor && this._isShaderMaterial(this._lineMaterial)) {
+        if (!this.useVertexColor && this._isShaderMaterial(this.material)) {
             const { r, g, b } = this.color;
             this._color4.set(r, g, b, this.alpha);
-            this._lineMaterial.setColor4("color", this._color4);
+            this.material.setColor4("color", this._color4);
         }
 
         return this;
@@ -239,7 +235,7 @@ export class LinesMesh extends Mesh {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false, doNotDisposeMaterial?: boolean): void {
         if (!doNotDisposeMaterial) {
-            this._lineMaterial.dispose(false, false, true);
+            this.material?.dispose(false, false, true);
         }
         super.dispose(doNotRecurse);
     }

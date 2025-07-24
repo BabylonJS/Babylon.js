@@ -394,6 +394,7 @@ export class NodeGeometryBlock {
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
         serializationObject.visibleOnFrame = this.visibleOnFrame;
+        serializationObject.comments = this.comments;
 
         serializationObject.inputs = [];
         serializationObject.outputs = [];

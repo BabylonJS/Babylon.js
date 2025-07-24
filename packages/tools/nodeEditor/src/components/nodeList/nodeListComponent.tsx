@@ -14,6 +14,9 @@ import deleteButton from "../../imgs/delete.svg";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { Accordion } from "shared-ui-components/fluent/primitives/accordion";
+import { SearchBar } from "shared-ui-components/fluent/primitives/searchBar";
 
 interface INodeListComponentProps {
     globalState: GlobalState;
@@ -327,6 +330,38 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
     }
 
+    renderFluent(blockMenu: JSX.Element[]) {
+        return (
+            <div>
+                <SearchBar placeholder="Filter" onChange={(val) => this.filterContent(val.toString())} />
+                <Accordion>{blockMenu}</Accordion>
+            </div>
+        );
+    }
+
+    renderOriginal(blockMenu: JSX.Element[]) {
+        return (
+            <div id="nmeNodeList">
+                <div className="panes">
+                    <div className="pane">
+                        <div className="filter">
+                            <input
+                                type="text"
+                                placeholder="Filter"
+                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
+                                onBlur={() => {
+                                    this.props.globalState.lockObject.lock = false;
+                                }}
+                                onChange={(evt) => this.filterContent(evt.target.value)}
+                            />
+                        </div>
+                        <div className="list-container">{blockMenu}</div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     override render() {
         const customFrameNames: string[] = [];
         for (const frame in this._customFrameList) {
@@ -556,7 +591,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         // Create node menu
-        const blockMenu = [];
+        const blockMenu: JSX.Element[] = [];
         for (const key in allBlocks) {
             const blockList = allBlocks[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
@@ -661,25 +696,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             };
         }
 
-        return (
-            <div id="nmeNodeList">
-                <div className="panes">
-                    <div className="pane">
-                        <div className="filter">
-                            <input
-                                type="text"
-                                placeholder="Filter"
-                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
-                                onBlur={() => {
-                                    this.props.globalState.lockObject.lock = false;
-                                }}
-                                onChange={(evt) => this.filterContent(evt.target.value)}
-                            />
-                        </div>
-                        <div className="list-container">{blockMenu}</div>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent(blockMenu) : this.renderOriginal(blockMenu))}</ToolContext.Consumer>;
     }
 }

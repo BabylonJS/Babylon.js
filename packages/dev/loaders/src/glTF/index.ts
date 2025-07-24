@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./glTFFileLoader";
 export * from "./glTFValidation";
 import * as GLTF1 from "./1.0/index";

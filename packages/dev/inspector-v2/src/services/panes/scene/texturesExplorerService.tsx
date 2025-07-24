@@ -1,46 +1,54 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Observer } from "core/index";
-
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { ImageRegular } from "@fluentui/react-icons";
+import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
 
+import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
+import { Observable } from "core/Misc";
+import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
+import { SceneContextIdentity } from "../../sceneContext";
+import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
-export const TextureHierarchyServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
-    friendlyName: "Texture Hierarchy",
-    consumes: [SceneExplorerServiceIdentity],
-    factory: (sceneExplorerService) => {
+export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
+    friendlyName: "Texture Explorer",
+    consumes: [SceneExplorerServiceIdentity, SceneContextIdentity],
+    factory: (sceneExplorerService, sceneContext) => {
+        const scene = sceneContext.currentScene;
+        if (!scene) {
+            return undefined;
+        }
+
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Textures",
-            order: 3,
-            getRootEntities: (scene) => scene.textures,
-            getEntityDisplayName: (texture) => texture.displayName || texture.name || `Unnamed Texture (${texture.uniqueId})`,
-            entityIcon: () => <ImageRegular />,
-            watch: (scene, onAdded, onRemoved) => {
-                const observers: Observer<any>[] = [];
+            order: DefaultSectionsOrder.Textures,
+            predicate: (entity): entity is BaseTexture => entity instanceof BaseTexture && entity.getClassName() !== "AdvancedDynamicTexture",
+            getRootEntities: () => scene.textures.filter((texture) => texture.getClassName() !== "AdvancedDynamicTexture"),
+            getEntityDisplayInfo: (texture) => {
+                const onChangeObservable = new Observable<void>();
 
-                observers.push(
-                    scene.onNewTextureAddedObservable.add((texture) => {
-                        onAdded(texture);
-                    })
-                );
-
-                observers.push(
-                    scene.onTextureRemovedObservable.add((texture) => {
-                        onRemoved(texture);
-                    })
-                );
+                const nameHookToken = InterceptProperty(texture, "name", {
+                    afterSet: () => {
+                        onChangeObservable.notifyObservers();
+                    },
+                });
 
                 return {
+                    get name() {
+                        return texture.displayName || texture.name || `${texture.constructor?.name || "Unnamed Texture"} (${texture.uniqueId})`;
+                    },
+                    onChange: onChangeObservable,
                     dispose: () => {
-                        for (const observer of observers) {
-                            scene.onNewTextureAddedObservable.remove(observer);
-                        }
+                        nameHookToken.dispose();
+                        onChangeObservable.clear();
                     },
                 };
             },
+            entityIcon: ({ entity: texture }) => (texture instanceof DynamicTexture ? <ImageEditRegular /> : <ImageRegular />),
+            getEntityAddedObservables: () => [scene.onNewTextureAddedObservable],
+            getEntityRemovedObservables: () => [scene.onTextureRemovedObservable],
         });
 
         return {
