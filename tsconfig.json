@@ -68,7 +68,11 @@
             "@lts/loaders/*": ["lts/loaders/src/*"],
             "@lts/serializers/*": ["lts/serializers/src/*"],
             "@lts/inspector/*": ["lts/inspector/src/*"],
-            "@lts/shared-ui-components/*": ["lts/sharedUiComponents/src/*"]
+            "@lts/shared-ui-components/*": ["lts/sharedUiComponents/src/*"],
+            "smart-filters": ["dev/smartFilters/src"],
+            "smart-filters-blocks": ["dev/smartFilterBlocks/src"],
+            "smart-filters-blocks/*": ["dev/smartFilterBlocks/src/*"],
+            "smart-filters-editor-control": ["tools/smartFiltersEditorControl/src"]
         }
     }
 }

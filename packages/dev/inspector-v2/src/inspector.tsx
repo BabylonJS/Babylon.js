@@ -14,12 +14,7 @@ import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
-import { AreaLightPropertiesServiceDefinition } from "./services/panes/properties/lights/areaLightPropertiesServices";
-import { DirectionalLightPropertiesServiceDefinition } from "./services/panes/properties/lights/directionalLightPropertiesServices";
-import { HemisphericLightPropertiesServiceDefinition } from "./services/panes/properties/lights/hemisphericLightPropertiesServices";
-import { PointLightPropertiesServiceDefinition } from "./services/panes/properties/lights/pointLightPropertiesServices";
-import { ShadowLightPropertiesServiceDefinition } from "./services/panes/properties/lights/shadowLightPropertiesServices";
-import { SpotLightPropertiesServiceDefinition } from "./services/panes/properties/lights/spotLightPropertiesServices";
+import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
@@ -211,12 +206,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             PhysicsPropertiesServiceDefinition,
             SkeletonPropertiesServiceDefinition,
             MaterialPropertiesServiceDefinition,
-            ShadowLightPropertiesServiceDefinition,
-            HemisphericLightPropertiesServiceDefinition,
-            AreaLightPropertiesServiceDefinition,
-            PointLightPropertiesServiceDefinition,
-            DirectionalLightPropertiesServiceDefinition,
-            SpotLightPropertiesServiceDefinition,
+            LightPropertiesServiceDefinition,
             SpritePropertiesServiceDefinition,
             ParticleSystemPropertiesServiceDefinition,
             CameraPropertiesServiceDefinition,

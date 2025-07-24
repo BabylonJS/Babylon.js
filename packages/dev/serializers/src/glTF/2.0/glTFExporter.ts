@@ -1310,13 +1310,8 @@ export class GLTFExporter {
 
         primitive.mode = GetPrimitiveMode(fillMode);
 
-        // Flip if triangle winding order is not CCW as glTF is always CCW.
-        const invertedMaterial = sideOrientation !== Material.CounterClockWiseSideOrientation;
-
-        const flipWhenInvertedMaterial = !state.wasAddedByNoopNode && invertedMaterial;
-
-        const flip = IsTriangleFillMode(fillMode) && flipWhenInvertedMaterial;
-
+        // Flip indices if triangle winding order is not CCW, as glTF is always CCW.
+        const flip = sideOrientation !== Material.CounterClockWiseSideOrientation && IsTriangleFillMode(fillMode);
         if (flip) {
             if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
                 throw new Error("Triangle strip/fan fill mode is not implemented");
@@ -1501,7 +1496,11 @@ export class GLTFExporter {
                 // Index buffer
                 const fillMode = isLinesMesh || isGreasedLineMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
 
-                const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
+                let sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
+                if (state.wasAddedByNoopNode && !babylonMesh.getScene().useRightHandedSystem) {
+                    // To properly remove a conversion node, we must also cancel out the implicit flip in its children's side orientations.
+                    sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+                }
 
                 this._exportIndices(
                     indices,

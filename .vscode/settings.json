@@ -1,5 +1,20 @@
 {
-    "cSpell.words": ["babylonjs", "fluentui", "Pickable"],
+    "cSpell.words": [
+        "acumin",
+        "babylonjs",
+        "desaturated",
+        "fluentui"
+        "multilines",
+        "ONEDEF",
+        "Pickable",
+        "Premultiplies",
+        "Resizer",
+        "smartfilter",
+        "Spector",
+        "spritesheet",
+        "webgl",
+        "webgpu"
+    ],
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": false,
@@ -11,7 +26,8 @@
         "**/packages/dev/**/shadersWGSL/**/*.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
-        "**/*.compute.ts": true
+        "**/*.compute.ts": true,
+        "**/*.block.ts": true
     },
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
