@@ -47,16 +47,18 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
         lastLoop.current = mainAnimatable.loopAnimation;
     }
 
+    const hasAnimations = animations.length > 0 || ranges.length > 0 || childAnimatables.length > 0;
+
     const currentFrame = useObservableState(
         useCallback(() => {
             return mainAnimatable ? mainAnimatable.masterFrame : (scene.getAllAnimatablesByTarget(entity)[0]?.masterFrame ?? 0);
         }, [scene, entity, mainAnimatable]),
-        scene.onAfterAnimationsObservable
+        hasAnimations ? scene.onAfterAnimationsObservable : undefined
     );
 
     return (
         <>
-            {animations.length === 0 && ranges.length === 0 && childAnimatables.length === 0 ? (
+            {!hasAnimations ? (
                 <MessageBar
                     intent="info"
                     title="No Animations"

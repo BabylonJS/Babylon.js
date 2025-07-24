@@ -73,6 +73,10 @@ export const transformPackageLocation = (location: string, options: ITransformer
         }
         return AddJS(computedPath, options.appendJS);
     } else {
+        if (directoryParts.length === 0) {
+            // Do not add .js to imports that reference the root of a package
+            return returnPackage;
+        }
         return AddJS(options.packageOnly ? returnPackage : `${returnPackage}/${directoryParts.join("/")}`, options.appendJS);
     }
 };

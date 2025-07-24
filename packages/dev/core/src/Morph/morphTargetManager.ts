@@ -403,7 +403,7 @@ export class MorphTargetManager implements IDisposable {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
         effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
         effect.setTexture("morphTargets", this._targetStoreTexture);
-        effect.setInt("morphTargetCount", this.numInfluencers);
+        effect.setFloat("morphTargetCount", this.numInfluencers);
     }
 
     /**
