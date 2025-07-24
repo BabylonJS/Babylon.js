@@ -920,8 +920,9 @@ export class ThinEngine extends AbstractEngine {
      * @param backBuffer defines if the back buffer must be cleared
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
+     * @param stencilClearValue defines the value to use to clear the stencil buffer (default is 0)
      */
-    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, stencilClearValue = 0): void {
         const useStencilGlobalOnly = this.stencilStateComposer.useStencilGlobalOnly;
         this.stencilStateComposer.useStencilGlobalOnly = true; // make sure the stencil mask is coming from the global stencil and not from a material (effect) which would currently be in effect
 
@@ -975,7 +976,7 @@ export class ThinEngine extends AbstractEngine {
             mode |= this._gl.DEPTH_BUFFER_BIT;
         }
         if (stencil) {
-            this._gl.clearStencil(0);
+            this._gl.clearStencil(stencilClearValue);
             mode |= this._gl.STENCIL_BUFFER_BIT;
         }
         this._gl.clear(mode);

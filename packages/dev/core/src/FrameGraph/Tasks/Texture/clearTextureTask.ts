@@ -32,6 +32,11 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
     public clearStencil = false;
 
     /**
+     * The value to use to clear the stencil buffer (default: 0).
+     */
+    public stencilValue = 0;
+
+    /**
      * The color texture to clear.
      */
     public targetTexture?: FrameGraphTextureHandle | FrameGraphTextureHandle[];
@@ -100,7 +105,7 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
                 color.toLinearSpaceToRef(color);
             }
 
-            context.clearAttachments(color, attachments, !!this.clearColor, !!this.clearDepth, !!this.clearStencil);
+            context.clearAttachments(color, attachments, !!this.clearColor, !!this.clearDepth, !!this.clearStencil, this.stencilValue);
         });
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);

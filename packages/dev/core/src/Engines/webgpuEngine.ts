@@ -229,7 +229,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public readonly _clearReverseDepthValue = 0;
     /** @internal */
-    public readonly _clearStencilValue = 0;
+    public _clearStencilValue = 0;
     private readonly _defaultSampleCount = 4; // Only supported value for now.
 
     // Engine Life Cycle
@@ -1520,11 +1520,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param backBuffer defines if the back buffer must be cleared
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
+     * @param stencilClearValue defines the value to use to clear the stencil buffer (default is 0)
      */
-    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, stencilClearValue = 0): void {
         // Some PGs are using color3...
         if (color && color.a === undefined) {
             color.a = 1;
+        }
+
+        if (stencil) {
+            this._clearStencilValue = stencilClearValue;
         }
 
         const hasScissor = this._scissorIsActive();
@@ -3207,15 +3212,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     ? {
                           view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                           depthClearValue: mustClearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : undefined,
-                          depthLoadOp: mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
-                          depthStoreOp: WebGPUConstants.StoreOp.Store,
+                          depthLoadOp: rtWrapper.depthReadOnly ? undefined : mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
+                          depthStoreOp: rtWrapper.depthReadOnly ? undefined : WebGPUConstants.StoreOp.Store,
+                          depthReadOnly: rtWrapper.depthReadOnly,
                           stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
-                          stencilLoadOp: !depthTextureHasStencil
+                          stencilLoadOp: rtWrapper.stencilReadOnly
                               ? undefined
-                              : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                                ? WebGPUConstants.LoadOp.Clear
-                                : WebGPUConstants.LoadOp.Load,
-                          stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
+                              : !depthTextureHasStencil
+                                ? undefined
+                                : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
+                                  ? WebGPUConstants.LoadOp.Clear
+                                  : WebGPUConstants.LoadOp.Load,
+                          stencilStoreOp: rtWrapper.stencilReadOnly ? undefined : !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
+                          stencilReadOnly: rtWrapper.stencilReadOnly,
                       }
                     : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
@@ -3737,7 +3746,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         // draw
         const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
 
-        if (nonCompatMode && this._currentDrawContext.indirectDrawBuffer) {
+        if (this._currentDrawContext.indirectDrawBuffer) {
             this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
             if (drawType === 0) {
                 renderPass2.drawIndexedIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
