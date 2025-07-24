@@ -1,7 +1,14 @@
 /* eslint-disable no-console */
 import * as fs from "fs";
+import * as path from "path";
 
-const PackageText = fs.readFileSync("package.json");
+// Get package.json path from command line argument or default to current directory
+const packageJsonDirectory = process.argv[2] || ".";
+const packageJsonFullPath = path.resolve(path.join(packageJsonDirectory, "package.json"));
+
+console.log("Reading package.json from:", packageJsonFullPath);
+
+const PackageText = fs.readFileSync(packageJsonFullPath);
 const PackageJSON = JSON.parse(PackageText.toString());
 
 const PackageName = PackageJSON.name;

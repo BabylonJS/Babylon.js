@@ -18,7 +18,8 @@
         "compile": "npm run compile:source",
         "compile:source": "tsc -b tsconfig.build.json",
         "watch:source": "tsc -b tsconfig.build.json -w",
-        "watch": "build-tools -c dev-watch --packages \"smart-filters\" -wa"
+        "watch": "build-tools -c dev-watch --packages \"smart-filters\" -wa",
+        "update-version": "node src/utils/buildTools/recordVersionNumber.js ../../public/@babylonjs/smart-filters"
     },
     "sideEffects": [
         "./dist/utils/buildTools/**"
