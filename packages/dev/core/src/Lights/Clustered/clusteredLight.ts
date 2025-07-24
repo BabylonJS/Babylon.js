@@ -26,7 +26,7 @@ import "core/Meshes/thinInstanceMesh";
 export class ClusteredLight extends Light {
     private static _GetEngineBatchSize(engine: AbstractEngine): number {
         const caps = engine._caps;
-        if (!engine.supportsUniformBuffers || !caps.texelFetch) {
+        if (!caps.texelFetch) {
             return 0;
         } else if (engine.isWebGPU) {
             // On WebGPU we use atomic writes to storage textures
@@ -154,7 +154,7 @@ export class ClusteredLight extends Light {
         const proxyShader = { vertex: "lightProxy", fragment: "lightProxy" };
         this._proxyMaterial = new ShaderMaterial("ProxyMaterial", this._scene, proxyShader, {
             attributes: ["position"],
-            uniforms: ["tileMaskResolution"],
+            uniforms: ["view", "projection", "tileMaskResolution"],
             samplers: ["lightDataTexture"],
             uniformBuffers: ["Scene"],
             storageBuffers: ["tileMaskBuffer"],
@@ -378,7 +378,7 @@ export class ClusteredLight extends Light {
         const hscale = this._horizontalTiles / engine.getRenderWidth();
         const vscale = this._verticalTiles / engine.getRenderHeight();
         this._uniformBuffer.updateFloat4("vLightData", this._horizontalTiles, this._verticalTiles, hscale, vscale, lightIndex);
-        this._uniformBuffer.updateFloat("vNumLights", this._lights.length);
+        this._uniformBuffer.updateFloat("vNumLights", this._lights.length, lightIndex);
         return this;
     }
 

@@ -66,7 +66,7 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateFloat: (name: string, x: number) => void;
+    public updateFloat: (name: string, x: number, suffix?: string) => void;
 
     /**
      * Lambda to Update a vec2 of float in a uniform buffer.
@@ -856,8 +856,8 @@ export class UniformBuffer {
         this.updateUniform(name, UniformBuffer._TempBuffer, 8);
     }
 
-    private _updateFloatForEffect(name: string, x: number) {
-        this._currentEffect.setFloat(name, x);
+    private _updateFloatForEffect(name: string, x: number, suffix = "") {
+        this._currentEffect.setFloat(name + suffix, x);
     }
 
     private _updateFloatForUniform(name: string, x: number) {

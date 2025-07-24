@@ -1103,6 +1103,7 @@ export function PrepareUniformsAndSamplersForLight(
         "vLightHeight" + lightIndex,
         "vLightFalloff" + lightIndex,
         "vLightGround" + lightIndex,
+        "vNumLights" + lightIndex,
         "lightMatrix" + lightIndex,
         "shadowsInfo" + lightIndex,
         "depthValues" + lightIndex
