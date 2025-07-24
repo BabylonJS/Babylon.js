@@ -206,3 +206,153 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         return sheenTerm * info.attenuation * info.NdotL * lightColor;
     }
 #endif
+
+#ifdef CLUSTLIGHT_MAX
+    fn computeClusteredLighting(
+        tileMask: ptr<storage, array<u32>>,
+        lightData: vec4f,
+        lights: ptr<uniform, array<SpotLight, CLUSTLIGHT_MAX>>,
+        V: vec3f,
+        N: vec3f,
+        posW: vec3f,
+        surfaceAlbedo: vec3f,
+        reflectivityOut: reflectivityOutParams,
+        diffuseScale: vec3f,
+        #ifdef SS_TRANSLUCENCY
+            subSurfaceOut: subSurfaceOutParams,
+        #endif
+        #ifdef SPECULARTERM
+            AARoughnessFactor: f32,
+        #endif
+        #ifdef ANISOTROPIC
+            anisotropicOut: anisotropicOutParams,
+        #endif
+        #ifdef SHEEN
+            sheenOut: sheenOutParams,
+        #endif
+        #ifdef CLEARCOAT
+            clearcoatOut: clearcoatOutParams,
+        #endif
+    ) -> lightingInfo {
+        let NdotV = absEps(dot(N, V));
+#include<pbrBlockReflectance0>
+        #ifdef CLEARCOAT
+            specularEnvironmentR0 = clearcoatOut.specularEnvironmentR0;
+        #endif
+
+        var result: lightingInfo;
+        let tilePos = vec2u(fragmentInputs.position.xy * lightData.xy);
+        let strideLen = vec2u(lightData.zw);
+        let mask = tileMask[tilePos.y * strideLen.x + tilePos.x];
+
+        for (var i = 0u; i < strideLen.y; i += 1u) {
+            if (mask & (1u << i)) == 0 {
+                continue;
+            }
+            let light = &lights[i];
+            var preInfo = computePointAndSpotPreLightingInfo(light.position, V, N, posW);
+
+            // Compute Attenuation infos
+            preInfo.NdotV = NdotV;
+            preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, light.falloff.x, light.falloff.y);
+            preInfo.attenuation *= computeDirectionalLightFalloff(light.direction.xyz, preInfo.L, light.direction.w, light.position.w, light.falloff.z, light.falloff.w);
+
+            let radius = light.specular.a;
+            preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, radius, preInfo.lightDistance);
+            preInfo.diffuseRoughness = reflectivityOut.diffuseRoughness;
+            preInfo.surfaceAlbedo = surfaceAlbedo;
+            var info: lightingInfo;
+
+            // Diffuse contribution
+            let diffuse = light.diffuse.rgb * diffuseScale;
+            #ifdef SS_TRANSLUCENCY
+                #ifdef SS_TRANSLUCENCY_LEGACY
+                    info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse, subSurfaceOut.transmittance);
+                    info.diffuseTransmission = vec3(0);
+                #else
+                    info.diffuse = computeDiffuseLighting(preInfo, diffuse) * (1.0 - subSurfaceOut.translucencyIntensity);
+                    info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, diffuse, subSurfaceOut.transmittance);
+                #endif
+            #else
+                info.diffuse = computeDiffuseLighting(preInfo, diffuse);
+            #endif
+
+            // Specular contribution
+            #ifdef SPECULARTERM
+                #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+                    let metalFresnel = reflectivityOut.specularWeight * getF82Specular(preInfo.VdotH, specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
+                    let dielectricFresnel = fresnelSchlickGGXVec3(preInfo.VdotH, reflectivityOut.dielectricColorF0, reflectivityOut.colorReflectanceF90);
+                    let coloredFresnel = mix(dielectricFresnel, metalFresnel, reflectivityOut.metallic);
+                #else
+                    let coloredFresnel = fresnelSchlickGGXVec3(preInfo.VdotH, specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
+                #endif
+                #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                    let NdotH = dot(N, preInfo.H);
+                    let fresnel = fresnelSchlickGGXVec3(NdotH, vec3(reflectanceF0), specularEnvironmentR90);
+                    info.diffuse *= (vec3(1.0) - fresnel);
+                #endif
+                #ifdef ANISOTROPIC
+                    info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, diffuse);
+                #else
+                    info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, diffuse);
+                #endif
+            #endif
+
+            // Sheen contribution
+            #ifdef SHEEN
+                #ifdef SHEEN_LINKWITHALBEDO
+                    preInfo.roughness = sheenOut.sheenIntensity;
+                #else
+                    preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, radius, preInfo.lightDistance);
+                #endif
+                preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, radius, preInfo.lightDistance);
+                info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, diffuse);
+            #endif
+
+            // Clear Coat contribution
+            #ifdef CLEARCOAT
+                preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, radius, preInfo.lightDistance);
+                info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, diffuse);
+
+                #ifdef CLEARCOAT_TINT
+                    // Absorption
+                    let absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
+                    info.diffuse *= absorption;
+                    #ifdef SS_TRANSLUCENCY
+                        info.diffuseTransmission *= absorption;
+                    #endif
+                    #ifdef SPECULARTERM
+                        info.specular *= absorption;
+                    #endif
+                #endif
+
+                info.diffuse *= info.clearCoat.w;
+                #ifdef SS_TRANSLUCENCY
+                    info.diffuseTransmission *= info.clearCoat.w;
+                #endif
+                #ifdef SPECULARTERM
+                    info.specular *= info.clearCoat.w;
+                #endif
+                #ifdef SHEEN
+                    info.sheen *= info.clearCoat.w;
+                #endif
+            #endif
+
+            // Apply contributions to result
+            result.diffuse += info.diffuse;
+            #ifdef SS_TRANSLUCENCY
+                result.diffuseTransmission += info.diffuseTransmission;
+            #endif
+            #ifdef SPECULARTERM
+                result.specular += info.specular;
+            #endif
+            #ifdef CLEARCOAT
+                result.clearCoat += info.clearCoat;
+            #endif
+            #ifdef SHEEN
+                result.sheen += info.sheen;
+            #endif
+        }
+        return result;
+    }
+#endif

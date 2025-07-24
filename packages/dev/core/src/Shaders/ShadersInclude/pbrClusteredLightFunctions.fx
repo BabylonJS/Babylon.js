@@ -10,7 +10,6 @@ lightingInfo computeClusteredLighting{X}(
         , subSurfaceOutParams subSurfaceOut
     #endif
     #ifdef SPECULARTERM
-        , vec3 specularScale
         , float AARoughnessFactor
     #endif
     #ifdef ANISOTROPIC
@@ -68,7 +67,6 @@ lightingInfo computeClusteredLighting{X}(
 
         // Specular contribution
         #ifdef SPECULARTERM
-            vec3 specular = light.specular.rgb * specularScale;
             #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
                 vec3 metalFresnel = reflectivityOut.specularWeight * getF82Specular(preInfo.VdotH, specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
                 vec3 dielectricFresnel = fresnelSchlickGGX(preInfo.VdotH, reflectivityOut.dielectricColorF0, reflectivityOut.colorReflectanceF90);
@@ -92,8 +90,9 @@ lightingInfo computeClusteredLighting{X}(
         #ifdef SHEEN
             #ifdef SHEEN_LINKWITHALBEDO
                 preInfo.roughness = sheenOut.sheenIntensity;
+            #else
+                preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, radius, preInfo.lightDistance);
             #endif
-            preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, radius, preInfo.lightDistance);
             info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, diffuse);
         #endif
 
