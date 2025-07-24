@@ -230,8 +230,8 @@
                     vReflectionInfos.y
                 #endif
                 );
-            #elif defined(CLUSTLIGHT{X}) && CLUSTLIGHT_MAX > 0
-                info = computeClusteredLighting{X}(viewDirectionW, normalW, diffuse{X}.rgb, glossiness);
+            #elif defined(CLUSTLIGHT{X}) && CLUSTLIGHT_BATCH > 0
+                info = computeClusteredLighting(lightDataTexture{X}, tileMaskTexture{X}, viewDirectionW, normalW, light{X}.vLightData, glossiness);
             #endif
         #endif
 

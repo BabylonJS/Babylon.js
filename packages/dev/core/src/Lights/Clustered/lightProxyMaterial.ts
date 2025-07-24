@@ -18,7 +18,7 @@ export class LightProxyMaterial extends ShaderMaterial {
             uniforms: ["halfTileRes"],
             uniformBuffers: ["Scene", "Light0"],
             storageBuffers: ["tileMaskBuffer0"],
-            defines: ["LIGHT0", "CLUSTLIGHT0", "CLUSTLIGHT_WRITE", `CLUSTLIGHT_MAX ${clusteredLight.maxLights}`],
+            defines: ["LIGHT0", "CLUSTLIGHT0", "CLUSTLIGHT_WRITE"],
             shaderLanguage: webgpu ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
                 if (webgpu) {
