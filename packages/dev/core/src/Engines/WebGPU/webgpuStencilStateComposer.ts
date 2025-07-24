@@ -162,19 +162,23 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
     }
 
     public override apply() {
-        const stencilMaterialEnabled = this.stencilMaterial?.enabled;
+        const stencilMaterialEnabled = !this.useStencilGlobalOnly && !!this.stencilMaterial?.enabled;
 
         this.enabled = stencilMaterialEnabled ? this.stencilMaterial!.enabled : this.stencilGlobal.enabled;
         if (!this.enabled) {
             return;
         }
 
-        this.func = stencilMaterialEnabled ? this.stencilMaterial!.func : this.stencilGlobal.func;
+        this.mask = stencilMaterialEnabled ? this.stencilMaterial!.mask : this.stencilGlobal.mask;
         this.funcRef = stencilMaterialEnabled ? this.stencilMaterial!.funcRef : this.stencilGlobal.funcRef;
         this.funcMask = stencilMaterialEnabled ? this.stencilMaterial!.funcMask : this.stencilGlobal.funcMask;
+        this.func = stencilMaterialEnabled ? this.stencilMaterial!.func : this.stencilGlobal.func;
         this.opStencilFail = stencilMaterialEnabled ? this.stencilMaterial!.opStencilFail : this.stencilGlobal.opStencilFail;
         this.opDepthFail = stencilMaterialEnabled ? this.stencilMaterial!.opDepthFail : this.stencilGlobal.opDepthFail;
         this.opStencilDepthPass = stencilMaterialEnabled ? this.stencilMaterial!.opStencilDepthPass : this.stencilGlobal.opStencilDepthPass;
-        this.mask = stencilMaterialEnabled ? this.stencilMaterial!.mask : this.stencilGlobal.mask;
+        this.backFunc = stencilMaterialEnabled ? this.stencilMaterial!.backFunc : this.stencilGlobal.backFunc;
+        this.backOpStencilFail = stencilMaterialEnabled ? this.stencilMaterial!.backOpStencilFail : this.stencilGlobal.backOpStencilFail;
+        this.backOpDepthFail = stencilMaterialEnabled ? this.stencilMaterial!.backOpDepthFail : this.stencilGlobal.backOpDepthFail;
+        this.backOpStencilDepthPass = stencilMaterialEnabled ? this.stencilMaterial!.backOpStencilDepthPass : this.stencilGlobal.backOpStencilDepthPass;
     }
 }

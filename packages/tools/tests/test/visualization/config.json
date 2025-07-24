@@ -981,27 +981,28 @@
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (left handed, once)",
-            "playgroundId": "#KX53VK#77",
+            "playgroundId": "#KX53VK#88",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
+            "replace": "//options//, useRightHandedSystem = false; iterations = 1;",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (left handed, twice)",
-            "playgroundId": "#KX53VK#77",
+            "playgroundId": "#KX53VK#88",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
-            "replace": "//options//, iterations = 2;",
+            "replace": "//options//, useRightHandedSystem = false; iterations = 2;",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (right handed, once)",
-            "playgroundId": "#KX53VK#76",
+            "playgroundId": "#KX53VK#88",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
-            "replace": "//options//, useRightHandedSystem = true;",
+            "replace": "//options//, useRightHandedSystem = true; iterations = 1;",
             "errorRatio": 1.1
         },
         {
             "title": "GLTF Serializer with Negative World Matrix (right handed, twice)",
-            "playgroundId": "#KX53VK#76",
+            "playgroundId": "#KX53VK#88",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
             "replace": "//options//, useRightHandedSystem = true; iterations = 2;",
             "errorRatio": 1.1

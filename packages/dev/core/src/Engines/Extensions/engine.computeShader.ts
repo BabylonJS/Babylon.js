@@ -57,6 +57,7 @@ export const enum ComputeBindingType {
     Sampler = 5,
     ExternalTexture = 6,
     DataBuffer = 7,
+    InternalTexture = 8,
 }
 
 /** @internal */

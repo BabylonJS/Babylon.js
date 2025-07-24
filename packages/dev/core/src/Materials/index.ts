@@ -39,6 +39,7 @@ export * from "./meshDebugPluginMaterial";
 export * from "./GaussianSplatting/gaussianSplattingMaterial";
 export * from "./materialHelper.functions";
 export * from "./materialHelper.geometryrendering";
+export * from "./materialStencilState";
 import "./material.decalMap";
 
 // async-loaded shaders

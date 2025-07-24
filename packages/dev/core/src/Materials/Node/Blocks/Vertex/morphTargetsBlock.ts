@@ -292,7 +292,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         const uniformsPrefix = isWebGPU ? "uniforms." : "";
         if (manager?.isUsingTextureForTargets) {
             injectionCode += `for (${isWebGPU ? "var" : "int"} i = 0; i < NUM_MORPH_INFLUENCERS; i++) {\n`;
-            injectionCode += `if (i >= ${uniformsPrefix}morphTargetCount) { break; }\n`;
+            injectionCode += `if (${isWebGPU ? "f32" : "float"}(i) >= ${uniformsPrefix}morphTargetCount) { break; }\n`;
 
             injectionCode += `vertexID = ${isWebGPU ? "f32(vertexInputs.vertexIndex" : "float(gl_VertexID"}) * ${uniformsPrefix}morphTargetTextureInfo.x;\n`;
             if (supportPositions) {

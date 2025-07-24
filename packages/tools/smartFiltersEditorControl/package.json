@@ -1,0 +1,39 @@
+{
+    "name": "@tools/smart-filters-editor-control",
+    "private": true,
+    "version": "1.0.0",
+    "description": "The editor control used in Smart Filters applications.",
+    "readme": "README.md",
+    "main": "dist/index",
+    "module": "dist/index",
+    "esnext": "dist/index",
+    "types": "dist/index",
+    "type": "module",
+    "sideEffects": true,
+    "files": [
+        "dist",
+        "src",
+        "license.md",
+        "readme.md"
+    ],
+    "scripts": {
+        "clean": "rimraf dist && rimraf tsconfig.build.tsbuildinfo",
+        "build": "tsc -p ./tsconfig.build.json",
+        "test": "jest -c ../../../jest.config.ts --passWithNoTests"
+    },
+    "peerDependencies": {
+        "@babylonjs/core": "^8.0.1",
+        "@babylonjs/shared-ui-components": "^8.0.1",
+        "@fortawesome/fontawesome-svg-core": "^6.1.0",
+        "@fortawesome/free-solid-svg-icons": "^6.1.0",
+        "@fortawesome/react-fontawesome": "^0.2.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "@dev/smart-filters": "^1.0.0",
+        "@dev/smart-filters-blocks": "^1.0.0",
+        "@dev/core": "^1.0.0",
+        "@dev/shared-ui-components": "^1.0.0"
+    }
+}

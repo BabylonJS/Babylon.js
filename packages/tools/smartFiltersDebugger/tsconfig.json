@@ -1,0 +1,14 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "types": [
+            // (various types, e.g. jquery, core-js),
+            "chrome"
+        ]
+    },
+
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": ["**/node_modules", "**/.temp"]
+}
