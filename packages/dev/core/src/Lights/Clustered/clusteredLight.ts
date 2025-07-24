@@ -8,7 +8,7 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { TmpColors } from "core/Maths/math.color";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { _WarnImport } from "core/Misc/devTools";
@@ -116,8 +116,7 @@ export class ClusteredLight extends Light {
     }
 
     private readonly _proxyMaterial: ShaderMaterial;
-    // TODO: rename to proxyMesh
-    private _lightProxy: Mesh;
+    private _proxyMesh: Mesh;
 
     private _proxyTesselation = 8;
     public get proxyTesselation(): number {
@@ -129,7 +128,7 @@ export class ClusteredLight extends Light {
             return;
         }
         this._proxyTesselation = tesselation;
-        this._lightProxy.dispose();
+        this._proxyMesh.dispose();
         this._createProxyMesh();
     }
 
@@ -156,9 +155,9 @@ export class ClusteredLight extends Light {
         this._proxyMaterial = new ShaderMaterial("ProxyMaterial", this._scene, proxyShader, {
             attributes: ["position"],
             uniforms: ["tileMaskResolution"],
+            samplers: ["lightDataTexture"],
             uniformBuffers: ["Scene"],
             storageBuffers: ["tileMaskBuffer"],
-            samplers: ["lightDataTexture"],
             defines: [`CLUSTLIGHT_BATCH ${this._batchSize}`],
             shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
@@ -199,29 +198,29 @@ export class ClusteredLight extends Light {
         // We can get the height from half the angle of that triangle (assuming a side length of 1)
         const lowRadius = Math.cos(Math.PI / this._proxyTesselation);
         // We scale up the disc so the lowest radius still wraps the light
-        this._lightProxy = CreateDisc("LightProxy", { radius: 1 / lowRadius, tessellation: this._proxyTesselation });
+        this._proxyMesh = CreateDisc("ProxyMesh", { radius: 1 / lowRadius, tessellation: this._proxyTesselation });
         // Make sure it doesn't render for the default scene
-        this._scene.removeMesh(this._lightProxy);
-        this._lightProxy.material = this._proxyMaterial;
+        this._scene.removeMesh(this._proxyMesh);
+        this._proxyMesh.material = this._proxyMaterial;
 
         if (this._tileMaskBatches > 0) {
-            this._tileMaskTexture.renderList = [this._lightProxy];
+            this._tileMaskTexture.renderList = [this._proxyMesh];
 
             // We don't actually use the matrix data but we need enough capacity for the lights
-            this._lightProxy.thinInstanceSetBuffer("matrix", new Float32Array(this._tileMaskBatches * this._batchSize * 16));
-            this._lightProxy.thinInstanceCount = this._lights.length;
-            this._lightProxy.isVisible = this._lights.length > 0;
+            this._proxyMesh.thinInstanceSetBuffer("matrix", new Float32Array(this._tileMaskBatches * this._batchSize * 16));
+            this._proxyMesh.thinInstanceCount = this._lights.length;
+            this._proxyMesh.isVisible = this._lights.length > 0;
         }
     }
 
     /** @internal */
     public _updateBatches(): RenderTargetTexture {
-        this._lightProxy.isVisible = this._lights.length > 0;
+        this._proxyMesh.isVisible = this._lights.length > 0;
 
         // Ensure space for atleast 1 batch
         const batches = Math.max(Math.ceil(this._lights.length / this._batchSize), 1);
         if (this._tileMaskBatches >= batches) {
-            this._lightProxy.thinInstanceCount = this._lights.length;
+            this._proxyMesh.thinInstanceCount = this._lights.length;
             return this._tileMaskTexture;
         }
         const engine = this.getEngine();
@@ -259,7 +258,7 @@ export class ClusteredLight extends Light {
         this._tileMaskTexture.renderParticles = false;
         this._tileMaskTexture.renderSprites = false;
         this._tileMaskTexture.noPrePassRenderer = true;
-        this._tileMaskTexture.renderList = [this._lightProxy];
+        this._tileMaskTexture.renderList = [this._proxyMesh];
 
         this._tileMaskTexture.onBeforeBindObservable.add(() => {
             this._updateLightData();
@@ -276,13 +275,14 @@ export class ClusteredLight extends Light {
             this._tileMaskBuffer?.dispose();
             const bufferSize = this._horizontalTiles * this._verticalTiles * batches * 4;
             this._tileMaskBuffer = new StorageBuffer(<WebGPUEngine>engine, bufferSize);
+            this._proxyMaterial.setStorageBuffer("tileMaskBuffer", this._tileMaskBuffer);
         }
 
         this._proxyMaterial.setVector3("tileMaskResolution", new Vector3(this._horizontalTiles, this.verticalTiles, batches));
 
         // We don't actually use the matrix data but we need enough capacity for the lights
-        this._lightProxy.thinInstanceSetBuffer("matrix", new Float32Array(maxLights * 16));
-        this._lightProxy.thinInstanceCount = this._lights.length;
+        this._proxyMesh.thinInstanceSetBuffer("matrix", new Float32Array(maxLights * 16));
+        this._proxyMesh.thinInstanceCount = this._lights.length;
         this._tileMaskBatches = batches;
         return this._tileMaskTexture;
     }
@@ -347,7 +347,7 @@ export class ClusteredLight extends Light {
         this._lightDataTexture.dispose();
         this._tileMaskTexture.dispose();
         this._tileMaskBuffer?.dispose();
-        this._lightProxy.dispose(doNotRecurse, disposeMaterialAndTextures);
+        this._proxyMesh.dispose(doNotRecurse, disposeMaterialAndTextures);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
@@ -359,14 +359,15 @@ export class ClusteredLight extends Light {
         this._scene.removeLight(light);
         this._lights.push(<PointLight | SpotLight>light);
 
-        this._lightProxy.isVisible = true;
-        this._lightProxy.thinInstanceCount = this._lights.length;
+        this._proxyMesh.isVisible = true;
+        this._proxyMesh.thinInstanceCount = this._lights.length;
     }
 
     protected override _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
         this._uniformBuffer.addUniform("vLightSpecular", 4);
+        this._uniformBuffer.addUniform("vNumLights", 1);
         this._uniformBuffer.addUniform("shadowsInfo", 3);
         this._uniformBuffer.addUniform("depthValues", 2);
         this._uniformBuffer.create();
@@ -376,13 +377,14 @@ export class ClusteredLight extends Light {
         const engine = this.getEngine();
         const hscale = this._horizontalTiles / engine.getRenderWidth();
         const vscale = this._verticalTiles / engine.getRenderHeight();
-        this._uniformBuffer.updateFloat4("vLightData", hscale, vscale, this._verticalTiles, this._lights.length, lightIndex);
+        this._uniformBuffer.updateFloat4("vLightData", this._horizontalTiles, this._verticalTiles, hscale, vscale, lightIndex);
+        this._uniformBuffer.updateFloat("vNumLights", this._lights.length);
         return this;
     }
 
     public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
         const engine = this.getEngine();
-        effect.setTexture("lightsTexture" + lightIndex, this._lightDataTexture);
+        effect.setTexture("lightDataTexture" + lightIndex, this._lightDataTexture);
         if (engine.isWebGPU) {
             (<WebGPUEngine>engine).setStorageBuffer("tileMaskBuffer" + lightIndex, this._tileMaskBuffer);
         } else {
@@ -403,6 +405,6 @@ export class ClusteredLight extends Light {
 
     public override _isReady(): boolean {
         this._updateBatches();
-        return this._lightProxy.isReady(true, true);
+        return this._proxyMesh.isReady(true, true);
     }
 }

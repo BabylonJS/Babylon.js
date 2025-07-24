@@ -1,12 +1,9 @@
-flat varying highp int vBatch;
+flat varying vec2 vLimits;
 flat varying highp uint vMask;
 
-uniform vec3 tileMaskResolution;
-
 void main(void) {
-    // Ensure the pixel we're writing to is of the correct batch
-    int coordBatch = int(gl_FragCoord.y / tileMaskResolution.y);
-    if (coordBatch != vBatch) {
+    // Ensure the pixel is within the limits for the batch
+    if (gl_FragCoord.y < vLimits.x || gl_FragCoord.y > vLimits.y) {
         discard;
     }
 

@@ -185,33 +185,44 @@ fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_
 #endif
 
 fn computeClusteredLighting(
-	tileMask: ptr<storage, array<u32>>,
+	lightDataTexture: texture_2d<f32>,
+	tileMaskBuffer: ptr<storage, array<u32>>,
 	viewDirectionW: vec3f,
 	vNormal: vec3f,
-	lightData: vec4f,
-	lights: ptr<uniform, array<SpotLight, CLUSTLIGHT_MAX>>,
-	diffuseScale: vec3f,
-	specularScale: vec3f,
+	clusteredData: vec4f,
+	numLights: i32,
 	glossiness: f32
 ) -> lightingInfo {
 	var result: lightingInfo;
-	let tilePos = vec2u(fragmentInputs.position.xy * lightData.xy);
-	let strideLen = vec2u(lightData.zw);
-	let mask = tileMask[tilePos.y * strideLen.x + tilePos.x];
+	let maskResolution = vec2i(clusteredData.xy);
+	let maskStride = maskResolution.x * maskResolution.y;
+	let tilePosition = vec2i(fragmentInputs.position.xy * clusteredData.zw);
+	var tileIndex = min(tilePosition.y * maskResolution.x + tilePosition.x, maskStride - 1);
 
-	// TODO: merge subgroups
+	for (var i = 0; i < numLights;) {
+		var mask = tileMaskBuffer[tileIndex];
+		tileIndex += maskStride;
+		let batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
 
-	for (var i = 0u; i < strideLen.y; i += 1u) {
-		if (mask & (1u << i)) == 0 {
-			continue;
+		for (; i < batchEnd && mask != 0; i += 1) {
+			// Skip as much as we can
+			let trailing = firstTrailingBit(mask);
+			mask >>= trailing + 1;
+			i += i32(trailing);
+
+			let lightData = textureLoad(lightDataTexture, vec2i(0, i), 0);
+			let diffuse = textureLoad(lightDataTexture, vec2i(1, i), 0);
+			let specular = textureLoad(lightDataTexture, vec2i(2, i), 0);
+			let direction = textureLoad(lightDataTexture, vec2i(3, i), 0);
+			let falloff = textureLoad(lightDataTexture, vec2i(4, i), 0);
+
+			let info = computeSpotLighting(viewDirectionW, vNormal, lightData, direction, diffuse.rgb, specular.rgb, diffuse.a, glossiness);
+			result.diffuse += info.diffuse;
+			#ifdef SPECULARTERM
+				result.specular += info.specular;
+			#endif
 		}
-		let diffuse = lights[i].diffuse.rgb * diffuseScale;
-		let specular = lights[i].specular.rgb * specularScale;
-		let info = computeSpotLighting(viewDirectionW, vNormal, lights[i].position, lights[i].direction, diffuse, specular, lights[i].diffuse.a, glossiness);
-		result.diffuse += info.diffuse;
-		#ifdef SPECULARTERM
-			result.specular += info.specular;
-		#endif
+		i = batchEnd;
 	}
 	return result;
 }

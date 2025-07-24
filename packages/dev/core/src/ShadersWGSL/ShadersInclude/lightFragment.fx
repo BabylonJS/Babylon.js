@@ -235,7 +235,7 @@
                 #endif
                     );
             #elif defined(CLUSTLIGHT{X})
-                info = computeClusteredLighting(&tileMaskBuffer{X}, viewDirectionW, normalW, light{X}.vLightData, &light{X}.vLights, diffuse{X}.rgb, light{X}.vLightSpecular.rgb, glossiness);
+                info = computeClusteredLighting(lightDataTexture{X}, &tileMaskBuffer{X}, viewDirectionW, normalW, light{X}.vLightData, i32(light{X}.vNumLights), glossiness);
             #endif
         #endif
 

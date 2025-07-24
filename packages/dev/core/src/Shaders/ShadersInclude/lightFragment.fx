@@ -231,7 +231,7 @@
                 #endif
                 );
             #elif defined(CLUSTLIGHT{X}) && CLUSTLIGHT_BATCH > 0
-                info = computeClusteredLighting(lightDataTexture{X}, tileMaskTexture{X}, viewDirectionW, normalW, light{X}.vLightData, glossiness);
+                info = computeClusteredLighting(lightDataTexture{X}, tileMaskTexture{X}, viewDirectionW, normalW, light{X}.vLightData, int(light{X}.vNumLights), glossiness);
             #endif
         #endif
 

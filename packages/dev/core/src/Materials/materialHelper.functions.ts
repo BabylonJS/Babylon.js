@@ -1084,7 +1084,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
  * @param iesLightTexture defines if IES texture must be used
- * @param clusteredLightsTexture defines if a tile mask texture must be used
+ * @param clusteredLightTextures defines if the clustered light textures must be used
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -1094,7 +1094,7 @@ export function PrepareUniformsAndSamplersForLight(
     uniformBuffersList: Nullable<string[]> = null,
     updateOnlyBuffersList = false,
     iesLightTexture = false,
-    clusteredLightsTexture = false
+    clusteredLightTextures = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -1137,7 +1137,7 @@ export function PrepareUniformsAndSamplersForLight(
     if (iesLightTexture) {
         samplersList.push("iesLightTexture" + lightIndex);
     }
-    if (clusteredLightsTexture) {
+    if (clusteredLightTextures) {
         samplersList.push("lightDataTexture" + lightIndex);
         samplersList.push("tileMaskTexture" + lightIndex);
     }

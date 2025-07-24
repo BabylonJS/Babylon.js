@@ -191,22 +191,21 @@ lightingInfo computeClusteredLighting(
 	vec3 viewDirectionW,
 	vec3 vNormal,
 	vec4 clusteredData,
+	int numLights,
 	float glossiness
 ) {
 	lightingInfo result;
-	ivec2 maskCoord = ivec2(gl_FragCoord.xy * clusteredData.xy);
-	int height = int(clusteredData.z);
-	int len = int(clusteredData.w);
+	int maskHeight = int(clusteredData.y);
+	ivec2 tilePosition = ivec2(gl_FragCoord.xy * clusteredData.zw);
+	tilePosition.x = min(tilePosition.x, maskHeight - 1);
 
-	for (int i = 0; i < len;) {
-		vec4 maskTexel = texelFetch(tileMaskTexture, maskCoord, 0);
-		uint mask = uint(maskTexel.r);
-		maskCoord.y += height;
+	for (int i = 0; i < numLights;) {
+		uint mask = uint(texelFetch(tileMaskTexture, tilePosition, 0).r);
+		tilePosition.y += maskHeight;
 
-		int batchEnd = min(i + CLUSTLIGHT_BATCH, len);
-		uint bit = 1u;
-		for(; i < batchEnd; i += 1, bit <<= 1) {
-			if ((mask & bit) == 0u) {
+		int batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
+		for(; i < batchEnd && mask != 0u; i += 1, mask >>= 1) {
+			if ((mask & 1u) == 0u) {
 				continue;
 			}
 			vec4 lightData = texelFetch(lightDataTexture, ivec2(0, i), 0);
@@ -221,6 +220,7 @@ lightingInfo computeClusteredLighting(
 				result.specular += info.specular;
 			#endif
 		}
+		i = batchEnd;
 	}
 	return result;
 }
