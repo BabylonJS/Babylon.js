@@ -10,7 +10,6 @@ import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLin
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 import { BoundProperty } from "../boundProperty";
-// import { NumberInput } from "shared-ui-components/fluent/primitives/input";
 
 export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: ArcRotateCamera; settings: ISettingsContext }> = (props) => {
     const { camera, settings } = props;
@@ -106,41 +105,9 @@ export const ArcRotateCameraCollisionProperties: FunctionComponent<{ camera: Arc
 
 export const ArcRotateCameraLimitsProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
     const { camera } = props;
-
+    // TODO-Iv2: Update defaultValues
     return (
         <>
-            {/**
-             *              camera.lowerAlpha is Nullable<number>
-             */}
-
-            {/** All NumberInputs expected to fail because they do not handle Nullables */}
-            {/* <BoundProperty component={NumberInput} target={camera} propertyKey="lowerAlphaLimit" />
-            <BoundProperty component={NumberInput} target={camera} propertyKey="lowerAlphaLimit" nullable={false} />
-            <BoundProperty component={NumberInput} target={camera} propertyKey="lowerAlphaLimit" nullable={true} />
-            <BoundProperty component={NumberInput} target={camera} propertyKey="lowerAlphaLimit" nullable={true} defaultValue={13} /> */}
-
-            {/** NumberInputPropertyLine will fail UNLESS nullable and defaultValue are sent */}
-            {/* <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" nullable={false} />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" nullable={true} />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" nullable={true} defaultValue={13} /> */}
-
-            {/**
-             *              camera.lowerTargetYLimit is number
-             */}
-            {/** NumberInput will fail if nullable is sent */}
-            {/* <BoundProperty component={NumberInput} target={camera} propertyKey="lowerTargetYLimit" />
-            <BoundProperty component={NumberInput} target={camera} propertyKey="lowerTargetYLimit" nullable={false} />
-            <BoundProperty component={NumberInput} target={camera} propertyKey="lowerTargetYLimit" nullable={true} />
-            <BoundProperty component={NumberInput} target={camera} propertyKey="lowerTargetYLimit" nullable={true} defaultValue={13} /> */}
-
-            {/** NumberInput will fail if nullable is sent */}
-
-            {/* <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerTargetYLimit" />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerTargetYLimit" nullable={false} />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerTargetYLimit" nullable={true} />
-            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerTargetYLimit" nullable={true} defaultValue={13} /> */}
-
             <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" nullable defaultValue={0} />
             <BoundProperty component={NumberInputPropertyLine} label="Upper Alpha Limit" target={camera} propertyKey="upperAlphaLimit" nullable defaultValue={Infinity} />
             <BoundProperty component={NumberInputPropertyLine} label="Lower Beta Limit" target={camera} propertyKey="lowerBetaLimit" nullable defaultValue={-Math.PI} />
