@@ -202,27 +202,7 @@ export class WebGPUDrawContext implements IDrawContext {
         }
 
         if (bufferNames.indexOf("indices") !== -1) {
-            if (!useVertexPulling) {
-                this.setBuffer("indices", null);
-            } else {
-                let is32bits = false;
-                if (indexBuffer) {
-                    this.setBuffer("indices", indexBuffer as WebGPUDataBuffer);
-                    is32bits = indexBuffer.is32Bits;
-                } else {
-                    // If no index buffer exists but the vertex shader uses the "indices" buffer, we need
-                    // to bind a dummy index buffer (of size 4 to avoid WebGPU errors). Then we'll set the
-                    // uniform to indicate that indices aren't used by the mesh.
-                    this.setBuffer("indices", this._dummyIndexBuffer);
-                }
-                // Set uniforms to indicate that the index buffer is used and whether it is 32-bit or 16-bit.
-                if (webgpuPipelineContext.uniformBuffer?.has("hasIndices")) {
-                    webgpuPipelineContext.uniformBuffer.updateInt("hasIndices", indexBuffer ? 1 : 0);
-                }
-                if (webgpuPipelineContext.uniformBuffer?.has("indicesAre32bit")) {
-                    webgpuPipelineContext.uniformBuffer?.updateInt("indicesAre32bit", is32bits ? 1 : 0);
-                }
-            }
+            this.setBuffer("indices", !useVertexPulling ? null : ((indexBuffer as WebGPUDataBuffer) ?? this._dummyIndexBuffer));
         }
     }
 

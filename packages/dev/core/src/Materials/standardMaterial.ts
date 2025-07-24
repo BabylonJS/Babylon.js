@@ -1249,7 +1249,8 @@ export class StandardMaterial extends PushMaterial {
             this.needAlphaTestingForMesh(mesh),
             defines,
             this._applyDecalMapAfterDetailMap,
-            this._useVertexPulling
+            this._useVertexPulling,
+            subMesh.getRenderingMesh()
         );
 
         // Values that need to be evaluated on every frame
