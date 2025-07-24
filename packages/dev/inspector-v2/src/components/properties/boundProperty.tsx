@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ComponentProps } from "react";
 import { forwardRef } from "react";
 
 import { useProperty } from "../../hooks/compoundPropertyHooks";
@@ -9,32 +9,17 @@ import { useProperty } from "../../hooks/compoundPropertyHooks";
 type IsNullable<T> = null extends T ? true : undefined extends T ? true : false;
 
 /**
- * Helper type to check if a component handles nullable values
- */
-type ComponentCanHandleNullable<C> = C extends ComponentType<infer P> ? (P extends { nullable?: boolean } ? true : false) : false;
-
-/**
- * Helper type to extract the value type from a component's props
- */
-type ExtractComponentValueType<C> = C extends ComponentType<infer P> ? (P extends { value: infer V } ? V : never) : never;
-
-/**
- * Helper to extract props from a component type
- */
-type ExtractComponentProps<C> = C extends ComponentType<infer P> ? P : never;
-
-/**
  * Base props for BoundProperty
  */
 type BaseBoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>> = Omit<
-    ExtractComponentProps<ComponentT>,
+    ComponentProps<ComponentT>,
     "value" | "onChange" | "nullable" | "defaultValue"
 > & {
     component: ComponentT;
     target: TargetT;
     propertyKey: PropertyKeyT;
-    convertTo?: (value: TargetT[PropertyKeyT]) => ExtractComponentValueType<ComponentT>;
-    convertFrom?: (value: ExtractComponentValueType<ComponentT>) => TargetT[PropertyKeyT];
+    convertTo?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
+    convertFrom?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
 };
 
 /**
@@ -46,7 +31,7 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
     ComponentT
 > &
     (IsNullable<TargetT[PropertyKeyT]> extends true
-        ? ComponentCanHandleNullable<ComponentT> extends true
+        ? ComponentProps<ComponentT> extends { nullable?: boolean }
             ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
               {
                   nullable: true;
@@ -54,10 +39,7 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
               }
             : // Component doesn't support nullable UI - prevent usage entirely with nullable properties
               never
-        : {
-              /** Property is not nullable - no nullable support needed */
-              nullable?: false;
-          });
+        : {});
 
 function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>>(
     props: BoundPropertyProps<TargetT, PropertyKeyT, ComponentT>,
@@ -71,14 +53,14 @@ function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof Ta
     const propsToSend = {
         ...rest,
         ref,
-        value: convertedValue as ExtractComponentValueType<ComponentT>,
-        onChange: (val: ExtractComponentValueType<ComponentT>) => {
-            const newValue = convertFrom ? convertFrom(val) : (val as TargetT[PropertyKeyT]);
-            (target as any)[propertyKey] = newValue;
+        value: convertedValue as TargetT[PropertyKeyT],
+        onChange: (val: TargetT[PropertyKeyT]) => {
+            const newValue = convertFrom ? convertFrom(val) : val;
+            target[propertyKey] = newValue;
         },
     };
 
-    return <Component {...(propsToSend as ExtractComponentProps<ComponentT>)} />;
+    return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
 }
 
 // Custom generic forwardRef function (this is needed because using forwardRef with BoundPropertyImpl does not properly resolve Generic types)

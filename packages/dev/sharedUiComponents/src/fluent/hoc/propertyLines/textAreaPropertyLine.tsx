@@ -1,5 +1,5 @@
 import { PropertyLine } from "./propertyLine";
-import type { PropertyLineProps } from "../../index";
+import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
 import { Textarea } from "../../primitives/textarea";
 import type { TextareaProps } from "../../primitives/textarea";

@@ -1,6 +1,7 @@
 import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
-import type { PrimitiveProps, PropertyLineProps } from "../../index";
+import type { ImmutablePrimitiveProps } from "../../primitives/primitive";
+import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
 
 /**
@@ -8,7 +9,7 @@ import type { FunctionComponent } from "react";
  * @param props - PropertyLineProps and TextProps
  * @returns property-line wrapped text
  */
-export const TextPropertyLine: FunctionComponent<PropertyLineProps<string> & PrimitiveProps<string, false>> = (props) => {
+export const TextPropertyLine: FunctionComponent<PropertyLineProps<string> & ImmutablePrimitiveProps<string>> = (props) => {
     const { value, title } = props;
     return (
         <PropertyLine {...props}>

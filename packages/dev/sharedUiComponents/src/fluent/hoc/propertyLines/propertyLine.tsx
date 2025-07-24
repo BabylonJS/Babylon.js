@@ -5,7 +5,7 @@ import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
-import type { PrimitiveProps } from "../../index";
+import type { PrimitiveProps } from "../../primitives/primitive";
 
 const usePropertyLineStyles = makeStyles({
     container: {
@@ -86,7 +86,7 @@ type NullableProperty<ValueT> = {
 };
 
 type NonNullableProperty = {
-    nullable?: false | never;
+    nullable?: false;
 };
 
 // Only expect optional expandByDefault prop if expandedContent is defined
@@ -105,7 +105,6 @@ type ExpandableProperty = {
 // If expanded content is undefined, don't expect expandByDefault prop
 type NonExpandableProperty = {
     expandedContent?: undefined;
-    expandByDefault?: never;
 };
 
 export type PropertyLineProps<ValueT> = BasePropertyLineProps & (NullableProperty<ValueT> | NonNullableProperty) & (ExpandableProperty | NonExpandableProperty);
@@ -121,7 +120,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     const classes = usePropertyLineStyles();
     const { label, onCopy, expandedContent, children, nullable } = props;
 
-    const [expanded, setExpanded] = useState(props.expandByDefault ?? false);
+    const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
 
     const { disableCopy } = useContext(ToolContext);
@@ -135,7 +134,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                   ...children.props,
                   disabled: props.value == null || children.props.disabled,
                   value: props.value ?? props.defaultValue,
-                  defaultValue: children.props.defaultValue ?? undefined, // Don't pass defaultValue to children as there is no guarantee how this will be used
+                  defaultValue: undefined, // Don't pass defaultValue to children as there is no guarantee how this will be used and we can't mix controlled + uncontrolled state
               })
             : children;
 

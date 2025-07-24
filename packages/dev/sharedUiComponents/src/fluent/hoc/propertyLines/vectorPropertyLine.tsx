@@ -3,7 +3,8 @@ import type { FunctionComponent } from "react";
 
 import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
-import type { PrimitiveProps, PropertyLineProps } from "../../index";
+import type { PrimitiveProps } from "../../primitives/primitive";
+import type { PropertyLineProps } from "./propertyLine";
 
 import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
 
