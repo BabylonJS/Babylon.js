@@ -21,14 +21,10 @@ const DropdownPropertyLine: FunctionComponent<DropdownProps<AcceptedDropdownValu
 };
 
 /**
- * Dropdown component for explicitly defined number values.
- * If value can be undefined, use OptionalNumberDropdownPropertyLine instead.
- * If value can be null, use NullableNumberDropdownPropertyLine instead.
+ * Dropdown component for number values.
  */
 export const NumberDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<number>>;
 /**
- * Dropdown component for explicitly defined string values.
- * If value can be undefined, use OptionalStringDropdownPropertyLine instead.
- * If value can be null, use NullableStringDropdownPropertyLine instead.
+ * Dropdown component for string values
  */
 export const StringDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<string>>;

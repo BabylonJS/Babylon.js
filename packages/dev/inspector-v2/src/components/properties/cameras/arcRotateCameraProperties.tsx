@@ -77,7 +77,6 @@ export const ArcRotateCameraTransformProperties: FunctionComponent<{ camera: Arc
 
 export const ArcRotateCameraControlProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
     const { camera } = props;
-
     return (
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Angular Sensitivity X" target={camera} propertyKey="angularSensibilityX" />
@@ -105,7 +104,7 @@ export const ArcRotateCameraCollisionProperties: FunctionComponent<{ camera: Arc
 
 export const ArcRotateCameraLimitsProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
     const { camera } = props;
-
+    // TODO-iv2: Specify the correct default values
     return (
         <>
             <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" nullable defaultValue={0} />

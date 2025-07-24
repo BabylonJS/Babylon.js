@@ -21,7 +21,7 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
         <>
             <BoundProperty
                 component={NumberDropdownPropertyLine}
-                nullable={true}
+                nullable
                 defaultValue={PBRMaterial.PBRMATERIAL_OPAQUE}
                 key="Transparency mode"
                 label="Transparency mode"

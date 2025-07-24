@@ -141,7 +141,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                   ...children.props,
                   disabled: props.value == null || children.props.disabled,
                   value: props.value ?? props.defaultValue,
-                  defaultValue: undefined, // Don't pass defaultValue to children as there is no guarantee how this will be used
+                  defaultValue: children.props.defaultValue ?? undefined, // Don't pass defaultValue to children as there is no guarantee how this will be used
               })
             : children;
 

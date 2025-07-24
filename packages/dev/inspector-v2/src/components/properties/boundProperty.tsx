@@ -4,11 +4,6 @@ import { forwardRef } from "react";
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**
- * Helper type to extract the non-nullable version of a type
- */
-type NonNullable<T> = T extends null | undefined ? never : T;
-
-/**
  * Helper type to check if a type includes null or undefined
  */
 type IsNullable<T> = null extends T ? true : undefined extends T ? true : false;
