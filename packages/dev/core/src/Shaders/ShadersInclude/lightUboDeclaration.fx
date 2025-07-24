@@ -12,8 +12,6 @@
 			vec4 vLightFalloff;
 		#elif defined(HEMILIGHT{X})
 			vec3 vLightGround;
-		#elif defined(CLUSTLIGHT{X})
-			SpotLight vLights[CLUSTLIGHT_MAX];
 		#endif
 		#if defined(AREALIGHT{X})
 			vec4 vLightWidth;
@@ -30,6 +28,7 @@
 	uniform sampler2D projectionLightTexture{X};
 #endif
 #ifdef CLUSTLIGHT{X}
+	uniform sampler2D lightDataTexture{X};
 	// Ensure the mask is sampled with high precision
 	uniform highp sampler2D tileMaskTexture{X};
 #endif

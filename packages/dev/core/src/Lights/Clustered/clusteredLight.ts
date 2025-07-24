@@ -3,9 +3,12 @@ import { Constants } from "core/Engines/constants";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import type { Effect } from "core/Materials/effect";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { TmpColors } from "core/Maths/math.color";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { _WarnImport } from "core/Misc/devTools";
@@ -13,7 +16,6 @@ import { Logger } from "core/Misc/logger";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
-import { LightProxyMaterial } from "./lightProxyMaterial";
 import { Light } from "../light";
 import { LightConstants } from "../lightConstants";
 import { PointLight } from "../pointLight";
@@ -22,7 +24,7 @@ import { SpotLight } from "../spotLight";
 import "core/Meshes/thinInstanceMesh";
 
 export class ClusteredLight extends Light {
-    private static _GetEngineMaxLights(engine: AbstractEngine): number {
+    private static _GetEngineBatchSize(engine: AbstractEngine): number {
         const caps = engine._caps;
         if (!engine.supportsUniformBuffers || !caps.texelFetch) {
             return 0;
@@ -43,7 +45,7 @@ export class ClusteredLight extends Light {
     }
 
     public static IsLightSupported(light: Light): boolean {
-        if (ClusteredLight._GetEngineMaxLights(light.getEngine()) === 0) {
+        if (ClusteredLight._GetEngineBatchSize(light.getEngine()) === 0) {
             return false;
         } else if (light.shadowEnabled && light._scene.shadowsEnabled && light.getShadowGenerators()) {
             // Shadows are not supported
@@ -67,10 +69,10 @@ export class ClusteredLight extends Light {
         throw _WarnImport("ClusteredLightSceneComponent");
     };
 
-    public readonly maxLights: number;
+    private readonly _batchSize: number;
 
     public get isSupported(): boolean {
-        return this.maxLights > 0;
+        return this._batchSize > 0;
     }
 
     private readonly _lights: (PointLight | SpotLight)[] = [];
@@ -78,7 +80,11 @@ export class ClusteredLight extends Light {
         return this._lights;
     }
 
-    private _tileMaskTexture: Nullable<RenderTargetTexture>;
+    private _lightDataBuffer: Float32Array;
+    private _lightDataTexture: RawTexture;
+
+    private _tileMaskBatches = -1;
+    private _tileMaskTexture: RenderTargetTexture;
     private _tileMaskBuffer: Nullable<StorageBuffer>;
 
     private _horizontalTiles = 64;
@@ -91,7 +97,8 @@ export class ClusteredLight extends Light {
             return;
         }
         this._horizontalTiles = horizontal;
-        this._disposeTileMask();
+        // Force the batch data to be recreated
+        this._tileMaskBatches = -1;
     }
 
     private _verticalTiles = 64;
@@ -104,9 +111,12 @@ export class ClusteredLight extends Light {
             return;
         }
         this._verticalTiles = vertical;
-        this._disposeTileMask();
+        // Force the batch data to be recreated
+        this._tileMaskBatches = -1;
     }
 
+    private readonly _proxyMaterial: ShaderMaterial;
+    // TODO: rename to proxyMesh
     private _lightProxy: Mesh;
 
     private _proxyTesselation = 8;
@@ -119,7 +129,7 @@ export class ClusteredLight extends Light {
             return;
         }
         this._proxyTesselation = tesselation;
-        this._lightProxy.dispose(false, true);
+        this._lightProxy.dispose();
         this._createProxyMesh();
     }
 
@@ -139,11 +149,35 @@ export class ClusteredLight extends Light {
 
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
-        this.maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
+        const engine = this.getEngine();
+        this._batchSize = ClusteredLight._GetEngineBatchSize(engine);
+
+        const proxyShader = { vertex: "lightProxy", fragment: "lightProxy" };
+        this._proxyMaterial = new ShaderMaterial("ProxyMaterial", this._scene, proxyShader, {
+            attributes: ["position"],
+            uniforms: ["tileMaskResolution"],
+            uniformBuffers: ["Scene"],
+            storageBuffers: ["tileMaskBuffer"],
+            samplers: ["lightDataTexture"],
+            defines: [`CLUSTLIGHT_BATCH ${this._batchSize}`],
+            shaderLanguage: engine.isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
+            extraInitializationsAsync: async () => {
+                if (engine.isWebGPU) {
+                    await Promise.all([import("../../ShadersWGSL/lightProxy.vertex"), import("../../ShadersWGSL/lightProxy.fragment")]);
+                } else {
+                    await Promise.all([import("../../Shaders/lightProxy.vertex"), import("../../Shaders/lightProxy.fragment")]);
+                }
+            },
+        });
+
+        // Additive blending is for merging masks on WebGL
+        this._proxyMaterial.transparencyMode = ShaderMaterial.MATERIAL_ALPHABLEND;
+        this._proxyMaterial.alphaMode = Constants.ALPHA_ADD;
 
         this._createProxyMesh();
+        this._updateBatches();
 
-        if (this.maxLights > 0) {
+        if (this._batchSize > 0) {
             ClusteredLight._SceneComponentInitialization(this._scene);
             for (const light of lights) {
                 this.addLight(light);
@@ -160,14 +194,61 @@ export class ClusteredLight extends Light {
         return LightConstants.LIGHTTYPEID_CLUSTERED;
     }
 
+    private _createProxyMesh(): void {
+        // The disc is made of `tesselation` isoceles triangles, and the lowest radius is the height of one of those triangles
+        // We can get the height from half the angle of that triangle (assuming a side length of 1)
+        const lowRadius = Math.cos(Math.PI / this._proxyTesselation);
+        // We scale up the disc so the lowest radius still wraps the light
+        this._lightProxy = CreateDisc("LightProxy", { radius: 1 / lowRadius, tessellation: this._proxyTesselation });
+        // Make sure it doesn't render for the default scene
+        this._scene.removeMesh(this._lightProxy);
+        this._lightProxy.material = this._proxyMaterial;
+
+        if (this._tileMaskBatches > 0) {
+            this._tileMaskTexture.renderList = [this._lightProxy];
+
+            // We don't actually use the matrix data but we need enough capacity for the lights
+            this._lightProxy.thinInstanceSetBuffer("matrix", new Float32Array(this._tileMaskBatches * this._batchSize * 16));
+            this._lightProxy.thinInstanceCount = this._lights.length;
+            this._lightProxy.isVisible = this._lights.length > 0;
+        }
+    }
+
     /** @internal */
-    public _createTileMask(): RenderTargetTexture {
-        if (this._tileMaskTexture) {
+    public _updateBatches(): RenderTargetTexture {
+        this._lightProxy.isVisible = this._lights.length > 0;
+
+        // Ensure space for atleast 1 batch
+        const batches = Math.max(Math.ceil(this._lights.length / this._batchSize), 1);
+        if (this._tileMaskBatches >= batches) {
+            this._lightProxy.thinInstanceCount = this._lights.length;
             return this._tileMaskTexture;
         }
-
         const engine = this.getEngine();
+        // Round up to a batch size so we don't have to reallocate as often
+        const maxLights = batches * this._batchSize;
+
+        this._lightDataBuffer = new Float32Array(20 * maxLights);
+        this._lightDataTexture?.dispose();
+        this._lightDataTexture = new RawTexture(
+            this._lightDataBuffer,
+            5,
+            maxLights,
+            Constants.TEXTUREFORMAT_RGBA,
+            this._scene,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            Constants.TEXTURETYPE_FLOAT
+        );
+        this._proxyMaterial.setTexture("lightDataTexture", this._lightDataTexture);
+
+        this._tileMaskTexture?.dispose();
         const textureSize = { width: this._horizontalTiles, height: this._verticalTiles };
+        if (!engine.isWebGPU) {
+            // In WebGL we shift the light proxy by the batch number
+            textureSize.height *= batches;
+        }
         this._tileMaskTexture = new RenderTargetTexture("TileMaskTexture", textureSize, this._scene, {
             // We don't write anything on WebGPU so make it as small as possible
             type: engine.isWebGPU ? Constants.TEXTURETYPE_UNSIGNED_BYTE : Constants.TEXTURETYPE_FLOAT,
@@ -180,6 +261,10 @@ export class ClusteredLight extends Light {
         this._tileMaskTexture.noPrePassRenderer = true;
         this._tileMaskTexture.renderList = [this._lightProxy];
 
+        this._tileMaskTexture.onBeforeBindObservable.add(() => {
+            this._updateLightData();
+        });
+
         this._tileMaskTexture.onClearObservable.add(() => {
             // Clear the storage buffer if it exists
             this._tileMaskBuffer?.clear();
@@ -188,53 +273,80 @@ export class ClusteredLight extends Light {
 
         if (engine.isWebGPU) {
             // WebGPU also needs a storage buffer to write to
-            const bufferSize = this._horizontalTiles * this._verticalTiles * 4;
+            this._tileMaskBuffer?.dispose();
+            const bufferSize = this._horizontalTiles * this._verticalTiles * batches * 4;
             this._tileMaskBuffer = new StorageBuffer(<WebGPUEngine>engine, bufferSize);
         }
 
+        this._proxyMaterial.setVector3("tileMaskResolution", new Vector3(this._horizontalTiles, this.verticalTiles, batches));
+
+        // We don't actually use the matrix data but we need enough capacity for the lights
+        this._lightProxy.thinInstanceSetBuffer("matrix", new Float32Array(maxLights * 16));
+        this._lightProxy.thinInstanceCount = this._lights.length;
+        this._tileMaskBatches = batches;
         return this._tileMaskTexture;
     }
 
-    private _disposeTileMask(): void {
-        this._tileMaskTexture?.dispose();
-        this._tileMaskTexture = null;
-        this._tileMaskBuffer?.dispose();
-        this._tileMaskBuffer = null;
-    }
+    private _updateLightData(): void {
+        for (let i = 0; i < this._lights.length; i += 1) {
+            const light = this._lights[i];
+            const offset = i * 20;
+            const computed = light.computeTransformedInformation();
+            const scaledIntensity = light.getScaledIntensity();
 
-    private _createProxyMesh(): void {
-        // The disc is made of `tesselation` isoceles triangles, and the lowest radius is the height of one of those triangles
-        // We can get the height from half the angle of that triangle (assuming a side length of 1)
-        const lowRadius = Math.cos(Math.PI / this._proxyTesselation);
-        // We scale up the disc so the lowest radius still wraps the light
-        this._lightProxy = CreateDisc("LightProxy", { radius: 1 / lowRadius, tessellation: this._proxyTesselation });
+            const position = computed ? light.transformedPosition : light.position;
+            const diffuse = light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
+            const specular = light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
+            const range = Math.min(light.range, this.maxRange);
+            const inverseSquaredRange = Math.max(light._inverseSquaredRange, this._minInverseSquaredRange);
+            this._lightDataBuffer.set(
+                [
+                    // vLightData
+                    position.x,
+                    position.y,
+                    position.z,
+                    0,
+                    // vLightDiffuse
+                    diffuse.r,
+                    diffuse.g,
+                    diffuse.b,
+                    range,
+                    // vLightSpecular
+                    specular.r,
+                    specular.g,
+                    specular.b,
+                    light.radius,
+                    // vLightDirection
+                    0,
+                    1,
+                    0,
+                    -1,
+                    // vLightFalloff
+                    range,
+                    inverseSquaredRange,
+                    0.5,
+                    0.5,
+                ],
+                offset
+            );
 
-        // Make sure it doesn't render for the default scene
-        this._scene.removeMesh(this._lightProxy);
-        if (this._tileMaskTexture) {
-            this._tileMaskTexture.renderList = [this._lightProxy];
+            if (light instanceof SpotLight) {
+                const direction = Vector3.Normalize(computed ? light.transformedDirection : light.direction);
+                this._lightDataBuffer[offset + 3] = light.exponent; // vLightData.a
+                this._lightDataBuffer.set([direction.x, direction.y, direction.z, light._cosHalfAngle], offset + 12); // vLightDirection
+                this._lightDataBuffer.set([light._lightAngleScale, light._lightAngleOffset], offset + 18); // vLightFalloff.zw
+            }
         }
-
-        this._lightProxy.material = new LightProxyMaterial("LightProxyMaterial", this);
-        // We don't actually use the matrix data but we need enough capacity for the lights
-        this._lightProxy.thinInstanceSetBuffer("matrix", new Float32Array(this.maxLights * 16));
-        this._updateProxyMesh();
-    }
-
-    private _updateProxyMesh(): void {
-        const len = Math.min(this._lights.length, this.maxLights);
-        this._lightProxy.thinInstanceCount = len;
-        // Hide the mesh if theres no instances
-        this._lightProxy.isVisible = len > 0;
+        this._lightDataTexture.update(this._lightDataBuffer);
     }
 
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         for (const light of this._lights) {
             light.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
-
-        this._disposeTileMask();
-
+        this._lightDataTexture.dispose();
+        this._tileMaskTexture.dispose();
+        this._tileMaskBuffer?.dispose();
         this._lightProxy.dispose(doNotRecurse, disposeMaterialAndTextures);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
@@ -243,31 +355,18 @@ export class ClusteredLight extends Light {
         if (!ClusteredLight.IsLightSupported(light)) {
             Logger.Warn("Attempting to add a light to cluster that does not support clustering");
             return;
-        } else if (this._lights.length === this.maxLights) {
-            // Only log this once (hence equals) but add the light anyway
-            Logger.Warn(`Attempting to add more lights to cluster than what is supported (${this.maxLights})`);
         }
         this._scene.removeLight(light);
         this._lights.push(<PointLight | SpotLight>light);
-        this._updateProxyMesh();
+
+        this._lightProxy.isVisible = true;
+        this._lightProxy.thinInstanceCount = this._lights.length;
     }
 
     protected override _buildUniformLayout(): void {
-        // We can't use `this.maxLights` since this will get called during construction
-        const maxLights = ClusteredLight._GetEngineMaxLights(this.getEngine());
-
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
         this._uniformBuffer.addUniform("vLightSpecular", 4);
-        for (let i = 0; i < maxLights; i += 1) {
-            // These technically don't have to match the field name but also why not
-            const struct = `vLights[${i}].`;
-            this._uniformBuffer.addUniform(struct + "position", 4);
-            this._uniformBuffer.addUniform(struct + "diffuse", 4);
-            this._uniformBuffer.addUniform(struct + "specular", 4);
-            this._uniformBuffer.addUniform(struct + "direction", 4);
-            this._uniformBuffer.addUniform(struct + "falloff", 4);
-        }
         this._uniformBuffer.addUniform("shadowsInfo", 3);
         this._uniformBuffer.addUniform("depthValues", 2);
         this._uniformBuffer.create();
@@ -277,43 +376,15 @@ export class ClusteredLight extends Light {
         const engine = this.getEngine();
         const hscale = this._horizontalTiles / engine.getRenderWidth();
         const vscale = this._verticalTiles / engine.getRenderHeight();
-
-        const len = Math.min(this._lights.length, this.maxLights);
-        this._uniformBuffer.updateFloat4("vLightData", hscale, vscale, this._horizontalTiles, len, lightIndex);
-
-        for (let i = 0; i < len; i += 1) {
-            const light = this._lights[i];
-            const struct = `vLights[${i}].`;
-
-            const computed = light.computeTransformedInformation();
-            const position = computed ? light.transformedPosition : light.position;
-            const exponent = light instanceof SpotLight ? light.exponent : 0;
-            this._uniformBuffer.updateFloat4(struct + "position", position.x, position.y, position.z, exponent, lightIndex);
-
-            const scaledIntensity = light.getScaledIntensity();
-            const range = Math.min(light.range, this.maxRange);
-            light.diffuse.scaleToRef(scaledIntensity, TmpColors.Color3[0]);
-            this._uniformBuffer.updateColor4(struct + "diffuse", TmpColors.Color3[0], range, lightIndex);
-            light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
-            this._uniformBuffer.updateColor4(struct + "specular", TmpColors.Color3[1], light.radius, lightIndex);
-
-            const inverseSquaredRange = Math.max(light._inverseSquaredRange, this._minInverseSquaredRange);
-            if (light instanceof SpotLight) {
-                const direction = Vector3.Normalize(computed ? light.transformedDirection : light.direction);
-                this._uniformBuffer.updateFloat4(struct + "direction", direction.x, direction.y, direction.z, light._cosHalfAngle, lightIndex);
-                this._uniformBuffer.updateFloat4(struct + "falloff", range, inverseSquaredRange, light._lightAngleScale, light._lightAngleOffset, lightIndex);
-            } else {
-                this._uniformBuffer.updateFloat4(struct + "direction", 0, 1, 0, -1, lightIndex);
-                this._uniformBuffer.updateFloat4(struct + "falloff", range, inverseSquaredRange, 0.5, 0.5, lightIndex);
-            }
-        }
+        this._uniformBuffer.updateFloat4("vLightData", hscale, vscale, this._verticalTiles, this._lights.length, lightIndex);
         return this;
     }
 
     public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
         const engine = this.getEngine();
+        effect.setTexture("lightsTexture" + lightIndex, this._lightDataTexture);
         if (engine.isWebGPU) {
-            (<WebGPUEngine>this.getEngine()).setStorageBuffer("tileMaskBuffer" + lightIndex, this._tileMaskBuffer);
+            (<WebGPUEngine>engine).setStorageBuffer("tileMaskBuffer" + lightIndex, this._tileMaskBuffer);
         } else {
             effect.setTexture("tileMaskTexture" + lightIndex, this._tileMaskTexture);
         }
@@ -327,10 +398,11 @@ export class ClusteredLight extends Light {
 
     public override prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["CLUSTLIGHT" + lightIndex] = true;
-        defines["CLUSTLIGHT_MAX"] = this.maxLights;
+        defines["CLUSTLIGHT_BATCH"] = this._batchSize;
     }
 
     public override _isReady(): boolean {
+        this._updateBatches();
         return this._lightProxy.isReady(true, true);
     }
 }

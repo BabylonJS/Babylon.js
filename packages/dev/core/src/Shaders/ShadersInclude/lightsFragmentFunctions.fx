@@ -183,3 +183,45 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 
 // End Area Light
 #endif
+
+#if defines(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+lightingInfo computeClusteredLighting(
+	sampler2D lightDataTexture,
+	sampler2D tileMaskTexture,
+	vec3 viewDirectionW,
+	vec3 vNormal,
+	vec4 clusteredData,
+	float glossiness
+) {
+	lightingInfo result;
+	ivec2 maskCoord = ivec2(gl_FragCoord.xy * clusteredData.xy);
+	int height = int(clusteredData.z);
+	int len = int(clusteredData.w);
+
+	for (int i = 0; i < len;) {
+		vec4 maskTexel = texelFetch(tileMaskTexture, maskCoord, 0);
+		uint mask = uint(maskTexel.r);
+		maskCoord.y += height;
+
+		int batchEnd = min(i + CLUSTLIGHT_BATCH, len);
+		uint bit = 1u;
+		for(; i < batchEnd; i += 1, bit <<= 1) {
+			if ((mask & bit) == 0u) {
+				continue;
+			}
+			vec4 lightData = texelFetch(lightDataTexture, ivec2(0, i), 0);
+			vec4 diffuse = texelFetch(lightDataTexture, ivec2(1, i), 0);
+			vec4 specular = texelFetch(lightDataTexture, ivec2(2, i), 0);
+			vec4 direction = texelFetch(lightDataTexture, ivec2(3, i), 0);
+			vec4 falloff = texelFetch(lightDataTexture, ivec2(4, i), 0);
+
+			lightingInfo info = computeSpotLighting(viewDirectionW, vNormal, lightData, direction, diffuse.rgb, specular.rgb, diffuse.a, glossiness);
+			result.diffuse += info.diffuse;
+			#ifdef SPECULARTERM
+				result.specular += info.specular;
+			#endif
+		}
+	}
+	return result;
+}
+#endif
