@@ -197,7 +197,7 @@ lightingInfo computeClusteredLighting(
 	lightingInfo result;
 	int maskHeight = int(clusteredData.y);
 	ivec2 tilePosition = ivec2(gl_FragCoord.xy * clusteredData.zw);
-	tilePosition.x = min(tilePosition.x, maskHeight - 1);
+	tilePosition.y = min(tilePosition.y, maskHeight - 1);
 
 	for (int i = 0; i < numLights;) {
 		uint mask = uint(texelFetch(tileMaskTexture, tilePosition, 0).r);
