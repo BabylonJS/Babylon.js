@@ -44,6 +44,7 @@ export class _IblShadowsVoxelRenderer {
     private _voxelMrtsXaxis: MultiRenderTarget[] = [];
     private _voxelMrtsYaxis: MultiRenderTarget[] = [];
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
+
     private _voxelMaterial: ShaderMaterial;
     private _voxelSlabDebugMaterial: ShaderMaterial;
     // private _voxelClearColor: Color4 = new Color4(0, 0, 0, 1);
@@ -416,7 +417,7 @@ export class _IblShadowsVoxelRenderer {
             });
             this._voxelGridRT = new RenderTargetTexture(
                 "voxelGridRT",
-                { width: Math.min(size.width * 10.0, 2048), height: Math.min(size.height * 10.0, 2048) },
+                { width: Math.min(size.width * 2.0, 2048), height: Math.min(size.height * 2.0, 2048) },
                 this._scene,
                 voxelAxisOptions
             );
@@ -611,6 +612,7 @@ export class _IblShadowsVoxelRenderer {
         this._removeVoxelRTs(this._voxelMrtsXaxis);
         this._removeVoxelRTs(this._voxelMrtsYaxis);
         this._removeVoxelRTs(this._voxelMrtsZaxis);
+        this._removeVoxelRTs([this._voxelGridRT]);
     }
 
     private _removeVoxelRTs(rts: RenderTargetTexture[]) {
@@ -646,7 +648,8 @@ export class _IblShadowsVoxelRenderer {
         this._voxelizationInProgress = true;
 
         if (this._engine.isWebGPU) {
-            this._voxelMaterial.setTexture("storage_texture", this.getVoxelGrid());
+            // this._voxelMaterial.useVertexPulling = true;
+            this._voxelMaterial.setTexture("voxel_storage", this.getVoxelGrid());
             this._voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
             this._voxelGridRT.setMaterialForRendering(includedMeshes, this._voxelMaterial);
             this._voxelGridRT.renderList = includedMeshes;

@@ -1,10 +1,10 @@
-var storage_texture: texture_storage_3d<rgba8unorm, write>;
+var voxel_storage: texture_storage_3d<rgba8unorm, write>;
 varying vNormalizedPosition: vec3f;
 flat varying f_swizzle: i32;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
-    var size: vec3f = vec3f(textureDimensions(storage_texture));
+    var size: vec3f = vec3f(textureDimensions(voxel_storage));
     var normPos: vec3f = input.vNormalizedPosition.xyz;
     var outputColor: vec4f = vec4f(0.0, 0.0, 0.0, 1.0);
     switch (input.f_swizzle) {
@@ -25,6 +25,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         }
     }
 
-    textureStore(storage_texture, vec3<i32>(i32(normPos.x * size.x), i32(normPos.y * size.y), i32(normPos.z * size.z)), outputColor);
+    textureStore(voxel_storage, vec3<i32>(i32(normPos.x * size.x), i32(normPos.y * size.y), i32(normPos.z * size.z)), outputColor);
     fragmentOutputs.color = vec4<f32>(vec3<f32>(normPos), 1.);
 }
