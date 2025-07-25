@@ -45,6 +45,10 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 }
 
 float getAttenuation(float cosAngle, float exponent) {
+	if (exponent == 0.0) {
+		// Undefined behaviour can occur if exponent == 0, the result in reality should always be 1
+		return 1.0;
+	}
 	return max(0., pow(cosAngle, exponent));
 }
 
@@ -178,4 +182,46 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 }
 
 // End Area Light
+#endif
+
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+lightingInfo computeClusteredLighting(
+	sampler2D lightDataTexture,
+	sampler2D tileMaskTexture,
+	vec3 viewDirectionW,
+	vec3 vNormal,
+	vec4 clusteredData,
+	int numLights,
+	float glossiness
+) {
+	lightingInfo result;
+	int maskHeight = int(clusteredData.y);
+	ivec2 tilePosition = ivec2(gl_FragCoord.xy * clusteredData.zw);
+	tilePosition.y = min(tilePosition.y, maskHeight - 1);
+
+	for (int i = 0; i < numLights;) {
+		uint mask = uint(texelFetch(tileMaskTexture, tilePosition, 0).r);
+		tilePosition.y += maskHeight;
+		int batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
+		for(; i < batchEnd && mask != 0u; i += 1, mask >>= 1) {
+			if ((mask & 1u) == 0u) {
+				continue;
+			}
+
+			vec4 lightData = texelFetch(lightDataTexture, ivec2(0, i), 0);
+			vec4 diffuse = texelFetch(lightDataTexture, ivec2(1, i), 0);
+			vec4 specular = texelFetch(lightDataTexture, ivec2(2, i), 0);
+			vec4 direction = texelFetch(lightDataTexture, ivec2(3, i), 0);
+			vec4 falloff = texelFetch(lightDataTexture, ivec2(4, i), 0);
+
+			lightingInfo info = computeSpotLighting(viewDirectionW, vNormal, lightData, direction, diffuse.rgb, specular.rgb, diffuse.a, glossiness);
+			result.diffuse += info.diffuse;
+			#ifdef SPECULARTERM
+				result.specular += info.specular;
+			#endif
+		}
+		i = batchEnd;
+	}
+	return result;
+}
 #endif

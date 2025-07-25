@@ -206,3 +206,165 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         return sheenTerm * info.attenuation * info.NdotL * lightColor;
     }
 #endif
+
+#ifdef CLUSTLIGHT_BATCH
+    fn computeClusteredLighting(
+        lightDataTexture: texture_2d<f32>,
+        tileMaskBuffer: ptr<storage, array<u32>>,
+        clusteredData: vec4f,
+        numLights: i32,
+        V: vec3f,
+        N: vec3f,
+        posW: vec3f,
+        surfaceAlbedo: vec3f,
+        reflectivityOut: reflectivityOutParams,
+        #ifdef SS_TRANSLUCENCY
+            subSurfaceOut: subSurfaceOutParams,
+        #endif
+        #ifdef SPECULARTERM
+            AARoughnessFactor: f32,
+        #endif
+        #ifdef ANISOTROPIC
+            anisotropicOut: anisotropicOutParams,
+        #endif
+        #ifdef SHEEN
+            sheenOut: sheenOutParams,
+        #endif
+        #ifdef CLEARCOAT
+            clearcoatOut: clearcoatOutParams,
+        #endif
+    ) -> lightingInfo {
+        let NdotV = absEps(dot(N, V));
+#include<pbrBlockReflectance0>
+        #ifdef CLEARCOAT
+            specularEnvironmentR0 = clearcoatOut.specularEnvironmentR0;
+        #endif
+
+        var result: lightingInfo;
+        let maskResolution = vec2i(clusteredData.xy);
+        let maskStride = maskResolution.x * maskResolution.y;
+        let tilePosition = vec2i(fragmentInputs.position.xy * clusteredData.zw);
+        var tileIndex = min(tilePosition.y * maskResolution.x + tilePosition.x, maskStride - 1);
+
+        for (var i = 0; i < numLights;) {
+            var mask = tileMaskBuffer[tileIndex];
+            tileIndex += maskStride;
+            let batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
+            for (; i < batchEnd && mask != 0; i += 1) {
+                // Skip as much as we can
+                let trailing = firstTrailingBit(mask);
+                mask >>= trailing + 1;
+                i += i32(trailing);
+
+                let lightData = textureLoad(lightDataTexture, vec2i(0, i), 0);
+                let diffuse = textureLoad(lightDataTexture, vec2i(1, i), 0);
+                let specular = textureLoad(lightDataTexture, vec2i(2, i), 0);
+                let direction = textureLoad(lightDataTexture, vec2i(3, i), 0);
+                let falloff = textureLoad(lightDataTexture, vec2i(4, i), 0);
+
+                var preInfo = computePointAndSpotPreLightingInfo(lightData, V, N, posW);
+                preInfo.NdotV = NdotV;
+
+                // Compute Attenuation infos
+                preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, falloff.x, falloff.y);
+                preInfo.attenuation *= computeDirectionalLightFalloff(direction.xyz, preInfo.L, direction.w, lightData.w, falloff.z, falloff.w);
+
+                preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, specular.a, preInfo.lightDistance);
+                preInfo.diffuseRoughness = reflectivityOut.diffuseRoughness;
+                preInfo.surfaceAlbedo = surfaceAlbedo;
+                var info: lightingInfo;
+
+                // Diffuse contribution
+                #ifdef SS_TRANSLUCENCY
+                    #ifdef SS_TRANSLUCENCY_LEGACY
+                        info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse.rgb, subSurfaceOut.transmittance);
+                        info.diffuseTransmission = vec3(0);
+                    #else
+                        info.diffuse = computeDiffuseLighting(preInfo, diffuse.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
+                        info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, diffuse.rgb, subSurfaceOut.transmittance);
+                    #endif
+                #else
+                    info.diffuse = computeDiffuseLighting(preInfo, diffuse.rgb);
+                #endif
+
+                // Specular contribution
+                #ifdef SPECULARTERM
+                    #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+                        let metalFresnel = reflectivityOut.specularWeight * getF82Specular(preInfo.VdotH, specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
+                        let dielectricFresnel = fresnelSchlickGGXVec3(preInfo.VdotH, reflectivityOut.dielectricColorF0, reflectivityOut.colorReflectanceF90);
+                        let coloredFresnel = mix(dielectricFresnel, metalFresnel, reflectivityOut.metallic);
+                    #else
+                        let coloredFresnel = fresnelSchlickGGXVec3(preInfo.VdotH, specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
+                    #endif
+                    #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                        let NdotH = dot(N, preInfo.H);
+                        let fresnel = fresnelSchlickGGXVec3(NdotH, vec3(reflectanceF0), specularEnvironmentR90);
+                        info.diffuse *= (vec3(1.0) - fresnel);
+                    #endif
+                    #ifdef ANISOTROPIC
+                        info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, diffuse.rgb);
+                    #else
+                        info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, diffuse.rgb);
+                    #endif
+                #endif
+
+                // Sheen contribution
+                #ifdef SHEEN
+                    #ifdef SHEEN_LINKWITHALBEDO
+                        preInfo.roughness = sheenOut.sheenIntensity;
+                    #else
+                        preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, specular.a, preInfo.lightDistance);
+                    #endif
+                    preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, specular.a, preInfo.lightDistance);
+                    info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, diffuse.rgb);
+                #endif
+
+                // Clear Coat contribution
+                #ifdef CLEARCOAT
+                    preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, specular.a, preInfo.lightDistance);
+                    info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, diffuse.rgb);
+
+                    #ifdef CLEARCOAT_TINT
+                        // Absorption
+                        let absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
+                        info.diffuse *= absorption;
+                        #ifdef SS_TRANSLUCENCY
+                            info.diffuseTransmission *= absorption;
+                        #endif
+                        #ifdef SPECULARTERM
+                            info.specular *= absorption;
+                        #endif
+                    #endif
+
+                    info.diffuse *= info.clearCoat.w;
+                    #ifdef SS_TRANSLUCENCY
+                        info.diffuseTransmission *= info.clearCoat.w;
+                    #endif
+                    #ifdef SPECULARTERM
+                        info.specular *= info.clearCoat.w;
+                    #endif
+                    #ifdef SHEEN
+                        info.sheen *= info.clearCoat.w;
+                    #endif
+                #endif
+
+                // Apply contributions to result
+                result.diffuse += info.diffuse;
+                #ifdef SS_TRANSLUCENCY
+                    result.diffuseTransmission += info.diffuseTransmission;
+                #endif
+                #ifdef SPECULARTERM
+                    result.specular += info.specular;
+                #endif
+                #ifdef CLEARCOAT
+                    result.clearCoat += info.clearCoat;
+                #endif
+                #ifdef SHEEN
+                    result.sheen += info.sheen;
+                #endif
+            }
+            i = batchEnd;
+        }
+        return result;
+    }
+#endif

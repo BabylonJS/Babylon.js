@@ -144,7 +144,8 @@ export abstract class Light extends Node implements ISortableLight {
     public intensity = 1.0;
 
     private _range = Number.MAX_VALUE;
-    protected _inverseSquaredRange = 0;
+    /** @internal */
+    public _inverseSquaredRange = 0;
 
     /**
      * Defines how far from the source the light is impacting in scene units.
@@ -483,7 +484,7 @@ export abstract class Light extends Node implements ISortableLight {
      */
     public override toString(fullDetails?: boolean): string {
         let ret = "Name: " + this.name;
-        ret += ", type: " + ["Point", "Directional", "Spot", "Hemispheric"][this.getTypeID()];
+        ret += ", type: " + ["Point", "Directional", "Spot", "Hemispheric", "Clustered"][this.getTypeID()];
         if (this.animations) {
             for (let i = 0; i < this.animations.length; i++) {
                 ret += ", animation[0]: " + this.animations[i].toString(fullDetails);

@@ -857,6 +857,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             maxVaryingVectors: this._deviceLimits.maxInterStageShaderVariables,
             maxFragmentUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
             maxVertexUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
+            shaderFloatPrecision: 23, // WGSL always uses IEEE-754 binary32 floats (which have 23 bits of significand)
             standardDerivatives: true,
             astc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionASTC) >= 0 ? true : undefined) as any,
             s3tc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined) as any,
@@ -869,6 +870,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
+            blendFloat: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.Float32Blendable) >= 0,
             supportFloatTexturesResolve: false, // See https://github.com/gpuweb/gpuweb/issues/3844
             rg11b10ufColorRenderable: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.RG11B10UFloatRenderable) >= 0,
             textureFloat: true,
@@ -3908,6 +3910,10 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
         return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE, label);
+    }
+
+    public clearStorageBuffer(storageBuffer: DataBuffer, byteOffset?: number, byteLength?: number): void {
+        this._renderEncoder.clearBuffer(storageBuffer.underlyingResource, byteOffset, byteLength);
     }
 
     /**
