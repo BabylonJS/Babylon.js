@@ -203,7 +203,6 @@ fn computeClusteredLighting(
 		var mask = tileMaskBuffer[tileIndex];
 		tileIndex += maskStride;
 		let batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
-
 		for (; i < batchEnd && mask != 0; i += 1) {
 			// Skip as much as we can
 			let trailing = firstTrailingBit(mask);
