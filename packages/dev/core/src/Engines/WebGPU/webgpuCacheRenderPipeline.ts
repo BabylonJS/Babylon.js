@@ -141,7 +141,6 @@ export abstract class WebGPUCacheRenderPipeline {
     private _depthStencilState: number;
     private _vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
-    private _indexBuffer: Nullable<DataBuffer>;
     private _textureState: number;
     private _useTextureStage: boolean;
 
@@ -185,6 +184,7 @@ export abstract class WebGPUCacheRenderPipeline {
     protected abstract _setRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void;
 
     public readonly vertexBuffers: VertexBuffer[];
+    public readonly indexBuffer: Nullable<DataBuffer>;
 
     public get colorFormats(): (GPUTextureFormat | null)[] {
         return this._mrtAttachments > 0 ? this._mrtFormats : this._webgpuColorFormat;
@@ -500,7 +500,7 @@ export abstract class WebGPUCacheRenderPipeline {
     ): void {
         this._vertexBuffers = vertexBuffers;
         this._overrideVertexBuffers = overrideVertexBuffers;
-        this._indexBuffer = indexBuffer;
+        (this.indexBuffer as Nullable<DataBuffer>) = indexBuffer;
     }
 
     private static _GetTopology(fillMode: number): GPUPrimitiveTopology {
@@ -1116,7 +1116,7 @@ export abstract class WebGPUCacheRenderPipeline {
 
         let stripIndexFormat: GPUIndexFormat | undefined = undefined;
         if (topology === WebGPUConstants.PrimitiveTopology.LineStrip || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip) {
-            stripIndexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
+            stripIndexFormat = !this.indexBuffer || this.indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
         }
 
         const depthStencilFormatHasStencil = this._webgpuDepthStencilFormat ? WebGPUTextureHelper.HasStencilAspect(this._webgpuDepthStencilFormat) : false;

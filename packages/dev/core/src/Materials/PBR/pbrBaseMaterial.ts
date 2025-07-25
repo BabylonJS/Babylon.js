@@ -302,6 +302,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public DECAL_AFTER_DETAIL = false;
 
     public DEBUGMODE = 0;
+    public USE_VERTEX_PULLING = false;
 
     /**
      * Initializes the PBR Material defines.
@@ -1275,7 +1276,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
-        let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+        let effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
 
         let forceWasNotReadyPreviously = false;
 
@@ -1331,14 +1332,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     private _prepareEffect(
         mesh: AbstractMesh,
+        renderingMesh: AbstractMesh,
         defines: PBRMaterialDefines,
         onCompiled: Nullable<(effect: Effect) => void> = null,
         onError: Nullable<(effect: Effect, errors: string) => void> = null,
         useInstances: Nullable<boolean> = null,
-        useClipPlane: Nullable<boolean> = null,
-        useThinInstances: boolean
+        useClipPlane: Nullable<boolean> = null
     ): Nullable<Effect> {
-        this._prepareDefines(mesh, defines, useInstances, useClipPlane, useThinInstances);
+        this._prepareDefines(mesh, renderingMesh, defines, useInstances, useClipPlane);
 
         if (!defines.isDirty) {
             return null;
@@ -1646,11 +1647,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     private _prepareDefines(
         mesh: AbstractMesh,
+        renderingMesh: AbstractMesh,
         defines: PBRMaterialDefines,
         useInstances: Nullable<boolean> = null,
-        useClipPlane: Nullable<boolean> = null,
-        useThinInstances: boolean = false
+        useClipPlane: Nullable<boolean> = null
     ): void {
+        const useThinInstances = renderingMesh.hasThinInstances;
+
         const scene = this.getScene();
         const engine = scene.getEngine();
 
@@ -2005,7 +2008,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 this.fogEnabled,
                 this.needAlphaTestingForMesh(mesh),
                 defines,
-                this._applyDecalMapAfterDetailMap
+                this._applyDecalMapAfterDetailMap,
+                this._useVertexPulling,
+                renderingMesh
             );
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;
@@ -2049,7 +2054,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 return;
             }
             const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
-            const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
+            const effect = this._prepareEffect(mesh, mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
                 onCreatedEffectParameters.subMesh = null;

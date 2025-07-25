@@ -52,6 +52,7 @@ import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
 import type { IAssetContainer } from "core/IAssetContainer";
+import { IsWrapper } from "./drawWrapper.functions";
 
 declare let BABYLON: any;
 
@@ -238,6 +239,24 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
     protected _forceGLSL = false;
+
+    protected _useVertexPulling = false;
+    /**
+     * Tells the engine to draw geometry using vertex pulling instead of index drawing. This will automatically
+     * set the vertex buffers as storage buffers and make them accessible to the vertex shader (WebGPU only).
+     */
+    public get useVertexPulling() {
+        return this._useVertexPulling;
+    }
+
+    public set useVertexPulling(value: boolean) {
+        if (this._useVertexPulling === value) {
+            return;
+        }
+
+        this._useVertexPulling = value;
+        this.markAsDirty(Material.MiscDirtyFlag);
+    }
 
     /** @internal */
     public get _supportGlowLayer() {
@@ -1292,7 +1311,13 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         const orientation = overrideOrientation == null ? this.sideOrientation : overrideOrientation;
         const reverse = orientation === Material.ClockWiseSideOrientation;
 
-        engine.enableEffect(effect ? effect : this._getDrawWrapper());
+        const effectiveDrawWrapper = effect ? effect : this._getDrawWrapper();
+
+        if (IsWrapper(effectiveDrawWrapper) && effectiveDrawWrapper.materialContext) {
+            effectiveDrawWrapper.materialContext.useVertexPulling = this.useVertexPulling;
+        }
+
+        engine.enableEffect(effectiveDrawWrapper);
         engine.setState(
             this.backFaceCulling,
             this.zOffset,

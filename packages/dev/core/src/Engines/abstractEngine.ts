@@ -249,6 +249,8 @@ export abstract class AbstractEngine {
     protected _cachedViewport: Nullable<IViewportLike>;
     /** @internal */
     public _currentDrawContext: IDrawContext;
+    /** @internal */
+    public _currentMaterialContext: IMaterialContext;
 
     /** @internal */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
