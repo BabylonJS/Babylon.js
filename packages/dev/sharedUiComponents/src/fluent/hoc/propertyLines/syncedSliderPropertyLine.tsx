@@ -4,7 +4,7 @@ import { SyncedSliderInput } from "../../primitives/syncedSlider";
 import type { SyncedSliderProps } from "../../primitives/syncedSlider";
 import { forwardRef } from "react";
 
-type SyncedSliderPropertyProps = SyncedSliderProps & PropertyLineProps;
+type SyncedSliderPropertyProps = SyncedSliderProps & PropertyLineProps<number>;
 /**
  * Renders a simple wrapper around the SyncedSliderInput
  * @param props
@@ -13,7 +13,7 @@ type SyncedSliderPropertyProps = SyncedSliderProps & PropertyLineProps;
 export const SyncedSliderPropertyLine = forwardRef<HTMLDivElement, SyncedSliderPropertyProps>((props, ref): React.ReactElement => {
     const { label, description, ...sliderProps } = props;
     return (
-        <PropertyLine ref={ref} label={label} description={description}>
+        <PropertyLine ref={ref} {...props}>
             <SyncedSliderInput {...sliderProps} />
         </PropertyLine>
     );

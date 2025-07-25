@@ -3,7 +3,8 @@ import type { FunctionComponent } from "react";
 
 import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
-import type { BaseComponentProps, PropertyLineProps } from "./propertyLine";
+import type { PrimitiveProps } from "../../primitives/primitive";
+import type { PropertyLineProps } from "./propertyLine";
 
 import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
 
@@ -11,8 +12,8 @@ import { Quaternion, Vector4 } from "core/Maths/math.vector";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 
-export type TensorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = BaseComponentProps<V> &
-    PropertyLineProps & {
+export type TensorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = PropertyLineProps<V> &
+    PrimitiveProps<V> & {
         /**
          * If passed, all sliders will use this for the min value
          */
@@ -95,12 +96,15 @@ type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
      */
     useDegrees?: boolean;
 };
-
 const QuaternionPropertyLineInternal = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Quaternion>>;
 export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLineProps> = (props) => {
     const min = props.useDegrees ? 0 : undefined;
     const max = props.useDegrees ? 360 : undefined;
     const [quat, setQuat] = useState(props.value);
+
+    // Extract only the properties that exist on QuaternionPropertyLineProps
+    const { useDegrees, ...restProps } = props;
+
     const onQuatChange = (val: Quaternion) => {
         setQuat(val);
         props.onChange(val);
@@ -111,12 +115,12 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
         setQuat(quat);
         props.onChange(quat);
     };
+
     return props.useDegrees ? (
-        <Vector3PropertyLine {...props} value={quat.toEulerAngles()} valueConverter={ToDegreesConverter} min={min} max={max} onChange={onEulerChange} />
+        <Vector3PropertyLine {...restProps} nullable={false} value={quat.toEulerAngles()} valueConverter={ToDegreesConverter} min={min} max={max} onChange={onEulerChange} />
     ) : (
-        <QuaternionPropertyLineInternal {...props} value={quat} min={min} max={max} onChange={onQuatChange} />
+        <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
     );
 };
-
 export const Vector3PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector3>>;
 export const Vector4PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector4>>;

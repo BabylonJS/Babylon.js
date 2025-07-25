@@ -3,7 +3,7 @@ import { makeStyles, Slider, tokens } from "@fluentui/react-components";
 import { NumberInput } from "./input";
 import type { ChangeEvent, FunctionComponent } from "react";
 import { useEffect, useState, useRef } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
+import type { PrimitiveProps } from "./primitive";
 
 const useSyncedSliderStyles = makeStyles({
     syncedSlider: {
@@ -22,7 +22,7 @@ const useSyncedSliderStyles = makeStyles({
     },
 });
 
-export type SyncedSliderProps = BaseComponentProps<number> & {
+export type SyncedSliderProps = PrimitiveProps<number> & {
     /** Minimum value for the slider */
     min?: number;
     /** Maximum value for the slider */
