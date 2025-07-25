@@ -184,7 +184,7 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 // End Area Light
 #endif
 
-#if defines(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
 lightingInfo computeClusteredLighting(
 	sampler2D lightDataTexture,
 	sampler2D tileMaskTexture,
@@ -202,12 +202,12 @@ lightingInfo computeClusteredLighting(
 	for (int i = 0; i < numLights;) {
 		uint mask = uint(texelFetch(tileMaskTexture, tilePosition, 0).r);
 		tilePosition.y += maskHeight;
-
 		int batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
 		for(; i < batchEnd && mask != 0u; i += 1, mask >>= 1) {
 			if ((mask & 1u) == 0u) {
 				continue;
 			}
+
 			vec4 lightData = texelFetch(lightDataTexture, ivec2(0, i), 0);
 			vec4 diffuse = texelFetch(lightDataTexture, ivec2(1, i), 0);
 			vec4 specular = texelFetch(lightDataTexture, ivec2(2, i), 0);

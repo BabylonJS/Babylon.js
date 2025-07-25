@@ -14,7 +14,6 @@
 #include<pbrUboDeclaration>
 
 #include<pbrFragmentExtraDeclaration>
-#include<spotLightDeclaration>
 #include<lightUboDeclaration>[0..maxSimultaneousLights]
 #include<pbrFragmentSamplersDeclaration>
 #include<imageProcessingDeclaration>

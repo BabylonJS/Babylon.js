@@ -30,7 +30,6 @@ precision highp float;
 #include<__decl__pbrFragment>
 
 #include<pbrFragmentExtraDeclaration>
-#include<spotLightDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 #include<pbrFragmentSamplersDeclaration>
 #include<imageProcessingDeclaration>
@@ -50,7 +49,6 @@ precision highp float;
 #include<pbrDirectLightingFalloffFunctions>
 #include<pbrBRDFFunctions>
 #include<hdrFilteringFunctions>
-#include<pbrDirectLightingFunctions>
 #include<pbrIBLFunctions>
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
@@ -72,9 +70,7 @@ precision highp float;
 #include<pbrBlockIridescence>
 #include<pbrBlockSubSurface>
 
-// WebGL does not support passing uniform arrays by reference and the copy heavily impacts performance.
-// Bit of a hacky solution but we can just create a function per clustered light that references the uniforms directly.
-#include<pbrClusteredLightFunctions>[0..maxSimultaneousLights]
+#include<pbrDirectLightingFunctions>
 
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {

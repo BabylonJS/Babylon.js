@@ -204,3 +204,162 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         return sheenTerm * info.attenuation * info.NdotL * lightColor;
     }
 #endif
+
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+    lightingInfo computeClusteredLighting(
+        sampler2D lightDataTexture,
+        sampler2D tileMaskTexture,
+        vec4 clusteredData,
+        int numLights,
+        vec3 V,
+        vec3 N,
+        vec3 posW,
+        vec3 surfaceAlbedo,
+        reflectivityOutParams reflectivityOut
+        #ifdef SS_TRANSLUCENCY
+            , subSurfaceOutParams subSurfaceOut
+        #endif
+        #ifdef SPECULARTERM
+            , float AARoughnessFactor
+        #endif
+        #ifdef ANISOTROPIC
+            , anisotropicOutParams anisotropicOut
+        #endif
+        #ifdef SHEEN
+            , sheenOutParams sheenOut
+        #endif
+        #ifdef CLEARCOAT
+            , clearcoatOutParams clearcoatOut
+        #endif
+    ) {
+        float NdotV = absEps(dot(N, V));
+#include<pbrBlockReflectance0>
+        #ifdef CLEARCOAT
+            specularEnvironmentR0 = clearcoatOut.specularEnvironmentR0;
+        #endif
+
+        lightingInfo result;
+        int maskHeight = int(clusteredData.y);
+        ivec2 tilePosition = ivec2(gl_FragCoord.xy * clusteredData.zw);
+        tilePosition.x = min(tilePosition.x, maskHeight - 1);
+
+        for (int i = 0; i < numLights;) {
+            uint mask = uint(texelFetch(tileMaskTexture, tilePosition, 0).r);
+            tilePosition.y += maskHeight;
+            int batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
+            for (; i < batchEnd && mask != 0u; i += 1, mask >>= 1) {
+                if ((mask & 1u) == 0u) {
+                    continue;
+                }
+
+                vec4 lightData = texelFetch(lightDataTexture, ivec2(0, i), 0);
+                vec4 diffuse = texelFetch(lightDataTexture, ivec2(1, i), 0);
+                vec4 specular = texelFetch(lightDataTexture, ivec2(2, i), 0);
+                vec4 direction = texelFetch(lightDataTexture, ivec2(3, i), 0);
+			    vec4 falloff = texelFetch(lightDataTexture, ivec2(4, i), 0);
+
+                preLightingInfo preInfo = computePointAndSpotPreLightingInfo(lightData, V, N, posW);
+                preInfo.NdotV = NdotV;
+
+                // Compute Attenuation infos
+                preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, falloff.x, falloff.y);
+                preInfo.attenuation *= computeDirectionalLightFalloff(direction.xyz, preInfo.L, direction.w, lightData.w, falloff.z, falloff.w);
+
+                preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, specular.a, preInfo.lightDistance);
+                preInfo.diffuseRoughness = reflectivityOut.diffuseRoughness;
+                preInfo.surfaceAlbedo = surfaceAlbedo;
+                lightingInfo info;
+
+                // Diffuse contribution
+                #ifdef SS_TRANSLUCENCY
+                    #ifdef SS_TRANSLUCENCY_LEGACY
+                        info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse.rgb, subSurfaceOut.transmittance);
+                        info.diffuseTransmission = vec3(0);
+                    #else
+                        info.diffuse = computeDiffuseLighting(preInfo, diffuse.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
+                        info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, diffuse.rgb, subSurfaceOut.transmittance);
+                    #endif
+                #else
+                    info.diffuse = computeDiffuseLighting(preInfo, diffuse.rgb);
+                #endif
+
+                // Specular contribution
+                #ifdef SPECULARTERM
+                    #if CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR
+                        vec3 metalFresnel = reflectivityOut.specularWeight * getF82Specular(preInfo.VdotH, specularEnvironmentR0, reflectivityOut.colorReflectanceF90, reflectivityOut.roughness);
+                        vec3 dielectricFresnel = fresnelSchlickGGX(preInfo.VdotH, reflectivityOut.dielectricColorF0, reflectivityOut.colorReflectanceF90);
+                        vec3 coloredFresnel = mix(dielectricFresnel, metalFresnel, reflectivityOut.metallic);
+                    #else
+                        vec3 coloredFresnel = fresnelSchlickGGX(preInfo.VdotH, specularEnvironmentR0, reflectivityOut.colorReflectanceF90);
+                    #endif
+                    #ifndef LEGACY_SPECULAR_ENERGY_CONSERVATION
+                        float NdotH = dot(N, preInfo.H);
+                        vec3 fresnel = fresnelSchlickGGX(NdotH, vec3(reflectanceF0), specularEnvironmentR90);
+                        info.diffuse *= (vec3(1.0) - fresnel);
+                    #endif
+                    #ifdef ANISOTROPIC
+                        info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, diffuse.rgb);
+                    #else
+                        info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, diffuse.rgb);
+                    #endif
+                #endif
+
+                // Sheen contribution
+                #ifdef SHEEN
+                    #ifdef SHEEN_LINKWITHALBEDO
+                        preInfo.roughness = sheenOut.sheenIntensity;
+                    #else
+                        preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, specular.a, preInfo.lightDistance);
+                    #endif
+                    info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, diffuse.rgb);
+                #endif
+
+                // Clear Coat contribution
+                #ifdef CLEARCOAT
+                    preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, specular.a, preInfo.lightDistance);
+                    info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, diffuse.rgb);
+
+                    #ifdef CLEARCOAT_TINT
+                        // Absorption
+                        float absorption = computeClearCoatLightingAbsorption(clearcoatOut.clearCoatNdotVRefract, preInfo.L, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatColor, clearcoatOut.clearCoatThickness, clearcoatOut.clearCoatIntensity);
+                        info.diffuse *= absorption;
+                        #ifdef SS_TRANSLUCENCY
+                            info.diffuseTransmission *= absorption;
+                        #endif
+                        #ifdef SPECULARTERM
+                            info.specular *= absorption;
+                        #endif
+                    #endif
+
+                    info.diffuse *= info.clearCoat.w;
+                    #ifdef SS_TRANSLUCENCY
+                        info.diffuseTransmission *= info.clearCoat.w;
+                    #endif
+                    #ifdef SPECULARTERM
+                        info.specular *= info.clearCoat.w;
+                    #endif
+                    #ifdef SHEEN
+                        info.sheen *= info.clearCoat.w;
+                    #endif
+                #endif
+
+                // Apply contributions to result
+                result.diffuse += info.diffuse;
+                #ifdef SS_TRANSLUCENCY
+                    result.diffuseTransmission += info.diffuseTransmission;
+                #endif
+                #ifdef SPECULARTERM
+                    result.specular += info.specular;
+                #endif
+                #ifdef CLEARCOAT
+                    result.clearCoat += info.clearCoat;
+                #endif
+                #ifdef SHEEN
+                    result.sheen += info.sheen;
+                #endif
+            }
+            i = batchEnd;
+        }
+        return result;
+    }
+#endif

@@ -8,15 +8,15 @@
 
         #if defined(PBR) && defined(CLUSTLIGHT{X})
             info = computeClusteredLighting(
+                lightDataTexture{X},
                 &tileMaskBuffer{X},
                 light{X}.vLightData,
-                &light{X}.vLights,
+                i32(light{X}.vNumLights),
                 viewDirectionW,
                 normalW,
                 fragmentInputs.vPositionW,
                 surfaceAlbedo,
                 reflectivityOut,
-                diffuse{X}.rgb,
                 #ifdef SS_TRANSLUCENCY
                     subSurfaceOut,
                 #endif
