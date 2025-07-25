@@ -30,10 +30,12 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
 
         const subNode = _GetSpatialAudioSubNode(subGraph);
         if (subNode) {
+            this._orientation = subNode.orientation.clone();
             this._position = subNode.position.clone();
             this._rotation = subNode.rotation.clone();
             this._rotationQuaternion = subNode.rotationQuaternion.clone();
         } else {
+            this._orientation = _SpatialAudioDefaults.orientation.clone();
             this._position = _SpatialAudioDefaults.position.clone();
             this._rotation = _SpatialAudioDefaults.rotation.clone();
             this._rotationQuaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
