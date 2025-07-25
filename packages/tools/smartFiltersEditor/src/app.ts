@@ -11,6 +11,7 @@ import {
     LogEntry,
     ObservableProperty,
     SmartFilterEditorControl,
+    LogLevel,
     type SmartFilterEditorOptions,
 } from "smart-filters-editor-control";
 import { SmartFilterRenderer } from "./smartFilterRenderer";
@@ -49,6 +50,17 @@ async function Main(): Promise<void> {
     const onLogRequiredObservable = new Observable<LogEntry>();
     let engine: Nullable<ThinEngine> = null;
 
+    // Redirect Logging to the onLogRequiredObservable
+    Logger.Log = (message: string | any[]) => {
+        onLogRequiredObservable.notifyObservers(new LogEntry(message.toString(), LogLevel.Log));
+    };
+    Logger.Warn = (message: string | any[]) => {
+        onLogRequiredObservable.notifyObservers(new LogEntry(message.toString(), LogLevel.Warn));
+    };
+    Logger.Error = (message: string | any[]) => {
+        onLogRequiredObservable.notifyObservers(new LogEntry(message.toString(), LogLevel.Error));
+    };
+
     // Set up optimize property change behavior
     optimizerEnabled.onChangedObservable.add(async (value: boolean) => {
         localStorage.setItem(LocalStorageOptimizeName, value ? "true" : "false");
@@ -73,7 +85,7 @@ async function Main(): Promise<void> {
 
     // Create the block editor registration
     const allBlockRegistrations: IBlockRegistration[] = [...customBlockRegistrations, ...EditorBlockRegistrations, ...builtInBlockRegistrations];
-    const blockEditorRegistration = GetBlockEditorRegistration(smartFilterDeserializer, allBlockRegistrations, true, onLogRequiredObservable);
+    const blockEditorRegistration = GetBlockEditorRegistration(smartFilterDeserializer, allBlockRegistrations, true);
 
     /**
      * Called when the editor has created a canvas and its associated engine
@@ -91,17 +103,17 @@ async function Main(): Promise<void> {
 
         afterEngineResizerObserver = newEngine.onResizeObservable.add(async () => {
             if (renderer && currentSmartFilter) {
-                await renderer.startRenderingAsync(currentSmartFilter, onLogRequiredObservable);
+                await renderer.startRenderingAsync(currentSmartFilter);
             }
         });
 
         let justLoadedSmartFilter = false;
         if (!currentSmartFilter) {
             try {
-                currentSmartFilter = await LoadStartingSmartFilter(smartFilterDeserializer, newEngine, onLogRequiredObservable);
+                currentSmartFilter = await LoadStartingSmartFilter(smartFilterDeserializer, newEngine);
                 justLoadedSmartFilter = true;
             } catch (err) {
-                onLogRequiredObservable.notifyObservers(new LogEntry(`Could not load Smart Filter:\n${err}`, true));
+                Logger.Error(`Could not load Smart Filter:\n${err}`);
                 return;
             }
         }
@@ -116,7 +128,7 @@ async function Main(): Promise<void> {
 
     const startRenderingAsync = async () => {
         if (renderer && currentSmartFilter) {
-            const renderResult = await renderer.startRenderingAsync(currentSmartFilter, onLogRequiredObservable);
+            const renderResult = await renderer.startRenderingAsync(currentSmartFilter);
             if (renderResult.succeeded) {
                 let statsString = "";
                 const stats: string[] = [];
@@ -129,19 +141,19 @@ async function Main(): Promise<void> {
                 if (stats.length > 0) {
                     statsString = ` [${stats.join(", ")}]`;
                 }
-                onLogRequiredObservable.notifyObservers(new LogEntry("Smart Filter built successfully" + statsString, false));
+                Logger.Log("Smart Filter built successfully" + statsString);
             }
         }
     };
 
     window.addEventListener("hashchange", async () => {
         if (renderer && engine) {
-            currentSmartFilter = await LoadFromUrl(smartFilterDeserializer, engine, onLogRequiredObservable);
+            currentSmartFilter = await LoadFromUrl(smartFilterDeserializer, engine);
             if (currentSmartFilter) {
                 await startRenderingAsync();
                 onSmartFilterLoadedObservable.notifyObservers(currentSmartFilter);
             } else {
-                onLogRequiredObservable.notifyObservers(new LogEntry("Could not load Smart Filter with that unique URL", true));
+                Logger.Error("Could not load Smart Filter with that unique URL");
             }
         }
     });
@@ -163,9 +175,9 @@ async function Main(): Promise<void> {
             }
             await startRenderingAsync();
 
-            onLogRequiredObservable.notifyObservers(new LogEntry("Loaded custom block successfully", false));
+            Logger.Log("Loaded custom block successfully");
         } catch (err) {
-            onLogRequiredObservable.notifyObservers(new LogEntry(`Could not load custom block:\n${err}`, true));
+            Logger.Error(`Could not load custom block:\n${err}`);
         }
     };
 
@@ -173,9 +185,9 @@ async function Main(): Promise<void> {
         if (currentSmartFilter) {
             try {
                 await SaveToSnippetServerAsync(currentSmartFilter);
-                onLogRequiredObservable.notifyObservers(new LogEntry("Saved Smart Filter to unique URL", false));
+                Logger.Log("Saved Smart Filter to unique URL");
             } catch (err: unknown) {
-                onLogRequiredObservable.notifyObservers(new LogEntry(`Could not save to unique URL:\n${err}`, true));
+                Logger.Error(`Could not save to unique URL:\n${err}`);
             }
         }
     };
@@ -185,7 +197,7 @@ async function Main(): Promise<void> {
             try {
                 await renderer.reloadAssetsAsync();
             } catch (err: unknown) {
-                onLogRequiredObservable.notifyObservers(new LogEntry(`Could not reload assets:\n${err}`, true));
+                Logger.Error(`Could not reload assets:\n${err}`);
             }
         }
     };
@@ -194,9 +206,9 @@ async function Main(): Promise<void> {
         if (currentSmartFilter) {
             try {
                 await CopySmartFilter(currentSmartFilter);
-                onLogRequiredObservable.notifyObservers(new LogEntry("Smart Filter JSON copied to clipboard", false));
+                Logger.Log("Smart Filter JSON copied to clipboard");
             } catch (err: unknown) {
-                onLogRequiredObservable.notifyObservers(new LogEntry(`Could not copy Smart Filter to clipboard:\n${err}`, true));
+                Logger.Error(`Could not copy Smart Filter to clipboard:\n${err}`);
             }
         }
     };
@@ -204,7 +216,7 @@ async function Main(): Promise<void> {
     const downloadSmartFilterAsync = async () => {
         if (currentSmartFilter) {
             await DownloadSmartFilter(currentSmartFilter);
-            onLogRequiredObservable.notifyObservers(new LogEntry("Smart filter JSON downloaded", false));
+            Logger.Log("Smart filter JSON downloaded");
         }
     };
 
@@ -223,12 +235,12 @@ async function Main(): Promise<void> {
             try {
                 if (renderer) {
                     currentSmartFilter = await LoadSmartFilterFromFile(smartFilterDeserializer, engine, file);
-                    onLogRequiredObservable.notifyObservers(new LogEntry("Loaded Smart Filter from JSON", false));
+                    Logger.Log("Loaded Smart Filter from JSON");
                     await startRenderingAsync();
                     return currentSmartFilter;
                 }
             } catch (err: unknown) {
-                onLogRequiredObservable.notifyObservers(new LogEntry(`Could not load Smart Filter:\n${err}`, true));
+                Logger.Error(`Could not load Smart Filter:\n${err}`);
             }
             return null;
         },
@@ -242,12 +254,12 @@ async function Main(): Promise<void> {
                     if (smartFilter) {
                         currentSmartFilter = smartFilter;
                         onSmartFilterLoadedObservable.notifyObservers(currentSmartFilter);
-                        onLogRequiredObservable.notifyObservers(new LogEntry("Smart Filter pasted from clipboard", false));
+                        Logger.Log("Smart Filter pasted from clipboard");
                         await startRenderingAsync();
                         return currentSmartFilter;
                     }
                 } catch (err: unknown) {
-                    onLogRequiredObservable.notifyObservers(new LogEntry(`Could not paste Smart Filter from clipboard:\n${err}`, true));
+                    Logger.Error(`Could not paste Smart Filter from clipboard:\n${err}`);
                 }
             }
             return null;

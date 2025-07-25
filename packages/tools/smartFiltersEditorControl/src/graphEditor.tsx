@@ -10,7 +10,7 @@ import { Portal } from "./portal.js";
 
 import { MessageDialog } from "shared-ui-components/components/MessageDialog.js";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas.js";
-import { LogComponent, LogEntry } from "./components/log/logComponent.js";
+import { LogComponent } from "./components/log/logComponent.js";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger.js";
 import { BlockTools } from "./blockTools.js";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent.js";
@@ -19,7 +19,7 @@ import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
-import type { BaseBlock, SmartFilter } from "smart-filters";
+import { Logger, type BaseBlock, type SmartFilter } from "smart-filters";
 import { inputsNamespace } from "smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
@@ -117,7 +117,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             if (canvas && this.props.globalState.onNewEngine) {
                 const engine = InitializePreview(canvas, this.props.globalState.forceWebGL1);
                 const versionToLog = `Babylon.js v${ThinEngine.Version} - WebGL${engine.webGLVersion}`;
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(versionToLog, false));
+                Logger.Log(versionToLog);
                 this.props.globalState.engine = engine;
                 this.props.globalState.onNewEngine(engine);
                 this._canvasResizeObserver.observe(canvas);
