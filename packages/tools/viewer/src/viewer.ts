@@ -22,6 +22,7 @@ import type {
     ShaderMaterial,
     ShadowGenerator,
     IblCdfGenerator,
+    BoundingInfo,
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
@@ -637,6 +638,25 @@ export type ViewerBoundingInfo = {
      * The center of the model.
      */
     readonly center: readonly [x: number, y: number, z: number];
+};
+
+export type ViewerCameraLimits = {
+    /**
+     * The minimum zoom distance of the camera.
+     */
+    lowerRadiusLimit: number;
+    /**
+     * The maximum zoom distance of the camera.
+     */
+    upperRadiusLimit: number;
+    /**
+     * The minZ of the camera.
+     */
+    minZ: number;
+    /**
+     * The maxZ of the camera.
+     */
+    maxZ: number;
 };
 
 export type Model = IDisposable & {
@@ -2626,6 +2646,39 @@ export class Viewer implements IDisposable {
         this._reframeCameraFromBounds(interpolate, models);
     }
 
+    protected _getWorldBounds(models: readonly Model[]): Nullable<ViewerBoundingInfo> {
+        return computeModelsBoundingInfos(models);
+    }
+
+    protected _getCameraLimits(models: readonly Model[]): ViewerCameraLimits {
+        let goalRadius = 1;
+        let goalTarget = Vector3.Zero();
+        const worldBounds = this._getWorldBounds(models);
+        if (worldBounds) {
+            // get bounds and prepare framing/camera radius from its values
+            this._camera.lowerRadiusLimit = null;
+
+            goalRadius = Vector3.FromArray(worldBounds.size).length() * 1.1;
+            goalTarget = Vector3.FromArray(worldBounds.center);
+            if (!isFinite(goalRadius)) {
+                goalRadius = 1;
+                goalTarget.copyFromFloats(0, 0, 0);
+            }
+        }
+
+        const lowerRadiusLimit = goalRadius * 0.001;
+        const upperRadiusLimit = goalRadius * 5;
+        const minZ = goalRadius * 0.001;
+        const maxZ = goalRadius * 1000;
+
+        return {
+            lowerRadiusLimit,
+            upperRadiusLimit,
+            minZ,
+            maxZ,
+        };
+    }
+
     // For rotation/radius/target, undefined means default framing, NaN means keep current value.
     private _reframeCameraFromBounds(
         interpolate: boolean,
@@ -2640,25 +2693,14 @@ export class Viewer implements IDisposable {
         let goalAlpha = Math.PI / 2;
         let goalBeta = Math.PI / 2.4;
         let goalRadius = 1;
-        let goalTarget = Vector3.Zero();
+        const goalTarget = Vector3.Zero();
 
-        const worldBounds = computeModelsBoundingInfos(models);
-        if (worldBounds) {
-            // get bounds and prepare framing/camera radius from its values
-            this._camera.lowerRadiusLimit = null;
+        const cameraLimits = this._getCameraLimits(models);
 
-            goalRadius = Vector3.FromArray(worldBounds.size).length() * 1.1;
-            goalTarget = Vector3.FromArray(worldBounds.center);
-            if (!isFinite(goalRadius)) {
-                goalRadius = 1;
-                goalTarget.copyFromFloats(0, 0, 0);
-            }
-        }
-
-        this._camera.lowerRadiusLimit = goalRadius * 0.001;
-        this._camera.upperRadiusLimit = goalRadius * 5;
-        this._camera.minZ = goalRadius * 0.001;
-        this._camera.maxZ = goalRadius * 1000;
+        this._camera.lowerRadiusLimit = cameraLimits.lowerRadiusLimit;
+        this._camera.upperRadiusLimit = cameraLimits.upperRadiusLimit;
+        this._camera.minZ = cameraLimits.minZ;
+        this._camera.maxZ = cameraLimits.maxZ;
 
         goalAlpha = alpha ?? goalAlpha;
         goalBeta = beta ?? goalBeta;
