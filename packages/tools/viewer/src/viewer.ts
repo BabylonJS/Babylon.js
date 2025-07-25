@@ -210,6 +210,7 @@ function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTextu
         hdrSkybox.material = hdrSkyboxMaterial;
         hdrSkybox.isPickable = false;
         hdrSkybox.infiniteDistance = true;
+        hdrSkybox.applyFog = false;
 
         updateSkybox(hdrSkybox, camera);
 
