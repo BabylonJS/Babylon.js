@@ -248,4 +248,6 @@ export abstract class AbstractSpatialAudio {
      * This is called automatically by default and only needs to be called manually if automatic updates are disabled.
      */
     public abstract update(): void;
+
+    public abstract dispose(): void;
 }

@@ -45,6 +45,12 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     }
 
     /** @internal */
+    public dispose(): void {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        this._subGraph.removeSubNodeAsync(_GetSpatialAudioSubNode(this._subGraph));
+    }
+
+    /** @internal */
     public get coneInnerAngle(): number {
         return this._coneInnerAngle;
     }
