@@ -16,6 +16,7 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     private _distanceModel: DistanceModelType = _SpatialAudioDefaults.distanceModel;
     private _maxDistance: number = _SpatialAudioDefaults.maxDistance;
     private _minDistance: number = _SpatialAudioDefaults.minDistance;
+    private _orientation: Vector3;
     private _panningModel: PanningModelType = _SpatialAudioDefaults.panningModel;
     private _position: Vector3;
     private _rolloffFactor: number = _SpatialAudioDefaults.rolloffFactor;
@@ -117,6 +118,16 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
     public set minDistance(value: number) {
         this._minDistance = value;
         _SetSpatialAudioProperty(this._subGraph, "minDistance", value);
+    }
+
+    /** @internal */
+    public get orientation(): Vector3 {
+        return this._orientation;
+    }
+
+    public set orientation(value: Vector3) {
+        this._orientation = value;
+        this._updateRotation();
     }
 
     /** @internal */
@@ -234,9 +245,18 @@ export abstract class _SpatialAudio extends AbstractSpatialAudio {
         if (!subNode.rotationQuaternion.equalsWithEpsilon(this._rotationQuaternion)) {
             subNode.rotationQuaternion.copyFrom(this._rotationQuaternion);
             subNode._updateRotation();
+            this._orientation.copyFrom(subNode.orientation);
+            this._rotation.copyFrom(subNode.rotation);
         } else if (!subNode.rotation.equalsWithEpsilon(this._rotation)) {
             subNode.rotation.copyFrom(this._rotation);
             subNode._updateRotation();
+            this._orientation.copyFrom(subNode.orientation);
+            this._rotationQuaternion.copyFrom(subNode.rotationQuaternion);
+        } else if (!subNode.orientation.equalsWithEpsilon(this._orientation)) {
+            subNode.orientation.copyFrom(this._orientation);
+            subNode._updateRotation();
+            this._rotation.copyFrom(subNode.rotation);
+            this._rotationQuaternion.copyFrom(subNode.rotationQuaternion);
         }
     }
 }
