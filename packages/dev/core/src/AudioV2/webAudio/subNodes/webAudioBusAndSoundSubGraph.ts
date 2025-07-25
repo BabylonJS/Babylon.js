@@ -62,6 +62,7 @@ export abstract class _WebAudioBusAndSoundSubGraph extends _WebAudioBaseSubGraph
         try {
             const node = super._createSubNode(name);
             return node;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {}
 
         switch (name) {

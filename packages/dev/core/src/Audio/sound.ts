@@ -740,7 +740,7 @@ export class Sound {
     public setLocalDirectionToMesh(newLocalDirection: Vector3): void {
         this._localDirection = newLocalDirection;
 
-        if (AbstractEngine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.isPlaying) {
+        if (this._connectedTransformNode && this.isPlaying) {
             this._updateDirection();
         }
     }
@@ -753,18 +753,17 @@ export class Sound {
         const mat = this._connectedTransformNode.getWorldMatrix();
         const direction = Vector3.TransformNormal(this._localDirection, mat);
         direction.normalize();
-        this._soundPanner.orientationX.value = direction.x;
-        this._soundPanner.orientationY.value = direction.y;
-        this._soundPanner.orientationZ.value = direction.z;
+
+        this._soundV2.spatial.orientation = direction;
     }
 
     /** @internal */
     public updateDistanceFromListener() {
-        if (AbstractEngine.audioEngine?.canUseWebAudio && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
+        if (this._soundV2._outNode && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
             const distance = this._scene.audioListenerPositionProvider
                 ? this._connectedTransformNode.position.subtract(this._scene.audioListenerPositionProvider()).length()
                 : this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
-            this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
+            this._soundV2.volume = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
         }
     }
 

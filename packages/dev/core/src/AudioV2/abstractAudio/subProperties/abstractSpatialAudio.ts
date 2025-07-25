@@ -10,6 +10,7 @@ export const _SpatialAudioDefaults = {
     distanceModel: "linear" as DistanceModelType,
     maxDistance: 10000 as number,
     minDistance: 1 as number,
+    orientation: Vector3.Right(),
     panningModel: "equalpower" as PanningModelType,
     position: Vector3.Zero(),
     rolloffFactor: 1 as number,
@@ -77,6 +78,10 @@ export interface ISpatialAudioOptions {
      */
     spatialMinUpdateTime: number;
     /**
+     * The spatial orientation used to determine the direction of the audio source. Defaults to (0, 0, -1).
+     */
+    spatialOrientation: Vector3;
+    /**
      * Possible values are:
      * - `"equalpower"`: Represents the equal-power panning algorithm, generally regarded as simple and efficient.
      * - `"HRTF"`: Renders a stereo output of higher quality than `"equalpower"` — it uses a convolution with measured impulse responses from human subjects.
@@ -123,6 +128,7 @@ export function _HasSpatialAudioOptions(options: Partial<ISpatialAudioOptions>):
         options.spatialMaxDistance !== undefined ||
         options.spatialMinDistance !== undefined ||
         options.spatialMinUpdateTime !== undefined ||
+        options.spatialOrientation !== undefined ||
         options.spatialPanningModel !== undefined ||
         options.spatialPosition !== undefined ||
         options.spatialRolloffFactor !== undefined ||
@@ -195,6 +201,11 @@ export abstract class AbstractSpatialAudio {
     public abstract minUpdateTime: number;
 
     /**
+     * The spatial orientation used to determine the direction of the audio source. Defaults to (0, 0, -1).
+     */
+    public abstract orientation: Vector3;
+
+    /**
      * The spatial panning model. Defaults to "equalpower".
      *
      * Possible values are:
@@ -216,12 +227,12 @@ export abstract class AbstractSpatialAudio {
     public abstract rolloffFactor: number;
 
     /**
-     * The spatial rotation. Defaults to (0, 0, 0).
+     * The spatial rotation used to determine the direction of the audio source. Defaults to (0, 0, 0).
      */
     public abstract rotation: Vector3;
 
     /**
-     * The spatial rotation quaternion. Defaults to (0, 0, 0, 1).
+     * The spatial rotation quaternion used to determine the direction of the audio source. Defaults to (0, 0, 0, 1).
      */
     public abstract rotationQuaternion: Quaternion;
 

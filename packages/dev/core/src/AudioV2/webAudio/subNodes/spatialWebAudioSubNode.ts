@@ -7,7 +7,6 @@ import type { IWebAudioInNode } from "../webAudioNode";
 
 const TmpMatrix = Matrix.Zero();
 const TmpQuaternion = new Quaternion();
-const TmpVector = Vector3.Zero();
 
 function D2r(degrees: number): number {
     return (degrees * Math.PI) / 180;
@@ -25,6 +24,7 @@ export async function _CreateSpatialAudioSubNodeAsync(engine: _WebAudioEngine): 
 
 /** @internal */
 export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
+    private _lastOrientation: Vector3 = Vector3.Zero();
     private _lastPosition: Vector3 = Vector3.Zero();
     private _lastRotation: Vector3 = Vector3.Zero();
     private _lastRotationQuaternion: Quaternion = new Quaternion();
@@ -38,6 +38,8 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
     /** @internal */
     public override readonly engine: _WebAudioEngine;
 
+    /** @internal */
+    public readonly orientation: Vector3 = _SpatialAudioDefaults.orientation.clone();
     /** @internal */
     public readonly position = _SpatialAudioDefaults.position.clone();
     /** @internal */
@@ -191,22 +193,27 @@ export class _SpatialWebAudioSubNode extends _SpatialAudioSubNode {
             return;
         }
 
+        let rotated = false;
         if (!this._lastRotationQuaternion.equalsWithEpsilon(this.rotationQuaternion)) {
             TmpQuaternion.copyFrom(this.rotationQuaternion);
             this._lastRotationQuaternion.copyFrom(this.rotationQuaternion);
+            rotated = true;
         } else if (!this._lastRotation.equalsWithEpsilon(this.rotation)) {
             Quaternion.FromEulerAnglesToRef(this.rotation.x, this.rotation.y, this.rotation.z, TmpQuaternion);
             this._lastRotation.copyFrom(this.rotation);
-        } else {
+            rotated = true;
+        } else if (this._lastOrientation.equalsWithEpsilon(this.orientation)) {
             return;
         }
 
-        Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
-        Vector3.TransformNormalToRef(Vector3.RightReadOnly, TmpMatrix, TmpVector);
+        if (rotated) {
+            Matrix.FromQuaternionToRef(TmpQuaternion, TmpMatrix);
+            Vector3.TransformNormalToRef(Vector3.RightReadOnly, TmpMatrix, this.orientation);
+        }
 
-        this._orientationX.targetValue = TmpVector.x;
-        this._orientationY.targetValue = TmpVector.y;
-        this._orientationZ.targetValue = TmpVector.z;
+        this._orientationX.targetValue = this.orientation.x;
+        this._orientationY.targetValue = this.orientation.y;
+        this._orientationZ.targetValue = this.orientation.z;
     }
 
     protected override _connect(node: IWebAudioInNode): boolean {
