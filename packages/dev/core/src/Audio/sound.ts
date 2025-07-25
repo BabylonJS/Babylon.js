@@ -18,9 +18,21 @@ import type { Nullable } from "../types";
 // import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import type { ISoundOptions } from "./Interfaces/ISoundOptions";
 import { SoundState } from "../AudioV2/soundState";
-import { _AudioAnalyzerDefaults, _SpatialAudioDefaults, type IStaticSoundOptions, type IStreamingSoundOptions } from "../AudioV2";
+import {
+    _AudioAnalyzerDefaults,
+    _SpatialAudioDefaults,
+    AudioParameterRampShape,
+    type IAudioParameterRampOptions,
+    type IStaticSoundOptions,
+    type IStreamingSoundOptions,
+} from "../AudioV2";
 import type { AudioEngine } from "./audioEngine";
 // import type { ISoundSourceOptions } from "../AudioV2/abstractAudio/abstractSoundSource";
+
+const TmpRampOptions: IAudioParameterRampOptions = {
+    duration: 0,
+    shape: AudioParameterRampShape.Linear,
+};
 
 /**
  * Defines a sound that can be played in the application.
@@ -151,6 +163,7 @@ export class Sound {
 
     private _panningModel: "equalpower" | "HRTF" = "equalpower";
     private _localDirection: Vector3 = new Vector3(1, 0, 0);
+    private _volume: number = 1;
     private _isReadyToPlay: boolean = false;
     // private _isDirectional: boolean = false;
     private _readyToPlayCallback: () => any;
@@ -164,7 +177,7 @@ export class Sound {
     // private _coneOuterGain: number = 0;
     private _scene: Scene;
     private _connectedTransformNode: Nullable<TransformNode>;
-    // private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
+    private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
     // private _htmlAudioElement: Nullable<HTMLAudioElement>;
@@ -204,13 +217,13 @@ export class Sound {
 
         // Default custom attenuation function is a linear attenuation
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        // this._customAttenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => {
-        //     if (currentDistance < maxDistance) {
-        //         return currentVolume * (1 - currentDistance / maxDistance);
-        //     } else {
-        //         return 0;
-        //     }
-        // };
+        this._customAttenuationFunction = (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => {
+            if (currentDistance < maxDistance) {
+                return currentVolume * (1 - currentDistance / maxDistance);
+            } else {
+                return 0;
+            }
+        };
 
         const audioEngineV2 = (AbstractEngine.audioEngine as AudioEngine)._v2;
 
@@ -439,41 +452,41 @@ export class Sound {
      * @param options A JSON object containing values named as the object properties
      */
     public updateOptions(options: ISoundOptions): void {
-        // if (options) {
-        //     this.loop = options.loop ?? this.loop;
-        //     this.maxDistance = options.maxDistance ?? this.maxDistance;
-        //     this.useCustomAttenuation = options.useCustomAttenuation ?? this.useCustomAttenuation;
-        //     this.rolloffFactor = options.rolloffFactor ?? this.rolloffFactor;
-        //     this.refDistance = options.refDistance ?? this.refDistance;
-        //     this.distanceModel = options.distanceModel ?? this.distanceModel;
-        //     this._playbackRate = options.playbackRate ?? this._playbackRate;
-        //     this._length = options.length ?? undefined;
-        //     this.spatialSound = options.spatialSound ?? this._spatialSound;
-        //     this._setOffset(options.offset ?? undefined);
-        //     this.setVolume(options.volume ?? this._volume);
-        //     this._updateSpatialParameters();
-        //     if (this.isPlaying) {
-        //         if (this._streaming && this._htmlAudioElement) {
-        //             this._htmlAudioElement.playbackRate = this._playbackRate;
-        //             if (this._htmlAudioElement.loop !== this.loop) {
-        //                 this._htmlAudioElement.loop = this.loop;
-        //             }
-        //         } else {
-        //             if (this._soundSource) {
-        //                 this._soundSource.playbackRate.value = this._playbackRate;
-        //                 if (this._soundSource.loop !== this.loop) {
-        //                     this._soundSource.loop = this.loop;
-        //                 }
-        //                 if (this._offset !== undefined && this._soundSource.loopStart !== this._offset) {
-        //                     this._soundSource.loopStart = this._offset;
-        //                 }
-        //                 if (this._length !== undefined && this._length !== this._soundSource.loopEnd) {
-        //                     this._soundSource.loopEnd = (this._offset! | 0) + this._length;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        if (options) {
+            //     this.loop = options.loop ?? this.loop;
+            //     this.maxDistance = options.maxDistance ?? this.maxDistance;
+            //     this.useCustomAttenuation = options.useCustomAttenuation ?? this.useCustomAttenuation;
+            //     this.rolloffFactor = options.rolloffFactor ?? this.rolloffFactor;
+            //     this.refDistance = options.refDistance ?? this.refDistance;
+            //     this.distanceModel = options.distanceModel ?? this.distanceModel;
+            //     this._playbackRate = options.playbackRate ?? this._playbackRate;
+            //     this._length = options.length ?? undefined;
+            //     this.spatialSound = options.spatialSound ?? this._spatialSound;
+            //     this._setOffset(options.offset ?? undefined);
+            this.setVolume(options.volume ?? this._volume);
+            //     this._updateSpatialParameters();
+            //     if (this.isPlaying) {
+            //         if (this._streaming && this._htmlAudioElement) {
+            //             this._htmlAudioElement.playbackRate = this._playbackRate;
+            //             if (this._htmlAudioElement.loop !== this.loop) {
+            //                 this._htmlAudioElement.loop = this.loop;
+            //             }
+            //         } else {
+            //             if (this._soundSource) {
+            //                 this._soundSource.playbackRate.value = this._playbackRate;
+            //                 if (this._soundSource.loop !== this.loop) {
+            //                     this._soundSource.loop = this.loop;
+            //                 }
+            //                 if (this._offset !== undefined && this._soundSource.loopStart !== this._offset) {
+            //                     this._soundSource.loopStart = this._offset;
+            //                 }
+            //                 if (this._length !== undefined && this._length !== this._soundSource.loopEnd) {
+            //                     this._soundSource.loopEnd = (this._offset! | 0) + this._length;
+            //                 }
+            //             }
+            //         }
+            //     }
+        }
     }
 
     // private _updateSpatialParameters() {
@@ -656,14 +669,12 @@ export class Sound {
 
     /** @internal */
     public updateDistanceFromListener() {
-        // TODO: Might need a separate gain node for distance attenuation.
-        //
-        // if (this._soundV2._outNode && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
-        //     const distance = this._scene.audioListenerPositionProvider
-        //         ? this._connectedTransformNode.position.subtract(this._scene.audioListenerPositionProvider()).length()
-        //         : this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
-        //     this._soundV2.volume = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
-        // }
+        if (this._soundV2._outNode && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
+            const distance = this._scene.audioListenerPositionProvider
+                ? this._connectedTransformNode.position.subtract(this._scene.audioListenerPositionProvider()).length()
+                : this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
+            this._soundV2.volume = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
+        }
     }
 
     /**
@@ -672,7 +683,7 @@ export class Sound {
      * @see https://doc.babylonjs.com/legacy/audio#creating-your-own-custom-attenuation-function
      */
     public setAttenuationFunction(callback: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number): void {
-        // this._customAttenuationFunction = callback;
+        this._customAttenuationFunction = callback;
     }
 
     /**
@@ -900,16 +911,9 @@ export class Sound {
      * @param time Define time for gradual change to new volume
      */
     public setVolume(newVolume: number, time?: number): void {
-        // if (AbstractEngine.audioEngine?.canUseWebAudio && this._soundGain) {
-        //     if (time && AbstractEngine.audioEngine.audioContext) {
-        //         this._soundGain.gain.cancelScheduledValues(AbstractEngine.audioEngine.audioContext.currentTime);
-        //         this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, AbstractEngine.audioEngine.audioContext.currentTime);
-        //         this._soundGain.gain.linearRampToValueAtTime(newVolume, AbstractEngine.audioEngine.audioContext.currentTime + time);
-        //     } else {
-        //         this._soundGain.gain.value = newVolume;
-        //     }
-        // }
-        // this._volume = newVolume;
+        TmpRampOptions.duration = time || 0;
+        this._soundV2.setVolume(newVolume, TmpRampOptions);
+        this._volume = newVolume;
     }
 
     /**
@@ -917,14 +921,9 @@ export class Sound {
      * @param newPlaybackRate Define the playback rate the sound should be played at
      */
     public setPlaybackRate(newPlaybackRate: number): void {
-        // this._playbackRate = newPlaybackRate;
-        // if (this.isPlaying) {
-        //     if (this._streaming && this._htmlAudioElement) {
-        //         this._htmlAudioElement.playbackRate = this._playbackRate;
-        //     } else if (this._soundSource) {
-        //         this._soundSource.playbackRate.value = this._playbackRate;
-        //     }
-        // }
+        if (this._soundV2 instanceof _WebAudioStaticSound) {
+            this._soundV2.playbackRate = newPlaybackRate;
+        }
     }
 
     /**
@@ -932,8 +931,11 @@ export class Sound {
      * @returns the  play back rate of the sound
      */
     public getPlaybackRate(): number {
-        // return this._playbackRate;
-        return 0;
+        if (this._soundV2 instanceof _WebAudioStaticSound) {
+            return this._soundV2.playbackRate;
+        }
+
+        return 1;
     }
 
     /**
@@ -941,8 +943,7 @@ export class Sound {
      * @returns the volume of the sound
      */
     public getVolume(): number {
-        // return this._volume;
-        return 0;
+        return this._volume;
     }
 
     /**
