@@ -15,3 +15,7 @@ ClusteredLight getClusteredLight(sampler2D lightDataTexture, int index) {
         texelFetch(lightDataTexture, ivec2(4, index), 0)
     );
 }
+
+int getClusteredSliceIndex(vec2 sliceData, float viewDepth) {
+    return int(log(viewDepth) * sliceData.x + sliceData.y);
+}
