@@ -34,6 +34,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     /** @internal */
     public _vReflectionFilteringInfoName: string;
     private _scene: Scene;
+    private _iblIntensityName: string;
 
     /**
      * The properties below are set by the main PBR block prior to calling methods of this class.
@@ -242,6 +243,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             effect.setTexture(this._2DSamplerName, reflectionTexture);
         }
 
+        effect.setFloat(this._iblIntensityName, this._scene.iblIntensity * reflectionTexture.level);
+
         const width = reflectionTexture.getSize().width;
 
         effect.setFloat3(this._vReflectionMicrosurfaceInfosName, width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
@@ -400,8 +403,12 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         state._emitUniformFromString(this._vReflectionFilteringInfoName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
+        this._iblIntensityName = state._getFreeVariableName("iblIntensity");
+
+        state._emitUniformFromString(this._iblIntensityName, NodeMaterialBlockConnectionPointTypes.Float);
+
         code += `#ifdef REFLECTION
-            ${state._declareLocalVar(this._vReflectionInfosName, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(1., 0.);
+            ${state._declareLocalVar(this._vReflectionInfosName, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(${(isWebGPU ? "uniforms." : "") + this._iblIntensityName}, 0.);
 
             ${isWebGPU ? "var reflectionOut: reflectionOutParams" : "reflectionOutParams reflectionOut"};
 
