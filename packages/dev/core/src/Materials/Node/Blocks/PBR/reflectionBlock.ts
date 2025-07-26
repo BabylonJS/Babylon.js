@@ -408,7 +408,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         state._emitUniformFromString(this._iblIntensityName, NodeMaterialBlockConnectionPointTypes.Float);
 
         code += `#ifdef REFLECTION
-            ${state._declareLocalVar(this._vReflectionInfosName, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(${this._iblIntensityName}, 0.);
+            ${state._declareLocalVar(this._vReflectionInfosName, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(${(isWebGPU ? "uniforms." : "") + this._iblIntensityName}, 0.);
 
             ${isWebGPU ? "var reflectionOut: reflectionOutParams" : "reflectionOutParams reflectionOut"};
 
