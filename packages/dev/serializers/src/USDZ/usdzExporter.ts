@@ -616,6 +616,7 @@ function BuildCamera(camera: Camera, options: IUSDZExportOptions) {
 }
 
 function ExtractMeshInformations(mesh: Mesh) {
+    mesh.computeWorldMatrix(true);
     const matrix = mesh.getWorldMatrix().clone();
     const sceneIsRightHanded = mesh.getScene().useRightHandedSystem;
     let sideOrientation = mesh.material?._getEffectiveOrientation(mesh) ?? mesh.sideOrientation;
@@ -638,7 +639,7 @@ function ExtractMeshInformations(mesh: Mesh) {
 
     if (matrix.determinant() < 0) {
         // RealityKit doesn't seem to automatically flip faces of a mesh with negative scale, like other engines do (including us).
-        Tools.Warn(`Mesh ${mesh} has a negative scale, which may look incorrect in destinations like QuickLook.`);
+        Tools.Warn(`Mesh ${mesh.name} has a negative scale, which may look incorrect in destinations like QuickLook.`);
     }
 
     return {
