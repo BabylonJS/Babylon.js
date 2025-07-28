@@ -22,7 +22,6 @@ import type {
     ShaderMaterial,
     ShadowGenerator,
     IblCdfGenerator,
-    BoundingInfo,
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
