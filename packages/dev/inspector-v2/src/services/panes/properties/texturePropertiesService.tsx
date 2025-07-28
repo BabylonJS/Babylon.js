@@ -1,12 +1,13 @@
 import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { ISelectionService } from "../../selectionService";
+import type { ISettingsContext } from "../../settingsContext";
 import type { IPropertiesService } from "./propertiesService";
 
 import { Spinner } from "@fluentui/react-components";
 import { lazy, Suspense } from "react";
 
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -17,11 +18,12 @@ import {
     BaseTexturePreviewProperties,
     BaseTextureTransformProperties,
 } from "../../../components/properties/textures/baseTextureProperties";
+import { CubeTextureTransformProperties } from "../../../components/properties/textures/cubeTextureProperties";
 import { MultiRenderTargetGeneralProperties } from "../../../components/properties/textures/multiRenderTargetProperties";
 import { RenderTargetTextureGeneralProperties } from "../../../components/properties/textures/renderTargetTextureProperties";
-import { TextureGeneralProperties, TexturePreviewProperties } from "../../../components/properties/textures/textureProperties";
+import { TextureGeneralProperties, TexturePreviewProperties, TextureTransformProperties } from "../../../components/properties/textures/textureProperties";
 import { ThinTextureGeneralProperties } from "../../../components/properties/textures/thinTextureProperties";
-import { SelectionServiceIdentity } from "../../selectionService";
+import { SettingsContextIdentity } from "../../settingsContext";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
 // Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
@@ -36,10 +38,10 @@ const AdvancedDynamicTextureGeneralProperties = lazy(async () => {
     return { default: AdvancedDynamicTextureGeneralProperties };
 });
 
-export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
+export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
     friendlyName: "Texture Properties",
-    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
-    factory: (propertiesService) => {
+    consumes: [PropertiesServiceIdentity, SettingsContextIdentity],
+    factory: (propertiesService, settingsContext) => {
         const baseTextureContentRegistration = propertiesService.addSectionContent({
             key: "Base Texture Properties",
             predicate: (entity: unknown) => entity instanceof BaseTexture,
@@ -65,7 +67,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
             ],
         });
 
-        const thinTextureProperties = propertiesService.addSectionContent({
+        const thinTextureContentRegistration = propertiesService.addSectionContent({
             key: "Thin Texture Properties",
             predicate: (entity: unknown) => entity instanceof ThinTexture,
             content: [
@@ -89,6 +91,28 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                     section: "General",
                     order: 300,
                     component: ({ context }) => <TextureGeneralProperties texture={context} />,
+                },
+            ],
+        });
+
+        const textureExcludingCubeContentRegistration = propertiesService.addSectionContent({
+            key: "Texture Transform Properties",
+            predicate: (entity: unknown): entity is Texture => entity instanceof Texture && !entity.isCube,
+            content: [
+                {
+                    section: "Transform",
+                    component: ({ context }) => <TextureTransformProperties texture={context} settings={settingsContext} />,
+                },
+            ],
+        });
+
+        const cubeTextureContentRegistration = propertiesService.addSectionContent({
+            key: "Cube Texture Properties",
+            predicate: (entity: unknown) => entity instanceof CubeTexture,
+            content: [
+                {
+                    section: "Transform",
+                    component: ({ context }) => <CubeTextureTransformProperties texture={context} settings={settingsContext} />,
                 },
             ],
         });
@@ -137,9 +161,11 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                 advancedDynamicTextureContentRegistration.dispose();
                 multiRenderTargetContentRegistration.dispose();
                 renderTargetTextureContentRegistration.dispose();
+                cubeTextureContentRegistration.dispose();
+                textureExcludingCubeContentRegistration.dispose();
                 textureContentRegistration.dispose();
                 baseTextureContentRegistration.dispose();
-                thinTextureProperties.dispose();
+                thinTextureContentRegistration.dispose();
             },
         };
     },
