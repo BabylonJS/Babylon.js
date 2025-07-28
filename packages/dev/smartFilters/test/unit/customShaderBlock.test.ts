@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-conditional-expect */
 import { Logger } from "../../src";
 import { SmartFilter } from "../../src/smartFilter.js";
 import { ImportCustomBlockDefinition } from "../../src/serialization/importCustomBlockDefinition.js";
@@ -38,7 +39,7 @@ vec4 test(vec2 vUV) { // main
 
 const glslValidColor3DefaultValue = `
 // { "smartFilterBlockType": "TestBlock", "namespace": "Bug.Repro" }
-// { "default" : { "x": 1.0, "y": 2.0, "z": 3.0 } }
+// { "default" : { "r": 1.0, "g": 2.0, "b": 3.0 } }
 uniform vec3 testColor3;
 vec4 test(vec2 vUV) { // main
     return vec4(vUV, 1., 1.);
@@ -54,7 +55,7 @@ vec4 test(vec2 vUV) { // main
 
 const glslValidColor4DefaultValue = `
 // { "smartFilterBlockType": "TestBlock", "namespace": "Bug.Repro" }
-// { "default" : { "x": 1.0, "y": 2.0, "z": 3.0, "w": 4.0 } }
+// { "default" : { "r": 1.0, "g": 2.0, "b": 3.0, "a": 4.0 } }
 uniform vec4 testColor4;
 vec4 test(vec2 vUV) { // main
     return vec4(vUV, 1., 1.);
@@ -92,6 +93,10 @@ describe("CustomShaderBlock", () => {
     beforeAll(() => {
         Logger.Warn = warnFn;
         Logger.Error = errorFn;
+    });
+
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
     describe("Default Value Parsing", () => {
@@ -151,8 +156,9 @@ describe("CustomShaderBlock", () => {
                 const blockDefinition = ImportCustomBlockDefinition(testCase.glsl) as SerializedShaderBlockDefinitionV1;
                 CustomShaderBlock.Create(smartFilter, "TestBlock", blockDefinition);
                 if (testCase.expectedWarning) {
-                    // eslint-disable-next-line jest/no-conditional-expect
                     expect(warnFn).toHaveBeenCalledWith(testCase.expectedWarning);
+                } else {
+                    expect(warnFn).not.toHaveBeenCalled();
                 }
                 expect(errorFn).not.toHaveBeenCalled();
             });
