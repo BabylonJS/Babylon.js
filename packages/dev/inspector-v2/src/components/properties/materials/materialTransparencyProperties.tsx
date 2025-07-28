@@ -5,7 +5,7 @@ import type { FunctionComponent } from "react";
 
 import { BoundProperty } from "../boundProperty";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { NullableNumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 
 const TransparencyModeOptions: DropdownOption[] = [
     { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
@@ -20,7 +20,9 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
     return (
         <>
             <BoundProperty
-                component={NullableNumberDropdownPropertyLine}
+                component={NumberDropdownPropertyLine}
+                nullable
+                defaultValue={PBRMaterial.PBRMATERIAL_OPAQUE}
                 key="Transparency mode"
                 label="Transparency mode"
                 target={material}

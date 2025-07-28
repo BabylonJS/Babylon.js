@@ -216,6 +216,7 @@ function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTextu
         hdrSkybox.material = hdrSkyboxMaterial;
         hdrSkybox.isPickable = false;
         hdrSkybox.infiniteDistance = true;
+        hdrSkybox.applyFog = false;
 
         updateSkybox(hdrSkybox, camera);
 
@@ -2701,13 +2702,13 @@ export class Viewer implements IDisposable {
 
     private _updateLight() {
         let shouldHaveDefaultLight: boolean;
-        if (!this._activeModel) {
+        if (this._loadedModels.length === 0) {
             shouldHaveDefaultLight = false;
         } else {
-            const hasModelProvidedLights = this._activeModel.assetContainer.lights.length > 0;
+            const hasModelProvidedLights = this._loadedModels.some((model) => model.assetContainer.lights.length > 0);
             const hasImageBasedLighting = !!this._reflectionTexture;
-            const hasMaterials = this._activeModel.assetContainer.materials.length > 0;
-            const hasNonPBRMaterials = this._activeModel.assetContainer.materials.some((material) => !(material instanceof PBRMaterial));
+            const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
+            const hasNonPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => !(material instanceof PBRMaterial)));
 
             if (hasModelProvidedLights) {
                 shouldHaveDefaultLight = false;

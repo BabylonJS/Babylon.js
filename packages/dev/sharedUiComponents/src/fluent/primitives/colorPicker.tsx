@@ -23,7 +23,7 @@ import {
 } from "@fluentui/react-components";
 import type { SpinButtonChangeEvent, SpinButtonOnChangeData, ColorPickerProps as FluentColorPickerProps, InputOnChangeData } from "@fluentui/react-components";
 import { Color3, Color4 } from "core/Maths/math.color";
-import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
+import type { PrimitiveProps } from "./primitive";
 
 const useColorPickerStyles = makeStyles({
     colorPickerContainer: {
@@ -68,7 +68,7 @@ const useColorPickerStyles = makeStyles({
 
 export type ColorPickerProps<C extends Color3 | Color4> = {
     isLinearMode?: boolean;
-} & BaseComponentProps<C>;
+} & PrimitiveProps<C>;
 
 export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color4>> = (props) => {
     const classes = useColorPickerStyles();
@@ -145,7 +145,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
 };
 
 type HsvKey = "h" | "s" | "v";
-export type InputHexProps = BaseComponentProps<Color3 | Color4> & {
+export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
     label?: string;
     linearHex?: boolean;
     isLinearMode?: boolean;

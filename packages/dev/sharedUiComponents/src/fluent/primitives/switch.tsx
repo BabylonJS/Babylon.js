@@ -1,9 +1,9 @@
 import type { SwitchOnChangeData } from "@fluentui/react-components";
 import type { ChangeEvent, FunctionComponent } from "react";
+import type { PrimitiveProps } from "./primitive";
 
 import { makeStyles, Switch as FluentSwitch } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
 
 const useSwitchStyles = makeStyles({
     switch: {
@@ -14,7 +14,7 @@ const useSwitchStyles = makeStyles({
     },
 });
 
-export type SwitchProps = BaseComponentProps<boolean>;
+export type SwitchProps = PrimitiveProps<boolean>;
 
 /**
  * This is a primitive fluent boolean switch component whose only knowledge is the shared styling across all tools

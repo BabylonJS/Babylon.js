@@ -1190,6 +1190,15 @@ export class UniformBuffer {
     }
 
     /**
+     * Checks if the uniform buffer has a uniform with the given name.
+     * @param name Name of the uniform to check
+     * @returns True if the uniform exists, false otherwise.
+     */
+    public has(name: string): boolean {
+        return this._uniformLocations[name] !== undefined;
+    }
+
+    /**
      * Disposes the uniform buffer.
      */
     public dispose(): void {

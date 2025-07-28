@@ -1,45 +1,82 @@
-import type { ComponentType } from "react";
-
-import type { BaseComponentProps } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
-
+import type { ComponentType, ComponentProps } from "react";
 import { forwardRef } from "react";
 
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**
- * This enables type safety when using a BoundProperty
- * Generic types TargetT and PropertyKeyT ensure that target[propertyKey] has the same type as the value/onChange of the BaseComponent
- * Generic type PropsT ensures that the BoundProperty component accepts only the props of the underlying ComponentType
+ * Helper type to check if a type includes null or undefined
  */
-export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object> = Omit<PropsT, "value" | "onChange"> & {
-    component: ComponentType<PropsT & BaseComponentProps<TargetT[PropertyKeyT]>>;
+type IsNullable<T> = null extends T ? true : undefined extends T ? true : false;
+
+/**
+ * Base props for BoundProperty
+ */
+type BaseBoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>> = Omit<
+    ComponentProps<ComponentT>,
+    "value" | "onChange" | "nullable" | "defaultValue"
+> & {
+    component: ComponentT;
     target: TargetT;
     propertyKey: PropertyKeyT;
     convertTo?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
     convertFrom?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
 };
 
-function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, PropsT extends object>(props: BoundPropertyProps<TargetT, PropertyKeyT, PropsT>, ref?: any) {
+/**
+ * Enhanced BoundProperty props that enforces strict nullable handling
+ */
+export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>> = BaseBoundPropertyProps<
+    TargetT,
+    PropertyKeyT,
+    ComponentT
+> &
+    (IsNullable<TargetT[PropertyKeyT]> extends true
+        ? ComponentProps<ComponentT> extends { nullable?: boolean }
+            ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
+              {
+                  nullable: true;
+                  defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+              }
+            : // Component doesn't support nullable UI - prevent usage entirely with nullable properties
+              never
+        : {});
+
+function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>>(
+    props: BoundPropertyProps<TargetT, PropertyKeyT, ComponentT>,
+    ref?: any
+) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
     const value = useProperty(target, propertyKey);
+    const convertedValue = convertTo ? convertTo(value) : value;
 
-    return (
-        <Component
-            {...(rest as PropsT)}
-            ref={ref}
-            value={convertTo ? convertTo(value) : value}
-            onChange={(val: TargetT[PropertyKeyT]) => {
-                target[propertyKey] = convertFrom ? convertFrom(val) : val;
-            }}
-        />
-    );
+    const propsToSend = {
+        ...rest,
+        ref,
+        value: convertedValue as TargetT[PropertyKeyT],
+        onChange: (val: TargetT[PropertyKeyT]) => {
+            const newValue = convertFrom ? convertFrom(val) : val;
+            target[propertyKey] = newValue;
+        },
+    };
+
+    return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
+}
+
+// Custom generic forwardRef function (this is needed because using forwardRef with BoundPropertyImpl does not properly resolve Generic types)
+function CreateGenericForwardRef<T extends (...args: any[]) => any>(render: T) {
+    return forwardRef(render as any) as unknown as T;
 }
 
 /**
  * Intercepts the passed in component's target[propertyKey] with useInterceptObservable and sets component state using useObservableState.
  * Renders the passed in component with value as the new observableState value and onChange as a callback to set the target[propertyKey] value.
- * @param props
- * @returns
+ *
+ * NOTE: BoundProperty has strict nullable enforcement!
+ *
+ * If Target[PropertyKey] is Nullable, caller can only bind to a component that explicitly handles nullable (and caller must send nullable/defaultValue props)
+ *
+ * @param props BoundPropertyProps with strict nullable validation
+ * @returns JSX element
  */
-export const BoundProperty = forwardRef(BoundPropertyImpl) as unknown as typeof BoundPropertyImpl;
+export const BoundProperty = CreateGenericForwardRef(BoundPropertyImpl);

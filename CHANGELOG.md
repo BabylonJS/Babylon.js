@@ -1,5 +1,35 @@
 # Changelog
 
+## 8.18.0
+
+### Core
+
+- Fix bug where glow layer is recreated every frame under NullEngine - by [djn24](https://github.com/djn24) ([#16908](https://github.com/BabylonJS/Babylon.js/pull/16908))
+
+### Serializers
+
+- glTF Exporter: Fix false positive test and add extra winding order handling - by [alexchuber](https://github.com/alexchuber) ([#16915](https://github.com/BabylonJS/Babylon.js/pull/16915))
+
+## 8.17.2
+
+### Core
+
+- Fix Out of range values with high contrast - by [sebavan](https://github.com/sebavan) ([#16913](https://github.com/BabylonJS/Babylon.js/pull/16913))
+- native morph workaround - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16910](https://github.com/BabylonJS/Babylon.js/pull/16910))
+- Fix the problem that the four methods of PBRSubSurfaceConfiguration class isReadyForSubMesh/getActiveTextures/getAnimatables/dispose miss the _refractionIntensityTexture issue. - by [xiehangyun](https://github.com/xiehangyun) ([#16909](https://github.com/BabylonJS/Babylon.js/pull/16909))
+
+### GUI
+
+- Add a function to sanitize SVG - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16904](https://github.com/BabylonJS/Babylon.js/pull/16904))
+
+### Node Editor
+
+- Add floating Search Box to graph canvas - by [georginahalpern](https://github.com/georginahalpern) ([#16911](https://github.com/BabylonJS/Babylon.js/pull/16911))
+
+### Serializers
+
+- USDZ Exporter: Winding order and vertex data handedness handling - by [alexchuber](https://github.com/alexchuber) ([#16912](https://github.com/BabylonJS/Babylon.js/pull/16912))
+
 ## 8.17.1
 
 ### Core
