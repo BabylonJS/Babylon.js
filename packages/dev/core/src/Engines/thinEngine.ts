@@ -211,8 +211,6 @@ export class ThinEngine extends AbstractEngine {
     // Cache
 
     /** @internal */
-    public _currentMaterialContext: IMaterialContext;
-    /** @internal */
     protected _currentProgram: Nullable<WebGLProgram>;
     private _vertexAttribArraysEnabled: boolean[] = [];
     private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;

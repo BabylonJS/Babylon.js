@@ -347,9 +347,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public override _currentDrawContext: WebGPUDrawContext;
     /** @internal */
-    public _currentMaterialContext: WebGPUMaterialContext;
+    public override _currentMaterialContext: WebGPUMaterialContext;
+    private _currentVertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
+    private _dummyIndexBuffer: WebGPUDataBuffer;
     private _colorWriteLocal = true;
     private _forceEnableEffect = false;
 
@@ -784,6 +786,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         size: 1,
                         label: "EmptyVertexBuffer",
                     });
+
+                    this._dummyIndexBuffer = this._bufferManager.createBuffer(
+                        new Uint16Array([0, 0, 0, 0]),
+                        WebGPUConstants.BufferUsage.Storage | WebGPUConstants.BufferUsage.CopyDst,
+                        "DummyIndices"
+                    );
 
                     this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
@@ -1618,7 +1626,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             view = data;
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst, label);
+        const dataBuffer = this._bufferManager.createBuffer(
+            view,
+            WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Storage,
+            label
+        );
         return dataBuffer;
     }
 
@@ -1662,7 +1674,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst, label);
+        const dataBuffer = this._bufferManager.createBuffer(
+            view,
+            WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Storage,
+            label
+        );
         dataBuffer.is32Bits = is32Bits;
         return dataBuffer;
     }
@@ -1789,18 +1805,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Bind a list of vertex buffers with the engine
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
-     * @param effect defines the effect associated with the vertex buffers
+     * @param _effect defines the effect associated with the vertex buffers
      * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      */
     public bindBuffers(
         vertexBuffers: { [key: string]: Nullable<VertexBuffer> },
         indexBuffer: Nullable<DataBuffer>,
-        effect: Effect,
+        _effect: Effect,
         overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
     ): void {
+        this._currentVertexBuffers = vertexBuffers;
         this._currentIndexBuffer = indexBuffer;
         this._currentOverrideVertexBuffers = overrideVertexBuffers ?? null;
-        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer, this._currentOverrideVertexBuffers);
+        this._cacheRenderPipeline.setBuffers(this._currentVertexBuffers, this._currentIndexBuffer, this._currentOverrideVertexBuffers);
     }
 
     /**
@@ -2098,7 +2115,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns the new context
      */
     public createDrawContext(): WebGPUDrawContext | undefined {
-        return new WebGPUDrawContext(this._bufferManager);
+        return new WebGPUDrawContext(this._bufferManager, this._dummyIndexBuffer);
     }
 
     /**
@@ -3649,6 +3666,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this.bindUniformBufferBase(this._currentRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
 
+        this._currentDrawContext.setVertexPulling(
+            this._currentMaterialContext.useVertexPulling,
+            webgpuPipelineContext,
+            this._currentVertexBuffers,
+            this._cacheRenderPipeline.indexBuffer, // don't use this._currentIndexBuffer, it will have been set to null by _drawArraysType!
+            this._currentOverrideVertexBuffers
+        );
+
         if (webgpuPipelineContext.uniformBuffer) {
             webgpuPipelineContext.uniformBuffer.update();
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, WebGPUShaderProcessor.LeftOvertUBOName);
@@ -3702,6 +3727,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._currentMaterialContext.textureState = textureState;
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
+
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 
         if (!this._snapshotRendering.record) {

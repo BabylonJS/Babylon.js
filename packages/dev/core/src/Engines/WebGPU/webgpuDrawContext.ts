@@ -1,7 +1,10 @@
+import type { VertexBuffer } from "../../Buffers/buffer";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import type { Nullable } from "../../types";
 import type { IDrawContext } from "../IDrawContext";
 import type { WebGPUBufferManager } from "./webgpuBufferManager";
+import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import * as WebGPUConstants from "./webgpuConstants";
 
 /**
@@ -36,6 +39,7 @@ export class WebGPUDrawContext implements IDrawContext {
     private _currentInstanceCount: number;
     private _isDirty: boolean;
     private _enableIndirectDraw: boolean;
+    private _vertexPullingEnabled: boolean;
 
     /**
      * Checks if the draw context is dirty.
@@ -101,13 +105,19 @@ export class WebGPUDrawContext implements IDrawContext {
     /**
      * Creates a new WebGPUDrawContext.
      * @param bufferManager The buffer manager used to manage WebGPU buffers.
+     * @param _dummyIndexBuffer A dummy index buffer to be bound as the "indices"
+     * storage buffer when no index buffer is provided.
      */
-    constructor(bufferManager: WebGPUBufferManager) {
+    constructor(
+        bufferManager: WebGPUBufferManager,
+        private _dummyIndexBuffer: WebGPUDataBuffer
+    ) {
         this._bufferManager = bufferManager;
         this.uniqueId = WebGPUDrawContext._Counter++;
         this._useInstancing = false;
         this._currentInstanceCount = 0;
         this._enableIndirectDraw = false;
+        this._vertexPullingEnabled = false;
         this.reset();
     }
 
@@ -117,6 +127,7 @@ export class WebGPUDrawContext implements IDrawContext {
         this._materialContextUpdateId = 0;
         this.fastBundle = undefined;
         this.bindGroups = undefined;
+        this._vertexPullingEnabled = false;
     }
 
     /**
@@ -144,6 +155,55 @@ export class WebGPUDrawContext implements IDrawContext {
         this._indirectDrawData[2] = firstIndexOrVertex;
 
         this._bufferManager.setRawData(this.indirectDrawBuffer, 0, this._indirectDrawData, 0, 20);
+    }
+
+    public setVertexPulling(
+        useVertexPulling: boolean,
+        webgpuPipelineContext: WebGPUPipelineContext,
+        vertexBuffers: { [key: string]: Nullable<VertexBuffer> },
+        indexBuffer: Nullable<DataBuffer>,
+        overrideVertexBuffers: Nullable<{ [kind: string]: Nullable<VertexBuffer> }>
+    ): void {
+        if (this._vertexPullingEnabled === useVertexPulling) {
+            return;
+        }
+
+        this._vertexPullingEnabled = useVertexPulling;
+        this._isDirty = true;
+
+        const bufferNames = webgpuPipelineContext.shaderProcessingContext.bufferNames;
+
+        if (overrideVertexBuffers) {
+            for (const attributeName in overrideVertexBuffers) {
+                const vertexBuffer = overrideVertexBuffers[attributeName];
+                if (!vertexBuffer || bufferNames.indexOf(attributeName) === -1) {
+                    continue;
+                }
+
+                const buffer = vertexBuffer.effectiveBuffer as Nullable<WebGPUDataBuffer>;
+
+                this.setBuffer(attributeName, useVertexPulling ? buffer : null);
+            }
+        }
+
+        for (const attributeName in vertexBuffers) {
+            if (overrideVertexBuffers && attributeName in overrideVertexBuffers) {
+                continue;
+            }
+
+            const vertexBuffer = vertexBuffers[attributeName];
+            if (!vertexBuffer || bufferNames.indexOf(attributeName) === -1) {
+                continue;
+            }
+
+            const buffer = vertexBuffer.effectiveBuffer as Nullable<WebGPUDataBuffer>;
+
+            this.setBuffer(attributeName, useVertexPulling ? buffer : null);
+        }
+
+        if (bufferNames.indexOf("indices") !== -1) {
+            this.setBuffer("indices", !useVertexPulling ? null : ((indexBuffer as WebGPUDataBuffer) ?? this._dummyIndexBuffer));
+        }
     }
 
     public dispose(): void {
