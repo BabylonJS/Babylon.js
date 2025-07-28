@@ -161,7 +161,7 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
             <BoundProperty component={SyncedSliderPropertyLine} label="UV Set" target={texture} propertyKey="coordinatesIndex" min={0} max={3} step={1} />
             <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="coordinatesMode" options={CoordinatesMode} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Level" target={texture} propertyKey="level" min={0} max={2} step={0.01} />
-            <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="samplingMode" options={SamplingMode} />
+            <BoundProperty component={NumberDropdownPropertyLine} label="Sampling" target={texture} propertyKey="samplingMode" options={SamplingMode} />
         </>
     );
 };
