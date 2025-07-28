@@ -234,12 +234,12 @@ export class CustomShaderBlock extends ShaderBlock {
     }
 
     /**
-     * Validates the default value of a connection point and returns the runtime data for it.
-     * If the default value is not provided, returns null.
+     * Validates the default value of a connection point and returns it if valid.
+     * If the default value is not provided or is invalid, this returns null.
      * @param connectionPointType - The type of the connection point
      * @param connectionPointName - The name of the connection point
      * @param defaultValue - The default value of the connection point
-     * @returns The runtime data for the default value, or null if no default value is provided
+     * @returns The default value, or null if no default value is provided or it was invalid
      */
     private _validateDefaultValue<U extends ConnectionPointType>(
         connectionPointType: U,
