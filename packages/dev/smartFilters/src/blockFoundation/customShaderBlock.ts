@@ -1,5 +1,6 @@
+import { Logger } from "core/Misc/logger.js";
 import type { Effect } from "core/Materials/effect.js";
-import { ConnectionPointType } from "../connection/connectionPointType.js";
+import { ConnectionPointType, type ConnectionPointValue } from "../connection/connectionPointType.js";
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
 import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
@@ -187,8 +188,9 @@ export class CustomShaderBlock extends ShaderBlock {
             this._autoBoundInputs.push(connectionPoint);
         } else {
             // If not auto bound, register as an input connection point
-            if (connectionPoint.defaultValue !== undefined) {
-                this._registerOptionalInput(connectionPoint.name, connectionPoint.type, CreateStrongRef(connectionPoint.defaultValue));
+            const defaultValue = this._validateDefaultValue(connectionPoint.type, connectionPoint.name, connectionPoint.defaultValue);
+            if (defaultValue) {
+                this._registerOptionalInput(connectionPoint.name, connectionPoint.type, CreateStrongRef(defaultValue));
             } else {
                 this._registerInput(connectionPoint.name, connectionPoint.type);
             }
@@ -229,6 +231,54 @@ export class CustomShaderBlock extends ShaderBlock {
         }
 
         return new CustomShaderBlockBinding(inputsToBind);
+    }
+
+    /**
+     * Validates the default value of a connection point and returns it if valid.
+     * If the default value is not provided or is invalid, this returns null.
+     * @param connectionPointType - The type of the connection point
+     * @param connectionPointName - The name of the connection point
+     * @param defaultValue - The default value of the connection point
+     * @returns The default value, or null if no default value is provided or it was invalid
+     */
+    private _validateDefaultValue<U extends ConnectionPointType>(
+        connectionPointType: U,
+        connectionPointName: string,
+        defaultValue?: ConnectionPointValue<U>
+    ): Nullable<ConnectionPointValue<U>> {
+        if (defaultValue === undefined || defaultValue === null) {
+            return null;
+        }
+
+        // Validate the default value based on the connection point type
+        let returnValue: Nullable<ConnectionPointValue<U>> = null;
+        switch (connectionPointType) {
+            case ConnectionPointType.Float:
+                returnValue = typeof defaultValue === "number" ? defaultValue : null;
+                break;
+            case ConnectionPointType.Color3:
+                returnValue = typeof defaultValue === "object" && "r" in defaultValue && "g" in defaultValue && "b" in defaultValue ? defaultValue : null;
+                break;
+            case ConnectionPointType.Color4:
+                returnValue = typeof defaultValue === "object" && "r" in defaultValue && "g" in defaultValue && "b" in defaultValue && "a" in defaultValue ? defaultValue : null;
+                break;
+            case ConnectionPointType.Boolean:
+                returnValue = typeof defaultValue === "boolean" ? defaultValue : null;
+                break;
+            case ConnectionPointType.Vector2:
+                returnValue = typeof defaultValue === "object" && "x" in defaultValue && "y" in defaultValue ? defaultValue : null;
+                break;
+            default: {
+                Logger.Warn(`Default value supplied when unsupported. Block Type: "${this.blockType}" Connection Point: "${connectionPointName}"`);
+                return null;
+            }
+        }
+
+        if (returnValue === null) {
+            Logger.Warn(`Invalid default value. Block Type: "${this.blockType}" Connection Point: "${connectionPointName}"`);
+        }
+
+        return returnValue;
     }
 }
 

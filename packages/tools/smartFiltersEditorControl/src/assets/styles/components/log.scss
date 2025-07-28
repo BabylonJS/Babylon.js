@@ -16,7 +16,13 @@
         font-family: "Courier New", Courier, monospace;
     }
 
+    .warn {
+        color: yellow;
+        font-weight: bold;
+    }
+
     .error {
-        color: red;
+        color: orangered;
+        font-weight: bold;
     }
 }

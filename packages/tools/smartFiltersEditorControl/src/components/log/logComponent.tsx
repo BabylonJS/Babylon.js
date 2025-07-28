@@ -7,12 +7,18 @@ interface ILogComponentProps {
     globalState: GlobalState;
 }
 
+export enum LogLevel {
+    Log = "log",
+    Warn = "warn",
+    Error = "error",
+}
+
 export class LogEntry {
     public time = new Date();
 
     constructor(
         public message: string,
-        public isError: boolean
+        public level: LogLevel
     ) {}
 }
 
@@ -48,7 +54,7 @@ export class LogComponent extends react.Component<ILogComponentProps, { logs: Lo
             <div id="sfe-log-console" ref={this._logConsoleRef}>
                 {this.state.logs.map((l, i) => {
                     return (
-                        <div key={i} className={"log" + (l.isError ? " error" : "")}>
+                        <div key={i} className={"log " + l.level}>
                             {l.time.getHours() +
                                 ":" +
                                 l.time.getMinutes().toLocaleString(undefined, { minimumIntegerDigits: 2 }) +
