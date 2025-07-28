@@ -722,7 +722,7 @@ export const RequestFile = (
     };
 
     // Caching all files
-    if (offlineProvider && offlineProvider.enableSceneOffline) {
+    if (offlineProvider && offlineProvider.enableSceneOffline && !url.startsWith("blob:")) {
         const noOfflineSupport = (request?: any) => {
             if (request && request.status > 400) {
                 if (onError) {
