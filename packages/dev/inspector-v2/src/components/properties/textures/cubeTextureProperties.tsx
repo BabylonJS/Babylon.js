@@ -3,9 +3,9 @@ import type { FunctionComponent } from "react";
 import type { CubeTexture } from "core/index";
 import type { ISettingsContext } from "../../../services/settingsContext";
 
-import { BoundProperty } from "../boundProperty";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
+import { BoundProperty } from "../boundProperty";
 
 export const CubeTextureTransformProperties: FunctionComponent<{ texture: CubeTexture; settings: ISettingsContext }> = (props) => {
     const { texture, settings } = props;
