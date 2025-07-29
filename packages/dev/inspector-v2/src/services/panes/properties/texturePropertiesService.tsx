@@ -9,7 +9,7 @@ import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
-import { MakeAsyncComponentFromModule } from "shared-ui-components/fluent/primitives/asyncComponent";
+import { MakeAsyncComponent } from "shared-ui-components/fluent/primitives/asyncComponent";
 import {
     BaseTextureCharacteristicProperties,
     BaseTextureGeneralProperties,
@@ -132,9 +132,8 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
         });
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const AdvancedDynamicTextureGeneralProperties = MakeAsyncComponentFromModule(
-            import("../../../components/properties/textures/advancedDynamicTextureProperties"),
-            "AdvancedDynamicTextureGeneralProperties",
+        const AdvancedDynamicTextureGeneralProperties = MakeAsyncComponent(
+            async () => (await import("../../../components/properties/textures/advancedDynamicTextureProperties")).AdvancedDynamicTextureGeneralProperties,
             { spinnerSize: "extra-tiny", spinnerLabel: "Loading..." }
         );
 
