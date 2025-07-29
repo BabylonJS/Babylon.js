@@ -11,7 +11,6 @@ import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/inter
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as localStyles from "./textureDisplayManager.module.scss";
 import * as commonStyles from "./common.module.scss";
-import { DepthSourceBlock } from "core/Materials";
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
