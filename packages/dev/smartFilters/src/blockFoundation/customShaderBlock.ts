@@ -189,7 +189,7 @@ export class CustomShaderBlock extends ShaderBlock {
         } else {
             // If not auto bound, register as an input connection point
             const defaultValue = this._validateDefaultValue(connectionPoint.type, connectionPoint.name, connectionPoint.defaultValue);
-            if (defaultValue) {
+            if (defaultValue != null) {
                 this._registerOptionalInput(connectionPoint.name, connectionPoint.type, CreateStrongRef(defaultValue));
             } else {
                 this._registerInput(connectionPoint.name, connectionPoint.type);
