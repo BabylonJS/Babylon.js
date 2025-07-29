@@ -3,15 +3,13 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISettingsContext } from "../../settingsContext";
 import type { IPropertiesService } from "./propertiesService";
 
-import { Spinner } from "@fluentui/react-components";
-import { lazy, Suspense } from "react";
-
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
+import { MakeAsyncComponent } from "shared-ui-components/fluent/primitives/asyncComponent";
 import {
     BaseTextureCharacteristicProperties,
     BaseTextureGeneralProperties,
@@ -30,13 +28,6 @@ import { PropertiesServiceIdentity } from "./propertiesService";
 function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTexture {
     return (entity as AdvancedDynamicTexture)?.constructor?.name === "AdvancedDynamicTexture";
 }
-
-const AdvancedDynamicTextureGeneralProperties = lazy(async () => {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { AdvancedDynamicTextureGeneralProperties } = await import("../../../components/properties/textures/advancedDynamicTextureProperties");
-    // await new Promise((resolve) => setTimeout(resolve, 5000));
-    return { default: AdvancedDynamicTextureGeneralProperties };
-});
 
 export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
     friendlyName: "Texture Properties",
@@ -140,6 +131,12 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
             ],
         });
 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const AdvancedDynamicTextureGeneralProperties = MakeAsyncComponent(
+            async () => (await import("../../../components/properties/textures/advancedDynamicTextureProperties")).AdvancedDynamicTextureGeneralProperties,
+            { spinnerSize: "extra-tiny", spinnerLabel: "Loading..." }
+        );
+
         const advancedDynamicTextureContentRegistration = propertiesService.addSectionContent({
             key: "Advanced Dynamic Texture Properties",
             predicate: (entity: unknown) => IsAdvancedDynamicTexture(entity),
@@ -147,11 +144,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                 {
                     section: "Advanced Dynamic Texture",
                     order: 100,
-                    component: ({ context }) => (
-                        <Suspense fallback={<Spinner size="extra-tiny" label="Loading..." />}>
-                            <AdvancedDynamicTextureGeneralProperties texture={context} />
-                        </Suspense>
-                    ),
+                    component: ({ context }) => <AdvancedDynamicTextureGeneralProperties texture={context} />,
                 },
             ],
         });
