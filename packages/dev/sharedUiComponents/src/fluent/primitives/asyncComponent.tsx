@@ -9,13 +9,32 @@ type AsyncComponentOptions = {
     spinnerLabel?: string;
 };
 
+type ComponentKeys<T> = {
+    [K in keyof T]: T[K] extends ComponentType<any> ? K : never;
+}[keyof T];
+
+/**
+ * Creates an asynchronous component wrapper that loads a React component from a module lazily/asynchronously.
+ * @param modulePromise A promise that resolves to a module containing React components.
+ * @param componentKey The name of the component property to extract from the module.
+ * @param options Options for the loading spinner.
+ * @returns A React component that displays a spinner while loading the async component.
+ */
+export function MakeAsyncComponentFromModule<ModuleT extends Record<PropertyKey, any>>(
+    modulePromise: Promise<ModuleT>,
+    componentKey: ComponentKeys<ModuleT>,
+    options?: AsyncComponentOptions
+): ModuleT[ComponentKeys<ModuleT>] {
+    return MakeAsyncComponentFromFactory(async () => (await modulePromise)[componentKey], options);
+}
+
 /**
  * Creates an asynchronous component wrapper that loads a React component lazily/asynchronously.
  * @param componentFactory A function that returns a promise resolving to the component.
  * @param options Options for the loading spinner.
  * @returns A React component that displays a spinner while loading the async component.
  */
-export function MakeAsyncComponent<ComponentT extends ComponentType<any>>(componentFactory: () => Promise<ComponentT>, options?: AsyncComponentOptions) {
+export function MakeAsyncComponentFromFactory<ComponentT extends ComponentType<any>>(componentFactory: () => Promise<ComponentT>, options?: AsyncComponentOptions) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const LazyComponent = lazy(async () => {
         const module = await componentFactory();
