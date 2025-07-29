@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.19.1
+
+### Viewer
+
+- add protected function to expose camera limit, world bounds - by [alexandremottet](https://github.com/alexandremottet) ([#16928](https://github.com/BabylonJS/Babylon.js/pull/16928))
+
 ## 8.19.0
 
 ### Core
