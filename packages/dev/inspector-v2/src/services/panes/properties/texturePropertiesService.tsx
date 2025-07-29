@@ -131,6 +131,7 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
             ],
         });
 
+        // AdvancedDynamicTextureGeneralProperties pulls in the gui package, so import it lazily (only when it needs to be rendered).
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const AdvancedDynamicTextureGeneralProperties = MakeAsyncComponent(
             async () => (await import("../../../components/properties/textures/advancedDynamicTextureProperties")).AdvancedDynamicTextureGeneralProperties,
