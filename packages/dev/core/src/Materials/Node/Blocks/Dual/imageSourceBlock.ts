@@ -134,7 +134,11 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             state.compilationString += `${state._declareOutput(this.dimensions)} = ${affect};\n`;
         }
 
-        state._emit2DSampler(this._samplerName);
+        if (this._texture?._texture?.is2DArray) {
+            state._emit2DArraySampler(this._samplerName);
+        } else {
+            state._emit2DSampler(this._samplerName);
+        }
 
         return this;
     }

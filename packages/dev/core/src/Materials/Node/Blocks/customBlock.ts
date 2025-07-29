@@ -9,6 +9,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
 import { ImageSourceBlock } from "./Dual/imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
+import { TextureBlock } from "./Dual/textureBlock";
 
 /**
  * Custom block created from user-defined json
@@ -135,7 +136,7 @@ export class CustomBlock extends NodeMaterialBlock {
             for (let i = 0; i < options.inParameters.length; i++) {
                 const input = options.inParameters[i];
                 const type = (<any>NodeMaterialBlockConnectionPointTypes)[input.type];
-                if (input.type === "sampler2D" || input.type === "samplerCube") {
+                if (input.type === "sampler2D" || input.type === "samplerCube" || input.type === "sampler2DArray") {
                     this._inputSamplers = this._inputSamplers || [];
                     this._inputSamplers.push(input.name);
                     this.registerInput(
