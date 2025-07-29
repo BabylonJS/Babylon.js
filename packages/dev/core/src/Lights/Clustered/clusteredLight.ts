@@ -324,8 +324,8 @@ export class ClusteredLight extends Light {
                     // vLightFalloff
                     range,
                     inverseSquaredRange,
-                    0.5,
-                    0.5,
+                    1_000_000,
+                    1_000_000,
                 ],
                 offset
             );
@@ -377,7 +377,7 @@ export class ClusteredLight extends Light {
         const engine = this.getEngine();
         const hscale = this._horizontalTiles / engine.getRenderWidth();
         const vscale = this._verticalTiles / engine.getRenderHeight();
-        this._uniformBuffer.updateFloat4("vLightData", this._horizontalTiles, this._verticalTiles, hscale, vscale, lightIndex);
+        this._uniformBuffer.updateFloat4("vLightData", hscale, vscale, this._verticalTiles, this._tileMaskBatches, lightIndex);
         this._uniformBuffer.updateFloat("vNumLights", this._lights.length, lightIndex);
         return this;
     }

@@ -241,8 +241,8 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         #endif
 
         lightingInfo result;
-        int maskHeight = int(lightData.y);
-        ivec2 tilePosition = ivec2(gl_FragCoord.xy * lightData.zw);
+        ivec2 tilePosition = ivec2(gl_FragCoord.xy * lightData.xy);
+        int maskHeight = int(lightData.z);
         tilePosition.y = min(tilePosition.y, maskHeight - 1);
 
         int numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;

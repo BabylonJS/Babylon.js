@@ -26,7 +26,6 @@ fn main(input: VertexInputs) -> FragmentInputs {
 
     // We don't care about depth and don't want it to be clipped so set Z to 0
     vertexOutputs.position = vec4f(tilePosition / uniforms.tileMaskResolution.xy * 2.0 - 1.0, 0, 1);
-    let uResolution = vec2u(uniforms.tileMaskResolution.xy);
-    vertexOutputs.vOffset = vertexInputs.instanceIndex / CLUSTLIGHT_BATCH * uResolution.x * uResolution.y;
-    vertexOutputs.vMask = 1u << vertexInputs.instanceIndex;
+    vertexOutputs.vOffset = vertexInputs.instanceIndex / CLUSTLIGHT_BATCH;
+    vertexOutputs.vMask = 1u << (vertexInputs.instanceIndex % CLUSTLIGHT_BATCH);
 }

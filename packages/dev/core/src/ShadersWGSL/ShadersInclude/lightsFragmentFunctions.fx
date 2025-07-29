@@ -192,22 +192,21 @@ fn computeClusteredLighting(
 	tileMaskBuffer: ptr<storage, array<u32>>,
 	viewDirectionW: vec3f,
 	vNormal: vec3f,
-	clusteredData: vec4f,
+	lightData: vec4f,
 	numLights: i32,
 	glossiness: f32
 ) -> lightingInfo {
 	var result: lightingInfo;
-	let maskResolution = vec2i(clusteredData.xy);
-	let maskStride = maskResolution.x * maskResolution.y;
-	let tilePosition = vec2i(fragmentInputs.position.xy * clusteredData.zw);
-	var tileIndex = min(tilePosition.y * maskResolution.x + tilePosition.x, maskStride - 1);
+	let tilePosition = vec2i(fragmentInputs.position.xy * lightData.xy);
+	let maskResolution = vec2i(lightData.zw);
+	var tileIndex = (tilePosition.x * maskResolution.x + tilePosition.y) * maskResolution.y;
 
 	let numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;
 	var batchOffset = 0u;
 
 	for (var i = 0; i < numBatches; i += 1) {
 		var mask = tileMaskBuffer[tileIndex];
-		tileIndex += maskStride;
+		tileIndex += 1;
 
 		while mask != 0 {
 			let trailing = firstTrailingBit(mask);

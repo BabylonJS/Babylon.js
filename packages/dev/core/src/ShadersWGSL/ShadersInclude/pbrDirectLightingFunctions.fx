@@ -208,10 +208,12 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 #endif
 
 #ifdef CLUSTLIGHT_BATCH
+#include<clusteredLightFunctions>
+
     fn computeClusteredLighting(
         lightDataTexture: texture_2d<f32>,
         tileMaskBuffer: ptr<storage, array<u32>>,
-        clusteredData: vec4f,
+        lightData: vec4f,
         numLights: i32,
         V: vec3f,
         N: vec3f,
@@ -241,35 +243,30 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         #endif
 
         var result: lightingInfo;
-        let maskResolution = vec2i(clusteredData.xy);
-        let maskStride = maskResolution.x * maskResolution.y;
-        let tilePosition = vec2i(fragmentInputs.position.xy * clusteredData.zw);
-        var tileIndex = min(tilePosition.y * maskResolution.x + tilePosition.x, maskStride - 1);
+        let tilePosition = vec2i(fragmentInputs.position.xy * lightData.xy);
+        let maskResolution = vec2i(lightData.zw);
+        var tileIndex = (tilePosition.x * maskResolution.x + tilePosition.y) * maskResolution.y;
 
-        for (var i = 0; i < numLights;) {
+        let numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;
+        var batchOffset = 0u;
+
+        for (var i = 0; i < numBatches; i += 1) {
             var mask = tileMaskBuffer[tileIndex];
-            tileIndex += maskStride;
-            let batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
-            for (; i < batchEnd && mask != 0; i += 1) {
-                // Skip as much as we can
+            tileIndex += 1;
+
+            while mask != 0 {
                 let trailing = firstTrailingBit(mask);
-                mask >>= trailing + 1;
-                i += i32(trailing);
+                mask ^= 1u << trailing;
+                let light = getClusteredSpotLight(lightDataTexture, batchOffset + trailing);
 
-                let lightData = textureLoad(lightDataTexture, vec2i(0, i), 0);
-                let diffuse = textureLoad(lightDataTexture, vec2i(1, i), 0);
-                let specular = textureLoad(lightDataTexture, vec2i(2, i), 0);
-                let direction = textureLoad(lightDataTexture, vec2i(3, i), 0);
-                let falloff = textureLoad(lightDataTexture, vec2i(4, i), 0);
-
-                var preInfo = computePointAndSpotPreLightingInfo(lightData, V, N, posW);
+                var preInfo = computePointAndSpotPreLightingInfo(light.vLightData, V, N, posW);
                 preInfo.NdotV = NdotV;
 
                 // Compute Attenuation infos
-                preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, falloff.x, falloff.y);
-                preInfo.attenuation *= computeDirectionalLightFalloff(direction.xyz, preInfo.L, direction.w, lightData.w, falloff.z, falloff.w);
+                preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, light.vLightFalloff.x, light.vLightFalloff.y);
+                preInfo.attenuation *= computeDirectionalLightFalloff(light.vLightDirection.xyz, preInfo.L, light.vLightDirection.w, light.vLightData.w, light.vLightFalloff.z, light.vLightFalloff.w);
 
-                preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, specular.a, preInfo.lightDistance);
+                preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, light.vLightSpecular.a, preInfo.lightDistance);
                 preInfo.diffuseRoughness = reflectivityOut.diffuseRoughness;
                 preInfo.surfaceAlbedo = surfaceAlbedo;
                 var info: lightingInfo;
@@ -277,14 +274,14 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
                 // Diffuse contribution
                 #ifdef SS_TRANSLUCENCY
                     #ifdef SS_TRANSLUCENCY_LEGACY
-                        info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse.rgb, subSurfaceOut.transmittance);
+                        info.diffuse = computeDiffuseTransmittedLighting(preInfo, light.vLightDiffuse.rgb, subSurfaceOut.transmittance);
                         info.diffuseTransmission = vec3(0);
                     #else
-                        info.diffuse = computeDiffuseLighting(preInfo, diffuse.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
-                        info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, diffuse.rgb, subSurfaceOut.transmittance);
+                        info.diffuse = computeDiffuseLighting(preInfo, light.vLightDiffuse.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
+                        info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, light.vLightDiffuse.rgb, subSurfaceOut.transmittance);
                     #endif
                 #else
-                    info.diffuse = computeDiffuseLighting(preInfo, diffuse.rgb);
+                    info.diffuse = computeDiffuseLighting(preInfo, light.vLightDiffuse.rgb);
                 #endif
 
                 // Specular contribution
@@ -302,9 +299,9 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
                         info.diffuse *= (vec3(1.0) - fresnel);
                     #endif
                     #ifdef ANISOTROPIC
-                        info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, diffuse.rgb);
+                        info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, light.vLightDiffuse.rgb);
                     #else
-                        info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, diffuse.rgb);
+                        info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, light.vLightDiffuse.rgb);
                     #endif
                 #endif
 
@@ -313,16 +310,15 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
                     #ifdef SHEEN_LINKWITHALBEDO
                         preInfo.roughness = sheenOut.sheenIntensity;
                     #else
-                        preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, specular.a, preInfo.lightDistance);
+                        preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, light.vLightSpecular.a, preInfo.lightDistance);
                     #endif
-                    preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, specular.a, preInfo.lightDistance);
-                    info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, diffuse.rgb);
+                    info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, light.vLightDiffuse.rgb);
                 #endif
 
                 // Clear Coat contribution
                 #ifdef CLEARCOAT
-                    preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, specular.a, preInfo.lightDistance);
-                    info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, diffuse.rgb);
+                    preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, light.vLightSpecular.a, preInfo.lightDistance);
+                    info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, light.vLightDiffuse.rgb);
 
                     #ifdef CLEARCOAT_TINT
                         // Absorption
@@ -363,7 +359,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
                     result.sheen += info.sheen;
                 #endif
             }
-            i = batchEnd;
+            batchOffset += CLUSTLIGHT_BATCH;
         }
         return result;
     }

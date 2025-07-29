@@ -69,7 +69,6 @@ precision highp float;
 #include<pbrBlockClearcoat>
 #include<pbrBlockIridescence>
 #include<pbrBlockSubSurface>
-
 #include<pbrDirectLightingFunctions>
 
 // _____________________________ MAIN FUNCTION ____________________________

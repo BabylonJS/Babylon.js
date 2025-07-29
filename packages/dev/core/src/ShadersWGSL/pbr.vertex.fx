@@ -93,7 +93,6 @@ varying vColor: vec4f;
 #include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
-#include<spotLightDeclaration>
 #include<lightVxUboDeclaration>[0..maxSimultaneousLights]
 
 #include<morphTargetsVertexGlobalDeclaration>

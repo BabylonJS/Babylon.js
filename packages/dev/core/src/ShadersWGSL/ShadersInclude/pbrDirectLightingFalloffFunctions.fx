@@ -47,7 +47,12 @@ fn computeDirectionalLightFalloff_Standard(lightDirection: vec3f, directionToLig
     var cosAngle: f32 = maxEps(dot(-lightDirection, directionToLightCenterW));
     if (cosAngle >= cosHalfAngle)
     {
-        falloff = max(0., pow(cosAngle, exponent));
+        if exponent == 0.0 {
+            // Undefined behaviour can occur if exponent == 0, the result in reality should always be 1
+            falloff = 1.0;
+        } else {
+            falloff = max(0., pow(cosAngle, exponent));
+        }
     }
     
     return falloff;
