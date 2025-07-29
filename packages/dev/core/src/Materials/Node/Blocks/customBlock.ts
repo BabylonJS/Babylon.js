@@ -9,7 +9,6 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
 import { ImageSourceBlock } from "./Dual/imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
-import { TextureBlock } from "./Dual/textureBlock";
 
 /**
  * Custom block created from user-defined json
