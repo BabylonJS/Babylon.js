@@ -163,5 +163,39 @@ describe("CustomShaderBlock", () => {
                 expect(errorFn).not.toHaveBeenCalled();
             });
         });
+
+        it("Should handle default float values of 0 as a valid default value", () => {
+            const glslDefinition = `// { "smartFilterBlockType": "TestBlock", "namespace": "Bug.Repro" }
+// { "default" : 0.0 }
+uniform float testFloat;
+vec4 test(vec2 vUV) { // main
+    return vec4(vUV, testFloat, 1.);
+}`;
+            const blockDefinition = ImportCustomBlockDefinition(glslDefinition) as SerializedShaderBlockDefinitionV1;
+            const customShaderBlock = CustomShaderBlock.Create(smartFilter, "TestBlock", blockDefinition);
+            expect(customShaderBlock.inputs.length).toBe(1);
+            expect(customShaderBlock.inputs[0].name).toBe("testFloat");
+            expect(customShaderBlock.inputs[0].defaultRuntimeData).not.toBeNull();
+            expect(customShaderBlock.inputs[0].defaultRuntimeData?.value).toBe(0);
+        });
+
+        it("Should handle default bool values of false as a valid default value", () => {
+            const glslDefinition = `// { "smartFilterBlockType": "TestBlock", "namespace": "Bug.Repro" }
+// { "default" : false }
+uniform bool testBool;
+vec4 test(vec2 vUV) { // main
+    if (testBool) {
+        return vec4(vUV, 1.0, 1.);
+         } else {
+        return vec4(vUV, 2.0, 1.);
+    }
+}`;
+            const blockDefinition = ImportCustomBlockDefinition(glslDefinition) as SerializedShaderBlockDefinitionV1;
+            const customShaderBlock = CustomShaderBlock.Create(smartFilter, "TestBlock", blockDefinition);
+            expect(customShaderBlock.inputs.length).toBe(1);
+            expect(customShaderBlock.inputs[0].name).toBe("testBool");
+            expect(customShaderBlock.inputs[0].defaultRuntimeData).not.toBeNull();
+            expect(customShaderBlock.inputs[0].defaultRuntimeData?.value).toBe(false);
+        });
     });
 });
