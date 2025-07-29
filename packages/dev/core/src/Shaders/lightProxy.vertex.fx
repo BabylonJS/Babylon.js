@@ -8,12 +8,13 @@ flat varying highp uint vMask;
 uniform sampler2D lightDataTexture;
 uniform vec3 tileMaskResolution;
 
+#include<clusteredLightFunctions>
+
 void main(void) {
-    vec4 lightData = texelFetch(lightDataTexture, ivec2(0, gl_InstanceID), 0);
-    vec4 falloff = texelFetch(lightDataTexture, ivec2(4, gl_InstanceID), 0);
+    SpotLight light = getClusteredSpotLight(lightDataTexture, gl_InstanceID);
 
     // We don't apply the view matrix to the disc since we want it always facing the camera
-    vec4 viewPosition = view * vec4(lightData.xyz, 1) + vec4(position * falloff.x, 0);
+    vec4 viewPosition = view * vec4(light.vLightData.xyz, 1) + vec4(position * light.vLightFalloff.x, 0);
     vec4 projPosition = projection * viewPosition;
 
     // Convert to NDC 0->1 space and scale to the tile resolution

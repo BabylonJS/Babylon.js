@@ -9,13 +9,14 @@ var lightDataTexture: texture_2d<f32>;
 uniform tileMaskResolution: vec3f;
 uniform halfTileRes: vec2f;
 
+#include<clusteredLightFunctions>
+
 @vertex
 fn main(input: VertexInputs) -> FragmentInputs {
-    let lightData = textureLoad(lightDataTexture, vec2u(0, vertexInputs.instanceIndex), 0);
-    let falloff = textureLoad(lightDataTexture, vec2u(4, vertexInputs.instanceIndex), 0);
+    let light = getClusteredSpotLight(lightDataTexture, vertexInputs.instanceIndex);
 
     // We don't apply the view matrix to the disc since we want it always facing the camera
-    let viewPosition = scene.view * vec4f(lightData.xyz, 1) + vec4f(vertexInputs.position * falloff.x, 0);
+    let viewPosition = scene.view * vec4f(light.vLightData.xyz, 1) + vec4f(vertexInputs.position * light.vLightFalloff.x, 0);
     let projPosition = scene.projection * viewPosition;
 
     // Convert to NDC 0->1 space and scale to the tile resolution

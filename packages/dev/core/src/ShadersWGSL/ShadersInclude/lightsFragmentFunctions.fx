@@ -184,6 +184,9 @@ fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_
 // End Area Light
 #endif
 
+#ifdef CLUSTLIGHT_BATCH
+#include<clusteredLightFunctions>
+
 fn computeClusteredLighting(
 	lightDataTexture: texture_2d<f32>,
 	tileMaskBuffer: ptr<storage, array<u32>>,
@@ -199,29 +202,26 @@ fn computeClusteredLighting(
 	let tilePosition = vec2i(fragmentInputs.position.xy * clusteredData.zw);
 	var tileIndex = min(tilePosition.y * maskResolution.x + tilePosition.x, maskStride - 1);
 
-	for (var i = 0; i < numLights;) {
+	let numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;
+	var batchOffset = 0u;
+
+	for (var i = 0; i < numBatches; i += 1) {
 		var mask = tileMaskBuffer[tileIndex];
 		tileIndex += maskStride;
-		let batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
-		for (; i < batchEnd && mask != 0; i += 1) {
-			// Skip as much as we can
+
+		while mask != 0 {
 			let trailing = firstTrailingBit(mask);
-			mask >>= trailing + 1;
-			i += i32(trailing);
+			mask ^= 1u << trailing;
+			let light = getClusteredSpotLight(lightDataTexture, batchOffset + trailing);
 
-			let lightData = textureLoad(lightDataTexture, vec2i(0, i), 0);
-			let diffuse = textureLoad(lightDataTexture, vec2i(1, i), 0);
-			let specular = textureLoad(lightDataTexture, vec2i(2, i), 0);
-			let direction = textureLoad(lightDataTexture, vec2i(3, i), 0);
-			let falloff = textureLoad(lightDataTexture, vec2i(4, i), 0);
-
-			let info = computeSpotLighting(viewDirectionW, vNormal, lightData, direction, diffuse.rgb, specular.rgb, diffuse.a, glossiness);
+			let info = computeSpotLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDirection, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
 			result.diffuse += info.diffuse;
 			#ifdef SPECULARTERM
 				result.specular += info.specular;
 			#endif
 		}
-		i = batchEnd;
+		batchOffset += CLUSTLIGHT_BATCH;
 	}
 	return result;
 }
+#endif

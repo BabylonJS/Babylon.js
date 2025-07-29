@@ -206,10 +206,12 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 #endif
 
 #if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+#include<clusteredLightFunctions>
+
     lightingInfo computeClusteredLighting(
         sampler2D lightDataTexture,
         sampler2D tileMaskTexture,
-        vec4 clusteredData,
+        vec4 lightData,
         int numLights,
         vec3 V,
         vec3 N,
@@ -239,33 +241,32 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
         #endif
 
         lightingInfo result;
-        int maskHeight = int(clusteredData.y);
-        ivec2 tilePosition = ivec2(gl_FragCoord.xy * clusteredData.zw);
+        int maskHeight = int(lightData.y);
+        ivec2 tilePosition = ivec2(gl_FragCoord.xy * lightData.zw);
         tilePosition.y = min(tilePosition.y, maskHeight - 1);
 
-        for (int i = 0; i < numLights;) {
+        int numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;
+        int batchOffset = 0;
+
+        for (int i = 0; i < numBatches; i += 1) {
             uint mask = uint(texelFetch(tileMaskTexture, tilePosition, 0).r);
             tilePosition.y += maskHeight;
-            int batchEnd = min(i + CLUSTLIGHT_BATCH, numLights);
-            for (; i < batchEnd && mask != 0u; i += 1, mask >>= 1) {
-                if ((mask & 1u) == 0u) {
-                    continue;
-                }
 
-                vec4 lightData = texelFetch(lightDataTexture, ivec2(0, i), 0);
-                vec4 diffuse = texelFetch(lightDataTexture, ivec2(1, i), 0);
-                vec4 specular = texelFetch(lightDataTexture, ivec2(2, i), 0);
-                vec4 direction = texelFetch(lightDataTexture, ivec2(3, i), 0);
-			    vec4 falloff = texelFetch(lightDataTexture, ivec2(4, i), 0);
+            while (mask != 0u) {
+                // This gets the lowest set bit
+                uint bit = mask & -mask;
+                mask ^= bit;
+                int position = onlyBitPosition(bit);
+                SpotLight light = getClusteredSpotLight(lightDataTexture, batchOffset + position);
 
-                preLightingInfo preInfo = computePointAndSpotPreLightingInfo(lightData, V, N, posW);
+                preLightingInfo preInfo = computePointAndSpotPreLightingInfo(light.vLightData, V, N, posW);
                 preInfo.NdotV = NdotV;
 
                 // Compute Attenuation infos
-                preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, falloff.x, falloff.y);
-                preInfo.attenuation *= computeDirectionalLightFalloff(direction.xyz, preInfo.L, direction.w, lightData.w, falloff.z, falloff.w);
+                preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, light.vLightFalloff.x, light.vLightFalloff.y);
+                preInfo.attenuation *= computeDirectionalLightFalloff(light.vLightDirection.xyz, preInfo.L, light.vLightDirection.w, light.vLightData.w, light.vLightFalloff.z, light.vLightFalloff.w);
 
-                preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, specular.a, preInfo.lightDistance);
+                preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, light.vLightSpecular.a, preInfo.lightDistance);
                 preInfo.diffuseRoughness = reflectivityOut.diffuseRoughness;
                 preInfo.surfaceAlbedo = surfaceAlbedo;
                 lightingInfo info;
@@ -273,14 +274,14 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
                 // Diffuse contribution
                 #ifdef SS_TRANSLUCENCY
                     #ifdef SS_TRANSLUCENCY_LEGACY
-                        info.diffuse = computeDiffuseTransmittedLighting(preInfo, diffuse.rgb, subSurfaceOut.transmittance);
+                        info.diffuse = computeDiffuseTransmittedLighting(preInfo, light.vLightDiffuse.rgb, subSurfaceOut.transmittance);
                         info.diffuseTransmission = vec3(0);
                     #else
-                        info.diffuse = computeDiffuseLighting(preInfo, diffuse.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
-                        info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, diffuse.rgb, subSurfaceOut.transmittance);
+                        info.diffuse = computeDiffuseLighting(preInfo, light.vLightDiffuse.rgb) * (1.0 - subSurfaceOut.translucencyIntensity);
+                        info.diffuseTransmission = computeDiffuseTransmittedLighting(preInfo, light.vLightDiffuse.rgb, subSurfaceOut.transmittance);
                     #endif
                 #else
-                    info.diffuse = computeDiffuseLighting(preInfo, diffuse.rgb);
+                    info.diffuse = computeDiffuseLighting(preInfo, light.vLightDiffuse.rgb);
                 #endif
 
                 // Specular contribution
@@ -298,9 +299,9 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
                         info.diffuse *= (vec3(1.0) - fresnel);
                     #endif
                     #ifdef ANISOTROPIC
-                        info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, diffuse.rgb);
+                        info.specular = computeAnisotropicSpecularLighting(preInfo, V, N, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, clearcoatOut.specularEnvironmentR0, specularEnvironmentR90, AARoughnessFactor, light.vLightDiffuse.rgb);
                     #else
-                        info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, diffuse.rgb);
+                        info.specular = computeSpecularLighting(preInfo, N, specularEnvironmentR0, coloredFresnel, AARoughnessFactor, light.vLightDiffuse.rgb);
                     #endif
                 #endif
 
@@ -309,15 +310,15 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
                     #ifdef SHEEN_LINKWITHALBEDO
                         preInfo.roughness = sheenOut.sheenIntensity;
                     #else
-                        preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, specular.a, preInfo.lightDistance);
+                        preInfo.roughness = adjustRoughnessFromLightProperties(sheenOut.sheenRoughness, light.vLightSpecular.a, preInfo.lightDistance);
                     #endif
-                    info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, diffuse.rgb);
+                    info.sheen = computeSheenLighting(preInfo, normalW, sheenOut.sheenColor, specularEnvironmentR90, AARoughnessFactor, light.vLightDiffuse.rgb);
                 #endif
 
                 // Clear Coat contribution
                 #ifdef CLEARCOAT
-                    preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, specular.a, preInfo.lightDistance);
-                    info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, diffuse.rgb);
+                    preInfo.roughness = adjustRoughnessFromLightProperties(clearcoatOut.clearCoatRoughness, light.vLightSpecular.a, preInfo.lightDistance);
+                    info.clearCoat = computeClearCoatLighting(preInfo, clearcoatOut.clearCoatNormalW, clearcoatOut.clearCoatAARoughnessFactors.x, clearcoatOut.clearCoatIntensity, light.vLightDiffuse.rgb);
 
                     #ifdef CLEARCOAT_TINT
                         // Absorption
@@ -358,7 +359,7 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
                     result.sheen += info.sheen;
                 #endif
             }
-            i = batchEnd;
+            batchOffset += CLUSTLIGHT_BATCH;
         }
         return result;
     }
