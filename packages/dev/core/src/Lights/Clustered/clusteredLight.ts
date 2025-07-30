@@ -12,7 +12,10 @@ import { Vector3 } from "core/Maths/math.vector";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { _WarnImport } from "core/Misc/devTools";
+import { serialize } from "core/Misc/decorators";
 import { Logger } from "core/Misc/logger";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Node } from "core/node";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
@@ -22,6 +25,10 @@ import { PointLight } from "../pointLight";
 import { SpotLight } from "../spotLight";
 
 import "core/Meshes/thinInstanceMesh";
+
+Node.AddNodeConstructor("Light_Type_5", (name, scene) => {
+    return () => new ClusteredLight(name, [], scene);
+});
 
 /**
  * A special light that renders all its associated spot or point lights using a clustered or forward+ system.
@@ -108,6 +115,7 @@ export class ClusteredLight extends Light {
      * The number of tiles in the horizontal direction to cluster lights into.
      * A lower value will reduce memory and make the clustering step faster, while a higher value increases memory and makes the rendering step faster.
      */
+    @serialize()
     public get horizontalTiles(): number {
         return this._horizontalTiles;
     }
@@ -126,6 +134,7 @@ export class ClusteredLight extends Light {
      * The number of tiles in the vertical direction to cluster lights into.
      * A lower value will reduce memory and make the clustering step faster, while a higher value increases memory and makes the rendering step faster.
      */
+    @serialize()
     public get verticalTiles(): number {
         return this._verticalTiles;
     }
@@ -147,6 +156,7 @@ export class ClusteredLight extends Light {
      * The amount of tesselation the light proxy (or light mesh) should have.
      * A higher value increases memory and makes the clustering step slower, but reduces the amount of "false-positives" (lights marked as being in a tile when its not) which could slow down rendering.
      */
+    @serialize()
     public get proxyTesselation(): number {
         return this._proxyTesselation;
     }
@@ -165,6 +175,7 @@ export class ClusteredLight extends Light {
     /**
      * This limits the range of all the added lights, so even lights with extreme ranges will still have bounds for clustering.
      */
+    @serialize()
     public get maxRange(): number {
         return this._maxRange;
     }
@@ -485,3 +496,6 @@ export class ClusteredLight extends Light {
         return this._proxyMesh.isReady(true, true);
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.ClusteredLight", ClusteredLight);
