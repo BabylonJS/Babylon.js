@@ -15,6 +15,7 @@ import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
@@ -90,7 +91,7 @@ export const BaseTextureGeneralProperties: FunctionComponent<{ texture: BaseText
         <>
             <BoundProperty component={TextInputPropertyLine} label="Display Name" target={texture} propertyKey="displayName" />
             {internalUniqueId != null ? (
-                <TextPropertyLine label="Internal Unique ID" description="The unique ID of the internal texture." value={internalUniqueId.toString()} />
+                <StringifiedPropertyLine label="Internal Unique ID" description="The unique ID of the internal texture." value={internalUniqueId} />
             ) : (
                 <BooleanBadgePropertyLine label="Internal Unique ID" description="This texture has no internal texture." value={false} />
             )}
