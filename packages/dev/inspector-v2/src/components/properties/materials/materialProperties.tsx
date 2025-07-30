@@ -7,12 +7,12 @@ import { BoundProperty } from "../boundProperty";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 
-const TransparencyModeOptions: DropdownOption[] = [
+const TransparencyModeOptions = [
     { label: "Opaque", value: PBRMaterial.PBRMATERIAL_OPAQUE },
     { label: "Alpha test", value: PBRMaterial.PBRMATERIAL_ALPHATEST },
     { label: "Alpha blend", value: PBRMaterial.PBRMATERIAL_ALPHABLEND },
     { label: "Alpha blend and test", value: PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND },
-];
+] as const satisfies DropdownOption[];
 
 export const MaterialTransparencyProperties: FunctionComponent<{ material: Material }> = (props) => {
     const { material } = props;

@@ -16,7 +16,6 @@ import { CameraPropertiesServiceDefinition } from "./services/panes/properties/c
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
 import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
 import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
@@ -202,7 +201,6 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             TransformPropertiesServiceDefinition,
             AnimationPropertiesServiceDefinition,
             NodePropertiesServiceDefinition,
-            MeshPropertiesServiceDefinition,
             PhysicsPropertiesServiceDefinition,
             SkeletonPropertiesServiceDefinition,
             MaterialPropertiesServiceDefinition,
