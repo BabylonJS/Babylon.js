@@ -7,7 +7,6 @@ import { useCallback } from "react";
 import { EngineInstrumentation } from "core/Instrumentation/engineInstrumentation";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
 import { useResource } from "../../hooks/resourceHooks";
@@ -16,6 +15,7 @@ import { useResource } from "../../hooks/resourceHooks";
 import "core/Engines/AbstractEngine/abstractEngine.timeQuery";
 import "core/Engines/Extensions/engine.query";
 import "core/Engines/WebGPU/Extensions/engine.query";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 
 export const FrameStepsStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const pollingObservable = usePollingObservable(1000);
@@ -57,16 +57,16 @@ export const FrameStepsStats: FunctionComponent<{ context: Scene }> = ({ context
 
     return (
         <>
-            <TextPropertyLine key="AbsoluteFPS" label="Absolute FPS" value={absoluteFPS.toLocaleString()} />
-            <TextPropertyLine key="MeshesSelection" label="Meshes Selection" value={meshesSelection.toFixed(2) + " ms"} />
-            <TextPropertyLine key="RenderTargets" label="Render Targets" value={renderTargets.toFixed(2) + " ms"} />
-            <TextPropertyLine key="Particles" label="Particles" value={particles.toFixed(2) + " ms"} />
-            <TextPropertyLine key="Sprites" label="Sprites" value={sprites.toFixed(2) + " ms"} />
-            <TextPropertyLine key="Animations" label="Animations" value={animations.toFixed(2) + " ms"} />
-            <TextPropertyLine key="Physics" label="Physics" value={physics.toFixed(2) + " ms"} />
-            <TextPropertyLine key="InterFrameTime" label="Inter-Frame Time" value={interFrameTime.toFixed(2) + " ms"} />
-            <TextPropertyLine key="GPUFrameTime" label="GPU Frame Time" value={gpuFrameTime.toFixed(2) + " ms"} />
-            <TextPropertyLine key="GPUFrameTimeAverage" label="GPU Frame Time (Average)" value={gpuFrameTimeAverage.toFixed(2) + " ms"} />
+            <StringifiedPropertyLine key="AbsoluteFPS" label="Absolute FPS" value={absoluteFPS} />
+            <StringifiedPropertyLine key="MeshesSelection" label="Meshes Selection" value={meshesSelection} precision={2} units="ms" />
+            <StringifiedPropertyLine key="RenderTargets" label="Render Targets" value={renderTargets} precision={2} units="ms" />
+            <StringifiedPropertyLine key="Particles" label="Particles" value={particles} precision={2} units="ms" />
+            <StringifiedPropertyLine key="Sprites" label="Sprites" value={sprites} precision={2} units="ms" />
+            <StringifiedPropertyLine key="Animations" label="Animations" value={animations} precision={2} units="ms" />
+            <StringifiedPropertyLine key="Physics" label="Physics" value={physics} precision={2} units="ms" />
+            <StringifiedPropertyLine key="InterFrameTime" label="Inter-Frame Time" value={interFrameTime} precision={2} units="ms" />
+            <StringifiedPropertyLine key="GPUFrameTime" label="GPU Frame Time" value={gpuFrameTime} precision={2} units="ms" />
+            <StringifiedPropertyLine key="GPUFrameTimeAverage" label="GPU Frame Time (Average)" value={gpuFrameTimeAverage} precision={2} units="ms" />
         </>
     );
 };
