@@ -2,8 +2,9 @@ uniform vec4 vEyePosition;
 
 uniform vec3 vReflectionColor;
 uniform vec4 vBaseColor;
-uniform float baseWeight;
+uniform float vBaseWeight;
 uniform float vBaseDiffuseRoughness;
+uniform vec4 vCoatColor;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
@@ -44,6 +45,10 @@ uniform vec2 vEmissionInfos;
 
 #ifdef METALLIC_ROUGHNESS
 uniform vec2 vBaseMetalRoughInfos;
+#endif
+
+#ifdef COAT_WEIGHT
+uniform vec2 vCoatWeightInfos;
 #endif
 
 // Refraction Reflection

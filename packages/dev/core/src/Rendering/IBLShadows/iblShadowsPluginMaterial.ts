@@ -169,16 +169,16 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                         #ifdef REFLECTION
                             #ifdef COLORED_IBL_SHADOWS
                                 var shadowValue: vec3f = computeIndirectShadow();
-                                finalIrradiance *= shadowValue;
-                                finalRadianceScaled *= mix(vec3f(1.0), shadowValue, roughness);
+                                slab_diffuse *= shadowValue;
+                                slab_glossy *= mix(vec3f(1.0), shadowValue, alphaG);
                             #else
                                 var shadowValue: vec2f = computeIndirectShadow();
-                                finalIrradiance *= vec3f(shadowValue.x);
-                                finalRadianceScaled *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness));
+                                slab_diffuse *= vec3f(shadowValue.x);
+                                slab_glossy *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, alphaG));
                             #endif
                         #endif
                     #else
-                        finalDiffuse *= computeIndirectShadow().x;
+                        slab_diffuse *= computeIndirectShadow().x;
                     #endif
                 #endif
             `;
@@ -247,16 +247,16 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                         #ifdef REFLECTION
                             #ifdef COLORED_IBL_SHADOWS
                                 vec3 shadowValue = computeIndirectShadow();
-                                finalIrradiance.rgb *= shadowValue.rgb;
-                                finalRadianceScaled *= mix(vec3(1.0), shadowValue.rgb, roughness);
+                                slab_diffuse.rgb *= shadowValue.rgb;
+                                slab_glossy *= mix(vec3(1.0), shadowValue.rgb, alphaG);
                             #else
                                 vec2 shadowValue = computeIndirectShadow();
-                                finalIrradiance *= shadowValue.x;
-                                finalRadianceScaled *= mix(pow(shadowValue.y, 4.0), shadowValue.x, roughness);
+                                slab_diffuse *= shadowValue.x;
+                                slab_glossy *= mix(pow(shadowValue.y, 4.0), shadowValue.x, alphaG);
                             #endif
                         #endif
                     #else
-                        finalDiffuse *= computeIndirectShadow().x;
+                        slab_diffuse *= computeIndirectShadow().x;
                     #endif
                 #endif
             `;

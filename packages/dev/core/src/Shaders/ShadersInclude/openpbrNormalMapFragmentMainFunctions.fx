@@ -1,4 +1,4 @@
-﻿#if defined(GEOMETRY_NORMAL) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC) || defined(DETAIL)
+﻿#if defined(GEOMETRY_NORMAL) || defined(GEOMETRY_COAT_NORMAL) || defined(ANISOTROPIC) || defined(DETAIL)
 	#if defined(TANGENT) && defined(NORMAL) 
 		varying mat3 vTBN;
 	#endif

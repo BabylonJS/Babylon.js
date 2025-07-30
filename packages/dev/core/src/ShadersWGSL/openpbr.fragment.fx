@@ -48,7 +48,7 @@
 #include<openpbrBlockReflectivity>
 #include<openpbrBlockAmbientOcclusion>
 #include<pbrBlockAlphaFresnel>
-#include<pbrBlockReflection>
+#include<openpbrIblFunctions>
 
 // _____________________________ MAIN FUNCTION ____________________________
 @fragment
@@ -90,7 +90,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         , baseColorFromTexture
         , uniforms.vBaseColorInfos
     #endif
-        , uniforms.baseWeight
+        , uniforms.vBaseWeight
     #ifdef BASE_WEIGHT
         , baseWeightFromTexture
         , uniforms.vBaseWeightInfos

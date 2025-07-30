@@ -50,7 +50,7 @@
     "[css]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "jest.runMode": "on-demand",
     "typescript.preferences.importModuleSpecifier": "project-relative",
     "javascript.preferences.importModuleSpecifier": "project-relative"

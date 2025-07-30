@@ -148,7 +148,13 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         // eslint-disable-next-line github/no-then
         return Promise.all(promises).then(() => {
             if (useOpenPBR) {
-                // eslint-disable-next-line github/no-then
+                const material = babylonMaterial as OpenPBRMaterial;
+                material.coatWeight = coatWeight;
+                material.coatWeightTexture = coatWeightTexture;
+                material.coatRoughness = coatRoughness;
+                material.coatRoughnessTexture = coatRoughnessTexture;
+                // material.coatNormalTexture = coatNormalTexture;
+                // material.coatNormalTextureScale = coatNormalTextureScale;
                 return;
             }
             const material = babylonMaterial as PBRMaterial;

@@ -60,11 +60,13 @@ precision highp float;
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-#include<openpbrBlockAlbedoOpacity>
-#include<openpbrBlockReflectivity>
+#include<openpbrDielectricReflectance>
+#include<openpbrConductorReflectance>
+
 #include<openpbrBlockAmbientOcclusion>
 #include<pbrBlockAlphaFresnel>
-#include<pbrBlockReflection>
+#include<openpbrIblFunctions>
+#include<openpbrGeometryInfo>
 
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
@@ -80,83 +82,17 @@ void main(void) {
 
     #include<pbrBlockNormalFinal>
 
-    // _____________________________ Albedo & Opacity ______________________________
-    albedoOpacityOutParams albedoOpacityOut;
+    // ______________________ Read Base properties & Opacity ______________________________
+    #include<openpbrBaseLayerData>
 
-#ifdef BASE_COLOR
-    vec4 baseColorFromTexture = texture2D(baseColorSampler, vBaseColorUV + uvOffset);
-#endif
-
-#ifdef BASE_WEIGHT
-    vec4 baseWeightFromTexture = texture2D(baseWeightSampler, vBaseWeightUV + uvOffset);
-#endif
-
-#ifdef OPACITY
-    vec4 opacityMap = texture2D(opacitySampler, vOpacityUV + uvOffset);
-#endif
-
-#ifdef DECAL
-    vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
-#endif
-
-    albedoOpacityOut = albedoOpacityBlock(
-        vBaseColor
-    #ifdef BASE_COLOR
-        , baseColorFromTexture
-        , vBaseColorInfos
-    #endif
-        , baseWeight
-    #ifdef BASE_WEIGHT
-        , baseWeightFromTexture
-        , vBaseWeightInfos
-    #endif
-    #ifdef OPACITY
-        , opacityMap
-        , vOpacityInfos
-    #endif
-    #ifdef DETAIL
-        , detailColor
-        , vDetailInfos
-    #endif
-    #ifdef DECAL
-        , decalColor
-        , vDecalInfos
-    #endif
-    );
-
-    vec3 surfaceAlbedo = albedoOpacityOut.surfaceAlbedo;
-    float alpha = albedoOpacityOut.alpha;
+    // _____________________________ Read Coat Layer properties ______________________
+    #include<openpbrCoatLayerData>
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
     #include<depthPrePass>
 
     #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
-
-
-// MPBR	=mix(Sambient-medium,Msurface,α)	whereα	=geometry_opacity
-// Msurface	=layer(Mcoated-base,Sfuzz,F)	whereF	=fuzz_weight
-// Mcoated-base	=layer(Mbase,Scoat,C)	whereC	=coat_weight
-
-// Mbase	=mix(Mdielectric-base,Smetal,M)	whereM	=base_metalness
-// Mdielectric-base	=mix(Mopaque-base,Stranslucent-base,T)	whereT	=transmission_weight
-// Mopaque-base	=mix(Mglossy-diffuse,Ssubsurface,S)	whereS	=subsurface_weight
-// Mglossy-diffuse	=layer(Sdiffuse,Sgloss)
-
-// Base roughness is modified by the coat layer
-// rB′ = mix(rB, min(1, rB^4 + 2rC^4)^1/4 , C) where C = coat_weight  (61) in OpenPBR spec
-
-// Sample specular lobe IBL and analytic lights separately from BRDF for each layer
-//    - pass in roughness, anisotropy, sample vector (and tangent?). Same code for reflection and refraction.
-//    - Coat: - one sample - pass in coat_roughness_anisotropy, coat_roughness, geometry_coat_normal
-//    - Base:- one sample - pass in geometry_normal, specular_roughness, specular_anisotropy
-//    - Translucent refraction
-//    - thin-walled refraction - i.e. no refraction
-// Sample diffuse lobe IBL and analytic lights separately from BRDF for each layer
-//    - only Base layer has diffuse lobe
-//    - pass in base_diffuse_roughness, geometry_normal, base_color
-//    - Subsurface - refracted/transmitted diffuse - (geometry_thin_walled with subsurface is the same as glTF diffuse transmission)
-
 
     // _____________________________ AO  _______________________________
     ambientOcclusionOutParams aoOut;
@@ -172,99 +108,23 @@ void main(void) {
     #endif
     );
 
-#ifdef UNLIT
-    vec3 diffuseBase = vec3(1., 1., 1.);
-#else // !UNLIT
-
-    // _____________________________ Reflectivity (Rename this to IBL) _______________________________
-    
-    reflectivityOutParams reflectivityOut;
-
-#ifdef METALLIC_ROUGHNESS
-    vec4 metallicRoughnessFromTexture = texture2D(baseMetalRoughSampler, vBaseMetalRoughUV + uvOffset);
-#endif
-
-#ifdef BASE_DIFFUSE_ROUGHNESS
-    float baseDiffuseRoughnessFromTexture = texture2D(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
-#endif
-
-vec4 specularColor = vSpecularColor;
-#ifdef SPECULAR_COLOR
-    vec4 specularColorFromTexture = texture2D(specularColorSampler, vSpecularColorUV + uvOffset);
-    #ifdef SPECULAR_COLOR_GAMMA
-        specularColorFromTexture = toLinearSpace(specularColorFromTexture);
-    #endif
-
-    specularColor.rgb *= specularColorFromTexture.rgb;
-#endif
-#ifdef SPECULAR_WEIGHT
-    vec4 specularWeightFromTexture = texture2D(specularWeightSampler, vSpecularWeightUV + uvOffset);
-    #ifdef SPECULAR_WEIGHT_GAMMA
-        specularWeightFromTexture = toLinearSpace(specularWeightFromTexture);
-    #endif
-
-    // If loaded from a glTF, the specular_weight is stored in the alpha channel.
-    // Otherwise, it's expected to just be a greyscale texture.
-    #ifdef SPECULAR_WEIGHT_USE_ALPHA_ONLY
-        specularColor.a *= specularWeightFromTexture.a;
-    #else
-        specularColor.rgb *= specularWeightFromTexture.rgb;
-    #endif
-#endif
-
-    reflectivityOut = reflectivityBlock(
-        vReflectanceInfo
-        , surfaceAlbedo
-        , specularColor
-        , vBaseDiffuseRoughness
-    #ifdef BASE_DIFFUSE_ROUGHNESS
-        , baseDiffuseRoughnessFromTexture
-        , vBaseDiffuseRoughnessInfos
-    #endif
-    #ifdef METALLIC_ROUGHNESS
-        , vec3(vBaseMetalRoughInfos, 1.0f)
-        , metallicRoughnessFromTexture
-        #ifdef AOSTOREINMETALMAPRED
-            , aoOut.ambientOcclusionColor
-        #endif
-    #endif
-    #ifdef DETAIL
-        , detailColor
-        , vDetailInfos
-    #endif
+    // _____________________________ Compute Geometry info for coat layer _________________________
+    geometryInfoOutParams coatGeoInfo = geometryInfo(
+        normalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
     );
 
-    float roughness = reflectivityOut.roughness;
-    float diffuseRoughness = reflectivityOut.diffuseRoughness;
-    
-    #if defined(METALLIC_ROUGHNESS) && defined(AOSTOREINMETALMAPRED)
-        aoOut.ambientOcclusionColor = reflectivityOut.ambientOcclusionColor;
-    #endif
+    // _____________________________ Compute Geometry info for base layer _________________________
+    // Adjust the base roughness to account for the coat layer. Equation 61 in OpenPBR spec.
+    specular_roughness = mix(specular_roughness, pow(min(1.0, pow(specular_roughness, 4.0) + 2.0 * pow(coat_roughness, 4.0)), 0.25), coat_weight);
+    geometryInfoOutParams baseGeoInfo = geometryInfo(
+        normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+    );
 
-    // _____________________________ Compute Geometry info _________________________________
-    #include<openpbrBlockGeometryInfo>
-
-// Share code for reflection and refraction
-// Pass in values to select between reflection and refraction, diffuse and specular, anisotropic and isotropic
-    // _____________________________ Reflection Info _______________________________________
+    // _____________________________ Base Diffuse Layer IBL _______________________________________
     #ifdef REFLECTION
-        reflectionOutParams reflectionOut;
-
-        #ifndef USE_CUSTOM_REFLECTION
-            reflectionOut = reflectionBlock(
-                vPositionW
-                , normalW
-                , alphaG
-                , vReflectionMicrosurfaceInfos
-                , vReflectionInfos
-                , vReflectionColor
-            #ifdef ANISOTROPIC
-                , anisotropicOut
-            #endif
-            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                , NdotVUnclamped
-            #endif
-                , reflectionSampler
+        // Pass in a vector to sample teh irradiance with (to handle reflection or )
+        vec3 baseDiffuseEnvironmentLight = sampleIrradiance(
+            normalW
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 , vEnvironmentIrradiance
             #endif
@@ -277,56 +137,180 @@ vec4 specularColor = vSpecularColor;
                     , vReflectionDominantDirection
                 #endif
             #endif
-            #ifndef LODBASEDMICROSFURACE
-                , reflectionSamplerLow
-                , reflectionSamplerHigh
-            #endif
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
                 #ifdef IBL_CDF_FILTERING
                     , icdfSampler
                 #endif
             #endif
-                , viewDirectionW
-                , diffuseRoughness
-                , surfaceAlbedo
-            );
+            , vReflectionInfos
+            , viewDirectionW
+            , base_diffuse_roughness
+            , base_color
+        );
+
+    // _____________________________ Base Specular Layer IBL _______________________________________    
+
+        #ifdef REFLECTIONMAP_3D
+            vec3 reflectionCoords = vec3(0., 0., 0.);
         #else
-            #define CUSTOM_REFLECTION
+            vec2 reflectionCoords = vec2(0., 0.);
         #endif
+        reflectionCoords = createReflectionCoords(vPositionW, normalW);
+        float specularAlphaG = specular_roughness * specular_roughness;
+        vec3 baseSpecularEnvironmentLight = sampleRadiance(specularAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+                , baseGeoInfo.NdotVUnclamped
+            #endif
+            , reflectionSampler
+            , reflectionCoords
+            #ifdef REALTIME_FILTERING
+                , vReflectionFilteringInfo
+            #endif
+        );
+
+        baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
+
+        vec3 coatEnvironmentLight = vec3(0., 0., 0.);
+        if (coat_weight > 0.0) {
+            #ifdef REFLECTIONMAP_3D
+                vec3 reflectionCoords = vec3(0., 0., 0.);
+            #else
+                vec2 reflectionCoords = vec2(0., 0.);
+            #endif
+            reflectionCoords = createReflectionCoords(vPositionW, normalW);
+            float coatAlphaG = coat_roughness * coat_roughness;
+            coatEnvironmentLight = sampleRadiance(coatAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+                    , coatGeoInfo.NdotVUnclamped
+                #endif
+                , reflectionSampler
+                , reflectionCoords
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+        }
+
+        
     #endif
 
-    // _________________________ Specular Environment Reflectance __________________________
-    float reflectanceF0 = reflectivityOut.reflectanceF0;
-    vec3 specularEnvironmentR0 = reflectivityOut.colorReflectanceF0;
-    vec3 specularEnvironmentR90 = reflectivityOut.colorReflectanceF90;
-    #include<openpbrBlockReflectance>
+    // _______________________ F0 and F90 Reflectance _______________________________
+
+    // Coat
+    dielectricReflectanceOutParams coatReflectance;
+    coatReflectance = dielectricReflectance(
+        coat_ior // inside IOR
+        , 1.0 // outside IOR is air
+        , vec3(1.0)
+        , coat_weight
+    );
+
+    // Base Dielectric
+    dielectricReflectanceOutParams baseDielectricReflectance;
+    {
+        float effectiveCoatIor = mix(1.0, coat_ior, coat_weight);
+        baseDielectricReflectance = dielectricReflectance(
+            specular_ior // inside IOR
+            , effectiveCoatIor // outside IOR is coat
+            , specular_color
+            , specular_weight
+        );
+    }
+
+    // Base Metallic
+    conductorReflectanceOutParams baseConductorReflectance;
+    baseConductorReflectance = conductorReflectance(base_color, specular_color, specular_weight);
     
+    // ______________________________ IBL Fresnel Reflectance ____________________________
+    #ifdef REFLECTION
+    
+        // Dielectric IBL Fresnel
+        // The colored fresnel represents the % of light reflected by the base specular lobe
+        // The non-colored fresnel represents the % of light that doesn't penetrate through 
+        // the base specular lobe. i.e. the specular lobe isn't energy conserving for coloured specular.
+        float dielectricIblFresnel = getReflectanceFromBRDFLookup(vec3(baseDielectricReflectance.F0), vec3(baseDielectricReflectance.F90), baseGeoInfo.environmentBrdf).r;
+        vec3 dielectricIblColoredFresnel = getReflectanceFromBRDFLookup(baseDielectricReflectance.coloredF0, baseDielectricReflectance.coloredF90, baseGeoInfo.environmentBrdf);
+
+        // Conductor IBL Fresnel
+        vec3 conductorIblFresnel = conductorIblFresnel(baseConductorReflectance, baseGeoInfo.NdotV, specular_roughness, baseGeoInfo.environmentBrdf);
+
+        // Coat IBL Fresnel
+        float coatIblFresnel = 0.0;
+        if (coat_weight > 0.0) {
+            coatIblFresnel = getReflectanceFromBRDFLookup(vec3(coatReflectance.F0), vec3(coatReflectance.F90), coatGeoInfo.environmentBrdf).r;
+            // Prevent the light reflected by the coat from being added to the base layer
+            dielectricIblFresnel -= coatIblFresnel;
+            dielectricIblColoredFresnel = max(dielectricIblColoredFresnel - vec3(coatIblFresnel), 0.0);
+            conductorIblFresnel = max(conductorIblFresnel - vec3(coatIblFresnel), 0.0);
+        }
+    #endif
+
+    // _____________________________ Base Layer IBL ______________________________________
+    vec3 slab_diffuse = vec3(0., 0., 0.);
+    vec3 slab_glossy = vec3(0., 0., 0.);
+    #ifdef REFLECTION
+        slab_diffuse = baseDiffuseEnvironmentLight * vLightingIntensity.z;
+
+        // Account for energy loss due to specular reflectance
+        vec3 baseSpecularEnergy = vec3(dielectricIblFresnel + coatIblFresnel);
+        slab_diffuse *= clamp(vec3(1.0) - baseSpecularEnergy, 0.0, 1.0);
+        slab_diffuse *= base_color.rgb;
+        slab_diffuse *= aoOut.ambientOcclusionColor;
+
+        // Add the specular environment light
+        slab_glossy = baseSpecularEnvironmentLight * dielectricIblColoredFresnel * vLightingIntensity.z;
+    #endif
+
+    // _____________________________ Metal Layer IBL ____________________________
+    vec3 slab_metal_IBL = vec3(0., 0., 0.);
+    #ifdef REFLECTION
+        slab_metal_IBL = baseSpecularEnvironmentLight * conductorIblFresnel * vLightingIntensity.z;
+    #endif
+
+    // _____________________________ Coat Layer IBL ____________________________
+    vec3 slab_coated_base = vec3(0., 0., 0.);
+    #ifdef REFLECTION
+        if (coat_weight > 0.0) {
+            slab_coated_base = coatEnvironmentLight * coatIblFresnel * vLightingIntensity.z;
+        }
+    #endif
+
     // _____________________________ Direct Lighting Info __________________________________
-    #include<pbrBlockDirectLighting>
+    vec3 baseDiffuseDirectLight = vec3(0., 0., 0.);
+    #ifdef SPECULARTERM
+        vec3 baseSpecularDirectLight = vec3(0., 0., 0.);
+    #endif
 
-    // TODO: lightFragment references cloatcoatOut, subsurfaceOut, etc.
-    // lightFragment shouldn't know what layer it's working on.
-    // Instead, we should define values for lightFragment to use here, defining
-    // conditions like F0, F90, etc.
-    // Or we could convert lightFragment to be a function that returns the diffuse
-    // or specular contribution, given the reflectance inputs?
-    // e.g. lighting contributions from clearcoat, subsurface, base layer, etc. need
-    // to be computed separately.
-    // #include<lightFragment>[0..maxSimultaneousLights]
+    // Direct Lighting Variables
+    #if defined(SPECULARTERM) && defined(LIGHT0)
+        vec3 coloredFresnel;
+    #endif
+    float aggShadow = 0.;
+    float numLights = 0.;
 
-    // _____________________________ Compute Final Lit Components ________________________
-    #include<openpbrBlockFinalLitComponents>
-#endif // !UNLIT
+    #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]
+    #include<openpbrDirectLightingShadow>[0..maxSimultaneousLights]
+    #include<openpbrDirectLightingDiffuse>[0..maxSimultaneousLights]
+    #include<openpbrDirectLightingSpecular>[0..maxSimultaneousLights]
 
-    // #include<pbrBlockFinalUnlitComponents>
-    // _____________________________ Diffuse ________________________________________
-    vec3 finalDiffuse = diffuseBase;
-    finalDiffuse *= surfaceAlbedo;
+    aggShadow = aggShadow / numLights;
 
-    finalDiffuse = max(finalDiffuse, 0.0);
-    finalDiffuse *= vLightingIntensity.x;
+    
 
+    // Handle direct lighting
+    vec3 finalDiffuseDirect = baseDiffuseDirectLight * vLightingIntensity.x;
+    finalDiffuseDirect *= base_color.rgb;
+
+
+    // ___________________ Specular Layer Direct Lighting ___________________________
+    vec3 finalSpecularDirect = vec3(0., 0., 0.);
+    #ifdef SPECULARTERM
+        baseSpecularDirectLight = max(baseSpecularDirectLight, 0.0) * vLightingIntensity.x * vLightingIntensity.w;
+        finalSpecularDirect += baseSpecularDirectLight;
+    #endif
+
+    
     // _____________________________ Emissive ________________________________________
     vec3 finalEmission = vEmissionColor;
     #ifdef EMISSION
@@ -340,14 +324,39 @@ vec4 specularColor = vSpecularColor;
     #endif
     finalEmission *= vLightingIntensity.y;
 
-    // ______________________________ Ambient ________________________________________
-    #ifdef AMBIENT_OCCLUSION
-        finalDiffuse *= mix(vec3(1.), aoOut.ambientOcclusionColor, 1.0 - vAmbientOcclusionInfos.y);
-    #endif
-
+    // _____________________________ Final Color Composition ________________________
     #define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION
 
-    #include<openpbrBlockFinalColorComposition>
+    // TEMP
+    vec3 slab_subsurface = vec3(0., 0., 0.);
+    vec3 slab_translucent_base = vec3(0., 0., 0.);
+    vec3 slab_fuzz = vec3(0., 0., 0.);
+    float subsurface_weight = 0.0;
+    float transmission_weight = 0.0;
+    float fuzz_weight = 0.0;
+
+    vec3 material_glossy_diffuse = slab_diffuse + slab_glossy;
+    vec3 material_opaque_base = mix(material_glossy_diffuse, slab_subsurface, subsurface_weight);
+    vec3 material_dielectric_base = mix(material_opaque_base, slab_translucent_base, transmission_weight);
+    vec3 material_base_substrate = mix(material_dielectric_base, slab_metal_IBL, base_metalness);
+    vec3 material_coated_base = material_base_substrate + slab_coated_base;
+    vec3 material_surface = mix(material_coated_base, slab_fuzz, fuzz_weight);
+    vec4 material_final = vec4(material_surface, alpha);
+
+    vec4 finalColor = vec4(
+        material_final.rgb +
+        finalDiffuseDirect +
+        finalSpecularDirect +
+        finalEmission
+        , alpha);
+
+    // _____________________________ EmissiveLight _____________________________________
+    finalColor.rgb += finalEmission;
+
+    #define CUSTOM_FRAGMENT_BEFORE_FOG
+
+    // _____________________________ Finally ___________________________________________
+    finalColor = max(finalColor, 0.0);
 
     #include<logDepthFragment>
     #include<fogFragment>(color, finalColor)
