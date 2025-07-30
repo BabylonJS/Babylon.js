@@ -2,9 +2,9 @@ import type { FunctionComponent } from "react";
 
 import type { Scene } from "core/index";
 
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
 import { usePollingObservable } from "../../hooks/pollingHooks";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 
 export const CountStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
     const pollingObservable = usePollingObservable(1000);
@@ -22,17 +22,17 @@ export const CountStats: FunctionComponent<{ context: Scene }> = ({ context: sce
 
     return (
         <>
-            <TextPropertyLine key="TotalMeshes" label="Total Meshes" value={totalMeshes.toLocaleString()} />
-            <TextPropertyLine key="ActiveMeshes" label="Active Meshes" value={activeMeshes.toLocaleString()} />
-            <TextPropertyLine key="ActiveIndices" label="Active Indeces" value={activeIndices.toLocaleString()} />
-            <TextPropertyLine key="ActiveFaces" label="Active Faces" value={(activeIndices / 3).toLocaleString()} />
-            <TextPropertyLine key="ActiveBones" label="Active Bones" value={activeBones.toLocaleString()} />
-            <TextPropertyLine key="ActiveParticles" label="Active Particles" value={activeParticles.toLocaleString()} />
-            <TextPropertyLine key="DrawCalls" label="Draw Calls" value={drawCalls.toLocaleString()} />
-            <TextPropertyLine key="TotalLights" label="Total Lights" value={totalLights.toLocaleString()} />
-            <TextPropertyLine key="TotalVertices" label="Total Vertices" value={totalVertices.toLocaleString()} />
-            <TextPropertyLine key="TotalMaterials" label="Total Materials" value={totalMaterials.toLocaleString()} />
-            <TextPropertyLine key="TotalTextures" label="Total Textures" value={totalTextures.toLocaleString()} />
+            <StringifiedPropertyLine key="TotalMeshes" label="Total Meshes" value={totalMeshes} />
+            <StringifiedPropertyLine key="ActiveMeshes" label="Active Meshes" value={activeMeshes} />
+            <StringifiedPropertyLine key="ActiveIndices" label="Active Indeces" value={activeIndices} />
+            <StringifiedPropertyLine key="ActiveFaces" label="Active Faces" value={activeIndices / 3} />
+            <StringifiedPropertyLine key="ActiveBones" label="Active Bones" value={activeBones} />
+            <StringifiedPropertyLine key="ActiveParticles" label="Active Particles" value={activeParticles} />
+            <StringifiedPropertyLine key="DrawCalls" label="Draw Calls" value={drawCalls} />
+            <StringifiedPropertyLine key="TotalLights" label="Total Lights" value={totalLights} />
+            <StringifiedPropertyLine key="TotalVertices" label="Total Vertices" value={totalVertices} />
+            <StringifiedPropertyLine key="TotalMaterials" label="Total Materials" value={totalMaterials} />
+            <StringifiedPropertyLine key="TotalTextures" label="Total Textures" value={totalTextures} />
         </>
     );
 };
