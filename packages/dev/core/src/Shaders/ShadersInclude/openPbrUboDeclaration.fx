@@ -60,11 +60,15 @@ uniform Material {
     vec3 vSphericalYZ;
     vec3 vSphericalZX;
 
-    float baseWeight;
+    float vBaseWeight;
     vec4 vBaseColor;
     float vBaseDiffuseRoughness;
     vec4 vReflectanceInfo;
     vec4 vSpecularColor;
+    float vCoatWeight;
+    vec3 vCoatColor;
+    float vCoatRoughness;
+    float vCoatIor;
     vec3 vEmissionColor;
 
     vec2 vBaseWeightInfos;
@@ -79,6 +83,12 @@ uniform Material {
     mat4 specularColorMatrix;
     vec2 vBaseMetalRoughInfos;
     mat4 baseMetalRoughMatrix;
+    vec2 vCoatWeightInfos;
+    mat4 coatWeightMatrix;
+    vec2 vCoatColorInfos;
+    mat4 coatColorMatrix;
+    vec2 vCoatRoughnessInfos;
+    mat4 coatRoughnessMatrix;
     vec2 vGeometryNormalInfos;
     mat4 geometryNormalMatrix;
     vec2 vGeometryOpacityInfos;

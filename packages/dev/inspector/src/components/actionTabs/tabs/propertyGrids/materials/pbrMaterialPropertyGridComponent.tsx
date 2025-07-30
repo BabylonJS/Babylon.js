@@ -162,14 +162,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                     />
                 )}
-                <TextureLinkLineComponent
-                    label="Lightmap"
-                    texture={material.lightmapTexture}
-                    propertyName="lightmapTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Lightmap"
+                        texture={material.lightmapTexture}
+                        propertyName="lightmapTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
                 {material instanceof PBRMaterial && (
                     <>
                         <TextureLinkLineComponent

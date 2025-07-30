@@ -22,6 +22,7 @@ import type { IColor3Like } from "core/Maths";
 import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
 import type { CubeTexture } from "./Textures/cubeTexture";
+import { Color3 } from "core/Maths/math.color";
 
 // Temps
 const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };

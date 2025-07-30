@@ -52,22 +52,3 @@ aggShadow = aggShadow / numLights;
     #endif
 
 #endif
-
-// _____________________________ Highlights on Alpha _____________________________
-#ifdef ALPHABLEND
-    var luminanceOverAlpha: f32 = 0.0;
-    #if	defined(REFLECTION) && defined(RADIANCEOVERALPHA)
-        luminanceOverAlpha += getLuminance(finalRadianceScaled);
-        #if defined(CLEARCOAT)
-            luminanceOverAlpha += getLuminance(clearcoatOut.finalClearCoatRadianceScaled);
-        #endif
-    #endif
-
-    #if defined(SPECULARTERM) && defined(SPECULAROVERALPHA)
-        luminanceOverAlpha += getLuminance(finalSpecularScaled);
-    #endif
-
-    #if defined(RADIANCEOVERALPHA) || defined(SPECULAROVERALPHA) || defined(CLEARCOATOVERALPHA)
-        alpha = saturate(alpha + luminanceOverAlpha * luminanceOverAlpha);
-    #endif
-#endif
