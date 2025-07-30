@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, expandToProperty, serializeAsTexture, addAccessorsForMaterialProperty } from "../../Misc/decorators";
+import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
@@ -10,7 +10,7 @@ import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-
+import type { Engine } from "../../Engines/engine";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../materialDefines";
@@ -229,9 +229,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public REFLECTIVITYDIRECTUV = 0;
     public SPECULARTERM = false;
 
-    public MICROSURFACEFROMREFLECTIVITYMAP = false;
-    public MICROSURFACEAUTOMATIC = false;
-    public LODBASEDMICROSFURACE = false;
+    public LODBASEDMICROSFURACE = true;
 
     public METALLICWORKFLOW = true;
     public ROUGHNESSSTOREINMETALMAPALPHA = false;
@@ -436,7 +434,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public baseWeight: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseWeight")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _baseWeight: Property<number> = new Property<number>("base_weight", 1, "baseWeight", 1);
+    private _baseWeight: Property<number> = new Property<number>("base_weight", 1, "vBaseWeight", 1);
 
     /**
      * Base Weight is a multiplier on the diffuse and metal lobes.
@@ -556,6 +554,69 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _baseMetalRoughTexture: Sampler = new Sampler("base_metalness_specular_roughness", "baseMetalRough", "METALLIC_ROUGHNESS");
 
     /**
+     * Defines the amount of clear coat on the surface.
+     * See OpenPBR's specs for coat_weight
+     */
+    public coatWeight: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatWeight")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatWeight: Property<number> = new Property<number>("coat_weight", 0.0, "vCoatWeight", 1, 0);
+
+    /**
+     * Coat weight texture.
+     * See OpenPBR's specs for coat_weight
+     */
+    public coatWeightTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatWeightTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatWeightTexture: Sampler = new Sampler("coat_weight", "coatWeight", "COAT_WEIGHT");
+
+    /**
+     * Defines the color of the clear coat on the surface.
+     * See OpenPBR's specs for coat_color
+     */
+    public coatColor: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatColor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatColor: Property<Color3> = new Property<Color3>("coat_color", Color3.White(), "vCoatColor", 3, 0);
+
+    /**
+     * Color of the clear coat.
+     * See OpenPBR's specs for coat_color
+     */
+    public coatColorTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatColorTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatColorTexture: Sampler = new Sampler("coat_color", "coatColor", "COAT_COLOR");
+
+    /**
+     * Defines the roughness of the clear coat on the surface.
+     * See OpenPBR's specs for coat_roughness
+     */
+    public coatRoughness: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatRoughness")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatRoughness: Property<number> = new Property<number>("coat_roughness", 0.0, "vCoatRoughness", 1, 0);
+
+    /**
+     * Roughness of the clear coat.
+     * See OpenPBR's specs for coat_roughness
+     */
+    public coatRoughnessTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatRoughnessTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatRoughnessTexture: Sampler = new Sampler("coat_roughness", "coatRoughness", "COAT_ROUGHNESS");
+
+    /**
+     * Defines the IOR of the clear coat on the surface.
+     * See OpenPBR's specs for coat_ior
+     */
+    public coatIor: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatIor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatIor: Property<number> = new Property<number>("coat_ior", 1.5, "vCoatIor", 1, 0);
+
+    /**
      * Defines the normal of the material's geometry.
      * See OpenPBR's specs for geometry_normal
      */
@@ -638,13 +699,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public environmentIntensity: number = 1.0;
 
     /**
-     * Stores the reflection values in a texture.
-     */
-    @serializeAsTexture()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public reflectionTexture: Nullable<BaseTexture>;
-
-    /**
      * Specifies that the specular weight is stored in the alpha channel of the specular weight texture.
      */
     @serialize()
@@ -673,13 +727,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public alphaCutOff = 0.4;
 
     /**
-     * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useMicroSurfaceFromReflectivityMapAlpha = false;
-
-    /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
      */
     @serialize()
@@ -692,14 +739,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public useAmbientInGrayScale = false;
-
-    /**
-     * In case the reflectivity map does not contain the microsurface information in its alpha channel,
-     * The material will try to infer what glossiness each pixel should be.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public useAutoMicroSurfaceFromReflectivityMap = false;
 
     /**
      * BJS is using an hardcoded light falloff based on a manually sets up range.
@@ -948,10 +987,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _lightingInfos: Vector4 = new Vector4(this._directIntensity, this._emissiveIntensity, this._environmentIntensity, 1.0);
 
     /**
-     * Stores the reflection values in a texture.
+     * Stores the radiance (and, possibly, irradiance) values in a texture.
      * @internal
      */
-    public _reflectionTexture: Nullable<BaseTexture> = null;
+    public _radianceTexture: Nullable<BaseTexture> = null;
 
     /**
      * Specifies that only the A channel from _metallicReflectanceTexture should be used.
@@ -981,36 +1020,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useAlphaFromAlbedoTexture = false;
 
     /**
-     * Specifies that the material will keeps the specular highlights over a transparent surface (only the most luminous ones).
-     * A car glass is a good example of that. When sun reflects on it you can not see what is behind.
-     * @internal
-     */
-    public _useSpecularOverAlpha = true;
-
-    /**
-     * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
-     * @internal
-     */
-    public _useMicroSurfaceFromReflectivityMapAlpha = false;
-
-    /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
      * @internal
      */
     public _useAmbientOcclusionFromMetallicTextureRed = false;
-
-    /**
-     * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
-     * @internal
-     */
-    public _useAmbientInGrayScale = false;
-
-    /**
-     * In case the reflectivity map does not contain the microsurface information in its alpha channel,
-     * The material will try to infer what glossiness each pixel should be.
-     * @internal
-     */
-    public _useAutoMicroSurfaceFromReflectivityMap = false;
 
     /**
      * Defines the  falloff type used in this material.
@@ -1018,13 +1031,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
-
-    /**
-     * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most luminous ones).
-     * A car glass is a good example of that. When the street lights reflects on it you can not see what is behind.
-     * @internal
-     */
-    public _useRadianceOverAlpha = true;
 
     /**
      * Allows using an object space normal map (instead of tangent space).
@@ -1222,6 +1228,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene, undefined, forceGLSL || PBRBaseMaterial.ForceGLSL);
+        // TODO: Check if we're running WebGL 2.0 or above
+        if (scene && !scene?.getEngine().isWebGPU && (scene.getEngine() as Engine).webGLVersion < 2) {
+            Logger.Error("OpenPBRMaterial: WebGL 2.0 or above is required for this material.");
+        }
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -1229,8 +1239,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
             this._renderTargets.reset();
 
-            if (MaterialFlags.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
+            if (MaterialFlags.ReflectionTextureEnabled && this._radianceTexture && this._radianceTexture.isRenderTarget) {
+                this._renderTargets.push(<RenderTargetTexture>this._radianceTexture);
             }
 
             this._eventInfo.renderTargets = this._renderTargets;
@@ -1299,6 +1309,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._specularRoughness;
         this._specularIor;
         this._baseMetalRoughTexture;
+        this._coatWeight;
+        this._coatWeightTexture;
+        this._coatColor;
+        this._coatColorTexture;
+        this._coatRoughness;
+        this._coatRoughnessTexture;
+        this._coatIor;
         this._geometryNormalTexture;
         this._geometryOpacity;
         this._geometryOpacityTexture;
@@ -1311,7 +1328,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Gets a boolean indicating that current material needs to register RTT
      */
     public override get hasRenderTargetTextures(): boolean {
-        if (MaterialFlags.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
+        if (MaterialFlags.ReflectionTextureEnabled && this._radianceTexture && this._radianceTexture.isRenderTarget) {
             return true;
         }
 
@@ -1529,18 +1546,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                const reflectionTexture = this._getReflectionTexture();
-                if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
-                    if (!reflectionTexture.isReadyOrNotBlocking()) {
+                const radianceTexture = this._getRadianceTexture();
+                if (radianceTexture && MaterialFlags.ReflectionTextureEnabled) {
+                    if (!radianceTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
-                    if (reflectionTexture.irradianceTexture) {
-                        if (!reflectionTexture.irradianceTexture.isReadyOrNotBlocking()) {
+                    if (radianceTexture.irradianceTexture) {
+                        if (!radianceTexture.irradianceTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
                     } else {
                         // Not ready until spherical are ready too.
-                        if (!reflectionTexture.sphericalPolynomial && reflectionTexture.getInternalTexture()?._sphericalPolynomialPromise) {
+                        if (!radianceTexture.sphericalPolynomial && radianceTexture.getInternalTexture()?._sphericalPolynomialPromise) {
                             return false;
                         }
                     }
@@ -1712,11 +1729,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         // Bones
         BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
-        let reflectionTexture: Nullable<BaseTexture> = null;
+        let radianceTexture: Nullable<BaseTexture> = null;
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
-            reflectionTexture = this._getReflectionTexture();
+            radianceTexture = this._getRadianceTexture();
 
             if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || subMesh._drawWrapper._forceRebindOnNextCall) {
                 // Texture uniforms
@@ -1739,7 +1756,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                BindIBLParameters(scene, defines, ubo, reflectionTexture, this.realTimeFiltering, true, true, true, true, true, this._reflectionColor);
+                BindIBLParameters(scene, defines, ubo, radianceTexture, this.realTimeFiltering, true, true, true, true, true, Color3.White());
 
                 // Point size
                 if (this.pointsCloud) {
@@ -1783,7 +1800,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                BindIBLSamplers(scene, defines, ubo, reflectionTexture, this.realTimeFiltering);
+                BindIBLSamplers(scene, defines, ubo, radianceTexture, this.realTimeFiltering);
 
                 if (defines.ENVIRONMENTBRDF) {
                     ubo.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
@@ -1813,7 +1830,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
 
             // View
-            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || reflectionTexture || mesh.receiveShadows || defines.PREPASS) {
+            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || radianceTexture || mesh.receiveShadows || defines.PREPASS) {
                 this.bindView(effect);
             }
 
@@ -1857,8 +1874,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
         }
 
-        if (this._reflectionTexture && this._reflectionTexture.animations && this._reflectionTexture.animations.length > 0) {
-            results.push(this._reflectionTexture);
+        if (this._radianceTexture && this._radianceTexture.animations && this._radianceTexture.animations.length > 0) {
+            results.push(this._radianceTexture);
         }
 
         return results;
@@ -1879,8 +1896,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
         }
 
-        if (this._reflectionTexture) {
-            activeTextures.push(this._reflectionTexture);
+        if (this._radianceTexture) {
+            activeTextures.push(this._radianceTexture);
         }
 
         return activeTextures;
@@ -1904,7 +1921,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             }
         }
 
-        if (this._reflectionTexture === texture) {
+        if (this._radianceTexture === texture) {
             return true;
         }
 
@@ -1939,7 +1956,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 sampler.value?.dispose();
             }
 
-            this._reflectionTexture?.dispose();
+            this._radianceTexture?.dispose();
         }
 
         this._renderTargets.dispose();
@@ -1955,9 +1972,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Returns the texture used for reflections.
      * @returns - Reflection texture if present.  Otherwise, returns the environment texture.
      */
-    private _getReflectionTexture(): Nullable<BaseTexture> {
-        if (this._reflectionTexture) {
-            return this._reflectionTexture;
+    private _getRadianceTexture(): Nullable<BaseTexture> {
+        if (this._radianceTexture) {
+            return this._radianceTexture;
         }
 
         return this.getScene().environmentTexture;
@@ -2104,15 +2121,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             uniforms.push(uniformName);
         }
 
-        const samplers = [
-            "environmentBrdfSampler",
-            "boneSampler",
-            "morphTargets",
-            "oitDepthSampler",
-            "oitFrontColorSampler",
-            "areaLightsLTC1Sampler",
-            "areaLightsLTC2Sampler",
-        ];
+        const samplers = ["environmentBrdfSampler", "boneSampler", "morphTargets", "oitDepthSampler", "oitFrontColorSampler", "areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
 
         for (const key in this._samplersList) {
             const sampler = this._samplersList[key];
@@ -2233,11 +2242,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines["MAINUV" + i] = false;
             }
             if (scene.texturesEnabled) {
-
-                if (engine.getCaps().textureLOD) {
-                    defines.LODBASEDMICROSFURACE = true;
-                }
-
                 // TODO - loop through samplers and prepare defines for each texture
                 for (const key in this._samplersList) {
                     const sampler = this._samplersList[key];
@@ -2249,14 +2253,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                const reflectionTexture = this._getReflectionTexture();
+                const radianceTexture = this._getRadianceTexture();
                 const useSHInFragment: boolean =
                     this._forceIrradianceInFragment ||
                     this.realTimeFiltering ||
                     this._twoSidedLighting ||
                     engine.getCaps().maxVaryingVectors <= 8 ||
                     this._baseDiffuseRoughnessTexture != null;
-                PrepareDefinesForIBL(scene, reflectionTexture, defines, this.realTimeFiltering, this.realTimeFilteringQuality, !useSHInFragment);
+                PrepareDefinesForIBL(scene, radianceTexture, defines, this.realTimeFiltering, this.realTimeFilteringQuality, !useSHInFragment);
 
                 if (MaterialFlags.SpecularTextureEnabled) {
                     if (this._baseMetalRoughTexture) {
@@ -2297,8 +2301,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 }
             }
 
-            defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
-
             if (this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_STANDARD) {
                 defines.USEPHYSICALLIGHTFALLOFF = false;
                 defines.USEGLTFLIGHTFALLOFF = false;
@@ -2309,8 +2311,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.USEPHYSICALLIGHTFALLOFF = true;
                 defines.USEGLTFLIGHTFALLOFF = false;
             }
-
-            defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
 
             if (!this.backFaceCulling && this._twoSidedLighting) {
                 defines.TWOSIDEDLIGHTING = true;

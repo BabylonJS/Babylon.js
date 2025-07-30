@@ -2772,6 +2772,46 @@
             "title": "Sponza Clustered Lighting (2 viewports)",
             "playgroundId": "#CSCJO2#20",
             "referenceImage": "sponza-clustered-lighting-viewports.png"
+        },
+        {
+            "title": "OpenPBR IBL Reflectance with IOR",
+            "playgroundId": "#KQYNYS#46",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL F82 Specular Metal vs Weight",
+            "playgroundId": "#GRQHVV#25",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL F82 Specular Roughness vs Weight",
+            "playgroundId": "#GRQHVV#26",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Furnace Test for Metal-Rough",
+            "playgroundId": "#KQYNYS#47",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Specular IOR vs Coat IOR",
+            "playgroundId": "#GRQHVV#28",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Metal vs Coat IOR",
+            "playgroundId": "#GRQHVV#29",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Specular IOR vs Coat Weight",
+            "playgroundId": "#GRQHVV#30",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Specular Roughness vs Coat Roughness",
+            "playgroundId": "#GRQHVV#31",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
