@@ -7,12 +7,11 @@ import type { PrimitiveProps } from "../../primitives/primitive";
 import type { PropertyLineProps } from "./propertyLine";
 
 import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
-
-import { Quaternion, Vector4 } from "core/Maths/math.vector";
 import type { Vector3 } from "core/Maths/math.vector";
+import { Quaternion, Vector2, Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 
-export type TensorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = PropertyLineProps<V> &
+export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quaternion> = PropertyLineProps<V> &
     PrimitiveProps<V> & {
         /**
          * If passed, all sliders will use this for the min value
@@ -37,13 +36,16 @@ export type TensorPropertyLineProps<V extends Vector3 | Vector4 | Quaternion> = 
         };
     };
 
+const HasZ = (vector: Vector2 | Vector3 | Vector4 | Quaternion): vector is Vector3 => !(vector instanceof Vector2);
+const HasW = (vector: Vector2 | Vector3 | Vector4 | Quaternion): vector is Vector4 => vector instanceof Vector4 || vector instanceof Quaternion;
+
 /**
  * Reusable component which renders a vector property line containing a label, vector value, and expandable XYZW values
  * The expanded section contains a slider/input box for each component of the vector (x, y, z, w)
  * @param props
  * @returns
  */
-const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector3 | Vector4 | Quaternion>> = (props) => {
+const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Vector3 | Vector4 | Quaternion>> = (props) => {
     const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
     const formatted = (val: number) => converted(val).toFixed(2);
 
@@ -66,12 +68,12 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector3 | Ve
                 <>
                     <SyncedSliderPropertyLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} />
                     <SyncedSliderPropertyLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} />
-                    <SyncedSliderPropertyLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} />
-                    {vector instanceof Vector4 && <SyncedSliderPropertyLine label="W" value={vector.w} min={min} max={max} onChange={(val) => onChange(val, "w")} />}
+                    {HasZ(vector) && <SyncedSliderPropertyLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} />}
+                    {HasW(vector) && <SyncedSliderPropertyLine label="W" value={converted(vector.w)} min={min} max={max} onChange={(val) => onChange(val, "w")} />}
                 </>
             }
         >
-            <Body1>{`X: ${formatted(props.value.x)} | Y: ${formatted(props.value.y)} | Z: ${formatted(props.value.z)}${props.value instanceof Vector4 ? ` | W: ${formatted(props.value.w)}` : ""}`}</Body1>
+            <Body1>{`X: ${formatted(props.value.x)} | Y: ${formatted(props.value.y)}${HasZ(props.value) ? ` | Z: ${formatted(props.value.z)}` : ""}${HasW(props.value) ? ` | W: ${formatted(props.value.w)}` : ""}`}</Body1>
         </PropertyLine>
     );
 };
@@ -122,5 +124,6 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
         <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
     );
 };
+export const Vector2PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector2>>;
 export const Vector3PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector3>>;
 export const Vector4PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector4>>;
