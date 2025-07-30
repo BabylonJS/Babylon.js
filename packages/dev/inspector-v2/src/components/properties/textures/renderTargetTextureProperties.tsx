@@ -15,8 +15,11 @@ export const RenderTargetTextureGeneralProperties: FunctionComponent<{ texture: 
 
     return (
         <>
-            {depthStencilTextureDisplayFormat && <TextPropertyLine label="Depth/Stencil Format" value={depthStencilTextureDisplayFormat.label} />}
-            {!depthStencilTextureDisplayFormat && <BooleanBadgePropertyLine label="Depth/Stencil Texture" value={false} />}
+            {depthStencilTextureDisplayFormat ? (
+                <TextPropertyLine label="Depth/Stencil Format" value={depthStencilTextureDisplayFormat.label} />
+            ) : (
+                <BooleanBadgePropertyLine label="Depth/Stencil Texture" value={false} />
+            )}
         </>
     );
 };

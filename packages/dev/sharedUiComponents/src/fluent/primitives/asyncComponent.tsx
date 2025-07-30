@@ -11,22 +11,22 @@ type AsyncComponentOptions = {
 
 /**
  * Creates an asynchronous component wrapper that loads a React component lazily/asynchronously.
- * @param componentFactory A function that returns a promise resolving to the component.
+ * @param getComponentAsync A function that returns a promise resolving to the component.
  * @param options Options for the loading spinner.
  * @returns A React component that displays a spinner while loading the async component.
  */
-export function MakeAsyncComponent<ComponentT extends ComponentType<any>>(componentFactory: () => Promise<ComponentT>, options?: AsyncComponentOptions) {
+export function MakeAsyncComponent<ComponentT extends ComponentType<any>>(getComponentAsync: () => Promise<ComponentT>, options?: AsyncComponentOptions) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const LazyComponent = lazy(async () => {
-        const module = await componentFactory();
-        return { default: module };
+        const component = await getComponentAsync();
+        return { default: component };
     });
 
     return forwardRef<ComponentProps<ComponentT>>((props, ref) => {
         const componentProps = { ...props, ref };
 
         return (
-            <Suspense fallback={<Spinner size={options?.spinnerSize} label={options?.spinnerLabel} />}>
+            <Suspense fallback={<Spinner ref={ref} size={options?.spinnerSize} label={options?.spinnerLabel} />}>
                 <LazyComponent {...(componentProps as ComponentProps<ComponentT>)} />
             </Suspense>
         );

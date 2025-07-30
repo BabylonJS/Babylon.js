@@ -89,8 +89,11 @@ export const BaseTextureGeneralProperties: FunctionComponent<{ texture: BaseText
     return (
         <>
             <BoundProperty component={TextInputPropertyLine} label="Display Name" target={texture} propertyKey="displayName" />
-            {internalUniqueId != null && <TextPropertyLine label="Internal Unique ID" description="The unique ID of the internal texture." value={internalUniqueId.toString()} />}
-            {internalUniqueId == null && <BooleanBadgePropertyLine label="Internal Unique ID" description="This texture has no internal texture." value={false} />}
+            {internalUniqueId != null ? (
+                <TextPropertyLine label="Internal Unique ID" description="The unique ID of the internal texture." value={internalUniqueId.toString()} />
+            ) : (
+                <BooleanBadgePropertyLine label="Internal Unique ID" description="This texture has no internal texture." value={false} />
+            )}
         </>
     );
 };

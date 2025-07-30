@@ -45,6 +45,8 @@ export const TextureTransformProperties: FunctionComponent<{ texture: Texture; s
     const { texture, settings } = props;
 
     const [toDisplayAngle, fromDisplayAngle] = useAngleConverters(settings);
+    const wrapU = useProperty(texture, "wrapU");
+    const wrapV = useProperty(texture, "wrapV");
 
     return (
         <>
@@ -84,12 +86,12 @@ export const TextureTransformProperties: FunctionComponent<{ texture: Texture; s
             />
             <SwitchPropertyLine
                 label="Clamp U"
-                value={texture.wrapU === Constants.TEXTURE_CLAMP_ADDRESSMODE}
+                value={wrapU === Constants.TEXTURE_CLAMP_ADDRESSMODE}
                 onChange={(value) => (texture.wrapU = value ? Constants.TEXTURE_CLAMP_ADDRESSMODE : Constants.TEXTURE_WRAP_ADDRESSMODE)}
             />
             <SwitchPropertyLine
                 label="Clamp V"
-                value={texture.wrapV === Constants.TEXTURE_CLAMP_ADDRESSMODE}
+                value={wrapV === Constants.TEXTURE_CLAMP_ADDRESSMODE}
                 onChange={(value) => (texture.wrapV = value ? Constants.TEXTURE_CLAMP_ADDRESSMODE : Constants.TEXTURE_WRAP_ADDRESSMODE)}
             />
         </>
