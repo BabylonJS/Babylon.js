@@ -73,7 +73,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         this.registerOutput("dimensions", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
-    public override bind(effect: Effect) {
+    public override bind(effect: Effect, _nodeMaterial: NodeMaterial) {
         if (!this.texture) {
             return;
         }
@@ -143,10 +143,10 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return this;
     }
 
-    protected override _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode(ignoreTexture = false) {
         let codeString = super._dumpPropertiesCode();
 
-        if (!this.texture) {
+        if (!this.texture || ignoreTexture) {
             return codeString;
         }
 
@@ -165,10 +165,10 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public override serialize(): any {
+    public override serialize(ignoreTexture = false): any {
         const serializationObject = super.serialize();
 
-        if (this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
+        if (!ignoreTexture && this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
             serializationObject.texture = this.texture.serialize();
         }
 
