@@ -14,12 +14,16 @@ import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
+import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
+import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
 import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
 import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
+import { PostProcessPropertiesServiceDefinition } from "./services/panes/properties/postProcessPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
+import { RenderingPipelinePropertiesServiceDefinition } from "./services/panes/properties/renderingPipelinePropertiesService";
 import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
@@ -208,6 +212,10 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SpritePropertiesServiceDefinition,
             ParticleSystemPropertiesServiceDefinition,
             CameraPropertiesServiceDefinition,
+            PostProcessPropertiesServiceDefinition,
+            RenderingPipelinePropertiesServiceDefinition,
+            EffectLayerPropertiesServiceDefinition,
+            FrameGraphPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
