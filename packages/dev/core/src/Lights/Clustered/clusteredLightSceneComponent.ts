@@ -3,19 +3,42 @@ import { type RenderTargetsStageAction, SceneComponentConstants, type ISceneComp
 
 import { ClusteredLight } from "./clusteredLight";
 
-class ClusteredLightSceneComponent implements ISceneComponent {
+/**
+ * A scene component required for running the clustering step in clustered lights
+ */
+export class ClusteredLightSceneComponent implements ISceneComponent {
+    /**
+     * The name of the component. Each component must have a unique name.
+     */
     public name = SceneComponentConstants.NAME_CLUSTEREDLIGHT;
 
+    /**
+     * The scene the component belongs to.
+     */
     public scene: Scene;
 
+    /**
+     * Creates a new scene component.
+     * @param scene The scene the component belongs to
+     */
     constructor(scene: Scene) {
         this.scene = scene;
     }
 
+    /**
+     * Disposes the component and the associated resources.
+     */
     public dispose(): void {}
 
+    /**
+     * Rebuilds the elements related to this component in case of
+     * context lost for instance.
+     */
     public rebuild(): void {}
 
+    /**
+     * Register the component to one instance of a scene.
+     */
     public register(): void {
         this.scene._gatherActiveCameraRenderTargetsStage.registerStep(
             SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHT,
