@@ -23,6 +23,9 @@ import { SpotLight } from "../spotLight";
 
 import "core/Meshes/thinInstanceMesh";
 
+/**
+ * A special light that renders all its associated spot or point lights using a clustered or forward+ system.
+ */
 export class ClusteredLight extends Light {
     private static _GetEngineBatchSize(engine: AbstractEngine): number {
         const caps = engine._caps;
@@ -44,6 +47,13 @@ export class ClusteredLight extends Light {
         }
     }
 
+    /**
+     * Checks if the clustered lighting system supports the given light with its current parameters.
+     * This will also check if the light's associated engine supports clustered lighting.
+     *
+     * @param light The light to test
+     * @returns true if the light and its engine is supported
+     */
     public static IsLightSupported(light: Light): boolean {
         if (ClusteredLight._GetEngineBatchSize(light.getEngine()) === 0) {
             return false;
@@ -71,11 +81,17 @@ export class ClusteredLight extends Light {
 
     private readonly _batchSize: number;
 
+    /**
+     * True if clustered lighting is supported.
+     */
     public get isSupported(): boolean {
         return this._batchSize > 0;
     }
 
     private readonly _lights: (PointLight | SpotLight)[] = [];
+    /**
+     * Gets the current list of lights added to this clustering system.
+     */
     public get lights(): readonly Light[] {
         return this._lights;
     }
@@ -88,6 +104,10 @@ export class ClusteredLight extends Light {
     private _tileMaskBuffer: Nullable<StorageBuffer>;
 
     private _horizontalTiles = 64;
+    /**
+     * The number of tiles in the horizontal direction to cluster lights into.
+     * A lower value will reduce memory and make the clustering step faster, while a higher value increases memory and makes the rendering step faster.
+     */
     public get horizontalTiles(): number {
         return this._horizontalTiles;
     }
@@ -102,6 +122,10 @@ export class ClusteredLight extends Light {
     }
 
     private _verticalTiles = 64;
+    /**
+     * The number of tiles in the vertical direction to cluster lights into.
+     * A lower value will reduce memory and make the clustering step faster, while a higher value increases memory and makes the rendering step faster.
+     */
     public get verticalTiles(): number {
         return this._verticalTiles;
     }
@@ -119,6 +143,10 @@ export class ClusteredLight extends Light {
     private _proxyMesh: Mesh;
 
     private _proxyTesselation = 8;
+    /**
+     * The amount of tesselation the light proxy (or light mesh) should have.
+     * A higher value increases memory and makes the clustering step slower, but reduces the amount of "false-positives" (lights marked as being in a tile when its not) which could slow down rendering.
+     */
     public get proxyTesselation(): number {
         return this._proxyTesselation;
     }
@@ -134,6 +162,9 @@ export class ClusteredLight extends Light {
 
     private _maxRange = 16383;
     private _minInverseSquaredRange = 1 / (this._maxRange * this._maxRange);
+    /**
+     * This limits the range of all the added lights, so even lights with extreme ranges will still have bounds for clustering.
+     */
     public get maxRange(): number {
         return this._maxRange;
     }
@@ -146,6 +177,13 @@ export class ClusteredLight extends Light {
         this._minInverseSquaredRange = 1 / (range * range);
     }
 
+    /**
+     * Creates a new clustered light system with an initial set of lights.
+     *
+     * @param name The name of the ClusteredLight
+     * @param lights The initial set of lights to add
+     * @param scene The scene the ClusteredLight belongs to
+     */
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
         const engine = this.getEngine();
@@ -184,10 +222,18 @@ export class ClusteredLight extends Light {
         }
     }
 
+    /**
+     * Returns the string "ClusteredLight".
+     * @returns the class name
+     */
     public override getClassName(): string {
         return "ClusteredLight";
     }
 
+    /**
+     * Returns the light type ID (integer).
+     * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+     */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
         return LightConstants.LIGHTTYPEID_CLUSTERED;
@@ -340,6 +386,11 @@ export class ClusteredLight extends Light {
         this._lightDataTexture.update(this._lightDataBuffer);
     }
 
+    /**
+     * Releases resources associated with this node.
+     * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+     * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+     */
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         for (const light of this._lights) {
             light.dispose(doNotRecurse, disposeMaterialAndTextures);
@@ -351,6 +402,10 @@ export class ClusteredLight extends Light {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
+    /**
+     * Adds a light to the clustering system.
+     * @param light The light to add
+     */
     public addLight(light: Light): void {
         if (!ClusteredLight.IsLightSupported(light)) {
             Logger.Warn("Attempting to add a light to cluster that does not support clustering");
@@ -373,6 +428,12 @@ export class ClusteredLight extends Light {
         this._uniformBuffer.create();
     }
 
+    /**
+     * Sets the passed Effect "effect" with the Light information.
+     * @param effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The light
+     */
     public override transferToEffect(effect: Effect, lightIndex: string): Light {
         const engine = this.getEngine();
         const hscale = this._horizontalTiles / engine.getRenderWidth();
@@ -382,6 +443,12 @@ export class ClusteredLight extends Light {
         return this;
     }
 
+    /**
+     * Sets the passed Effect "effect" with the Light textures.
+     * @param effect The effect to update
+     * @param lightIndex The index of the light in the effect to update
+     * @returns The light
+     */
     public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
         const engine = this.getEngine();
         effect.setTexture("lightDataTexture" + lightIndex, this._lightDataTexture);
@@ -393,16 +460,26 @@ export class ClusteredLight extends Light {
         return this;
     }
 
+    /**
+     * Sets the passed Effect "effect" with the Light information.
+     * @returns The light
+     */
     public override transferToNodeMaterialEffect(): Light {
         // TODO: ????
         return this;
     }
 
+    /**
+     * Prepares the list of defines specific to the light type.
+     * @param defines the list of defines
+     * @param lightIndex defines the index of the light for the effect
+     */
     public override prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["CLUSTLIGHT" + lightIndex] = true;
         defines["CLUSTLIGHT_BATCH"] = this._batchSize;
     }
 
+    /** @internal */
     public override _isReady(): boolean {
         this._updateBatches();
         return this._proxyMesh.isReady(true, true);
