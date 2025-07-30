@@ -12,15 +12,15 @@ import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { BoundProperty } from "../boundProperty";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 
 export const SkeletonGeneralProperties: FunctionComponent<{ skeleton: Skeleton }> = (props) => {
     const { skeleton } = props;
 
     return (
         <>
-            <TextPropertyLine key="SkeletonBoneCount" label="Bone count" description="The number of bones of the skeleton." value={skeleton.bones.length.toString()} />
+            <StringifiedPropertyLine key="SkeletonBoneCount" label="Bone count" description="The number of bones of the skeleton." value={skeleton.bones.length} />
             <BoundProperty
                 key="SkeletonUseTextureToStoreBoneMatrices2"
                 component={SwitchPropertyLine}

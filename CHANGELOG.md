@@ -1,5 +1,34 @@
 # Changelog
 
+## 8.19.1
+
+### Viewer
+
+- add protected function to expose camera limit, world bounds - by [alexandremottet](https://github.com/alexandremottet) ([#16928](https://github.com/BabylonJS/Babylon.js/pull/16928))
+
+## 8.19.0
+
+### Core
+
+- Fix bug when blob where requested to IDB - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16930](https://github.com/BabylonJS/Babylon.js/pull/16930))
+- Support vertex pulling - by [MiiBond](https://github.com/MiiBond) ([#16826](https://github.com/BabylonJS/Babylon.js/pull/16826))
+- PBR node material: Fix iblIntensity in reflection block - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16926](https://github.com/BabylonJS/Babylon.js/pull/16926))
+- Fix submesh identification with picking octrees - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16924](https://github.com/BabylonJS/Babylon.js/pull/16924))
+- Fix alphaMode serialization of Node Materials - by [sebavan](https://github.com/sebavan) ([#16922](https://github.com/BabylonJS/Babylon.js/pull/16922))
+- Improved depth/stencil support in the engine and in frame graphs + miscellaneous - by [Popov72](https://github.com/Popov72) ([#16916](https://github.com/BabylonJS/Babylon.js/pull/16916))
+
+### Node Editor
+
+
+### Serializers
+
+- USDZ Exporter: Place "Materials" under the default prim - by [alexchuber](https://github.com/alexchuber) ([#16929](https://github.com/BabylonJS/Babylon.js/pull/16929))
+
+### Viewer
+
+- _updateLight now works with _loadedModels - by [alexandremottet](https://github.com/alexandremottet) ([#16927](https://github.com/BabylonJS/Babylon.js/pull/16927))
+- Don't apply fog on skybox by default - by [alexandremottet](https://github.com/alexandremottet) ([#16923](https://github.com/BabylonJS/Babylon.js/pull/16923))
+
 ## 8.18.0
 
 ### Core

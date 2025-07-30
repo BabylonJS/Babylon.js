@@ -640,6 +640,35 @@ export type ViewerBoundingInfo = {
     readonly center: readonly [x: number, y: number, z: number];
 };
 
+export type ViewerCameraConfig = {
+    /**
+     * The goal radius of the camera.
+     * @remarks This is the size of the scene bounds (times a factor)
+     */
+    radius: number;
+    /**
+     * The goal target of the camera.
+     * @remarks Center of the bounds of the scene or 0,0,0 by default
+     */
+    target: Vector3;
+    /**
+     * The minimum zoom distance of the camera.
+     */
+    lowerRadiusLimit: number;
+    /**
+     * The maximum zoom distance of the camera.
+     */
+    upperRadiusLimit: number;
+    /**
+     * The minZ of the camera.
+     */
+    minZ: number;
+    /**
+     * The maxZ of the camera.
+     */
+    maxZ: number;
+};
+
 export type Model = IDisposable & {
     /**
      * The asset container representing the model.
@@ -2627,6 +2656,41 @@ export class Viewer implements IDisposable {
         this._reframeCameraFromBounds(interpolate, models);
     }
 
+    protected _getWorldBounds(models: readonly Model[]): Nullable<ViewerBoundingInfo> {
+        return computeModelsBoundingInfos(models);
+    }
+
+    protected _getCameraConfig(models: readonly Model[]): ViewerCameraConfig {
+        let radius = 1;
+        let target = Vector3.Zero();
+        const worldBounds = this._getWorldBounds(models);
+        if (worldBounds) {
+            // get bounds and prepare framing/camera radius from its values
+            this._camera.lowerRadiusLimit = null;
+
+            radius = Vector3.FromArray(worldBounds.size).length() * 1.1;
+            target = Vector3.FromArray(worldBounds.center);
+            if (!isFinite(radius)) {
+                radius = 1;
+                target.copyFromFloats(0, 0, 0);
+            }
+        }
+
+        const lowerRadiusLimit = radius * 0.001;
+        const upperRadiusLimit = radius * 5;
+        const minZ = radius * 0.001;
+        const maxZ = radius * 1000;
+
+        return {
+            radius,
+            target,
+            lowerRadiusLimit,
+            upperRadiusLimit,
+            minZ,
+            maxZ,
+        };
+    }
+
     // For rotation/radius/target, undefined means default framing, NaN means keep current value.
     private _reframeCameraFromBounds(
         interpolate: boolean,
@@ -2638,35 +2702,24 @@ export class Viewer implements IDisposable {
         targetY?: number,
         targetZ?: number
     ): void {
+        let goalRadius = 1;
+        const goalTarget = Vector3.Zero();
         let goalAlpha = Math.PI / 2;
         let goalBeta = Math.PI / 2.4;
-        let goalRadius = 1;
-        let goalTarget = Vector3.Zero();
 
-        const worldBounds = computeModelsBoundingInfos(models);
-        if (worldBounds) {
-            // get bounds and prepare framing/camera radius from its values
-            this._camera.lowerRadiusLimit = null;
+        const { radius: sceneRadius, target: sceneTarget, lowerRadiusLimit, upperRadiusLimit, minZ, maxZ } = this._getCameraConfig(models);
 
-            goalRadius = Vector3.FromArray(worldBounds.size).length() * 1.1;
-            goalTarget = Vector3.FromArray(worldBounds.center);
-            if (!isFinite(goalRadius)) {
-                goalRadius = 1;
-                goalTarget.copyFromFloats(0, 0, 0);
-            }
-        }
-
-        this._camera.lowerRadiusLimit = goalRadius * 0.001;
-        this._camera.upperRadiusLimit = goalRadius * 5;
-        this._camera.minZ = goalRadius * 0.001;
-        this._camera.maxZ = goalRadius * 1000;
+        this._camera.lowerRadiusLimit = lowerRadiusLimit;
+        this._camera.upperRadiusLimit = upperRadiusLimit;
+        this._camera.minZ = minZ;
+        this._camera.maxZ = maxZ;
 
         goalAlpha = alpha ?? goalAlpha;
         goalBeta = beta ?? goalBeta;
-        goalRadius = radius ?? goalRadius;
-        goalTarget.x = targetX ?? goalTarget.x;
-        goalTarget.y = targetY ?? goalTarget.y;
-        goalTarget.z = targetZ ?? goalTarget.z;
+        goalRadius = radius ?? sceneRadius;
+        goalTarget.x = targetX ?? sceneTarget.x;
+        goalTarget.y = targetY ?? sceneTarget.y;
+        goalTarget.z = targetZ ?? sceneTarget.z;
 
         if (interpolate) {
             this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget, undefined, 0.1);
