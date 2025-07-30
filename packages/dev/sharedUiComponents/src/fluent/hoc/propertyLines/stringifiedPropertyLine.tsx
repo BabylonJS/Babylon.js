@@ -10,8 +10,8 @@ type StringifiedPropertyLineProps = PropertyLineProps<number> &
     };
 
 /**
- * Expects a numerical value and converts it to a fixed string
- * Can pass optional precision, units, and converter function (default uses value.toLocaleString())
+ * Expects a numerical value and converts it toFixed(if precision is supplied) or toLocaleString
+ * Can pass optional units to be appending to the end of the string
  * @param props
  * @returns
  */
