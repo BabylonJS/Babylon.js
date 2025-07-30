@@ -1,8 +1,7 @@
 import type { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 
-import { useCallback, type FunctionComponent } from "react";
+import { useCallback } from "react";
 
-import { AdvancedDynamicTextureInstrumentation } from "gui/2D/adtInstrumentation";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
@@ -11,40 +10,50 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { usePollingObservable } from "../../../hooks/pollingHooks";
 import { useResource } from "../../../hooks/resourceHooks";
 import { BoundProperty } from "../boundProperty";
+import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 
-export const AdvancedDynamicTextureGeneralProperties: FunctionComponent<{ texture: AdvancedDynamicTexture }> = (props) => {
-    const { texture } = props;
+export const AdvancedDynamicTextureGeneralProperties = MakeLazyComponent(
+    async () => {
+        // Defer importing anything from the gui package until this component is actually mounted.
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { AdvancedDynamicTextureInstrumentation } = await import("gui/2D/adtInstrumentation");
 
-    const instrumentation = useResource(
-        useCallback(() => {
-            const instrumentation = new AdvancedDynamicTextureInstrumentation(texture);
-            instrumentation.captureRenderTime = true;
-            instrumentation.captureLayoutTime = true;
-            return instrumentation;
-        }, [texture])
-    );
+        return (props: { texture: AdvancedDynamicTexture }) => {
+            const { texture } = props;
 
-    const layoutTime = useObservableState(
-        useCallback(() => instrumentation.layoutTimeCounter.current, [instrumentation.layoutTimeCounter]),
-        usePollingObservable(1000)
-    );
+            const instrumentation = useResource(
+                useCallback(() => {
+                    const instrumentation = new AdvancedDynamicTextureInstrumentation(texture);
+                    instrumentation.captureRenderTime = true;
+                    instrumentation.captureLayoutTime = true;
+                    return instrumentation;
+                }, [texture])
+            );
 
-    const renderTime = useObservableState(
-        useCallback(() => instrumentation.renderTimeCounter.current, [instrumentation.renderTimeCounter]),
-        usePollingObservable(1000)
-    );
+            const layoutTime = useObservableState(
+                useCallback(() => instrumentation.layoutTimeCounter.current, [instrumentation.layoutTimeCounter]),
+                usePollingObservable(1000)
+            );
 
-    return (
-        <>
-            <TextPropertyLine label="Last Layout Time" value={`${layoutTime.toFixed(2)} ms`} />
-            <TextPropertyLine label="Last Render Time" value={`${renderTime.toFixed(2)} ms`} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Render Scale" target={texture} propertyKey="renderScale" min={0.1} max={5} step={0.1} />
-            <BoundProperty component={SwitchPropertyLine} label="Premultiply Alpha" target={texture} propertyKey="premulAlpha" />
-            <BoundProperty component={NumberInputPropertyLine} label="Ideal Width" target={texture} propertyKey="idealWidth" />
-            <BoundProperty component={NumberInputPropertyLine} label="Ideal Height" target={texture} propertyKey="idealHeight" />
-            <BoundProperty component={SwitchPropertyLine} label="Use Smallest Ideal" target={texture} propertyKey="useSmallestIdeal" />
-            <BoundProperty component={SwitchPropertyLine} label="Render at Ideal Size" target={texture} propertyKey="renderAtIdealSize" />
-            <BoundProperty component={SwitchPropertyLine} label="Invalidate Rect Optimization" target={texture} propertyKey="useInvalidateRectOptimization" />
-        </>
-    );
-};
+            const renderTime = useObservableState(
+                useCallback(() => instrumentation.renderTimeCounter.current, [instrumentation.renderTimeCounter]),
+                usePollingObservable(1000)
+            );
+
+            return (
+                <>
+                    <TextPropertyLine label="Last Layout Time" value={`${layoutTime.toFixed(2)} ms`} />
+                    <TextPropertyLine label="Last Render Time" value={`${renderTime.toFixed(2)} ms`} />
+                    <BoundProperty component={SyncedSliderPropertyLine} label="Render Scale" target={texture} propertyKey="renderScale" min={0.1} max={5} step={0.1} />
+                    <BoundProperty component={SwitchPropertyLine} label="Premultiply Alpha" target={texture} propertyKey="premulAlpha" />
+                    <BoundProperty component={NumberInputPropertyLine} label="Ideal Width" target={texture} propertyKey="idealWidth" />
+                    <BoundProperty component={NumberInputPropertyLine} label="Ideal Height" target={texture} propertyKey="idealHeight" />
+                    <BoundProperty component={SwitchPropertyLine} label="Use Smallest Ideal" target={texture} propertyKey="useSmallestIdeal" />
+                    <BoundProperty component={SwitchPropertyLine} label="Render at Ideal Size" target={texture} propertyKey="renderAtIdealSize" />
+                    <BoundProperty component={SwitchPropertyLine} label="Invalidate Rect Optimization" target={texture} propertyKey="useInvalidateRectOptimization" />
+                </>
+            );
+        };
+    },
+    { spinnerSize: "extra-tiny", spinnerLabel: "Loading..." }
+);

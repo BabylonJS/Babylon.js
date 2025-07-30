@@ -9,7 +9,7 @@ import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { ThinTexture } from "core/Materials/Textures/thinTexture";
-import { MakeAsyncComponent } from "shared-ui-components/fluent/primitives/asyncComponent";
+import { AdvancedDynamicTextureGeneralProperties } from "../../../components/properties/textures/advancedDynamicTextureProperties";
 import {
     BaseTextureCharacteristicProperties,
     BaseTextureGeneralProperties,
@@ -130,13 +130,6 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                 },
             ],
         });
-
-        // AdvancedDynamicTextureGeneralProperties pulls in the gui package, so import it lazily (only when it needs to be rendered).
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const AdvancedDynamicTextureGeneralProperties = MakeAsyncComponent(
-            async () => (await import("../../../components/properties/textures/advancedDynamicTextureProperties")).AdvancedDynamicTextureGeneralProperties,
-            { spinnerSize: "extra-tiny", spinnerLabel: "Loading..." }
-        );
 
         const advancedDynamicTextureContentRegistration = propertiesService.addSectionContent({
             key: "Advanced Dynamic Texture Properties",
