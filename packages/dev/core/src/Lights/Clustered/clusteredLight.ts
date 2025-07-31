@@ -375,14 +375,14 @@ export class ClusteredLight extends Light {
                     light.radius,
                     // vLightDirection
                     0,
-                    1,
+                    0,
                     0,
                     -1,
                     // vLightFalloff
                     range,
                     inverseSquaredRange,
-                    1_000_000,
-                    1_000_000,
+                    0,
+                    0,
                 ],
                 offset
             );

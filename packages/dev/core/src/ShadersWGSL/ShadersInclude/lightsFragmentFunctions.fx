@@ -45,10 +45,6 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 }
 
 fn getAttenuation(cosAngle: f32, exponent: f32) -> f32 {
-	if (exponent == 0.0) {
-		// Undefined behaviour can occur if exponent == 0, the result in reality should always be 1
-		return 1.0;
-	}
 	return max(0., pow(cosAngle, exponent));
 }
 
@@ -213,7 +209,21 @@ fn computeClusteredLighting(
 			mask ^= 1u << trailing;
 			let light = getClusteredSpotLight(lightDataTexture, batchOffset + trailing);
 
-			let info = computeSpotLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDirection, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
+			let direction = light.vLightData.xyz - fragmentInputs.vPositionW;
+			let lightVectorW = normalize(direction);
+			var attenuation = max(0., 1.0 - length(direction) / light.vLightDiffuse.a);
+
+			// Assume an angle greater than 180º is a point light
+			if light.vLightDirection.w >= 0.0 {
+				let cosAngle = max(0., dot(light.vLightDirection.xyz, -lightVectorW));
+				if cosAngle < light.vLightDirection.w {
+					// Outside spotlight angle
+					continue;
+				}
+				attenuation *= getAttenuation(cosAngle, light.vLightData.w);
+			}
+
+			let info = computeBasicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, glossiness);
 			result.diffuse += info.diffuse;
 			#ifdef SPECULARTERM
 				result.specular += info.specular;

@@ -3938,6 +3938,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE, label);
     }
 
+    /**
+     * Clears a storage buffer to zeroes
+     * @param storageBuffer the storage buffer to clear
+     * @param byteOffset the byte offset to start clearing (optional)
+     * @param byteLength the byte length to clear (optional)
+     */
     public clearStorageBuffer(storageBuffer: DataBuffer, byteOffset?: number, byteLength?: number): void {
         this._renderEncoder.clearBuffer(storageBuffer.underlyingResource, byteOffset, byteLength);
     }

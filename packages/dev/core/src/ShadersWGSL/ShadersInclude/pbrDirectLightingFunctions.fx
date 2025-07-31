@@ -264,7 +264,10 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 
                 // Compute Attenuation infos
                 preInfo.attenuation = computeDistanceLightFalloff(preInfo.lightOffset, preInfo.lightDistanceSquared, light.vLightFalloff.x, light.vLightFalloff.y);
-                preInfo.attenuation *= computeDirectionalLightFalloff(light.vLightDirection.xyz, preInfo.L, light.vLightDirection.w, light.vLightData.w, light.vLightFalloff.z, light.vLightFalloff.w);
+                // Assume an angle greater than 180º is a point light
+                if light.vLightDirection.w >= 0.0 {
+                    preInfo.attenuation *= computeDirectionalLightFalloff(light.vLightDirection.xyz, preInfo.L, light.vLightDirection.w, light.vLightData.w, light.vLightFalloff.z, light.vLightFalloff.w);
+                }
 
                 preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, light.vLightSpecular.a, preInfo.lightDistance);
                 preInfo.diffuseRoughness = reflectivityOut.diffuseRoughness;

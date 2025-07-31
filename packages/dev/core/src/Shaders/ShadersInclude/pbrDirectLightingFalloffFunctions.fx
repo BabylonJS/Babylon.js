@@ -40,12 +40,7 @@ float computeDirectionalLightFalloff_Standard(vec3 lightDirection, vec3 directio
     float cosAngle = maxEps(dot(-lightDirection, directionToLightCenterW));
     if (cosAngle >= cosHalfAngle)
     {
-        if (exponent == 0.0) {
-            // Undefined behaviour can occur if exponent == 0, the result in reality should always be 1
-            falloff = 1.0;
-        } else {
-            falloff = max(0., pow(cosAngle, exponent));
-        }
+        falloff = max(0., pow(cosAngle, exponent));
     }
     
     return falloff;
