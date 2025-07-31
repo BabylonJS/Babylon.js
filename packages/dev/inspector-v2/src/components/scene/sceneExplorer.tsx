@@ -305,12 +305,20 @@ export const SceneExplorer: FunctionComponent<{
     }, [sections, openItems]);
 
     const visibleItems = useMemo(() => {
-        const visibleItems: TreeItemData[] = [];
+        // This will track the items in the order they were traversed (which is what the flat tree expects).
+        const traversedItems: TreeItemData[] = [];
+        // This will track the items that are visible based on either the open state or the filter.
+        const visibleItems = new Set<TreeItemData>();
+        const filter = itemsFilter.toLocaleLowerCase();
 
-        visibleItems.push({
+        const sceneTreeItem = {
             type: "scene",
             scene: scene,
-        });
+        } as const satisfies SceneTreeItemData;
+
+        traversedItems.push(sceneTreeItem);
+        // The scene tree item is always visible.
+        visibleItems.add(sceneTreeItem);
 
         for (const section of sections) {
             const rootEntities = section.getRootEntities();
@@ -321,10 +329,12 @@ export const SceneExplorer: FunctionComponent<{
                 hasChildren: rootEntities.length > 0,
             } as const satisfies SectionTreeItemData;
 
-            visibleItems.push(sectionTreeItem);
+            traversedItems.push(sectionTreeItem);
+            // Section tree items are always visible.
+            visibleItems.add(sectionTreeItem);
 
             // When an item filter is present, always traverse the full scene graph (e.g. ignore the open item state).
-            if (itemsFilter || openItems.has(section.displayName)) {
+            if (filter || openItems.has(section.displayName)) {
                 let depth = 2;
 
                 const createEntityTreeItemData = (entity: EntityBase, parent: SectionTreeItemData | EntityTreeItemData) => {
@@ -345,7 +355,7 @@ export const SceneExplorer: FunctionComponent<{
                     rootEntityTreeItems,
                     (treeItem) => {
                         // When an item filter is present, always traverse the full scene graph (e.g. ignore the open item state).
-                        if ((itemsFilter || openItems.has(treeItem.entity.uniqueId)) && section.getEntityChildren) {
+                        if ((filter || openItems.has(treeItem.entity.uniqueId)) && section.getEntityChildren) {
                             const children = section.getEntityChildren(treeItem.entity);
                             return children.map((child) => createEntityTreeItemData(child, treeItem));
                         }
@@ -354,18 +364,37 @@ export const SceneExplorer: FunctionComponent<{
                     (treeItem) => {
                         depth++;
 
-                        // If there is no item filter and we are traversing the node, then it is in an open state, so it should be added to the visible items.
-                        let shouldAdd = !itemsFilter;
+                        traversedItems.push(treeItem);
 
-                        // Otherwise, if there is an item filter then we need to check if the display name matches the filter.
-                        if (!shouldAdd) {
+                        if (!filter) {
+                            // If there is no filter and we made it this far, then the item's parent is in an open state and this item is visible.
+                            visibleItems.add(treeItem);
+                        } else {
+                            // Otherwise we have an item filter and we need to check for a match.
                             const displayInfo = treeItem.getDisplayInfo();
-                            shouldAdd = displayInfo.name.toLocaleLowerCase().includes(itemsFilter.toLocaleLowerCase());
-                            displayInfo.dispose?.();
-                        }
+                            if (displayInfo.name.toLocaleLowerCase().includes(filter)) {
+                                // The item is a match, add it to the set.
+                                visibleItems.add(treeItem);
 
-                        if (shouldAdd) {
-                            visibleItems.push(treeItem);
+                                // Also add all ancestors as a match since we want to be able to see the tree structure up to the matched item.
+                                let currentItem = treeItem.parent;
+                                while (true) {
+                                    // If this item is already in the matched set, then all its ancestors must also already be in the set.
+                                    if (visibleItems.has(currentItem)) {
+                                        break;
+                                    }
+
+                                    visibleItems.add(currentItem);
+
+                                    // If the parent is the section, then there are no more parents to traverse.
+                                    if (currentItem.type === "section") {
+                                        break;
+                                    }
+
+                                    currentItem = currentItem.parent;
+                                }
+                            }
+                            displayInfo.dispose?.();
                         }
                     },
                     () => {
@@ -375,7 +404,7 @@ export const SceneExplorer: FunctionComponent<{
             }
         }
 
-        return visibleItems;
+        return traversedItems.filter((item) => visibleItems.has(item));
     }, [scene, sceneVersion, sections, openItems, itemsFilter]);
 
     const getParentStack = useCallback(
