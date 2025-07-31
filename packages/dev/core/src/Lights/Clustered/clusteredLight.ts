@@ -429,6 +429,26 @@ export class ClusteredLight extends Light {
         this._proxyMesh.thinInstanceCount = this._lights.length;
     }
 
+    /**
+     * Removes a light from the clustering system.
+     * @param light The light to remove
+     * @returns the index where the light was in the light list
+     */
+    public removeLight(light: Light): number {
+        const index = this.lights.indexOf(light);
+        if (index === -1) {
+            return index;
+        }
+        this._lights.splice(index, 1);
+        this._scene.addLight(light);
+
+        this._proxyMesh.thinInstanceCount = this._lights.length;
+        if (this._lights.length === 0) {
+            this._proxyMesh.isVisible = false;
+        }
+        return index;
+    }
+
     protected override _buildUniformLayout(): void {
         this._uniformBuffer.addUniform("vLightData", 4);
         this._uniformBuffer.addUniform("vLightDiffuse", 4);
