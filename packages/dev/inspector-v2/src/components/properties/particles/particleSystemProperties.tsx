@@ -1,4 +1,5 @@
-import type { FactorGradient, ColorGradient as Color4Gradient, IParticleSystem, IValueGradient } from "core/index";
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports, @typescript-eslint/consistent-type-imports
+import { type FactorGradient, type ColorGradient as Color4Gradient, type IParticleSystem, type IValueGradient, GizmoManager, ParticleSystem } from "core/index";
 
 import { Color3, Color4 } from "core/Maths/math.color";
 import { useCallback } from "react";
@@ -7,20 +8,13 @@ import type { FunctionComponent } from "react";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
+import { AttractorList } from "./attractor";
 
-export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: IParticleSystem }> = (props) => {
+export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
     // TODO-iv2: Perhaps a common enough pattern to create a custom hook
-    const emitRateGradients = useObservableState(
-        useCallback(() => {
-            const gradients = system.getEmitRateGradients();
-            return [...(gradients ?? [])];
-        }, [system]),
-        useInterceptObservable("function", system, "addEmitRateGradient"),
-        useInterceptObservable("function", system, "removeEmitRateGradient"),
-        useInterceptObservable("function", system, "forceRefreshGradients")
-    );
+    const emitRateGradients = useParticleSystemProperty(system, "getEmitRateGradients", "function", "addEmitRateGradient", "removeEmitRateGradient", "forceRefreshGradients");
 
     return (
         <>
@@ -45,19 +39,10 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
     );
 };
 
-export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: IParticleSystem }> = (props) => {
+export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    const colorGradients = useObservableState(
-        useCallback(() => {
-            const gradients = system.getColorGradients();
-            return [...(gradients ?? [])];
-        }, [system]),
-        useInterceptObservable("function", system, "addColorGradient"),
-        useInterceptObservable("function", system, "removeColorGradient"),
-        useInterceptObservable("function", system, "forceRefreshGradients")
-    );
-
+    const colorGradients = useParticleSystemProperty(system, "getColorGradients", "function", "addColorGradient", "removeColorGradient", "forceRefreshGradients");
     return (
         <>
             {!system.isNodeGenerated && (
@@ -65,7 +50,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                     gradients={colorGradients}
                     label="Color gradient"
                     removeGradient={(gradient: IValueGradient) => {
-                        system.removeEmitRateGradient(gradient.gradient);
+                        system.removeColorGradient(gradient.gradient);
                         system.forceRefreshGradients();
                     }}
                     addGradient={(gradient?: Color4Gradient) => {
@@ -83,5 +68,39 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
                 />
             )}
         </>
+    );
+};
+
+export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
+    const { particleSystem: system } = props;
+    const gizmoManager = new GizmoManager(system.getScene()!);
+
+    // TODO do we need refresh?
+    const attractors = useParticleSystemProperty(system, "attractors", "property", "addAttractor", "removeAttractor", "forceRefreshGradients"); // TODO
+
+    return (
+        <>
+            <AttractorList gizmoManager={gizmoManager} attractors={attractors} scene={system.getScene()!} system={system} />
+        </>
+    );
+};
+
+// TODO can make this more general than particle system if common enough pattern
+const useParticleSystemProperty = (
+    system: ParticleSystem,
+    propertyKey: keyof ParticleSystem,
+    observableType: "function" | "property",
+    addFn: keyof ParticleSystem,
+    removeFn: keyof ParticleSystem,
+    changeFn?: keyof ParticleSystem
+) => {
+    return useObservableState(
+        useCallback(() => {
+            const value = observableType === "function" ? system[propertyKey]() : system[propertyKey];
+            return [...(value ?? [])];
+        }, [system, propertyKey]),
+        useInterceptObservable("function", system, addFn),
+        useInterceptObservable("function", system, removeFn),
+        changeFn ? useInterceptObservable("function", system, changeFn) : undefined
     );
 };
