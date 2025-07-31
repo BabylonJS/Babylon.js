@@ -330,8 +330,10 @@ export const SceneExplorer: FunctionComponent<{
             } as const satisfies SectionTreeItemData;
 
             traversedItems.push(sectionTreeItem);
-            // Section tree items are always visible.
-            visibleItems.add(sectionTreeItem);
+            // Section tree items are always visible when not filtering.
+            if (!filter) {
+                visibleItems.add(sectionTreeItem);
+            }
 
             // When an item filter is present, always traverse the full scene graph (e.g. ignore the open item state).
             if (filter || openItems.has(section.displayName)) {
@@ -353,6 +355,7 @@ export const SceneExplorer: FunctionComponent<{
 
                 TraverseGraph(
                     rootEntityTreeItems,
+                    // Get children
                     (treeItem) => {
                         // When an item filter is present, always traverse the full scene graph (e.g. ignore the open item state).
                         if ((filter || openItems.has(treeItem.entity.uniqueId)) && section.getEntityChildren) {
@@ -361,6 +364,7 @@ export const SceneExplorer: FunctionComponent<{
                         }
                         return null;
                     },
+                    // Before traverse
                     (treeItem) => {
                         depth++;
 
@@ -397,6 +401,7 @@ export const SceneExplorer: FunctionComponent<{
                             displayInfo.dispose?.();
                         }
                     },
+                    // After traverse
                     () => {
                         depth--;
                     }
