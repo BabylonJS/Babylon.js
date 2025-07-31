@@ -1,4 +1,13 @@
-import { ConnectionPointType, CustomShaderBlock, importCustomBlockDefinition, InputBlock, type ShaderBlock, SmartFilter, SmartFilterOptimizer } from "../../src/index.js";
+import {
+    ConnectionPointType,
+    CustomShaderBlock,
+    importCustomBlockDefinition,
+    InputBlock,
+    SerializedShaderBlockDefinition,
+    type ShaderBlock,
+    SmartFilter,
+    SmartFilterOptimizer,
+} from "../../src/index.js";
 
 const testBlockWithOverloadsAnnotatedGlsl = `
 /*
@@ -28,12 +37,26 @@ vec4 getColor(vec3 v) {
     return vec4(v, ONEDEF);
 }
 `;
+const testBlockWithTexture2DSymbolAnnotatedGlsl = `
+/*
+{
+    "smartFilterBlockType": "TestBlockWithTexture2DSymbol",
+    "namespace": "Babylon.UnitTests"
+}
+*/
+uniform float amount;
+vec4 mainFunc(vec2 vUV) { // main
+    float texture2D = 1.0;
+    return texture2DStuff(texture2D + amount);
+}
+vec4 texture2DStuff(float f) {
+    return texture2D(input, vec2(f));
+}
+`;
 
 describe("smartFilterOptimizer", () => {
-    const testBlockWithOverloadsDefinition = importCustomBlockDefinition(testBlockWithOverloadsAnnotatedGlsl);
-    if (testBlockWithOverloadsDefinition.format !== "shaderBlockDefinition") {
-        throw new Error("Block definition format is not shaderBlockDefinition");
-    }
+    const testBlockWithOverloadsDefinition = importCustomBlockDefinition(testBlockWithOverloadsAnnotatedGlsl) as SerializedShaderBlockDefinition;
+    const testBlockWithTexture2DSymbolDefinition = importCustomBlockDefinition(testBlockWithTexture2DSymbolAnnotatedGlsl) as SerializedShaderBlockDefinition;
 
     describe("when a block has multiple overloads of a helper function", () => {
         it("should emit all of them in the optimized shader block", () => {
@@ -157,6 +180,36 @@ describe("smartFilterOptimizer", () => {
             expect(firstInstance).toBeGreaterThan(-1);
             const secondInstance = optimizedFunc!.code.lastIndexOf(newDefineName!);
             expect(secondInstance).toBeGreaterThan(firstInstance);
+        });
+    });
+
+    describe("when a block has a symbol that contains the string 'texture2D'", () => {
+        it("should not replace the string with sampleTexture", () => {
+            // Arrange
+            const smartFilter = new SmartFilter("Test");
+
+            const testBlock = CustomShaderBlock.Create(smartFilter, "TestBlock1", testBlockWithTexture2DSymbolDefinition);
+            const amountInputBlock = new InputBlock(smartFilter, "amount", ConnectionPointType.Float, 0.5);
+            amountInputBlock.output.connectTo(testBlock.findInput("amount")!);
+            testBlock.output.connectTo(smartFilter.output);
+
+            const optimizer = new SmartFilterOptimizer(smartFilter, {
+                maxSamplersInFragmentShader: 16,
+                removeDisabledBlocks: false,
+            });
+
+            // Act
+            const optimizedSmartFilter = optimizer.optimize();
+
+            // Assert
+            expect(optimizedSmartFilter).not.toBeNull();
+            const optimizedBlock = optimizedSmartFilter!.attachedBlocks.find((b) => b.name === "optimized");
+            const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
+            const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
+            expect(fragmentShaderCode?.indexOf("vec4 _texture2DStuff_(")).toBeGreaterThan(-1);
+            expect(fragmentShaderCode?.indexOf("float texture2D =")).toBeGreaterThan(-1);
+            expect(fragmentShaderCode?.indexOf("return _texture2DStuff_(")).toBeGreaterThan(-1);
+            expect(fragmentShaderCode?.indexOf("return texture2D(")).toBeGreaterThan(-1);
         });
     });
 });

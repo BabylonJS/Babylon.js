@@ -397,7 +397,7 @@ export class SmartFilterOptimizer {
     }
 
     private _processSampleTexture(block: ShaderBlock, code: string, sampler: string, samplers: string[], inputTextureBlock?: InputBlock<ConnectionPointType.Texture>): string {
-        const rx = new RegExp(`sampleTexture\\s*\\(\\s*${DecorateChar}${sampler}${DecorateChar}\\s*,\\s*(.*?)\\s*\\)`);
+        const rx = new RegExp(`__sampleTexture\\s*\\(\\s*${DecorateChar}${sampler}${DecorateChar}\\s*,\\s*(.*?)\\s*\\)`);
 
         let newSamplerName = sampler;
 
@@ -492,8 +492,8 @@ export class SmartFilterOptimizer {
             // Removes the vUV declaration if it exists
             code = code.replace(/varying\s+vec2\s+vUV\s*;/g, "");
 
-            // Replaces the texture2D calls by sampleTexture for easier processing
-            code = code.replace(/texture2D/g, "sampleTexture");
+            // Replaces the texture2D calls by __sampleTexture for easier processing
+            code = code.replace(/\stexture2D\s*\(/g, " __sampleTexture(");
 
             // Processes the defines to make them unique
             code = this._processDefines(block, code);
@@ -578,8 +578,8 @@ export class SmartFilterOptimizer {
                         inputBlock: undefined,
                     });
 
-                    // We have to replace the call(s) to sampleTexture by a call to the main function of the parent block
-                    const rx = new RegExp(`sampleTexture\\s*\\(\\s*${sampler}\\s*,\\s*(.*?)\\s*\\)`);
+                    // We have to replace the call(s) to __sampleTexture by a call to the main function of the parent block
+                    const rx = new RegExp(`__sampleTexture\\s*\\(\\s*${sampler}\\s*,\\s*(.*?)\\s*\\)`);
 
                     let match = rx.exec(code);
                     while (match !== null) {
@@ -735,7 +735,7 @@ export class SmartFilterOptimizer {
     }
 
     /**
-     * If this block used DisableStrategy.AutoSample, find all the sampleTexture calls which just pass the vUV,
+     * If this block used DisableStrategy.AutoSample, find all the __sampleTexture calls which just pass the vUV,
      * skip the first one, and for all others replace with the local variable created by the DisableStrategy.AutoSample
      *
      * @param code - The shader code to process
@@ -745,7 +745,7 @@ export class SmartFilterOptimizer {
      */
     private _applyAutoSampleStrategy(code: string, sampler: string): string {
         let isFirstMatch = true;
-        const rx = new RegExp(`sampleTexture\\s*\\(\\s*${sampler}\\s*,\\s*vUV\\s*\\)`, "g");
+        const rx = new RegExp(`__sampleTexture\\s*\\(\\s*${sampler}\\s*,\\s*vUV\\s*\\)`, "g");
         return code.replace(rx, (match) => {
             if (isFirstMatch) {
                 isFirstMatch = false;
