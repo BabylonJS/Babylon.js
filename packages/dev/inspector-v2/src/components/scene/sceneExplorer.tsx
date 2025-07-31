@@ -4,9 +4,9 @@ import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fl
 import type { ScrollToInterface } from "@fluentui/react-components/unstable";
 import type { ComponentType, FunctionComponent } from "react";
 
-import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, ToggleButton, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
+import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, SearchBox, ToggleButton, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
-import { MoviesAndTvRegular } from "@fluentui/react-icons";
+import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -155,7 +155,7 @@ type EntityTreeItemData = {
     type: "entity";
     entity: EntityBase;
     depth: number;
-    parent: TreeItemValue;
+    parent: SectionTreeItemData | EntityTreeItemData;
     hasChildren: boolean;
     icon?: ComponentType<{ entity: EntityBase }>;
     getDisplayInfo: () => EntityDisplayInfo;
@@ -170,9 +170,12 @@ const useStyles = makeStyles({
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
+        padding: `0 ${tokens.spacingHorizontalM}`,
+    },
+    searchBox: {
+        padding: 0,
     },
     tree: {
-        margin: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
         rowGap: 0,
         overflow: "hidden",
         flex: 1,
@@ -258,7 +261,7 @@ export const SceneExplorer: FunctionComponent<{
 
     // For the filter, we should maybe to the traversal but use onAfterNode so that if the filter matches, we make sure to include the full parent chain.
     // Then just reverse the array of nodes before returning it.
-    const [itemsFilter /*, setItemsFilter*/] = useState("");
+    const [itemsFilter, setItemsFilter] = useState("");
 
     useEffect(() => {
         setSceneVersion((version) => version + 1);
@@ -301,9 +304,9 @@ export const SceneExplorer: FunctionComponent<{
         };
     }, [sections, openItems]);
 
+    // "visible" items means items whose parent is in an opened/expanded state.
     const visibleItems = useMemo(() => {
         const visibleItems: TreeItemData[] = [];
-        const entityParents = new Map<number, TreeItemValue>();
 
         visibleItems.push({
             type: "scene",
@@ -313,37 +316,43 @@ export const SceneExplorer: FunctionComponent<{
         for (const section of sections) {
             const rootEntities = section.getRootEntities();
 
-            visibleItems.push({
+            const sectionTreeItem = {
                 type: "section",
                 sectionName: section.displayName,
                 hasChildren: rootEntities.length > 0,
-            });
+            } as const satisfies SectionTreeItemData;
+
+            visibleItems.push(sectionTreeItem);
 
             if (openItems.has(section.displayName)) {
-                let depth = 1;
+                let depth = 2;
+
+                const createEntityTreeItemData = (entity: EntityBase, parent: SectionTreeItemData | EntityTreeItemData) => {
+                    return {
+                        type: "entity",
+                        entity,
+                        depth,
+                        parent,
+                        hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
+                        icon: section.entityIcon,
+                        getDisplayInfo: () => section.getEntityDisplayInfo(entity),
+                    } as const satisfies EntityTreeItemData;
+                };
+
+                const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity, sectionTreeItem));
+
                 TraverseGraph(
-                    rootEntities,
-                    (entity) => {
-                        if (openItems.has(entity.uniqueId) && section.getEntityChildren) {
-                            const children = section.getEntityChildren(entity);
-                            for (const child of children) {
-                                entityParents.set(child.uniqueId, entity.uniqueId);
-                            }
-                            return children;
+                    rootEntityTreeItems,
+                    (treeItem) => {
+                        if (openItems.has(treeItem.entity.uniqueId) && section.getEntityChildren) {
+                            const children = section.getEntityChildren(treeItem.entity);
+                            return children.map((child) => createEntityTreeItemData(child, treeItem));
                         }
                         return null;
                     },
-                    (entity) => {
+                    (treeItem) => {
                         depth++;
-                        visibleItems.push({
-                            type: "entity",
-                            entity,
-                            depth,
-                            parent: entityParents.get(entity.uniqueId) ?? section.displayName,
-                            hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
-                            icon: section.entityIcon,
-                            getDisplayInfo: () => section.getEntityDisplayInfo(entity),
-                        });
+                        visibleItems.push(treeItem);
                     },
                     () => {
                         depth--;
@@ -353,7 +362,53 @@ export const SceneExplorer: FunctionComponent<{
         }
 
         return visibleItems;
-    }, [scene, sceneVersion, sections, openItems, itemsFilter]);
+    }, [scene, sceneVersion, sections, openItems]);
+
+    // "filtered" items are the visible items that match the filter string.
+    const filteredItems = useMemo(() => {
+        if (!itemsFilter) {
+            return visibleItems;
+        }
+
+        const matchingItems = new Set<TreeItemData>();
+        const filter = itemsFilter.toLocaleLowerCase();
+
+        // Check each "visible" item
+        for (const visibleItem of visibleItems) {
+            // Always show the scene item and the section items.
+            if (visibleItem.type !== "entity") {
+                matchingItems.add(visibleItem);
+            } else {
+                const displayInfo = visibleItem.getDisplayInfo();
+                if (displayInfo.name.toLocaleLowerCase().includes(filter)) {
+                    // The item is a match, add it to the set.
+                    matchingItems.add(visibleItem);
+
+                    // Also add all ancestors as a match since we want to be able to see the tree structure up to the matched item.
+                    let currentItem = visibleItem.parent;
+                    while (true) {
+                        // If this item is already in the matched set, then all its ancestors must also already be in the set.
+                        if (matchingItems.has(currentItem)) {
+                            break;
+                        }
+
+                        matchingItems.add(currentItem);
+
+                        // If the parent is the section, then there are no more parents to traverse.
+                        if (currentItem.type === "section") {
+                            break;
+                        }
+
+                        currentItem = currentItem.parent;
+                    }
+                }
+                displayInfo.dispose?.();
+            }
+        }
+
+        // Finally, just filter the visible items to those we've determined are in the filter matching set.
+        return visibleItems.filter((treeItem) => matchingItems.has(treeItem));
+    }, [visibleItems, itemsFilter]);
 
     const getParentStack = useCallback(
         (entity: EntityBase) => {
@@ -402,13 +457,13 @@ export const SceneExplorer: FunctionComponent<{
     // We need to wait for a render to complete before we can scroll to the item, hence the isScrollToPending.
     useEffect(() => {
         if (isScrollToPending) {
-            const selectedItemIndex = visibleItems.findIndex((item) => item.type === "entity" && item.entity === selectedEntity);
+            const selectedItemIndex = filteredItems.findIndex((item) => item.type === "entity" && item.entity === selectedEntity);
             if (selectedItemIndex >= 0 && scrollViewRef.current) {
                 scrollViewRef.current.scrollTo(selectedItemIndex, "smooth");
                 setIsScrollToPending(false);
             }
         }
-    }, [isScrollToPending, selectedEntity, visibleItems]);
+    }, [isScrollToPending, selectedEntity, filteredItems]);
 
     const onOpenChange = useCallback(
         (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
@@ -422,10 +477,18 @@ export const SceneExplorer: FunctionComponent<{
 
     return (
         <div className={classes.rootDiv}>
+            <SearchBox
+                className={classes.searchBox}
+                appearance="underline"
+                contentBefore={<FilterRegular />}
+                placeholder="Filter"
+                value={itemsFilter}
+                onChange={(_, data) => setItemsFilter(data.value)}
+            />
             <FlatTree className={classes.tree} openItems={openItems} onOpenChange={onOpenChange} aria-label="Scene Explorer Tree">
-                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={visibleItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
+                <VirtualizerScrollView imperativeRef={scrollViewRef} numItems={filteredItems.length} itemSize={32} container={{ style: { overflowX: "hidden" } }}>
                     {(index: number) => {
-                        const item = visibleItems[index];
+                        const item = filteredItems[index];
 
                         if (item.type === "scene") {
                             return (
@@ -474,7 +537,7 @@ export const SceneExplorer: FunctionComponent<{
                                     key={item.entity.uniqueId}
                                     value={item.entity.uniqueId}
                                     itemType={item.hasChildren ? "branch" : "leaf"}
-                                    parentValue={item.parent ?? undefined}
+                                    parentValue={item.parent.type === "section" ? item.parent.sectionName : item.entity.uniqueId}
                                     aria-level={item.depth}
                                     aria-setsize={1}
                                     aria-posinset={1}
