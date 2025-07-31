@@ -521,6 +521,7 @@ export const SceneExplorer: FunctionComponent<{
                                 <FlatTreeItem
                                     key={item.sectionName}
                                     value={item.sectionName}
+                                    // Disable manual expand/collapse when a filter is active.
                                     itemType={!itemsFilter && item.hasChildren ? "branch" : "leaf"}
                                     parentValue={undefined}
                                     aria-level={1}
@@ -539,6 +540,7 @@ export const SceneExplorer: FunctionComponent<{
                                 <FlatTreeItem
                                     key={item.entity.uniqueId}
                                     value={item.entity.uniqueId}
+                                    // Disable manual expand/collapse when a filter is active.
                                     itemType={!itemsFilter && item.hasChildren ? "branch" : "leaf"}
                                     parentValue={item.parent.type === "section" ? item.parent.sectionName : item.entity.uniqueId}
                                     aria-level={item.depth}
