@@ -381,8 +381,8 @@ export const SceneExplorer: FunctionComponent<{
                                 visibleItems.add(treeItem);
 
                                 // Also add all ancestors as a match since we want to be able to see the tree structure up to the matched item.
-                                let currentItem = treeItem.parent;
-                                while (true) {
+                                let currentItem: Nullable<SectionTreeItemData | EntityTreeItemData> = treeItem.parent;
+                                while (currentItem) {
                                     // If this item is already in the matched set, then all its ancestors must also already be in the set.
                                     if (visibleItems.has(currentItem)) {
                                         break;
@@ -392,10 +392,10 @@ export const SceneExplorer: FunctionComponent<{
 
                                     // If the parent is the section, then there are no more parents to traverse.
                                     if (currentItem.type === "section") {
-                                        break;
+                                        currentItem = null;
+                                    } else {
+                                        currentItem = currentItem.parent;
                                     }
-
-                                    currentItem = currentItem.parent;
                                 }
                             }
                             displayInfo.dispose?.();
