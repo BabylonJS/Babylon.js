@@ -1,5 +1,4 @@
 ﻿vec2 uvOffset = vec2(0.0, 0.0);
-
 #if defined(GEOMETRY_NORMAL) || defined(PARALLAX) || defined(DETAIL)
 	#ifdef NORMALXYSCALE
 		float normalScale = 1.0;
@@ -46,6 +45,10 @@
     vec2 detailNormalRG = detailColor.wy * 2.0 - 1.0;
     float detailNormalB = sqrt(1. - saturate(dot(detailNormalRG, detailNormalRG)));
     vec3 detailNormal = vec3(detailNormalRG, detailNormalB);
+#endif
+
+#ifdef GEOMETRY_COAT_NORMAL
+	coatNormalW = perturbNormal(TBN, texture2D(geometryNormalSampler, vGeometryNormalUV + uvOffset).xyz, vGeometryNormalInfos.y);
 #endif
 
 #ifdef GEOMETRY_NORMAL

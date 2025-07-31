@@ -626,6 +626,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _geometryNormalTexture: Sampler = new Sampler("geometry_normal", "geometryNormal", "GEOMETRY_NORMAL");
 
     /**
+     * Defines the normal of the material's coat layer.
+     * See OpenPBR's specs for geometry_coat_normal
+     */
+    public geometryCoatNormalTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryCoatNormalTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryCoatNormalTexture: Sampler = new Sampler("geometry_coat_normal", "geometryCoatNormal", "GEOMETRY_COAT_NORMAL");
+
+    /**
      * Defines the opacity of the material's geometry.
      * See OpenPBR's specs for geometry_opacity
      */
@@ -644,6 +653,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _geometryOpacityTexture: Sampler = new Sampler("geometry_opacity", "geometryOpacity", "GEOMETRY_OPACITY");
 
     /**
+     * Defines the opacity of the material's geometry.
+     * See OpenPBR's specs for geometry_opacity
+     */
+    public emissionLuminance: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionLuminance")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _emissionLuminance: Property<number> = new Property<number>("emission_luminance", 1.0, "vLightingIntensity", 4, 1);
+
+    /**
      * Defines the color of the material's emission.
      * See OpenPBR's specs for emission_color
      */
@@ -656,10 +674,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the color of the material's emission.
      * See OpenPBR's specs for emission_color
      */
-    public emissionTexture: BaseTexture;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionTexture")
+    public emissionColorTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionColorTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _emissionTexture: Sampler = new Sampler("emission", "emission", "EMISSION");
+    private _emissionColorTexture: Sampler = new Sampler("emission_color", "emissionColor", "EMISSION_COLOR");
 
     /**
      * Defines the ambient occlusion texture.
@@ -681,14 +699,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public directIntensity: number = 1.0;
-
-    /**
-     * Intensity of the emissive part of the material.
-     * This helps controlling the emissive effect without modifying the emissive color.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public emissiveIntensity: number = 1.0;
 
     /**
      * Intensity of the environment e.g. how much the environment will light the object
@@ -968,13 +978,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _directIntensity: number = 1.0;
 
     /**
-     * Intensity of the emissive part of the material.
-     * This helps controlling the emissive effect without modifying the emissive color.
-     * @internal
-     */
-    public _emissiveIntensity: number = 1.0;
-
-    /**
      * Intensity of the environment e.g. how much the environment will light the object
      * either through harmonics for rough material or through the reflection for shiny ones.
      * @internal
@@ -984,7 +987,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     /**
      * This stores the direct, emissive, environment, and specular light intensities into a Vector4.
      */
-    private _lightingInfos: Vector4 = new Vector4(this._directIntensity, this._emissiveIntensity, this._environmentIntensity, 1.0);
+    private _lightingInfos: Vector4 = new Vector4(this._directIntensity, 1.0, this._environmentIntensity, 1.0);
 
     /**
      * Stores the radiance (and, possibly, irradiance) values in a texture.
@@ -1317,10 +1320,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._coatRoughnessTexture;
         this._coatIor;
         this._geometryNormalTexture;
+        this._geometryCoatNormalTexture;
         this._geometryOpacity;
         this._geometryOpacityTexture;
+        this._emissionLuminance;
         this._emissionColor;
-        this._emissionTexture;
+        this._emissionColorTexture;
         this._ambientOcclusionTexture;
     }
 
@@ -1781,7 +1786,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 // Misc
                 this._lightingInfos.x = this._directIntensity;
-                this._lightingInfos.y = this._emissiveIntensity;
+                this._lightingInfos.y = this.emissionLuminance;
                 this._lightingInfos.z = this._environmentIntensity * scene.environmentIntensity;
                 this._lightingInfos.w = 1.0; // This is used to be _specularIntensity.
 

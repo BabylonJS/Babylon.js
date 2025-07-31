@@ -292,14 +292,14 @@ var specularColor: vec4f = uniforms.vSpecularColor;
 
     // _____________________________ Emissive ________________________________________
     var finalEmission: vec3f = uniforms.vEmissionColor;
-    #ifdef EMISSION
-    var emissionColorTex: vec3f = textureSample(emissionSampler, emissionSamplerSampler, fragmentInputs.vEmissionUV + uvOffset).rgb;
-        #ifdef EMISSION_GAMMA
+    #ifdef EMISSION_COLOR
+    var emissionColorTex: vec3f = textureSample(emissionColorSampler, emissionColorSamplerSampler, fragmentInputs.vEmissionColorUV + uvOffset).rgb;
+        #ifdef EMISSION_COLOR_GAMMA
             finalEmission *= toLinearSpaceVec3(emissionColorTex.rgb);
         #else
             finalEmission *= emissionColorTex.rgb;
         #endif
-        finalEmission *=  uniforms.vEmissionInfos.y;
+        finalEmission *=  uniforms.vEmissionColorInfos.y;
     #endif
     finalEmission *= uniforms.vLightingIntensity.y;
 

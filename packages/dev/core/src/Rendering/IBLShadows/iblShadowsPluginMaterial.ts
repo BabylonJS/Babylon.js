@@ -170,11 +170,11 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                             #ifdef COLORED_IBL_SHADOWS
                                 var shadowValue: vec3f = computeIndirectShadow();
                                 slab_diffuse *= shadowValue;
-                                slab_glossy *= mix(vec3f(1.0), shadowValue, alphaG);
+                                slab_glossy *= mix(vec3f(1.0), shadowValue, specularAlphaG);
                             #else
                                 var shadowValue: vec2f = computeIndirectShadow();
                                 slab_diffuse *= vec3f(shadowValue.x);
-                                slab_glossy *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, alphaG));
+                                slab_glossy *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG));
                             #endif
                         #endif
                     #else
@@ -248,11 +248,11 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
                             #ifdef COLORED_IBL_SHADOWS
                                 vec3 shadowValue = computeIndirectShadow();
                                 slab_diffuse.rgb *= shadowValue.rgb;
-                                slab_glossy *= mix(vec3(1.0), shadowValue.rgb, alphaG);
+                                slab_glossy *= mix(vec3(1.0), shadowValue.rgb, specularAlphaG);
                             #else
                                 vec2 shadowValue = computeIndirectShadow();
                                 slab_diffuse *= shadowValue.x;
-                                slab_glossy *= mix(pow(shadowValue.y, 4.0), shadowValue.x, alphaG);
+                                slab_glossy *= mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG);
                             #endif
                         #endif
                     #else
