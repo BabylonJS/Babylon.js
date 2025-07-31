@@ -404,6 +404,7 @@ export const SceneExplorer: FunctionComponent<{
             }
         }
 
+        // Filter the traversal ordered items by those that should actually be visible.
         return traversedItems.filter((item) => visibleItems.has(item));
     }, [scene, sceneVersion, sections, openItems, itemsFilter]);
 
