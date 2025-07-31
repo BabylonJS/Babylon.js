@@ -21,6 +21,7 @@ import { MaterialPropertyGridComponent } from "./propertyGrids/materials/materia
 import { StandardMaterialPropertyGridComponent } from "./propertyGrids/materials/standardMaterialPropertyGridComponent";
 import { TexturePropertyGridComponent } from "./propertyGrids/materials/texturePropertyGridComponent";
 import { PBRMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMaterialPropertyGridComponent";
+import { OpenPBRMaterialPropertyGridComponent } from "./propertyGrids/materials/openpbrMaterialPropertyGridComponent";
 import { ScenePropertyGridComponent } from "./propertyGrids/scenePropertyGridComponent";
 import { HemisphericLightPropertyGridComponent } from "./propertyGrids/lights/hemisphericLightPropertyGridComponent";
 import { PointLightPropertyGridComponent } from "./propertyGrids/lights/pointLightPropertyGridComponent";
@@ -400,7 +401,7 @@ export class PropertyGridTabComponent extends PaneComponent {
             } else if (className === "OpenPBRMaterial") {
                 const material = entity as OpenPBRMaterial;
                 return (
-                    <PBRMaterialPropertyGridComponent
+                    <OpenPBRMaterialPropertyGridComponent
                         globalState={this.props.globalState}
                         material={material}
                         lockObject={this._lockObject}
