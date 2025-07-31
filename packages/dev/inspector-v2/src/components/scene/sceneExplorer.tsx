@@ -259,8 +259,6 @@ export const SceneExplorer: FunctionComponent<{
         props.setSelectedEntity?.(entity);
     };
 
-    // For the filter, we should maybe to the traversal but use onAfterNode so that if the filter matches, we make sure to include the full parent chain.
-    // Then just reverse the array of nodes before returning it.
     const [itemsFilter, setItemsFilter] = useState("");
 
     useEffect(() => {
