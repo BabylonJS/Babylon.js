@@ -87,10 +87,10 @@ export class SmartFilterRenderer {
 
         try {
             this._lastRenderedSmartFilter = filter;
-            const filterToRender = filter;
+            let filterToRender = filter;
             if (this.optimize) {
                 const optimizeStartTime = performance.now();
-                this._optimize(filter);
+                filterToRender = this._optimize(filter);
                 optimizationTimeMs = performance.now() - optimizeStartTime;
             }
 
