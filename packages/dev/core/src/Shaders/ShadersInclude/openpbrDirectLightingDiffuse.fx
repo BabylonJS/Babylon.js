@@ -1,11 +1,6 @@
 ﻿#ifdef LIGHT{X}
     vec4 diffuse{X} = light{X}.vLightDiffuse;
     
-    // Diffuse contribution
-    #ifdef SS_TRANSLUCENCY
-        info{X}.diffuseTransmission = vec3(0.0);
-    #endif
-
     #ifdef HEMILIGHT{X}
         info{X}.diffuse = computeHemisphericDiffuseLighting(preInfo{X}, diffuse{X}.rgb, light{X}.vLightGround);
     #elif defined(AREALIGHT{X})

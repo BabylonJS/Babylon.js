@@ -2415,7 +2415,7 @@ export class GLTFLoader implements IGLTFLoader {
         return Promise.all(promises).then(() => {
             if (this.parent.useOpenPBR) {
                 (babylonMaterial as OpenPBRMaterial).ambientOcclusionTexture = aoTexture;
-                (babylonMaterial as OpenPBRMaterial).emissionTexture = emissionTexture;
+                (babylonMaterial as OpenPBRMaterial).emissionColorTexture = emissionTexture;
                 if (aoTexture) {
                     (babylonMaterial as OpenPBRMaterial).ambientOcclusionTexture.level = aoStrength;
                 }

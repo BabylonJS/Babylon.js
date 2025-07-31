@@ -26,7 +26,7 @@ geometryInfoOutParams geometryInfo(
     outParams.horizonOcclusion = 1.0;
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         #ifdef HORIZONOCCLUSION
-            #ifdef GEOMETRY_NORMAL
+            #if defined(GEOMETRY_NORMAL) || defined(GEOMETRY_COAT_NORMAL)
                 #ifdef REFLECTIONMAP_3D
                     outParams.horizonOcclusion = environmentHorizonOcclusion(-viewDirectionW, normalW, geometricNormalW);
                 #endif

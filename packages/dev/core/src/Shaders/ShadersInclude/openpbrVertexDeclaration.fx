@@ -31,9 +31,9 @@ uniform vec2 vAmbientOcclusionInfos;
 uniform mat4 ambientOcclusionMatrix;
 #endif
 
-#ifdef EMISSION
-uniform vec2 vEmissionInfos;
-uniform mat4 emissionMatrix;
+#ifdef EMISSION_COLOR
+uniform vec2 vEmissionColorInfos;
+uniform mat4 emissionColorMatrix;
 #endif
 
 #ifdef LIGHTMAP
@@ -59,6 +59,11 @@ uniform mat4 specularColorMatrix;
 #ifdef GEOMETRY_NORMAL
 uniform vec2 vGeometryNormalInfos;
 uniform mat4 geometryNormalMatrix;
+#endif
+
+#ifdef GEOMETRY_COAT_NORMAL
+uniform vec2 vGeometryCoatNormalInfos;
+uniform mat4 geometryCoatNormalMatrix;
 #endif
 
 #ifdef POINTSIZE

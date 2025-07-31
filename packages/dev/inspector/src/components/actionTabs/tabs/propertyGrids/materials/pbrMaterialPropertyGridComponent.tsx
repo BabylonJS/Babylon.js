@@ -83,14 +83,16 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                     />
                 )}
-                <TextureLinkLineComponent
-                    label="Reflection"
-                    texture={material.reflectionTexture}
-                    propertyName="reflectionTexture"
-                    material={material}
-                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
-                />
+                {material instanceof PBRMaterial && (
+                    <TextureLinkLineComponent
+                        label="Reflection"
+                        texture={material.reflectionTexture}
+                        propertyName="reflectionTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                    />
+                )}
                 {material instanceof PBRMaterial && (
                     <TextureLinkLineComponent
                         label="Refraction"
@@ -1119,7 +1121,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                    {material.reflectionTexture && (
+                    {material instanceof PBRMaterial && material.reflectionTexture && (
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
                             label="Reflection strength"

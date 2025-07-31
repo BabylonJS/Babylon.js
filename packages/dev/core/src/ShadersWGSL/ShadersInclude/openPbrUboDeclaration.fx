@@ -67,6 +67,8 @@ uniform vCoatRoughnessInfos: vec2f;
 uniform coatRoughnessMatrix: mat4x4f;
 uniform vGeometryNormalInfos: vec2f;
 uniform geometryNormalMatrix: mat4x4f;
+uniform vGeometryCoatNormalInfos: vec2f;
+uniform geometryCoatNormalMatrix: mat4x4f;
 uniform vGeometryOpacityInfos: vec2f;
 uniform geometryOpacityMatrix: mat4x4f;
 uniform vEmissionInfos: vec2f;
