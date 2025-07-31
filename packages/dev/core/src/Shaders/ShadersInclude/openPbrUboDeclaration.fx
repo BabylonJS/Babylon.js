@@ -91,10 +91,12 @@ uniform Material {
     mat4 coatRoughnessMatrix;
     vec2 vGeometryNormalInfos;
     mat4 geometryNormalMatrix;
+    vec2 vGeometryCoatNormalInfos;
+    mat4 geometryCoatNormalMatrix;
     vec2 vGeometryOpacityInfos;
     mat4 geometryOpacityMatrix;
-    vec2 vEmissionInfos;
-    mat4 emissionMatrix;
+    vec2 vEmissionColorInfos;
+    mat4 emissionColorMatrix;
     vec2 vAmbientOcclusionInfos;
     mat4 ambientOcclusionMatrix;
 

@@ -1,6 +1,6 @@
 ﻿#ifdef LIGHT{X}
     preLightingInfo preInfo{X};
-    lightingInfo info{X};
+    openpbrLightingInfo info{X};
     float shadow{X} = 1.;
     #if defined(SHADOWONLY) || defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation

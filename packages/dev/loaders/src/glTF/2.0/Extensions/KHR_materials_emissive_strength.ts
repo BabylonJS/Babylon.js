@@ -73,18 +73,22 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
                 const mod = await import("core/Materials/PBR/pbrMaterial");
                 PBRMaterialClass = mod.PBRMaterial;
             }
-            this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
+            this._loadEmissiveProperties(extensionContext, extension, babylonMaterial, useOpenPBR);
             return await Promise.resolve();
         });
     }
 
-    private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
+    private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material, useOpenPBR: boolean): void {
         if (!(babylonMaterial instanceof PBRMaterialClass)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         if (properties.emissiveStrength !== undefined) {
-            babylonMaterial.emissiveIntensity = properties.emissiveStrength;
+            if (useOpenPBR) {
+                (babylonMaterial as OpenPBRMaterial).emissionLuminance = properties.emissiveStrength;
+            } else {
+                (babylonMaterial as PBRMaterial).emissiveIntensity = properties.emissiveStrength;
+            }
         }
     }
 }
