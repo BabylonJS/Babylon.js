@@ -49,6 +49,7 @@ precision highp float;
 #include<pbrDirectLightingFalloffFunctions>
 #include<pbrBRDFFunctions>
 #include<hdrFilteringFunctions>
+#include<pbrDirectLightingFunctions>
 #include<pbrIBLFunctions>
 #include<bumpFragmentMainFunctions>
 #include<bumpFragmentFunctions>
@@ -69,7 +70,8 @@ precision highp float;
 #include<pbrBlockClearcoat>
 #include<pbrBlockIridescence>
 #include<pbrBlockSubSurface>
-#include<pbrDirectLightingFunctions>
+
+#include<pbrClusteredLightingFunctions>
 
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
