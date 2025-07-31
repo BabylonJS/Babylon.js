@@ -1,16 +1,18 @@
 uniform vec4 vEyePosition;
 
-uniform vec3 vReflectionColor;
-uniform vec4 vBaseColor;
 uniform float vBaseWeight;
+uniform vec4 vBaseColor;
 uniform float vBaseDiffuseRoughness;
-uniform vec4 vCoatColor;
+uniform vec4 vReflectanceInfo;
+uniform vec4 vSpecularColor;
+uniform float vCoatWeight;
+uniform vec3 vCoatColor;
+uniform float vCoatRoughness;
+uniform float vCoatIor;
+uniform vec3 vEmissionColor;
 
 // CUSTOM CONTROLS
 uniform vec4 vLightingIntensity;
-
-uniform vec3 vEmissionColor;
-
 uniform float visibility;
 
 // Samplers
@@ -35,12 +37,16 @@ uniform vec2 vGeometryNormalInfos;
 uniform vec2 vTangentSpaceParams;
 #endif
 
+#ifdef GEOMETRY_COAT_NORMAL
+uniform vec2 vGeometryCoatNormalInfos;
+#endif
+
 #ifdef GEOMETRY_OPACITY
 uniform vec2 vGeometryOpacityInfos;
 #endif
 
-#ifdef EMISSION
-uniform vec2 vEmissionInfos;
+#ifdef EMISSION_COLOR
+uniform vec2 vEmissionColorInfos;
 #endif
 
 #ifdef METALLIC_ROUGHNESS

@@ -2,7 +2,7 @@
 
 #define CUSTOM_FRAGMENT_EXTENSION
 
-#if defined(GEOMETRY_NORMAL) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA)
+#if defined(GEOMETRY_NORMAL) || defined(GEOMETRY_COAT_NORMAL) || !defined(NORMAL) || defined(FORCENORMALFORWARD) || defined(SPECULARAA)
 #extension GL_OES_standard_derivatives : enable
 #endif
 
@@ -68,6 +68,16 @@ precision highp float;
 #include<openpbrIblFunctions>
 #include<openpbrGeometryInfo>
 
+struct openpbrLightingInfo
+{
+    vec3 diffuse;
+    #ifdef SPECULARTERM
+        vec3 specular;
+    #endif
+    vec3 coloredFresnel;
+    float fresnel;
+};
+
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
 
@@ -77,10 +87,11 @@ void main(void) {
 
     // _____________________________ Geometry Information ____________________________
     #include<pbrBlockNormalGeometric>
+    vec3 coatNormalW = normalW;
 
     #include<openpbrNormalMapFragment>
 
-    #include<pbrBlockNormalFinal>
+    #include<openpbrBlockNormalFinal>
 
     // ______________________ Read Base properties & Opacity ______________________________
     #include<openpbrBaseLayerData>
@@ -110,7 +121,7 @@ void main(void) {
 
     // _____________________________ Compute Geometry info for coat layer _________________________
     geometryInfoOutParams coatGeoInfo = geometryInfo(
-        normalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
+        coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
     );
 
     // _____________________________ Compute Geometry info for base layer _________________________
@@ -178,7 +189,7 @@ void main(void) {
             #else
                 vec2 reflectionCoords = vec2(0., 0.);
             #endif
-            reflectionCoords = createReflectionCoords(vPositionW, normalW);
+            reflectionCoords = createReflectionCoords(vPositionW, coatNormalW);
             float coatAlphaG = coat_roughness * coat_roughness;
             coatEnvironmentLight = sampleRadiance(coatAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                 #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
@@ -276,7 +287,7 @@ void main(void) {
         }
     #endif
 
-    // _____________________________ Direct Lighting Info __________________________________
+    // __________________________ Direct Lighting Info ____________________________
     vec3 baseDiffuseDirectLight = vec3(0., 0., 0.);
     #ifdef SPECULARTERM
         vec3 baseSpecularDirectLight = vec3(0., 0., 0.);
@@ -296,7 +307,6 @@ void main(void) {
 
     aggShadow = aggShadow / numLights;
 
-    
 
     // Handle direct lighting
     vec3 finalDiffuseDirect = baseDiffuseDirectLight * vLightingIntensity.x;
@@ -310,17 +320,16 @@ void main(void) {
         finalSpecularDirect += baseSpecularDirectLight;
     #endif
 
-    
-    // _____________________________ Emissive ________________________________________
+    // _____________________________ Emission ________________________________________
     vec3 finalEmission = vEmissionColor;
-    #ifdef EMISSION
-        vec3 emissionColorTex = texture2D(emissionSampler, vEmissionUV + uvOffset).rgb;
-        #ifdef EMISSION_GAMMA
+    #ifdef EMISSION_COLOR
+        vec3 emissionColorTex = texture2D(emissionColorSampler, vEmissionColorUV + uvOffset).rgb;
+        #ifdef EMISSION_COLOR_GAMMA
             finalEmission *= toLinearSpace(emissionColorTex.rgb);
         #else
             finalEmission *= emissionColorTex.rgb;
         #endif
-        finalEmission *=  vEmissionInfos.y;
+        finalEmission *=  vEmissionColorInfos.y;
     #endif
     finalEmission *= vLightingIntensity.y;
 
