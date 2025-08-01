@@ -218,7 +218,7 @@
     }
 
     #define pbr_inline
-    vec3 conductorIblFresnel(in conductorReflectanceOutParams reflectance, in float NdotV, in float roughness, in vec3 environmentBrdf)
+    vec3 conductorIblFresnel(in ReflectanceParams reflectance, in float NdotV, in float roughness, in vec3 environmentBrdf)
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
             // For OpenPBR, we use a different specular lobe for metallic materials and then blend based on metalness. However,
@@ -227,10 +227,10 @@
             // So, for intermediate metallic values, the result isn't 100% correct but it seems to work well enough in practice.
             // Because specular weight in OpenPBR removes the specular lobe entirely for metals, we do need the actual dielectric
             // F0 value to pickup the weight from the dielectric lobe.
-            return getF82Specular(NdotV, reflectance.F0, reflectance.F90, roughness);
-            
+            return getF82Specular(NdotV, reflectance.coloredF0, reflectance.coloredF90, roughness);
+
         #else
-            return getReflectanceFromBRDFLookup(reflectance.F0, reflectance.F90, environmentBrdf);
+            return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif
     }
 #endif

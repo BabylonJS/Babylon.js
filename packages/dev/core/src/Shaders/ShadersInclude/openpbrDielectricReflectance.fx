@@ -1,4 +1,4 @@
-struct dielectricReflectanceOutParams
+struct ReflectanceParams
 {
     float F0;
     float F90;
@@ -7,11 +7,11 @@ struct dielectricReflectanceOutParams
 };
 
 #define pbr_inline
-dielectricReflectanceOutParams dielectricReflectance(
+ReflectanceParams dielectricReflectance(
     in float insideIOR, in float outsideIOR, in vec3 specularColor, in float specularWeight
 )
 {
-    dielectricReflectanceOutParams outParams;
+    ReflectanceParams outParams;
 
     float dielectricF0 = pow((insideIOR - outsideIOR) / (insideIOR + outsideIOR), 2.0);
 
@@ -30,7 +30,7 @@ dielectricReflectanceOutParams dielectricReflectance(
     // Scale the reflectanceF90 by the IOR for values less than 1.5.
     // This is an empirical hack to account for the fact that Schlick is tuned for IOR = 1.5
     // and an IOR of 1.0 should result in no visible glancing specular.
-    float f90Scale = clamp(2.0 * (insideIOR - 1.0), 0.0, 1.0);
+    float f90Scale = clamp(2.0 * abs(insideIOR - outsideIOR), 0.0, 1.0);
     outParams.F90 = f90Scale * specularWeight;
 
     // Compute the coloured F0 reflectance.
