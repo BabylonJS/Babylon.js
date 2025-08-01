@@ -46,8 +46,8 @@ const testBlockWithTexture2DSymbolAnnotatedGlsl = `
 */
 uniform float amount;
 vec4 mainFunc(vec2 vUV) { // main
-    float texture2D = 1.0;
-    return texture2DStuff(texture2D + amount);
+    float footexture2D = 1.0;
+    return texture2DStuff(footexture2D + amount);
 }
 vec4 texture2DStuff(float f) {
     return texture2D(input, vec2(f));
@@ -207,7 +207,7 @@ describe("smartFilterOptimizer", () => {
             const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
             const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
             expect(fragmentShaderCode?.indexOf("vec4 _texture2DStuff_(")).toBeGreaterThan(-1);
-            expect(fragmentShaderCode?.indexOf("float texture2D =")).toBeGreaterThan(-1);
+            expect(fragmentShaderCode?.indexOf("float footexture2D =")).toBeGreaterThan(-1);
             expect(fragmentShaderCode?.indexOf("return _texture2DStuff_(")).toBeGreaterThan(-1);
             expect(fragmentShaderCode?.indexOf("return texture2D(")).toBeGreaterThan(-1);
         });
