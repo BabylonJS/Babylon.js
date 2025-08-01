@@ -2795,22 +2795,42 @@
         },
         {
             "title": "OpenPBR IBL Specular IOR vs Coat IOR",
-            "playgroundId": "#GRQHVV#28",
+            "playgroundId": "#GRQHVV#39",
             "excludedEngines": ["webgl1"]
         },
         {
-            "title": "OpenPBR IBL Metal vs Coat IOR",
-            "playgroundId": "#GRQHVV#29",
+            "title": "OpenPBR IBL Metalness vs Coat IOR",
+            "playgroundId": "#GRQHVV#38",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL Specular IOR vs Coat Weight",
-            "playgroundId": "#GRQHVV#30",
+            "playgroundId": "#GRQHVV#40",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR IBL Specular Roughness vs Coat Roughness",
-            "playgroundId": "#GRQHVV#31",
+            "playgroundId": "#GRQHVV#41",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Specular Roughness vs Coat Roughness",
+            "playgroundId": "#GRQHVV#42",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Specular Weight vs Metalness",
+            "playgroundId": "#GRQHVV#34",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Specular IOR vs Coat Weight",
+            "playgroundId": "#GRQHVV#35",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Specular IOR vs Coat IOR",
+            "playgroundId": "#GRQHVV#36",
             "excludedEngines": ["webgl1"]
         }
     ]

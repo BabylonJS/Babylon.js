@@ -163,22 +163,22 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
             `;
             } else if (this._material instanceof OpenPBRMaterial) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
+                frag["CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     #ifndef UNLIT
                         #ifdef REFLECTION
                             #ifdef COLORED_IBL_SHADOWS
                                 var shadowValue: vec3f = computeIndirectShadow();
-                                slab_diffuse *= shadowValue;
-                                slab_glossy *= mix(vec3f(1.0), shadowValue, specularAlphaG);
+                                slab_diffuse_ibl *= shadowValue;
+                                slab_glossy_ibl *= mix(vec3f(1.0), shadowValue, specularAlphaG);
                             #else
                                 var shadowValue: vec2f = computeIndirectShadow();
-                                slab_diffuse *= vec3f(shadowValue.x);
-                                slab_glossy *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG));
+                                slab_diffuse_ibl *= vec3f(shadowValue.x);
+                                slab_glossy_ibl *= vec3f(mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG));
                             #endif
                         #endif
                     #else
-                        slab_diffuse *= computeIndirectShadow().x;
+                        slab_diffuse_ibl *= computeIndirectShadow().x;
                     #endif
                 #endif
             `;
@@ -241,22 +241,22 @@ export class IBLShadowsPluginMaterial extends MaterialPluginBase {
             `;
             } else if (this._material instanceof OpenPBRMaterial) {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                frag["CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION"] = `
+                frag["CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION"] = `
                 #ifdef RENDER_WITH_IBL_SHADOWS
                     #ifndef UNLIT
                         #ifdef REFLECTION
                             #ifdef COLORED_IBL_SHADOWS
                                 vec3 shadowValue = computeIndirectShadow();
-                                slab_diffuse.rgb *= shadowValue.rgb;
-                                slab_glossy *= mix(vec3(1.0), shadowValue.rgb, specularAlphaG);
+                                slab_diffuse_ibl.rgb *= shadowValue.rgb;
+                                slab_glossy_ibl *= mix(vec3(1.0), shadowValue.rgb, specularAlphaG);
                             #else
                                 vec2 shadowValue = computeIndirectShadow();
-                                slab_diffuse *= shadowValue.x;
-                                slab_glossy *= mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG);
+                                slab_diffuse_ibl *= shadowValue.x;
+                                slab_glossy_ibl *= mix(pow(shadowValue.y, 4.0), shadowValue.x, specularAlphaG);
                             #endif
                         #endif
                     #else
-                        slab_diffuse *= computeIndirectShadow().x;
+                        slab_diffuse_ibl *= computeIndirectShadow().x;
                     #endif
                 #endif
             `;

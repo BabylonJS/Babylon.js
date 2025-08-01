@@ -1,20 +1,17 @@
-struct conductorReflectanceOutParams
-{
-    vec3 F0;
-    vec3 F90;
-};
 
 #define pbr_inline
-conductorReflectanceOutParams conductorReflectance(in vec3 baseColor, in vec3 specularColor, in float specularWeight)
+ReflectanceParams conductorReflectance(in vec3 baseColor, in vec3 specularColor, in float specularWeight)
 {
-    conductorReflectanceOutParams outParams;
+    ReflectanceParams outParams;
 
     #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
-        outParams.F0 = baseColor * specularWeight;
-        outParams.F90 = specularColor * specularWeight;
+        outParams.coloredF0 = baseColor * specularWeight;
+        outParams.coloredF90 = specularColor * specularWeight;
     #else
-        outParams.F0 = baseColor;
-        outParams.F90 = vec3(1.0);
+        outParams.coloredF0 = baseColor;
+        outParams.coloredF90 = vec3(1.0);
     #endif
+    outParams.F0 = 1.0;
+    outParams.F90 = 1.0;
     return outParams;
 }
