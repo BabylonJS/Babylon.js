@@ -12,6 +12,8 @@
 			vec4 vLightFalloff;
 		#elif defined(HEMILIGHT{X})
 			vec3 vLightGround;
+		#elif defined(CLUSTLIGHT{X})
+			float vNumLights; // TODO: remove once depth clustering is added
 		#endif
 		#if defined(AREALIGHT{X})
 			vec4 vLightWidth;
