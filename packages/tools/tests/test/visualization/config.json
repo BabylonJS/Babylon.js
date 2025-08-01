@@ -1871,6 +1871,16 @@
             "referenceImage": "gltfMSFTLOD.png"
         },
         {
+            "title": "GLTF ext MSFT_LOD for multi material mesh",
+            "playgroundId": "#SVEUE4#2",
+            "referenceImage": "gltfMSFTLOD-multi-material.png"
+        },
+        {
+            "title": "GLTF ext MSFT_LOD for complex hierarchical mesh",
+            "playgroundId": "#ZSTNSI#3",
+            "referenceImage": "gltfMSFTLOD-complex-hierarchy.png"
+        },
+        {
             "title": "Reverse depth buffer and shadows",
             "renderCount": 10,
             "playgroundId": "#WL4Q8J#20",

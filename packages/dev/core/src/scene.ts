@@ -4480,12 +4480,44 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         // Determine mesh candidates
-        const meshes = this.getActiveMeshCandidates();
+        const meshes = this.getActiveMeshCandidates().data;
+
+        // Check if any mesh has LOD levels to avoid unnecessary processing
+        let hasLODMeshes = false;
+        for (let i = 0; i < meshes.length; i++) {
+            if ((meshes[i] as Mesh).hasLODLevels) {
+                hasLODMeshes = true;
+                break;
+            }
+        }
+
+        // Move meshes with LOD levels to the front of the list for priority processing
+        if (hasLODMeshes) {
+            meshes.sort((a, b) => ((a as Mesh).hasLODLevels ? -1 : (b as Mesh).hasLODLevels ? 1 : 0));
+        }
+
+        // Build LOD parent map to cache LOD parent relationships
+        const lodParentMap = new Map<AbstractMesh, AbstractMesh>();
+        if (hasLODMeshes) {
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
+                if ((mesh as Mesh).hasLODLevels) {
+                    const lodLevels = (mesh as Mesh).getLODLevels();
+                    // Map each LOD mesh to its parent
+                    for (const lodLevel of lodLevels) {
+                        if (lodLevel.mesh) {
+                            lodParentMap.set(lodLevel.mesh, mesh);
+                        }
+                    }
+                }
+            }
+        }
 
         // Check each mesh
         const len = meshes.length;
+        const skippedLODMeshes = [];
         for (let i = 0; i < len; i++) {
-            const mesh = meshes.data[i];
+            const mesh = meshes[i];
             let currentLOD = mesh._internalAbstractMeshDataInfo._currentLOD.get(this.activeCamera);
             if (currentLOD) {
                 currentLOD[1] = -1;
@@ -4512,6 +4544,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             // Switch to current LOD
             let meshToRender = this.customLODSelector ? this.customLODSelector(mesh, this.activeCamera) : mesh.getLOD(this.activeCamera);
+
             currentLOD[0] = meshToRender;
             currentLOD[1] = this._frameId;
             if (meshToRender === undefined || meshToRender === null) {
@@ -4521,6 +4554,48 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // Compute world matrix if LOD is billboard
             if (meshToRender !== mesh && meshToRender.billboardMode !== 0) {
                 meshToRender.computeWorldMatrix();
+            }
+
+            // If the mesh has LOD levels, add its LOD levels that are not the current LOD to the skipped list
+            const lodLevelMeshes = (mesh as Mesh).hasLODLevels
+                ? (mesh as Mesh)
+                      .getLODLevels()
+                      .map((level) => level.mesh as Mesh)
+                      .concat(mesh as Mesh)
+                : [];
+            for (let levelIndex = 0; levelIndex < lodLevelMeshes.length; levelIndex++) {
+                const levelMesh = lodLevelMeshes[levelIndex];
+                if (levelMesh !== meshToRender) {
+                    skippedLODMeshes.push(levelMesh);
+                }
+            }
+
+            // Skip meshes that are not the current LOD level
+            // First, check if this mesh is part of a LOD system via the cache
+            const lodParent = lodParentMap.get(mesh);
+            if (lodParent) {
+                // This mesh is a LOD child, check if it's the current LOD
+                const parentLOD = this.customLODSelector ? this.customLODSelector(lodParent, this.activeCamera) : lodParent.getLOD(this.activeCamera);
+                if (mesh !== parentLOD) {
+                    skippedLODMeshes.push(mesh);
+                    continue;
+                }
+            }
+
+            // Check if any ancestor is in the skipped list
+            let shouldSkip = false;
+            let ancestor = mesh.parent;
+            while (ancestor) {
+                if (skippedLODMeshes.includes(ancestor as Mesh)) {
+                    shouldSkip = true;
+                    break;
+                }
+                ancestor = ancestor.parent;
+            }
+
+            if (shouldSkip) {
+                skippedLODMeshes.push(mesh);
+                continue;
             }
 
             mesh._preActivate();
