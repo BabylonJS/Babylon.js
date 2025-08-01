@@ -2736,6 +2736,66 @@
         {
             "title": "Test code inlining",
             "playgroundId": "#YG3BBF#51"
+        },
+        {
+            "title": "OpenPBR IBL Reflectance with IOR",
+            "playgroundId": "#KQYNYS#46",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL F82 Specular Metal vs Weight",
+            "playgroundId": "#GRQHVV#25",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL F82 Specular Roughness vs Weight",
+            "playgroundId": "#GRQHVV#26",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Furnace Test for Metal-Rough",
+            "playgroundId": "#KQYNYS#47",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Specular IOR vs Coat IOR",
+            "playgroundId": "#GRQHVV#39",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Metalness vs Coat IOR",
+            "playgroundId": "#GRQHVV#38",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Specular IOR vs Coat Weight",
+            "playgroundId": "#GRQHVV#40",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Specular Roughness vs Coat Roughness",
+            "playgroundId": "#GRQHVV#41",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Specular Roughness vs Coat Roughness",
+            "playgroundId": "#GRQHVV#42",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Specular Weight vs Metalness",
+            "playgroundId": "#GRQHVV#34",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Specular IOR vs Coat Weight",
+            "playgroundId": "#GRQHVV#35",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Specular IOR vs Coat IOR",
+            "playgroundId": "#GRQHVV#36",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
