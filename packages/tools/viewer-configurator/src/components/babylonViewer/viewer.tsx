@@ -45,5 +45,11 @@ export const Viewer: FunctionComponent<{ onViewerCreated: (element: ViewerElemen
         })();
     }, []);
 
-    return <configured-babylon-viewer class="viewerElement" ref={props.onViewerCreated}></configured-babylon-viewer>;
+    // Allow engine selection through query param for testing. Later we may add an option in the UI for engine selection.
+    let engine: string | null | undefined = new URLSearchParams(window.location.search).get("engine");
+    if (engine !== "WebGL" && engine !== "WebGPU") {
+        engine = undefined;
+    }
+
+    return <configured-babylon-viewer class="viewerElement" ref={props.onViewerCreated} engine={engine}></configured-babylon-viewer>;
 };
