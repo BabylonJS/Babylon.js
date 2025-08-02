@@ -65,35 +65,6 @@ function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
     }
 }
 
-function IsCompressedTextureFormat(format: number): boolean {
-    switch (format) {
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
-        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-            return true;
-        default:
-            return false;
-    }
-}
-
 /**
  * Computes the metallic factor from specular glossiness values.
  * @param diffuse diffused value
@@ -888,23 +859,6 @@ export class GLTFMaterialExporter {
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
     }
 
-    /**
-     * Get the RGBA pixel data from a texture
-     * @param babylonTexture
-     * @returns an array buffer promise containing the pixel data
-     */
-    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
-    private _getPixelsFromTextureAsync(babylonTexture: BaseTexture): Promise<Nullable<Uint8Array | Float32Array>> {
-        // If the internal texture format is compressed, we cannot read the pixels directly.
-        if (IsCompressedTextureFormat(babylonTexture.textureFormat)) {
-            return GetTextureDataAsync(babylonTexture, babylonTexture._texture!.width, babylonTexture._texture!.height);
-        }
-
-        return babylonTexture.textureType === Constants.TEXTURETYPE_UNSIGNED_BYTE
-            ? (babylonTexture.readPixels() as Promise<Uint8Array>)
-            : (babylonTexture.readPixels() as Promise<Float32Array>);
-    }
-
     public async exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
         const extensionPromise = this._exporter._extensionsPreExportTextureAsync("exporter", babylonTexture as Texture, mimeType);
         if (!extensionPromise) {
@@ -922,7 +876,7 @@ export class GLTFMaterialExporter {
     private async _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
         let textureInfo = this._textureMap.get(babylonTexture);
         if (!textureInfo) {
-            const pixels = await this._getPixelsFromTextureAsync(babylonTexture);
+            const pixels = await GetTextureDataAsync(babylonTexture).catch(() => null);
             if (!pixels) {
                 return null;
             }
