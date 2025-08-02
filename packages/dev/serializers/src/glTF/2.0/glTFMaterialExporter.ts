@@ -272,21 +272,8 @@ export class GLTFMaterialExporter {
         await this._exporter._extensionsPostExportMaterialAsync("exportMaterial", glTFMaterial, babylonMaterial);
     }
 
-    private async _getImageDataAsync(buffer: Uint8Array | Float32Array, width: number, height: number, mimeType: ImageMimeType): Promise<ArrayBuffer> {
-        const textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
-
-        const hostingScene = this._exporter._babylonScene;
-        const engine = hostingScene.getEngine();
-
-        // Create a temporary texture with the texture buffer data
-        const tempTexture = engine.createRawTexture(buffer, width, height, Constants.TEXTUREFORMAT_RGBA, false, true, Texture.NEAREST_SAMPLINGMODE, null, textureType);
-
-        engine.isWebGPU ? await import("core/ShadersWGSL/pass.fragment") : await import("core/Shaders/pass.fragment");
-        await TextureTools.ApplyPostProcess("pass", tempTexture, hostingScene, textureType, Constants.TEXTURE_NEAREST_SAMPLINGMODE, Constants.TEXTUREFORMAT_RGBA);
-
-        const data = await engine._readTexturePixels(tempTexture, width, height);
-
-        return (await DumpTools.DumpDataAsync(width, height, data, mimeType, undefined, true, true)) as ArrayBuffer;
+    private async _getImageDataAsync(buffer: Uint8Array, width: number, height: number, mimeType: ImageMimeType): Promise<ArrayBuffer> {
+        return await DumpTools.DumpDataAsync(width, height, buffer, mimeType, undefined, false, true);
     }
 
     /**
