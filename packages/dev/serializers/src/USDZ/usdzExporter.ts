@@ -362,7 +362,7 @@ function BuildTexture(
         float outputs:g
         float outputs:b
         float3 outputs:rgb
-        ${material.needAlphaBlending() ? "float outputs:a" : ""}
+        ${material.needAlphaBlending() || material.needAlphaTesting() ? "float outputs:a" : ""}
     }`;
 }
 
