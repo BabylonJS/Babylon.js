@@ -3,6 +3,7 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Nullable } from "core/types";
 import { RenderTargetGenerator, ConnectionPointType, SmartFilterOptimizer, type InputBlock, type SmartFilter, type SmartFilterRuntime, Logger } from "smart-filters";
 import { RegisterAnimations, TextureAssetCache } from "smart-filters-editor-control";
+import { RegisterOptimizedShaderBlockCodeForUnitTests } from "./optimizerUnitTestHelper";
 
 /**
  * Describes the result of rendering a Smart Filter
@@ -221,6 +222,9 @@ export class SmartFilterRenderer {
         if (optimizedSmartFilter === null) {
             throw new Error("Failed to optimize Smart Filter");
         }
+
+        RegisterOptimizedShaderBlockCodeForUnitTests(optimizedSmartFilter.attachedBlocks);
+
         return optimizedSmartFilter;
     }
 }
