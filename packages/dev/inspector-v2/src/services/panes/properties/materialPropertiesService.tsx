@@ -8,6 +8,9 @@ import { SelectionServiceIdentity } from "../../selectionService";
 import { Material, MultiMaterial } from "core/Materials";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
+import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
@@ -32,6 +35,18 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+
+        const standardMaterialContentRegistration = propertiesService.addSectionContent({
+            key: "Standard Material Properties",
+            predicate: (entity: unknown) => entity instanceof StandardMaterial,
+            content: [
+                {
+                    section: "Lighting & Colors",
+                    component: ({ context }) => <StandardMaterialLightingAndColorProperties standardMaterial={context} />,
+                },
+            ],
+        });
+
         const multiMaterialContentRegistration = propertiesService.addSectionContent({
             key: "Multi Material Properties",
             predicate: (entity: unknown) => entity instanceof MultiMaterial,
@@ -46,6 +61,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
         return {
             dispose: () => {
                 materialContentRegistration.dispose();
+                standardMaterialContentRegistration.dispose();
                 multiMaterialContentRegistration.dispose();
             },
         };

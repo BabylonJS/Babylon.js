@@ -18,7 +18,7 @@ export const NodeGeneralProperties: FunctionComponent<{ node: Node; setSelectedE
             {parent && <LinkPropertyLine key="Parent" label="Parent" description={`The parent of this node.`} value={parent.name} onLink={() => setSelectedEntity(parent)} />}
             <SwitchPropertyLine
                 key="NodeIsEnabled"
-                label="Is enabled"
+                label="Is Enabled"
                 description="Whether the node is enabled or not."
                 value={isEnabled}
                 onChange={(checked) => node.setEnabled(checked)}
