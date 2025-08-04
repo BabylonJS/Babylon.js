@@ -38,7 +38,6 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                     section: "General",
                     component: ({ context }) => <AbstractMeshGeneralProperties mesh={context} selectionService={selectionService} />,
                 },
-
                 {
                     section: "Advanced",
                     component: ({ context }) => <AbstractMeshAdvancedProperties mesh={context} />,

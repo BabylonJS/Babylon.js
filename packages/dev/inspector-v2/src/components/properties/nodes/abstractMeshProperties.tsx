@@ -1,4 +1,4 @@
-import type { FunctionComponent } from "react";
+import { useState, type FunctionComponent } from "react";
 
 import type { ISelectionService } from "../../../services/selectionService";
 
@@ -22,66 +22,7 @@ import { VertexBuffer } from "core/Meshes/buffer";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
-
-const DisplayNormals = function (mesh: AbstractMesh) {
-    const scene = mesh.getScene();
-
-    if (mesh.material && mesh.material.getClassName() === "NormalMaterial") {
-        mesh.material.dispose();
-
-        mesh.material = mesh.reservedDataStore.originalMaterial;
-        mesh.reservedDataStore.originalMaterial = null;
-    } else {
-        if (typeof NormalMaterial === "undefined") {
-            Tools.Warn("NormalMaterial not found. Make sure to load the materials library.");
-            return;
-        }
-
-        if (!mesh.reservedDataStore) {
-            mesh.reservedDataStore = {};
-        }
-
-        if (!mesh.reservedDataStore.originalMaterial) {
-            mesh.reservedDataStore.originalMaterial = mesh.material;
-        }
-
-        const normalMaterial = new NormalMaterial("normalMaterial", scene);
-        normalMaterial.disableLighting = true;
-        if (mesh.material) {
-            normalMaterial.sideOrientation = mesh.material.sideOrientation;
-        }
-        normalMaterial.reservedDataStore = { hidden: true };
-        mesh.material = normalMaterial;
-    }
-};
-
-const DisplayVertexColors = function (mesh: AbstractMesh) {
-    const scene = mesh.getScene();
-
-    if (mesh.material && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial) {
-        mesh.material.dispose();
-
-        mesh.material = mesh.reservedDataStore.originalMaterial;
-        mesh.reservedDataStore.originalMaterial = null;
-    } else {
-        if (!mesh.reservedDataStore) {
-            mesh.reservedDataStore = {};
-        }
-
-        if (!mesh.reservedDataStore.originalMaterial) {
-            mesh.reservedDataStore.originalMaterial = mesh.material;
-        }
-        const vertexColorMaterial = new StandardMaterial("vertex colors", scene);
-        vertexColorMaterial.disableLighting = true;
-        vertexColorMaterial.emissiveColor = Color3.White();
-        if (mesh.material) {
-            vertexColorMaterial.sideOrientation = mesh.material.sideOrientation;
-        }
-        vertexColorMaterial.reservedDataStore = { hidden: true, isVertexColorMaterial: true };
-        mesh.useVertexColors = true;
-        mesh.material = vertexColorMaterial;
-    }
-};
+import { SkeletonViewer } from "core/Debug/skeletonViewer";
 
 const RenderNormalVectors = function (mesh: AbstractMesh) {
     const scene = mesh.getScene();
@@ -259,37 +200,163 @@ export const AbstractMeshOutlineOverlayProperties: FunctionComponent<{ mesh: Abs
 export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh }> = (props) => {
     const { mesh } = props;
 
-    const displayNormals = mesh.material != null && mesh.material.getClassName() === "NormalMaterial";
-    const displayVertexColors = !!(mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial);
-    const renderNormalVectors = mesh.reservedDataStore && mesh.reservedDataStore.normalLines ? true : false;
-    const renderWireframeOver = mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver ? true : false;
+    const [displayNormals, setDisplayNormals] = useState(mesh.material != null && mesh.material.getClassName() === "NormalMaterial");
+    const [displayVertexColors, setDisplayVertexColors] = useState(
+        mesh.material != null && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial ? true : false
+    );
+    const [renderNormalVectors] = useState(mesh.reservedDataStore && mesh.reservedDataStore.normalLines ? true : false);
+    const [renderWireframeOver] = useState(mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver ? true : false);
+    const [displayBoneWeights, setDisplayBoneWeights] = useState(mesh.material != null && mesh.material.getClassName() === "BoneWeightShader");
+    const [displaySkeletonMap, setDisplaySkeletonMap] = useState(mesh.material != null && mesh.material.getClassName() === "SkeletonMapShader");
+
+    const overlayColor = useColor3Property(mesh, "overlayColor");
+
+    const displayNormalsHandler = function (mesh: AbstractMesh) {
+        const scene = mesh.getScene();
+
+        if (mesh.material && mesh.material.getClassName() === "NormalMaterial") {
+            mesh.material.dispose();
+
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
+            setDisplayNormals(false);
+        } else {
+            if (typeof NormalMaterial === "undefined") {
+                Tools.Warn("NormalMaterial not found. Make sure to load the materials library.");
+                return;
+            }
+
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
+            }
+
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
+
+            const normalMaterial = new NormalMaterial("normalMaterial", scene);
+            normalMaterial.disableLighting = true;
+            if (mesh.material) {
+                normalMaterial.sideOrientation = mesh.material.sideOrientation;
+            }
+            normalMaterial.reservedDataStore = { hidden: true };
+            mesh.material = normalMaterial;
+
+            setDisplayVertexColors(false);
+            setDisplayBoneWeights(false);
+            setDisplaySkeletonMap(false);
+            setDisplayNormals(true);
+        }
+    };
+
+    const displayVertexColorsHandler = function (mesh: AbstractMesh) {
+        const scene = mesh.getScene();
+
+        if (mesh.material && mesh.material.reservedDataStore && mesh.material.reservedDataStore.isVertexColorMaterial) {
+            mesh.material.dispose();
+
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
+            setDisplayVertexColors(false);
+        } else {
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
+            }
+
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
+            const vertexColorMaterial = new StandardMaterial("vertex colors", scene);
+            vertexColorMaterial.disableLighting = true;
+            vertexColorMaterial.emissiveColor = Color3.White();
+            if (mesh.material) {
+                vertexColorMaterial.sideOrientation = mesh.material.sideOrientation;
+            }
+            vertexColorMaterial.reservedDataStore = { hidden: true, isVertexColorMaterial: true };
+            mesh.useVertexColors = true;
+            mesh.material = vertexColorMaterial;
+
+            setDisplayNormals(false);
+            setDisplayBoneWeights(false);
+            setDisplaySkeletonMap(false);
+            setDisplayVertexColors(true);
+        }
+    };
+    const displayBoneWeightsHandler = function (mesh: AbstractMesh) {
+        const scene = mesh.getScene();
+
+        if (mesh.material && mesh.material.getClassName() === "BoneWeightShader") {
+            mesh.material.dispose();
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
+            setDisplayBoneWeights(false);
+        } else {
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
+            }
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
+            if (!mesh.reservedDataStore.displayBoneIndex) {
+                //mesh.reservedDataStore.displayBoneIndex = this.state.displayBoneIndex;
+            }
+            if (mesh.skeleton) {
+                const boneWeightsShader = SkeletonViewer.CreateBoneWeightShader({ skeleton: mesh.skeleton }, scene);
+                boneWeightsShader.reservedDataStore = { hidden: true };
+                mesh.material = boneWeightsShader;
+            }
+            setDisplayNormals(false);
+            setDisplayVertexColors(false);
+            setDisplaySkeletonMap(false);
+            setDisplayBoneWeights(true);
+        }
+    };
+
+    const displaySkeletonMapHandler = function (mesh: AbstractMesh) {
+        const scene = mesh.getScene();
+
+        if (mesh.material && mesh.material.getClassName() === "SkeletonMapShader") {
+            mesh.material.dispose();
+            mesh.material = mesh.reservedDataStore.originalMaterial;
+            mesh.reservedDataStore.originalMaterial = null;
+            setDisplaySkeletonMap(false);
+        } else {
+            if (!mesh.reservedDataStore) {
+                mesh.reservedDataStore = {};
+            }
+            if (!mesh.reservedDataStore.originalMaterial) {
+                mesh.reservedDataStore.originalMaterial = mesh.material;
+            }
+            if (mesh.skeleton) {
+                const skeletonMapShader = SkeletonViewer.CreateSkeletonMapShader({ skeleton: mesh.skeleton }, scene);
+                skeletonMapShader.reservedDataStore = { hidden: true };
+                mesh.material = skeletonMapShader;
+            }
+            setDisplayNormals(false);
+            setDisplayVertexColors(false);
+            setDisplayBoneWeights(false);
+            setDisplaySkeletonMap(true);
+        }
+    };
 
     return (
         <>
-            <SwitchPropertyLine
-                label="Display normals"
-                description="Displays the normals for each face of the mesh."
-                value={displayNormals}
-                onChange={() => DisplayNormals(mesh)}
-            />
-            <SwitchPropertyLine
-                label="Display vertex colors"
-                description="Displays the colors for each vertex of the mesh."
-                value={displayVertexColors}
-                onChange={() => DisplayVertexColors(mesh)}
-            />
-            <SwitchPropertyLine
-                label="Render vertex normals"
-                description="Renders the vertex normals for the mesh."
-                value={renderNormalVectors}
-                onChange={() => RenderNormalVectors(mesh)}
-            />
-            <SwitchPropertyLine
-                label="Render wireframe over mesh"
-                description="Display the mesh wireframe over itself."
-                value={renderWireframeOver}
-                onChange={() => RenderWireframeOver(mesh)}
-            />
+            <SwitchPropertyLine label="Display Normals" value={displayNormals} onChange={() => displayNormalsHandler(mesh)} />
+            <SwitchPropertyLine label="Display Vertex Colors" value={displayVertexColors} onChange={() => displayVertexColorsHandler(mesh)} />
+            <SwitchPropertyLine label="Render Vertex Normals" value={renderNormalVectors} onChange={() => RenderNormalVectors(mesh)} />
+            <SwitchPropertyLine label="Render Wireframe over Mesh" value={renderWireframeOver} onChange={() => RenderWireframeOver(mesh)} />
+            {mesh.skeleton && <SwitchPropertyLine label="Display Bone Weights" value={displayBoneWeights} onChange={() => displayBoneWeightsHandler(mesh)} />}
+            <Collapse visible={displayBoneWeights}>
+                <Color3PropertyLine
+                    key="OverlayColor"
+                    label="Overlay Color"
+                    value={overlayColor}
+                    onChange={(color) => {
+                        mesh.overlayColor = color;
+                    }}
+                />
+            </Collapse>
+            {mesh.skeleton && <SwitchPropertyLine label="Display Skeleton Map" value={displaySkeletonMap} onChange={() => displaySkeletonMapHandler(mesh)} />}
         </>
     );
 };
