@@ -26,8 +26,7 @@ export const FrameGraphPropertiesServiceDefinition: ServiceDefinition<[], [IProp
 
         return {
             dispose: () => {
-                frameGraphGeneralContentRegistration.dispose();
-                frameGraphTasksContentRegistration.dispose();
+                frameGraphContentRegistration.dispose();
             },
         };
     },
