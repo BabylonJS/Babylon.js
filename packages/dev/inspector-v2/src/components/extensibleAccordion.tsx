@@ -7,6 +7,10 @@ import { Children, isValidElement, useMemo, useState } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
+function AsReadonlyArray<T>(array: T[]): readonly T[] {
+    return array;
+}
+
 export type DynamicAccordionSection = Readonly<{
     /**
      * A unique identity for the section, which can be referenced by section content.
@@ -83,7 +87,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
                 }
             });
         }
-        return defaultSections;
+        return AsReadonlyArray(defaultSections);
     }, [children]);
 
     const defaultSectionContent = useMemo(() => {
@@ -100,21 +104,20 @@ export function ExtensibleAccordion<ContextT = unknown>(
                 }
             });
         }
-        return defaultSectionContent;
+        return AsReadonlyArray(defaultSectionContent);
     }, [children, defaultSections]);
 
-    const mergedSectionContent = useMemo(
-        () =>
-            [...defaultSectionContent, ...sectionContent]
-                .map((content, index) => {
-                    return {
-                        ...content,
-                        order: content.order ?? index,
-                    };
-                })
-                .sort((a, b) => a.order - b.order),
-        [defaultSectionContent, sectionContent]
-    );
+    const mergedSectionContent = useMemo(() => {
+        return AsReadonlyArray(
+            [...defaultSectionContent, ...sectionContent].map((content, index) => {
+                return {
+                    ...content,
+                    key: `${content.key}-${index}`,
+                    order: content.order ?? index,
+                } as const;
+            })
+        );
+    }, [defaultSectionContent, sectionContent]);
 
     const mergedSections = useMemo(() => {
         const mergedSections = [...defaultSections, ...sections];
@@ -127,15 +130,15 @@ export function ExtensibleAccordion<ContextT = unknown>(
             }
         }
 
-        return [...implicitSections, ...defaultSections, ...sections]
-            .map((section, index) => {
+        return AsReadonlyArray(
+            [...implicitSections, ...mergedSections].map((section, index) => {
                 return {
                     ...section,
                     order: section.order ?? index,
                     collapseByDefault: section.collapseByDefault ?? false,
-                };
+                } as const;
             })
-            .sort((a, b) => a.order - b.order);
+        );
     }, [defaultSections, sections, mergedSectionContent]);
 
     const [version, setVersion] = useState(0);
@@ -148,7 +151,9 @@ export function ExtensibleAccordion<ContextT = unknown>(
             return [];
         }
 
-        return mergedSections
+        const sortedSections = [...mergedSections].sort((a, b) => a.order - b.order);
+
+        return sortedSections
             .map((section) => {
                 // Get a flat list of the section content, preserving the key so it can be used when each component for each section is rendered.
                 const contentForSection = mergedSectionContent.filter((content) => content.section === section.identity);
@@ -157,6 +162,9 @@ export function ExtensibleAccordion<ContextT = unknown>(
                 if (contentForSection.length === 0) {
                     return null; // No content for this section
                 }
+
+                // Sort the content for this section by order, defaulting to 0 if not specified.
+                contentForSection.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
                 // Return the section with its identity, collapseByDefault flag, and the content components to render.
                 return {

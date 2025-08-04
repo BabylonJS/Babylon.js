@@ -76,6 +76,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                                   return {
                                       key: section.key,
                                       section: content.section,
+                                      order: content.order,
                                       component: content.component,
                                   };
                               });

@@ -29,6 +29,12 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
             getEntityDisplayInfo: (texture) => {
                 const onChangeObservable = new Observable<void>();
 
+                const displayNameHookToken = InterceptProperty(texture, "displayName", {
+                    afterSet: () => {
+                        onChangeObservable.notifyObservers();
+                    },
+                });
+
                 const nameHookToken = InterceptProperty(texture, "name", {
                     afterSet: () => {
                         onChangeObservable.notifyObservers();
@@ -42,6 +48,7 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
                     onChange: onChangeObservable,
                     dispose: () => {
                         nameHookToken.dispose();
+                        displayNameHookToken.dispose();
                         onChangeObservable.clear();
                     },
                 };

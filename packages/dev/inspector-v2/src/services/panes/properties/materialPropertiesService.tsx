@@ -6,7 +6,7 @@ import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
 
 import { Material } from "core/Materials";
-import { MaterialTransparencyProperties } from "../../../components/properties/materials/materialTransparencyProperties";
+import { MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
@@ -14,7 +14,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
     factory: (propertiesService) => {
         const materialContentRegistration = propertiesService.addSectionContent({
             key: "Material Properties",
-            predicate: (entity: unknown): entity is Material => entity instanceof Material,
+            predicate: (entity: unknown) => entity instanceof Material,
             content: [
                 {
                     section: "Transparency",
