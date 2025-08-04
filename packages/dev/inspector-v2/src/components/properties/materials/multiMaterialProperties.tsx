@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
 
-import { MultiMaterial } from "core/Materials/multiMaterial";
-import { ISelectionService } from "../../../services/selectionService";
+import type { MultiMaterial } from "core/Materials/multiMaterial";
+import type { ISelectionService } from "../../../services/selectionService";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 
 export const MultiMaterialChildrenProperties: FunctionComponent<{ multiMaterial: MultiMaterial; selectionService: ISelectionService }> = (props) => {
