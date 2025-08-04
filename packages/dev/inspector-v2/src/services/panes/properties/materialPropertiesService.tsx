@@ -25,7 +25,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
-        const standardMateriaContentRegistration = propertiesService.addSectionContent({
+        const standardMaterialContentRegistration = propertiesService.addSectionContent({
             key: "Standard Material Properties",
             predicate: (entity: unknown) => entity instanceof StandardMaterial,
             content: [
@@ -39,7 +39,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
         return {
             dispose: () => {
                 materialContentRegistration.dispose();
-                standardMateriaContentRegistration.dispose();
+                standardMaterialContentRegistration.dispose();
             },
         };
     },

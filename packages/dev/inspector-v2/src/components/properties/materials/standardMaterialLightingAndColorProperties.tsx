@@ -6,6 +6,11 @@ import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 
+/**
+ * Displays the lighting and color properties of a standard material.
+ * @param props - The required properties
+ * @returns A JSX element representing the lighting and color properties.
+ */
 export const StandardMaterialLightingAndColorProperties: FunctionComponent<{ standardMaterial: StandardMaterial }> = (props) => {
     const { standardMaterial } = props;
 
