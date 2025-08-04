@@ -7,8 +7,9 @@ import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLi
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 
-export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; settings?: ISettingsContext }> = ({ material, settings }) => {
-    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings!);
+export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; settings: ISettingsContext }> = (props) => {
+    const { material, settings } = props;
+    const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
 
     return (
         <>

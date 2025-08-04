@@ -9,10 +9,12 @@ import { Material } from "core/Materials";
 import { MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
+import { SettingsContextIdentity } from "../../settingsContext";
+import type { ISettingsContext } from "../../../services/settingsContext";
 
-export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
+export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISettingsContext]> = {
     friendlyName: "Material Properties",
-    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SettingsContextIdentity],
     factory: (propertiesService, _, settingsContext) => {
         const materialContentRegistration = propertiesService.addSectionContent({
             key: "Material Properties",
