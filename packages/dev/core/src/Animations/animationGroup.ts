@@ -507,6 +507,14 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets the scene the animation group belongs to
+     * @returns The scene the animation group belongs to
+     */
+    public getScene(): Scene {
+        return this._scene;
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
