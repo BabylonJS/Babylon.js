@@ -44,11 +44,18 @@
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
-#include<openpbrBlockAlbedoOpacity>
-#include<openpbrBlockReflectivity>
-#include<openpbrBlockAmbientOcclusion>
-#include<pbrBlockAlphaFresnel>
+#include<openpbrDielectricReflectance>
+#include<openpbrConductorReflectance>
+
+// #include<openpbrBlockAmbientOcclusion>
 #include<openpbrIblFunctions>
+#include<openpbrGeometryInfo>
+
+// Do a mix between layers with additional multipliers for each layer.
+fn layer(slab_bottom: vec3f, slab_top: vec3f, lerp_factor: f32, bottom_multiplier: vec3f, top_multiplier: vec3f) -> vec3f {
+
+    return mix(slab_bottom * bottom_multiplier, slab_top * top_multiplier, lerp_factor);
+}
 
 // _____________________________ MAIN FUNCTION ____________________________
 @fragment
@@ -60,57 +67,22 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     // _____________________________ Geometry Information ____________________________
     #include<pbrBlockNormalGeometric>
+    var coatNormalW: vec3f = normalW;
 
     #include<openpbrNormalMapFragment>
 
-    #include<pbrBlockNormalFinal>
+    #include<openpbrBlockNormalFinal>
 
-    // _____________________________ Albedo & Opacity ______________________________
-    var albedoOpacityOut: albedoOpacityOutParams;
+    // ______________________ Read Base properties & Opacity ______________________________
+    #include<openpbrBaseLayerData>
 
-#ifdef BASE_COLOR
-    var baseColorFromTexture: vec4f = textureSample(baseColorSampler, baseColorSamplerSampler, fragmentInputs.vBaseColorUV + uvOffset);
-#endif
+    // _____________________________ Read Coat Layer properties ______________________
+    #include<openpbrCoatLayerData>
 
-#ifdef BASE_WEIGHT
-    var baseWeightFromTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
-#endif
-
-#ifdef OPACITY
-    var opacityMap: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
-#endif
-
-#ifdef DECAL
-    var decalColor: vec4f = textureSample(decalSampler, decalSamplerSampler, fragmentInputs.vDecalUV + uvOffset);
-#endif
-
-    albedoOpacityOut = albedoOpacityBlock(
-        uniforms.vBaseColor
-    #ifdef BASE_COLOR
-        , baseColorFromTexture
-        , uniforms.vBaseColorInfos
-    #endif
-        , uniforms.vBaseWeight
-    #ifdef BASE_WEIGHT
-        , baseWeightFromTexture
-        , uniforms.vBaseWeightInfos
-    #endif
-    #ifdef OPACITY
-        , opacityMap
-        , uniforms.vOpacityInfos
-    #endif
-    #ifdef DETAIL
-        , detailColor
-        , uniforms.vDetailInfos
-    #endif
-    #ifdef DECAL
-        , decalColor
-        , uniforms.vDecalInfos
-    #endif
-    );
-
-    var surfaceAlbedo: vec3f = albedoOpacityOut.surfaceAlbedo;
-    var alpha: f32 = albedoOpacityOut.alpha;
+    // TEMP
+    var subsurface_weight: f32 = 0.0f;
+    var transmission_weight: f32 = 0.0f;
+    var fuzz_weight: f32 = 0.0f;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
@@ -132,185 +104,75 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
     );
 
-#ifdef UNLIT
-    var diffuseBase: vec3f =  vec3f(1., 1., 1.);
-#else
-
-    // _____________________________ Reflectivity _______________________________
-    var baseColor: vec3f = surfaceAlbedo;
-
-    var reflectivityOut: reflectivityOutParams;
-
-#ifdef METALLIC_ROUGHNESS
-    var metallicRoughnessFromTexture: vec4f = textureSample(baseMetalRoughSampler, baseMetalRoughSamplerSampler, fragmentInputs.vBaseMetalRoughUV + uvOffset);
-#endif
-
-#ifdef BASE_DIFFUSE_ROUGHNESS
-    var baseDiffuseRoughnessFromTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).x;
-#endif
-
-var specularColor: vec4f = uniforms.vSpecularColor;
-#ifdef SPECULAR_COLOR
-    var specularColorFromTexture: vec4f = textureSample(specularColorSampler, specularColorSamplerSampler, fragmentInputs.vSpecularColorUV + uvOffset);
-    #ifdef SPECULAR_COLOR_GAMMA
-        specularColorFromTexture = toLinearSpaceVec4(specularColorFromTexture);
-    #endif
-
-    specularColor = vec4f(specularColor.rgb * specularColorFromTexture.rgb, specularColor.a);
-#endif
-#ifdef SPECULAR_WEIGHT
-    var specularWeightFromTexture: vec4f = textureSample(specularWeightSampler, specularWeightSamplerSampler, fragmentInputs.vSpecularWeightUV + uvOffset);
-    #ifdef SPECULAR_WEIGHT_GAMMA
-        specularWeightFromTexture = toLinearSpaceVec4(specularWeightFromTexture);
-    #endif
-
-    // If loaded from a glTF, the specular_weight is stored in the alpha channel.
-    // Otherwise, it's expected to just be a greyscale texture.
-    #ifdef SPECULAR_WEIGHT_USE_ALPHA_ONLY
-        specularColor.a *= specularWeightFromTexture.a;
-    #else
-        specularColor = vec4f(specularColor.rgb * specularWeightFromTexture.rgb, specularColor.a);
-    #endif
-#endif
-
-    reflectivityOut = reflectivityBlock(
-        uniforms.vReflectanceInfo
-        , surfaceAlbedo
-        , specularColor
-        , uniforms.vBaseDiffuseRoughness
-    #ifdef BASE_DIFFUSE_ROUGHNESS
-        , baseDiffuseRoughnessFromTexture
-        , uniforms.vBaseDiffuseRoughnessInfos
-    #endif
-    #ifdef METALLIC_ROUGHNESS
-        , vec3f(uniforms.vBaseMetalRoughInfos, 1.0f)
-        , metallicRoughnessFromTexture
-    #endif
-    #if defined(METALLIC_ROUGHNESS)  && defined(AOSTOREINMETALMAPRED)
-        , aoOut.ambientOcclusionColor
-    #endif
-    #ifdef DETAIL
-        , detailColor
-        , uniforms.vDetailInfos
-    #endif
+    // _____________________________ Compute Geometry info for coat layer _________________________
+    let coatGeoInfo: geometryInfoOutParams = geometryInfo(
+        coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
     );
 
-    var roughness: f32 = reflectivityOut.roughness;
-    var diffuseRoughness: f32 = reflectivityOut.diffuseRoughness;
+    // _____________________________ Compute Geometry info for base layer _________________________
+    // Adjust the base roughness to account for the coat layer. Equation 61 in OpenPBR spec.
+    specular_roughness = mix(specular_roughness, pow(min(1.0f, pow(specular_roughness, 4.0f) + 2.0f * pow(coat_roughness, 4.0f)), 0.25f), coat_weight);
+    let baseGeoInfo: geometryInfoOutParams = geometryInfo(
+        normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+    );
 
-    #if defined(METALLIC_ROUGHNESS) && defined(AOSTOREINMETALMAPRED)
-        aoOut.ambientOcclusionColor = reflectivityOut.ambientOcclusionColor;
+    // _______________________ F0 and F90 Reflectance _______________________________
+    
+    // Coat
+    let coatReflectance: ReflectanceParams = dielectricReflectance(
+        coat_ior // inside IOR
+        , 1.0f // outside IOR is air
+        , vec3f(1.0f)
+        , coat_weight
+    );
+
+    // Base Dielectric
+    let baseDielectricReflectance: ReflectanceParams = dielectricReflectance(
+        specular_ior // inside IOR
+        , mix(1.0f, coat_ior, coat_weight) // outside IOR is coat
+        , specular_color
+        , specular_weight
+    );
+
+    // Base Metallic
+    let baseConductorReflectance: ReflectanceParams = conductorReflectance(base_color, specular_color, specular_weight);
+
+    // ________________________ Environment (IBL) Lighting ____________________________
+    var material_surface_ibl: vec3f = vec3f(0.f, 0.f, 0.f);
+    #include<openpbrEnvironmentLighting>
+
+    // __________________________ Direct Lighting ____________________________
+    var material_surface_direct: vec3f = vec3f(0.f, 0.f, 0.f);
+    #if defined(LIGHT0)
+        var aggShadow: f32 = 0.f;
+        var numLights: f32 = 0.f;
+        #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]
+        #include<openpbrDirectLighting>[0..maxSimultaneousLights]
+        
     #endif
 
-    // _____________________________ Compute Geometry info _________________________________
-    #include<openpbrBlockGeometryInfo>
-
-    // _____________________________ Reflection Info _______________________________________
-    #ifdef REFLECTION
-        var reflectionOut: reflectionOutParams;
-
-        #ifndef USE_CUSTOM_REFLECTION
-            reflectionOut = reflectionBlock(
-                fragmentInputs.vPositionW
-                , normalW
-                , alphaG
-                , uniforms.vReflectionMicrosurfaceInfos
-                , uniforms.vReflectionInfos
-                , uniforms.vReflectionColor
-            #ifdef ANISOTROPIC
-                , anisotropicOut
-            #endif
-            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                , NdotVUnclamped
-            #endif
-                , reflectionSampler
-                , reflectionSamplerSampler
-            #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                , fragmentInputs.vEnvironmentIrradiance
-            #endif
-            #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
-                , uniforms.reflectionMatrix
-            #endif
-            #ifdef USEIRRADIANCEMAP
-                , irradianceSampler
-                , irradianceSamplerSampler
-                #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
-                    , uniforms.vReflectionDominantDirection
-                #endif
-            #endif
-            #ifndef LODBASEDMICROSFURACE
-                , reflectionLowSampler
-                , reflectionLowSamplerSampler
-                , reflectionHighSampler
-                , reflectionHighSamplerSampler
-            #endif
-            #ifdef REALTIME_FILTERING
-                , uniforms.vReflectionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , icdfSampler
-                    , icdfSamplerSampler
-                #endif
-            #endif
-                , viewDirectionW
-                , diffuseRoughness
-                , surfaceAlbedo
-            );
-        #else
-            #define CUSTOM_REFLECTION
-        #endif
-    #endif
-
-    // ___________________ Compute Reflectance aka R0 F0 info _________________________
-    var reflectanceF0: f32 = reflectivityOut.reflectanceF0;
-    var specularEnvironmentR0: vec3f = reflectivityOut.colorReflectanceF0;
-    var specularEnvironmentR90: vec3f = reflectivityOut.colorReflectanceF90;
-
-    // _________________________ Specular Environment Reflectance __________________________
-    #include<openpbrBlockReflectance>
-
-    // _____________________________ Direct Lighting Info __________________________________
-    #include<pbrBlockDirectLighting>
-    // TODO: lightFragment references cloatcoatOut, subsurfaceOut, etc.
-    // lightFragment shouldn't know what layer it's working on.
-    // Instead, we should define values for lightFragment to use here, defining
-    // conditions like F0, F90, etc.
-    // Or we could convert lightFragment to be a function that returns the diffuse
-    // or specular contribution, given the reflectance inputs?
-    // e.g. lighting contributions from clearcoat, subsurface, base layer, etc. need
-    // to be computed separately.
-    // #include<lightFragment>[0..maxSimultaneousLights]
-
-    // _____________________________ Compute Final Lit Components ________________________
-    #include<openpbrBlockFinalLitComponents>
-#endif // UNLIT
-
-    // _____________________________ Diffuse ________________________________________
-    var finalDiffuse: vec3f = diffuseBase;
-    finalDiffuse *= surfaceAlbedo;
-    finalDiffuse = max(finalDiffuse, vec3f(0.0));
-    finalDiffuse *= uniforms.vLightingIntensity.x;
-
-    // _____________________________ Emissive ________________________________________
-    var finalEmission: vec3f = uniforms.vEmissionColor;
+    // _________________________ Emissive Lighting _______________________________
+    var material_surface_emission: vec3f = uniforms.vEmissionColor;
     #ifdef EMISSION_COLOR
-    var emissionColorTex: vec3f = textureSample(emissionColorSampler, emissionColorSamplerSampler, fragmentInputs.vEmissionColorUV + uvOffset).rgb;
+        let emissionColorTex: vec3f = textureSample(emissionColorSampler, emissionColorSamplerSampler, uniforms.vEmissionColorUV + uvOffset).rgb;
         #ifdef EMISSION_COLOR_GAMMA
-            finalEmission *= toLinearSpaceVec3(emissionColorTex.rgb);
+            material_surface_emission *= toLinearSpace(emissionColorTex.rgb);
         #else
-            finalEmission *= emissionColorTex.rgb;
+            material_surface_emission *= emissionColorTex.rgb;
         #endif
-        finalEmission *=  uniforms.vEmissionColorInfos.y;
+        material_surface_emission *=  uniforms.vEmissionColorInfos.y;
     #endif
-    finalEmission *= uniforms.vLightingIntensity.y;
+    material_surface_emission *= uniforms.vLightingIntensity.y;
 
-    // ______________________________ Ambient ________________________________________
-    #ifdef AMBIENT_OCCLUSION
-        finalDiffuse *= mix( vec3f(1.), aoOut.ambientOcclusionColor, 1.0 - uniforms.vAmbientOcclusionInfos.y);
-    #endif
-
+    // _____________________________ Final Color Composition ________________________
     #define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION
 
-    #include<openpbrBlockFinalColorComposition>
+    var finalColor: vec4f = vec4f(material_surface_ibl + material_surface_direct + material_surface_emission, alpha);
+
+    #define CUSTOM_FRAGMENT_BEFORE_FOG
+
+    // _____________________________ Finally ___________________________________________
+    finalColor = max(finalColor, vec4f(0.0));
 
     #include<logDepthFragment>
     #include<fogFragment>(color, finalColor)
