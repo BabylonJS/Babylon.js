@@ -17,6 +17,12 @@ export const FrameGraphGeneralProperties: FunctionComponent<{ frameGraph: FrameG
                 onChange={(checked) => (frameGraph.optimizeTextureAllocation = checked)}
             />
             {frameGraph.scene.frameGraph !== frameGraph && <ButtonLine onClick={() => (frameGraph.scene.frameGraph = frameGraph)} label="Set as scene's frame graph" />}
+            <ButtonLine
+                label="Edit graph"
+                onClick={() => {
+                    void frameGraph.getLinkedNodeRenderGraph()!.edit({ nodeRenderGraphEditorConfig: { hostScene: frameGraph.scene } });
+                }}
+            ></ButtonLine>
         </>
     );
 };

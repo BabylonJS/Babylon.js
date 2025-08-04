@@ -15,12 +15,6 @@ export const FrameGraphTaskProperties: FunctionComponent<{ frameGraph: FrameGrap
                 tasks.map((task, i) => {
                     return <TextPropertyLine label={i + 1 + ". " + task.name} value="" key={"task" + i} />;
                 })}
-            <ButtonLine
-                label="Edit graph"
-                onClick={() => {
-                    void frameGraph.getLinkedNodeRenderGraph()!.edit({ nodeRenderGraphEditorConfig: { hostScene: frameGraph.scene } });
-                }}
-            ></ButtonLine>
         </>
     );
 };
