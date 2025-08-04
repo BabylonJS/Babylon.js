@@ -1,4 +1,5 @@
-import { useState, type FunctionComponent } from "react";
+import type { FunctionComponent } from "react";
+import { useState } from "react";
 
 import type { ISelectionService } from "../../../services/selectionService";
 
@@ -13,7 +14,7 @@ import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
-import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Tools } from "core/Misc/tools";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3 } from "core/Maths/math.color";
@@ -23,8 +24,8 @@ import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
-import { type DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { type ShaderMaterial } from "core/Materials/shaderMaterial";
+import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import type { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
@@ -105,6 +106,8 @@ export const AbstractMeshOutlineOverlayProperties: FunctionComponent<{ mesh: Abs
 
 export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh }> = (props) => {
     const { mesh } = props;
+
+    const skeleton = useProperty(mesh, "skeleton");
 
     const [displayNormals, setDisplayNormals] = useState(mesh.material?.getClassName() === "NormalMaterial");
     const [displayVertexColors, setDisplayVertexColors] = useState(mesh.material?.reservedDataStore?.isVertexColorMaterial ? true : false);
@@ -369,7 +372,7 @@ export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh
             <SwitchPropertyLine label="Display Vertex Colors" value={displayVertexColors} onChange={() => displayVertexColorsHandler()} />
             <SwitchPropertyLine label="Render Vertex Normals" value={renderNormalVectors} onChange={() => renderNormalVectorsHandler()} />
             <SwitchPropertyLine label="Render Wireframe over Mesh" value={renderWireframeOver} onChange={() => renderWireframeOverHandler()} />
-            {mesh.skeleton && <SwitchPropertyLine label="Display Bone Weights" value={displayBoneWeights} onChange={() => displayBoneWeightsHandler()} />}
+            {skeleton && <SwitchPropertyLine label="Display Bone Weights" value={displayBoneWeights} onChange={() => displayBoneWeightsHandler()} />}
             <Collapse visible={displayBoneWeights}>
                 <div>
                     <NumberDropdownPropertyLine
@@ -390,7 +393,7 @@ export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh
                     />
                 </div>
             </Collapse>
-            {mesh.skeleton && <SwitchPropertyLine label="Display Skeleton Map" value={displaySkeletonMap} onChange={() => displaySkeletonMapHandler()} />}
+            {skeleton && <SwitchPropertyLine label="Display Skeleton Map" value={displaySkeletonMap} onChange={() => displaySkeletonMapHandler()} />}
         </>
     );
 };
