@@ -15,16 +15,12 @@ import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 
-const NullValue = Number.MAX_SAFE_INTEGER;
-
 const OrientationOptions = [
-    { label: "<None>", value: NullValue },
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
     { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
 ] as const satisfies DropdownOption[];
 
 const TransparencyModeOptions = [
-    { label: "<Not Defined>", value: NullValue },
     { label: "Opaque", value: Material.MATERIAL_OPAQUE },
     { label: "Alpha test", value: Material.MATERIAL_ALPHATEST },
     { label: "Alpha blend", value: Material.MATERIAL_ALPHABLEND },
@@ -87,8 +83,7 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
                 target={material}
                 propertyKey="sideOrientation"
                 nullable
-                defaultValue={NullValue}
-                // TODO: defaultValue={material.getScene().useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation}
+                defaultValue={material.getScene().useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation}
             />
             {/* TODO: Property name is different per material type
             <BoundProperty component={SwitchPropertyLine} label="Disable lighting" target={material} propertyKey="disableLighting" /> */}
@@ -125,8 +120,7 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
                 propertyKey="transparencyMode"
                 options={TransparencyModeOptions}
                 nullable
-                defaultValue={NullValue}
-                // TODO: defaultValue={Material.MATERIAL_OPAQUE}
+                defaultValue={Material.MATERIAL_OPAQUE}
             />
             <BoundProperty
                 component={NumberDropdownPropertyLine}
