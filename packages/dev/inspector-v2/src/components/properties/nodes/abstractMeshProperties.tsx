@@ -1,8 +1,5 @@
 import type { FunctionComponent } from "react";
 
-import { Color3, CreateLineSystem, FrameGraphUtils, StandardMaterial, TmpVectors, Tools, Vector3, VertexBuffer, type AbstractMesh, type Scene } from "core/index";
-import { NormalMaterial } from "materials/normal/normalMaterial";
-
 import type { ISelectionService } from "../../../services/selectionService";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
@@ -16,6 +13,15 @@ import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
+import { type AbstractMesh } from "core/Meshes/abstractMesh";
+import { NormalMaterial } from "materials/normal/normalMaterial";
+import { Tools } from "core/Misc/tools";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Color3 } from "core/Maths/math.color";
+import { VertexBuffer } from "core/Meshes/buffer";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
+import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 
 const DisplayNormals = function (mesh: AbstractMesh) {
     const scene = mesh.getScene();
