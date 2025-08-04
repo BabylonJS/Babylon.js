@@ -63,30 +63,14 @@ precision highp float;
 #include<openpbrDielectricReflectance>
 #include<openpbrConductorReflectance>
 
-#include<openpbrBlockAmbientOcclusion>
-#include<pbrBlockAlphaFresnel>
+// #include<openpbrBlockAmbientOcclusion>
 #include<openpbrIblFunctions>
 #include<openpbrGeometryInfo>
 
-struct openpbrLightingInfo
-{
-    vec3 material_final;
-    // vec3 specular;
-    // float fresnel;
-    // vec3 slab_diffuse = vec3(0., 0., 0.);
-    // vec3 slab_subsurface = vec3(0., 0., 0.);
-    // vec3 slab_translucent = vec3(0., 0., 0.);
-    // vec3 slab_glossy = vec3(0., 0., 0.);
-    // float specularFresnel = 0.0;
-    // vec3 slab_metal = vec3(0., 0., 0.);
-    // vec3 slab_coat = vec3(0., 0., 0.);
-    // float coatFresnel = 0.0;
-    // vec3 slab_fuzz = vec3(0., 0., 0.);
-};
+// Do a mix between layers with additional multipliers for each layer.
+vec3 layer(vec3 slab_bottom, vec3 slab_top, float lerp_factor, vec3 bottom_multiplier, vec3 top_multiplier) {
 
-vec3 layer(vec3 slab_bottom, vec3 slab_top, float fresnel, vec3 bottom_multiplier, vec3 top_multiplier) {
-    
-    return mix(slab_bottom * bottom_multiplier, slab_top * top_multiplier, fresnel);
+    return mix(slab_bottom * bottom_multiplier, slab_top * top_multiplier, lerp_factor);
 }
 
 // _____________________________ MAIN FUNCTION ____________________________
@@ -147,80 +131,6 @@ void main(void) {
         normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
     );
 
-    // _____________________________ Base Diffuse Layer IBL _______________________________________
-    #ifdef REFLECTION
-        // Pass in a vector to sample teh irradiance with (to handle reflection or )
-        vec3 baseDiffuseEnvironmentLight = sampleIrradiance(
-            normalW
-            #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                , vEnvironmentIrradiance
-            #endif
-            #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
-                , reflectionMatrix
-            #endif
-            #ifdef USEIRRADIANCEMAP
-                , irradianceSampler
-                #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
-                    , vReflectionDominantDirection
-                #endif
-            #endif
-            #ifdef REALTIME_FILTERING
-                , vReflectionFilteringInfo
-                #ifdef IBL_CDF_FILTERING
-                    , icdfSampler
-                #endif
-            #endif
-            , vReflectionInfos
-            , viewDirectionW
-            , base_diffuse_roughness
-            , base_color
-        );
-
-    // _____________________________ Base Specular Layer IBL _______________________________________    
-
-        #ifdef REFLECTIONMAP_3D
-            vec3 reflectionCoords = vec3(0., 0., 0.);
-        #else
-            vec2 reflectionCoords = vec2(0., 0.);
-        #endif
-        reflectionCoords = createReflectionCoords(vPositionW, normalW);
-        float specularAlphaG = specular_roughness * specular_roughness;
-        vec3 baseSpecularEnvironmentLight = sampleRadiance(specularAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
-            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                , baseGeoInfo.NdotVUnclamped
-            #endif
-            , reflectionSampler
-            , reflectionCoords
-            #ifdef REALTIME_FILTERING
-                , vReflectionFilteringInfo
-            #endif
-        );
-
-        baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
-
-        vec3 coatEnvironmentLight = vec3(0., 0., 0.);
-        if (coat_weight > 0.0) {
-            #ifdef REFLECTIONMAP_3D
-                vec3 reflectionCoords = vec3(0., 0., 0.);
-            #else
-                vec2 reflectionCoords = vec2(0., 0.);
-            #endif
-            reflectionCoords = createReflectionCoords(vPositionW, coatNormalW);
-            float coatAlphaG = coat_roughness * coat_roughness;
-            coatEnvironmentLight = sampleRadiance(coatAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
-                #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                    , coatGeoInfo.NdotVUnclamped
-                #endif
-                , reflectionSampler
-                , reflectionCoords
-                #ifdef REALTIME_FILTERING
-                    , vReflectionFilteringInfo
-                #endif
-            );
-        }
-        
-    #endif
-
     // _______________________ F0 and F90 Reflectance _______________________________
     
     // Coat
@@ -248,76 +158,11 @@ void main(void) {
     ReflectanceParams baseConductorReflectance;
     baseConductorReflectance = conductorReflectance(base_color, specular_color, specular_weight);
     
-    // ______________________________ IBL Fresnel Reflectance ____________________________
-    #ifdef REFLECTION
-    
-        // Dielectric IBL Fresnel
-        // The colored fresnel represents the % of light reflected by the base specular lobe
-        // The non-colored fresnel represents the % of light that doesn't penetrate through 
-        // the base specular lobe. i.e. the specular lobe isn't energy conserving for coloured specular.
-        float dielectricIblFresnel = getReflectanceFromBRDFLookup(vec3(baseDielectricReflectance.F0), vec3(baseDielectricReflectance.F90), baseGeoInfo.environmentBrdf).r;
-        vec3 dielectricIblColoredFresnel = getReflectanceFromBRDFLookup(baseDielectricReflectance.coloredF0, baseDielectricReflectance.coloredF90, baseGeoInfo.environmentBrdf);
-
-        // Conductor IBL Fresnel
-        vec3 conductorIblFresnel = conductorIblFresnel(baseConductorReflectance, baseGeoInfo.NdotV, specular_roughness, baseGeoInfo.environmentBrdf);
-
-        // Coat IBL Fresnel
-        float coatIblFresnel = 0.0;
-        if (coat_weight > 0.0) {
-            coatIblFresnel = getReflectanceFromBRDFLookup(vec3(coatReflectance.F0), vec3(coatReflectance.F90), coatGeoInfo.environmentBrdf).r;
-            // Prevent the light reflected by the coat from being added to the base layer
-            // dielectricIblFresnel -= coatIblFresnel;
-            // dielectricIblColoredFresnel = max(dielectricIblColoredFresnel - vec3(coatIblFresnel), 0.0);
-            // conductorIblFresnel = max(conductorIblFresnel - vec3(coatIblFresnel), 0.0);
-        }
-    #endif
-
+    // ________________________ Environment (IBL) Lighting ____________________________
     vec3 material_surface_ibl = vec3(0., 0., 0.);
-    vec3 slab_diffuse_ibl = vec3(0., 0., 0.);
-    vec3 slab_glossy_ibl = vec3(0., 0., 0.);
-    vec3 slab_metal_ibl = vec3(0., 0., 0.);
-    vec3 slab_coat_ibl = vec3(0., 0., 0.);
-    #ifdef REFLECTION
-        slab_diffuse_ibl = baseDiffuseEnvironmentLight * vLightingIntensity.z;
-        slab_diffuse_ibl *= aoOut.ambientOcclusionColor;
+    #include<openpbrEnvironmentLighting>
 
-        // Add the specular environment light
-        slab_glossy_ibl = baseSpecularEnvironmentLight * vLightingIntensity.z;
-        
-        // _____________________________ Metal Layer IBL ____________________________
-        slab_metal_ibl = baseSpecularEnvironmentLight * conductorIblFresnel * vLightingIntensity.z;
-
-        // _____________________________ Coat Layer IBL _____________________________
-        if (coat_weight > 0.0) {
-            slab_coat_ibl = coatEnvironmentLight * vLightingIntensity.z;
-        }
-    
-        // TEMP
-        vec3 slab_subsurface_ibl = vec3(0., 0., 0.);
-        vec3 slab_translucent_base_ibl = vec3(0., 0., 0.);
-        vec3 slab_fuzz_ibl = vec3(0., 0., 0.);
-        
-        slab_diffuse_ibl *= base_color.rgb;
-
-        // _____________________________ IBL Material Layer Composition ______________________________________
-        #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
-        vec3 material_opaque_base_ibl = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
-        vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
-        vec3 material_dielectric_gloss_ibl = layer(material_dielectric_base_ibl, slab_glossy_ibl, dielectricIblFresnel, vec3(1.0), specular_color);
-        vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
-        vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coat_color, vec3(1.0));
-        material_surface_ibl = mix(material_coated_base_ibl, slab_fuzz_ibl, fuzz_weight);
-        
-    #endif
-
-
-    // __________________________ Direct Lighting Info ____________________________
-    vec3 baseDiffuseDirectLight = vec3(0., 0., 0.);
-    #ifdef SPECULARTERM
-        vec3 baseSpecularDirectLight = vec3(0., 0., 0.);
-    #endif
-
-    // Direct Lighting Variables
+    // __________________________ Direct Lighting ____________________________
     vec3 material_surface_direct = vec3(0., 0., 0.);
     #if defined(LIGHT0)
         float aggShadow = 0.;
@@ -327,27 +172,25 @@ void main(void) {
         
     #endif
 
-    // _____________________________ Emission ________________________________________
-    vec3 finalEmission = vEmissionColor;
+    // _________________________ Emissive Lighting _______________________________
+    vec3 material_surface_emission = vEmissionColor;
     #ifdef EMISSION_COLOR
         vec3 emissionColorTex = texture2D(emissionColorSampler, vEmissionColorUV + uvOffset).rgb;
         #ifdef EMISSION_COLOR_GAMMA
-            finalEmission *= toLinearSpace(emissionColorTex.rgb);
+            material_surface_emission *= toLinearSpace(emissionColorTex.rgb);
         #else
-            finalEmission *= emissionColorTex.rgb;
+            material_surface_emission *= emissionColorTex.rgb;
         #endif
-        finalEmission *=  vEmissionColorInfos.y;
+        material_surface_emission *=  vEmissionColorInfos.y;
     #endif
-    finalEmission *= vLightingIntensity.y;
+    material_surface_emission *= vLightingIntensity.y;
 
     // _____________________________ Final Color Composition ________________________
     #define CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION
 
 
-    vec4 finalColor = vec4(material_surface_ibl + material_surface_direct, alpha);
+    vec4 finalColor = vec4(material_surface_ibl + material_surface_direct + material_surface_emission, alpha);
 
-    // _____________________________ EmissiveLight _____________________________________
-    finalColor.rgb += finalEmission;
 
     #define CUSTOM_FRAGMENT_BEFORE_FOG
 

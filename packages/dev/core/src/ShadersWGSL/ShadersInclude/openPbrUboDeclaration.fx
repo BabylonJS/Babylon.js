@@ -36,7 +36,7 @@ uniform vSphericalXY: vec3f;
 uniform vSphericalYZ: vec3f;
 uniform vSphericalZX: vec3f;
 
-uniform baseWeight: f32;
+uniform vBaseWeight: f32;
 uniform vBaseColor: vec4f;
 uniform vBaseDiffuseRoughness: f32;
 uniform vReflectanceInfo: vec4f;
