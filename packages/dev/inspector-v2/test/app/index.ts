@@ -1,6 +1,5 @@
-import type { ArcRotateCamera, Nullable } from "core/index";
-
 import HavokPhysics from "@babylonjs/havok";
+import type { Nullable } from "core/types";
 
 import { Engine } from "core/Engines/engine";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
@@ -10,10 +9,13 @@ import { PhysicsAggregate, PhysicsMotionType, PhysicsShapeType } from "core/Phys
 import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import "core/Helpers/sceneHelpers";
+import { Color3 } from "core/Maths/math.color";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
-
-import "core/Helpers/sceneHelpers";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MeshBuilder } from "core/Meshes";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -59,6 +61,13 @@ async function createPhysics() {
     assetContainer.addAllToScene();
     createCamera();
     await createPhysics();
+
+    const sphere = MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 0.2 }, scene);
+    const redMat = new StandardMaterial("redMat", scene);
+    redMat.emissiveColor = new Color3(1, 0, 0);
+    sphere.material = redMat;
+    const sphereInstance = sphere.createInstance("sphereInstance");
+    sphereInstance.position = new Vector3(0, 0, -0.5);
 
     engine.runRenderLoop(() => {
         scene.render();

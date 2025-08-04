@@ -1,6 +1,5 @@
 import type { FunctionComponent } from "react";
 
-import type { AbstractMesh } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
@@ -14,15 +13,33 @@ import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { InstancedMesh } from "core/Meshes/instancedMesh";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
 
     // Use the observable to keep keep state up-to-date and re-render the component when it changes.
     const material = useObservableState(() => mesh.material, mesh.onMaterialChangedObservable);
+    const skeleton = useProperty(mesh, "skeleton");
+    const isAnInstance = useProperty(mesh, "isAnInstance");
 
     return (
         <>
+            <StringifiedPropertyLine key="Vertices" label="Vertices:" value={mesh.getTotalVertices()} />
+            <StringifiedPropertyLine key="Faces" label="Faces:" value={mesh.getTotalIndices() / 3} />
+            <StringifiedPropertyLine key="SubMeshes" label="Sub-meshes:" value={mesh.subMeshes.length} />
+            {skeleton && (
+                <LinkPropertyLine
+                    label="Skeleton"
+                    description="The skeleton associated with the mesh."
+                    value={skeleton.name}
+                    onLink={() => (selectionService.selectedEntity = skeleton)}
+                />
+            )}
+            <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {material && !material.reservedDataStore?.hidden && (
                 <LinkPropertyLine
                     key="Material"
@@ -32,6 +49,16 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
                     onLink={() => (selectionService.selectedEntity = material)}
                 />
             )}
+            {isAnInstance && mesh instanceof InstancedMesh && mesh.sourceMesh && (
+                <LinkPropertyLine
+                    key="Source"
+                    label="Source"
+                    description={`The source mesh from which this instance was created.`}
+                    value={mesh.sourceMesh.name}
+                    onLink={() => (selectionService.selectedEntity = mesh.sourceMesh)}
+                />
+            )}
+            <ButtonLine label="Dispose" onClick={() => mesh.dispose()} />
         </>
     );
 };
