@@ -70,7 +70,7 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
         <>
             <BoundProperty
                 component={SwitchPropertyLine}
-                label="Backface culling"
+                label="Backface Culling"
                 docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#back-face-culling"
                 target={material}
                 propertyKey="backFaceCulling"
@@ -87,12 +87,12 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
             />
             {/* TODO: Property name is different per material type
             <BoundProperty component={SwitchPropertyLine} label="Disable lighting" target={material} propertyKey="disableLighting" /> */}
-            <BoundProperty component={SwitchPropertyLine} label="Disable color write" target={material} propertyKey="disableColorWrite" />
-            <BoundProperty component={SwitchPropertyLine} label="Disable depth write" target={material} propertyKey="disableDepthWrite" />
-            <BoundProperty component={NumberDropdownPropertyLine} label="Depth function" options={DepthFunctionOptions} target={material} propertyKey="depthFunction" />
+            <BoundProperty component={SwitchPropertyLine} label="Disable Color Write" target={material} propertyKey="disableColorWrite" />
+            <BoundProperty component={SwitchPropertyLine} label="Disable Depth Write" target={material} propertyKey="disableDepthWrite" />
+            <BoundProperty component={NumberDropdownPropertyLine} label="Depth Function" options={DepthFunctionOptions} target={material} propertyKey="depthFunction" />
             <BoundProperty
                 component={SwitchPropertyLine}
-                label="Need depth pre-pass"
+                label="Need Depth Pre-pass"
                 docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering/#depth-pre-pass-meshes"
                 target={material}
                 propertyKey="needDepthPrePass"
@@ -100,8 +100,8 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
             <BoundProperty component={SyncedSliderPropertyLine} label="Z-offset Factor" target={material} propertyKey="zOffset" min={-10} max={10} step={0.1} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Z-offset Units" target={material} propertyKey="zOffsetUnits" min={-10} max={10} step={0.1} />
             <BoundProperty component={SwitchPropertyLine} label="Wireframe" target={material} propertyKey="wireframe" />
-            <BoundProperty component={SwitchPropertyLine} label="Point cloud" target={material} propertyKey="pointsCloud" />
-            {pointsCloud && <BoundProperty component={SyncedSliderPropertyLine} label="Point size" target={material} propertyKey="pointSize" min={0} max={100} step={0.1} />}
+            <BoundProperty component={SwitchPropertyLine} label="Point Cloud" target={material} propertyKey="pointsCloud" />
+            {pointsCloud && <BoundProperty component={SyncedSliderPropertyLine} label="Point Size" target={material} propertyKey="pointSize" min={0} max={100} step={0.1} />}
         </>
     );
 };
@@ -114,7 +114,7 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
             <BoundProperty component={SyncedSliderPropertyLine} label="Alpha" target={material} propertyKey="alpha" min={0} max={1} step={0.01} />
             <BoundProperty
                 component={NumberDropdownPropertyLine}
-                label="Transparency mode"
+                label="Transparency Mode"
                 docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering/#the-transparencymode-property"
                 target={material}
                 propertyKey="transparencyMode"
@@ -124,7 +124,7 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
             />
             <BoundProperty
                 component={NumberDropdownPropertyLine}
-                label="Alpha mode"
+                label="Alpha Mode"
                 docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/using/blendModes/#available-blend-modes"
                 target={material}
                 propertyKey="alphaMode"
@@ -133,7 +133,7 @@ export const MaterialTransparencyProperties: FunctionComponent<{ material: Mater
             {/* TODO: Property names are different per material type
             <BoundProperty component={SwitchPropertyLine} label="Diffuse/albedo texture has alpha" target={material.albedoTexture} propertyKey="hasAlpha" />
             <BoundProperty component={SwitchPropertyLine} label="Use alpha from diffuse/albedo texture" target={material} propertyKey="useAlphaFromDiffuseTexture" /> */}
-            <BoundProperty component={SwitchPropertyLine} label="Separate culling pass" target={material} propertyKey="separateCullingPass" />
+            <BoundProperty component={SwitchPropertyLine} label="Separate Culling Pass" target={material} propertyKey="separateCullingPass" />
         </>
     );
 };
@@ -151,9 +151,9 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                     {/* <BoundProperty component={HexPropertyLine} label="Write mask" target={material.stencil} propertyKey="mask" /> */}
                     {/* <BoundProperty component={HexPropertyLine} label="Read mask" target={material.stencil} propertyKey="funcMask" /> */}
                     {/** TODO: Force int integer-only for NumberInputPropertyLine */}
-                    <BoundProperty component={NumberInputPropertyLine} label="Reference value" target={material.stencil} propertyKey="funcRef" step={0} />
+                    <BoundProperty component={NumberInputPropertyLine} label="Reference Value" target={material.stencil} propertyKey="funcRef" step={0} />
                     <TextPropertyLine
-                        label="Front Stencil"
+                        label="Front"
                         value=""
                         expandByDefault={true}
                         expandedContent={
@@ -167,24 +167,21 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                 />
                                 <BoundProperty
                                     component={NumberDropdownPropertyLine}
-                                    label="Op stencil fail"
-                                    description="Operation to perform when stencil test fails"
+                                    label="Stencil Fail Operation"
                                     target={material.stencil}
                                     propertyKey="opStencilFail"
                                     options={StencilOperationOptions}
                                 />
                                 <BoundProperty
                                     component={NumberDropdownPropertyLine}
-                                    label="Op depth fail"
-                                    description="Operation to perform when depth test fails"
+                                    label="Depth Fail Operation"
                                     target={material.stencil}
                                     propertyKey="opDepthFail"
                                     options={StencilOperationOptions}
                                 />
                                 <BoundProperty
                                     component={NumberDropdownPropertyLine}
-                                    label="Op stencil+depth pass"
-                                    description="Operation to perform when both stencil + depth tests succeed"
+                                    label="Stencil & Depth Pass Operation"
                                     target={material.stencil}
                                     propertyKey="opStencilDepthPass"
                                     options={StencilOperationOptions}
@@ -193,7 +190,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                         }
                     />
                     <TextPropertyLine
-                        label="Back Stencil"
+                        label="Back"
                         value=""
                         expandByDefault={true}
                         expandedContent={
@@ -207,24 +204,21 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                                 />
                                 <BoundProperty
                                     component={NumberDropdownPropertyLine}
-                                    label="Op stencil fail"
-                                    description="Operation to perform when stencil test fails"
+                                    label="Stencil Fail Operation"
                                     target={material.stencil}
                                     propertyKey="backOpStencilFail"
                                     options={StencilOperationOptions}
                                 />
                                 <BoundProperty
                                     component={NumberDropdownPropertyLine}
-                                    label="Op depth fail"
-                                    description="Operation to perform when depth test fails"
+                                    label="Depth Fail Operation"
                                     target={material.stencil}
                                     propertyKey="backOpDepthFail"
                                     options={StencilOperationOptions}
                                 />
                                 <BoundProperty
                                     component={NumberDropdownPropertyLine}
-                                    label="Op stencil+depth pass"
-                                    description="Operation to perform when both stencil + depth tests succeed"
+                                    label="Stencil & Depth Pass Operation"
                                     target={material.stencil}
                                     propertyKey="backOpStencilDepthPass"
                                     options={StencilOperationOptions}
