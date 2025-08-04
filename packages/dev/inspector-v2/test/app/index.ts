@@ -11,10 +11,12 @@ import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ImageProcessingPostProcess } from "core/PostProcesses/imageProcessingPostProcess";
 import "core/Helpers/sceneHelpers";
-import { Color4 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -34,6 +36,22 @@ let camera: Nullable<ArcRotateCamera> = null;
 const newSystem = ParticleHelper.CreateDefault(Vector3.Zero(), 10000, scene);
 newSystem.name = "CPU particle system";
 newSystem.start();
+
+// Create PBR Glass sphere
+// Create meshes
+const sphereGlass = MeshBuilder.CreateSphere("sphereGlass", { segments: 48, diameter: 80.0 }, scene);
+const glass = new PBRMaterial("glass", scene);
+//glass.reflectionTexture = hdrTexture;
+glass.indexOfRefraction = 0.52;
+glass.alpha = 0.5;
+glass.directIntensity = 0.0;
+glass.environmentIntensity = 0.7;
+glass.cameraExposure = 0.66;
+glass.cameraContrast = 1.66;
+glass.microSurface = 1;
+glass.reflectivityColor = new Color3(0.2, 0.2, 0.2);
+glass.albedoColor = new Color3(0.95, 0.95, 0.95);
+sphereGlass.material = glass;
 
 function createCamera() {
     camera?.dispose();
