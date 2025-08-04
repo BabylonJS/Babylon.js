@@ -64,7 +64,7 @@ async function createPhysics() {
     const postProcess = new ImageProcessingPostProcess("processing", 1.0, camera);
     postProcess.vignetteWeight = 10;
     postProcess.vignetteStretch = 2;
-    postProcess.vignetteColor = new Color4(1, 0, 0, 0);
+    postProcess.vignetteColor = new Color4(0, 0, 1, 0);
     postProcess.vignetteEnabled = true;
 
     await createPhysics();
