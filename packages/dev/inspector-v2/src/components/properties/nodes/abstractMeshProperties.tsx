@@ -1,13 +1,20 @@
 import type { FunctionComponent } from "react";
 import { useState } from "react";
 
+import { RenderingManager } from "core/Rendering/renderingManager";
+
 import type { ISelectionService } from "../../../services/selectionService";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
 
+import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { useColor3Property, useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
@@ -23,10 +30,7 @@ import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import type { ShaderMaterial } from "core/Materials/shaderMaterial";
-import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -45,6 +49,28 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
                     onLink={() => (selectionService.selectedEntity = material)}
                 />
             )}
+        </>
+    );
+};
+
+export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMesh }> = (props) => {
+    const { mesh } = props;
+
+    return (
+        <>
+            <BoundProperty component={NumberInputPropertyLine} label="Alpha Index" target={mesh} propertyKey="alphaIndex" />
+            <BoundProperty component={SwitchPropertyLine} label="Receive Shadows" target={mesh} propertyKey="receiveShadows" />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Rendering Group Id"
+                target={mesh}
+                propertyKey="renderingGroupId"
+                min={RenderingManager.MIN_RENDERINGGROUPS}
+                max={RenderingManager.MAX_RENDERINGGROUPS - 1}
+                step={1}
+            />
+            {/* TODO: Placeholder should be a hex property line */}
+            <BoundProperty component={PlaceholderPropertyLine} label="TODO: Layer Mask" target={mesh} propertyKey="layerMask" />
         </>
     );
 };
