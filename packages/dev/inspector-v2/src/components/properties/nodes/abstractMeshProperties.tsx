@@ -1,7 +1,5 @@
 import type { FunctionComponent } from "react";
 
-import type { AbstractMesh } from "core/index";
-
 import { VertexBuffer } from "core/Meshes/buffer";
 import { RenderingManager } from "core/Rendering/renderingManager";
 
@@ -23,16 +21,38 @@ import { BoundProperty } from "../boundProperty";
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
 import { LinkToNodePropertyLine } from "../linkToNodePropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { InstancedMesh } from "core/Meshes/instancedMesh";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
 
     // Use the observable to keep keep state up-to-date and re-render the component when it changes.
     const material = useObservableState(() => mesh.material, mesh.onMaterialChangedObservable);
+    const skeleton = useProperty(mesh, "skeleton");
+    const isAnInstance = useProperty(mesh, "isAnInstance");
+    // TODO: Handle case where array is mutated
+    const subMeshes = useProperty(mesh, "subMeshes");
 
     return (
         <>
-            <LinkToNodePropertyLine label="Material" description={`The material used by the mesh.`} node={material} selectionService={selectionService} />
+            <StringifiedPropertyLine label="Vertices" value={mesh.getTotalVertices()} />
+            <StringifiedPropertyLine label="Faces" value={mesh.getTotalIndices() / 3} />
+            <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />
+            <LinkToNodePropertyLine label="Skeleton" description="The skeleton associated with the mesh." node={skeleton} selectionService={selectionService} />
+            <LinkToNodePropertyLine label="Material" description="The material used by the mesh." node={material} selectionService={selectionService} />
+            <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
+            {isAnInstance && mesh instanceof InstancedMesh && (
+                <LinkToNodePropertyLine
+                    label="Source"
+                    description="The source mesh from which this instance was created."
+                    node={mesh.sourceMesh}
+                    selectionService={selectionService}
+                />
+            )}
+            <ButtonLine label="Dispose" onClick={() => mesh.dispose()} />
         </>
     );
 };

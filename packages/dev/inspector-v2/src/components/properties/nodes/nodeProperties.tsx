@@ -16,8 +16,8 @@ export const NodeGeneralProperties: FunctionComponent<{ node: Node; selectionSer
 
     return (
         <>
-            <LinkToNodePropertyLine label="Parent" description={`The parent of this node.`} node={parent} selectionService={selectionService} />
-            <SwitchPropertyLine label="Is enabled" description="Whether the node is enabled or not." value={isEnabled} onChange={(checked) => node.setEnabled(checked)} />
+            <LinkToNodePropertyLine label="Parent" description="The parent of this node" node={parent} selectionService={selectionService} />
+            <SwitchPropertyLine label="Is Enabled" description="Whether the node is enabled or not." value={isEnabled} onChange={(checked) => node.setEnabled(checked)} />
         </>
     );
 };
