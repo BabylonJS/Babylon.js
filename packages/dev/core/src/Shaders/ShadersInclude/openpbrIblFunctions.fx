@@ -5,7 +5,7 @@
     vec3 sampleIrradiance(
         in vec3 surfaceNormal
         #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-            , in vec3 vEnvironmentIrradiance
+            , in vec3 vEnvironmentIrradianceSH
         #endif
         #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
             , in mat4 iblMatrix
@@ -34,8 +34,8 @@
         vec3 environmentIrradiance = vec3(0., 0., 0.);
 
         #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
-            vec3 irradianceVector = vec3(iblMatrix * vec4(surfaceNormal, 0)).xyz;
-            vec3 irradianceView = vec3(iblMatrix * vec4(viewDirectionW, 0)).xyz;
+            vec3 irradianceVector = (iblMatrix * vec4(surfaceNormal, 0)).xyz;
+            vec3 irradianceView = (iblMatrix * vec4(viewDirectionW, 0)).xyz;
             #if !defined(USE_IRRADIANCE_DOMINANT_DIRECTION) && !defined(REALTIME_FILTERING)
                 // Approximate diffuse roughness by bending the surface normal away from the view.
                 #if BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LAMBERT && BASE_DIFFUSE_MODEL != BRDF_DIFFUSE_MODEL_LEGACY
@@ -56,7 +56,7 @@
         #endif
         #ifdef USESPHERICALFROMREFLECTIONMAP
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                environmentIrradiance = vEnvironmentIrradiance;
+                environmentIrradiance = vEnvironmentIrradianceSH;
             #else
                 #if defined(REALTIME_FILTERING)
                     environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo, diffuseRoughness, surfaceAlbedo, irradianceView
@@ -182,22 +182,6 @@
         // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
         reflectionLOD = reflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
 
-        #ifdef LODINREFLECTIONALPHA
-            // Automatic LOD adjustment to ensure that the smoothness-based environment LOD selection
-            // is constrained to appropriate LOD levels in order to prevent aliasing.
-            // The environment map is first sampled without custom LOD selection to determine
-            // the hardware-selected LOD, and this is then used to constrain the final LOD selection
-            // so that excessive surface smoothness does not cause aliasing (e.g. on curved geometry
-            // where the normal is varying rapidly).
-
-            // Note: Shader Model 4.1 or higher can provide this directly via CalculateLevelOfDetail(), and
-            // manual calculation via derivatives is also possible, but for simplicity we use the
-            // hardware LOD calculation with the alpha channel containing the LOD for each mipmap.
-            float automaticReflectionLOD = UNPACK_LOD(sampleReflection(reflectionSampler, reflectionCoords).a);
-            float requestedReflectionLOD = max(automaticReflectionLOD, reflectionLOD);
-        #else
-            float requestedReflectionLOD = reflectionLOD;
-        #endif
         #ifdef REALTIME_FILTERING
             environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
         #else
@@ -213,7 +197,7 @@
         #endif
 
         // _____________________________ Levels _____________________________________
-        environmentRadiance.rgb *= vReflectionInfos.x;
+        environmentRadiance.rgb *= vec3(vReflectionInfos.x);
         return environmentRadiance.rgb;
     }
 
