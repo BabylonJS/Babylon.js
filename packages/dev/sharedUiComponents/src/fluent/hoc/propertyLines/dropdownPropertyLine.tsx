@@ -2,7 +2,7 @@ import { Dropdown } from "../../primitives/dropdown";
 import type { AcceptedDropdownValue, DropdownProps } from "../../primitives/dropdown";
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
-import type { FunctionComponent } from "react";
+import { forwardRef, type FunctionComponent } from "react";
 
 // In a follow-up PR i will remove the nullAs concept from dropdown
 type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = Omit<DropdownProps<V>, "includeNullAs"> & PropertyLineProps<AcceptedDropdownValue>;
@@ -12,13 +12,14 @@ type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = Omit<DropdownP
  * @param props - PropertyLineProps and DropdownProps
  * @returns property-line wrapped dropdown
  */
-const DropdownPropertyLine: FunctionComponent<DropdownProps<AcceptedDropdownValue> & PropertyLineProps<AcceptedDropdownValue>> = (props) => {
+
+const DropdownPropertyLine = forwardRef<HTMLDivElement, DropdownProps<AcceptedDropdownValue> & PropertyLineProps<AcceptedDropdownValue>>((props, ref) => {
     return (
-        <PropertyLine {...props}>
+        <PropertyLine {...props} ref={ref}>
             <Dropdown {...props} />
         </PropertyLine>
     );
-};
+});
 
 /**
  * Dropdown component for number values.
