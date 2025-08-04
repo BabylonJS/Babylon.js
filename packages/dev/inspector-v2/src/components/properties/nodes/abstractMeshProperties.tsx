@@ -1,6 +1,9 @@
 import type { FunctionComponent } from "react";
 
 import type { AbstractMesh } from "core/index";
+
+import { VertexBuffer } from "core/Meshes/buffer";
+
 import type { ISelectionService } from "../../../services/selectionService";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
@@ -14,6 +17,8 @@ import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -51,6 +56,16 @@ export const AbstractMeshAdvancedProperties: FunctionComponent<{ mesh: AbstractM
                 />
             )}
             <BoundProperty component={SwitchPropertyLine} label="Check Collisions" description="Whether to check for collisions." target={mesh} propertyKey={"checkCollisions"} />
+            <TextPropertyLine label="Geometry ID" value={mesh.geometry?.uniqueId.toString() ?? "N/A"} />
+            <BooleanBadgePropertyLine label="Has Normals" value={mesh.isVerticesDataPresent(VertexBuffer.NormalKind)} />
+            <BooleanBadgePropertyLine label="Has Vertex Colors" value={mesh.isVerticesDataPresent(VertexBuffer.ColorKind)} />
+            <BooleanBadgePropertyLine label="Has UV Set 0" value={mesh.isVerticesDataPresent(VertexBuffer.UVKind)} />
+            <BooleanBadgePropertyLine label="Has UV Set 1" value={mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)} />
+            <BooleanBadgePropertyLine label="Has UV Set 2" value={mesh.isVerticesDataPresent(VertexBuffer.UV3Kind)} />
+            <BooleanBadgePropertyLine label="Has UV Set 3" value={mesh.isVerticesDataPresent(VertexBuffer.UV4Kind)} />
+            <BooleanBadgePropertyLine label="Has Tangents" value={mesh.isVerticesDataPresent(VertexBuffer.TangentKind)} />
+            <BooleanBadgePropertyLine label="Has Matrix Weights" value={mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)} />
+            <BooleanBadgePropertyLine label="Has Matrix Indices" value={mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)} />
         </>
     );
 };
