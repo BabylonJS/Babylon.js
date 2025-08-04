@@ -1,5 +1,5 @@
 import { Scene } from "core/scene";
-import { type FunctionComponent } from "react";
+import type { FunctionComponent } from "react";
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { BoundProperty } from "../properties/boundProperty";
