@@ -5,15 +5,19 @@ import type { ISelectionService } from "../../../services/selectionService";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
 
-import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
+import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { useColor3Property, useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -90,3 +94,79 @@ export const AbstractMeshOutlineOverlayProperties: FunctionComponent<{ mesh: Abs
         </>
     );
 };
+
+const OcclusionTypes = [
+    { label: "None", value: 0 },
+    { label: "Optimistic", value: 1 },
+    { label: "Strict", value: 2 },
+] as const;
+
+const OcclusionQueryAlgorithmTypes = [
+    { label: "Conservative", value: 0 },
+    { label: "Accurate", value: 1 },
+] as const;
+
+export const AbstractMeshOcclusionsProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => (
+    <>
+        <BoundProperty
+            component={NumberDropdownPropertyLine}
+            label="Type"
+            description="Occlusion type for the mesh."
+            target={mesh}
+            propertyKey="occlusionType"
+            options={OcclusionTypes}
+        />
+        <BoundProperty
+            component={NumberInputPropertyLine}
+            label="Occlusion Retry Count"
+            description="Number of retries for occlusion (-1 disables retries)."
+            target={mesh}
+            propertyKey="occlusionRetryCount"
+            min={-1}
+            max={10}
+            step={1}
+        />
+        <BoundProperty
+            component={NumberDropdownPropertyLine}
+            label="Algorithm"
+            description="Occlusion query algorithm type."
+            target={mesh}
+            propertyKey="occlusionQueryAlgorithmType"
+            options={OcclusionQueryAlgorithmTypes}
+        />
+    </>
+);
+
+export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => (
+    <>
+        <CheckboxPropertyLine
+            label="Enable"
+            description="Enable edge rendering for this mesh."
+            value={false}
+            onChange={(enabled) => {
+                if (enabled) {
+                    mesh.enableEdgesRendering();
+                } else {
+                    mesh.disableEdgesRendering();
+                }
+            }}
+        />
+        <BoundProperty
+            component={SyncedSliderPropertyLine}
+            label="Edges Width"
+            description="Width of the rendered edges (0 to 10)."
+            target={mesh}
+            propertyKey="edgesWidth"
+            min={0}
+            max={10}
+            step={0.1}
+        />
+        <Color4PropertyLine
+            label="Edge Color"
+            value={mesh.edgesColor}
+            onChange={(color) => {
+                mesh.edgesColor = color;
+            }}
+        />
+    </>
+);

@@ -4,7 +4,13 @@ import type { IPropertiesService } from "./propertiesService";
 
 import { Node } from "core/node";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
-import { AbstractMeshAdvancedProperties, AbstractMeshGeneralProperties, AbstractMeshOutlineOverlayProperties } from "../../../components/properties/nodes/abstractMeshProperties";
+import {
+    AbstractMeshAdvancedProperties,
+    AbstractMeshGeneralProperties,
+    AbstractMeshOutlineOverlayProperties,
+    AbstractMeshOcclusionsProperties,
+    AbstractMeshEdgeRenderingProperties,
+} from "../../../components/properties/nodes/abstractMeshProperties";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
@@ -41,6 +47,14 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                 {
                     section: "Outlines & Overlays",
                     component: ({ context }) => <AbstractMeshOutlineOverlayProperties mesh={context} />,
+                },
+                {
+                    section: "Occlusions",
+                    component: ({ context }) => <AbstractMeshOcclusionsProperties mesh={context} />,
+                },
+                {
+                    section: "Edge Rendering",
+                    component: ({ context }) => <AbstractMeshEdgeRenderingProperties mesh={context} />,
                 },
             ],
         });
