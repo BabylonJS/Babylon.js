@@ -33,10 +33,14 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
     (IsNullable<TargetT[PropertyKeyT]> extends true
         ? ComponentProps<ComponentT> extends { nullable?: boolean }
             ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
-              {
-                  nullable: true;
-                  defaultValue: NonNullable<TargetT[PropertyKeyT]>;
-              }
+              | {
+                        nullable: true;
+                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                    }
+                  | {
+                        ignoreNullable: true;
+                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                    }
             : // Component doesn't support nullable UI - prevent usage entirely with nullable properties
               never
         : {});
