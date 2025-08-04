@@ -1,10 +1,6 @@
 import type { FunctionComponent } from "react";
 import { useState } from "react";
 
-import { RenderingManager } from "core/Rendering/renderingManager";
-
-import type { ISelectionService } from "../../../services/selectionService";
-
 import { Collapse } from "@fluentui/react-motion-components-preview";
 
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
@@ -15,6 +11,10 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
+
+import type { ISelectionService } from "../../../services/selectionService";
 import { useColor3Property, useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
@@ -22,6 +22,8 @@ import { BoundProperty } from "../boundProperty";
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { RenderingManager } from "core/Rendering/renderingManager";
 import { Tools } from "core/Misc/tools";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3 } from "core/Maths/math.color";
@@ -30,25 +32,53 @@ import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
-import type { ShaderMaterial } from "core/Materials/shaderMaterial";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { InstancedMesh } from "core/Meshes/instancedMesh";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
 
     // Use the observable to keep keep state up-to-date and re-render the component when it changes.
     const material = useObservableState(() => mesh.material, mesh.onMaterialChangedObservable);
+    const skeleton = useProperty(mesh, "skeleton");
+    const isAnInstance = useProperty(mesh, "isAnInstance");
+    // TODO: Handle case where array is mutated
+    const subMeshes = useProperty(mesh, "subMeshes");
 
     return (
         <>
+            <StringifiedPropertyLine key="Vertices" label="Vertices" value={mesh.getTotalVertices()} />
+            <StringifiedPropertyLine key="Faces" label="Faces" value={mesh.getTotalIndices() / 3} />
+            <StringifiedPropertyLine key="SubMeshes" label="Sub-Meshes" value={subMeshes.length} />
+            {skeleton && (
+                <LinkPropertyLine
+                    label="Skeleton"
+                    description="The skeleton associated with the mesh."
+                    value={skeleton.name}
+                    onLink={() => (selectionService.selectedEntity = skeleton)}
+                />
+            )}
+            <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {material && !material.reservedDataStore?.hidden && (
                 <LinkPropertyLine
                     key="Material"
                     label="Material"
-                    description={`The material used by the mesh.`}
+                    description="The material used by the mesh."
                     value={material.name}
                     onLink={() => (selectionService.selectedEntity = material)}
                 />
             )}
+            {isAnInstance && mesh instanceof InstancedMesh && mesh.sourceMesh && (
+                <LinkPropertyLine
+                    key="Source"
+                    label="Source"
+                    description="The source mesh from which this instance was created."
+                    value={mesh.sourceMesh.name}
+                    onLink={() => (selectionService.selectedEntity = mesh.sourceMesh)}
+                />
+            )}
+            <ButtonLine label="Dispose" onClick={() => mesh.dispose()} />
         </>
     );
 };
@@ -90,6 +120,16 @@ export const AbstractMeshAdvancedProperties: FunctionComponent<{ mesh: AbstractM
                 />
             )}
             <BoundProperty component={SwitchPropertyLine} label="Check Collisions" description="Whether to check for collisions." target={mesh} propertyKey={"checkCollisions"} />
+            <TextPropertyLine label="Geometry ID" value={mesh.geometry?.uniqueId.toString() ?? "N/A"} />
+            <BooleanBadgePropertyLine label="Has Normals" value={mesh.isVerticesDataPresent(VertexBuffer.NormalKind)} />
+            <BooleanBadgePropertyLine label="Has Vertex Colors" value={mesh.isVerticesDataPresent(VertexBuffer.ColorKind)} />
+            <BooleanBadgePropertyLine label="Has UV Set 0" value={mesh.isVerticesDataPresent(VertexBuffer.UVKind)} />
+            <BooleanBadgePropertyLine label="Has UV Set 1" value={mesh.isVerticesDataPresent(VertexBuffer.UV2Kind)} />
+            <BooleanBadgePropertyLine label="Has UV Set 2" value={mesh.isVerticesDataPresent(VertexBuffer.UV3Kind)} />
+            <BooleanBadgePropertyLine label="Has UV Set 3" value={mesh.isVerticesDataPresent(VertexBuffer.UV4Kind)} />
+            <BooleanBadgePropertyLine label="Has Tangents" value={mesh.isVerticesDataPresent(VertexBuffer.TangentKind)} />
+            <BooleanBadgePropertyLine label="Has Matrix Weights" value={mesh.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)} />
+            <BooleanBadgePropertyLine label="Has Matrix Indices" value={mesh.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)} />
         </>
     );
 };
