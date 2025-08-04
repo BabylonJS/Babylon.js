@@ -19,6 +19,7 @@ import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConf
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { Collapse } from "@fluentui/react-motion-components-preview";
 
 let StoredEnvironmentTexture: Nullable<BaseTexture>;
 
@@ -31,19 +32,21 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
             <BoundProperty component={SyncedSliderPropertyLine} label="Contrast" min={0} max={4} step={0.1} target={imageProcessing} propertyKey="contrast" />
             <BoundProperty component={SyncedSliderPropertyLine} label="Exposure" min={0} max={4} step={0.1} target={imageProcessing} propertyKey="exposure" />
             <BoundProperty component={SwitchPropertyLine} label="Tone mapping" target={imageProcessing} propertyKey="toneMappingEnabled" />
-            <BoundProperty
-                component={NumberDropdownPropertyLine}
-                options={
-                    [
-                        { label: "Standard", value: ImageProcessingConfiguration.TONEMAPPING_STANDARD },
-                        { label: "ACES", value: ImageProcessingConfiguration.TONEMAPPING_ACES },
-                        { label: "Khronos PBR Neutral", value: ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL },
-                    ] as const
-                }
-                label="Tone mapping type"
-                target={imageProcessing}
-                propertyKey="toneMappingType"
-            />
+            <Collapse visible={imageProcessing.toneMappingEnabled}>
+                <BoundProperty
+                    component={NumberDropdownPropertyLine}
+                    options={
+                        [
+                            { label: "Standard", value: ImageProcessingConfiguration.TONEMAPPING_STANDARD },
+                            { label: "ACES", value: ImageProcessingConfiguration.TONEMAPPING_ACES },
+                            { label: "Khronos PBR Neutral", value: ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL },
+                        ] as const
+                    }
+                    label="Tone mapping type"
+                    target={imageProcessing}
+                    propertyKey="toneMappingType"
+                />
+            </Collapse>
             <BoundProperty component={SwitchPropertyLine} label="Vignette" target={imageProcessing} propertyKey="vignetteEnabled" />
             <BoundProperty component={SyncedSliderPropertyLine} label="Vignette FOV" min={0} max={Math.PI} step={0.1} target={imageProcessing} propertyKey="vignetteCameraFov" />
             <BoundProperty component={SyncedSliderPropertyLine} label="Vignette center X" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterX" />
@@ -261,12 +264,16 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
                 target={scene}
                 propertyKey="fogMode"
             />
-            {fogMode !== Scene.FOGMODE_NONE && <BoundProperty component={Color3PropertyLine} label="Fog color" target={scene} propertyKey="fogColor" />}
-            {(fogMode === Scene.FOGMODE_EXP || fogMode === Scene.FOGMODE_EXP2) && (
-                <BoundProperty component={NumberInputPropertyLine} label="Fog density" target={scene} propertyKey="fogDensity" step={0.1} />
-            )}
-            {fogMode === Scene.FOGMODE_LINEAR && <BoundProperty component={NumberInputPropertyLine} label="Fog start" target={scene} propertyKey="fogStart" step={0.1} />}
-            {fogMode === Scene.FOGMODE_LINEAR && <BoundProperty component={NumberInputPropertyLine} label="Fog end" target={scene} propertyKey="fogEnd" step={0.1} />}
+            <Collapse visible={fogMode !== Scene.FOGMODE_NONE}>
+                <>
+                    {fogMode !== Scene.FOGMODE_NONE && <BoundProperty component={Color3PropertyLine} label="Fog color" target={scene} propertyKey="fogColor" />}
+                    {(fogMode === Scene.FOGMODE_EXP || fogMode === Scene.FOGMODE_EXP2) && (
+                        <BoundProperty component={NumberInputPropertyLine} label="Fog density" target={scene} propertyKey="fogDensity" step={0.1} />
+                    )}
+                    {fogMode === Scene.FOGMODE_LINEAR && <BoundProperty component={NumberInputPropertyLine} label="Fog start" target={scene} propertyKey="fogStart" step={0.1} />}
+                    {fogMode === Scene.FOGMODE_LINEAR && <BoundProperty component={NumberInputPropertyLine} label="Fog end" target={scene} propertyKey="fogEnd" step={0.1} />}
+                </>
+            </Collapse>
         </>
     );
 };
