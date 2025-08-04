@@ -3,8 +3,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { FrameGraphGeneralProperties } from "../../../components/properties/frameGraph/frameGraphGeneralProperties";
-import { FrameGraphTaskProperties } from "../../../components/properties/frameGraph/frameGraphTasksProperties";
+import { FrameGraphTaskProperties, FrameGraphGeneralProperties } from "../../../components/properties/frameGraph/frameGraphProperties";
 
 export const FrameGraphPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Frame Graph Properties",
