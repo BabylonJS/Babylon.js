@@ -17,6 +17,7 @@ import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
+
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 
