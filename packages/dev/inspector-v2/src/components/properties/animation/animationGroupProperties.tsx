@@ -1,11 +1,97 @@
-import type { FunctionComponent } from "react";
+import type { AnimationGroup } from "core/Animations/animationGroup";
+import { useCallback, type FunctionComponent } from "react";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { BoundProperty } from "../boundProperty";
+import { useObservableState } from "../../../hooks/observableHooks";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { Collapse } from "@fluentui/react-motion-components-preview";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 
-import type { AnimationGroup } from "core/index";
+interface ICurrentFrameHolder {
+    currentFrame: number;
+}
 
 export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup: AnimationGroup }> = (props) => {
-    return <></>;
+    const { animationGroup } = props;
+    const targetedAnimations = animationGroup.targetedAnimations;
+    let currentFrameHolder: ICurrentFrameHolder | undefined = undefined;
+
+    if (targetedAnimations.length > 0) {
+        currentFrameHolder = targetedAnimations[0].animation.runtimeAnimations.find((rA) => rA.target === targetedAnimations[0].target);
+    }
+
+    const currentFrame = useObservableState(
+        useCallback(() => {
+            return currentFrameHolder ? currentFrameHolder.currentFrame : undefined;
+        }, [currentFrameHolder]),
+        animationGroup.getScene().onBeforeRenderObservable
+    );
+
+    const isPlaying = useObservableState(
+        useCallback(() => {
+            return animationGroup.isPlaying;
+        }, [animationGroup]),
+        animationGroup.getScene().onBeforeRenderObservable
+    );
+
+    return (
+        <>
+            <ButtonLine label={isPlaying ? "Pause" : "Play"} onClick={() => (isPlaying ? animationGroup.pause() : animationGroup.play(true))} />
+            <ButtonLine label="Stop" onClick={() => animationGroup.stop()} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Speed ratio" min={0} max={10} step={0.1} target={animationGroup} propertyKey="speedRatio" />
+            {currentFrameHolder ? (
+                <SyncedSliderPropertyLine
+                    label="Current frame"
+                    min={animationGroup.from}
+                    max={animationGroup.to}
+                    step={(animationGroup.to - animationGroup.from) / 1000.0}
+                    value={currentFrame!}
+                    onChange={(value) => {
+                        if (!animationGroup.isPlaying) {
+                            animationGroup.play(true);
+                            animationGroup.goToFrame(value);
+                            animationGroup.pause();
+                        } else {
+                            animationGroup.goToFrame(value);
+                        }
+                    }}
+                />
+            ) : null}
+            {/* TODO: Hey Georgie some nulls we do not want here*/}
+            <BoundProperty component={SwitchPropertyLine} label="Blending" target={animationGroup} propertyKey="enableBlending" nullable defaultValue={false} />
+            <Collapse visible={animationGroup && !!animationGroup.enableBlending}>
+                <div>
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="Blending speed"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        target={animationGroup}
+                        propertyKey="blendingSpeed"
+                        nullable
+                        defaultValue={0}
+                    />
+                    <BoundProperty component={SwitchPropertyLine} label="Is additive" target={animationGroup} propertyKey="isAdditive" />
+                    <BoundProperty component={NumberInputPropertyLine} label="Weight" target={animationGroup} propertyKey="weight" step={0.1} />
+                    <BoundProperty component={NumberInputPropertyLine} label="Play order" target={animationGroup} propertyKey="playOrder" step={0} />
+                    {/* TODO: Hey georgie :<Play order> should be integer (even when typing)*/}
+                </div>
+            </Collapse>
+        </>
+    );
 };
 
 export const AnimationGroupInfoProperties: FunctionComponent<{ animationGroup: AnimationGroup }> = (props) => {
-    return <></>;
+    const { animationGroup } = props;
+    return (
+        <>
+            <TextPropertyLine label="Animation count" value={animationGroup.targetedAnimations.length.toString()} />
+            <TextPropertyLine label="From" value={animationGroup.from.toFixed(2)} />
+            <TextPropertyLine label="To" value={animationGroup.to.toFixed(2)} />
+            <TextPropertyLine label="Unique ID" value={animationGroup.uniqueId.toString()} />
+        </>
+    );
 };
