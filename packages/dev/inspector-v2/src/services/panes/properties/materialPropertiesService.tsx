@@ -9,6 +9,7 @@ import { Material } from "core/Materials/material";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
+import { StandardMaterialTexturesProperties } from "../../../components/properties/materials/standardMaterialTexturesProperties";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
@@ -37,6 +38,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             key: "Standard Material Properties",
             predicate: (entity: unknown) => entity instanceof StandardMaterial,
             content: [
+                {
+                    section: "Textures",
+                    component: ({ context }) => <StandardMaterialTexturesProperties standardMaterial={context} />,
+                },
                 {
                     section: "Lighting & Colors",
                     component: ({ context }) => <StandardMaterialLightingAndColorProperties standardMaterial={context} />,
