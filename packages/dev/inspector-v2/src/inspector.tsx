@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
+import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
@@ -218,6 +219,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             RenderingPipelinePropertiesServiceDefinition,
             EffectLayerPropertiesServiceDefinition,
             FrameGraphPropertiesServiceDefinition,
+            AnimationGroupPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
