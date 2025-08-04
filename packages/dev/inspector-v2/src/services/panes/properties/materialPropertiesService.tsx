@@ -35,7 +35,6 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
-
         const standardMaterialContentRegistration = propertiesService.addSectionContent({
             key: "Standard Material Properties",
             predicate: (entity: unknown) => entity instanceof StandardMaterial,
