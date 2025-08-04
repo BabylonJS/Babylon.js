@@ -11,10 +11,12 @@ import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ImageProcessingPostProcess } from "core/PostProcesses/imageProcessingPostProcess";
 import "core/Helpers/sceneHelpers";
-import { Color4 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MeshBuilder } from "core/Meshes";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -70,6 +72,13 @@ async function createPhysics() {
     createPostProcess();
 
     await createPhysics();
+
+    const sphere = MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 0.2 }, scene);
+    const redMat = new StandardMaterial("redMat", scene);
+    redMat.emissiveColor = new Color3(1, 0, 0);
+    sphere.material = redMat;
+    const sphereInstance = sphere.createInstance("sphereInstance");
+    sphereInstance.position = new Vector3(0, 0, -0.5);
 
     engine.runRenderLoop(() => {
         scene.render();

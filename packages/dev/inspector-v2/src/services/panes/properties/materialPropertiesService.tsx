@@ -5,8 +5,10 @@ import type { ISelectionService } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
 
-import { Material } from "core/Materials";
+import { Material } from "core/Materials/material";
 import { MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
@@ -23,9 +25,21 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+        const standardMateriaContentRegistration = propertiesService.addSectionContent({
+            key: "Standard Material Properties",
+            predicate: (entity: unknown) => entity instanceof StandardMaterial,
+            content: [
+                {
+                    section: "Lighting & Colors",
+                    component: ({ context }) => <StandardMaterialLightingAndColorProperties standardMaterial={context} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 materialContentRegistration.dispose();
+                standardMateriaContentRegistration.dispose();
             },
         };
     },
