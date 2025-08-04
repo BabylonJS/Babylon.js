@@ -1,7 +1,5 @@
 import type { FunctionComponent } from "react";
 
-import type { /*AnimationPropertiesOverride,*/ AnimationRange, IAnimatable, Nullable, Scene } from "core/index";
-
 import { useCallback, useRef } from "react";
 import { Badge } from "@fluentui/react-components";
 
@@ -13,10 +11,12 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-
-// interface IAnimatableInternal extends IAnimatable {
-//     animationPropertiesOverride?: Nullable<AnimationPropertiesOverride>;
-// }
+import type { AnimationRange } from "core/Animations/animationRange";
+import type { Nullable } from "core/types";
+import type { IAnimatable } from "core/Animations/animatable.interface";
+import type { Scene } from "core/scene";
+import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
 
 export interface IAnimationRangeContainer {
     getAnimationRanges(): Nullable<AnimationRange>[];
@@ -24,6 +24,10 @@ export interface IAnimationRangeContainer {
 
 export interface IAnimatableContainer {
     getAnimatables(): IAnimatable[];
+}
+
+export interface IAnimationsPropertiesOverrideContainer {
+    animationPropertiesOverride?: AnimationPropertiesOverride;
 }
 
 export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Partial<IAnimatable & IAnimationRangeContainer & IAnimatableContainer> }> = (props) => {
@@ -40,6 +44,9 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
     const animatablesForTarget = scene.getAllAnimatablesByTarget(entity);
     const isPlaying = animatablesForTarget.length > 0;
     const mainAnimatable = isPlaying ? animatablesForTarget[0] : undefined;
+
+    const mainAnimatableWithPropertiesOverride = mainAnimatable as IAnimationsPropertiesOverrideContainer;
+    const animationPropertiesOverride = useProperty(mainAnimatableWithPropertiesOverride, "animationPropertiesOverride");
 
     if (mainAnimatable) {
         lastFrom.current = mainAnimatable.fromFrame;
@@ -160,14 +167,49 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
                                     }
                                 }}
                             />
+                            {ranges.length > 0 || animations.length > 0 ? (
+                                <>
+                                    <SwitchPropertyLine
+                                        label="Enable override"
+                                        value={animationPropertiesOverride != null}
+                                        onChange={(value) => {
+                                            if (value) {
+                                                mainAnimatableWithPropertiesOverride.animationPropertiesOverride = new AnimationPropertiesOverride();
+                                                mainAnimatableWithPropertiesOverride.animationPropertiesOverride.blendingSpeed = 0.05;
+                                            } else {
+                                                mainAnimatableWithPropertiesOverride.animationPropertiesOverride = undefined;
+                                            }
+                                        }}
+                                    />
+                                    {animationPropertiesOverride != null && (
+                                        <>
+                                            <SwitchPropertyLine
+                                                label="Enable blending"
+                                                value={animationPropertiesOverride.enableBlending}
+                                                onChange={(value) => {
+                                                    if (animationPropertiesOverride) {
+                                                        animationPropertiesOverride.enableBlending = value;
+                                                    }
+                                                }}
+                                            />
+                                            <SyncedSliderPropertyLine
+                                                label="Blending speed"
+                                                value={animationPropertiesOverride.blendingSpeed}
+                                                min={0}
+                                                max={0.1}
+                                                step={0.01}
+                                                onChange={(value) => {
+                                                    animationPropertiesOverride.blendingSpeed = value;
+                                                }}
+                                            />
+                                        </>
+                                    )}
+                                </>
+                            ) : null}
                         </>
                     )}
                 </>
             )}
-            {/* <TextPropertyLine label="Count" value={animations.length.toString()} /> */}
-            {/* {animations.map((animation, index) => {
-                return <TextPropertyLine key={animation.uniqueId} label={`${index}: ${animation.name}`} value={animation.targetProperty} />;
-            })} */}
         </>
     );
 };
