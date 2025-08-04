@@ -22,18 +22,20 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
         currentFrameHolder = targetedAnimations[0].animation.runtimeAnimations.find((rA) => rA.target === targetedAnimations[0].target);
     }
 
-    const currentFrame = useObservableState(
-        useCallback(() => {
-            return currentFrameHolder ? currentFrameHolder.currentFrame : undefined;
-        }, [currentFrameHolder]),
-        animationGroup.getScene().onBeforeRenderObservable
-    );
-
     const isPlaying = useObservableState(
         useCallback(() => {
             return animationGroup.isPlaying;
         }, [animationGroup]),
-        animationGroup.getScene().onBeforeRenderObservable
+        animationGroup.onAnimationGroupPlayObservable,
+        animationGroup.onAnimationGroupPauseObservable,
+        animationGroup.onAnimationGroupEndObservable
+    );
+
+    const currentFrame = useObservableState(
+        useCallback(() => {
+            return currentFrameHolder ? currentFrameHolder.currentFrame : undefined;
+        }, [currentFrameHolder]),
+        isPlaying ? animationGroup.getScene().onBeforeRenderObservable : null
     );
 
     return (
@@ -88,7 +90,7 @@ export const AnimationGroupInfoProperties: FunctionComponent<{ animationGroup: A
     const { animationGroup } = props;
     return (
         <>
-            <TextPropertyLine label="Animation count" value={animationGroup.targetedAnimations.length.toString()} />
+            <TextPropertyLine label="Animation Count" value={animationGroup.targetedAnimations.length.toString()} />
             <TextPropertyLine label="From" value={animationGroup.from.toFixed(2)} />
             <TextPropertyLine label="To" value={animationGroup.to.toFixed(2)} />
             <TextPropertyLine label="Unique ID" value={animationGroup.uniqueId.toString()} />
