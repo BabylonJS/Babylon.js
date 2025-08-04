@@ -9,8 +9,9 @@ import { PhysicsAggregate, PhysicsMotionType, PhysicsShapeType } from "core/Phys
 import { HavokPlugin } from "core/Physics/v2/Plugins/havokPlugin";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import { ImageProcessingPostProcess } from "core/PostProcesses/imageProcessingPostProcess";
 import "core/Helpers/sceneHelpers";
-import { Color3 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
@@ -43,6 +44,14 @@ function createCamera() {
     camera.alpha = Math.PI / 2;
 }
 
+function createPostProcess() {
+    const postProcess = new ImageProcessingPostProcess("skyPostProcess", 1.0, camera);
+    postProcess.vignetteWeight = 10;
+    postProcess.vignetteStretch = 2;
+    postProcess.vignetteColor = new Color4(0, 0, 1, 0);
+    postProcess.vignetteEnabled = true;
+}
+
 async function createPhysics() {
     const havok = await HavokPhysics();
     const hkPlugin = new HavokPlugin(true, havok);
@@ -60,6 +69,8 @@ async function createPhysics() {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
     createCamera();
+    createPostProcess();
+
     await createPhysics();
 
     const sphere = MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 0.2 }, scene);
