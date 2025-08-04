@@ -8,7 +8,6 @@ import { RenderingManager } from "core/Rendering/renderingManager";
 import { Collapse } from "@fluentui/react-motion-components-preview";
 
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
-import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -23,6 +22,7 @@ import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
+import { LinkToNodePropertyLine } from "../linkToNodePropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -32,15 +32,7 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
 
     return (
         <>
-            {material && !material.reservedDataStore?.hidden && (
-                <LinkPropertyLine
-                    key="Material"
-                    label="Material"
-                    description={`The material used by the mesh.`}
-                    value={material.name}
-                    onLink={() => (selectionService.selectedEntity = material)}
-                />
-            )}
+            <LinkToNodePropertyLine label="Material" description={`The material used by the mesh.`} node={material} selectionService={selectionService} />
         </>
     );
 };

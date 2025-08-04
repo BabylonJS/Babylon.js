@@ -14,6 +14,7 @@ import { TraverseGraph } from "../../misc/graphUtils";
 
 export type EntityBase = Readonly<{
     uniqueId: number;
+    reservedDataStore?: Record<PropertyKey, unknown>;
 }>;
 
 export type EntityDisplayInfo = Readonly<
@@ -367,16 +368,16 @@ export const SceneExplorer: FunctionComponent<{
                         depth++;
 
                         traversedItems.push(treeItem);
-
+                        const shouldAdd = !treeItem.entity.reservedDataStore?.hidden;
                         if (!filter) {
                             // If there is no filter and we made it this far, then the item's parent is in an open state and this item is visible.
-                            visibleItems.add(treeItem);
+                            shouldAdd && visibleItems.add(treeItem);
                         } else {
                             // Otherwise we have an item filter and we need to check for a match.
                             const displayInfo = treeItem.getDisplayInfo();
                             if (displayInfo.name.toLocaleLowerCase().includes(filter)) {
                                 // The item is a match, add it to the set.
-                                visibleItems.add(treeItem);
+                                shouldAdd && visibleItems.add(treeItem);
 
                                 // Also add all ancestors as a match since we want to be able to see the tree structure up to the matched item.
                                 let currentItem: Nullable<SectionTreeItemData | EntityTreeItemData> = treeItem.parent;
@@ -386,7 +387,7 @@ export const SceneExplorer: FunctionComponent<{
                                         break;
                                     }
 
-                                    visibleItems.add(currentItem);
+                                    shouldAdd && visibleItems.add(currentItem);
 
                                     // If the parent is the section, then there are no more parents to traverse.
                                     if (currentItem.type === "section") {

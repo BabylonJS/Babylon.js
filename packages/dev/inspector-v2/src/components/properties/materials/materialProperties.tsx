@@ -18,14 +18,14 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 const OrientationOptions = [
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
     { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 const TransparencyModeOptions = [
     { label: "Opaque", value: Material.MATERIAL_OPAQUE },
     { label: "Alpha test", value: Material.MATERIAL_ALPHATEST },
     { label: "Alpha blend", value: Material.MATERIAL_ALPHABLEND },
     { label: "Alpha blend and test", value: Material.MATERIAL_ALPHATESTANDBLEND },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 const DepthFunctionOptions = [
     { label: "<Engine Default>", value: 0 },
@@ -37,7 +37,7 @@ const DepthFunctionOptions = [
     { label: "Greater", value: Engine.GREATER },
     { label: "Greater or equal", value: Engine.GEQUAL },
     { label: "Not equal", value: Engine.NOTEQUAL },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 const StencilFunctionOptions = [
     { label: "Never", value: Constants.NEVER },
@@ -48,7 +48,7 @@ const StencilFunctionOptions = [
     { label: "Greater", value: Constants.GREATER },
     { label: "Greater or equal", value: Constants.GEQUAL },
     { label: "Not equal", value: Constants.NOTEQUAL },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 const StencilOperationOptions = [
     { label: "Keep", value: Constants.KEEP },
@@ -59,7 +59,7 @@ const StencilOperationOptions = [
     { label: "Invert", value: Constants.INVERT },
     { label: "Incr wrap", value: Constants.INCR_WRAP },
     { label: "Decr wrap", value: Constants.DECR_WRAP },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 export const MaterialGeneralProperties: FunctionComponent<{ material: Material }> = (props) => {
     const { material } = props;

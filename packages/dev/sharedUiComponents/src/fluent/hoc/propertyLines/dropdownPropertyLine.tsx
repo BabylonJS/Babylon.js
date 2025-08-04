@@ -1,18 +1,18 @@
+import type { Node } from "core/index";
 import { Dropdown } from "../../primitives/dropdown";
 import type { AcceptedDropdownValue, DropdownProps } from "../../primitives/dropdown";
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
 
-// In a follow-up PR i will remove the nullAs concept from dropdown
-type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = Omit<DropdownProps<V>, "includeNullAs"> & PropertyLineProps<AcceptedDropdownValue>;
+type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = DropdownProps<V> & PropertyLineProps<V>;
 
 /**
  * Wraps a dropdown in a property line
  * @param props - PropertyLineProps and DropdownProps
  * @returns property-line wrapped dropdown
  */
-const DropdownPropertyLine: FunctionComponent<DropdownProps<AcceptedDropdownValue> & PropertyLineProps<AcceptedDropdownValue>> = (props) => {
+const DropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => {
     return (
         <PropertyLine {...props}>
             <Dropdown {...props} />
@@ -28,3 +28,7 @@ export const NumberDropdownPropertyLine = DropdownPropertyLine as FunctionCompon
  * Dropdown component for string values
  */
 export const StringDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<string>>;
+/**
+ * Dropdown component for Node values
+ */
+export const NodeDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<Node>>;

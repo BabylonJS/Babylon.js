@@ -145,8 +145,9 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                     <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
-                    {nullable && (
+                    {nullable && typeof props.value !== "boolean" && (
                         // Since this checkbox is used to toggle null, 'checked' means 'non null'
+                        // However don't bother adding a checkbox for boolean values - the control should treat null as false
                         <Checkbox
                             checked={!(props.value == null)}
                             onChange={(_, data) => {
