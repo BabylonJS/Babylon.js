@@ -65,6 +65,15 @@ async function createPhysics() {
     }
 }
 
+function createTestSpheres() {
+    const sphere = MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 0.2 }, scene);
+    const redMat = new StandardMaterial("redMat", scene);
+    redMat.emissiveColor = new Color3(1, 0, 0);
+    sphere.material = redMat;
+    const sphereInstance = sphere.createInstance("sphereInstance");
+    sphereInstance.position = new Vector3(0, 0, -0.5);
+}
+
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
@@ -73,12 +82,7 @@ async function createPhysics() {
 
     await createPhysics();
 
-    const sphere = MeshBuilder.CreateSphere("sphere1", { segments: 16, diameter: 0.2 }, scene);
-    const redMat = new StandardMaterial("redMat", scene);
-    redMat.emissiveColor = new Color3(1, 0, 0);
-    sphere.material = redMat;
-    const sphereInstance = sphere.createInstance("sphereInstance");
-    sphereInstance.position = new Vector3(0, 0, -0.5);
+    createTestSpheres();
 
     engine.runRenderLoop(() => {
         scene.render();
