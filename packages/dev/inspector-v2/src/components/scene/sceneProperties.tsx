@@ -40,7 +40,7 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                         { label: "Khronos PBR Neutral", value: ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL },
                     ] as const
                 }
-                label="Tone mapping type"
+                label="Tone Mapping Type"
                 target={imageProcessing}
                 propertyKey="toneMappingType"
             />
