@@ -1,5 +1,5 @@
 import { CopyRegular, DeleteRegular } from "@fluentui/react-icons";
-import type { FunctionComponent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { ButtonLine } from "../hoc/buttonLine";
 import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
 
@@ -42,7 +42,7 @@ export type ListItem<T = any> = {
     sortBy: number;
 };
 
-type ListProps<T = any> = {
+type ListProps<T> = {
     items: ListItem<T>[];
     renderItem: (item: ListItem<T>, index: number) => ReactNode;
     onDelete: (item: ListItem<T>, index: number) => void;
@@ -55,7 +55,7 @@ type ListProps<T = any> = {
  * @returns A React component that renders a list of items with add/delete functionality
  * @param props - The properties for the List component
  */
-export const List: FunctionComponent<ListProps<any>> = (props): React.ReactElement => {
+export function List<T>(props: ListProps<T>): JSX.Element {
     const { items, renderItem, onDelete, onAdd, addButtonLabel = "Add new item" } = props;
     const classes = useListStyles();
 
@@ -79,4 +79,4 @@ export const List: FunctionComponent<ListProps<any>> = (props): React.ReactEleme
             </div>
         </div>
     );
-};
+}

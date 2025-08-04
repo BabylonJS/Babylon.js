@@ -1,10 +1,10 @@
-import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
+import type { AbstractMesh, IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
 
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ScrollToInterface } from "@fluentui/react-components/unstable";
 import type { ComponentType, FunctionComponent } from "react";
-
-import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, ToggleButton, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
+import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
+import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
 import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { MoviesAndTvRegular } from "@fluentui/react-icons";
 
@@ -194,24 +194,16 @@ const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; ent
 
 const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; entity: EntityBase; scene: Scene }> = (props) => {
     const { command, entity, scene } = props;
-    const [checked, setChecked] = useState(command.isEnabled(scene, entity));
-    const toggle = useCallback(() => {
-        setChecked((prev) => {
-            const enabled = !prev;
-            command.setEnabled(scene, entity, enabled);
-            return enabled;
-        });
-    }, [setChecked]);
+    const [checked] = useState(command.isEnabled(scene, entity));
 
     return (
-        <Tooltip content={command.displayName} relationship="label">
-            <ToggleButton
-                icon={!checked && command.disabledIcon ? <command.disabledIcon entity={entity} /> : <command.icon entity={entity} />}
-                appearance="transparent"
-                checked={checked}
-                onClick={toggle}
-            />
-        </Tooltip>
+        <ToggleButton
+            enabledIcon={<command.icon entity={entity} />}
+            disabledIcon={command.disabledIcon ? <command.disabledIcon entity={entity} /> : undefined}
+            value={checked}
+            onChange={(enabled: boolean) => command.setEnabled(scene, entity, enabled)}
+            title={command.displayName}
+        />
     );
 };
 
@@ -335,15 +327,16 @@ export const SceneExplorer: FunctionComponent<{
                     },
                     (entity) => {
                         depth++;
-                        visibleItems.push({
-                            type: "entity",
-                            entity,
-                            depth,
-                            parent: entityParents.get(entity.uniqueId) ?? section.displayName,
-                            hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
-                            icon: section.entityIcon,
-                            getDisplayInfo: () => section.getEntityDisplayInfo(entity),
-                        });
+                        !(entity as AbstractMesh).reservedDataStore?.hidden && // TODO-iv2: Determine how hidden nodes are hidden
+                            visibleItems.push({
+                                type: "entity",
+                                entity,
+                                depth,
+                                parent: entityParents.get(entity.uniqueId) ?? section.displayName,
+                                hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
+                                icon: section.entityIcon,
+                                getDisplayInfo: () => section.getEntityDisplayInfo(entity),
+                            });
                     },
                     () => {
                         depth--;

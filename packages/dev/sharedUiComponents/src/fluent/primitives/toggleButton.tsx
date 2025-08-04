@@ -2,11 +2,10 @@ import { ToggleButton as FluentToggleButton } from "@fluentui/react-components";
 import type { PrimitiveProps } from "./primitive";
 import { useCallback, useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
-import type { FluentIcon } from "@fluentui/react-icons";
 
 type ToggleButtonProps = PrimitiveProps<boolean> & {
-    enabledIcon: FluentIcon;
-    disabledIcon?: FluentIcon;
+    enabledIcon: JSX.Element;
+    disabledIcon?: JSX.Element;
 };
 
 /**
@@ -52,8 +51,8 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
         // </Tooltip>
         <FluentToggleButton
             title={title}
-            icon={!checked && props.disabledIcon ? <props.disabledIcon /> : <props.enabledIcon />}
-            appearance="transparent"
+            icon={!checked && props.disabledIcon ? props.disabledIcon : props.enabledIcon}
+            appearance={checked ? "transparent" : "subtle"}
             checked={checked}
             onClick={toggle}
         />

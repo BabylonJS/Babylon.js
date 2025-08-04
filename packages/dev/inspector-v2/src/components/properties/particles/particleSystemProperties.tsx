@@ -1,5 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports, @typescript-eslint/consistent-type-imports
-import { type FactorGradient, type ColorGradient as Color4Gradient, type IParticleSystem, type IValueGradient, GizmoManager, ParticleSystem } from "core/index";
+import type { FactorGradient, ColorGradient as Color4Gradient, IValueGradient, ParticleSystem } from "core/index";
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { GizmoManager } from "core/index";
 
 import { Color3, Color4 } from "core/Maths/math.color";
 import { useCallback } from "react";
