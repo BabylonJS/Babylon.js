@@ -30,7 +30,7 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
         <>
             <StringifiedPropertyLine key="Vertices" label="Vertices:" value={mesh.getTotalVertices()} />
             <StringifiedPropertyLine key="Faces" label="Faces:" value={mesh.getTotalIndices() / 3} />
-            <StringifiedPropertyLine key="SubMeshes" label="Sub-meshes:" value={mesh.subMeshes.length} />
+            <StringifiedPropertyLine key="SubMeshes" label="Sub-Meshes:" value={mesh.subMeshes.length} />
             {skeleton && (
                 <LinkPropertyLine
                     label="Skeleton"
@@ -44,7 +44,7 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
                 <LinkPropertyLine
                     key="Material"
                     label="Material"
-                    description={`The material used by the mesh.`}
+                    description="The material used by the mesh."
                     value={material.name}
                     onLink={() => (selectionService.selectedEntity = material)}
                 />
@@ -53,7 +53,7 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
                 <LinkPropertyLine
                     key="Source"
                     label="Source"
-                    description={`The source mesh from which this instance was created.`}
+                    description="The source mesh from which this instance was created."
                     value={mesh.sourceMesh.name}
                     onLink={() => (selectionService.selectedEntity = mesh.sourceMesh)}
                 />
