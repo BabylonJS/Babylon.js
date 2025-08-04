@@ -2,7 +2,6 @@ import type { AnimationGroup } from "core/Animations/animationGroup";
 import { useCallback, type FunctionComponent } from "react";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { BoundProperty } from "../boundProperty";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
