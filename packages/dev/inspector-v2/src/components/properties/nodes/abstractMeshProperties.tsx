@@ -25,12 +25,14 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
     const material = useObservableState(() => mesh.material, mesh.onMaterialChangedObservable);
     const skeleton = useProperty(mesh, "skeleton");
     const isAnInstance = useProperty(mesh, "isAnInstance");
+    // TODO: Handle case where array is mutated
+    const subMeshes = useProperty(mesh, "subMeshes");
 
     return (
         <>
-            <StringifiedPropertyLine key="Vertices" label="Vertices:" value={mesh.getTotalVertices()} />
-            <StringifiedPropertyLine key="Faces" label="Faces:" value={mesh.getTotalIndices() / 3} />
-            <StringifiedPropertyLine key="SubMeshes" label="Sub-Meshes:" value={mesh.subMeshes.length} />
+            <StringifiedPropertyLine key="Vertices" label="Vertices" value={mesh.getTotalVertices()} />
+            <StringifiedPropertyLine key="Faces" label="Faces" value={mesh.getTotalIndices() / 3} />
+            <StringifiedPropertyLine key="SubMeshes" label="Sub-Meshes" value={subMeshes.length} />
             {skeleton && (
                 <LinkPropertyLine
                     label="Skeleton"
