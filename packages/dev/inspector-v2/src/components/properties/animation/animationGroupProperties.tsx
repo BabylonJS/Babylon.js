@@ -2,12 +2,12 @@ import type { AnimationGroup } from "core/Animations/animationGroup";
 import { useCallback, type FunctionComponent } from "react";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { BoundProperty } from "../boundProperty";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { Collapse } from "@fluentui/react-motion-components-preview";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 
 interface ICurrentFrameHolder {
     currentFrame: number;
@@ -90,10 +90,10 @@ export const AnimationGroupInfoProperties: FunctionComponent<{ animationGroup: A
     const { animationGroup } = props;
     return (
         <>
-            <TextPropertyLine label="Animation Count" value={animationGroup.targetedAnimations.length.toString()} />
-            <TextPropertyLine label="From" value={animationGroup.from.toFixed(2)} />
-            <TextPropertyLine label="To" value={animationGroup.to.toFixed(2)} />
-            <TextPropertyLine label="Unique ID" value={animationGroup.uniqueId.toString()} />
+            <StringifiedPropertyLine label="Animation Count" value={animationGroup.targetedAnimations.length} />
+            <StringifiedPropertyLine label="From" value={animationGroup.from} precision={2} />
+            <StringifiedPropertyLine label="To" value={animationGroup.to} precision={2} />
+            <StringifiedPropertyLine label="Unique ID" value={animationGroup.uniqueId} />
         </>
     );
 };
