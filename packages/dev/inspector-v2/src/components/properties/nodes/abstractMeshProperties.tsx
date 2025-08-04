@@ -1,6 +1,9 @@
 import type { FunctionComponent } from "react";
 
 import type { AbstractMesh } from "core/index";
+
+import { RenderingManager } from "core/Rendering/renderingManager";
+
 import type { ISelectionService } from "../../../services/selectionService";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
@@ -8,6 +11,9 @@ import { Collapse } from "@fluentui/react-motion-components-preview";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { useColor3Property, useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
@@ -32,6 +38,28 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
                     onLink={() => (selectionService.selectedEntity = material)}
                 />
             )}
+        </>
+    );
+};
+
+export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMesh }> = (props) => {
+    const { mesh } = props;
+
+    return (
+        <>
+            <BoundProperty component={NumberInputPropertyLine} label="Alpha Index" target={mesh} propertyKey="alphaIndex" />
+            <BoundProperty component={SwitchPropertyLine} label="Receive Shadows" target={mesh} propertyKey="receiveShadows" />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Rendering Group Id"
+                target={mesh}
+                propertyKey="renderingGroupId"
+                min={RenderingManager.MIN_RENDERINGGROUPS}
+                max={RenderingManager.MAX_RENDERINGGROUPS - 1}
+                step={1}
+            />
+            {/* TODO: Placeholder should be a hex property line */}
+            <BoundProperty component={PlaceholderPropertyLine} label="TODO: Layer Mask" target={mesh} propertyKey="layerMask" />
         </>
     );
 };
