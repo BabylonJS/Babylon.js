@@ -1,7 +1,6 @@
 import type { FrameGraph } from "core/index";
 
 import type { FunctionComponent } from "react";
-import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 
