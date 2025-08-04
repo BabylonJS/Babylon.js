@@ -30,4 +30,3 @@ export const NumberDropdownPropertyLine = DropdownPropertyLine as FunctionCompon
  * Dropdown component for string values
  */
 export const StringDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<string>>;
-
