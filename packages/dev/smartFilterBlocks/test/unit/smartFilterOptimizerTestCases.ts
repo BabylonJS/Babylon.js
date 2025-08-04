@@ -1,6 +1,9 @@
 import * as pixelateSmartFilter from "./optimizerTestCases/pixelate.json";
 import { optimizedSmartFilterBlocks as pixelateOptimizedBlocks } from "./optimizerTestCases/pixelate.optimized.js";
 
+import * as pixelateAndTintSmartFilter from "./optimizerTestCases/pixelateAndTint.json";
+import { optimizedSmartFilterBlocks as pixelateAndTintOptimizedBlocks } from "./optimizerTestCases/pixelateAndTint.optimized.js";
+
 /**
  * To add test cases you need to store the serialized Smart Filter to optimize as well as the
  * expected output of the optimizer.
@@ -31,6 +34,11 @@ export const testCases: OptimizationTestCase[] = [
         name: "Single Block",
         serializedSmartFilter: pixelateSmartFilter,
         expectedOptimizedBlocks: pixelateOptimizedBlocks,
+    },
+    {
+        name: "Two Simple Blocks",
+        serializedSmartFilter: pixelateAndTintSmartFilter,
+        expectedOptimizedBlocks: pixelateAndTintOptimizedBlocks,
     },
 ];
 
