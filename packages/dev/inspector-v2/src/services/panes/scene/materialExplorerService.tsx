@@ -24,7 +24,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
             displayName: "Materials",
             order: DefaultSectionsOrder.Materials,
             predicate: (entity) => entity instanceof Material,
-            getRootEntities: () => scene.materials,
+            getRootEntities: () => scene.materials.concat(scene.multiMaterials),
             getEntityDisplayInfo: (material) => {
                 const onChangeObservable = new Observable<void>();
 

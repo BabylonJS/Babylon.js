@@ -5,13 +5,14 @@ import type { ISelectionService } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
 
-import { Material } from "core/Materials";
+import { Material, MultiMaterial } from "core/Materials";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
+import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
-    factory: (propertiesService) => {
+    factory: (propertiesService, selectionService) => {
         const materialContentRegistration = propertiesService.addSectionContent({
             key: "Material Properties",
             predicate: (entity: unknown) => entity instanceof Material,
@@ -31,9 +32,21 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+        const multiMaterialContentRegistration = propertiesService.addSectionContent({
+            key: "Multi Material Properties",
+            predicate: (entity: unknown) => entity instanceof MultiMaterial,
+            content: [
+                {
+                    section: "Children",
+                    component: ({ context }) => <MultiMaterialChildrenProperties multiMaterial={context} selectionService={selectionService} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 materialContentRegistration.dispose();
+                multiMaterialContentRegistration.dispose();
             },
         };
     },
