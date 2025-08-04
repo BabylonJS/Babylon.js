@@ -18,7 +18,7 @@ export const StandardMaterialTexturesProperties: FunctionComponent<{ standardMat
     // TODO: Add buttons and links for adding the textures themselves
     return (
         <>
-            <BoundProperty component={SwitchPropertyLine} label="Use Lightmap As Shadowmap" target={standardMaterial} propertyKey="useLightmapAsShadowmap" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Lightmap as Shadowmap" target={standardMaterial} propertyKey="useLightmapAsShadowmap" />
             <BoundProperty component={SwitchPropertyLine} label="Use Detailmap" target={standardMaterial.detailMap} propertyKey="isEnabled" />
             {decalMap && <BoundProperty component={SwitchPropertyLine} label="Use Decalmap" target={decalMap} propertyKey="isEnabled" />}
         </>

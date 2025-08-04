@@ -17,6 +17,7 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { ShowInspector } from "../../src/inspector";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MeshBuilder } from "core/Meshes";
+import { Texture } from "core/Materials/Textures/texture";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -70,6 +71,8 @@ function createTestBoxes() {
     const box = MeshBuilder.CreateBox("box1", { size: 0.15 }, scene);
     const redMat = new StandardMaterial("redMat", scene);
     redMat.emissiveColor = new Color3(1, 0, 0);
+    redMat.diffuseTexture = new Texture("https://i.imgur.com/Wk1cGEq.png", scene);
+    redMat.bumpTexture = new Texture("https://i.imgur.com/wGyk6os.png", scene);
     box.material = redMat;
     const boxInstance = box.createInstance("boxInstance");
     boxInstance.position = new Vector3(0, 0, -0.5);

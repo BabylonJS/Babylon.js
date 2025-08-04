@@ -10,6 +10,7 @@ import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTranspare
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
 import { StandardMaterialTexturesProperties } from "../../../components/properties/materials/standardMaterialTexturesProperties";
+import { StandardMaterialLevelsProperties } from "../../../components/properties/materials/standardMaterialLevelsProperties";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
@@ -45,6 +46,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "Lighting & Colors",
                     component: ({ context }) => <StandardMaterialLightingAndColorProperties standardMaterial={context} />,
+                },
+                {
+                    section: "Levels",
+                    component: ({ context }) => <StandardMaterialLevelsProperties standardMaterial={context} />,
                 },
             ],
         });
