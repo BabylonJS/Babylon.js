@@ -29,6 +29,7 @@ module.exports = (env) => {
                 materials: path.resolve("../../dev/materials/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
                 "inspector-v2": path.resolve("./src"),
+                serializers: path.resolve("../../dev/serializers/dist"),
             },
         },
 
