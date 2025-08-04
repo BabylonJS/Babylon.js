@@ -6,11 +6,13 @@ import { TargetedAnimation } from "core/Animations/animationGroup";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { TargetedAnimationGeneralProperties } from "../../../components/properties/animation/targetedAnimationProperties";
 import { AnimationGroupControlProperties, AnimationGroupInfoProperties } from "../../../components/properties/animation/animationGroupProperties";
+import type { ISelectionService } from "../../selectionService";
+import { SelectionServiceIdentity } from "../../selectionService";
 
-export const AnimationGroupPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+export const AnimationGroupPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Animation Group Properties",
-    consumes: [PropertiesServiceIdentity],
-    factory: (propertiesService) => {
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
+    factory: (propertiesService, selectionService) => {
         const animationGroupContentRegistration = propertiesService.addSectionContent({
             key: "Animation Group Properties",
             predicate: (entity: unknown) => entity instanceof AnimationGroup,
@@ -32,7 +34,7 @@ export const AnimationGroupPropertiesServiceDefinition: ServiceDefinition<[], [I
             content: [
                 {
                     section: "General",
-                    component: ({ context }) => <TargetedAnimationGeneralProperties targetedAnimation={context} />,
+                    component: ({ context }) => <TargetedAnimationGeneralProperties targetedAnimation={context} selectionService={selectionService} />,
                 },
             ],
         });
