@@ -1,11 +1,12 @@
 import type { FunctionComponent } from "react";
+import { useState } from "react";
 
 import type { AbstractMesh } from "core/index";
 import type { ISelectionService } from "../../../services/selectionService";
 
+import { makeStyles } from "@fluentui/react-components";
 import { Collapse } from "@fluentui/react-motion-components-preview";
 
-import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -16,6 +17,7 @@ import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
+import "core/Rendering/edgesRenderer";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 
@@ -137,36 +139,52 @@ export const AbstractMeshOcclusionsProperties: FunctionComponent<{ mesh: Abstrac
     </>
 );
 
-export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => (
-    <>
-        <CheckboxPropertyLine
-            label="Enable"
-            description="Enable edge rendering for this mesh."
-            value={false}
-            onChange={(enabled) => {
-                if (enabled) {
-                    mesh.enableEdgesRendering();
-                } else {
-                    mesh.disableEdgesRendering();
-                }
-            }}
-        />
-        <BoundProperty
-            component={SyncedSliderPropertyLine}
-            label="Edges Width"
-            description="Width of the rendered edges (0 to 10)."
-            target={mesh}
-            propertyKey="edgesWidth"
-            min={0}
-            max={10}
-            step={0.1}
-        />
-        <Color4PropertyLine
-            label="Edge Color"
-            value={mesh.edgesColor}
-            onChange={(color) => {
-                mesh.edgesColor = color;
-            }}
-        />
-    </>
-);
+const useStyles = makeStyles({
+    contentDiv: {
+        overflow: "hidden",
+    },
+});
+
+export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => {
+    const classes = useStyles();
+    // Track enabled state locally to trigger re-render
+    const [enabled, setEnabled] = useState(mesh.edgesRenderingEnabled());
+
+    return (
+        <>
+            <SwitchPropertyLine
+                label="Enable"
+                value={enabled}
+                onChange={(isEnabled: boolean) => {
+                    if (isEnabled) {
+                        mesh.enableEdgesRendering();
+                    } else {
+                        mesh.disableEdgesRendering();
+                    }
+                    setEnabled(mesh.edgesRenderingEnabled());
+                }}
+            />
+            <Collapse visible={enabled}>
+                <div className={classes.contentDiv}>
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="Edges Width"
+                        description="Width of the rendered edges (0 to 10)."
+                        target={mesh}
+                        propertyKey="edgesWidth"
+                        min={0}
+                        max={10}
+                        step={0.1}
+                    />
+                    <Color4PropertyLine
+                        label="Edge Color"
+                        value={mesh.edgesColor}
+                        onChange={(color) => {
+                            mesh.edgesColor = color;
+                        }}
+                    />
+                </div>
+            </Collapse>
+        </>
+    );
+};

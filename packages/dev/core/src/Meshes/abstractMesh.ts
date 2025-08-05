@@ -2838,6 +2838,15 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         throw _WarnImport("EdgesRenderer");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
+    /**
+     * Checks if the mesh has edges rendering enabled
+     * @returns true if edges rendering is enabled, otherwise false
+     */
+    edgesRenderingEnabled(): boolean {
+        throw _WarnImport("EdgesRenderer"); // This method is used to check if the mesh has edges rendering enabled
+    }
+
     /**
      * This function returns all of the particle systems in the scene that use the mesh as an emitter.
      * @returns an array of particle systems in the scene that use the mesh as an emitter

@@ -3,7 +3,6 @@ import type { IPropertiesService } from "./propertiesService";
 import type { ISelectionService } from "../../selectionService";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { SelectionServiceIdentity } from "../../selectionService";
 
 import { Material } from "core/Materials";
 import { MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
@@ -12,10 +11,10 @@ import { SkyMaterialProperties } from "../../../components/properties/materials/
 import { SettingsContextIdentity } from "../../settingsContext";
 import type { ISettingsContext } from "../../../services/settingsContext";
 
-export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISettingsContext]> = {
+export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
     friendlyName: "Material Properties",
-    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SettingsContextIdentity],
-    factory: (propertiesService, _, settingsContext) => {
+    consumes: [PropertiesServiceIdentity, SettingsContextIdentity],
+    factory: (propertiesService, settingsContext) => {
         const materialContentRegistration = propertiesService.addSectionContent({
             key: "Material Properties",
             predicate: (entity: unknown) => entity instanceof Material,

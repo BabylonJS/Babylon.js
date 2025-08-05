@@ -69,7 +69,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
-                label="mieDirectionalG"
+                label="Mie Directional G"
                 description="Mie directional scattering (0 to 1)."
                 target={material}
                 propertyKey="mieDirectionalG"
@@ -79,7 +79,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
-                label="mieCoefficient"
+                label="Mie Coefficient"
                 description="Mie scattering coefficient (0 to 1)."
                 target={material}
                 propertyKey="mieCoefficient"
@@ -97,7 +97,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 max={1000}
                 step={0.1}
             />
-            <BoundProperty component={CheckboxPropertyLine} label="Use sun pos" description="Enable custom sun position." target={material} propertyKey="useSunPosition" />
+            <BoundProperty component={CheckboxPropertyLine} label="Use Sun Pos" description="Enable custom sun position." target={material} propertyKey="useSunPosition" />
             <BoundProperty component={Vector3PropertyLine} label="Sun Position" description="Custom sun position (Vector3)." target={material} propertyKey="sunPosition" />
             <BoundProperty component={Vector3PropertyLine} label="Camera Offset" description="Offset for the camera (Vector3)." target={material} propertyKey="cameraOffset" />
         </>
