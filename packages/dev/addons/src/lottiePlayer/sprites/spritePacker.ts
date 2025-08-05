@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-import "@babylonjs/core/Engines/Extensions/engine.dynamicTexture";
+import "core/Engines/Extensions/engine.dynamicTexture";
 
 import type { ThinEngine } from "core/Engines/thinEngine";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";

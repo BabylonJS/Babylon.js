@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-import "@babylonjs/core/Engines/Extensions/engine.dynamicBuffer";
-import "@babylonjs/core/Shaders/sprites.vertex";
-import "@babylonjs/core/Shaders/sprites.fragment";
+import "core/Engines/Extensions/engine.dynamicBuffer";
+import "core/Shaders/sprites.vertex";
+import "core/Shaders/sprites.fragment";
 
 import type { ThinEngine } from "core/Engines/thinEngine";
 import type { ThinTexture } from "core/Materials/Textures/thinTexture";

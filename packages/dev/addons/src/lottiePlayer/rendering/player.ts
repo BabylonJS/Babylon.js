@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-import "@babylonjs/core/Engines/Extensions/engine.alpha";
-import "@babylonjs/core/Shaders/sprites.vertex";
-import "@babylonjs/core/Shaders/sprites.fragment";
+import "core/Engines/Extensions/engine.alpha";
+import "core/Shaders/sprites.vertex";
+import "core/Shaders/sprites.fragment";
 
 import { ThinEngine } from "core/Engines/thinEngine";
 import { Viewport } from "core/Maths/math.viewport";

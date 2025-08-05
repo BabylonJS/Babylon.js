@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
 import type { IVector2Like } from "core/Maths/math.like";
-import { ThinMatrix } from "../maths/matrix";
+
 import type { ScalarProperty, Vector2Property } from "../lottie/parsedTypes";
+
+import { ThinMatrix } from "../maths/matrix";
+
 import { IgnoreOpacityAnimations } from "../config";
 
 /**
