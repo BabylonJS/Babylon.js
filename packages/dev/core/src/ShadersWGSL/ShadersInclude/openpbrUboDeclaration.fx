@@ -81,3 +81,4 @@ uniform ambientOcclusionMatrix: mat4x4f;
 
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>
+
