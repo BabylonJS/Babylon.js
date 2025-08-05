@@ -10,6 +10,19 @@ import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTranspare
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
 
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { PBRMaterialLightingAndColorProperties } from "../../../components/properties/materials/pbrMaterialLightingAndColorProperties";
+
+import {
+    PBRBaseMaterialClearCoatProperties,
+    PBRBaseMaterialIridescenceProperties,
+    PBRBaseMaterialAnisotropicProperties,
+    PBRBaseMaterialSheenProperties,
+} from "../../../components/properties/materials/pbrBaseMaterialProperties";
+
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import { PBRBaseSimpleMaterial } from "core/Materials/PBR/pbrBaseSimpleMaterial";
+
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity],
@@ -44,10 +57,46 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+        const pbrBaseMaterialPropertiesRegistration = propertiesService.addSectionContent({
+            key: "PBR Base Material Properties",
+            predicate: (entity: unknown): entity is PBRBaseMaterial => entity instanceof PBRBaseMaterial && !(entity instanceof PBRBaseSimpleMaterial),
+            content: [
+                {
+                    section: "Clear Coat",
+                    component: ({ context }) => <PBRBaseMaterialClearCoatProperties material={context} />,
+                },
+                {
+                    section: "Iridescence",
+                    component: ({ context }) => <PBRBaseMaterialIridescenceProperties material={context} />,
+                },
+                {
+                    section: "Anisotropic",
+                    component: ({ context }) => <PBRBaseMaterialAnisotropicProperties material={context} />,
+                },
+                {
+                    section: "Sheen",
+                    component: ({ context }) => <PBRBaseMaterialSheenProperties material={context} />,
+                },
+            ],
+        });
+
+        const pbrMaterialContentRegistration = propertiesService.addSectionContent({
+            key: "PBR Material Properties",
+            predicate: (entity: unknown) => entity instanceof PBRMaterial,
+            content: [
+                {
+                    section: "Lighting & Colors",
+                    component: ({ context }) => <PBRMaterialLightingAndColorProperties pbrMaterial={context} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 materialContentRegistration.dispose();
                 standardMaterialContentRegistration.dispose();
+                pbrBaseMaterialPropertiesRegistration.dispose();
+                pbrMaterialContentRegistration.dispose();
             },
         };
     },
