@@ -63,7 +63,7 @@ precision highp float;
 #include<openpbrDielectricReflectance>
 #include<openpbrConductorReflectance>
 
-// #include<openpbrBlockAmbientOcclusion>
+#include<openpbrBlockAmbientOcclusion>
 #include<openpbrIblFunctions>
 #include<openpbrGeometryInfo>
 

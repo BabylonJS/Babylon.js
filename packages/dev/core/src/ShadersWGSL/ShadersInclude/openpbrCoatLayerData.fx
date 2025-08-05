@@ -10,23 +10,23 @@ var coat_darkening: f32 = 1.0f;
 
 // Sample Coat Layer properties from textures
 #ifdef COAT_WEIGHT
-    var coatWeightFromTexture: vec4f = textureSample(coatWeightSampler, coatWeightSamplerSampler, uniforms.vCoatWeightUV + uvOffset);
+    var coatWeightFromTexture: vec4f = textureSample(coatWeightSampler, coatWeightSamplerSampler, fragmentInputs.vCoatWeightUV + uvOffset);
 #endif
 
 #ifdef COAT_COLOR
-    var coatColorFromTexture: vec4f = textureSample(coatColorSampler, coatColorSamplerSampler, uniforms.vCoatColorUV + uvOffset);
+    var coatColorFromTexture: vec4f = textureSample(coatColorSampler, coatColorSamplerSampler, fragmentInputs.vCoatColorUV + uvOffset);
 #endif
 
 #ifdef COAT_ROUGHNESS
-    var coatRoughnessFromTexture: vec4f = textureSample(coatRoughnessSampler, coatRoughnessSamplerSampler, uniforms.vCoatRoughnessUV + uvOffset);
+    var coatRoughnessFromTexture: vec4f = textureSample(coatRoughnessSampler, coatRoughnessSamplerSampler, fragmentInputs.vCoatRoughnessUV + uvOffset);
 #endif
 
 #ifdef COAT_ROUGHNESS_ANISOTROPY
-    var coatRoughnessAnisotropyFromTexture: f32 = textureSample(coatRoughnessAnisotropySampler, coatRoughnessAnisotropySamplerSampler, uniforms.vCoatRoughnessAnisotropyUV + uvOffset).r;
+    var coatRoughnessAnisotropyFromTexture: f32 = textureSample(coatRoughnessAnisotropySampler, coatRoughnessAnisotropySamplerSampler, fragmentInputs.vCoatRoughnessAnisotropyUV + uvOffset).r;
 #endif
 
 #ifdef COAT_DARKENING
-    var coatDarkeningFromTexture: vec4f = textureSample(coatDarkeningSampler, coatDarkeningSamplerSampler, uniforms.vCoatDarkeningUV + uvOffset);
+    var coatDarkeningFromTexture: vec4f = textureSample(coatDarkeningSampler, coatDarkeningSamplerSampler, fragmentInputs.vCoatDarkeningUV + uvOffset);
 #endif
 
 // Initalize coat layer properties from uniforms
