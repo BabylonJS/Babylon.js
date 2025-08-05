@@ -490,6 +490,7 @@ export class WebXRHand implements IDisposable {
             jointMesh.position.copyFrom(jointTransform.position);
             jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
             jointMesh.scaling.setAll(scaledJointRadius);
+            jointMesh.parent = xrCamera.parent;
 
             // The WebXR data comes as right-handed, so we might need to do some conversions.
             if (!this._scene.useRightHandedSystem) {
