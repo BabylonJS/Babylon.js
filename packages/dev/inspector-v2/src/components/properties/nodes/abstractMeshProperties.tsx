@@ -1,40 +1,48 @@
 import type { FunctionComponent } from "react";
+
+import type { AbstractMesh, ShaderMaterial } from "core/index";
+import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
+import type { ISelectionService } from "../../../services/selectionService";
+
+import { makeStyles } from "@fluentui/react-components";
+import { Collapse } from "@fluentui/react-motion-components-preview";
 import { useState } from "react";
 
-import { Collapse } from "@fluentui/react-motion-components-preview";
-
-import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
-import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { SkeletonViewer } from "core/Debug/skeletonViewer";
+import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Color3 } from "core/Maths/math.color";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { VertexBuffer } from "core/Meshes/buffer";
+import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
+import { InstancedMesh } from "core/Meshes/instancedMesh";
+import { Tools } from "core/Misc/tools";
+import { RenderingManager } from "core/Rendering/renderingManager";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
+import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
+import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
-import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
-
-import type { ISelectionService } from "../../../services/selectionService";
 import { useColor3Property, useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { BoundProperty } from "../boundProperty";
 
-// Ensures that the outlineRenderer properties exist on the prototype of the Mesh
+// Ensures that the outlineRenderer and edgesRenderer properties exist on the prototype of the Mesh
+import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import type { ShaderMaterial } from "core/Materials/shaderMaterial";
-import { RenderingManager } from "core/Rendering/renderingManager";
-import { Tools } from "core/Misc/tools";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Color3 } from "core/Maths/math.color";
-import { VertexBuffer } from "core/Meshes/buffer";
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
-import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
-import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
-import { SkeletonViewer } from "core/Debug/skeletonViewer";
-import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
-import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { InstancedMesh } from "core/Meshes/instancedMesh";
+
+// TODO: Georgie make sure to include this in the common control, then we can remove this!
+const useStyles = makeStyles({
+    contentDiv: {
+        overflow: "hidden",
+    },
+});
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -165,6 +173,95 @@ export const AbstractMeshOutlineOverlayProperties: FunctionComponent<{ mesh: Abs
                         mesh.outlineColor = color;
                     }}
                 />
+            </Collapse>
+        </>
+    );
+};
+
+const OcclusionTypes = [
+    { label: "None", value: 0 },
+    { label: "Optimistic", value: 1 },
+    { label: "Strict", value: 2 },
+] as const satisfies readonly DropdownOption[];
+
+const OcclusionQueryAlgorithmTypes = [
+    { label: "Conservative", value: 0 },
+    { label: "Accurate", value: 1 },
+] as const satisfies readonly DropdownOption[];
+
+export const AbstractMeshOcclusionsProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => {
+    const classes = useStyles();
+
+    const occlusionType = useProperty(mesh, "occlusionType");
+
+    return (
+        <>
+            <BoundProperty
+                component={NumberDropdownPropertyLine}
+                label="Type"
+                description="Occlusion type for the mesh."
+                target={mesh}
+                propertyKey="occlusionType"
+                options={OcclusionTypes}
+            />
+            <Collapse visible={occlusionType !== 0}>
+                <div className={classes.contentDiv}>
+                    <BoundProperty
+                        component={NumberInputPropertyLine}
+                        label="Occlusion Retry Count"
+                        description="Number of retries for occlusion (-1 disables retries)."
+                        target={mesh}
+                        propertyKey="occlusionRetryCount"
+                        min={-1}
+                        max={10}
+                        step={1}
+                    />
+                    <BoundProperty
+                        component={NumberDropdownPropertyLine}
+                        label="Algorithm"
+                        description="Occlusion query algorithm type."
+                        target={mesh}
+                        propertyKey="occlusionQueryAlgorithmType"
+                        options={OcclusionQueryAlgorithmTypes}
+                    />
+                </div>
+            </Collapse>
+        </>
+    );
+};
+
+export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => {
+    const classes = useStyles();
+
+    const edgesRenderer = useProperty(mesh, "_edgesRenderer");
+
+    return (
+        <>
+            <SwitchPropertyLine
+                label="Enable"
+                value={!!edgesRenderer}
+                onChange={(isEnabled: boolean) => {
+                    if (isEnabled) {
+                        mesh.enableEdgesRendering();
+                    } else {
+                        mesh.disableEdgesRendering();
+                    }
+                }}
+            />
+            <Collapse visible={!!edgesRenderer}>
+                <div className={classes.contentDiv}>
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="Edges Width"
+                        description="Width of the rendered edges (0 to 10)."
+                        target={mesh}
+                        propertyKey="edgesWidth"
+                        min={0}
+                        max={10}
+                        step={0.1}
+                    />
+                    <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
+                </div>
             </Collapse>
         </>
     );
