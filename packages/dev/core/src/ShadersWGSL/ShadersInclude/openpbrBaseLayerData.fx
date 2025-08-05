@@ -44,7 +44,7 @@ var alpha: f32 = 1.0;
 #ifdef SPECULAR_COLOR
     var specularColorFromTexture: vec4f = textureSample(specularColorSampler, specularColorSamplerSampler, fragmentInputs.vSpecularColorUV + uvOffset);
     #ifdef SPECULAR_COLOR_GAMMA
-        specularColorFromTexture = toLinearSpace(specularColorFromTexture.rgb);
+        specularColorFromTexture.rgb = toLinearSpace(specularColorFromTexture.rgb);
     #endif
 #endif
 

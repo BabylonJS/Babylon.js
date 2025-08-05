@@ -98,6 +98,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
         }
 
         const promises = new Array<Promise<any>>();
+        promises.push(Promise.resolve());
 
         if (useOpenPBR) {
             if (properties.specularFactor !== undefined) {
@@ -151,7 +152,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Specular Color)`;
-                        (babylonMaterial as PBRMaterial).reflectionTexture = texture;
+                        (babylonMaterial as PBRMaterial).reflectanceTexture = texture;
                     })
                 );
             }
