@@ -6,7 +6,6 @@ import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
 
 import { Material, MultiMaterial } from "core/Materials";
-import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { StandardMaterial } from "core/Materials/standardMaterial";
