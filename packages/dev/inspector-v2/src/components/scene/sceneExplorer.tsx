@@ -293,16 +293,15 @@ const EntityTreeItem: FunctionComponent<{
     const name = useObservableState(() => displayInfo.name, displayInfo.onChange);
 
     // Get the commands that apply to this entity.
-    const commandInfo = useResource(
+    const commands = useResource(
         useCallback(() => {
             const commands: readonly SceneExplorerCommandDisplayInfo<EntityBase>[] = commandProviders
                 .filter((provider) => provider.predicate(entityItem.entity))
                 .map((provider) => provider.getCommandInfo(entityItem.entity));
 
-            return {
-                commands,
+            return Object.assign(commands, {
                 dispose: () => commands.forEach((command) => command.dispose?.()),
-            } as const;
+            });
         }, [entityItem.entity, commandProviders])
     );
 
@@ -310,7 +309,7 @@ const EntityTreeItem: FunctionComponent<{
 
     // For enabled/active toggle commands, we should always show them so the user knows this command is toggled on.
     useEffect(() => {
-        const toggleCommands = commandInfo.commands.filter((command) => command.type === "toggle");
+        const toggleCommands = commands.filter((command) => command.type === "toggle");
 
         const updateEnabledToggleCommands = () => {
             setEnabledToggleCommands(toggleCommands.filter((command) => command.isEnabled));
@@ -328,7 +327,7 @@ const EntityTreeItem: FunctionComponent<{
                 observer.remove();
             }
         };
-    }, [commandInfo.commands]);
+    }, [commands]);
 
     return (
         <FlatTreeItem
@@ -346,7 +345,7 @@ const EntityTreeItem: FunctionComponent<{
                 iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
                 style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                 // Actions are only visible when the item is focused or has pointer hover.
-                actions={commandInfo.commands.map((command) =>
+                actions={commands.map((command) =>
                     command.type === "action" ? (
                         <ActionCommand key={command.displayName} command={command} entity={entityItem.entity} />
                     ) : (
