@@ -86,18 +86,33 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         });
 
         const visibilityCommandRegistration = sceneExplorerService.addCommand({
-            type: "toggle",
             order: 0,
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
-            isEnabled: (scene, mesh) => {
-                return mesh.isVisible;
+            getCommandInfo: (mesh) => {
+                const onChangeObservable = new Observable<void>();
+                const isVisibleHook = InterceptProperty(mesh, "isVisible", {
+                    afterSet: () => onChangeObservable.notifyObservers(),
+                });
+
+                return {
+                    type: "toggle",
+                    get displayName() {
+                        return `${mesh.isVisible ? "Hide" : "Show"} Mesh`;
+                    },
+                    icon: () => (mesh.isVisible ? <EyeRegular /> : <EyeOffRegular />),
+                    get isEnabled() {
+                        return !mesh.isVisible;
+                    },
+                    set isEnabled(enabled: boolean) {
+                        mesh.isVisible = !enabled;
+                    },
+                    onChange: onChangeObservable,
+                    dispose: () => {
+                        isVisibleHook.dispose();
+                        onChangeObservable.clear();
+                    },
+                };
             },
-            setEnabled: (scene, mesh, enabled) => {
-                mesh.isVisible = enabled;
-            },
-            displayName: "Show/Hide Mesh",
-            icon: () => <EyeRegular />,
-            disabledIcon: () => <EyeOffRegular />,
         });
 
         return {

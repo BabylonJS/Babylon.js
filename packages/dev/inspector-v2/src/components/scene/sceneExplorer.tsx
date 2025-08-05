@@ -10,14 +10,15 @@ import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useObservableState } from "../../hooks/observableHooks";
+import { useResource } from "../../hooks/resourceHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
 export type EntityBase = Readonly<{
     uniqueId: number;
 }>;
 
-export type EntityDisplayInfo = Readonly<
-    {
+export type EntityDisplayInfo = Partial<IDisposable> &
+    Readonly<{
         /**
          * The name of the entity to display in the Scene Explorer tree.
          */
@@ -27,8 +28,7 @@ export type EntityDisplayInfo = Readonly<
          * An observable that notifies when the display info (such as the name) changes.
          */
         onChange?: IReadonlyObservable<void>;
-    } & Partial<IDisposable>
->;
+    }>;
 
 export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     /**
@@ -90,7 +90,45 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
 }>;
 
-type EntityCommandBase<T extends EntityBase> = Readonly<{
+type CommandDisplayInfo<T extends EntityBase> = Partial<IDisposable> &
+    Readonly<{
+        /**
+         * The display name of the command (e.g. "Delete", "Rename", etc.).
+         */
+        displayName: string;
+
+        /**
+         * An icon component to render for the command.
+         */
+        icon: ComponentType<{ entity: T }>;
+
+        /**
+         * An observable that notifies when the command state changes.
+         */
+        onChange?: IReadonlyObservable<void>;
+    }>;
+
+type ActionCommandDisplayInfo<T extends EntityBase> = CommandDisplayInfo<T> & {
+    readonly type: "action";
+
+    /**
+     * The function that executes the command on the given entity.
+     */
+    execute(entity: T): void;
+};
+
+type ToggleCommandDisplayInfo<T extends EntityBase> = CommandDisplayInfo<T> & {
+    readonly type: "toggle";
+
+    /**
+     * A boolean indicating if the command is enabled.
+     */
+    isEnabled: boolean;
+};
+
+export type SceneExplorerCommandDisplayInfo<T extends EntityBase> = ActionCommandDisplayInfo<T> | ToggleCommandDisplayInfo<T>;
+
+export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     /**
      * An optional order for the section, relative to other commands.
      * Defaults to 0.
@@ -103,45 +141,10 @@ type EntityCommandBase<T extends EntityBase> = Readonly<{
     predicate: (entity: unknown) => entity is T;
 
     /**
-     * The display name of the command (e.g. "Delete", "Rename", etc.).
+     * Gets the command information for the given entity.
      */
-    displayName: string;
-
-    /**
-     * An icon component to render for the command.
-     */
-    icon: ComponentType<{ entity: T }>;
+    getCommandInfo: (entity: T) => SceneExplorerCommandDisplayInfo<T>;
 }>;
-
-type ActionCommand<T extends EntityBase> = EntityCommandBase<T> &
-    Readonly<{
-        type: "action";
-        /**
-         * The function that executes the command on the given entity.
-         */
-        execute: (scene: Scene, entity: T) => void;
-    }>;
-
-type ToggleCommand<T extends EntityBase> = EntityCommandBase<T> &
-    Readonly<{
-        type: "toggle";
-        /**
-         * A boolean indicating if the command is enabled.
-         */
-        isEnabled: (scene: Scene, entity: T) => boolean;
-
-        /**
-         * The function that sets the enabled state of the command on the given entity.
-         */
-        setEnabled: (scene: Scene, entity: T, enabled: boolean) => void;
-
-        /**
-         * An optional icon component to render when the command is disabled.
-         */
-        disabledIcon?: ComponentType<{ entity: T }>;
-    }>;
-
-export type SceneExplorerEntityCommand<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
 
 type SceneTreeItemData = { type: "scene"; scene: Scene };
 
@@ -185,69 +188,207 @@ const useStyles = makeStyles({
     },
 });
 
-const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; entity: EntityBase; scene: Scene }> = (props) => {
-    const { command, entity, scene } = props;
+const ActionCommand: FunctionComponent<{ command: ActionCommandDisplayInfo<EntityBase>; entity: EntityBase }> = (props) => {
+    const { command, entity } = props;
 
     return (
         <Tooltip key={command.displayName} content={command.displayName} relationship="label">
-            <Button icon={<command.icon entity={entity} />} appearance="subtle" onClick={() => command.execute(scene, entity)} />
+            <Button icon={<command.icon entity={entity} />} appearance="subtle" onClick={() => command.execute(entity)} />
         </Tooltip>
     );
 };
 
-const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; entity: EntityBase; scene: Scene }> = (props) => {
-    const { command, entity, scene } = props;
-    const [checked, setChecked] = useState(command.isEnabled(scene, entity));
+const ToggleCommand: FunctionComponent<{ command: ToggleCommandDisplayInfo<EntityBase>; entity: EntityBase }> = (props) => {
+    const { command, entity } = props;
+    const [checked, setChecked] = useState(command.isEnabled);
     const toggle = useCallback(() => {
         setChecked((prev) => {
             const enabled = !prev;
-            command.setEnabled(scene, entity, enabled);
+            command.isEnabled = enabled;
             return enabled;
         });
     }, [setChecked]);
 
     return (
         <Tooltip content={command.displayName} relationship="label">
-            <ToggleButton
-                icon={!checked && command.disabledIcon ? <command.disabledIcon entity={entity} /> : <command.icon entity={entity} />}
-                appearance="transparent"
-                checked={checked}
-                onClick={toggle}
-            />
+            <ToggleButton icon={<command.icon entity={entity} />} appearance="transparent" checked={checked} onClick={toggle} />
         </Tooltip>
     );
 };
 
-const EntityTreeItemComponent: FunctionComponent<{ item: EntityTreeItemData }> = (props) => {
-    const { item } = props;
+const SceneTreeItem: FunctionComponent<{
+    scene: Scene;
+    selectedEntity?: unknown;
+    setSelectedEntity?: (entity: unknown) => void;
+    isFiltering: boolean;
+}> = (props) => {
+    const { scene, selectedEntity, setSelectedEntity } = props;
 
-    const [displayInfo, setDisplayInfo] = useState<EntityDisplayInfo>();
-
-    useEffect(() => {
-        const displayInfo = item.getDisplayInfo();
-        setDisplayInfo(displayInfo);
-        return () => displayInfo.dispose?.();
-    }, [item]);
-
-    const name = useObservableState(() => displayInfo?.name, displayInfo?.onChange);
+    const classes = useStyles();
 
     return (
-        <Body1 wrap={false} truncate>
-            {name?.substring(0, 100)}
-        </Body1>
+        <FlatTreeItem
+            key="scene"
+            value="scene"
+            itemType="leaf"
+            parentValue={undefined}
+            aria-level={1}
+            aria-setsize={1}
+            aria-posinset={1}
+            onClick={() => setSelectedEntity?.(scene)}
+        >
+            <TreeItemLayout
+                iconBefore={<MoviesAndTvRegular />}
+                className={classes.sceneTreeItemLayout}
+                style={scene === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+            >
+                <Body1Strong wrap={false} truncate>
+                    Scene
+                </Body1Strong>
+            </TreeItemLayout>
+        </FlatTreeItem>
+    );
+};
+
+const SectionTreeItem: FunctionComponent<{
+    scene: Scene;
+    section: SectionTreeItemData;
+    selectedEntity?: unknown;
+    setSelectedEntity?: (entity: unknown) => void;
+    isFiltering: boolean;
+}> = (props) => {
+    const { section, isFiltering } = props;
+
+    return (
+        <FlatTreeItem
+            key={section.sectionName}
+            value={section.sectionName}
+            // Disable manual expand/collapse when a filter is active.
+            itemType={!isFiltering && section.hasChildren ? "branch" : "leaf"}
+            parentValue={undefined}
+            aria-level={1}
+            aria-setsize={1}
+            aria-posinset={1}
+        >
+            <TreeItemLayout>
+                <Body1Strong wrap={false} truncate>
+                    {section.sectionName.substring(0, 100)}
+                </Body1Strong>
+            </TreeItemLayout>
+        </FlatTreeItem>
+    );
+};
+
+const EntityTreeItem: FunctionComponent<{
+    scene: Scene;
+    entityItem: EntityTreeItemData;
+    selectedEntity?: unknown;
+    setSelectedEntity?: (entity: unknown) => void;
+    isFiltering: boolean;
+    commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+}> = (props) => {
+    const { entityItem, selectedEntity, setSelectedEntity, isFiltering, commandProviders } = props;
+
+    const displayInfo = useResource(
+        useCallback(() => {
+            const displayInfo = entityItem.getDisplayInfo();
+            if (!displayInfo.dispose) {
+                displayInfo.dispose = () => {
+                    /* No-op */
+                };
+            }
+            return displayInfo as typeof displayInfo & IDisposable;
+        }, [entityItem])
+    );
+
+    const name = useObservableState(() => displayInfo.name, displayInfo.onChange);
+
+    // Get the commands that apply to this entity.
+    const commandInfo = useResource(
+        useCallback(() => {
+            const commands: readonly SceneExplorerCommandDisplayInfo<EntityBase>[] = commandProviders
+                .filter((provider) => provider.predicate(entityItem.entity))
+                .map((provider) => provider.getCommandInfo(entityItem.entity));
+
+            return {
+                commands,
+                dispose: () => commands.forEach((command) => command.dispose?.()),
+            } as const;
+        }, [entityItem.entity, commandProviders])
+    );
+
+    const [enabledToggleCommands, setEnabledToggleCommands] = useState<readonly ToggleCommandDisplayInfo<EntityBase>[]>([]);
+
+    // For enabled/active toggle commands, we should always show them so the user knows this command is toggled on.
+    useEffect(() => {
+        const toggleCommands = commandInfo.commands.filter((command) => command.type === "toggle");
+
+        const updateEnabledToggleCommands = () => {
+            setEnabledToggleCommands(toggleCommands.filter((command) => command.isEnabled));
+        };
+
+        updateEnabledToggleCommands();
+
+        const observers = toggleCommands
+            .map((command) => command.onChange)
+            .filter((onChange) => !!onChange)
+            .map((onChange) => onChange.add(updateEnabledToggleCommands));
+
+        return () => {
+            for (const observer of observers) {
+                observer.remove();
+            }
+        };
+    }, [commandInfo.commands]);
+
+    return (
+        <FlatTreeItem
+            key={entityItem.entity.uniqueId}
+            value={entityItem.entity.uniqueId}
+            // Disable manual expand/collapse when a filter is active.
+            itemType={!isFiltering && entityItem.hasChildren ? "branch" : "leaf"}
+            parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : entityItem.entity.uniqueId}
+            aria-level={entityItem.depth}
+            aria-setsize={1}
+            aria-posinset={1}
+            onClick={() => setSelectedEntity?.(entityItem.entity)}
+        >
+            <TreeItemLayout
+                iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                style={entityItem.entity === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                // Actions are only visible when the item is focused or has pointer hover.
+                actions={commandInfo.commands.map((command) =>
+                    command.type === "action" ? (
+                        <ActionCommand key={command.displayName} command={command} entity={entityItem.entity} />
+                    ) : (
+                        <ToggleCommand key={command.displayName} command={command} entity={entityItem.entity} />
+                    )
+                )}
+                // Asides are always visible.
+                aside={{
+                    // Match the gap and padding of the actions.
+                    style: { gap: 0, paddingRight: tokens.spacingHorizontalS },
+                    children: enabledToggleCommands.map((command) => <ToggleCommand key={command.displayName} command={command} entity={entityItem.entity} />),
+                }}
+            >
+                <Body1 wrap={false} truncate>
+                    {name.substring(0, 100)}
+                </Body1>
+            </TreeItemLayout>
+        </FlatTreeItem>
     );
 };
 
 export const SceneExplorer: FunctionComponent<{
     sections: readonly SceneExplorerSection<EntityBase>[];
-    commands: readonly SceneExplorerEntityCommand<EntityBase>[];
+    commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
     scene: Scene;
     selectedEntity?: unknown;
     setSelectedEntity?: (entity: unknown) => void;
 }> = (props) => {
     const classes = useStyles();
 
-    const { sections, commands, scene, selectedEntity } = props;
+    const { sections, commandProviders, scene, selectedEntity } = props;
 
     const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
     const [sceneVersion, setSceneVersion] = useState(0);
@@ -492,76 +633,29 @@ export const SceneExplorer: FunctionComponent<{
                         const item = visibleItems[index];
 
                         if (item.type === "scene") {
-                            return (
-                                <FlatTreeItem
-                                    key="scene"
-                                    value="scene"
-                                    itemType="leaf"
-                                    parentValue={undefined}
-                                    aria-level={1}
-                                    aria-setsize={1}
-                                    aria-posinset={1}
-                                    onClick={() => setSelectedEntity?.(scene)}
-                                >
-                                    <TreeItemLayout
-                                        iconBefore={<MoviesAndTvRegular />}
-                                        className={classes.sceneTreeItemLayout}
-                                        style={scene === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-                                    >
-                                        <Body1Strong wrap={false} truncate>
-                                            Scene
-                                        </Body1Strong>
-                                    </TreeItemLayout>
-                                </FlatTreeItem>
-                            );
+                            return <SceneTreeItem key="scene" scene={scene} selectedEntity={selectedEntity} setSelectedEntity={setSelectedEntity} isFiltering={!!itemsFilter} />;
                         } else if (item.type === "section") {
                             return (
-                                <FlatTreeItem
+                                <SectionTreeItem
                                     key={item.sectionName}
-                                    value={item.sectionName}
-                                    // Disable manual expand/collapse when a filter is active.
-                                    itemType={!itemsFilter && item.hasChildren ? "branch" : "leaf"}
-                                    parentValue={undefined}
-                                    aria-level={1}
-                                    aria-setsize={1}
-                                    aria-posinset={1}
-                                >
-                                    <TreeItemLayout>
-                                        <Body1Strong wrap={false} truncate>
-                                            {item.sectionName.substring(0, 100)}
-                                        </Body1Strong>
-                                    </TreeItemLayout>
-                                </FlatTreeItem>
+                                    scene={scene}
+                                    section={item}
+                                    selectedEntity={selectedEntity}
+                                    setSelectedEntity={setSelectedEntity}
+                                    isFiltering={!!itemsFilter}
+                                />
                             );
                         } else {
                             return (
-                                <FlatTreeItem
+                                <EntityTreeItem
                                     key={item.entity.uniqueId}
-                                    value={item.entity.uniqueId}
-                                    // Disable manual expand/collapse when a filter is active.
-                                    itemType={!itemsFilter && item.hasChildren ? "branch" : "leaf"}
-                                    parentValue={item.parent.type === "section" ? item.parent.sectionName : item.entity.uniqueId}
-                                    aria-level={item.depth}
-                                    aria-setsize={1}
-                                    aria-posinset={1}
-                                    onClick={() => setSelectedEntity?.(item.entity)}
-                                >
-                                    <TreeItemLayout
-                                        iconBefore={item.icon ? <item.icon entity={item.entity} /> : null}
-                                        style={item.entity === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-                                        actions={commands
-                                            .filter((command) => command.predicate(item.entity))
-                                            .map((command) =>
-                                                command.type === "action" ? (
-                                                    <ActionCommand key={command.displayName} command={command} entity={item.entity} scene={scene} />
-                                                ) : (
-                                                    <ToggleCommand key={command.displayName} command={command} entity={item.entity} scene={scene} />
-                                                )
-                                            )}
-                                    >
-                                        <EntityTreeItemComponent item={item} />
-                                    </TreeItemLayout>
-                                </FlatTreeItem>
+                                    scene={scene}
+                                    entityItem={item}
+                                    selectedEntity={selectedEntity}
+                                    setSelectedEntity={setSelectedEntity}
+                                    isFiltering={!!itemsFilter}
+                                    commandProviders={commandProviders}
+                                />
                             );
                         }
                     }}
