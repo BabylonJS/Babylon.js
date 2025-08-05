@@ -23,6 +23,7 @@ import { _WarnImport } from "../Misc/devTools";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
 import type { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { ThinEffectLayer } from "./thinEffectLayer";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -76,6 +77,7 @@ export interface IEffectLayerOptions {
  */
 export abstract class EffectLayer {
     private _effectLayerOptions: IEffectLayerOptions;
+    private _mainTextureCreatedSize: ISize = { width: 0, height: 0 };
 
     protected _scene: Scene;
     protected _engine: AbstractEngine;
@@ -116,6 +118,11 @@ export abstract class EffectLayer {
     public static set ForceGLSL(value: boolean) {
         ThinEffectLayer.ForceGLSL = value;
     }
+
+    /**
+     * The unique id of the layer
+     */
+    public readonly uniqueId = UniqueIdGenerator.UniqueId;
 
     /**
      * The name of the layer
@@ -310,7 +317,7 @@ export abstract class EffectLayer {
 
         this._engine = this._scene.getEngine();
         this._maxSize = this._engine.getCaps().maxTextureSize;
-        this._scene.effectLayers.push(this);
+        this._scene.addEffectLayer(this);
 
         this._thinEffectLayer.onDisposeObservable.add(() => {
             this.onDisposeObservable.notifyObservers(this);
@@ -533,10 +540,9 @@ export abstract class EffectLayer {
         }
 
         // Handle size changes.
-        const size = this._mainTexture.getSize();
         this._setMainTextureSize();
         if (
-            (size.width !== this._mainTextureDesiredSize.width || size.height !== this._mainTextureDesiredSize.height) &&
+            (this._mainTextureCreatedSize.width !== this._mainTextureDesiredSize.width || this._mainTextureCreatedSize.height !== this._mainTextureDesiredSize.height) &&
             this._mainTextureDesiredSize.width !== 0 &&
             this._mainTextureDesiredSize.height !== 0
         ) {
@@ -545,6 +551,8 @@ export abstract class EffectLayer {
             this._disposeTextureAndPostProcesses();
             this._createMainTexture();
             this._createTextureAndPostProcesses();
+            this._mainTextureCreatedSize.width = this._mainTextureDesiredSize.width;
+            this._mainTextureCreatedSize.height = this._mainTextureDesiredSize.height;
         }
     }
 
@@ -642,10 +650,7 @@ export abstract class EffectLayer {
         this._disposeTextureAndPostProcesses();
 
         // Remove from scene
-        const index = this._scene.effectLayers.indexOf(this, 0);
-        if (index > -1) {
-            this._scene.effectLayers.splice(index, 1);
-        }
+        this._scene.removeEffectLayer(this);
 
         // Callback
         this.onDisposeObservable.clear();

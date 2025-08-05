@@ -4,7 +4,6 @@ import type { Scene } from "../scene";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
-import { Color3 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 import type { Mesh } from "../Meshes/mesh";
 import type { UniformBuffer } from "./uniformBuffer";
@@ -19,9 +18,10 @@ import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
+import type { IColor3Like } from "core/Maths";
 
 // Temps
-const TempFogColor = Color3.Black();
+const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };
 const TmpMorphInfluencers = {
     NUM_MORPH_INFLUENCERS: 0,
     NORMAL: false,
@@ -499,6 +499,8 @@ export function GetFogState(mesh: AbstractMesh, scene: Scene) {
  * @param alphaTest defines if alpha testing has to be turned on
  * @param defines defines the current list of defines
  * @param applyDecalAfterDetail Defines if the decal is applied after or before the detail
+ * @param useVertexPulling Defines if vertex pulling is used
+ * @param renderingMesh The mesh used for rendering
  */
 export function PrepareDefinesForMisc(
     mesh: AbstractMesh,
@@ -508,7 +510,9 @@ export function PrepareDefinesForMisc(
     fogEnabled: boolean,
     alphaTest: boolean,
     defines: any,
-    applyDecalAfterDetail: boolean = false
+    applyDecalAfterDetail: boolean = false,
+    useVertexPulling: boolean = false,
+    renderingMesh?: AbstractMesh
 ): void {
     if (defines._areMiscDirty) {
         defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
@@ -517,6 +521,12 @@ export function PrepareDefinesForMisc(
         defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
         defines["ALPHATEST"] = alphaTest;
         defines["DECAL_AFTER_DETAIL"] = applyDecalAfterDetail;
+        defines["USE_VERTEX_PULLING"] = useVertexPulling;
+
+        const indexBuffer = renderingMesh?.geometry?.getIndexBuffer();
+
+        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer;
+        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer ? indexBuffer.is32Bits : false;
     }
 }
 

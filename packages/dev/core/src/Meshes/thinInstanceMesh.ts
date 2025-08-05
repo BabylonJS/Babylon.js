@@ -505,4 +505,8 @@ Mesh.prototype._disposeThinInstanceSpecificData = function () {
         this._thinInstanceDataStorage.matrixBuffer.dispose();
         this._thinInstanceDataStorage.matrixBuffer = null;
     }
+    if (this._thinInstanceDataStorage?.previousMatrixBuffer) {
+        this._thinInstanceDataStorage.previousMatrixBuffer.dispose();
+        this._thinInstanceDataStorage.previousMatrixBuffer = null;
+    }
 };

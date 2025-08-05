@@ -9,6 +9,7 @@ module.exports = (env) => {
         namespace: "NODEEDITOR",
         es6Mode: true,
         maxMode: true,
+        minToMax: true,
         alias: {
             "shared-ui-components": path.resolve("../../../dev/sharedUiComponents/dist"),
         },

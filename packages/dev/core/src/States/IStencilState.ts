@@ -2,15 +2,22 @@
 export interface IStencilState {
     enabled: boolean;
 
-    mask: number;
+    mask: number; // write mask
+    funcMask: number; // read mask
 
-    func: number;
     funcRef: number;
-    funcMask: number;
 
+    // Front stencil operations
+    func: number;
     opStencilDepthPass: number;
     opStencilFail: number;
     opDepthFail: number;
+
+    // Back stencil operations
+    backFunc: number;
+    backOpStencilDepthPass: number;
+    backOpStencilFail: number;
+    backOpDepthFail: number;
 
     reset(): void;
 }

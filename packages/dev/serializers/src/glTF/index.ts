@@ -1,3 +1,3 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./glTFFileExporter";
 export * from "./2.0/index";

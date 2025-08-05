@@ -21,6 +21,7 @@ import type { VideoTexture } from "core/Materials/Textures/videoTexture";
 import { WebGPUPerfCounter } from "core/Engines/WebGPU/webgpuPerfCounter";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { _RetryWithInterval } from "core/Misc/timingTools";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -170,6 +171,23 @@ export class ComputeShader {
 
         this._bindings[name] = {
             type: bindSampler ? ComputeBindingType.Texture : ComputeBindingType.TextureWithoutSampler,
+            object: texture,
+            indexInGroupEntries: current?.indexInGroupEntries,
+        };
+
+        this._contextIsDirty ||= !current || current.object !== texture || current.type !== this._bindings[name].type;
+    }
+
+    /**
+     * Binds an internal texture to the shader
+     * @param name Binding name of the texture
+     * @param texture Texture to bind
+     */
+    public setInternalTexture(name: string, texture: InternalTexture): void {
+        const current = this._bindings[name];
+
+        this._bindings[name] = {
+            type: ComputeBindingType.InternalTexture,
             object: texture,
             indexInGroupEntries: current?.indexInGroupEntries,
         };
@@ -472,6 +490,7 @@ export class ComputeShader {
                     break;
                 }
 
+                case ComputeBindingType.InternalTexture:
                 case ComputeBindingType.UniformBuffer: {
                     break;
                 }

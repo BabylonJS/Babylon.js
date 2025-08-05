@@ -113,14 +113,14 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     /**
      * @internal
      */
-    public _preparePendingTasks(_context: FlowGraphContext): void {
+    public override _preparePendingTasks(_context: FlowGraphContext): void {
         // no-op
     }
 
     /**
      * @internal
      */
-    public _cancelPendingTasks(_context: FlowGraphContext): void {
+    public override _cancelPendingTasks(_context: FlowGraphContext): void {
         // no-op
     }
 

@@ -1,6 +1,5 @@
 import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
-import { RandomRangeBlock } from "core/Particles/Node/Blocks/randomRangeBlock";
 import { UpdateDirectionBlock } from "core/Particles/Node/Blocks/Update/updateDirectionBlock";
 import { UpdatePositionBlock } from "core/Particles/Node/Blocks/Update/updatePositionBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
@@ -34,6 +33,8 @@ import { SphereShapeBlock } from "core/Particles/Node/Blocks/Emitters/sphereShap
 import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeBlock";
 import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
 import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinderShapeBlock";
+import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
+import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
 
 /**
  * Static class for BlockTools
@@ -126,6 +127,8 @@ export class BlockTools {
                 return new UpdateAngleBlock("Update angle");
             case "UpdateFlowMapBlock":
                 return new UpdateFlowMapBlock("Update flow map");
+            case "UpdateAttractorBlock":
+                return new UpdateAttractorBlock("Update attractor");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
@@ -140,8 +143,8 @@ export class BlockTools {
                 return new CustomShapeBlock("Custom shape");
             case "CylinderShapeBlock":
                 return new CylinderShapeBlock("Cylinder shape");
-            case "RandomRangeBlock":
-                return new RandomRangeBlock("Random range");
+            case "MeshShapeBlock":
+                return new MeshShapeBlock("Mesh shape");
             case "PositionBlock": {
                 const block = new ParticleInputBlock("Position");
                 block.contextualValue = NodeParticleContextualSources.Position;

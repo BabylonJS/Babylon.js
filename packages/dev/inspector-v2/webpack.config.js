@@ -1,9 +1,8 @@
 const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
-const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
-const ReactRefreshTypeScript = require("react-refresh-typescript").default;
 
 module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     return {
         entry: "./test/app/index.ts",
 
@@ -23,36 +22,26 @@ module.exports = (env) => {
         resolve: {
             extensions: [".ts", ".tsx", ".js", ".jsx"],
             alias: {
+                addons: path.resolve("../../dev/addons/dist"),
                 core: path.resolve("../../dev/core/dist"),
+                gui: path.resolve("../../dev/gui/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
+                materials: path.resolve("../../dev/materials/dist"),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+                "inspector-v2": path.resolve("./src"),
             },
         },
 
         module: {
-            rules: [
-                {
-                    test: /\.tsx?$/,
-                    use: [
-                        {
-                            loader: "ts-loader",
-                            options: {
-                                getCustomTransformers: () => ({
-                                    before: [ReactRefreshTypeScript()].filter(Boolean),
-                                }),
-                                transpileOnly: true,
-                            },
-                        },
-                    ],
-                    exclude: /node_modules/,
+            rules: webpackTools.getRules({
+                sideEffects: true,
+                includeCSS: false,
+                enableFastRefresh: !production,
+                tsOptions: {
+                    configFile: "tsconfig.build.json",
+                    transpileOnly: true,
                 },
-                {
-                    test: /\.css$/,
-                    use: ["style-loader", "css-loader"],
-                },
-            ],
+            }),
         },
-
-        plugins: [new ReactRefreshWebpackPlugin()].filter(Boolean),
     };
 };

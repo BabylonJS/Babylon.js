@@ -87,6 +87,7 @@ import { ScreenSizeBlock } from "core/Materials/Node/Blocks/Fragment/screenSizeB
 import { MatrixBuilderBlock } from "core/Materials/Node/Blocks/matrixBuilderBlock";
 import { SceneDepthBlock } from "core/Materials/Node/Blocks/Dual/sceneDepthBlock";
 import { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
+import { DepthSourceBlock } from "core/Materials/Node/Blocks/Dual/depthSourceBlock";
 import { CloudBlock } from "core/Materials/Node/Blocks/cloudBlock";
 import { VoronoiNoiseBlock } from "core/Materials/Node/Blocks/voronoiNoiseBlock";
 import { ScreenSpaceBlock } from "core/Materials/Node/Blocks/Fragment/screenSpaceBlock";
@@ -679,6 +680,8 @@ export class BlockTools {
             }
             case "ImageSourceBlock":
                 return new ImageSourceBlock("ImageSource");
+            case "DepthSourceBlock":
+                return new DepthSourceBlock("DepthSource");
             case "ClipPlanesBlock":
                 return new ClipPlanesBlock("ClipPlanes");
             case "FragDepthBlock":

@@ -51,30 +51,27 @@ export class VertexAnimationBaker {
 
         const vertexData = halfFloat ? new Uint16Array(floatsPerFrame * totalFrames) : new Float32Array(floatsPerFrame * totalFrames);
 
-        let offset = 0;
-        const matrices = this._skeleton.getTransformMatrices(this._mesh);
+        let frameIdx = 0;
 
         this._skeleton.returnToRest();
 
-        if (halfFloat) {
-            for (const { from, to } of ranges) {
-                for (let f = Math.floor(from); f <= Math.floor(to); ++f) {
-                    this._scene.beginAnimation(this._skeleton, f, f, false, 1.0);
-                    this._skeleton.computeAbsoluteMatrices(true);
-                    for (let i = 0; i < floatsPerFrame; ++i) {
-                        vertexData[offset + i] = ToHalfFloat(matrices[i]);
-                    }
-                    offset += floatsPerFrame;
+        for (const range of ranges) {
+            for (let f = Math.floor(range.from); f <= Math.floor(range.to); f++) {
+                this._scene.beginAnimation(this._skeleton, f, f, false, 1.0);
+                this._scene.render();
+                this._skeleton.computeAbsoluteMatrices(true);
+                const matrices = this._skeleton.getTransformMatrices(this._mesh);
+                const base = frameIdx * floatsPerFrame;
+                if (halfFloat) {
+                    matrices.forEach((val, i) => {
+                        vertexData[base + i] = ToHalfFloat(val);
+                    });
+                } else {
+                    matrices.forEach((val, i) => {
+                        vertexData[base + i] = val;
+                    });
                 }
-            }
-        } else {
-            for (const { from, to } of ranges) {
-                for (let f = Math.floor(from); f <= Math.floor(to); ++f) {
-                    this._scene.beginAnimation(this._skeleton, f, f, false, 1.0);
-                    this._skeleton.computeAbsoluteMatrices(true);
-                    vertexData.set(matrices, offset);
-                    offset += floatsPerFrame;
-                }
+                frameIdx++;
             }
         }
 

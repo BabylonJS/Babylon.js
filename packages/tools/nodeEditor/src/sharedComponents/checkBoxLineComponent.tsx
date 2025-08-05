@@ -1,6 +1,8 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 export interface ICheckBoxLineComponentProps {
     label: string;
@@ -79,7 +81,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         this.setState({ isSelected: !this.state.isSelected });
     }
 
-    override render() {
+    renderFluent() {
+        return <SwitchPropertyLine label={this.props.label} value={this.state.isSelected} disabled={!!this.props.disabled} onChange={() => this.onChange()} />;
+    }
+
+    renderOriginal() {
         return (
             <div className="checkBoxLine">
                 <div className="label" title={this.props.label}>
@@ -98,5 +104,9 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                 </div>
             </div>
         );
+    }
+
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

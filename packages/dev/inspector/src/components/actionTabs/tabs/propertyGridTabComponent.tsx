@@ -775,7 +775,7 @@ export class PropertyGridTabComponent extends PaneComponent {
         const entity = this.props.selectedEntity || {};
         const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
         return (
-            <FluentToolWrapper>
+            <FluentToolWrapper toolName="INSPECTOR">
                 <div className="pane">
                     {this.renderContent()}
                     {Tags.HasTags(entity) && (

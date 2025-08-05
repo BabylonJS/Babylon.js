@@ -403,7 +403,7 @@ export class MorphTargetManager implements IDisposable {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
         effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
         effect.setTexture("morphTargets", this._targetStoreTexture);
-        effect.setInt("morphTargetCount", this.numInfluencers);
+        effect.setFloat("morphTargetCount", this.numInfluencers);
     }
 
     /**
@@ -412,10 +412,12 @@ export class MorphTargetManager implements IDisposable {
      */
     public clone(): MorphTargetManager {
         const copy = new MorphTargetManager(this._scene);
+        copy.areUpdatesFrozen = true;
 
         for (const target of this._targets) {
             copy.addTarget(target.clone());
         }
+        copy.areUpdatesFrozen = false;
 
         copy.enablePositionMorphing = this.enablePositionMorphing;
         copy.enableNormalMorphing = this.enableNormalMorphing;

@@ -37,7 +37,7 @@ export class _IESTextureLoader implements IInternalTextureLoader {
 
         const textureData = LoadIESData(uint8array);
 
-        callback(textureData.width, textureData.height, false, false, () => {
+        callback(textureData.width, textureData.height, texture.useMipMaps, false, () => {
             const engine = texture.getEngine();
             texture.type = Constants.TEXTURETYPE_FLOAT;
             texture.format = Constants.TEXTUREFORMAT_R;

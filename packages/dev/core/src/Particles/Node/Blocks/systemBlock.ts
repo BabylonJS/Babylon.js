@@ -133,7 +133,6 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.emitRate = this.emitRate;
         particleSystem.blendMode = this.blendMode;
         particleSystem.name = this.name;
-        particleSystem._nodeGenerated = true;
         particleSystem._targetStopDuration = this.targetStopDuration;
         particleSystem.startDelay = this.startDelay;
 

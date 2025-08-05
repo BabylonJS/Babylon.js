@@ -6,7 +6,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Texture } from "core/Materials/Textures/texture";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
-import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
+import { GetGeneralProperties, GetGenericProperties } from "./genericNodePropertyComponent";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
@@ -15,6 +15,7 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
 
 export class ImageSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean }> {
     get imageSourceBlock(): ImageSourceBlock {
@@ -47,8 +48,16 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     }
 
     updateAfterTextureLoad() {
-        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.nodeData.data as NodeMaterialBlock);
+        const block = this.props.nodeData.data as ImageSourceBlock;
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+
+        const connections = block.source.connectedBlocks;
+
+        for (const connection of connections) {
+            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(connection);
+        }
+
         this.forceUpdate();
     }
 
@@ -149,8 +158,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         ];
 
         return (
-            <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+            <PropertyTabComponentBase>
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
                     {texture && texture.updateSamplingMode && (
                         <OptionsLine
@@ -299,8 +308,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                 </LineContainerComponent>
-                <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-            </div>
+                {GetGenericProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+            </PropertyTabComponentBase>
         );
     }
 }

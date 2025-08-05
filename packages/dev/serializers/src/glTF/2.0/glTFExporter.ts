@@ -48,7 +48,6 @@ import {
     GetAttributeType,
     GetMinMax,
     GetPrimitiveMode,
-    IsNoopNode,
     IsTriangleFillMode,
     IsChildCollapsible,
     FloatsNeed16BitInteger,
@@ -60,11 +59,13 @@ import {
     DefaultTranslation,
     DefaultScale,
     DefaultRotation,
+    ConvertToRightHandedTransformMatrix,
 } from "./glTFUtilities";
+import { IsNoopNode } from "../../exportUtils";
 import { BufferManager } from "./bufferManager";
 import { Camera } from "core/Cameras/camera";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Logger } from "core/Misc/logger";
 import { EnumerateFloatValues, AreIndices32Bits } from "core/Buffers/bufferUtils";
@@ -78,6 +79,7 @@ import { GreasedLineBaseMesh } from "core/Meshes/GreasedLine/greasedLineBaseMesh
 import { Color3, Color4 } from "core/Maths/math.color";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
+import { DataWriter } from "./dataWriter";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -521,9 +523,9 @@ export class GLTFExporter {
 
     public async generateGLTFAsync(glTFPrefix: string): Promise<GLTFData> {
         const binaryBuffer = await this._generateBinaryAsync();
-
         this._extensionsOnExporting();
         const jsonText = this._generateJSON(binaryBuffer.byteLength, glTFPrefix, true);
+
         const bin = new Blob([binaryBuffer], { type: "application/octet-stream" });
 
         const glTFFileName = glTFPrefix + ".gltf";
@@ -564,15 +566,15 @@ export class GLTFExporter {
     public async generateGLBAsync(glTFPrefix: string): Promise<GLTFData> {
         this._shouldUseGlb = true;
         const binaryBuffer = await this._generateBinaryAsync();
-
         this._extensionsOnExporting();
         const jsonText = this._generateJSON(binaryBuffer.byteLength);
+
         const glbFileName = glTFPrefix + ".glb";
         const headerLength = 12;
         const chunkLengthPrefix = 8;
         let jsonLength = jsonText.length;
         let encodedJsonText;
-        // make use of TextEncoder when available
+        // Make use of TextEncoder when available
         if (typeof TextEncoder !== "undefined") {
             const encoder = new TextEncoder();
             encodedJsonText = encoder.encode(jsonText);
@@ -583,61 +585,53 @@ export class GLTFExporter {
 
         const byteLength = headerLength + 2 * chunkLengthPrefix + jsonLength + jsonPadding + binaryBuffer.byteLength + binPadding;
 
-        // header
-        const headerBuffer = new ArrayBuffer(headerLength);
-        const headerBufferView = new DataView(headerBuffer);
-        headerBufferView.setUint32(0, 0x46546c67, true); //glTF
-        headerBufferView.setUint32(4, 2, true); // version
-        headerBufferView.setUint32(8, byteLength, true); // total bytes in file
+        const dataWriter = new DataWriter(byteLength);
 
-        // json chunk
-        const jsonChunkBuffer = new ArrayBuffer(chunkLengthPrefix + jsonLength + jsonPadding);
-        const jsonChunkBufferView = new DataView(jsonChunkBuffer);
-        jsonChunkBufferView.setUint32(0, jsonLength + jsonPadding, true);
-        jsonChunkBufferView.setUint32(4, 0x4e4f534a, true);
+        // Header
+        dataWriter.writeUInt32(0x46546c67); // "glTF"
+        dataWriter.writeUInt32(2); // Version
+        dataWriter.writeUInt32(byteLength); // Total bytes in file
 
-        // json chunk bytes
-        const jsonData = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix);
-        // if TextEncoder was available, we can simply copy the encoded array
+        // JSON chunk length prefix
+        dataWriter.writeUInt32(jsonLength + jsonPadding);
+        dataWriter.writeUInt32(0x4e4f534a); // "JSON"
+
+        // JSON chunk bytes
         if (encodedJsonText) {
-            jsonData.set(encodedJsonText);
+            // If TextEncoder was available, we can simply copy the encoded array
+            dataWriter.writeTypedArray(encodedJsonText);
         } else {
             const blankCharCode = "_".charCodeAt(0);
             for (let i = 0; i < jsonLength; ++i) {
                 const charCode = jsonText.charCodeAt(i);
-                // if the character doesn't fit into a single UTF-16 code unit, just put a blank character
+                // If the character doesn't fit into a single UTF-16 code unit, just put a blank character
                 if (charCode != jsonText.codePointAt(i)) {
-                    jsonData[i] = blankCharCode;
+                    dataWriter.writeUInt8(blankCharCode);
                 } else {
-                    jsonData[i] = charCode;
+                    dataWriter.writeUInt8(charCode);
                 }
             }
         }
 
-        // json padding
-        const jsonPaddingView = new Uint8Array(jsonChunkBuffer, chunkLengthPrefix + jsonLength);
+        // JSON padding
         for (let i = 0; i < jsonPadding; ++i) {
-            jsonPaddingView[i] = 0x20;
+            dataWriter.writeUInt8(0x20);
         }
 
-        // binary chunk
-        const binaryChunkBuffer = new ArrayBuffer(chunkLengthPrefix);
-        const binaryChunkBufferView = new DataView(binaryChunkBuffer);
-        binaryChunkBufferView.setUint32(0, binaryBuffer.byteLength + binPadding, true);
-        binaryChunkBufferView.setUint32(4, 0x004e4942, true);
+        // Binary chunk length prefix
+        dataWriter.writeUInt32(binaryBuffer.byteLength + binPadding);
+        dataWriter.writeUInt32(0x004e4942); // "BIN"
 
-        // binary padding
-        const binPaddingBuffer = new ArrayBuffer(binPadding);
-        const binPaddingView = new Uint8Array(binPaddingBuffer);
+        // Binary chunk bytes
+        dataWriter.writeTypedArray(binaryBuffer);
+
+        // Binary padding
         for (let i = 0; i < binPadding; ++i) {
-            binPaddingView[i] = 0;
+            dataWriter.writeUInt8(0);
         }
-
-        const glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer, binPaddingBuffer];
-        const glbFile = new Blob(glbData, { type: "application/octet-stream" });
 
         const container = new GLTFData();
-        container.files[glbFileName] = glbFile;
+        container.files[glbFileName] = new Blob([dataWriter.getOutputData()], { type: "application/octet-stream" });
 
         return container;
     }
@@ -661,7 +655,7 @@ export class GLTFExporter {
         }
 
         const rotationQuaternion =
-            babylonTransformNode.rotationQuaternion ||
+            babylonTransformNode.rotationQuaternion?.clone() ||
             Quaternion.FromEulerAngles(babylonTransformNode.rotation.x, babylonTransformNode.rotation.y, babylonTransformNode.rotation.z);
 
         if (!rotationQuaternion.equalsWithEpsilon(DefaultRotation, Epsilon)) {
@@ -746,7 +740,7 @@ export class GLTFExporter {
         }
     }
 
-    // Builds all skins in the skins array so nodes can reference it during node parsing.
+    // Collects all skins in a skins map so nodes can reference it during node parsing.
     private _listAvailableSkeletons(): void {
         for (const skeleton of this._babylonScene.skeletons) {
             if (skeleton.bones.length <= 0) {
@@ -758,21 +752,20 @@ export class GLTFExporter {
         }
     }
 
-    private _exportAndAssignSkeletons() {
+    private _exportAndAssignSkeletons(leftHandNodes: Set<Node>): void {
         for (const skeleton of this._babylonScene.skeletons) {
             if (skeleton.bones.length <= 0) {
                 continue;
             }
 
             const skin = this._skinMap.get(skeleton);
-
             if (skin == undefined) {
                 continue;
             }
 
+            // The bones (joints) of a skeleton (skin) must be exported in the same order as they appear in vertex attributes,
+            // which is indicated by getIndex and may not match a bone's index in skeleton.bones
             const boneIndexMap: { [index: number]: Bone } = {};
-            const inverseBindMatrices: Matrix[] = [];
-
             let maxBoneIndex = -1;
             for (let i = 0; i < skeleton.bones.length; ++i) {
                 const bone = skeleton.bones[i];
@@ -785,43 +778,43 @@ export class GLTFExporter {
                 }
             }
 
-            // Set joints index to scene node.
+            // Set joints indices to scene nodes.
+            const inverseBindMatrices: Matrix[] = [];
             for (let boneIndex = 0; boneIndex <= maxBoneIndex; ++boneIndex) {
-                const bone = boneIndexMap[boneIndex];
-                inverseBindMatrices.push(bone.getAbsoluteInverseBindMatrix());
+                const bone = boneIndexMap[boneIndex]; // Assumes no gaps in bone indices
                 const transformNode = bone.getTransformNode();
-
-                if (transformNode !== null) {
-                    const nodeID = this._nodeMap.get(transformNode);
-                    if (transformNode && nodeID !== null && nodeID !== undefined) {
-                        skin.joints.push(nodeID);
-                    } else {
-                        Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
-                    }
-                } else {
-                    Tools.Warn("Exporting a bone without a linked transform node is currently unsupported");
+                const nodeIndex = transformNode ? this._nodeMap.get(transformNode) : undefined;
+                if (nodeIndex === undefined) {
+                    Tools.Warn("Exporting a bone without a linked transform node is currently unsupported.");
+                    continue; // The indices may be out-of-sync after this and break the skinning.
                 }
+                skin.joints.push(nodeIndex);
+
+                const boneMatrix = bone.getAbsoluteInverseBindMatrix().clone();
+                if (leftHandNodes.has(transformNode!)) {
+                    ConvertToRightHandedTransformMatrix(boneMatrix);
+                }
+                inverseBindMatrices.push(boneMatrix);
             }
 
             // Nodes that use this skin.
-            const skinedNodes = this._nodesSkinMap.get(skin);
+            const skinnedNodes = this._nodesSkinMap.get(skin);
 
-            // Only create skeleton if it has at least one joint and is used by a mesh.
-            if (skin.joints.length > 0 && skinedNodes !== undefined) {
-                // Put IBM data into TypedArraybuffer view
-                const byteLength = inverseBindMatrices.length * 64; // Always a 4 x 4 matrix of 32 bit float
-                const inverseBindMatricesData = new Float32Array(byteLength / 4);
+            // Only export the skin if it has at least one joint and is used by a mesh.
+            if (skin.joints.length > 0 && skinnedNodes !== undefined) {
+                const inverseBindMatricesData = new Float32Array(inverseBindMatrices.length * 16); // Always a 4 x 4 matrix of 32 bit float
                 inverseBindMatrices.forEach((mat: Matrix, index: number) => {
                     inverseBindMatricesData.set(mat.m, index * 16);
                 });
-                // Create buffer view and accessor
+
                 const bufferView = this._bufferManager.createBufferView(inverseBindMatricesData);
                 this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.MAT4, AccessorComponentType.FLOAT, inverseBindMatrices.length));
                 skin.inverseBindMatrices = this._accessors.length - 1;
 
                 this._skins.push(skin);
-                for (const skinedNode of skinedNodes) {
-                    skinedNode.skin = this._skins.length - 1;
+                const skinIndex = this._skins.length - 1;
+                for (const skinnedNode of skinnedNodes) {
+                    skinnedNode.skin = skinIndex;
                 }
             }
         }
@@ -872,7 +865,7 @@ export class GLTFExporter {
         }
 
         this._exportAndAssignCameras();
-        this._exportAndAssignSkeletons();
+        this._exportAndAssignSkeletons(stateLH.getNodesSet());
 
         if (this._babylonScene.animationGroups.length) {
             _GLTFAnimation._CreateNodeAndMorphAnimationFromAnimationGroups(
@@ -1095,7 +1088,7 @@ export class GLTFExporter {
 
             if (floatMatricesIndices.size !== 0) {
                 Logger.Warn(
-                    `Joints conversion needed: some joints are stored as floats in Babylon but GLTF requires UNSIGNED BYTES. We will perform the conversion but this might lead to unused data in the buffer.`
+                    `Joint indices conversion needed: some joint indices are stored as floats in Babylon but GLTF requires UNSIGNED BYTES. We will perform the conversion but this might lead to unused data in the buffer.`
                 );
             }
 
@@ -1317,13 +1310,8 @@ export class GLTFExporter {
 
         primitive.mode = GetPrimitiveMode(fillMode);
 
-        // Flip if triangle winding order is not CCW as glTF is always CCW.
-        const invertedMaterial = sideOrientation !== Material.CounterClockWiseSideOrientation;
-
-        const flipWhenInvertedMaterial = !state.wasAddedByNoopNode && invertedMaterial;
-
-        const flip = IsTriangleFillMode(fillMode) && flipWhenInvertedMaterial;
-
+        // Flip indices if triangle winding order is not CCW, as glTF is always CCW.
+        const flip = sideOrientation !== Material.CounterClockWiseSideOrientation && IsTriangleFillMode(fillMode);
         if (flip) {
             if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
                 throw new Error("Triangle strip/fan fill mode is not implemented");
@@ -1425,7 +1413,7 @@ export class GLTFExporter {
         if (materialIndex === undefined) {
             const hasUVs = vertexBuffers && Object.keys(vertexBuffers).some((kind) => kind.startsWith("uv"));
             babylonMaterial = babylonMaterial instanceof MultiMaterial ? babylonMaterial.subMaterials[subMesh.materialIndex]! : babylonMaterial;
-            if (babylonMaterial instanceof PBRMaterial) {
+            if (babylonMaterial instanceof PBRBaseMaterial) {
                 materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
             } else if (babylonMaterial instanceof StandardMaterial) {
                 materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
@@ -1508,7 +1496,11 @@ export class GLTFExporter {
                 // Index buffer
                 const fillMode = isLinesMesh || isGreasedLineMesh ? Material.LineListDrawMode : (babylonMesh.overrideRenderingFillMode ?? babylonMaterial.fillMode);
 
-                const sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
+                let sideOrientation = babylonMaterial._getEffectiveOrientation(babylonMesh);
+                if (state.wasAddedByNoopNode && !babylonMesh.getScene().useRightHandedSystem) {
+                    // To properly remove a conversion node, we must also cancel out the implicit flip in its children's side orientations.
+                    sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+                }
 
                 this._exportIndices(
                     indices,

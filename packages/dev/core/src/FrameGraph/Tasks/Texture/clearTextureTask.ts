@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
 import { Color4, TmpColors } from "../../../Maths/math.color";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -33,9 +32,14 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
     public clearStencil = false;
 
     /**
+     * The value to use to clear the stencil buffer (default: 0).
+     */
+    public stencilValue = 0;
+
+    /**
      * The color texture to clear.
      */
-    public targetTexture?: FrameGraphTextureHandle;
+    public targetTexture?: FrameGraphTextureHandle | FrameGraphTextureHandle[];
 
     /**
      * The depth attachment texture to clear.
@@ -69,12 +73,14 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: targetTexture and depthTexture can't both be undefined.`);
         }
 
+        const targetTextures = this.targetTexture !== undefined ? (Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture]) : undefined;
+
         let textureSamples = 0;
         let depthSamples = 0;
 
         if (this.targetTexture !== undefined) {
-            textureSamples = this._frameGraph.textureManager.getTextureDescription(this.targetTexture).options.samples || 1;
-            this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
+            textureSamples = this._frameGraph.textureManager.getTextureDescription(targetTextures![0]).options.samples || 1;
+            this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, targetTextures![0]);
         }
         if (this.depthTexture !== undefined) {
             depthSamples = this._frameGraph.textureManager.getTextureDescription(this.depthTexture).options.samples || 1;
@@ -85,11 +91,13 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: the depth texture and the target texture must have the same number of samples.`);
         }
 
+        const attachments = this._frameGraph.engine.buildTextureLayout(targetTextures ? Array(targetTextures.length).fill(true) : []);
+
         const color = TmpColors.Color4[0];
 
         const pass = this._frameGraph.addRenderPass(this.name);
 
-        pass.setRenderTarget(this.targetTexture);
+        pass.setRenderTarget(targetTextures);
         pass.setRenderTargetDepth(this.depthTexture);
         pass.setExecuteFunc((context) => {
             color.copyFrom(this.color);
@@ -97,12 +105,12 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
                 color.toLinearSpaceToRef(color);
             }
 
-            context.clear(color, !!this.clearColor, !!this.clearDepth, !!this.clearStencil);
+            context.clearAttachments(color, attachments, !!this.clearColor, !!this.clearDepth, !!this.clearStencil, this.stencilValue);
         });
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
-        passDisabled.setRenderTarget(this.targetTexture);
+        passDisabled.setRenderTarget(targetTextures);
         passDisabled.setRenderTargetDepth(this.depthTexture);
         passDisabled.setExecuteFunc((_context) => {});
 

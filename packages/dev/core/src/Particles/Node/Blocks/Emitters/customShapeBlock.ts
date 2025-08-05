@@ -5,11 +5,12 @@ import { Vector3 } from "core/Maths/math.vector";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { Particle } from "core/Particles/particle";
+import type { IShapeBlock } from "./IShapeBlock";
 
 /**
  * Block used to provide a flow of particles emitted from a custom position.
  */
-export class CustomShapeBlock extends NodeParticleBlock {
+export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
     /**
      * Create a new CustomShapeBlock
      * @param name defines the block name

@@ -12,6 +12,15 @@
         },
         {
             "path": "../loaders/tsconfig.build.json"
+        },
+        {
+            "path": "../sharedUiComponents/tsconfig.build.json"
+        },
+        {
+            "path": "../addons/tsconfig.build.json"
+        },
+        {
+            "path": "../materials/tsconfig.build.json"
         }
     ],
 

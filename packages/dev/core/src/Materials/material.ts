@@ -4,7 +4,7 @@ import type { IAnimatable } from "../Animations/animatable.interface";
 import type { SmartArray } from "../Misc/smartArray";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
+import type { Immutable, Nullable } from "../types";
 import type { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
@@ -52,6 +52,7 @@ import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { ShaderLanguage } from "./shaderLanguage";
 import type { IAssetContainer } from "core/IAssetContainer";
+import { IsWrapper } from "./drawWrapper.functions";
 
 declare let BABYLON: any;
 
@@ -238,6 +239,24 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
     protected _forceGLSL = false;
+
+    protected _useVertexPulling = false;
+    /**
+     * Tells the engine to draw geometry using vertex pulling instead of index drawing. This will automatically
+     * set the vertex buffers as storage buffers and make them accessible to the vertex shader (WebGPU only).
+     */
+    public get useVertexPulling() {
+        return this._useVertexPulling;
+    }
+
+    public set useVertexPulling(value: boolean) {
+        if (this._useVertexPulling === value) {
+            return;
+        }
+
+        this._useVertexPulling = value;
+        this.markAsDirty(Material.MiscDirtyFlag);
+    }
 
     /** @internal */
     public get _supportGlowLayer() {
@@ -560,32 +579,42 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Stores the value of the alpha mode
      */
-    @serialize("alphaMode")
-    private _alphaMode: number = Constants.ALPHA_COMBINE;
+    @serialize()
+    protected _alphaMode: number[] = [Constants.ALPHA_COMBINE];
 
     /**
      * Sets the value of the alpha mode.
      *
      * | Value | Type | Description |
      * | --- | --- | --- |
-     * | 0 | ALPHA_DISABLE |   |
-     * | 1 | ALPHA_ADD |   |
-     * | 2 | ALPHA_COMBINE |   |
-     * | 3 | ALPHA_SUBTRACT |   |
-     * | 4 | ALPHA_MULTIPLY |   |
-     * | 5 | ALPHA_MAXIMIZED |   |
-     * | 6 | ALPHA_ONEONE |   |
-     * | 7 | ALPHA_PREMULTIPLIED |   |
-     * | 8 | ALPHA_PREMULTIPLIED_PORTERDUFF |   |
-     * | 9 | ALPHA_INTERPOLATE |   |
-     * | 10 | ALPHA_SCREENMODE |   |
+     * | 0 | ALPHA_DISABLE |  |
+     * | 1 | ALPHA_ADD | Defines that alpha blending is COLOR=SRC_ALPHA * SRC + DEST, ALPHA=DEST_ALPHA |
+     * | 2 | ALPHA_COMBINE | Defines that alpha blending is COLOR=SRC_ALPHA * SRC + (1 - SRC_ALPHA) * DEST, ALPHA=SRC_ALPHA + DEST_ALPHA |
+     * | 3 | ALPHA_SUBTRACT | Defines that alpha blending is COLOR=(1 - SRC) * DEST, ALPHA=SRC_ALPHA - DEST_ALPHA |
+     * | 4 | ALPHA_MULTIPLY | Defines that alpha blending is COLOR=DEST * SRC, ALPHA=SRC_ALPHA + DEST_ALPHA |
+     * | 5 | ALPHA_MAXIMIZED | Defines that alpha blending is COLOR=SRC_ALPHA * SRC + (1 - SRC) * DEST, ALPHA=SRC_ALPHA + DEST_ALPHA |
+     * | 6 | ALPHA_ONEONE | Defines that alpha blending is COLOR=SRC + DEST, ALPHA=DEST_ALPHA |
+     * | 7 | ALPHA_PREMULTIPLIED | Defines that alpha blending is COLOR=SRC + (1 - SRC_ALPHA) * DEST, ALPHA=SRC_ALPHA + DEST_ALPHA |
+     * | 8 | ALPHA_PREMULTIPLIED_PORTERDUFF | Defines that alpha blending is COLOR=SRC + (1 - SRC_ALPHA) * DEST, ALPHA=SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA |
+     * | 9 | ALPHA_INTERPOLATE | Defines that alpha blending is COLOR=CST * SRC + (1 - CST) * DEST, ALPHA=CST_ALPHA * SRC + (1 - CST_ALPHA) * DEST_ALPHA |
+     * | 10 | ALPHA_SCREENMODE | Defines that alpha blending is COLOR=SRC + (1 - SRC) * DEST, ALPHA=SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA |
+     * | 11 | ALPHA_ONEONE_ONEONE | Defines that alpha blending is COLOR=SRC + DST, ALPHA=SRC_ALPHA + DEST_ALPHA |
+     * | 12 | ALPHA_ALPHATOCOLOR | Defines that alpha blending is COLOR=DEST_ALPHA * SRC + DST, ALPHA=0 |
+     * | 13 | ALPHA_REVERSEONEMINUS | Defines that alpha blending is COLOR=(1 - DEST) * SRC + (1 - SRC) * DEST, ALPHA=(1 - DEST_ALPHA) * SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA |
+     * | 14 | ALPHA_SRC_DSTONEMINUSSRCALPHA | Defines that alpha blending is ALPHA=SRC + (1 - SRC ALPHA) * DEST, ALPHA=SRC_ALPHA + (1 - SRC ALPHA) * DEST_ALPHA |
+     * | 15 | ALPHA_ONEONE_ONEZERO | Defines that alpha blending is COLOR=SRC + DST, ALPHA=SRC_ALPHA |
+     * | 16 | ALPHA_EXCLUSION | Defines that alpha blending is COLOR=(1 - DEST) * SRC + (1 - SRC) * DEST, ALPHA=DEST_ALPHA |
+     * | 17 | ALPHA_LAYER_ACCUMULATE | Defines that alpha blending is COLOR=SRC_ALPHA * SRC + (1 - SRC ALPHA) * DEST, ALPHA=SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA |
+     * | 18 | ALPHA_MIN | Defines that alpha blending is COLOR=MIN(SRC, DEST), ALPHA=MIN(SRC_ALPHA, DEST_ALPHA) |
+     * | 19 | ALPHA_MAX | Defines that alpha blending is COLOR=MAX(SRC, DEST), ALPHA=MAX(SRC_ALPHA, DEST_ALPHA) |
+     * | 20 | ALPHA_DUAL_SRC0_ADD_SRC1xDST | Defines that alpha blending uses dual source blending and is COLOR=SRC + SRC1 * DEST, ALPHA=DST_ALPHA |
      *
      */
     public set alphaMode(value: number) {
-        if (this._alphaMode === value) {
+        if (this._alphaMode[0] === value) {
             return;
         }
-        this._alphaMode = value;
+        this._alphaMode[0] = value;
         this.markAsDirty(Material.TextureDirtyFlag);
     }
 
@@ -593,7 +622,27 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Gets the value of the alpha mode
      */
     public get alphaMode(): number {
+        return this._alphaMode[0];
+    }
+
+    /**
+     * Gets the list of alpha modes (length greater than 1 for multi-targets)
+     */
+    public get alphaModes(): Immutable<number[]> {
         return this._alphaMode;
+    }
+
+    /**
+     * Sets the value of the alpha mode for a specific target index.
+     * @param value The alpha mode value to set.
+     * @param targetIndex The index of the target to set the alpha mode for. Defaults to 0.
+     */
+    public setAlphaMode(value: number, targetIndex: number = 0): void {
+        if (this._alphaMode[targetIndex] === value) {
+            return;
+        }
+        this._alphaMode[targetIndex] = value;
+        this.markAsDirty(Material.TextureDirtyFlag);
     }
 
     /**
@@ -1263,7 +1312,13 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         const orientation = overrideOrientation == null ? this.sideOrientation : overrideOrientation;
         const reverse = orientation === Material.ClockWiseSideOrientation;
 
-        engine.enableEffect(effect ? effect : this._getDrawWrapper());
+        const effectiveDrawWrapper = effect ? effect : this._getDrawWrapper();
+
+        if (IsWrapper(effectiveDrawWrapper) && effectiveDrawWrapper.materialContext) {
+            effectiveDrawWrapper.materialContext.useVertexPulling = this.useVertexPulling;
+        }
+
+        engine.enableEffect(effectiveDrawWrapper);
         engine.setState(
             this.backFaceCulling,
             this.zOffset,
@@ -1961,6 +2016,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
 
+        serializationObject.alphaMode = this._alphaMode;
+
         serializationObject.stencil = this.stencil.serialize();
         serializationObject.uniqueId = this.uniqueId;
 
@@ -2002,6 +2059,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         const materialType = Tools.Instantiate(parsedMaterial.customType);
         const material = materialType.Parse(parsedMaterial, scene, rootUrl);
         material._loadedUniqueId = parsedMaterial.uniqueId;
+        if (!Array.isArray(parsedMaterial.alphaMode)) {
+            material._alphaMode = [parsedMaterial.alphaMode ?? Constants.ALPHA_COMBINE];
+        } else {
+            material._alphaMode = parsedMaterial.alphaMode;
+        }
 
         return material;
     }

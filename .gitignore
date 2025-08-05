@@ -35,3 +35,14 @@ playwright-report
 playwright/.cache/
 .nx
 .DS_Store
+
+# generated Smart Filter block TS files
+**/*.block.ts
+
+# Smart Filters publish their src files - we copy them during the build - ignore them
+packages/public/@babylonjs/smart-filters/src
+packages/public/@babylonjs/smart-filters-blocks/src
+
+# Smart Filters Editor files
+packages/tools/smartFiltersEditor/www/scripts/**
+packages/tools/smartFiltersEditor/www/index.html

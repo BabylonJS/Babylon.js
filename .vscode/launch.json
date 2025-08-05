@@ -254,6 +254,20 @@
             "preLaunchTask": "Node Particle Editor Serve (Dev)"
         },
         {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Smart Filter Editor development (Edge)",
+            "url": "http://localhost:1346",
+            "preLaunchTask": "Smart Filter Editor Serve (Dev)"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Smart Filter Editor development (Chrome)",
+            "url": "http://localhost:1346",
+            "preLaunchTask": "Smart Filter Editor Serve (Dev)"
+        },
+        {
             /*
             Launch the playground to be use to test changes in dev packages
             */
@@ -531,6 +545,13 @@
             "name": "Viewer Configurator development (Chrome)",
             "url": "http://localhost:3003",
             "preLaunchTask": "Viewer Configurator Serve (Dev)"
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Inspector v2 development (Edge)",
+            "url": "http://localhost:9001",
+            "preLaunchTask": "Inspector v2 Test App"
         },
         {
             "type": "chrome",

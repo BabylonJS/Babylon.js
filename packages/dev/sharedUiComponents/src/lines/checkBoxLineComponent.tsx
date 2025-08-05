@@ -7,7 +7,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import copyIcon from "../imgs/copy.svg";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
-import { SwitchPropertyLine } from "../fluent/hoc/switchPropertyLine";
+import { SwitchPropertyLine } from "../fluent/hoc/propertyLines/switchPropertyLine";
+import { Checkbox } from "../fluent/primitives/checkbox";
 
 export interface ICheckBoxLineComponentProps {
     label?: string;
@@ -171,8 +172,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     }
 
     renderFluent() {
-        // This same component renders a readonly 'check' icon, and an editable switch -- will introduce the icon in next PR as it will be a diff component
-        return <SwitchPropertyLine label={this.props.label || ""} checked={this.state.isSelected} onChange={() => this.onChange()} disabled={!!this.props.disabled} />;
+        // if faIcons are sent (to mimic a checkbox) use fluent checkbox
+        if (this.props.faIcons) {
+            return <Checkbox disabled={this.props.disabled} value={this.state.isSelected} onChange={() => !this.props.disabled && this.onChange()} />;
+        }
+        return <SwitchPropertyLine label={this.props.label || ""} value={this.state.isSelected} onChange={() => this.onChange()} disabled={!!this.props.disabled} />;
     }
 
     override render() {

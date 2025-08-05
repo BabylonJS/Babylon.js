@@ -302,6 +302,10 @@ export interface EffectWrapperCreationOptions {
      * If the effect should be used as a post process (default: false). If true, the effect will be created with a "scale" uniform and a "textureSampler" sampler
      */
     useAsPostProcess?: boolean;
+    /**
+     * Sets this property to true if the fragment shader doesn't use a textureSampler texture (default: false).
+     */
+    allowEmptySourceTexture?: boolean;
 }
 
 /**
@@ -428,6 +432,7 @@ export class EffectWrapper {
             extraInitializations: creationOptions.extraInitializations || (undefined as any),
             extraInitializationsAsync: creationOptions.extraInitializationsAsync || (undefined as any),
             useAsPostProcess: creationOptions.useAsPostProcess ?? false,
+            allowEmptySourceTexture: creationOptions.allowEmptySourceTexture ?? false,
         };
 
         this.options.uniformNames = this.options.uniforms;
@@ -435,7 +440,7 @@ export class EffectWrapper {
         this.options.vertexShader = this.options.vertexUrl;
 
         if (this.options.useAsPostProcess) {
-            if (this.options.samplers.indexOf("textureSampler") === -1) {
+            if (!this.options.allowEmptySourceTexture && this.options.samplers.indexOf("textureSampler") === -1) {
                 this.options.samplers.push("textureSampler");
             }
             if (this.options.uniforms.indexOf("scale") === -1) {

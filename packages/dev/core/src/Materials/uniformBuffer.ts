@@ -29,7 +29,7 @@ export class UniformBuffer {
     private _createBufferOnWrite: boolean;
     private _data: number[];
     private _bufferData: Float32Array;
-    private _dynamic?: boolean;
+    private _dynamic: boolean;
     private _uniformLocations: { [key: string]: number };
     private _uniformSizes: { [key: string]: number };
     private _uniformArraySizes: { [key: string]: { strideSize: number; arraySize: number } };
@@ -237,7 +237,7 @@ export class UniformBuffer {
      * @param name to assign to the buffer (debugging purpose)
      * @param forceNoUniformBuffer define that this object must not rely on UBO objects
      */
-    constructor(engine: AbstractEngine, data?: number[], dynamic?: boolean, name?: string, forceNoUniformBuffer = false) {
+    constructor(engine: AbstractEngine, data?: number[], dynamic = false, name?: string, forceNoUniformBuffer = false) {
         this._engine = engine;
         this._noUBO = !engine.supportsUniformBuffers || forceNoUniformBuffer;
         this._dynamic = dynamic;
@@ -338,7 +338,7 @@ export class UniformBuffer {
      * @returns if Dynamic, otherwise false
      */
     public isDynamic(): boolean {
-        return this._dynamic !== undefined;
+        return this._dynamic;
     }
 
     /**
@@ -1187,6 +1187,15 @@ export class UniformBuffer {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if the uniform buffer has a uniform with the given name.
+     * @param name Name of the uniform to check
+     * @returns True if the uniform exists, false otherwise.
+     */
+    public has(name: string): boolean {
+        return this._uniformLocations[name] !== undefined;
     }
 
     /**

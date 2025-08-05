@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
@@ -12,19 +10,47 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
-import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
-import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
-import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
-import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
+import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
+import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
+import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
+import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
+import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
+import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
+import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
+import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
+import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
+import { PostProcessPropertiesServiceDefinition } from "./services/panes/properties/postProcessPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
+import { RenderingPipelinePropertiesServiceDefinition } from "./services/panes/properties/renderingPipelinePropertiesService";
+import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
+import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
+import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
+import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
+import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
+import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
+import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
+import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
+import { NodeExplorerServiceDefinition } from "./services/panes/scene/nodeExplorerService";
+import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
+import { PostProcessExplorerServiceDefinition } from "./services/panes/scene/postProcessExplorerService";
+import { RenderingPipelineExplorerServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
+import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
+import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
+import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
+import { ScenePropertiesServiceDefinition } from "./services/panes/properties/scenePropertiesService";
+import type { IDisposable, Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { IInspectorOptions } from "core/Debug/debugLayer";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
@@ -165,14 +191,39 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
             // Scene explorer tab and related services.
             SceneExplorerServiceDefinition,
-            NodeHierarchyServiceDefinition,
+            NodeExplorerServiceDefinition,
+            SkeletonExplorerServiceDefinition,
             MaterialExplorerServiceDefinition,
-            TextureHierarchyServiceDefinition,
+            TextureExplorerServiceDefinition,
+            PostProcessExplorerServiceDefinition,
+            RenderingPipelineExplorerServiceDefinition,
+            EffectLayerExplorerServiceDefinition,
+            ParticleSystemExplorerServiceDefinition,
+            SpriteManagerExplorerServiceDefinition,
+            AnimationGroupExplorerServiceDefinition,
+            GuiExplorerServiceDefinition,
+            FrameGraphExplorerServiceDefinition,
 
             // Properties pane tab and related services.
+            ScenePropertiesServiceDefinition,
             PropertiesServiceDefinition,
+            TexturePropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
-            MeshPropertiesServiceDefinition,
+            TransformPropertiesServiceDefinition,
+            AnimationPropertiesServiceDefinition,
+            NodePropertiesServiceDefinition,
+            PhysicsPropertiesServiceDefinition,
+            SkeletonPropertiesServiceDefinition,
+            MaterialPropertiesServiceDefinition,
+            LightPropertiesServiceDefinition,
+            SpritePropertiesServiceDefinition,
+            ParticleSystemPropertiesServiceDefinition,
+            CameraPropertiesServiceDefinition,
+            PostProcessPropertiesServiceDefinition,
+            RenderingPipelinePropertiesServiceDefinition,
+            EffectLayerPropertiesServiceDefinition,
+            FrameGraphPropertiesServiceDefinition,
+            AnimationGroupPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

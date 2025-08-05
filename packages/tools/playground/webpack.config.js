@@ -3,6 +3,7 @@ const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
 
 module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
@@ -10,19 +11,29 @@ module.exports = (env) => {
                 ...env,
                 outputFilename: "babylon.playground.js",
                 dirName: __dirname,
+                enableHotReload: true,
             },
             {
                 static: ["public"],
                 port: process.env.PLAYGROUND_PORT || 1338,
-            }
+            },
+            [
+                new MonacoWebpackPlugin({
+                    // publicPath: "public/",
+                    languages: ["typescript", "javascript"],
+                }),
+            ]
         ),
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
                 "inspector-v2": path.resolve("../../dev/inspector-v2/dist"),
+                addons: path.resolve("../../dev/addons/dist"),
+                materials: path.resolve("../../dev/materials/dist"),
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
+                gui: path.resolve("../../dev/gui/dist"),
             },
         },
         externals: [
@@ -36,6 +47,12 @@ module.exports = (env) => {
                         return callback(null, "BABYLON");
                     } else if (/^loaders\//.test(request)) {
                         return callback(null, "BABYLON");
+                    } else if (/^addons\//.test(request)) {
+                        return callback(null, "ADDONS");
+                    } else if (/^materials\//.test(request)) {
+                        return callback(null, "BABYLON");
+                    } else if (/^gui\//.test(request)) {
+                        return callback(null, "BABYLON.GUI");
                     }
                 }
 
@@ -62,14 +79,9 @@ module.exports = (env) => {
                         rootDir: "../../",
                     },
                 },
+                enableFastRefresh: !production,
             }),
         },
-        plugins: [
-            new MonacoWebpackPlugin({
-                // publicPath: "public/",
-                languages: ["typescript", "javascript"],
-            }),
-        ],
     };
     return commonConfig;
 };

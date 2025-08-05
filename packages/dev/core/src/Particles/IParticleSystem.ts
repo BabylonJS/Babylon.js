@@ -13,7 +13,6 @@ import type {
     CylinderDirectedParticleEmitter,
     ConeParticleEmitter,
     ConeDirectedParticleEmitter,
-    // eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
 import type { Scene } from "../scene";
 import type { ColorGradient, FactorGradient, Color3Gradient } from "../Misc/gradients";
@@ -31,6 +30,11 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
  * A particle system represents a way to manage particles from their emission to their animation and rendering.
  */
 export interface IParticleSystem {
+    /**
+     * Gets or sets the unique id of the particle system.
+     */
+    uniqueId: number;
+
     /**
      * List of animations used by the particle system.
      */

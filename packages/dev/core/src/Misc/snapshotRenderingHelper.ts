@@ -10,7 +10,6 @@ import type {
     WebGPUShaderProcessor,
     WebGPUPipelineContext,
     GaussianSplattingMesh,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 
 import { Constants } from "core/Engines/constants";
@@ -301,7 +300,8 @@ export class SnapshotRenderingHelper {
             if (mesh.subMeshes) {
                 const sourceMesh = mesh as Mesh;
                 for (const subMesh of sourceMesh.subMeshes) {
-                    sourceMesh._updateInstancedBuffers(subMesh, sourceMesh._getInstancesRenderList(subMesh._id), sourceMesh._instanceDataStorage.instancesBufferSize, this._engine);
+                    const batch = sourceMesh._getInstancesRenderList(subMesh._id);
+                    sourceMesh._updateInstancedBuffers(subMesh, batch, batch.parent.instancesBufferSize, this._engine);
                 }
             }
             return true;

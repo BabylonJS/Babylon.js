@@ -1,5 +1,37 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { IDisposable } from "core/index";
+import type { IDisposable, Nullable } from "core/index";
+
+/**
+ * Gets the property descriptor for a property on an object, including inherited properties.
+ * @param target The object containing the property.
+ * @param propertyKey The key of the property to get the descriptor for.
+ * @returns The owner of the property (which may be different from the target in the case of inheritance) along with the property descriptor, or null if the property is not found.
+ */
+export function GetPropertyDescriptor<T extends object>(target: T, propertyKey: keyof T): Nullable<[owner: object, descriptor: PropertyDescriptor]> {
+    let propertyOwner: object | null = target;
+    let propertyDescriptor: PropertyDescriptor | undefined;
+    while (propertyOwner) {
+        if ((propertyDescriptor = Reflect.getOwnPropertyDescriptor(propertyOwner, propertyKey))) {
+            break;
+        }
+        propertyOwner = Reflect.getPrototypeOf(propertyOwner);
+    }
+
+    if (propertyOwner && propertyDescriptor) {
+        return [propertyOwner, propertyDescriptor];
+    }
+
+    return null;
+}
+
+/**
+ * Checks if a property is readonly.
+ * @param propertyDescriptor The property descriptor to check.
+ * @returns True if the property is readonly, false otherwise.
+ */
+export function IsPropertyReadonly(propertyDescriptor: PropertyDescriptor): boolean {
+    // If the property is not writable, it is readonly.
+    return propertyDescriptor.writable === false || (propertyDescriptor.writable === undefined && !propertyDescriptor.set);
+}
 
 export type PropertyHooks = {
     /**
@@ -19,25 +51,33 @@ const InterceptorHooksMaps = new WeakMap<object, Map<PropertyKey, PropertyHooks[
  */
 export function InterceptProperty<T extends object>(target: T, propertyKey: keyof T, hooks: PropertyHooks): IDisposable {
     // Find the property descriptor and note the owning object (might be inherited through the prototype chain).
-    let propertyOwner: object | null = target;
-    let propertyDescriptor: PropertyDescriptor | undefined;
-    while (propertyOwner) {
-        if ((propertyDescriptor = Reflect.getOwnPropertyDescriptor(propertyOwner, propertyKey))) {
-            break;
+    const ownerAndDescriptor = GetPropertyDescriptor(target, propertyKey);
+
+    // If the property does not exist, we'll define one transiently directly on the target object.
+    const [propertyOwner, propertyDescriptor] = ownerAndDescriptor ?? [
+        target,
+        {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: undefined,
+        },
+    ];
+
+    if (!ownerAndDescriptor) {
+        Reflect.defineProperty(propertyOwner, propertyKey, propertyDescriptor);
+    } else {
+        // If the property is not configurable, it cannot be intercepted.
+        if (!propertyDescriptor.configurable) {
+            throw new Error(`Property "${propertyKey.toString()}" of object "${target}" is not configurable.`);
         }
-        propertyOwner = Reflect.getPrototypeOf(propertyOwner);
-    }
 
-    if (!propertyDescriptor) {
-        throw new Error(`Property "${propertyKey.toString()}" not found on "${target}" or in its prototype chain.`);
-    }
-
-    // Make sure the property is configurable and writable, otherwise it is immutable and cannot be intercepted.
-    if (!propertyDescriptor.configurable) {
-        throw new Error(`Property "${propertyKey.toString()}" of object "${target}" is not configurable.`);
-    }
-    if (propertyDescriptor.writable === false || (propertyDescriptor.writable === undefined && !propertyDescriptor.set)) {
-        throw new Error(`Property "${propertyKey.toString()}" of object "${target}" is readonly.`);
+        // If the property is not writable, it cannot be intercepted, but it cannot be mutated anyway so there is no need to intercept it.
+        if (IsPropertyReadonly(propertyDescriptor)) {
+            return {
+                dispose: () => {},
+            };
+        }
     }
 
     // Get or create the hooks map for the target object.
@@ -78,9 +118,6 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
     }
     hooksForKey.push(hooks);
 
-    // Take note of whether the property is owned by the target object or inherited from its prototype chain.
-    const isOwnProperty = propertyOwner === target;
-
     let isDisposed = false;
     return {
         dispose: () => {
@@ -97,15 +134,19 @@ export function InterceptProperty<T extends object>(target: T, propertyKey: keyo
                         InterceptorHooksMaps.delete(target);
                     }
 
-                    if (isOwnProperty) {
-                        // If the property is owned by the target object, it means the property was defined directly on the target object,
-                        // in which case we replaced it and the original property descriptor needs to be restored.
+                    const shouldRestorePropertyDescriptor =
+                        // If the property is owned by the target object, then we may have replaced an original property descriptor that needs to be restore.
+                        propertyOwner === target &&
+                        // But this is only the case if we found an existing property descriptor on the target object (hence the ownerAndDescriptor check),
+                        // or if the property value is not undefined, in which case we still want to retain the value that was set.
+                        (ownerAndDescriptor || target[propertyKey] !== undefined);
+                    // Otherwise, the property was inherited through the prototype chain, and so we can simply delete it from the target object.
+
+                    if (shouldRestorePropertyDescriptor) {
                         if (!Reflect.defineProperty(target, propertyKey, propertyDescriptor)) {
                             throw new Error(`Failed to restore original property descriptor "${propertyKey.toString()}" on object "${target}".`);
                         }
                     } else {
-                        // Otherwise, the property was inherited through the prototype chain, and so we can simply delete it from
-                        // the target object to allow it to fall back to the prototype chain as it did originally.
                         if (!Reflect.deleteProperty(target, propertyKey)) {
                             throw new Error(`Failed to delete transient property descriptor "${propertyKey.toString()}" on object "${target}".`);
                         }
