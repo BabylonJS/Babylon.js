@@ -90,7 +90,7 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
 }>;
 
-type CommandDisplayInfo<T extends EntityBase> = Partial<IDisposable> &
+type Command<T extends EntityBase> = Partial<IDisposable> &
     Readonly<{
         /**
          * The display name of the command (e.g. "Delete", "Rename", etc.).
@@ -108,7 +108,7 @@ type CommandDisplayInfo<T extends EntityBase> = Partial<IDisposable> &
         onChange?: IReadonlyObservable<void>;
     }>;
 
-type ActionCommandDisplayInfo<T extends EntityBase> = CommandDisplayInfo<T> & {
+type ActionCommand<T extends EntityBase> = Command<T> & {
     readonly type: "action";
 
     /**
@@ -117,7 +117,7 @@ type ActionCommandDisplayInfo<T extends EntityBase> = CommandDisplayInfo<T> & {
     execute(entity: T): void;
 };
 
-type ToggleCommandDisplayInfo<T extends EntityBase> = CommandDisplayInfo<T> & {
+type ToggleCommand<T extends EntityBase> = Command<T> & {
     readonly type: "toggle";
 
     /**
@@ -126,7 +126,7 @@ type ToggleCommandDisplayInfo<T extends EntityBase> = CommandDisplayInfo<T> & {
     isEnabled: boolean;
 };
 
-export type SceneExplorerCommandDisplayInfo<T extends EntityBase> = ActionCommandDisplayInfo<T> | ToggleCommandDisplayInfo<T>;
+export type SceneExplorerCommandDisplayInfo<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
 
 export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     /**
@@ -188,7 +188,7 @@ const useStyles = makeStyles({
     },
 });
 
-const ActionCommand: FunctionComponent<{ command: ActionCommandDisplayInfo<EntityBase>; entity: EntityBase }> = (props) => {
+const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; entity: EntityBase }> = (props) => {
     const { command, entity } = props;
 
     return (
@@ -198,7 +198,7 @@ const ActionCommand: FunctionComponent<{ command: ActionCommandDisplayInfo<Entit
     );
 };
 
-const ToggleCommand: FunctionComponent<{ command: ToggleCommandDisplayInfo<EntityBase>; entity: EntityBase }> = (props) => {
+const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; entity: EntityBase }> = (props) => {
     const { command, entity } = props;
     const [checked, setChecked] = useState(command.isEnabled);
     const toggle = useCallback(() => {
@@ -305,7 +305,7 @@ const EntityTreeItem: FunctionComponent<{
         }, [entityItem.entity, commandProviders])
     );
 
-    const [enabledToggleCommands, setEnabledToggleCommands] = useState<readonly ToggleCommandDisplayInfo<EntityBase>[]>([]);
+    const [enabledToggleCommands, setEnabledToggleCommands] = useState<readonly ToggleCommand<EntityBase>[]>([]);
 
     // For enabled/active toggle commands, we should always show them so the user knows this command is toggled on.
     useEffect(() => {
