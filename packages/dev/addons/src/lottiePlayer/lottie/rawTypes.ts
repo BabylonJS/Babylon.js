@@ -1,9 +1,11 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-// Types for the raw lottie .json data
+// Types for the raw Lottie .json data
 
-// General animation information
+// General animation data
 export type RawLottieAnimation = {
     v: string; // Version
     fr: number; // Framerate in frames per second
@@ -15,6 +17,7 @@ export type RawLottieAnimation = {
     layers: RawLottieLayer[]; // Layers
 };
 
+// Layer data
 export type RawLottieLayer = {
     ind?: number; // Index that can be used for parenting and referenced in expressions
     ty: RawLayerType; // Layer type (0: precomp, 1: solid, 2: image, 3: null, 4: shape, 5: text)
@@ -29,6 +32,57 @@ export type RawLottieLayer = {
     ct?: number; // Collapse Transform (0: false, 1: true), marks that transforms should be applied before masks
     ks: RawTransform; // Layer transform
     shapes?: RawGraphicElement[];
+};
+
+export type RawGraphicElement = {
+    nm?: string; // Human readable name
+    hd?: boolean; // Hidden
+    ty: RawShapeType; // Type ('gr' for group, 'rc' for rectangle, 'el' for ellipse, 'sh' for path, etc.)
+    bm?: number; // Blend mode
+    ix?: number; // Index
+};
+
+export type RawGroupShape = RawGraphicElement & {
+    it?: RawGraphicElement[]; // shapes
+};
+
+export type RawRectangleShape = RawGraphicElement & {
+    d: RawShapeDirection; // direction the shape is drawn as, mostly relevant when using trim path
+    p: RawPositionProperty; // center of the rectangle
+    s: RawVectorProperty; // size of the rectangle
+    r: RawScalarProperty; // rounded corners radius
+};
+
+export type RawPathShape = RawGraphicElement & {
+    d: RawShapeDirection; // direction the shape is drawn as, mostly relevant when using trim path
+    ks: RawBezierShapeProperty; // bezier path
+};
+
+export type RawFillShape = RawGraphicElement & {
+    o: RawScalarProperty; // Opacity, 100 means fully opaque
+    c: RawColorProperty; // Color
+    r: RawFillRule; // fill rule
+};
+
+export type RawGradientFillShape = RawGraphicElement & {
+    o: RawScalarProperty; // Opacity, 100 means fully opaque
+    g: RawGradientsProperty; // Gradient colors
+    s: RawPositionProperty; // Starting point of the gradient
+    e: RawPositionProperty; // End point of the gradient
+    t: RawGradientType; // type of the gradient
+    h: RawScalarProperty; // highlight length as a percentage between s and e
+    a?: RawScalarProperty; // highlight angle in clockwise degrees, relative to the direction from s to e
+    r: RawFillRule; // fill rule
+};
+
+export type RawTransformShape = RawGraphicElement & {
+    a: RawPositionProperty; // anchor point
+    p: RawPositionProperty; // position/translation
+    r: RawScalarProperty; // rotation in degrees, clockwise
+    s: RawVectorProperty; // scale factor, [100, 100] for no scaling
+    o: RawScalarProperty; // opacity
+    sk: RawScalarProperty; // skew amount as an angle in degrees
+    sa: RawScalarProperty; // skew axis, direction along which skew is applied, in degrees (0 skes along the x axis, 90 along the Y axys)
 };
 
 export type RawTransform = {
@@ -120,57 +174,6 @@ export type RawBezier = {
     i: number[][]; // In tangents, array of points, each point is an array of coordinates. These points are along the in tangents relative to the corresponding v
     o: number[][]; // Out tangents, array of points, each point is an array of coordinates. These points are along the out tangents relative to the corresponding v
     v: number[][]; // Vertices, array of points, each point is an array of coordinates. These points are along the bezier path
-};
-
-export type RawGraphicElement = {
-    nm?: string; // Human readable name
-    hd?: boolean; // Hidden
-    ty: RawShapeType; // Type ('gr' for group, 'rc' for rectangle, 'el' for ellipse, 'sh' for path, etc.)
-    bm?: number; // Blend mode
-    ix?: number; // Index
-};
-
-export type RawRectangleShape = RawGraphicElement & {
-    d: RawShapeDirection; // direction the shape is drawn as, mostly relevant when using trim path
-    p: RawPositionProperty; // center of the rectangle
-    s: RawVectorProperty; // size of the rectangle
-    r: RawScalarProperty; // rounded corners radius
-};
-
-export type RawPathShape = RawGraphicElement & {
-    d: RawShapeDirection; // direction the shape is drawn as, mostly relevant when using trim path
-    ks: RawBezierShapeProperty; // bezier path
-};
-
-export type RawFillShape = RawGraphicElement & {
-    o: RawScalarProperty; // Opacity, 100 means fully opaque
-    c: RawColorProperty; // Color
-    r: RawFillRule; // fill rule
-};
-
-export type RawGradientFillShape = RawGraphicElement & {
-    o: RawScalarProperty; // Opacity, 100 means fully opaque
-    g: RawGradientsProperty; // Gradient colors
-    s: RawPositionProperty; // Starting point of the gradient
-    e: RawPositionProperty; // End point of the gradient
-    t: RawGradientType; // type of the gradient
-    h: RawScalarProperty; // highlight length as a percentage between s and e
-    a?: RawScalarProperty; // highlight angle in clockwise degrees, relative to the direction from s to e
-    r: RawFillRule; // fill rule
-};
-
-export type RawGroupShape = RawGraphicElement & {
-    it?: RawGraphicElement[]; // shapes
-};
-
-export type RawTransformShape = RawGraphicElement & {
-    a: RawPositionProperty; // anchor point
-    p: RawPositionProperty; // position/translation
-    r: RawScalarProperty; // rotation in degrees, clockwise
-    s: RawVectorProperty; // scale factor, [100, 100] for no scaling
-    o: RawScalarProperty; // opacity
-    sk: RawScalarProperty; // skew amount as an angle in degrees
-    sa: RawScalarProperty; // skew axis, direction along which skew is applied, in degrees (0 skes along the x axis, 90 along the Y axys)
 };
 
 export type RawNumberBoolean = 0 | 1; // 0: false, 1: true;
