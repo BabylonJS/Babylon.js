@@ -26,6 +26,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 step={toDisplayAngle(0.001)}
                 convertTo={toDisplayAngle}
                 convertFrom={fromDisplayAngle}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -38,6 +39,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 step={toDisplayAngle(0.001)}
                 convertTo={toDisplayAngle}
                 convertFrom={fromDisplayAngle}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -48,6 +50,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 min={0}
                 max={100}
                 step={0.1}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -58,6 +61,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 min={0}
                 max={1}
                 step={0.001}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -68,6 +72,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 min={0}
                 max={4}
                 step={0.001}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -78,6 +83,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 min={0}
                 max={1}
                 step={0.001}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -88,6 +94,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 min={0}
                 max={1}
                 step={0.001}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
@@ -98,10 +105,32 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 min={0}
                 max={1000}
                 step={0.1}
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
             />
-            <BoundProperty component={SwitchPropertyLine} label="Use Sun Pos" description="Enable custom sun position." target={material} propertyKey="useSunPosition" />
-            <BoundProperty component={Vector3PropertyLine} label="Sun Position" description="Custom sun position (Vector3)." target={material} propertyKey="sunPosition" />
-            <BoundProperty component={Vector3PropertyLine} label="Camera Offset" description="Offset for the camera (Vector3)." target={material} propertyKey="cameraOffset" />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Use Sun Pos"
+                description="Enable custom sun position."
+                target={material}
+                propertyKey="useSunPosition"
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
+            />
+            <BoundProperty
+                component={Vector3PropertyLine}
+                label="Sun Position"
+                description="Custom sun position (Vector3)."
+                target={material}
+                propertyKey="sunPosition"
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#configuring-the-sky-material"
+            />
+            <BoundProperty
+                component={Vector3PropertyLine}
+                label="Camera Offset"
+                description="Offset for the camera (Vector3)."
+                target={material}
+                propertyKey="cameraOffset"
+                docLink="https://doc.babylonjs.com/toolsAndResources/assetLibraries/materialsLibrary/skyMat/#keeping-the-horizon-relative-to-the-camera-elevation"
+            />
         </>
     );
 };
