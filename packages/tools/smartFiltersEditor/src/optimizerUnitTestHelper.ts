@@ -24,13 +24,11 @@ export function RegisterOptimizedShaderBlockCodeForUnitTests(attachedBlocks: rea
     (window as any).getOptimizedShaderBlocks = () => {
         const code = GetCode(optimizedShaderProgramList);
 
-        // Copy the code to the clipboard
-        navigator.clipboard.writeText(code).catch((err) => {
-            console.error("Failed to copy optimized shader blocks code to clipboard:", err);
-        });
-        console.log("The code for the optimized shader blocks has been copied to the clipboard.");
+        console.log("Optimized shader blocks for unit testing");
+        console.log("========================================");
+        console.log(code);
+        console.log("========================================");
     };
-    console.log("To get the optimized shader blocks code, type getOptimizedShaderBlocks() in the console.");
 }
 
 function GetCode(optimizedShaderProgramList: ShaderProgram[]): string {

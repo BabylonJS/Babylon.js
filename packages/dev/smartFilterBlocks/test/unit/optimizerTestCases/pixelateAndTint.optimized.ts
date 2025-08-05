@@ -19,7 +19,7 @@ uniform sampler2D _input_;
             mainFunctionName: `_mainImage_`,
             functions: [
                 {
-                    name: `_mainImage_FAIL_`,
+                    name: `_mainImage_`,
                     params: ``,
                     code: `
 

@@ -4,6 +4,12 @@ import { optimizedSmartFilterBlocks as pixelateOptimizedBlocks } from "./optimiz
 import * as pixelateAndTintSmartFilter from "./optimizerTestCases/pixelateAndTint.json";
 import { optimizedSmartFilterBlocks as pixelateAndTintOptimizedBlocks } from "./optimizerTestCases/pixelateAndTint.optimized.js";
 
+import * as doubleTintAndWipeSmartFilter from "./optimizerTestCases/doubleTintAndWipe.json";
+import { optimizedSmartFilterBlocks as doubleTintAndWipeOptimizedBlocks } from "./optimizerTestCases/doubleTintAndWipe.optimized.js";
+
+import * as contrastTintAndBlurSmartFilter from "./optimizerTestCases/contrastTintAndBlur.json";
+import { optimizedSmartFilterBlocks as contrastTintAndBlurOptimizedBlocks } from "./optimizerTestCases/contrastTintAndBlur.optimized.js";
+
 /**
  * To add test cases you need to store the serialized Smart Filter to optimize as well as the
  * expected output of the optimizer.
@@ -16,7 +22,7 @@ import { optimizedSmartFilterBlocks as pixelateAndTintOptimizedBlocks } from "./
  *
  * To get the expectedOptimizedBlocks:
  *   1. In SFE, ensure the "Optimize Smart Filter" checkbox is checked.
- *   2. Open the developer tools in the browser, go to the console, and type: getOptimizedShaderBlocks
+ *   2. Open the developer tools in the browser, go to the console, and type: getOptimizedShaderBlocks()
  *   3. You will see a message that they have been copied to the clipboard.
  *   4. Create a file in the optimizerTestCases folder, e.g. `pixelate.optimized.ts`, and paste the output in it.
  *
@@ -31,14 +37,24 @@ import { optimizedSmartFilterBlocks as pixelateAndTintOptimizedBlocks } from "./
 
 export const testCases: OptimizationTestCase[] = [
     {
-        name: "Single Block",
+        name: "Single Block (tests simple case of a single block)",
         serializedSmartFilter: pixelateSmartFilter,
         expectedOptimizedBlocks: pixelateOptimizedBlocks,
     },
     {
-        name: "Two Simple Blocks",
+        name: "Two Simple Blocks (tests simple case of combining two blocks)",
         serializedSmartFilter: pixelateAndTintSmartFilter,
         expectedOptimizedBlocks: pixelateAndTintOptimizedBlocks,
+    },
+    {
+        name: "Double Tint and Wipe (tests multiple instances of the same block)",
+        serializedSmartFilter: doubleTintAndWipeSmartFilter,
+        expectedOptimizedBlocks: doubleTintAndWipeOptimizedBlocks,
+    },
+    {
+        name: "Contrast, Tint and Blur (tests non-optimizable sections)",
+        serializedSmartFilter: contrastTintAndBlurSmartFilter,
+        expectedOptimizedBlocks: contrastTintAndBlurOptimizedBlocks,
     },
 ];
 
