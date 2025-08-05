@@ -5,7 +5,8 @@ import type { ISelectionService } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
 
-import { Material, MultiMaterial } from "core/Materials";
+import { Material } from "core/Materials/material";
+import { MultiMaterial } from "core/Materials/multiMaterial";
 import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { StandardMaterial } from "core/Materials/standardMaterial";
