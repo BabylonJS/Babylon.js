@@ -1,4 +1,3 @@
-import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
@@ -11,6 +10,7 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
+import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
@@ -47,6 +47,10 @@ import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
+import { ScenePropertiesServiceDefinition } from "./services/panes/properties/scenePropertiesService";
+import type { IDisposable, Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { IInspectorOptions } from "core/Debug/debugLayer";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
@@ -201,6 +205,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             FrameGraphExplorerServiceDefinition,
 
             // Properties pane tab and related services.
+            ScenePropertiesServiceDefinition,
             PropertiesServiceDefinition,
             TexturePropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
@@ -218,6 +223,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             RenderingPipelinePropertiesServiceDefinition,
             EffectLayerPropertiesServiceDefinition,
             FrameGraphPropertiesServiceDefinition,
+            AnimationGroupPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

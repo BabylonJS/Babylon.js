@@ -123,6 +123,26 @@ export async function DumpFramebuffer(
     DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
 }
 
+export async function DumpDataAsync(
+    width: number,
+    height: number,
+    data: ArrayBufferView,
+    mimeType: string | undefined,
+    fileName: string | undefined,
+    invertY: boolean | undefined,
+    toArrayBuffer: true,
+    quality?: number
+): Promise<ArrayBuffer>;
+export async function DumpDataAsync(
+    width: number,
+    height: number,
+    data: ArrayBufferView,
+    mimeType?: string,
+    fileName?: string,
+    invertY?: boolean,
+    toArrayBuffer?: boolean,
+    quality?: number
+): Promise<string>;
 /**
  * Dumps an array buffer
  * @param width defines the rendering width
