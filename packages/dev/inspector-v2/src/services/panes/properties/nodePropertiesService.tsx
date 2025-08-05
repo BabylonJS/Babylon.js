@@ -10,10 +10,14 @@ import {
     AbstractMeshOutlineOverlayProperties,
     AbstractMeshOcclusionsProperties,
     AbstractMeshEdgeRenderingProperties,
+    AbstractMeshDebugProperties,
+    AbstractMeshDisplayProperties,
 } from "../../../components/properties/nodes/abstractMeshProperties";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
+import { Mesh } from "core/Meshes/mesh";
+import { MeshDisplayProperties } from "../../../components/properties/nodes/meshProperties";
 
 export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",
@@ -39,7 +43,10 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                     section: "General",
                     component: ({ context }) => <AbstractMeshGeneralProperties mesh={context} selectionService={selectionService} />,
                 },
-
+                {
+                    section: "Display",
+                    component: ({ context }) => <AbstractMeshDisplayProperties mesh={context} />,
+                },
                 {
                     section: "Advanced",
                     component: ({ context }) => <AbstractMeshAdvancedProperties mesh={context} />,
@@ -56,6 +63,21 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                     section: "Edge Rendering",
                     component: ({ context }) => <AbstractMeshEdgeRenderingProperties mesh={context} />,
                 },
+                {
+                    section: "Debug",
+                    component: ({ context }) => <AbstractMeshDebugProperties mesh={context} />,
+                },
+            ],
+        });
+
+        const meshContentRegistration = propertiesService.addSectionContent({
+            key: "Mesh Properties",
+            predicate: (entity: unknown): entity is Mesh => entity instanceof Mesh && entity.getTotalVertices() > 0,
+            content: [
+                {
+                    section: "Display",
+                    component: ({ context }) => <MeshDisplayProperties mesh={context} />,
+                },
             ],
         });
 
@@ -63,6 +85,7 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
             dispose: () => {
                 nodeContentRegistration.dispose();
                 abstractMeshContentRegistration.dispose();
+                meshContentRegistration.dispose();
             },
         };
     },
