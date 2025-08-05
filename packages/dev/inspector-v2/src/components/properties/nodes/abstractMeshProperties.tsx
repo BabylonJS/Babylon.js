@@ -20,7 +20,7 @@ import { BoundProperty } from "../boundProperty";
 
 // Ensures that the outlineRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/outlineRenderer";
-import { LinkToNodePropertyLine } from "../linkToNodePropertyLine";
+import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -41,14 +41,14 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
             <StringifiedPropertyLine label="Vertices" value={mesh.getTotalVertices()} />
             <StringifiedPropertyLine label="Faces" value={mesh.getTotalIndices() / 3} />
             <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />
-            <LinkToNodePropertyLine label="Skeleton" description="The skeleton associated with the mesh." node={skeleton} selectionService={selectionService} />
-            <LinkToNodePropertyLine label="Material" description="The material used by the mesh." node={material} selectionService={selectionService} />
+            <LinkToEntityPropertyLine label="Skeleton" description="The skeleton associated with the mesh." entity={skeleton} selectionService={selectionService} />
+            <LinkToEntityPropertyLine label="Material" description="The material used by the mesh." entity={material} selectionService={selectionService} />
             <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
             {isAnInstance && mesh instanceof InstancedMesh && (
-                <LinkToNodePropertyLine
+                <LinkToEntityPropertyLine
                     label="Source"
                     description="The source mesh from which this instance was created."
-                    node={mesh.sourceMesh}
+                    entity={mesh.sourceMesh}
                     selectionService={selectionService}
                 />
             )}

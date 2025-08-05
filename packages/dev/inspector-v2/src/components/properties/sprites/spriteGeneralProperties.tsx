@@ -4,7 +4,7 @@ import type { FunctionComponent } from "react";
 
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { BoundProperty } from "../boundProperty";
-import { LinkToNodePropertyLine } from "../linkToNodePropertyLine";
+import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import type { ISelectionService } from "../../../services/selectionService";
 
 export const SpriteGeneralProperties: FunctionComponent<{ sprite: Sprite; selectionService: ISelectionService }> = (props) => {
@@ -12,7 +12,13 @@ export const SpriteGeneralProperties: FunctionComponent<{ sprite: Sprite; select
 
     return (
         <>
-            <LinkToNodePropertyLine key="Parent" label="Parent" description={`Sprite Manager that owns this sprite.`} node={sprite.manager} selectionService={selectionService} />
+            <LinkToEntityPropertyLine
+                key="Parent"
+                label="Parent"
+                description={`Sprite Manager that owns this sprite.`}
+                entity={sprite.manager}
+                selectionService={selectionService}
+            />
             <BoundProperty
                 component={SwitchPropertyLine}
                 key="IsVisible"

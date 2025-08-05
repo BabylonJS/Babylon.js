@@ -6,7 +6,7 @@ import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import type { ISelectionService } from "../../../services/selectionService";
-import { LinkToNodePropertyLine } from "../linkToNodePropertyLine";
+import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 
 export const NodeGeneralProperties: FunctionComponent<{ node: Node; selectionService: ISelectionService }> = (props) => {
     const { node, selectionService } = props;
@@ -16,7 +16,7 @@ export const NodeGeneralProperties: FunctionComponent<{ node: Node; selectionSer
 
     return (
         <>
-            <LinkToNodePropertyLine label="Parent" description="The parent of this node" node={parent} selectionService={selectionService} />
+            <LinkToEntityPropertyLine label="Parent" description="The parent of this node" entity={parent} selectionService={selectionService} />
             <SwitchPropertyLine label="Is Enabled" description="Whether the node is enabled or not." value={isEnabled} onChange={(checked) => node.setEnabled(checked)} />
         </>
     );

@@ -1,7 +1,7 @@
 import type { Bone } from "core/index";
 
 import type { FunctionComponent } from "react";
-import { LinkToNodePropertyLine } from "../linkToNodePropertyLine";
+import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 import type { ISelectionService } from "../../../services/selectionService";
 
 export const BoneGeneralProperties: FunctionComponent<{ bone: Bone; selectionService: ISelectionService }> = (props) => {
@@ -9,11 +9,11 @@ export const BoneGeneralProperties: FunctionComponent<{ bone: Bone; selectionSer
 
     return (
         <>
-            <LinkToNodePropertyLine
+            <LinkToEntityPropertyLine
                 key="Linked Transform Node"
                 label="Linked node"
-                description={`The transform node linked to this bone.`}
-                node={bone.getTransformNode()}
+                description="The transform node linked to this bone."
+                entity={bone.getTransformNode()}
                 selectionService={props.selectionService}
             />
         </>
