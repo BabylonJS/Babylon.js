@@ -44,7 +44,7 @@ float alpha = 1.0;
 #ifdef SPECULAR_COLOR
     vec4 specularColorFromTexture = texture2D(specularColorSampler, vSpecularColorUV + uvOffset);
     #ifdef SPECULAR_COLOR_GAMMA
-        specularColorFromTexture = toLinearSpace(specularColorFromTexture.rgb);
+        specularColorFromTexture.rgb = toLinearSpace(specularColorFromTexture.rgb);
     #endif
 #endif
 
