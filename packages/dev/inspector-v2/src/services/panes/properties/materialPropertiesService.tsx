@@ -11,6 +11,9 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
 import { StandardMaterialTexturesProperties } from "../../../components/properties/materials/standardMaterialTexturesProperties";
 import { StandardMaterialLevelsProperties } from "../../../components/properties/materials/standardMaterialLevelsProperties";
+import { PBRBaseSimpleMaterial } from "core/Materials/PBR/pbrBaseSimpleMaterial";
+import { type MaterialWithNormalMaps, NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Material Properties",
@@ -51,6 +54,21 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                     section: "Levels",
                     component: ({ context }) => <StandardMaterialLevelsProperties standardMaterial={context} />,
                 },
+                {
+                    section: "Normal Map",
+                    component: ({ context }) => <NormalMapProperties material={context} />,
+                },
+            ],
+        });
+
+        const pbrMaterialNormalMapsContentRegistration = propertiesService.addSectionContent({
+            key: "PBR Material Normal Map Properties",
+            predicate: (entity: unknown): entity is MaterialWithNormalMaps => entity instanceof PBRMaterial || entity instanceof PBRBaseSimpleMaterial,
+            content: [
+                {
+                    section: "Normal Map",
+                    component: ({ context }) => <NormalMapProperties material={context} />,
+                },
             ],
         });
 
@@ -58,6 +76,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             dispose: () => {
                 materialContentRegistration.dispose();
                 standardMaterialContentRegistration.dispose();
+                pbrMaterialNormalMapsContentRegistration.dispose();
             },
         };
     },

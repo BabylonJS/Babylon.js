@@ -1,4 +1,4 @@
-import { useState, type FunctionComponent } from "react";
+import type { FunctionComponent } from "react";
 
 import { BoundProperty } from "../boundProperty";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
