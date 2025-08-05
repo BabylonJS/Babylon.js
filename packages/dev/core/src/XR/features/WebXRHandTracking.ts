@@ -512,6 +512,8 @@ export class WebXRHand implements IDisposable {
                 this._handMeshRoot.parent = xrCamera.parent;
             }
         }
+
+        this.xrController.pointer.parent = xrCamera.parent;
     }
 
     /**
