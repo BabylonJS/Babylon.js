@@ -1,4 +1,3 @@
-import type { Node } from "core/index";
 import { Dropdown } from "../../primitives/dropdown";
 import type { AcceptedDropdownValue, DropdownProps } from "../../primitives/dropdown";
 import { PropertyLine } from "./propertyLine";
@@ -30,7 +29,3 @@ export const NumberDropdownPropertyLine = DropdownPropertyLine as FunctionCompon
  * Dropdown component for string values
  */
 export const StringDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<string>>;
-/**
- * Dropdown component for Node values
- */
-export const NodeDropdownPropertyLine = DropdownPropertyLine as FunctionComponent<DropdownPropertyLineProps<Node>>;

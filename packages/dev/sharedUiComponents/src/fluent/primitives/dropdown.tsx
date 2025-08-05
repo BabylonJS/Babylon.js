@@ -2,7 +2,6 @@ import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-
 import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
-import type { Node } from "core/index";
 
 const useDropdownStyles = makeStyles({
     dropdownOption: {
@@ -12,7 +11,7 @@ const useDropdownStyles = makeStyles({
     optionsLine: {},
 });
 
-export type AcceptedDropdownValue = string | number | Node;
+export type AcceptedDropdownValue = string | number;
 export type DropdownOption<T extends AcceptedDropdownValue> = {
     /**
      * Defines the visible part of the option

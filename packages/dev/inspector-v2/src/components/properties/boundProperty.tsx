@@ -13,7 +13,7 @@ type IsNullable<T> = null extends T ? true : undefined extends T ? true : false;
  */
 type BaseBoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>> = Omit<
     ComponentProps<ComponentT>,
-    "value" | "onChange" | "nullable" | "defaultValue"
+    "value" | "onChange" | "nullable" | "defaultValue" | "ignoreNullable"
 > & {
     component: ComponentT;
     target: TargetT;

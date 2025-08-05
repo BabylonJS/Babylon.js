@@ -160,8 +160,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                 </InfoLabel>
                 <div className={classes.rightContent}>
                     {nullable && !ignoreNullable && (
-                        // Since this checkbox is used to toggle null, 'checked' means 'non null'
-                        // However don't bother adding a checkbox for boolean values - the control should treat null as false
+                        // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
                         <Checkbox
                             checked={!(props.value == null)}
                             onChange={(_, data) => {
