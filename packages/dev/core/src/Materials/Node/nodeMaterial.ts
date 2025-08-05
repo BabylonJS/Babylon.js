@@ -298,6 +298,9 @@ export class NodeMaterial extends PushMaterial {
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
 
+    /** Gets or sets a boolean indicating that render target textures can be serialized */
+    public static AllowSerializationOfRenderTargetTextures = false;
+
     /** Defines default shader language when no option is defined */
     public static DefaultShaderLanguage = ShaderLanguage.GLSL;
 

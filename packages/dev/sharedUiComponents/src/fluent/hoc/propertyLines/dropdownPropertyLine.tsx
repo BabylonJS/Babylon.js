@@ -3,6 +3,7 @@ import { Dropdown } from "../../primitives/dropdown";
 import type { AcceptedDropdownValue, DropdownProps } from "../../primitives/dropdown";
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
+import { forwardRef } from "react";
 import type { FunctionComponent } from "react";
 
 type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = DropdownProps<V> & PropertyLineProps<V>;
@@ -12,13 +13,14 @@ type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = DropdownProps<
  * @param props - PropertyLineProps and DropdownProps
  * @returns property-line wrapped dropdown
  */
-const DropdownPropertyLine: FunctionComponent<DropdownPropertyLineProps<AcceptedDropdownValue>> = (props) => {
+
+const DropdownPropertyLine = forwardRef<HTMLDivElement, DropdownPropertyLineProps<AcceptedDropdownValue>>((props, ref) => {
     return (
-        <PropertyLine {...props}>
+        <PropertyLine {...props} ref={ref}>
             <Dropdown {...props} />
         </PropertyLine>
     );
-};
+});
 
 /**
  * Dropdown component for number values.

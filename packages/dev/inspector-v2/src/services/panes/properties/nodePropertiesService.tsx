@@ -6,9 +6,10 @@ import { Node } from "core/node";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import {
     AbstractMeshAdvancedProperties,
-    AbstractMeshDisplayProperties,
     AbstractMeshGeneralProperties,
     AbstractMeshOutlineOverlayProperties,
+    AbstractMeshDebugProperties,
+    AbstractMeshDisplayProperties,
 } from "../../../components/properties/nodes/abstractMeshProperties";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
@@ -51,6 +52,10 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
                 {
                     section: "Outlines & Overlays",
                     component: ({ context }) => <AbstractMeshOutlineOverlayProperties mesh={context} />,
+                },
+                {
+                    section: "Debug",
+                    component: ({ context }) => <AbstractMeshDebugProperties mesh={context} />,
                 },
             ],
         });
