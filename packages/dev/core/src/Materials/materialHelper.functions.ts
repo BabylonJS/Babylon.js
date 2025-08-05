@@ -750,6 +750,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
  * @param realTimeFiltering Whether realtime filting of IBL texture is being used
  * @param realTimeFilteringQuality The quality of realtime filtering
  * @param forceSHInVertex Whether the SH are handled in the vertex shader
+ * @returns true if the defines were updated
  */
 export function PrepareDefinesForIBL(
     scene: Scene,
@@ -758,10 +759,10 @@ export function PrepareDefinesForIBL(
     realTimeFiltering: boolean = false,
     realTimeFilteringQuality: number = Constants.TEXTURE_FILTERING_QUALITY_LOW,
     forceSHInVertex: boolean = false
-) {
+): boolean {
     if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
         if (!reflectionTexture.isReadyOrNotBlocking()) {
-            return;
+            return false;
         }
         defines.REFLECTION = true;
         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
@@ -873,6 +874,7 @@ export function PrepareDefinesForIBL(
         defines.RGBDREFLECTION = false;
         defines.LINEARSPECULARREFLECTION = false;
     }
+    return true;
 }
 
 /**
