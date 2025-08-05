@@ -18,38 +18,38 @@ var alpha: f32 = 1.0;
 
 // Sample Base Layer properties from textures
 #ifdef BASE_WEIGHT
-    var baseWeightFromTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, uniforms.vBaseWeightUV + uvOffset);
+    var baseWeightFromTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
 #endif
 
 #ifdef BASE_COLOR
-    var baseColorFromTexture: vec4f = textureSample(baseColorSampler, baseColorSamplerSampler, uniforms.vBaseColorUV + uvOffset);
+    var baseColorFromTexture: vec4f = textureSample(baseColorSampler, baseColorSamplerSampler, fragmentInputs.vBaseColorUV + uvOffset);
 #endif
 
 #ifdef METALLIC_ROUGHNESS
-    var metallicRoughnessFromTexture: vec4f = textureSample(baseMetalRoughSampler, baseMetalRoughSamplerSampler, uniforms.vBaseMetalRoughUV + uvOffset);
+    var metallicRoughnessFromTexture: vec4f = textureSample(baseMetalRoughSampler, baseMetalRoughSamplerSampler, fragmentInputs.vBaseMetalRoughUV + uvOffset);
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    var baseDiffuseRoughnessFromTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, uniforms.vBaseDiffuseRoughnessUV + uvOffset).r;
+    var baseDiffuseRoughnessFromTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).r;
 #endif
 
 #ifdef GEOMETRY_OPACITY
-    var opacityFromTexture: vec4f = textureSample(opacitySampler, opacitySamplerSampler, uniforms.vOpacityUV + uvOffset);
+    var opacityFromTexture: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
 #endif
 
 #ifdef DECAL
-    var decalFromTexture: vec4f = textureSample(decalSampler, decalSamplerSampler, uniforms.vDecalUV + uvOffset);
+    var decalFromTexture: vec4f = textureSample(decalSampler, decalSamplerSampler, fragmentInputs.vDecalUV + uvOffset);
 #endif
 
 #ifdef SPECULAR_COLOR
-    var specularColorFromTexture: vec4f = textureSample(specularColorSampler, specularColorSamplerSampler, uniforms.vSpecularColorUV + uvOffset);
+    var specularColorFromTexture: vec4f = textureSample(specularColorSampler, specularColorSamplerSampler, fragmentInputs.vSpecularColorUV + uvOffset);
     #ifdef SPECULAR_COLOR_GAMMA
         specularColorFromTexture = toLinearSpace(specularColorFromTexture.rgb);
     #endif
 #endif
 
 #ifdef SPECULAR_WEIGHT
-    var specularWeightFromTexture: vec4f = textureSample(specularWeightSampler, specularWeightSamplerSampler, uniforms.vSpecularWeightUV + uvOffset);
+    var specularWeightFromTexture: vec4f = textureSample(specularWeightSampler, specularWeightSamplerSampler, fragmentInputs.vSpecularWeightUV + uvOffset);
 #endif
 
 // Initalize base layer properties from uniforms
