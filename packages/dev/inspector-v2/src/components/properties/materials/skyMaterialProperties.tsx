@@ -1,11 +1,13 @@
 import type { FunctionComponent } from "react";
+
 import type { SkyMaterial } from "materials/sky/skyMaterial";
 import type { ISettingsContext } from "../../../services/settingsContext";
-import { BoundProperty } from "../boundProperty";
+
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
+import { BoundProperty } from "../boundProperty";
 
 export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; settings: ISettingsContext }> = (props) => {
     const { material, settings } = props;
@@ -97,7 +99,7 @@ export const SkyMaterialProperties: FunctionComponent<{ material: SkyMaterial; s
                 max={1000}
                 step={0.1}
             />
-            <BoundProperty component={CheckboxPropertyLine} label="Use Sun Pos" description="Enable custom sun position." target={material} propertyKey="useSunPosition" />
+            <BoundProperty component={SwitchPropertyLine} label="Use Sun Pos" description="Enable custom sun position." target={material} propertyKey="useSunPosition" />
             <BoundProperty component={Vector3PropertyLine} label="Sun Position" description="Custom sun position (Vector3)." target={material} propertyKey="sunPosition" />
             <BoundProperty component={Vector3PropertyLine} label="Camera Offset" description="Offset for the camera (Vector3)." target={material} propertyKey="cameraOffset" />
         </>
