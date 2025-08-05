@@ -2286,6 +2286,13 @@ export class GLTFLoader implements IGLTFLoader {
             (babylonMaterial as PBRMaterial).useSpecularOverAlpha = !this._parent.transparencyAsCoverage;
         }
         babylonMaterial.transparencyMode = PBRMaterialClass.PBRMATERIAL_OPAQUE;
+        if (this.parent.useOpenPBR) {
+            (babylonMaterial as OpenPBRMaterial).baseMetalness = 1.0;
+            (babylonMaterial as OpenPBRMaterial).specularRoughness = 1.0;
+        } else {
+            (babylonMaterial as PBRMaterial).metallic = 1.0;
+            (babylonMaterial as PBRMaterial).roughness = 1.0;
+        }
 
         return babylonMaterial;
     }
