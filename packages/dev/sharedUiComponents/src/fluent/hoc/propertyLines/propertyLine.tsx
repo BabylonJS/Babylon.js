@@ -55,7 +55,9 @@ const usePropertyLineStyles = makeStyles({
     expandButton: {
         margin: 0,
     },
-    expandedContent: {},
+    expandedContent: {
+        paddingLeft: "20px",
+    },
 });
 
 type BasePropertyLineProps = {

@@ -14,6 +14,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 
 const OrientationOptions = [
     { label: "Clockwise", value: Material.ClockWiseSideOrientation },
@@ -152,9 +153,8 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                     {/* <BoundProperty component={HexPropertyLine} label="Read mask" target={material.stencil} propertyKey="funcMask" /> */}
                     {/** TODO: Force int integer-only for NumberInputPropertyLine */}
                     <BoundProperty component={NumberInputPropertyLine} label="Reference Value" target={material.stencil} propertyKey="funcRef" step={0} />
-                    <TextPropertyLine
+                    <PropertyLine
                         label="Front"
-                        value=""
                         expandByDefault={true}
                         expandedContent={
                             <>
@@ -189,9 +189,8 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                             </>
                         }
                     />
-                    <TextPropertyLine
+                    <PropertyLine
                         label="Back"
-                        value=""
                         expandByDefault={true}
                         expandedContent={
                             <>
