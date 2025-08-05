@@ -286,15 +286,15 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
                 const cmask = (1 << 9) - 1;
                 const rotation = [];
-                const iLargest = comp >> 30;
+                const iLargest = comp >>> 30;
                 let remaining = comp;
                 let sumSquares = 0;
 
                 for (let i = 3; i >= 0; --i) {
                     if (i !== iLargest) {
                         const mag = remaining & cmask;
-                        const negbit = (remaining >> 9) & 0x1;
-                        remaining = remaining >> 10;
+                        const negbit = (remaining >>> 9) & 0x1;
+                        remaining = remaining >>> 10;
 
                         rotation[i] = sqrt12 * (mag / cmask);
                         if (negbit === 1) {
@@ -312,8 +312,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 rotation[1] *= coordinateSign;
                 rotation[2] *= coordinateSign;
 
+                const shuffle = [3, 0, 1, 2]; // shuffle to match the order of the quaternion components in the splat file
                 for (let j = 0; j < 4; j++) {
-                    rot[i * 32 + 28 + j] = Math.round(127.5 + rotation[j] * 127.5);
+                    rot[i * 32 + 28 + j] = Math.round(127.5 + rotation[shuffle[j]] * 127.5);
                 }
 
                 byteOffset += 4;
