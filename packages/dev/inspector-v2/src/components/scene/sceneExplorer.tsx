@@ -218,29 +218,20 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommandDisplayInfo<Entit
 
 const SceneTreeItem: FunctionComponent<{
     scene: Scene;
-    selectedEntity?: unknown;
-    setSelectedEntity?: (entity: unknown) => void;
+    isSelected: boolean;
+    select: () => void;
     isFiltering: boolean;
 }> = (props) => {
-    const { scene, selectedEntity, setSelectedEntity } = props;
+    const { isSelected, select } = props;
 
     const classes = useStyles();
 
     return (
-        <FlatTreeItem
-            key="scene"
-            value="scene"
-            itemType="leaf"
-            parentValue={undefined}
-            aria-level={1}
-            aria-setsize={1}
-            aria-posinset={1}
-            onClick={() => setSelectedEntity?.(scene)}
-        >
+        <FlatTreeItem key="scene" value="scene" itemType="leaf" parentValue={undefined} aria-level={1} aria-setsize={1} aria-posinset={1} onClick={select}>
             <TreeItemLayout
                 iconBefore={<MoviesAndTvRegular />}
                 className={classes.sceneTreeItemLayout}
-                style={scene === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
             >
                 <Body1Strong wrap={false} truncate>
                     Scene
@@ -253,8 +244,6 @@ const SceneTreeItem: FunctionComponent<{
 const SectionTreeItem: FunctionComponent<{
     scene: Scene;
     section: SectionTreeItemData;
-    selectedEntity?: unknown;
-    setSelectedEntity?: (entity: unknown) => void;
     isFiltering: boolean;
 }> = (props) => {
     const { section, isFiltering } = props;
@@ -282,12 +271,12 @@ const SectionTreeItem: FunctionComponent<{
 const EntityTreeItem: FunctionComponent<{
     scene: Scene;
     entityItem: EntityTreeItemData;
-    selectedEntity?: unknown;
-    setSelectedEntity?: (entity: unknown) => void;
+    isSelected: boolean;
+    select: () => void;
     isFiltering: boolean;
     commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
 }> = (props) => {
-    const { entityItem, selectedEntity, setSelectedEntity, isFiltering, commandProviders } = props;
+    const { entityItem, isSelected, select, isFiltering, commandProviders } = props;
 
     const displayInfo = useResource(
         useCallback(() => {
@@ -351,11 +340,11 @@ const EntityTreeItem: FunctionComponent<{
             aria-level={entityItem.depth}
             aria-setsize={1}
             aria-posinset={1}
-            onClick={() => setSelectedEntity?.(entityItem.entity)}
+            onClick={select}
         >
             <TreeItemLayout
                 iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                style={entityItem.entity === selectedEntity ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                 // Actions are only visible when the item is focused or has pointer hover.
                 actions={commandInfo.commands.map((command) =>
                     command.type === "action" ? (
@@ -633,26 +622,25 @@ export const SceneExplorer: FunctionComponent<{
                         const item = visibleItems[index];
 
                         if (item.type === "scene") {
-                            return <SceneTreeItem key="scene" scene={scene} selectedEntity={selectedEntity} setSelectedEntity={setSelectedEntity} isFiltering={!!itemsFilter} />;
-                        } else if (item.type === "section") {
                             return (
-                                <SectionTreeItem
-                                    key={item.sectionName}
+                                <SceneTreeItem
+                                    key="scene"
                                     scene={scene}
-                                    section={item}
-                                    selectedEntity={selectedEntity}
-                                    setSelectedEntity={setSelectedEntity}
+                                    isSelected={selectedEntity === scene}
+                                    select={() => setSelectedEntity?.(scene)}
                                     isFiltering={!!itemsFilter}
                                 />
                             );
+                        } else if (item.type === "section") {
+                            return <SectionTreeItem key={item.sectionName} scene={scene} section={item} isFiltering={!!itemsFilter} />;
                         } else {
                             return (
                                 <EntityTreeItem
                                     key={item.entity.uniqueId}
                                     scene={scene}
                                     entityItem={item}
-                                    selectedEntity={selectedEntity}
-                                    setSelectedEntity={setSelectedEntity}
+                                    isSelected={selectedEntity === item.entity}
+                                    select={() => setSelectedEntity?.(item.entity)}
                                     isFiltering={!!itemsFilter}
                                     commandProviders={commandProviders}
                                 />
