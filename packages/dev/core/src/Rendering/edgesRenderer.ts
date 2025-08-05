@@ -49,10 +49,6 @@ AbstractMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, checkVer
     return this;
 };
 
-AbstractMesh.prototype.edgesRenderingEnabled = function (): boolean {
-    return this._edgesRenderer !== null && this._edgesRenderer.isEnabled;
-};
-
 Object.defineProperty(AbstractMesh.prototype, "edgesRenderer", {
     get: function (this: AbstractMesh) {
         return this._edgesRenderer;

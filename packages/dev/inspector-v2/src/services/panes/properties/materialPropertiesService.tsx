@@ -1,16 +1,15 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { ISettingsContext } from "../../../services/settingsContext";
 import type { IPropertiesService } from "./propertiesService";
 
-import { PropertiesServiceIdentity } from "./propertiesService";
-
-import { Material } from "core/Materials";
-import { SkyMaterial } from "materials/sky/skyMaterial";
-import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
-import { SettingsContextIdentity } from "../../settingsContext";
-import type { ISettingsContext } from "../../../services/settingsContext";
-import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
+import { Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { SkyMaterial } from "materials/sky/skyMaterial";
+import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
+import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
 import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
+import { SettingsContextIdentity } from "../../settingsContext";
+import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
     friendlyName: "Material Properties",
@@ -47,7 +46,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
         });
 
         const skyMaterialRegistration = propertiesService.addSectionContent({
-            key: "Sky",
+            key: "Sky Material Properties",
             predicate: (entity: unknown) => entity instanceof SkyMaterial,
             content: [
                 {

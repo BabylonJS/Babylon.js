@@ -2,22 +2,22 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISelectionService } from "../../selectionService";
 import type { IPropertiesService } from "./propertiesService";
 
-import { Node } from "core/node";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Mesh } from "core/Meshes/mesh";
+import { Node } from "core/node";
 import {
     AbstractMeshAdvancedProperties,
-    AbstractMeshGeneralProperties,
-    AbstractMeshOutlineOverlayProperties,
-    AbstractMeshOcclusionsProperties,
-    AbstractMeshEdgeRenderingProperties,
     AbstractMeshDebugProperties,
     AbstractMeshDisplayProperties,
+    AbstractMeshEdgeRenderingProperties,
+    AbstractMeshGeneralProperties,
+    AbstractMeshOcclusionsProperties,
+    AbstractMeshOutlineOverlayProperties,
 } from "../../../components/properties/nodes/abstractMeshProperties";
+import { MeshDisplayProperties } from "../../../components/properties/nodes/meshProperties";
+import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
-import { Mesh } from "core/Meshes/mesh";
-import { MeshDisplayProperties } from "../../../components/properties/nodes/meshProperties";
 
 export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",
