@@ -827,9 +827,16 @@ export class StandardMaterial extends StandardMaterialBase {
                 } else {
                     defines.OPACITY = false;
                 }
-                defines.ROUGHNESS = this._roughness > 0;
-                defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
-                PrepareDefinesForIBL(scene, this._reflectionTexture, defines);
+                if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
+                    defines.ROUGHNESS = this._roughness > 0;
+                    defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
+                } else {
+                    defines.ROUGHNESS = false;
+                    defines.REFLECTIONOVERALPHA = false;
+                }
+                if (!PrepareDefinesForIBL(scene, this._reflectionTexture, defines)) {
+                    return false;
+                }
 
                 if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                     if (!this._emissiveTexture.isReadyOrNotBlocking()) {
@@ -1471,6 +1478,9 @@ export class StandardMaterial extends StandardMaterialBase {
                     }
 
                     BindIBLParameters(scene, defines, ubo, this._reflectionTexture, false, false, true);
+                    if (!this._reflectionTexture || !StandardMaterial.ReflectionTextureEnabled) {
+                        ubo.updateFloat2("vReflectionInfos", 0.0, this.roughness);
+                    }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                         ubo.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);

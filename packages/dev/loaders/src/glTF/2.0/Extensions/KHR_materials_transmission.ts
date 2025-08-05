@@ -397,11 +397,14 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         if (!(babylonMaterial instanceof PBRMaterialClass)) {
             throw new Error(`${context}: Material type not supported`);
         }
+        if (useOpenPBR) {
+            return Promise.resolve();
+        }
 
         let transmissionWeight = 0.0;
         let transmissionWeightTexture: Nullable<BaseTexture> = null;
 
-        const promises = new Array<Promise<any>>();
+        let texturePromise = new Promise<Nullable<BaseTexture>>((resolve) => resolve(null));
         if (extension.transmissionFactor !== undefined) {
             transmissionWeight = extension.transmissionFactor;
         } else {
@@ -410,43 +413,40 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         if (extension.transmissionTexture) {
             (extension.transmissionTexture as ITextureInfo).nonColorData = true;
             // eslint-disable-next-line github/no-then
-            promises.push(
-                this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, (texture: BaseTexture) => {
-                    texture.name = `${babylonMaterial.name} (Transmission)`;
-                    transmissionWeightTexture = texture;
-                })
-            );
+            texturePromise = this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, (texture: BaseTexture) => {
+                texture.name = `${babylonMaterial.name} (Transmission)`;
+                transmissionWeightTexture = texture;
+            });
         }
 
+        const pbrMaterial = babylonMaterial as PBRMaterial;
+
+        // Enables "refraction" texture which represents transmitted light.
+        pbrMaterial.subSurface.isRefractionEnabled = transmissionWeight !== 0;
+
+        // Since this extension models thin-surface transmission only, we must make IOR = 1.0
+        pbrMaterial.subSurface.volumeIndexOfRefraction = 1.0;
+
+        // Albedo colour will tint transmission.
+        pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
+
+        pbrMaterial.subSurface.refractionIntensity = transmissionWeight;
+
+        if (transmissionWeight) {
+            const scene = pbrMaterial.getScene() as unknown as ITransmissionHelperHolder;
+            if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper) {
+                new TransmissionHelper({}, pbrMaterial.getScene());
+            } else if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper?._isRenderTargetValid()) {
+                // If the render target is not valid, recreate it.
+                scene._transmissionHelper?._setupRenderTargets();
+            }
+        }
+
+        pbrMaterial.subSurface.minimumThickness = 0.0;
+        pbrMaterial.subSurface.maximumThickness = 0.0;
+
         // eslint-disable-next-line github/no-then
-        return Promise.all(promises).then(() => {
-            if (useOpenPBR) {
-                return;
-            }
-            const pbrMaterial = babylonMaterial as PBRMaterial;
-
-            // Enables "refraction" texture which represents transmitted light.
-            pbrMaterial.subSurface.isRefractionEnabled = transmissionWeight !== 0;
-
-            // Since this extension models thin-surface transmission only, we must make IOR = 1.0
-            pbrMaterial.subSurface.volumeIndexOfRefraction = 1.0;
-
-            // Albedo colour will tint transmission.
-            pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
-
-            pbrMaterial.subSurface.refractionIntensity = transmissionWeight;
-
-            if (transmissionWeight) {
-                const scene = pbrMaterial.getScene() as unknown as ITransmissionHelperHolder;
-                if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper) {
-                    new TransmissionHelper({}, pbrMaterial.getScene());
-                } else if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper?._isRenderTargetValid()) {
-                    // If the render target is not valid, recreate it.
-                    scene._transmissionHelper?._setupRenderTargets();
-                }
-            }
-            pbrMaterial.subSurface.minimumThickness = 0.0;
-            pbrMaterial.subSurface.maximumThickness = 0.0;
+        return texturePromise.then(() => {
             pbrMaterial.subSurface.refractionIntensityTexture = transmissionWeightTexture;
             pbrMaterial.subSurface.useGltfStyleTextures = true;
         });
