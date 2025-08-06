@@ -37,7 +37,7 @@ const ViewerDisplayModes = [
     { label: "Lines", value: SkeletonViewer.DISPLAY_LINES },
     { label: "Spheres", value: SkeletonViewer.DISPLAY_SPHERES },
     { label: "Sphere and Spurs", value: SkeletonViewer.DISPLAY_SPHERE_AND_SPURS },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 const useStyles = makeStyles({
     contentDiv: {

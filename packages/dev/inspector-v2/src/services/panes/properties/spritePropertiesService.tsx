@@ -22,7 +22,7 @@ export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IProperti
             content: [
                 {
                     section: "General",
-                    component: ({ context }) => <SpriteGeneralProperties sprite={context} setSelectedEntity={(entity) => (selectionService.selectedEntity = entity)} />,
+                    component: ({ context }) => <SpriteGeneralProperties sprite={context} selectionService={selectionService} />,
                 },
             ],
         });

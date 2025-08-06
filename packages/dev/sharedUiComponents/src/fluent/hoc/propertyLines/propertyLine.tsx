@@ -55,7 +55,9 @@ const usePropertyLineStyles = makeStyles({
     expandButton: {
         margin: 0,
     },
-    expandedContent: {},
+    expandedContent: {
+        paddingLeft: "20px",
+    },
 });
 
 type BasePropertyLineProps = {
@@ -80,13 +82,23 @@ type BasePropertyLineProps = {
 // Only require value/onChange/defaultValue props if nullable is true
 type NullableProperty<ValueT> = {
     nullable: true;
+    ignoreNullable: false;
     value: ValueT;
     onChange: (value: ValueT) => void;
     defaultValue?: ValueT;
 };
 
+type IgnoreNullable<ValueT> = {
+    ignoreNullable: true;
+    nullable: false;
+    value: ValueT;
+    onChange: (value: ValueT) => void;
+    defaultValue: ValueT;
+};
+
 type NonNullableProperty = {
     nullable?: false;
+    ignoreNullable?: false;
 };
 
 // Only expect optional expandByDefault prop if expandedContent is defined
@@ -107,7 +119,9 @@ type NonExpandableProperty = {
     expandedContent?: undefined;
 };
 
-export type PropertyLineProps<ValueT> = BasePropertyLineProps & (NullableProperty<ValueT> | NonNullableProperty) & (ExpandableProperty | NonExpandableProperty);
+export type PropertyLineProps<ValueT> = BasePropertyLineProps &
+    (NullableProperty<ValueT> | NonNullableProperty | IgnoreNullable<ValueT>) &
+    (ExpandableProperty | NonExpandableProperty);
 
 /**
  * A reusable component that renders a property line with a label and child content, and an optional description, copy button, and expandable section.
@@ -118,7 +132,7 @@ export type PropertyLineProps<ValueT> = BasePropertyLineProps & (NullablePropert
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps<any>>>((props, ref) => {
     const classes = usePropertyLineStyles();
-    const { label, onCopy, expandedContent, children, nullable } = props;
+    const { label, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
@@ -129,10 +143,10 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
-        nullable && isValidElement(children)
+        (nullable || ignoreNullable) && isValidElement(children)
             ? cloneElement(children, {
                   ...children.props,
-                  disabled: props.value == null || children.props.disabled,
+                  disabled: children.props.disabled || (nullable && props.value == null),
                   value: props.value ?? props.defaultValue,
                   defaultValue: undefined, // Don't pass defaultValue to children as there is no guarantee how this will be used and we can't mix controlled + uncontrolled state
               })
@@ -145,8 +159,8 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                     <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
-                    {nullable && (
-                        // Since this checkbox is used to toggle null, 'checked' means 'non null'
+                    {nullable && !ignoreNullable && (
+                        // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
                         <Checkbox
                             checked={!(props.value == null)}
                             onChange={(_, data) => {

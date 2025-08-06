@@ -15,6 +15,7 @@ import { TraverseGraph } from "../../misc/graphUtils";
 
 export type EntityBase = Readonly<{
     uniqueId: number;
+    reservedDataStore?: Record<PropertyKey, unknown>;
 }>;
 
 export type EntityDisplayInfo = Partial<IDisposable> &
@@ -496,7 +497,9 @@ export const SceneExplorer: FunctionComponent<{
                         depth++;
 
                         traversedItems.push(treeItem);
-
+                        if (treeItem.entity.reservedDataStore?.hidden) {
+                            return; // Don't display the treeItem or its children if reservedDataStore.hidden is true
+                        }
                         if (!filter) {
                             // If there is no filter and we made it this far, then the item's parent is in an open state and this item is visible.
                             visibleItems.add(treeItem);
