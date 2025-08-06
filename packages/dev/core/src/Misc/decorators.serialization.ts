@@ -223,7 +223,11 @@ export class SerializationHelper {
                 const dest = destination;
                 switch (propertyType) {
                     case 0: // Value
-                        dest[property] = sourceProperty;
+                        if (Array.isArray(sourceProperty)) {
+                            dest[property] = sourceProperty.slice();
+                        } else {
+                            dest[property] = sourceProperty;
+                        }
                         break;
                     case 1: // Texture
                         if (scene) {
