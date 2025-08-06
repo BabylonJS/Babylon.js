@@ -493,7 +493,7 @@ export class SmartFilterOptimizer {
             code = code.replace(/varying\s+vec2\s+vUV\s*;/g, "");
 
             // Replaces the texture2D calls by __sampleTexture for easier processing
-            code = code.replace(/\stexture2D\(/g, " __sampleTexture(");
+            code = code.replace(/\stexture2D\s*\(/g, " __sampleTexture(");
 
             // Processes the defines to make them unique
             code = this._processDefines(block, code);
