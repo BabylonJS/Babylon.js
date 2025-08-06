@@ -19,7 +19,7 @@ import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConf
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { Collapse } from "@fluentui/react-motion-components-preview";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 
 let StoredEnvironmentTexture: Nullable<BaseTexture>;
 

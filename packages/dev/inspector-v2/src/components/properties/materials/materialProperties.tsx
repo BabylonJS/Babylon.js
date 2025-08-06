@@ -3,13 +3,12 @@ import { Engine } from "core/Engines/engine";
 import { Constants } from "core/Engines/constants";
 import type { FunctionComponent } from "react";
 
-import { Collapse } from "@fluentui/react-motion-components-preview";
-
 import { BoundProperty } from "../boundProperty";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -146,7 +145,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
         <>
             <BoundProperty component={SwitchPropertyLine} label="Enabled" target={material.stencil} propertyKey="enabled" />
             <Collapse visible={stencilEnabled}>
-                <div>
+                <>
                     {/* TODO: Make HexPropertyLine work in the case of simply editing a hex value */}
                     {/* <BoundProperty component={HexPropertyLine} label="Write mask" target={material.stencil} propertyKey="mask" /> */}
                     {/* <BoundProperty component={HexPropertyLine} label="Read mask" target={material.stencil} propertyKey="funcMask" /> */}
@@ -224,7 +223,7 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
                             </>
                         }
                     />
-                </div>
+                </>
             </Collapse>
         </>
     );

@@ -5,7 +5,7 @@ import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { BoundProperty } from "../boundProperty";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { Collapse } from "@fluentui/react-motion-components-preview";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
@@ -64,7 +64,7 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
             ) : null}
             <BoundProperty component={SwitchPropertyLine} label="Blending" target={animationGroup} propertyKey="enableBlending" ignoreNullable defaultValue={false} />
             <Collapse visible={!!enableBlending}>
-                <div>
+                <>
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Blending speed"
@@ -80,7 +80,7 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
                     <BoundProperty component={NumberInputPropertyLine} label="Weight" target={animationGroup} propertyKey="weight" step={0.1} />
                     <BoundProperty component={NumberInputPropertyLine} label="Play order" target={animationGroup} propertyKey="playOrder" step={0} />
                     {/* TODO: Hey georgie :<Play order> should be integer (even when typing)*/}
-                </div>
+                </>
             </Collapse>
         </>
     );
