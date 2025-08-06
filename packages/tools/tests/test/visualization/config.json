@@ -2832,6 +2832,11 @@
             "title": "OpenPBR Analytic Lights Specular IOR vs Coat IOR",
             "playgroundId": "#GRQHVV#36",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Normal and Coat Normal Mapping",
+            "playgroundId": "#GRQHVV#44",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
