@@ -48,7 +48,7 @@
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL
-	coatNormalW = perturbNormal(TBN, texture2D(geometryNormalSampler, vGeometryNormalUV + uvOffset).xyz, vGeometryNormalInfos.y);
+	coatNormalW = perturbNormal(TBN, texture2D(geometryCoatNormalSampler, vGeometryCoatNormalUV + uvOffset).xyz, vGeometryCoatNormalInfos.y);
 #endif
 
 #ifdef GEOMETRY_NORMAL
