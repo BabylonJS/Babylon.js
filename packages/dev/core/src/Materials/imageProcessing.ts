@@ -6,10 +6,6 @@ import type { Observer } from "../Misc/observable";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { ColorCurves } from "../Materials/colorCurves";
 
-// Explicit re-export of types to help TypeScript resolve them in declaration files
-// export type { Observer } from "../Misc/observable";
-// export type { ColorCurves } from "./colorCurves";
-
 type ImageProcessingMixinConstructor<T = {}> = new (...args: any[]) => T;
 
 /**
