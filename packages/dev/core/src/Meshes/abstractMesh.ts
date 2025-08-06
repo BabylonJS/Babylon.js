@@ -2775,7 +2775,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             return this;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { OptimizeIndices } = await import("./mesh.vertexData.functions");
 
         OptimizeIndices(indices);

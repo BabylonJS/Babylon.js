@@ -541,7 +541,7 @@ function usePane(
             <>
                 {paneComponents.length > 0 && (
                     <div className={`${classes.pane} ${alignment === "left" ? classes.paneLeft : classes.paneRight}`}>
-                        <div className={`${classes.paneContainer} ${resizing ? "" : classes.paneContainerTransitions}}`} style={{ width: `${collapsed ? 0 : width}px` }}>
+                        <div className={`${classes.paneContainer} ${resizing ? "" : classes.paneContainerTransitions}`} style={{ width: `${collapsed ? 0 : width}px` }}>
                             {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
                             {toolbarMode === "compact" && (paneComponents.length > 1 || topBarComponents.length > 0) && (
                                 <>

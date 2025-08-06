@@ -21,13 +21,13 @@ const MotionOptions = [
     { label: "Static", value: PhysicsMotionType.STATIC },
     { label: "Animated", value: PhysicsMotionType.ANIMATED },
     { label: "Dynamic", value: PhysicsMotionType.DYNAMIC },
-] as const satisfies readonly DropdownOption[];
+] as const satisfies readonly DropdownOption<number>[];
 
 const PrestepOptions = [
     { label: "Disabled", value: PhysicsPrestepType.DISABLED },
     { label: "Teleport", value: PhysicsPrestepType.TELEPORT },
     { label: "Action", value: PhysicsPrestepType.ACTION },
-] as const satisfies readonly DropdownOption[];
+] as const satisfies readonly DropdownOption<number>[];
 
 export const TransformNodePhysicsProperties: FunctionComponent<{ node: TransformNode }> = (props) => {
     const { node } = props;
@@ -90,7 +90,7 @@ const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (
                 options={MotionOptions}
                 value={motionType}
                 onChange={(value) => {
-                    return physicsBody.setMotionType(value as PhysicsMotionType);
+                    return physicsBody.setMotionType(value);
                 }}
             />
             <NumberDropdownPropertyLine
@@ -98,7 +98,7 @@ const PhysicsBodyProperties: FunctionComponent<{ physicsBody: PhysicsBody }> = (
                 options={PrestepOptions}
                 value={prestepType}
                 onChange={(value) => {
-                    return physicsBody.setPrestepType(value as PhysicsPrestepType);
+                    return physicsBody.setPrestepType(value);
                 }}
             />
             {/* Linear Damping */}

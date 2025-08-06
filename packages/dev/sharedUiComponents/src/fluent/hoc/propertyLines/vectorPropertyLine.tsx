@@ -119,7 +119,16 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
     };
 
     return props.useDegrees ? (
-        <Vector3PropertyLine {...restProps} nullable={false} value={quat.toEulerAngles()} valueConverter={ToDegreesConverter} min={min} max={max} onChange={onEulerChange} />
+        <Vector3PropertyLine
+            {...restProps}
+            nullable={false}
+            ignoreNullable={false}
+            value={quat.toEulerAngles()}
+            valueConverter={ToDegreesConverter}
+            min={min}
+            max={max}
+            onChange={onEulerChange}
+        />
     ) : (
         <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
     );
