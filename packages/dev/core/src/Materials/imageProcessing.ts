@@ -10,13 +10,13 @@ import type { ColorCurves } from "../Materials/colorCurves";
 // export type { Observer } from "../Misc/observable";
 // export type { ColorCurves } from "./colorCurves";
 
-type Constructor<T = {}> = new (...args: any[]) => T;
+type ImageProcessingMixinConstructor<T = {}> = new (...args: any[]) => T;
 
 /**
  * Mixin to add Image processing defines to your material defines
  * @internal
  */
-export function ImageProcessingMixin<Tbase extends Constructor>(base: Tbase) {
+export function ImageProcessingMixin<Tbase extends ImageProcessingMixinConstructor>(base: Tbase) {
     return class extends base {
         /**
          * Constructor for the ImageProcessingMixin.

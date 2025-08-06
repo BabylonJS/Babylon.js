@@ -1,10 +1,10 @@
-type Constructor<T = {}> = new (...args: any[]) => T;
+type UVDefinesMixinConstructor<T = {}> = new (...args: any[]) => T;
 
 /**
  * Mixin to add UV defines to your material defines
  * @internal
  */
-export function UVDefinesMixin<Tbase extends Constructor>(base: Tbase) {
+export function UVDefinesMixin<Tbase extends UVDefinesMixinConstructor>(base: Tbase) {
     return class extends base {
         public MAINUV1 = false;
         public MAINUV2 = false;

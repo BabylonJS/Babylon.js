@@ -22,13 +22,13 @@ export interface IImageProcessingConfigurationDefines {
     SKIPFINALCOLORCLAMP: boolean;
 }
 
-type Constructor<T = {}> = new (...args: any[]) => T;
+type ImageProcessingDefinesMixinConstructor<T = {}> = new (...args: any[]) => T;
 
 /**
  * Mixin to add Image processing defines to your material defines
  * @internal
  */
-export function ImageProcessingDefinesMixin<Tbase extends Constructor>(base: Tbase) {
+export function ImageProcessingDefinesMixin<Tbase extends ImageProcessingDefinesMixinConstructor>(base: Tbase) {
     return class extends base implements IImageProcessingConfigurationDefines {
         // Implement all members of IImageProcessingConfigurationDefines here
         public IMAGEPROCESSING = false;
