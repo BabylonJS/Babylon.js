@@ -15,9 +15,9 @@ import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import { useCallback, useEffect, useRef, useState, type FunctionComponent } from "react";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
-// import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { List } from "shared-ui-components/fluent/primitives/list";
+import type { ListItem } from "shared-ui-components/fluent/primitives/list";
 import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 
@@ -32,18 +32,26 @@ type AttractorProps = {
 export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => {
     const { attractor } = props;
     const classes = useAttractorStyles();
+    const [shown, setShown] = useState(props.shown);
+    const [controlled, setControlled] = useState(props.controlled);
+    useEffect(() => {
+        setShown(props.shown);
+    }, [props.shown]);
+    useEffect(() => {
+        setControlled(props.controlled);
+    }, [props.controlled]);
 
     return (
         <div className={classes.container}>
             <SyncedSliderInput value={attractor.strength} onChange={(value) => (attractor.strength = value)} min={-10} max={10} step={0.1} />
-            <ToggleButton title="Show / hide particle attractor." enabledIcon={<EyeFilled />} disabledIcon={<EyeOffFilled />} value={props.shown} onChange={props.onShow} />
-            <ToggleButton title="Control particle attractor" enabledIcon={<ArrowMoveFilled />} value={props.controlled} onChange={props.onControl} />
+            <ToggleButton title="Show / hide particle attractor." enabledIcon={<EyeFilled />} disabledIcon={<EyeOffFilled />} value={shown} onChange={props.onShow} />
+            <ToggleButton title="Add / remove position gizmo from particle attractor" enabledIcon={<ArrowMoveFilled />} value={controlled} onChange={props.onControl} />
         </div>
     );
 };
 const useAttractorStyles = makeStyles({
     container: {
-        // top-level div used for lineContainer
+        // top-level div used for lineContainer, in UI overhaul update to just use linecontainer
         width: "100%",
         display: "flex", // Makes this a flex container
         flexDirection: "row", // Arranges children horizontally, main-axis=horizontal
@@ -51,32 +59,6 @@ const useAttractorStyles = makeStyles({
         borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
     },
 });
-// export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => {
-//     const { attractor } = props;
-//     // // Initialize both the view and control toggles based on whether the attractor is in controlled state
-//     // const [controlled, setControlled] = useState(props.controlled);
-//     // const [inView, setInView] = useState(props.controlled);
-
-//     // useEffect(() => {
-//     //     setControlled(props.controlled);
-//     // }, [props.controlled]);
-
-//     // const onView = (val: boolean) => {
-//     //     setInView(val);
-//     //     props.onView(val);
-//     // };
-//     // const onControl = (val: boolean) => {
-//     //     setControlled(val);
-//     //     props.onControl(val);
-//     // };
-//     return (
-//         <LineContainer>
-//             <SyncedSliderInput value={attractor.strength} onChange={(value) => (attractor.strength = value)} min={-10} max={10} step={0.1} />
-//             <ToggleButton title="Show / hide particle attractor." enabledIcon={<EyeFilled />} disabledIcon={<EyeOffFilled />} value={inView} onChange={onView} />
-//             <ToggleButton title="Control particle attractor" enabledIcon={<ArrowMoveFilled />} value={controlled} onChange={onControl} />
-//         </LineContainer>
-//     );
-// };
 
 // For each Attractor, create a listItem consisting of the attractor and its debugging impostor mesh
 function AttractorsToListItems(attractors: Nullable<Array<Attractor>>) {
@@ -138,91 +120,123 @@ type AttractorDebugProperties = {
 };
 export const AttractorList: FunctionComponent<AttractorListProps> = (props) => {
     const { scene, system } = props;
+    const [items, setItems] = useState<Array<ListItem<Attractor>>>([]);
+
+    // All impostors share a scale/color... for now!
     const [impostorScale, setImpostorScale] = useState(1);
     const [impostorColor, setImpostorColor] = useState<Color3>(Color3.White());
-    const gizmoManagerRef = useRef<GizmoManager>(new GizmoManager(props.scene));
-    // TODO fix label
+    const [controlledImpostor, setControlledImpostor] = useState<Nullable<AbstractMesh>>(null);
     const getFontAsset = useFontAsset("https://assets.babylonjs.com/fonts/roboto-regular.json", "https://assets.babylonjs.com/fonts/roboto-regular.png");
-    const impostorMaterialRef = useRef<StandardMaterial>(new StandardMaterial("Attractor impostor material", scene));
-    const [items, setItems] = useState(AttractorsToListItems(props.attractors));
 
-    const sceneOnAfterRenderObserver = useRef<Observer<Scene>>();
+    const gizmoManagerRef = useRef<GizmoManager>(new GizmoManager(props.scene));
+    const impostorMaterialRef = useRef<StandardMaterial>();
     const impostorMapRef = useRef<Map<Attractor, AttractorDebugProperties>>(new Map());
+    const sceneOnAfterRenderObserverRef = useRef<Observer<Scene>>();
 
     // Initial setup and cleanup logic
     useEffect(() => {
         // Setup
         gizmoManagerRef.current.positionGizmoEnabled = true;
-        gizmoManagerRef.current.attachableMeshes = [];
+        //        gizmoManagerRef.current.attachableMeshes = [];
+
+        impostorMaterialRef.current = new StandardMaterial("Attractor impostor material", scene);
+        impostorMaterialRef.current.reservedDataStore = { hidden: true }; // Ensure scene explorer doesn't show the material
+
+        // setItems(AttractorsToListItems(props.attractors));
 
         return () => {
             // Cleanup
             gizmoManagerRef.current.dispose();
-            impostorMaterialRef.current.dispose();
-            impostorMapRef.current.forEach((item) => {
-                item.impostor.dispose(true, true);
-                // item.label?.dispose();
-            });
-            impostorMapRef.current.clear();
-            if (sceneOnAfterRenderObserver.current) {
-                scene.onAfterRenderObservable.remove(sceneOnAfterRenderObserver.current);
-            }
+            impostorMaterialRef.current?.dispose();
+            disposeImpostors();
+            sceneOnAfterRenderObserverRef.current?.remove();
         };
     }, []);
 
     // If impostor color or scale changes, update all impostors
     useEffect(() => {
-        impostorMaterialRef.current.diffuseColor = impostorColor;
+        impostorMaterialRef.current && (impostorMaterialRef.current.diffuseColor = impostorColor);
         impostorMapRef.current.forEach((element) => {
             element.impostor.scaling.setAll(impostorScale);
+            if (element.label) {
+                element.label.color = Color4.FromColor3(impostorColor, 1.0);
+                element.label.render(scene.getViewMatrix(), scene.getProjectionMatrix());
+            }
         });
     }, [impostorScale, impostorColor]);
 
-    // If attractors change, dispose impostors before recreating items. Reset the onAfterRenderObservable
-    useEffect(() => {
+    const disposeImpostors = () => {
         impostorMapRef.current.forEach((item) => {
             item.impostor.dispose(true, true);
-            // item.label?.dispose();
+            item.label?.dispose();
         });
         impostorMapRef.current.clear();
-        props.attractors.forEach((attractor, index) => {
+    };
+
+    const createImpostors = (attractors: Attractor[]) => {
+        attractors.forEach((attractor, index) => {
             const impostor = CreateSphere("Attractor impostor #" + index, { diameter: 1 }, scene);
-            impostor.reservedDataStore = { hidden: true };
             impostor.scaling.setAll(impostorScale);
             impostor.position.copyFrom(attractor.position);
-            impostorMaterialRef.current.diffuseColor = impostorColor;
-            impostor.material = impostorMaterialRef.current;
-            impostorMapRef.current.set(attractor, { impostor });
+            const material = impostorMaterialRef.current;
+            material && (impostor.material = material);
+            // impostorMaterialRef.current && (impostorMaterialRef.current.diffuseColor = impostorColor);
+            // impostorMaterialRef.current && (impostor.material = impostorMaterialRef.current);
+
+            const debugProperties = { impostor };
+            impostorMapRef.current.set(attractor, debugProperties);
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            addLabelAsync(impostor, index);
+            addLabelAsync(debugProperties, index);
         });
 
-        setItems(AttractorsToListItems(props.attractors));
+        setItems(AttractorsToListItems(attractors));
+    };
 
-        if (sceneOnAfterRenderObserver.current) {
-            scene.onAfterRenderObservable.remove(sceneOnAfterRenderObserver.current);
-        }
+    // If attractors change, dispose impostors before recreating items. Reset the onAfterRenderObservable
+    useEffect(() => {
+        disposeImpostors();
+        createImpostors(props.attractors);
 
-        sceneOnAfterRenderObserver.current = scene.onAfterRenderObservable.add(() => {
+        sceneOnAfterRenderObserverRef.current?.remove();
+        sceneOnAfterRenderObserverRef.current = scene.onAfterRenderObservable.add(() => {
             impostorMapRef.current.forEach((item, key) => {
                 key.position.copyFrom(item.impostor.position);
+                if (item.label) {
+                    item.label.color = Color4.FromColor3(impostorMaterialRef.current?.diffuseColor || impostorColor, 1.0);
+                    item.label.render(scene.getViewMatrix(), scene.getProjectionMatrix());
+                }
             });
         });
     }, [props.attractors]);
 
-    const isControlled = (impostor?: AbstractMesh) => {
-        return gizmoManagerRef.current?.attachedMesh ? gizmoManagerRef.current?.attachedMesh === impostor : false;
-    };
-
-    const addLabelAsync = async (impostor: AbstractMesh, index: number) => {
+    const addLabelAsync = async (debugProperties: AttractorDebugProperties, index: number) => {
         const fontAsset = await getFontAsset();
         const textRenderer = await TextRenderer.CreateTextRendererAsync(fontAsset, scene.getEngine());
 
         textRenderer.addParagraph("#" + index, {}, Matrix.Scaling(0.5, 0.5, 0.5).multiply(Matrix.Translation(0, 1, 0)));
         textRenderer.isBillboard = true;
-        textRenderer.color = Color4.FromColor3(impostorColor, 1.0);
-        textRenderer.parent = impostor;
+        textRenderer.color = Color4.FromColor3(impostorMaterialRef.current?.diffuseColor || impostorColor, 1.0);
         textRenderer.render(scene.getViewMatrix(), scene.getProjectionMatrix());
+        textRenderer.parent = debugProperties.impostor;
+
+        debugProperties.label = textRenderer;
+    };
+
+    const onControlImpostor = (shouldControl: boolean, impostor: AbstractMesh) => {
+        // If true, attach the gizmo to the current impostor, otherwise detach
+        const impostorToControl = shouldControl ? impostor : null;
+        gizmoManagerRef.current.attachToMesh(impostorToControl);
+        setControlledImpostor(impostorToControl);
+    };
+
+    const onShowImpostor = (shouldShow: boolean, impostor: AbstractMesh) => {
+        if (shouldShow) {
+            impostor.setEnabled(true);
+            impostor.visibility = 1;
+        } else {
+            impostor.setEnabled(false);
+            impostor.visibility = 0;
+        }
     };
 
     return (
@@ -241,25 +255,16 @@ export const AttractorList: FunctionComponent<AttractorListProps> = (props) => {
                 renderItem={(item) => {
                     const attractor = item.data;
                     const impostor = impostorMapRef.current.get(attractor)?.impostor;
+                    if (!impostor) {
+                        throw new Error("Should never be rendering an attractorComponent without associated impostor");
+                    }
                     return (
                         <AttractorComponent
                             attractor={attractor}
-                            controlled={isControlled(impostor)}
-                            shown={isControlled(impostor)}
-                            onShow={(val) => {
-                                if (!impostor) {
-                                    return;
-                                }
-                                // If attractor already has an imposter, cleanup. Otherwise, add imposter to make it visible
-                                if (val) {
-                                    impostor.setEnabled(true);
-                                    impostor.visibility = 1;
-                                } else {
-                                    impostor.setEnabled(false);
-                                    impostor.visibility = 0;
-                                }
-                            }}
-                            onControl={(val) => (val ? gizmoManagerRef.current.attachToMesh(impostor!) : gizmoManagerRef.current.attachToMesh(null))}
+                            controlled={impostor === controlledImpostor}
+                            shown={impostor.isEnabled()}
+                            onShow={(val) => onShowImpostor(val, impostor)}
+                            onControl={(val) => onControlImpostor(val, impostor)}
                         />
                     );
                 }}
