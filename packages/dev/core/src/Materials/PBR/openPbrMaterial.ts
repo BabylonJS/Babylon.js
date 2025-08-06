@@ -207,8 +207,6 @@ class OpenPBRMaterialDefinesBase extends UVDefinesMixin(MaterialDefines) {}
  * @internal
  */
 export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRMaterialDefinesBase) {
-    public PBR = true;
-
     public NUM_SAMPLES = "0";
     public REALTIME_FILTERING = false;
     public IBL_CDF_FILTERING = false;
@@ -386,7 +384,6 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public override reset(): void {
         super.reset();
         this.ALPHATESTVALUE = "0.5";
-        this.PBR = true;
         this.NORMALXYSCALE = true;
     }
 }
@@ -615,6 +612,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatIor")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatIor: Property<number> = new Property<number>("coat_ior", 1.5, "vCoatIor", 1, 0);
+
+    /**
+     * Specifies whether the coat roughness is taken from the
+     * same texture as the coat_weight.
+     */
+    public useCoatRoughnessFromWeightTexture: boolean = false;
 
     /**
      * Defines the normal of the material's geometry.
