@@ -88,7 +88,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         const visibilityCommandRegistration = sceneExplorerService.addCommand({
             order: 0,
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
-            getCommandInfo: (mesh) => {
+            getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
                 const isVisibleHook = InterceptProperty(mesh, "isVisible", {
                     afterSet: () => onChangeObservable.notifyObservers(),
