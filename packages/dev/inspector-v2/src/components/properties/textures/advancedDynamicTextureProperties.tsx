@@ -5,12 +5,12 @@ import { useCallback } from "react";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { usePollingObservable } from "../../../hooks/pollingHooks";
 import { useResource } from "../../../hooks/resourceHooks";
 import { BoundProperty } from "../boundProperty";
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 
 export const AdvancedDynamicTextureGeneralProperties = MakeLazyComponent(
     async () => {
@@ -42,8 +42,8 @@ export const AdvancedDynamicTextureGeneralProperties = MakeLazyComponent(
 
             return (
                 <>
-                    <TextPropertyLine label="Last Layout Time" value={`${layoutTime.toFixed(2)} ms`} />
-                    <TextPropertyLine label="Last Render Time" value={`${renderTime.toFixed(2)} ms`} />
+                    <StringifiedPropertyLine label="Last Layout Time" value={layoutTime} precision={2} units="ms" />
+                    <StringifiedPropertyLine label="Last Render Time" value={renderTime} precision={2} units="ms" />
                     <BoundProperty component={SyncedSliderPropertyLine} label="Render Scale" target={texture} propertyKey="renderScale" min={0.1} max={5} step={0.1} />
                     <BoundProperty component={SwitchPropertyLine} label="Premultiply Alpha" target={texture} propertyKey="premulAlpha" />
                     <BoundProperty component={NumberInputPropertyLine} label="Ideal Width" target={texture} propertyKey="idealWidth" />

@@ -7,6 +7,7 @@ import { useObservableState } from "../../../hooks/observableHooks";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { Collapse } from "@fluentui/react-motion-components-preview";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 
 interface ICurrentFrameHolder {
@@ -37,7 +38,7 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
         }, [currentFrameHolder]),
         isPlaying ? animationGroup.getScene().onBeforeRenderObservable : null
     );
-
+    const enableBlending = useProperty(animationGroup, "enableBlending");
     return (
         <>
             <ButtonLine label={isPlaying ? "Pause" : "Play"} onClick={() => (isPlaying ? animationGroup.pause() : animationGroup.play(true))} />
@@ -61,9 +62,8 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
                     }}
                 />
             ) : null}
-            {/* TODO: Hey Georgie some nulls we do not want here*/}
-            <BoundProperty component={SwitchPropertyLine} label="Blending" target={animationGroup} propertyKey="enableBlending" nullable defaultValue={false} />
-            <Collapse visible={animationGroup && !!animationGroup.enableBlending}>
+            <BoundProperty component={SwitchPropertyLine} label="Blending" target={animationGroup} propertyKey="enableBlending" ignoreNullable defaultValue={false} />
+            <Collapse visible={!!enableBlending}>
                 <div>
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
@@ -73,7 +73,7 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
                         step={0.01}
                         target={animationGroup}
                         propertyKey="blendingSpeed"
-                        nullable
+                        ignoreNullable
                         defaultValue={0}
                     />
                     <BoundProperty component={SwitchPropertyLine} label="Is additive" target={animationGroup} propertyKey="isAdditive" />

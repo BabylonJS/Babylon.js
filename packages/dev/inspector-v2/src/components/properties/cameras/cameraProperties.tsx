@@ -18,7 +18,7 @@ import { useAngleConverters } from "../../../hooks/settingsHooks";
 const CameraModes = [
     { label: "Perspective", value: Camera.PERSPECTIVE_CAMERA },
     { label: "Orthographic", value: Camera.ORTHOGRAPHIC_CAMERA },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 /**
  * The general properties component for a camera.

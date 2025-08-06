@@ -23,7 +23,6 @@ import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
@@ -36,6 +35,7 @@ import { BoundProperty } from "../boundProperty";
 // Ensures that the outlineRenderer and edgesRenderer properties exist on the prototype of the Mesh
 import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
+import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 
 // TODO: Georgie make sure to include this in the common control, then we can remove this!
 const useStyles = makeStyles({
@@ -56,34 +56,19 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
 
     return (
         <>
-            <StringifiedPropertyLine key="Vertices" label="Vertices" value={mesh.getTotalVertices()} />
-            <StringifiedPropertyLine key="Faces" label="Faces" value={mesh.getTotalIndices() / 3} />
-            <StringifiedPropertyLine key="SubMeshes" label="Sub-Meshes" value={subMeshes.length} />
-            {skeleton && (
-                <LinkPropertyLine
-                    label="Skeleton"
-                    description="The skeleton associated with the mesh."
-                    value={skeleton.name}
-                    onLink={() => (selectionService.selectedEntity = skeleton)}
-                />
-            )}
+            <BoundProperty component={SwitchPropertyLine} label="Is Visible" target={mesh} propertyKey="isVisible" />
+            <StringifiedPropertyLine label="Vertices" value={mesh.getTotalVertices()} />
+            <StringifiedPropertyLine label="Faces" value={mesh.getTotalIndices() / 3} />
+            <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />
+            <LinkToEntityPropertyLine label="Skeleton" description="The skeleton associated with the mesh." entity={skeleton} selectionService={selectionService} />
+            <LinkToEntityPropertyLine label="Material" description="The material used by the mesh." entity={material} selectionService={selectionService} />
             <BoundProperty component={SwitchPropertyLine} label="Is Pickable" target={mesh} propertyKey={"isPickable"} />
-            {material && !material.reservedDataStore?.hidden && (
-                <LinkPropertyLine
-                    key="Material"
-                    label="Material"
-                    description="The material used by the mesh."
-                    value={material.name}
-                    onLink={() => (selectionService.selectedEntity = material)}
-                />
-            )}
-            {isAnInstance && mesh instanceof InstancedMesh && mesh.sourceMesh && (
-                <LinkPropertyLine
-                    key="Source"
+            {isAnInstance && mesh instanceof InstancedMesh && (
+                <LinkToEntityPropertyLine
                     label="Source"
                     description="The source mesh from which this instance was created."
-                    value={mesh.sourceMesh.name}
-                    onLink={() => (selectionService.selectedEntity = mesh.sourceMesh)}
+                    entity={mesh.sourceMesh}
+                    selectionService={selectionService}
                 />
             )}
             <ButtonLine label="Dispose" onClick={() => mesh.dispose()} />
@@ -182,12 +167,12 @@ const OcclusionTypes = [
     { label: "None", value: 0 },
     { label: "Optimistic", value: 1 },
     { label: "Strict", value: 2 },
-] as const satisfies readonly DropdownOption[];
+] as const satisfies readonly DropdownOption<number>[];
 
 const OcclusionQueryAlgorithmTypes = [
     { label: "Conservative", value: 0 },
     { label: "Accurate", value: 1 },
-] as const satisfies readonly DropdownOption[];
+] as const satisfies readonly DropdownOption<number>[];
 
 export const AbstractMeshOcclusionsProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => {
     const classes = useStyles();
@@ -280,7 +265,7 @@ export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh
     const [displaySkeletonMap, setDisplaySkeletonMap] = useState(mesh.material?.getClassName() === "SkeletonMapShader");
     const [displayBoneIndex, setDisplayBoneIndex] = useState(mesh.reservedDataStore?.displayBoneIndex ?? 0);
 
-    const [targetBoneOptions] = useState<DropdownOption[]>(
+    const [targetBoneOptions] = useState<DropdownOption<number>[]>(
         mesh.skeleton
             ? mesh.skeleton.bones
                   .filter((bone) => bone.getIndex() >= 0)
