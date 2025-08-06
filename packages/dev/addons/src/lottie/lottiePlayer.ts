@@ -1,3 +1,5 @@
+import { Player } from "./rendering/player";
+
 /**
  * Configuration options for the Lottie animation player.
  */
@@ -49,6 +51,16 @@ export type AnimationConfiguration = {
     supportDeviceLost?: boolean;
 };
 
+const SpriteAtlasSize = 2048; // Size of the texture atlas
+const GapSize = 5; // Gap around the sprites in the atlas
+const Capacity = 64; // Maximum number of sprites the renderer can handle at once
+const White = { r: 1, g: 1, b: 1, a: 0 }; // Background color for the animation canvas
+const ScaleMultiplier = 5; // Minimum scale factor to prevent too small sprites
+const DevicePixelRatio = 1; // Scale factor
+const EasingSteps = 4; // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
+const IgnoreOpacityAnimations = true; // Whether to ignore opacity animations for performance
+const SupportDeviceLost = false; // Whether to support device lost events for WebGL contexts
+
 /**
  * Plays a Lottie animation using Babylon running on a worker thread and an OffscreenCanvas if available.
  * @param container The HTMLDivElement to create the canvas in and render the animation on.
@@ -56,45 +68,98 @@ export type AnimationConfiguration = {
  * @param configuration Optional configuration object to customize the animation playback.
  * @returns True if the animation is successfully set up to play, false if OffscreenCanvas is not supported.
  */
-export function PlayAnimation(container: HTMLDivElement, animationFile: string, configuration?: AnimationConfiguration): boolean {
-    if ("OffscreenCanvas" in window) {
-        // Create the canvas element
-        const canvas = document.createElement("canvas");
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
+export async function PlayAnimation(container: HTMLDivElement, animationFile: string, configuration?: AnimationConfiguration): Promise<boolean> {
+    const canvas = document.createElement("canvas");
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
 
-        // Style the canvas to fill the container
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
-        canvas.style.display = "block";
+    // Style the canvas to fill the container
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.display = "block";
 
-        // Append the canvas to the container
-        container.appendChild(canvas);
+    // Append the canvas to the container
+    container.appendChild(canvas);
 
-        const offscreen = canvas.transferControlToOffscreen();
+    const animation = await (await fetch(animationFile)).text();
 
-        const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
-        worker.postMessage({ canvas: offscreen, file: animationFile, config: configuration }, [offscreen]);
+    const originalConfig = configuration as AnimationConfiguration | undefined;
+    const config = {
+        spriteAtlasSize: originalConfig?.spriteAtlasSize || SpriteAtlasSize,
+        gapSize: originalConfig?.gapSize || GapSize,
+        spritesCapacity: originalConfig?.spritesCapacity || Capacity,
+        backgroundColor: originalConfig?.backgroundColor || White,
+        scaleMultiplier: originalConfig?.scaleMultiplier || ScaleMultiplier,
+        devicePixelRatio: originalConfig?.devicePixelRatio || window.devicePixelRatio || DevicePixelRatio,
+        easingSteps: originalConfig?.easingSteps || EasingSteps,
+        ignoreOpacityAnimations: originalConfig?.ignoreOpacityAnimations ?? IgnoreOpacityAnimations,
+        supportDeviceLost: originalConfig?.supportDeviceLost ?? SupportDeviceLost,
+    } as Required<AnimationConfiguration>;
 
-        // Listen for size information from worker
-        worker.onmessage = function (evt) {
-            if (evt.data.animationWidth && evt.data.animationHeight) {
-                canvas.style.width = `${evt.data.animationWidth}px`;
-                canvas.style.height = `${evt.data.animationHeight}px`;
-            }
-        };
+    const player = new Player(canvas, config);
+    player.initialize(animation);
 
-        // Window events that affect the worker
-        window.addEventListener("resize", () => {
-            worker.postMessage({ width: canvas.clientWidth, height: canvas.clientHeight });
-        });
+    canvas.style.width = `${player.animationWidth}px`;
+    canvas.style.height = `${player.animationHeight}px`;
 
-        window.addEventListener("beforeunload", () => {
-            worker.terminate();
-        });
+    player.playAnimation(true);
+    return true;
+    // if ("OffscreenCanvas" in window) {
+    //     // Create the canvas element
+    //     const canvas = document.createElement("canvas");
+    //     canvas.width = container.clientWidth;
+    //     canvas.height = container.clientHeight;
 
-        return true;
-    } else {
-        return false;
-    }
+    //     // Style the canvas to fill the container
+    //     canvas.style.width = "100%";
+    //     canvas.style.height = "100%";
+    //     canvas.style.display = "block";
+
+    //     // Append the canvas to the container
+    //     container.appendChild(canvas);
+
+    //     const offscreen = canvas.transferControlToOffscreen();
+
+    //     //const worker = new Worker(new URL("/worker.ts", import.meta.url));
+    //     //const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+    //     //const worker = new Worker("./worker.ts");
+    //     const blob = new Blob([workerCode], { type: "application/javascript" });
+    //     const workerUrl = URL.createObjectURL(blob);
+    //     const worker = new Worker(workerUrl, { type: "module" });
+    //     worker.postMessage({ canvas: offscreen, file: animationFile, config: configuration }, [offscreen]);
+
+    //     // Listen for size information from worker
+    //     worker.onmessage = function (evt) {
+    //         // eslint-disable-next-line no-console
+    //         console.error("Worker message:", evt);
+
+    //         if (evt.data.animationWidth && evt.data.animationHeight) {
+    //             canvas.style.width = `${evt.data.animationWidth}px`;
+    //             canvas.style.height = `${evt.data.animationHeight}px`;
+    //         }
+    //     };
+
+    //     worker.onerror = function (error) {
+    //         // eslint-disable-next-line no-console
+    //         console.error("Worker error:", error);
+    //     };
+
+    //     worker.onmessageerror = function (error) {
+    //         // eslint-disable-next-line no-console
+    //         console.error("Worker message error:", error);
+    //     };
+
+    //     // Window events that affect the worker
+    //     window.addEventListener("resize", () => {
+    //         worker.postMessage({ width: canvas.clientWidth, height: canvas.clientHeight });
+    //     });
+
+    //     window.addEventListener("beforeunload", () => {
+    //         worker.terminate();
+    //     });
+
+    //     return true;
+    // } else {
+    //     return false;
+    // }
 }
