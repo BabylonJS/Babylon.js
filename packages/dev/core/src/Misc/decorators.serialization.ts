@@ -154,7 +154,11 @@ export class SerializationHelper {
             if (sourceProperty !== undefined && sourceProperty !== null && (property !== "uniqueId" || SerializationHelper.AllowLoadingUniqueId)) {
                 switch (propertyType) {
                     case 0: // Value
-                        serializationObject[targetPropertyName] = sourceProperty;
+                        if (Array.isArray(sourceProperty)) {
+                            serializationObject[targetPropertyName] = sourceProperty.slice();
+                        } else {
+                            serializationObject[targetPropertyName] = sourceProperty;
+                        }
                         break;
                     case 1: // Texture
                         serializationObject[targetPropertyName] = sourceProperty.serialize();
@@ -223,11 +227,7 @@ export class SerializationHelper {
                 const dest = destination;
                 switch (propertyType) {
                     case 0: // Value
-                        if (Array.isArray(sourceProperty)) {
-                            dest[property] = sourceProperty.slice();
-                        } else {
-                            dest[property] = sourceProperty;
-                        }
+                        dest[property] = sourceProperty;
                         break;
                     case 1: // Texture
                         if (scene) {
