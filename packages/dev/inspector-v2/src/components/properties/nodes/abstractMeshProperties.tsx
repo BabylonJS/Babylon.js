@@ -290,7 +290,7 @@ export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh
             setDisplayNormals(false);
         } else {
             try {
-                const { NormalMaterial: normalMaterialClass } = await import("materials/normal/normalMaterial");
+                const { NormalMaterial } = await import("materials/normal/normalMaterial");
 
                 if (!mesh.reservedDataStore) {
                     mesh.reservedDataStore = {};
@@ -300,7 +300,7 @@ export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh
                     mesh.reservedDataStore.originalMaterial = mesh.material;
                 }
 
-                const normalMaterial = new normalMaterialClass("normalMaterial", scene);
+                const normalMaterial = new NormalMaterial("normalMaterial", scene);
                 normalMaterial.disableLighting = true;
                 if (mesh.material) {
                     normalMaterial.sideOrientation = mesh.material.sideOrientation;
