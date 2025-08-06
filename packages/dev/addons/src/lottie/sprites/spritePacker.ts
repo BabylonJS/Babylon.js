@@ -12,7 +12,7 @@ import type { RawBezier, RawFillShape, RawGradientFillShape, RawPathShape, RawRe
 import type { BoundingBox } from "../maths/boundingBox";
 import { GetBoundingBox } from "../maths/boundingBox";
 
-import { DefaultSpriteAtlasSize, GapSize } from "../config";
+import type { AnimationConfiguration } from "../lottiePlayer";
 
 /**
  * Information about a sprite in the sprite atlas.
@@ -77,6 +77,7 @@ type GradientStop = {
  */
 export class SpritePacker {
     private readonly _engine: ThinEngine;
+    private readonly _configuration: Required<AnimationConfiguration>;
 
     private _spritesCanvas: OffscreenCanvas;
     private _spritesCanvasContext: OffscreenCanvasRenderingContext2D;
@@ -102,18 +103,20 @@ export class SpritePacker {
     /**
      * Creates a new instance of SpritePacker.
      * @param engine Engine that will render the sprites.
+     * @param configuration Configuration options for the sprite packer.
      */
-    public constructor(engine: ThinEngine) {
+    public constructor(engine: ThinEngine, configuration: Required<AnimationConfiguration>) {
         this._engine = engine;
+        this._configuration = configuration;
         this._isDirty = false;
         this._currentX = 0;
         this._currentY = 0;
         this._maxRowHeight = 0;
 
-        this._spritesCanvas = new OffscreenCanvas(DefaultSpriteAtlasSize, DefaultSpriteAtlasSize);
+        this._spritesCanvas = new OffscreenCanvas(this._configuration.spriteAtlasSize, this._configuration.spriteAtlasSize);
         this._spritesCanvasContext = this._spritesCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
-        this._spritesInternalTexture = this._engine.createDynamicTexture(DefaultSpriteAtlasSize, DefaultSpriteAtlasSize, false, 2); // Linear filtering
+        this._spritesInternalTexture = this._engine.createDynamicTexture(this._configuration.spriteAtlasSize, this._configuration.spriteAtlasSize, false, 2); // Linear filtering
         this._engine.updateDynamicTexture(this._spritesInternalTexture, this._spritesCanvas, false);
 
         this._spritesTexture = new ThinTexture(this._spritesInternalTexture);
@@ -147,19 +150,19 @@ export class SpritePacker {
         this._spriteAtlasInfo.centerY = boundingBox.centerY;
 
         // Check if the sprite fits in the current row
-        if (this._currentX + this._spriteAtlasInfo.cellWidth > DefaultSpriteAtlasSize) {
+        if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasSize) {
             this._currentX = 0;
-            this._currentY += this._maxRowHeight + GapSize; // Add a gap between sprites to avoid bleeding
+            this._currentY += this._maxRowHeight + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
             this._maxRowHeight = 0;
         }
 
         // Normalize the x/y offsets in texture coordinates (0 to 1)
-        this._spriteAtlasInfo.uOffset = this._currentX / DefaultSpriteAtlasSize;
-        this._spriteAtlasInfo.vOffset = this._currentY / DefaultSpriteAtlasSize;
+        this._spriteAtlasInfo.uOffset = this._currentX / this._configuration.spriteAtlasSize;
+        this._spriteAtlasInfo.vOffset = this._currentY / this._configuration.spriteAtlasSize;
 
         this._drawVectorShape(rawGroup, boundingBox, scalingFactor);
 
-        this._currentX += this._spriteAtlasInfo.cellWidth + GapSize; // Add a gap between sprites to avoid bleeding
+        this._currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
         this._maxRowHeight = Math.max(this._maxRowHeight, this._spriteAtlasInfo.cellHeight);
 
         this._spriteAtlasInfo.widthPx = boundingBox.width;

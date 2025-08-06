@@ -29,7 +29,7 @@ import type { RenderingManager } from "../rendering/renderingManager";
 import { Node } from "../rendering/node";
 import { ControlNode } from "../rendering/controlNode";
 
-import { ScaleMultiplier } from "../config";
+import type { AnimationConfiguration } from "../lottiePlayer";
 
 /**
  * Type of the vector properties in the Lottie animation. It determines how the vector values are interpreted in Babylon.js.
@@ -56,12 +56,13 @@ const DefaultPosition: IVector2Like = { x: 0, y: 0 };
  */
 export class AnimationParser {
     private _packer: SpritePacker;
+    private readonly _renderingManager: RenderingManager;
+    private readonly _configuration: Required<AnimationConfiguration>;
 
     private _unsupportedFeatures: string[];
 
     private _parentNodes: Map<number, Node>; // Map of nodes to build the scenegraph from the animation layers
     private _rootNodes: Node[]; // Array of root-level nodes in the animation, in top-down z order
-    private _renderingManager: RenderingManager;
 
     // Loop variables to save allocations
     private _shape: RawGraphicElement | undefined = undefined;
@@ -70,10 +71,12 @@ export class AnimationParser {
      * Creates a new instance of the Lottie animations parser.
      * @param packer Object that packs the sprites from the animation into a texture atlas.
      * @param renderingManager Object that manages the rendering of the sprites in the animation.
+     * @param configuration Configuration options for the animation parser.
      */
-    public constructor(packer: SpritePacker, renderingManager: RenderingManager) {
+    public constructor(packer: SpritePacker, renderingManager: RenderingManager, configuration: Required<AnimationConfiguration>) {
         this._packer = packer;
         this._renderingManager = renderingManager;
+        this._configuration = configuration;
 
         this._unsupportedFeatures = [];
 
@@ -96,7 +99,7 @@ export class AnimationParser {
      * @param fileContentAsJsonString The content of the lottie file as a JSON string.
      * @returns An AnimationInfo instance containing the parsed animation data.
      */
-    public loadFromFile(fileContentAsJsonString: string): AnimationInfo {
+    public loadFromData(fileContentAsJsonString: string): AnimationInfo {
         this._unsupportedFeatures.length = 0; // Clear previous errors
         const rawData = JSON.parse(fileContentAsJsonString) as RawLottieAnimation;
 
@@ -441,8 +444,8 @@ export class AnimationParser {
             scale.y *= node.startScale.y;
         }
 
-        scale.x = scale.x * ScaleMultiplier;
-        scale.y = scale.y * ScaleMultiplier;
+        scale.x = scale.x * this._configuration.scaleMultiplier;
+        scale.y = scale.y * this._configuration.scaleMultiplier;
 
         return scale;
     }

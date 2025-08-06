@@ -17,7 +17,7 @@ import { ThinMatrix } from "../maths/matrix";
 
 import { SpritePacker } from "../sprites/spritePacker";
 
-import { DevicePixelRatio, SupportDeviceLost } from "../config";
+import type { AnimationConfiguration } from "../lottiePlayer";
 
 /**
  * Defines the babylon combine alpha value to prevent a large import.
@@ -28,11 +28,13 @@ const AlphaCombine = 2;
  * Class that controls the playing of lottie animations using Babylon.js
  */
 export class Player {
-    private _canvas: HTMLCanvasElement;
     private _isReady: boolean;
 
+    private readonly _canvas: HTMLCanvasElement;
+    private readonly _configuration: Required<AnimationConfiguration>;
     private readonly _engine: ThinEngine;
     private readonly _spritePacker: SpritePacker;
+
     private _parser: AnimationParser;
     private _animation?: AnimationInfo;
 
@@ -80,10 +82,12 @@ export class Player {
     /**
      * Creates a new instance of the Player.
      * @param canvas The canvas element to render the animation on.
+     * @param configuration The configuration for the animation player.
      */
-    public constructor(canvas: HTMLCanvasElement) {
+    public constructor(canvas: HTMLCanvasElement, configuration: Required<AnimationConfiguration>) {
         this._isReady = false;
         this._canvas = canvas;
+        this._configuration = configuration;
         this._currentFrame = 0;
         this._isPlaying = false;
         this._animationFrameId = null;
@@ -106,7 +110,7 @@ export class Player {
                 // Important to allow skip frame and tiled optimizations
                 preserveDrawingBuffer: false,
                 premultipliedAlpha: false,
-                doNotHandleContextLost: !SupportDeviceLost,
+                doNotHandleContextLost: this._configuration.supportDeviceLost,
                 // Usefull during debug to simulate WebGL1 devices (Safari)
                 // disableWebGL2Support: true,
             },
@@ -120,11 +124,11 @@ export class Player {
         this._engine.stencilState.stencilTest = false;
         this._engine.setAlphaMode(AlphaCombine);
 
-        this._spritePacker = new SpritePacker(this._engine);
+        this._spritePacker = new SpritePacker(this._engine, this._configuration);
 
-        this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture);
+        this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture, this._configuration);
 
-        this._parser = new AnimationParser(this._spritePacker, this._renderingManager);
+        this._parser = new AnimationParser(this._spritePacker, this._renderingManager, this._configuration);
 
         this._projectionMatrix = new ThinMatrix();
         this._worldMatrix = new ThinMatrix();
@@ -138,7 +142,7 @@ export class Player {
      * @param animationJson The JSON string of the Lottie animation to be played.
      */
     public initialize(animationJson: string): void {
-        this._animation = this._parser.loadFromFile(animationJson);
+        this._animation = this._parser.loadFromData(animationJson);
         this._parser = undefined as any; // Clear the reference to the parser to allow garbage collection
         this.setSize(this._animation.widthPx, this._animation.heightPx);
         this._frameDuration = 1000 / this._animation.frameRate;
@@ -202,17 +206,18 @@ export class Player {
      */
     public setSize(width: number, height: number): void {
         const { _engine, _projectionMatrix, _worldMatrix } = this;
+        const devicePixelRatio = this._configuration.devicePixelRatio;
 
-        _engine.setSize(width * DevicePixelRatio, height * DevicePixelRatio);
-        this._canvas.width = width * DevicePixelRatio;
-        this._canvas.height = height * DevicePixelRatio;
+        _engine.setSize(width * devicePixelRatio, height * devicePixelRatio);
+        this._canvas.width = width * devicePixelRatio;
+        this._canvas.height = height * devicePixelRatio;
         // _engine.getRenderingCanvas()!.style.width = `${width}px`;
         // _engine.getRenderingCanvas()!.style.height = `${height}px`;
 
         const world = _worldMatrix.asArray();
         world[5] = -1; // we are upside down with Lottie
 
-        _projectionMatrix.orthoOffCenterLeftHanded(0, _engine.getRenderWidth() / DevicePixelRatio, _engine.getRenderHeight() / DevicePixelRatio, 0, -100, 100);
+        _projectionMatrix.orthoOffCenterLeftHanded(0, _engine.getRenderWidth() / devicePixelRatio, _engine.getRenderHeight() / devicePixelRatio, 0, -100, 100);
     }
 
     /**

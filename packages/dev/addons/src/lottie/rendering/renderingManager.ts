@@ -11,28 +11,31 @@ import { SpriteRenderer } from "core/Sprites/spriteRenderer";
 
 import type { ThinMatrix } from "../maths/matrix";
 
-import { DefaultCapacity, White } from "../config";
+import type { AnimationConfiguration } from "../lottiePlayer";
 
 /**
  * Represents all the sprites from the animation and manages their rendering.
  */
 export class RenderingManager {
-    private _engine: ThinEngine;
-    private _spritesRenderer: SpriteRenderer;
-    private _spritesTexture: ThinTexture;
+    private readonly _engine: ThinEngine;
+    private readonly _spritesRenderer: SpriteRenderer;
+    private readonly _spritesTexture: ThinTexture;
     private _sprites: ThinSprite[];
+    private readonly _configuration: Required<AnimationConfiguration>;
 
     /**
      * Creates a new instance of the RenderingManager.
      * @param engine ThinEngine instance used for rendering.
      * @param spriteTexture The texture atlas containing the sprites.
+     * @param configuration Configuration options for the rendering manager.
      */
-    public constructor(engine: ThinEngine, spriteTexture: ThinTexture) {
+    public constructor(engine: ThinEngine, spriteTexture: ThinTexture, configuration: Required<AnimationConfiguration>) {
         this._engine = engine;
         this._spritesTexture = spriteTexture;
         this._sprites = [];
+        this._configuration = configuration;
 
-        this._spritesRenderer = new SpriteRenderer(this._engine, DefaultCapacity, 0);
+        this._spritesRenderer = new SpriteRenderer(this._engine, this._configuration.spritesCapacity, 0);
         this._spritesRenderer.disableDepthWrite = true;
         this._spritesRenderer.autoResetAlpha = false;
         this._spritesRenderer.fogEnabled = false;
@@ -60,7 +63,7 @@ export class RenderingManager {
      * @param projectionMatrix Projection matrix to apply to the sprites.
      */
     public render(worldMatrix: ThinMatrix, projectionMatrix: ThinMatrix): void {
-        this._engine.clear(White, true, false, false);
+        this._engine.clear(this._configuration.backgroundColor, true, false, false);
         this._spritesRenderer.render(this._sprites, 0, worldMatrix, projectionMatrix, this._customSpriteUpdate);
     }
 
