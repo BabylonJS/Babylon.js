@@ -331,10 +331,10 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
             return serializedObjects;
         },
     },
-    "math/e": getSimpleInputMapping(FlowGraphBlockNames.E),
-    "math/pi": getSimpleInputMapping(FlowGraphBlockNames.PI),
-    "math/inf": getSimpleInputMapping(FlowGraphBlockNames.Inf),
-    "math/nan": getSimpleInputMapping(FlowGraphBlockNames.NaN),
+    "math/E": getSimpleInputMapping(FlowGraphBlockNames.E),
+    "math/Pi": getSimpleInputMapping(FlowGraphBlockNames.PI),
+    "math/Inf": getSimpleInputMapping(FlowGraphBlockNames.Inf),
+    "math/NaN": getSimpleInputMapping(FlowGraphBlockNames.NaN),
     "math/abs": getSimpleInputMapping(FlowGraphBlockNames.Abs),
     "math/sign": getSimpleInputMapping(FlowGraphBlockNames.Sign),
     "math/trunc": getSimpleInputMapping(FlowGraphBlockNames.Trunc),
@@ -406,8 +406,8 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/le": getSimpleInputMapping(FlowGraphBlockNames.LessThanOrEqual, ["a", "b"]),
     "math/gt": getSimpleInputMapping(FlowGraphBlockNames.GreaterThan, ["a", "b"]),
     "math/ge": getSimpleInputMapping(FlowGraphBlockNames.GreaterThanOrEqual, ["a", "b"]),
-    "math/isnan": getSimpleInputMapping(FlowGraphBlockNames.IsNaN),
-    "math/isinf": getSimpleInputMapping(FlowGraphBlockNames.IsInfinity),
+    "math/isNaN": getSimpleInputMapping(FlowGraphBlockNames.IsNaN),
+    "math/isInf": getSimpleInputMapping(FlowGraphBlockNames.IsInfinity),
     "math/select": {
         blocks: [FlowGraphBlockNames.Conditional],
         inputs: {
@@ -567,7 +567,7 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     "math/transpose": getSimpleInputMapping(FlowGraphBlockNames.Transpose),
     "math/determinant": getSimpleInputMapping(FlowGraphBlockNames.Determinant),
     "math/inverse": getSimpleInputMapping(FlowGraphBlockNames.InvertMatrix),
-    "math/matmul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
+    "math/matMul": getSimpleInputMapping(FlowGraphBlockNames.MatrixMultiplication, ["a", "b"]),
     "math/matCompose": {
         blocks: [FlowGraphBlockNames.MatrixCompose],
         inputs: {
@@ -1590,10 +1590,6 @@ const gltfToFlowGraphMapping: { [key: string]: IGLTFToFlowGraphMapping } = {
     },
 };
 
-// aliases for backwards compatibility
-gltfToFlowGraphMapping["math/compose"] = gltfToFlowGraphMapping["math/matCompose"];
-gltfToFlowGraphMapping["math/decompose"] = gltfToFlowGraphMapping["math/matDecompose"];
-
 function getSimpleInputMapping(type: FlowGraphBlockNames, inputs: string[] = ["a"], inferType?: boolean): IGLTFToFlowGraphMapping {
     return {
         blocks: [type],
@@ -1665,10 +1661,10 @@ export function getAllSupportedNativeNodeTypes(): string[] {
 
 ### Math Nodes
 1. **Constants**
-   - E (`math/e`) FlowGraphBlockNames.E
-   - Pi (`math/pi`) FlowGraphBlockNames.PI
-   - Infinity (`math/inf`) FlowGraphBlockNames.Inf
-   - Not a Number (`math/nan`) FlowGraphBlockNames.NaN
+   - E (`math/E`) FlowGraphBlockNames.E
+   - Pi (`math/Pi`) FlowGraphBlockNames.PI
+   - Infinity (`math/Inf`) FlowGraphBlockNames.Inf
+   - Not a Number (`math/NaN`) FlowGraphBlockNames.NaN
 2. **Arithmetic Nodes**
    - Absolute Value (`math/abs`) FlowGraphBlockNames.Abs
    - Sign (`math/sign`) FlowGraphBlockNames.Sign
@@ -1695,8 +1691,8 @@ export function getAllSupportedNativeNodeTypes(): string[] {
    - Greater Than (`math/gt`) FlowGraphBlockNames.GreaterThan
    - Greater Than Or Equal To (`math/ge`) FlowGraphBlockNames.GreaterThanOrEqual
 4. **Special Nodes**
-   - Is Not a Number (`math/isnan`) FlowGraphBlockNames.IsNaN
-   - Is Infinity (`math/isinf`) FlowGraphBlockNames.IsInfinity
+   - Is Not a Number (`math/isNaN`) FlowGraphBlockNames.IsNaN
+   - Is Infinity (`math/isInf`) FlowGraphBlockNames.IsInfinity
    - Select (`math/select`) FlowGraphBlockNames.Conditional
    - Switch (`math/switch`) FlowGraphBlockNames.DataSwitch
    - Random (`math/random`) FlowGraphBlockNames.Random
@@ -1737,7 +1733,7 @@ export function getAllSupportedNativeNodeTypes(): string[] {
    - Transpose (`math/transpose`) FlowGraphBlockNames.Transpose
    - Determinant (`math/determinant`) FlowGraphBlockNames.Determinant
    - Inverse (`math/inverse`) FlowGraphBlockNames.InvertMatrix
-   - Multiplication (`math/matmul`) FlowGraphBlockNames.MatrixMultiplication
+   - Multiplication (`math/matMul`) FlowGraphBlockNames.MatrixMultiplication
    - Compose (`math/matCompose`) FlowGraphBlockNames.MatrixCompose
    - Decompose (`math/matDecompose`) FlowGraphBlockNames.MatrixDecompose
 10. **Quaternion Nodes**
