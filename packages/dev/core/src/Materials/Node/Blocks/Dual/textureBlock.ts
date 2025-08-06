@@ -688,7 +688,12 @@ export class TextureBlock extends NodeMaterialBlock {
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         serializationObject.fragmentOnly = this._fragmentOnly;
         serializationObject.disableLevelMultiplication = this.disableLevelMultiplication;
-        if (!this.hasImageSource && this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
+        if (
+            !this.hasImageSource &&
+            this.texture &&
+            (NodeMaterial.AllowSerializationOfRenderTargetTextures || !this.texture.isRenderTarget) &&
+            this.texture.getClassName() !== "VideoTexture"
+        ) {
             serializationObject.texture = this.texture.serialize();
         }
 

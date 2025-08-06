@@ -168,7 +168,12 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     public override serialize(ignoreTexture = false): any {
         const serializationObject = super.serialize();
 
-        if (!ignoreTexture && this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
+        if (
+            !ignoreTexture &&
+            this.texture &&
+            (NodeMaterial.AllowSerializationOfRenderTargetTextures || !this.texture.isRenderTarget) &&
+            this.texture.getClassName() !== "VideoTexture"
+        ) {
             serializationObject.texture = this.texture.serialize();
         }
 
