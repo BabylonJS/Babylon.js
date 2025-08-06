@@ -15,7 +15,6 @@ import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propert
 export const AdvancedDynamicTextureGeneralProperties = MakeLazyComponent(
     async () => {
         // Defer importing anything from the gui package until this component is actually mounted.
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { AdvancedDynamicTextureInstrumentation } = await import("gui/2D/adtInstrumentation");
 
         return (props: { texture: AdvancedDynamicTexture }) => {

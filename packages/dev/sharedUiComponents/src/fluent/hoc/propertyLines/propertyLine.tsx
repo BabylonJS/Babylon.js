@@ -1,8 +1,8 @@
 import { Body1, Body1Strong, Button, InfoLabel, Link, ToggleButton, Checkbox, makeStyles, tokens } from "@fluentui/react-components";
-import { Collapse } from "@fluentui/react-motion-components-preview";
 import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
+import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
 import type { PrimitiveProps } from "../../primitives/primitive";
@@ -196,9 +196,11 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                     )}
                 </div>
             </div>
-            <Collapse visible={expanded && !!expandedContent}>
-                <div className={classes.expandedContent}>{expandedContent}</div>
-            </Collapse>
+            {expandedContent && (
+                <Collapse visible={!!expanded}>
+                    <div className={classes.expandedContent}>{expandedContent}</div>
+                </Collapse>
+            )}
         </LineContainer>
     );
 });

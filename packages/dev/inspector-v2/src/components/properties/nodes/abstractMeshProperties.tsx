@@ -4,8 +4,6 @@ import type { AbstractMesh, ShaderMaterial } from "core/index";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import type { ISelectionService } from "../../../services/selectionService";
 
-import { makeStyles } from "@fluentui/react-components";
-import { Collapse } from "@fluentui/react-motion-components-preview";
 import { useState } from "react";
 
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
@@ -19,6 +17,7 @@ import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Tools } from "core/Misc/tools";
 import { RenderingManager } from "core/Rendering/renderingManager";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
@@ -36,13 +35,6 @@ import { BoundProperty } from "../boundProperty";
 import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
-
-// TODO: Georgie make sure to include this in the common control, then we can remove this!
-const useStyles = makeStyles({
-    contentDiv: {
-        overflow: "hidden",
-    },
-});
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -175,8 +167,6 @@ const OcclusionQueryAlgorithmTypes = [
 ] as const satisfies readonly DropdownOption<number>[];
 
 export const AbstractMeshOcclusionsProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => {
-    const classes = useStyles();
-
     const occlusionType = useProperty(mesh, "occlusionType");
 
     return (
@@ -190,7 +180,7 @@ export const AbstractMeshOcclusionsProperties: FunctionComponent<{ mesh: Abstrac
                 options={OcclusionTypes}
             />
             <Collapse visible={occlusionType !== 0}>
-                <div className={classes.contentDiv}>
+                <>
                     <BoundProperty
                         component={NumberInputPropertyLine}
                         label="Occlusion Retry Count"
@@ -209,15 +199,13 @@ export const AbstractMeshOcclusionsProperties: FunctionComponent<{ mesh: Abstrac
                         propertyKey="occlusionQueryAlgorithmType"
                         options={OcclusionQueryAlgorithmTypes}
                     />
-                </div>
+                </>
             </Collapse>
         </>
     );
 };
 
 export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: AbstractMesh }> = ({ mesh }) => {
-    const classes = useStyles();
-
     const edgesRenderer = useProperty(mesh, "_edgesRenderer");
 
     return (
@@ -234,7 +222,7 @@ export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: Abst
                 }}
             />
             <Collapse visible={!!edgesRenderer}>
-                <div className={classes.contentDiv}>
+                <>
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
                         label="Edges Width"
@@ -246,7 +234,7 @@ export const AbstractMeshEdgeRenderingProperties: FunctionComponent<{ mesh: Abst
                         step={0.1}
                     />
                     <BoundProperty component={Color4PropertyLine} label="Edge Color" target={mesh} propertyKey="edgesColor" />
-                </div>
+                </>
             </Collapse>
         </>
     );
@@ -290,7 +278,7 @@ export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh
             setDisplayNormals(false);
         } else {
             try {
-                const { NormalMaterial: normalMaterialClass } = await import("materials/normal/normalMaterial");
+                const { NormalMaterial } = await import("materials/normal/normalMaterial");
 
                 if (!mesh.reservedDataStore) {
                     mesh.reservedDataStore = {};
@@ -300,7 +288,7 @@ export const AbstractMeshDebugProperties: FunctionComponent<{ mesh: AbstractMesh
                     mesh.reservedDataStore.originalMaterial = mesh.material;
                 }
 
-                const normalMaterial = new normalMaterialClass("normalMaterial", scene);
+                const normalMaterial = new NormalMaterial("normalMaterial", scene);
                 normalMaterial.disableLighting = true;
                 if (mesh.material) {
                     normalMaterial.sideOrientation = mesh.material.sideOrientation;
