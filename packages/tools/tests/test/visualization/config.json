@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "SPZ v3 - Splat",
+            "playgroundId": "#V7CV8W#3",
+            "referenceImage": "gsplat-spz-v3.png"
+        },
+        {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png"
