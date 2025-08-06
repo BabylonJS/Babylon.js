@@ -7,9 +7,11 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
-import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
-import { StandardMaterialTexturesProperties } from "../../../components/properties/materials/standardMaterialTexturesProperties";
-import { StandardMaterialLevelsProperties } from "../../../components/properties/materials/standardMaterialLevelsProperties";
+import {
+    StandardMaterialLevelsProperties,
+    StandardMaterialLightingAndColorProperties,
+    StandardMaterialTexturesProperties,
+} from "../../../components/properties/materials/standardMaterialProperties";
 import { PBRBaseSimpleMaterial } from "core/Materials/PBR/pbrBaseSimpleMaterial";
 import { type MaterialWithNormalMaps, NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
