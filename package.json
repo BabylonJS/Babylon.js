@@ -90,7 +90,7 @@
         "build:tools": "npm run build -w @dev/build-tools && npm run build -w eslint-plugin-babylonjs",
         "build:test-tools": "npm run build -w @tools/test-tools",
         "test": "jest --runInBand",
-        "test:unit": "jest --selectProjects=unit",
+        "test:unit": "npm run build:assets:smart-filters && jest --selectProjects=unit",
         "test:visualization": "playwright test -c ./playwright.config.ts",
         "test:visualization:ui": "playwright test -c ./playwright.config.ts --ui",
         "test:integration": "jest --selectProjects=integration --runInBand && npm run test -w @tools/memory-leak-tests",
