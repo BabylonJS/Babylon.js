@@ -4,6 +4,8 @@ import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { Nullable } from "core/types";
 
 const NAME = "EXT_materials_diffuse_roughness";
 
@@ -45,6 +47,13 @@ export class EXT_materials_diffuse_roughness implements IGLTFExporterExtensionV2
                 }
                 return additionalTextures;
             }
+        } else if (babylonMaterial instanceof OpenPBRMaterial) {
+            if (babylonMaterial.baseDiffuseRoughness) {
+                if (babylonMaterial.baseDiffuseRoughnessTexture) {
+                    additionalTextures.push(babylonMaterial.baseDiffuseRoughnessTexture);
+                }
+                return additionalTextures;
+            }
         }
 
         return [];
@@ -53,29 +62,37 @@ export class EXT_materials_diffuse_roughness implements IGLTFExporterExtensionV2
     // eslint-disable-next-line no-restricted-syntax
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
+            let diffuseRoughnessFactor: Nullable<number> = null;
+            let diffuseRoughnessTexture: Nullable<BaseTexture> = null;
             if (babylonMaterial instanceof PBRBaseMaterial) {
-                if (!babylonMaterial._baseDiffuseRoughness) {
-                    resolve(node);
-                    return;
-                }
-
-                this._wasUsed = true;
-
-                node.extensions = node.extensions || {};
-
-                const diffuseRoughnessTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial._baseDiffuseRoughnessTexture);
-
-                const diffuseRoughnessInfo: IEXTMaterialsDiffuseRoughness = {
-                    diffuseRoughnessFactor: babylonMaterial._baseDiffuseRoughness,
-                    diffuseRoughnessTexture: diffuseRoughnessTextureInfo ?? undefined,
-                };
-
-                if (diffuseRoughnessInfo.diffuseRoughnessTexture !== null) {
-                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-                }
-
-                node.extensions[NAME] = diffuseRoughnessInfo;
+                diffuseRoughnessFactor = babylonMaterial._baseDiffuseRoughness;
+                diffuseRoughnessTexture = babylonMaterial._baseDiffuseRoughnessTexture;
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                diffuseRoughnessFactor = babylonMaterial.baseDiffuseRoughness;
+                diffuseRoughnessTexture = babylonMaterial.baseDiffuseRoughnessTexture;
             }
+            if (!diffuseRoughnessFactor) {
+                resolve(node);
+                return;
+            }
+
+            this._wasUsed = true;
+
+            node.extensions = node.extensions || {};
+
+            const diffuseRoughnessTextureInfo = this._exporter._materialExporter.getTextureInfo(diffuseRoughnessTexture);
+
+            const diffuseRoughnessInfo: IEXTMaterialsDiffuseRoughness = {
+                diffuseRoughnessFactor: diffuseRoughnessFactor,
+                diffuseRoughnessTexture: diffuseRoughnessTextureInfo ?? undefined,
+            };
+
+            if (diffuseRoughnessInfo.diffuseRoughnessTexture !== null) {
+                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+            }
+
+            node.extensions[NAME] = diffuseRoughnessInfo;
+
             resolve(node);
         });
     }

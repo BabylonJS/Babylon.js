@@ -398,7 +398,9 @@ export class PropertyGridTabComponent extends PaneComponent {
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 );
-            } else if (className === "OpenPBRMaterial") {
+            }
+
+            if (className === "OpenPBRMaterial") {
                 const material = entity as OpenPBRMaterial;
                 return (
                     <OpenPBRMaterialPropertyGridComponent
