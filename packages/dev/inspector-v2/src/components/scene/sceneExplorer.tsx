@@ -126,7 +126,7 @@ type ToggleCommand<T extends EntityBase> = Command<T> & {
     isEnabled: boolean;
 };
 
-export type SceneExplorerCommandDisplayInfo<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
+export type SceneExplorerCommand<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
 
 export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     /**
@@ -143,7 +143,7 @@ export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     /**
      * Gets the command information for the given entity.
      */
-    getCommandInfo: (entity: T) => SceneExplorerCommandDisplayInfo<T>;
+    getCommand: (entity: T) => SceneExplorerCommand<T>;
 }>;
 
 type SceneTreeItemData = { type: "scene"; scene: Scene };
@@ -295,9 +295,9 @@ const EntityTreeItem: FunctionComponent<{
     // Get the commands that apply to this entity.
     const commands = useResource(
         useCallback(() => {
-            const commands: readonly SceneExplorerCommandDisplayInfo<EntityBase>[] = commandProviders
+            const commands: readonly SceneExplorerCommand<EntityBase>[] = commandProviders
                 .filter((provider) => provider.predicate(entityItem.entity))
-                .map((provider) => provider.getCommandInfo(entityItem.entity));
+                .map((provider) => provider.getCommand(entityItem.entity));
 
             return Object.assign(commands, {
                 dispose: () => commands.forEach((command) => command.dispose?.()),
