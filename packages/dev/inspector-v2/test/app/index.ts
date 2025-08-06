@@ -75,6 +75,42 @@ function createTestBoxes() {
     boxInstance.position = new Vector3(0, 0, -0.5);
 }
 
+function createTestMetadata() {
+    const materialMeta = new StandardMaterial("material.meta", scene);
+    materialMeta.emissiveColor = Color3.Red();
+    materialMeta.metadata = {
+        test: "test string",
+        description: "Material JSON metadata.",
+        someNumber: 73,
+    };
+
+    const defaultMeta = MeshBuilder.CreateBox("default.metadata", { size: 0.15 }, scene);
+
+    const undefinedMeta = defaultMeta.clone("undefined.metadata");
+    undefinedMeta.material = materialMeta;
+    undefinedMeta.metadata = undefined;
+
+    const jsonMeta = defaultMeta.clone("json.metadata");
+    jsonMeta.material = materialMeta;
+    jsonMeta.metadata = {
+        test: "test string",
+        description: "JSON metadata.",
+        someNumber: 42,
+    };
+
+    const nullMeta = defaultMeta.clone("null.metadata");
+    nullMeta.material = materialMeta;
+    nullMeta.metadata = null;
+
+    const stringMeta = defaultMeta.clone("string.metadata");
+    stringMeta.material = materialMeta;
+    stringMeta.metadata = "String metadata.";
+
+    const objectMeta = defaultMeta.clone("object.metadata");
+    objectMeta.material = materialMeta;
+    objectMeta.metadata = jsonMeta;
+}
+
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
@@ -84,6 +120,7 @@ function createTestBoxes() {
     await createPhysics();
 
     createTestBoxes();
+    createTestMetadata();
 
     engine.runRenderLoop(() => {
         scene.render();
