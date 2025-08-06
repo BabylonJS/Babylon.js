@@ -3,9 +3,8 @@ import type { FunctionComponent } from "react";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import type { ISettingsContext } from "../../../services/settingsContext";
 
-import { Collapse } from "@fluentui/react-motion-components-preview";
-
 import { Camera } from "core/Cameras/camera";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { BoundProperty } from "../boundProperty";
