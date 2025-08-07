@@ -179,16 +179,6 @@ export interface IPath2D {
      * @param height The rectangle's height. Positive values are down, and negative are up.
      */
     rect(x: number, y: number, width: number, height: number): void;
-
-    /**
-     * Adds a rounded rectangle to the current path.
-     * @param x The x-axis coordinate of the rectangle's starting point, in pixels.
-     * @param y The y-axis coordinate of the rectangle's starting point, in pixels.
-     * @param width The rectangle's width. Positive values are to the right, and negative to the left.
-     * @param height The rectangle's height. Positive values are down, and negative are up.
-     * @param radii A number specifying the radii of the circular arc to be used for the corners of the rectangle. The number and order of the radii function in the same way as the border-radius CSS property when width and height are positive:
-     */
-    roundRect(x: number, y: number, width: number, height: number, radii: number): void;
 }
 
 /**
@@ -537,17 +527,6 @@ export interface ICanvasRenderingContext {
      * @param y The y-axis coordinate of the end point.
      */
     quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void;
-
-    /**
-     * Adds a cubic Bézier curve to the current path.
-     * @param cp1x The x-axis coordinate of the first control point.
-     * @param cp1x The x-axis coordinate of the first control point.
-     * @param cp2y The y-axis coordinate of the second control point.
-     * @param cp2y The y-axis coordinate of the second control point.
-     * @param x The x-axis coordinate of the end point.
-     * @param y The y-axis coordinate of the end point.
-     */
-    bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
 
     /**
      * Returns a TextMetrics object.
