@@ -245,6 +245,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         architecture: "",
         device: "",
         description: "",
+        subgroupMinSize: 0,
+        subgroupMaxSize: 0,
+        isFallbackAdapter: false,
     };
     private _adapterSupportedLimits: GPUSupportedLimits;
     /** @internal */
@@ -851,7 +854,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     private _initializeLimits(): void {
         // Init caps
-        // TODO WEBGPU Real Capability check once limits will be working.
+        const textureFormatsTier1 = this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureFormatsTier1) >= 0;
 
         this._caps = {
             maxTexturesImageUnits: this._deviceLimits.maxSampledTexturesPerShaderStage,
@@ -908,7 +911,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             textureMaxLevel: true,
             texture2DArrayMaxLayerCount: this._deviceLimits.maxTextureArrayLayers,
             disableMorphTargetTexture: false,
-            textureNorm16: false, // in the works: https://github.com/gpuweb/gpuweb/issues/3001
+            textureNorm16: textureFormatsTier1,
             blendParametersPerTarget: true,
             dualSourceBlending: true,
         };
