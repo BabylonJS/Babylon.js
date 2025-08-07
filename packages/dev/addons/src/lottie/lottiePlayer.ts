@@ -75,7 +75,7 @@ export class LottiePlayer {
     }
 
     /**
-     * Plays a Lottie animation using Babylon running on a worker thread and an OffscreenCanvas if available.
+     * Loads and plays a lottie animation.
      * @param container The HTMLDivElement to create the canvas in and render the animation on.
      * @param animationFile The URL of the Lottie animation file to be played.
      * @param configuration Optional configuration object to customize the animation playback.
