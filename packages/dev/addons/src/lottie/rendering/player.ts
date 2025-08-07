@@ -17,7 +17,7 @@ import { ThinMatrix } from "../maths/matrix";
 
 import { SpritePacker } from "../sprites/spritePacker";
 
-import type { AnimationConfiguration } from "../lottiePlayer";
+import type { AnimationConfiguration } from "../playAnimation";
 
 /**
  * Defines the babylon combine alpha value to prevent a large import.

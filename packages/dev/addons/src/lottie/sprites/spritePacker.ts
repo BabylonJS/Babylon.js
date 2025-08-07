@@ -12,7 +12,7 @@ import type { RawBezier, RawFillShape, RawGradientFillShape, RawPathShape, RawRe
 import type { BoundingBox } from "../maths/boundingBox";
 import { GetBoundingBox } from "../maths/boundingBox";
 
-import type { AnimationConfiguration } from "../lottiePlayer";
+import type { AnimationConfiguration } from "../playAnimation";
 
 /**
  * Information about a sprite in the sprite atlas.

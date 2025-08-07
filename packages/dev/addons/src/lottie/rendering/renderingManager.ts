@@ -11,7 +11,7 @@ import { SpriteRenderer } from "core/Sprites/spriteRenderer";
 
 import type { ThinMatrix } from "../maths/matrix";
 
-import type { AnimationConfiguration } from "../lottiePlayer";
+import type { AnimationConfiguration } from "../playAnimation";
 
 /**
  * Represents all the sprites from the animation and manages their rendering.

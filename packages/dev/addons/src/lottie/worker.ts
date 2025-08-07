@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-import type { AnimationConfiguration } from "./lottiePlayer";
+import type { AnimationConfiguration } from "./playAnimation";
 import { Player } from "./rendering/player";
 
 let AnimationPlayer: Player | null = null;

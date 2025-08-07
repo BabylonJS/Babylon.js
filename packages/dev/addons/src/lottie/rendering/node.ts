@@ -6,14 +6,13 @@ import type { ScalarProperty, Vector2Property } from "../lottie/parsedTypes";
 
 import { ThinMatrix } from "../maths/matrix";
 
-import { IgnoreOpacityAnimations } from "../config";
-
 /**
  * Represents a node in the scenegraph that contains the animation information from a lottie animation layer or group.
  */
 export class Node {
     private readonly _id: string;
-    public readonly _position: Vector2Property;
+    private readonly _ignoreOpacityAnimations: boolean;
+    private readonly _position: Vector2Property;
     private readonly _rotation: ScalarProperty;
     private readonly _scale: Vector2Property;
     private _worldMatrix: ThinMatrix;
@@ -121,16 +120,27 @@ export class Node {
     /**
      * Constructs a new node.
      * @param id Unique identifier for the node.
+     * @param ignoreOpacityAnimations If there are no animations on opacity, mark this as true to ignore and optimize CPU usage.
      * @param position Position of the node in the scene.
      * @param rotation Rotation of the node in degrees.
      * @param scale Scale of the node in the scene.
      * @param opacity Opacity of the node, from 0 to 1.
      * @param parent Parent node in the scenegraph.
      */
-    public constructor(id: string, position?: Vector2Property, rotation?: ScalarProperty, scale?: Vector2Property, opacity?: ScalarProperty, parent?: Node) {
+    public constructor(
+        id: string,
+        ignoreOpacityAnimations: boolean,
+        position?: Vector2Property,
+        rotation?: ScalarProperty,
+        scale?: Vector2Property,
+        opacity?: ScalarProperty,
+        parent?: Node
+    ) {
         this._isVisible = false;
 
         this._id = id;
+        this._ignoreOpacityAnimations = ignoreOpacityAnimations;
+
         this._position = position || { startValue: { x: 0, y: 0 }, currentValue: { x: 0, y: 0 }, currentKeyframeIndex: 0 };
         this._rotation = rotation || { startValue: 0, currentValue: 0, currentKeyframeIndex: 0 };
         this._scale = scale || { startValue: { x: 1, y: 1 }, currentValue: { x: 1, y: 1 }, currentKeyframeIndex: 0 };
@@ -250,7 +260,7 @@ export class Node {
             }
         }
 
-        if (!IgnoreOpacityAnimations) {
+        if (!this._ignoreOpacityAnimations) {
             this._updateOpacity(frame);
         }
 

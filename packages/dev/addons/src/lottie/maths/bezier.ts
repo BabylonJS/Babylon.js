@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-import { EasingSteps } from "../config";
-
 /**
  * Represents a Babylon.js thin version of a cubic bezier curve
  * We are only exposing what we truly need in the scope of
@@ -25,6 +23,9 @@ export class BezierCurve {
      * Y of the second control point
      */
     public readonly y2: number;
+
+    private readonly _easingSteps: number;
+
     private readonly _f0: number;
     private readonly _f1: number;
     private readonly _f2: number;
@@ -36,12 +37,14 @@ export class BezierCurve {
      * @param y1 Defines the y component of the start tangent in the bezier curve
      * @param x2 Defines the x component of the end tangent in the bezier curve
      * @param y2 Defines the y component of the end tangent in the bezier curve
+     * @param easingSteps Number of steps to sample the bezier curve for easing
      */
-    constructor(x1: number = 0, y1: number = 0, x2: number = 1, y2: number = 1) {
+    constructor(x1: number = 0, y1: number = 0, x2: number = 1, y2: number = 1, easingSteps: number) {
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
+        this._easingSteps = easingSteps;
 
         // Pre-calculate coefficients
         this._f0 = 1 - 3 * this.x2 + 3 * this.x1;
@@ -65,7 +68,7 @@ export class BezierCurve {
 
         let refinedT = t;
 
-        for (let i = 0; i < EasingSteps; i++) {
+        for (let i = 0; i < this._easingSteps; i++) {
             const refinedT2 = refinedT * refinedT;
             const refinedT3 = refinedT2 * refinedT;
             const x = this._f0 * refinedT3 + this._f1 * refinedT2 + this._f2 * refinedT;

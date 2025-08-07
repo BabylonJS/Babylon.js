@@ -29,7 +29,7 @@ import type { RenderingManager } from "../rendering/renderingManager";
 import { Node } from "../rendering/node";
 import { ControlNode } from "../rendering/controlNode";
 
-import type { AnimationConfiguration } from "../lottiePlayer";
+import type { AnimationConfiguration } from "../playAnimation";
 
 /**
  * Type of the vector properties in the Lottie animation. It determines how the vector values are interpreted in Babylon.js.
@@ -154,6 +154,7 @@ export class AnimationParser {
 
         const controlNode = new ControlNode(
             parentNode ? `${parentNode.id} - ${layer.nm} - ControlNode (TRS)` : `${layer.nm} - ControlNode (TRS)`,
+            this._configuration.ignoreOpacityAnimations,
             layer.ip,
             layer.op,
             transform.position,
@@ -170,6 +171,7 @@ export class AnimationParser {
 
         const anchorNode = new Node(
             parentNode ? `${parentNode.id} - ${layer.nm} - Node (Anchor)` : `${layer.nm} - Node (Anchor)`,
+            this._configuration.ignoreOpacityAnimations,
             transform.anchorPoint,
             undefined, // Rotation is not used for anchor point
             undefined, // Scale is not used for anchor point
@@ -232,7 +234,15 @@ export class AnimationParser {
             return;
         }
 
-        const trsNode = new Node(`${parent.id} - ${rawGroup.nm} - ControlNode (TRS)`, transform.position, transform.rotation, transform.scale, transform.opacity, parent);
+        const trsNode = new Node(
+            `${parent.id} - ${rawGroup.nm} - ControlNode (TRS)`,
+            this._configuration.ignoreOpacityAnimations,
+            transform.position,
+            transform.rotation,
+            transform.scale,
+            transform.opacity,
+            parent
+        );
 
         const spriteInfo = this._packer.addLottieShape(rawGroup, scalingFactor);
 
@@ -256,6 +266,7 @@ export class AnimationParser {
 
         new SpriteNode(
             `${parent.id} - ${rawGroup.nm} - SpriteNode (Anchor)`,
+            this._configuration.ignoreOpacityAnimations,
             sprite,
             transform.anchorPoint,
             undefined, // Rotation is not used for anchor point
@@ -304,11 +315,18 @@ export class AnimationParser {
                         (rawKeyFrames[i].o!.x as number[])[0],
                         (rawKeyFrames[i].o!.y as number[])[0],
                         (rawKeyFrames[i].i!.x as number[])[0],
-                        (rawKeyFrames[i].i!.y as number[])[0]
+                        (rawKeyFrames[i].i!.y as number[])[0],
+                        this._configuration.easingSteps
                     );
                 } else {
                     // Value is a number
-                    easeFunction = new BezierCurve(rawKeyFrames[i].o!.x as number, rawKeyFrames[i].o!.y as number, rawKeyFrames[i].i!.x as number, rawKeyFrames[i].i!.y as number);
+                    easeFunction = new BezierCurve(
+                        rawKeyFrames[i].o!.x as number,
+                        rawKeyFrames[i].o!.y as number,
+                        rawKeyFrames[i].i!.x as number,
+                        rawKeyFrames[i].i!.y as number,
+                        this._configuration.easingSteps
+                    );
                 }
             }
 
@@ -377,11 +395,18 @@ export class AnimationParser {
                         (rawKeyFrames[i].o!.x as number[])[0],
                         (rawKeyFrames[i].o!.y as number[])[0],
                         (rawKeyFrames[i].i!.x as number[])[0],
-                        (rawKeyFrames[i].i!.y as number[])[0]
+                        (rawKeyFrames[i].i!.y as number[])[0],
+                        this._configuration.easingSteps
                     );
                 } else {
                     // Value is a number
-                    easeFunction1 = new BezierCurve(rawKeyFrames[i].o!.x as number, rawKeyFrames[i].o!.y as number, rawKeyFrames[i].i!.x as number, rawKeyFrames[i].i!.y as number);
+                    easeFunction1 = new BezierCurve(
+                        rawKeyFrames[i].o!.x as number,
+                        rawKeyFrames[i].o!.y as number,
+                        rawKeyFrames[i].i!.x as number,
+                        rawKeyFrames[i].i!.y as number,
+                        this._configuration.easingSteps
+                    );
                 }
             }
 
@@ -393,11 +418,18 @@ export class AnimationParser {
                         (rawKeyFrames[i].o!.x as number[])[1],
                         (rawKeyFrames[i].o!.y as number[])[1],
                         (rawKeyFrames[i].i!.x as number[])[1],
-                        (rawKeyFrames[i].i!.y as number[])[1]
+                        (rawKeyFrames[i].i!.y as number[])[1],
+                        this._configuration.easingSteps
                     );
                 } else {
                     // Value is a number
-                    easeFunction2 = new BezierCurve(rawKeyFrames[i].o!.x as number, rawKeyFrames[i].o!.y as number, rawKeyFrames[i].i!.x as number, rawKeyFrames[i].i!.y as number);
+                    easeFunction2 = new BezierCurve(
+                        rawKeyFrames[i].o!.x as number,
+                        rawKeyFrames[i].o!.y as number,
+                        rawKeyFrames[i].i!.x as number,
+                        rawKeyFrames[i].i!.y as number,
+                        this._configuration.easingSteps
+                    );
                 }
             }
 
