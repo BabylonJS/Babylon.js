@@ -22,8 +22,6 @@ import { Light } from "core/Lights/light";
 import { Text } from "@fluentui/react-components";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 
-// NOTE: Only importing types from serializers package, which is a dev dependency
-import type { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
 
 const EnvExportImageTypes = [

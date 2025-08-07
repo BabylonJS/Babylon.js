@@ -1,3 +1,4 @@
+import type { Nullable } from "core/types";
 import type { IDisposable, Scene } from "core/scene";
 import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { IShellService } from "../shellService";
@@ -41,20 +42,29 @@ export const ToolsServiceDefinition: ServiceDefinition<[IToolsService], [IShellS
         const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
         const sectionContentCollection = new ObservableCollection<DynamicAccordionSectionContent<Scene>>();
 
-        const toolsPaneRegistration = shellService.addSidePane({
-            key: "Tools",
-            title: "Tools",
-            icon: WrenchRegular,
-            horizontalLocation: "right",
-            order: 400,
-            suppressTeachingMoment: true,
-            content: () => {
-                const sections = useOrderedObservableCollection(sectionsCollection);
-                const sectionContent = useObservableCollection(sectionContentCollection);
-                const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
+        // Only show the Tools pane if some tool content has been added.
+        let toolsPaneRegistration: Nullable<IDisposable> = null;
+        sectionContentCollection.observable.add(() => {
+            if (sectionContentCollection.items.length === 0) {
+                toolsPaneRegistration?.dispose();
+                toolsPaneRegistration = null;
+            } else if (!toolsPaneRegistration) {
+                toolsPaneRegistration = shellService.addSidePane({
+                    key: "Tools",
+                    title: "Tools",
+                    icon: WrenchRegular,
+                    horizontalLocation: "right",
+                    order: 400,
+                    suppressTeachingMoment: true,
+                    content: () => {
+                        const sections = useOrderedObservableCollection(sectionsCollection);
+                        const sectionContent = useObservableCollection(sectionContentCollection);
+                        const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
 
-                return scene && <ToolsPane sections={sections} sectionContent={sectionContent} context={scene} />;
-            },
+                        return scene && <ToolsPane sections={sections} sectionContent={sectionContent} context={scene} />;
+                    },
+                });
+            }
         });
 
         /**
@@ -68,7 +78,7 @@ export const ToolsServiceDefinition: ServiceDefinition<[IToolsService], [IShellS
         return {
             addSection: (section) => sectionsCollection.add(section),
             addSectionContent: (content) => sectionContentCollection.add(content),
-            dispose: () => toolsPaneRegistration.dispose(),
+            dispose: () => toolsPaneRegistration?.dispose(),
         };
     },
 };
