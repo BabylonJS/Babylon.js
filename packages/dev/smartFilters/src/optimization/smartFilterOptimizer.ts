@@ -310,17 +310,12 @@ export class SmartFilterOptimizer {
             // If this exact overload wasn't found, add it to the list of remapped symbols so it'll be emitted in
             // the final shader.
             if (!existingFunctionExactOverload) {
-                let funcCode = func.code;
-                for (const [regex, replacement] of replaceFuncNames) {
-                    funcCode = funcCode.replace(regex, replacement);
-                }
-
                 this._remappedSymbols.push({
                     type: "function",
                     name: funcName,
                     remappedName: newVarName,
                     params: func.params,
-                    declaration: funcCode,
+                    declaration: func.code,
                     owners: [block],
                     inputBlock: undefined,
                 });
@@ -328,6 +323,15 @@ export class SmartFilterOptimizer {
 
             code = code.replace(regexFindCurName, newVarName);
         }
+
+        // After processing all of the helper functions, go through them and update any calls between them to use the new symbols
+        this._remappedSymbols.forEach((remappedSymbol) => {
+            if (remappedSymbol.owners[0] && remappedSymbol.owners[0] === block) {
+                for (const [regex, replacement] of replaceFuncNames) {
+                    remappedSymbol.declaration = remappedSymbol.declaration.replace(regex, replacement);
+                }
+            }
+        });
 
         return code;
     }

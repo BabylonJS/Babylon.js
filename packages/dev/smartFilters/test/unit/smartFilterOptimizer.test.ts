@@ -80,6 +80,61 @@ vec4 texture2DStuff(float f) {
 }
 `;
 
+// TODO: add test case to confirm that helper references to helpers get updated:
+
+// const FirstBlockGlsl = `
+// /*
+// {
+//     "smartFilterBlockType": "FirstBlock",
+//     "namespace": "Babylon.Test"
+// }
+// */
+
+// uniform sampler2D input; // main
+
+// vec4 helper1(vec2 vUV) {
+//     // In FirstBlock
+//     return helper2(input, vUV);
+// }
+
+// vec4 helper2(vec2 vUV) {
+//     // In FirstBlock
+//     return texture2D(input, vUV);
+// }
+
+// vec4 firstBlockMain(vec2 vUV) { // main
+//     // In FirstBlock
+//     vec4 color = helper1(vUV);
+//     return color;
+// }
+// `;
+
+// const SecondBlockGlsl = `
+// /*
+// {
+//     "smartFilterBlockType": "SecondBlock",
+//     "namespace": "Babylon.Test"
+// }
+// */
+
+// uniform sampler2D input; // main
+
+// vec4 helper1(vec2 vUV) {
+//     // In SecondBlock
+//     return helper2(input, vUV);
+// }
+
+// vec4 helper2(vec2 vUV) {
+//     // In SecondBlock
+//     return texture2D(input, vUV);
+// }
+
+// vec4 secondBlockMain(vec2 vUV) { // main
+//     vec4 color = helper1(vUV);
+//     return color;
+// }
+// `;
+
 describe("smartFilterOptimizer", () => {
     const testBlockWithOverloadsDefinition = importCustomBlockDefinition(testBlockWithOverloadsAnnotatedGlsl) as SerializedShaderBlockDefinition;
     const testBlackAndWhiteBlockDefinition = importCustomBlockDefinition(blackAndWhiteAnnotatedGlsl) as SerializedShaderBlockDefinition;
