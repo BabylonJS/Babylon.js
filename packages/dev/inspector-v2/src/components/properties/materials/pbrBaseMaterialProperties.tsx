@@ -24,6 +24,7 @@ declare module "core/Materials/PBR/pbrSheenConfiguration" {
     }
 }
 
+// TODO: ryamtrem / gehalper This function is temporal until there is a line control to handle texture links (similar to the old TextureLinkLineComponent)
 const UpdateTexture = (file: File, material: PBRBaseMaterial, textureSetter: (texture: BaseTexture) => void) => {
     ReadFile(
         file,

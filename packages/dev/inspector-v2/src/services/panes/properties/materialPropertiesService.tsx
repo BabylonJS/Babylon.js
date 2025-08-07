@@ -77,7 +77,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
 
         const pbrBaseMaterialPropertiesRegistration = propertiesService.addSectionContent({
             key: "PBR Base Material Properties",
-            predicate: (entity: unknown): entity is PBRBaseMaterial => entity instanceof PBRBaseMaterial && !(entity instanceof PBRBaseSimpleMaterial),
+            predicate: (entity: unknown) => entity instanceof PBRBaseMaterial,
             content: [
                 {
                     section: "Clear Coat",
