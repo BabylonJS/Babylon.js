@@ -108,7 +108,7 @@ export class LottiePlayer {
             this._worker.postMessage({ canvas: offscreen, file: animationFile, config: configuration }, [offscreen]);
 
             // Listen for size information from worker
-            this._worker.onmessage = this._onWorkerMessage;
+            this._worker.onmessage = this._onWorkerMessage.bind(this);
             this._worker.onerror = function (error) {
                 // eslint-disable-next-line no-console
                 console.error("Worker onerror:", error);
@@ -119,8 +119,8 @@ export class LottiePlayer {
             };
 
             // Window events that affect the worker
-            window.addEventListener("resize", this._resizeEventListener);
-            window.addEventListener("beforeunload", this._beforeUnloadEventListener);
+            window.addEventListener("resize", this._resizeEventListener.bind(this));
+            window.addEventListener("beforeunload", this._beforeUnloadEventListener.bind(this));
 
             return true;
         } else {
@@ -140,7 +140,7 @@ export class LottiePlayer {
     }
 
     private _onWorkerMessage(evt: MessageEvent): void {
-        if (evt.data.width && evt.data.height && this._canvas) {
+        if (evt.data.animationWidth && evt.data.animationHeight && this._canvas) {
             this._canvas.style.width = `${evt.data.animationWidth}px`;
             this._canvas.style.height = `${evt.data.animationHeight}px`;
         }
