@@ -721,7 +721,7 @@ describe("Interactivity math nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        b: {
+                        angle: {
                             type: 1,
                             value: [Math.PI / 2],
                         },
@@ -749,7 +749,7 @@ describe("Interactivity math nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        b: {
+                        angle: {
                             type: 1,
                             value: [rotationAngleInRadians],
                         },
@@ -778,7 +778,7 @@ describe("Interactivity math nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        b: {
+                        angle: {
                             type: 1,
                             value: [rotationAngleInRadians],
                         },
@@ -812,7 +812,7 @@ describe("Interactivity math nodes", () => {
                             type: 0,
                             value: [1, 1, 1],
                         },
-                        b: {
+                        rotation: {
                             type: 1,
                             value: Quaternion.FromEulerAngles(Math.PI / 2, 0, 0).asArray(),
                         },
@@ -841,7 +841,7 @@ describe("Interactivity math nodes", () => {
                             type: 0,
                             value: vector.asArray(),
                         },
-                        b: {
+                        rotation: {
                             type: 1,
                             value: quaternion.asArray(),
                         },
