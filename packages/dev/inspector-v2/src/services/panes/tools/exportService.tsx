@@ -2,7 +2,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import { ToolsServiceIdentity } from "../toolsService";
 import type { IToolsService } from "../toolsService";
 import type { IDisposable } from "core/scene";
-import { ExportBabylonProperties, ExportGltfProperties } from "../../../components/tools/exportTools";
+import { ExportBabylonTools, ExportGltfTools } from "../../../components/tools/exportTools";
 
 export const ExportServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
     friendlyName: "Export Tools",
@@ -15,7 +15,7 @@ export const ExportServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
             toolsService.addSectionContent({
                 key: "glTF Export",
                 section: "glTF Export",
-                component: ({ context }) => <ExportGltfProperties scene={context} />,
+                component: ({ context }) => <ExportGltfTools scene={context} />,
             })
         );
 
@@ -24,7 +24,7 @@ export const ExportServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
             toolsService.addSectionContent({
                 key: "Babylon Export",
                 section: "Babylon Export",
-                component: ({ context }) => <ExportBabylonProperties scene={context} />,
+                component: ({ context }) => <ExportBabylonTools scene={context} />,
             })
         );
 

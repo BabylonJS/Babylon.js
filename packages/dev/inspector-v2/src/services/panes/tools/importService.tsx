@@ -1,7 +1,7 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import { ToolsServiceIdentity } from "../toolsService";
 import type { IToolsService } from "../toolsService";
-import { ImportAnimationsProperties } from "../../../components/tools/importTools";
+import { ImportAnimationsTools } from "../../../components/tools/importTools";
 
 export const SceneImportServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
     friendlyName: "Import Tool",
@@ -10,7 +10,7 @@ export const SceneImportServiceDefinition: ServiceDefinition<[], [IToolsService]
         const contentRegistration = toolsService.addSectionContent({
             key: "AnimationImport",
             section: "Animation Import",
-            component: ({ context }) => <ImportAnimationsProperties scene={context} />,
+            component: ({ context }) => <ImportAnimationsTools scene={context} />,
         });
 
         return {

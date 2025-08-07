@@ -8,8 +8,10 @@ import type { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { VideoRecorder } from "core/Misc/videoRecorder";
 import { captureEquirectangularFromScene } from "core/Misc/equirectangularCapture";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { CameraRegular, RecordRegular, RecordStopRegular } from "@fluentui/react-icons";
 
-export const CaptureRttProperties: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+export const CaptureRttTools: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
     const [useWidthHeight, setUseWidthHeight] = useState(false);
     const [screenshotSize, setScreenshotSize] = useState<IScreenshotSize>({ precision: 1 });
 
@@ -27,7 +29,7 @@ export const CaptureRttProperties: FunctionComponent<{ scene: Scene }> = ({ scen
 
     return (
         <>
-            <ButtonLine label="Capture" onClick={captureRender} />
+            <ButtonLine label="Capture" icon={CameraRegular} onClick={captureRender} />
             <SyncedSliderPropertyLine
                 label="Precision"
                 value={screenshotSize.precision ?? 1}
@@ -37,29 +39,29 @@ export const CaptureRttProperties: FunctionComponent<{ scene: Scene }> = ({ scen
                 step={0.1}
             />
             <SwitchPropertyLine label="Use Custom Width/Height" value={useWidthHeight} onChange={(value) => setUseWidthHeight(value)} />
-            {useWidthHeight && (
-                <>
-                    <SyncedSliderPropertyLine
-                        label="Width"
-                        value={screenshotSize.width ?? 512}
-                        onChange={(data) => setScreenshotSize({ ...screenshotSize, width: data ?? 512 })}
-                        min={1}
-                        step={1}
-                    />
-                    <SyncedSliderPropertyLine
-                        label="Height"
-                        value={screenshotSize.height ?? 512}
-                        onChange={(data) => setScreenshotSize({ ...screenshotSize, height: data ?? 512 })}
-                    />
-                </>
-            )}
+            <Collapse visible={useWidthHeight}>
+                <SyncedSliderPropertyLine
+                    label="Width"
+                    value={screenshotSize.width ?? 512}
+                    onChange={(data) => setScreenshotSize({ ...screenshotSize, width: data ?? 512 })}
+                    min={1}
+                    step={1}
+                />
+                <SyncedSliderPropertyLine
+                    label="Height"
+                    value={screenshotSize.height ?? 512}
+                    onChange={(data) => setScreenshotSize({ ...screenshotSize, height: data ?? 512 })}
+                    min={1}
+                    step={1}
+                />
+            </Collapse>
         </>
     );
 };
 
-export const CaptureScreenshotProperties: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
-    const [recordVideoText, setRecordVideoText] = useState("Record video");
-    const videoRecorder = useRef<VideoRecorder | null>(null);
+export const CaptureScreenshotTools: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    const [isRecording, setIsRecording] = useState(false);
+    const videoRecorder = useRef<VideoRecorder>();
 
     const captureScreenshot = useCallback(() => {
         if (scene.activeCamera) {
@@ -75,7 +77,8 @@ export const CaptureScreenshotProperties: FunctionComponent<{ scene: Scene }> = 
 
     const recordVideoAsync = useCallback(async () => {
         if (videoRecorder.current && videoRecorder.current.isRecording) {
-            void videoRecorder.current.stopRecording();
+            videoRecorder.current.stopRecording();
+            setIsRecording(false);
             return;
         }
 
@@ -83,15 +86,15 @@ export const CaptureScreenshotProperties: FunctionComponent<{ scene: Scene }> = 
             videoRecorder.current = new VideoRecorder(scene.getEngine());
         }
 
-        await videoRecorder.current.startRecording();
-        setRecordVideoText("Stop recording");
+        void videoRecorder.current.startRecording();
+        setIsRecording(true);
     }, [scene]);
 
     return (
         <>
-            <ButtonLine label="Capture" onClick={captureScreenshot} />
-            <ButtonLine label="Capture Equirectangular" onClick={captureEquirectangularAsync} />
-            <ButtonLine label={recordVideoText} onClick={recordVideoAsync} />
+            <ButtonLine label="Capture" icon={CameraRegular} onClick={captureScreenshot} />
+            <ButtonLine label="Capture Equirectangular" icon={CameraRegular} onClick={captureEquirectangularAsync} />
+            <ButtonLine label={isRecording ? "Stop Recording" : "Record Video"} icon={isRecording ? RecordStopRegular : RecordRegular} onClick={recordVideoAsync} />
         </>
     );
 };

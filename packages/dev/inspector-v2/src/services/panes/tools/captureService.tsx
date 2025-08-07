@@ -2,7 +2,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import { ToolsServiceIdentity } from "../toolsService";
 import type { IToolsService } from "../toolsService";
 import type { IDisposable } from "core/scene";
-import { CaptureRttProperties, CaptureScreenshotProperties } from "../../../components/tools/captureTools";
+import { CaptureRttTools, CaptureScreenshotTools } from "../../../components/tools/captureTools";
 
 export const CaptureServiceDefinition: ServiceDefinition<[], [IToolsService]> = {
     friendlyName: "Capture Tools",
@@ -15,7 +15,7 @@ export const CaptureServiceDefinition: ServiceDefinition<[], [IToolsService]> = 
             toolsService.addSectionContent({
                 key: "Screenshot Capture",
                 section: "Screenshot Capture",
-                component: ({ context }) => <CaptureScreenshotProperties scene={context} />,
+                component: ({ context }) => <CaptureScreenshotTools scene={context} />,
             })
         );
 
@@ -24,7 +24,7 @@ export const CaptureServiceDefinition: ServiceDefinition<[], [IToolsService]> = 
             toolsService.addSectionContent({
                 key: "RTT Capture",
                 section: "RTT Capture",
-                component: ({ context }) => <CaptureRttProperties scene={context} />,
+                component: ({ context }) => <CaptureRttTools scene={context} />,
             })
         );
 

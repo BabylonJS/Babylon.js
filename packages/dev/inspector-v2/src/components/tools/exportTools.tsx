@@ -1,5 +1,3 @@
-/* eslint-disable import/no-internal-modules */
-import * as React from "react";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Tools } from "core/Misc/tools";
@@ -19,15 +17,16 @@ import type { BackgroundMaterial } from "core/Materials/Background/backgroundMat
 import { Texture } from "core/Materials/Textures/texture";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
-import { Text } from "@fluentui/react-components";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 
 import { MakeLazyComponent } from "shared-ui-components/fluent/primitives/lazyComponent";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { ArrowDownloadRegular } from "@fluentui/react-icons";
 
 const EnvExportImageTypes = [
     { label: "PNG", value: 0, imageType: "image/png" },
     { label: "WebP", value: 1, imageType: "image/webp" },
-];
+] as const;
 
 interface IBabylonExportOptionsState {
     imageTypeIndex: number;
@@ -35,8 +34,8 @@ interface IBabylonExportOptionsState {
     iblDiffuse: boolean;
 }
 
-export const ExportBabylonProperties: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
-    const [babylonExportOptions, setBabylonExportOptions] = React.useState<IBabylonExportOptionsState>({
+export const ExportBabylonTools: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    const [babylonExportOptions, setBabylonExportOptions] = useState<Readonly<IBabylonExportOptionsState>>({
         imageTypeIndex: 0,
         imageQuality: 0.8,
         iblDiffuse: false,
@@ -69,10 +68,10 @@ export const ExportBabylonProperties: FunctionComponent<{ scene: Scene }> = ({ s
 
     return (
         <>
-            <ButtonLine label="Export to Babylon" onClick={exportBabylon} />
+            <ButtonLine label="Export to Babylon" icon={ArrowDownloadRegular} onClick={exportBabylon} />
             {!scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera && (
                 <>
-                    <ButtonLine label="Generate .env texture" onClick={createEnvTexture} />
+                    <ButtonLine label="Generate .env texture" icon={ArrowDownloadRegular} onClick={createEnvTexture} />
                     {scene.environmentTexture.irradianceTexture && (
                         <SwitchPropertyLine
                             key="iblDiffuse"
@@ -92,7 +91,7 @@ export const ExportBabylonProperties: FunctionComponent<{ scene: Scene }> = ({ s
                             setBabylonExportOptions((prev) => ({ ...prev, imageTypeIndex: val as number }));
                         }}
                     />
-                    {babylonExportOptions.imageTypeIndex > 0 && (
+                    <Collapse visible={babylonExportOptions.imageTypeIndex > 0}>
                         <SyncedSliderPropertyLine
                             label="Quality"
                             value={babylonExportOptions.imageQuality}
@@ -100,7 +99,7 @@ export const ExportBabylonProperties: FunctionComponent<{ scene: Scene }> = ({ s
                             min={0}
                             max={1}
                         />
-                    )}
+                    </Collapse>
                 </>
             )}
         </>
@@ -114,14 +113,13 @@ interface IGltfExportOptionsState {
     exportLights: boolean;
 }
 
-export const ExportGltfProperties = MakeLazyComponent(async () => {
-    // Defer importing anything from the gui package until this component is actually mounted.
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+export const ExportGltfTools = MakeLazyComponent(async () => {
+    // Defer importing anything from the serializers package until this component is actually mounted.
     const { GLTF2Export } = await import("serializers/glTF/2.0/glTFSerializer");
 
     return (props: { scene: Scene }) => {
         const [isExportingGltf, setIsExportingGltf] = useState(false);
-        const [gltfExportOptions, setGltfExportOptions] = useState<IGltfExportOptionsState>({
+        const [gltfExportOptions, setGltfExportOptions] = useState<Readonly<IGltfExportOptionsState>>({
             exportDisabledNodes: false,
             exportSkyboxes: false,
             exportCameras: false,
@@ -177,40 +175,35 @@ export const ExportGltfProperties = MakeLazyComponent(async () => {
 
         return (
             <>
-                {isExportingGltf && <Text title="Please wait..exporting" />}
-                {!isExportingGltf && (
-                    <>
-                        <SwitchPropertyLine
-                            key="GLTFExportDisabledNodes"
-                            label="Export Disabled Nodes"
-                            description="Whether to export nodes that are disabled in the scene."
-                            value={gltfExportOptions.exportDisabledNodes}
-                            onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportDisabledNodes: checked })}
-                        />
-                        <SwitchPropertyLine
-                            key="GLTFExportSkyboxes"
-                            label="Export Skyboxes"
-                            description="Whether to export skybox nodes in the scene."
-                            value={gltfExportOptions.exportSkyboxes}
-                            onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportSkyboxes: checked })}
-                        />
-                        <SwitchPropertyLine
-                            key="GLTFExportCameras"
-                            label="Export Cameras"
-                            description="Whether to export cameras in the scene."
-                            value={gltfExportOptions.exportCameras}
-                            onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportCameras: checked })}
-                        />
-                        <SwitchPropertyLine
-                            key="GLTFExportLights"
-                            label="Export Lights"
-                            description="Whether to export lights in the scene."
-                            value={gltfExportOptions.exportLights}
-                            onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportLights: checked })}
-                        />
-                    </>
-                )}
-                {!isExportingGltf && <ButtonLine label="Export to GLB" onClick={exportGLTF} />}
+                <SwitchPropertyLine
+                    key="GLTFExportDisabledNodes"
+                    label="Export Disabled Nodes"
+                    description="Whether to export nodes that are disabled in the scene."
+                    value={gltfExportOptions.exportDisabledNodes}
+                    onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportDisabledNodes: checked })}
+                />
+                <SwitchPropertyLine
+                    key="GLTFExportSkyboxes"
+                    label="Export Skyboxes"
+                    description="Whether to export skybox nodes in the scene."
+                    value={gltfExportOptions.exportSkyboxes}
+                    onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportSkyboxes: checked })}
+                />
+                <SwitchPropertyLine
+                    key="GLTFExportCameras"
+                    label="Export Cameras"
+                    description="Whether to export cameras in the scene."
+                    value={gltfExportOptions.exportCameras}
+                    onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportCameras: checked })}
+                />
+                <SwitchPropertyLine
+                    key="GLTFExportLights"
+                    label="Export Lights"
+                    description="Whether to export lights in the scene."
+                    value={gltfExportOptions.exportLights}
+                    onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportLights: checked })}
+                />
+                <ButtonLine label="Export to GLB" icon={ArrowDownloadRegular} onClick={exportGLTF} disabled={isExportingGltf} />
             </>
         );
     };
