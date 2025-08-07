@@ -16,6 +16,7 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MultiMaterial } from "core/Materials/multiMaterial";
 import { MeshBuilder } from "core/Meshes";
 import { Texture } from "core/Materials/Textures/texture";
 
@@ -78,6 +79,11 @@ function createTestBoxes() {
     boxInstance.position = new Vector3(0, 0, -0.5);
 }
 
+function createMaterials() {
+    const multiMaterial = new MultiMaterial("multi", scene);
+    multiMaterial.subMaterials.push(...scene.materials);
+}
+
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
@@ -87,6 +93,8 @@ function createTestBoxes() {
     await createPhysics();
 
     createTestBoxes();
+
+    createMaterials();
 
     engine.runRenderLoop(() => {
         scene.render();

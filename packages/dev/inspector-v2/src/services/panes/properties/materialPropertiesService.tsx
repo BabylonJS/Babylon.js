@@ -1,27 +1,31 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISettingsContext } from "../../../services/settingsContext";
+import type { ISelectionService } from "../../selectionService";
 import type { IPropertiesService } from "./propertiesService";
 
 import { Material } from "core/Materials/material";
+import { MultiMaterial } from "core/Materials/multiMaterial";
+import { PBRBaseSimpleMaterial } from "core/Materials/PBR/pbrBaseSimpleMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
+import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
+import { type MaterialWithNormalMaps, NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
 import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
 import {
     StandardMaterialLevelsProperties,
     StandardMaterialLightingAndColorProperties,
     StandardMaterialTexturesProperties,
 } from "../../../components/properties/materials/standardMaterialProperties";
-import { PBRBaseSimpleMaterial } from "core/Materials/PBR/pbrBaseSimpleMaterial";
-import { type MaterialWithNormalMaps, NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { SelectionServiceIdentity } from "../../selectionService";
 import { SettingsContextIdentity } from "../../settingsContext";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
-export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
+export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISettingsContext]> = {
     friendlyName: "Material Properties",
-    consumes: [PropertiesServiceIdentity, SettingsContextIdentity],
-    factory: (propertiesService, settingsContext) => {
+    consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SettingsContextIdentity],
+    factory: (propertiesService, selectionService, settingsContext) => {
         const materialContentRegistration = propertiesService.addSectionContent({
             key: "Material Properties",
             predicate: (entity: unknown) => entity instanceof Material,
@@ -86,12 +90,24 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+        const multiMaterialContentRegistration = propertiesService.addSectionContent({
+            key: "Multi Material Properties",
+            predicate: (entity: unknown) => entity instanceof MultiMaterial,
+            content: [
+                {
+                    section: "Children",
+                    component: ({ context }) => <MultiMaterialChildrenProperties multiMaterial={context} selectionService={selectionService} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 materialContentRegistration.dispose();
-                skyMaterialRegistration.dispose();
                 standardMaterialContentRegistration.dispose();
                 pbrMaterialNormalMapsContentRegistration.dispose();
+                skyMaterialRegistration.dispose();
+                multiMaterialContentRegistration.dispose();
             },
         };
     },
