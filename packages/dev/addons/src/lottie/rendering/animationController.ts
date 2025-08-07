@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 import "core/Engines/Extensions/engine.alpha";
 import "core/Shaders/sprites.vertex";
 import "core/Shaders/sprites.fragment";
@@ -17,7 +15,7 @@ import { ThinMatrix } from "../maths/matrix";
 
 import { SpritePacker } from "../sprites/spritePacker";
 
-import type { AnimationConfiguration } from "../playAnimation";
+import type { AnimationConfiguration } from "../lottiePlayer";
 
 /**
  * Defines the babylon combine alpha value to prevent a large import.
@@ -27,7 +25,7 @@ const AlphaCombine = 2;
 /**
  * Class that controls the playing of lottie animations using Babylon.js
  */
-export class Player {
+export class AnimationController {
     private _isReady: boolean;
 
     private readonly _canvas: HTMLCanvasElement;

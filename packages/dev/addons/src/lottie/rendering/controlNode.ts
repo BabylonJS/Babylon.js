@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 import type { ScalarProperty, Vector2Property } from "../lottie/parsedTypes";
 import { Node } from "./node";
 

@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 import type { IVector2Like } from "core/Maths/math.like";
 
 import type { BezierCurve } from "../maths/bezier";

@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 import "core/Engines/Extensions/engine.dynamicTexture";
 
 import type { ThinEngine } from "core/Engines/thinEngine";
@@ -12,7 +10,7 @@ import type { RawBezier, RawFillShape, RawGradientFillShape, RawPathShape, RawRe
 import type { BoundingBox } from "../maths/boundingBox";
 import { GetBoundingBox } from "../maths/boundingBox";
 
-import type { AnimationConfiguration } from "../playAnimation";
+import type { AnimationConfiguration } from "../lottiePlayer";
 
 /**
  * Information about a sprite in the sprite atlas.

@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 import type { ThinSprite } from "core/Sprites/thinSprite";
 
 import type { ScalarProperty, Vector2Property } from "../lottie/parsedTypes";

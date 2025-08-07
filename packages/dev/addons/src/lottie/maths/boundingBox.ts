@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 import type { RawBezier, RawGroupShape, RawPathShape, RawRectangleShape } from "../lottie/rawTypes";
 
 /**

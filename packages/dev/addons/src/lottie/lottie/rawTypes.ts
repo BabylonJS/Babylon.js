@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 

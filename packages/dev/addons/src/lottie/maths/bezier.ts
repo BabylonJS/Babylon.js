@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 /**
  * Represents a Babylon.js thin version of a cubic bezier curve
  * We are only exposing what we truly need in the scope of

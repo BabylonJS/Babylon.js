@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 import type { IVector2Like } from "core/Maths/math.like";
 import { ThinSprite } from "core/Sprites/thinSprite";
 
@@ -29,7 +27,7 @@ import type { RenderingManager } from "../rendering/renderingManager";
 import { Node } from "../rendering/node";
 import { ControlNode } from "../rendering/controlNode";
 
-import type { AnimationConfiguration } from "../playAnimation";
+import type { AnimationConfiguration } from "../lottiePlayer";
 
 /**
  * Type of the vector properties in the Lottie animation. It determines how the vector values are interpreted in Babylon.js.

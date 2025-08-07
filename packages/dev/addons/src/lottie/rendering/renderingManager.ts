@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-
 import "core/Engines/Extensions/engine.dynamicBuffer";
 import "core/Shaders/sprites.vertex";
 import "core/Shaders/sprites.fragment";
@@ -11,7 +9,7 @@ import { SpriteRenderer } from "core/Sprites/spriteRenderer";
 
 import type { ThinMatrix } from "../maths/matrix";
 
-import type { AnimationConfiguration } from "../playAnimation";
+import type { AnimationConfiguration } from "../lottiePlayer";
 
 /**
  * Represents all the sprites from the animation and manages their rendering.

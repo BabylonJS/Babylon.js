@@ -1,10 +1,9 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+import type { AnimationConfiguration } from "./lottiePlayer";
+import { AnimationController } from "./rendering/animationController";
 
-import type { AnimationConfiguration } from "./playAnimation";
-import { Player } from "./rendering/player";
+let AnimationPlayer: AnimationController | null = null;
 
-let AnimationPlayer: Player | null = null;
-
+const LoopAnimation = false; // By default do not loop animations
 const SpriteAtlasSize = 2048; // Size of the texture atlas
 const GapSize = 5; // Gap around the sprites in the atlas
 const Capacity = 64; // Maximum number of sprites the renderer can handle at once
@@ -21,6 +20,7 @@ onmessage = async function (evt) {
         const file = evt.data.file as string;
         const originalConfig = evt.data.config as AnimationConfiguration | undefined;
         const configuration = {
+            loopAnimation: originalConfig?.loopAnimation ?? LoopAnimation,
             spriteAtlasSize: originalConfig?.spriteAtlasSize || SpriteAtlasSize,
             gapSize: originalConfig?.gapSize || GapSize,
             spritesCapacity: originalConfig?.spritesCapacity || Capacity,
@@ -33,7 +33,7 @@ onmessage = async function (evt) {
         } as Required<AnimationConfiguration>;
 
         const animationData = await (await fetch(file)).text();
-        AnimationPlayer = new Player(canvas, configuration);
+        AnimationPlayer = new AnimationController(canvas, configuration);
         AnimationPlayer.initialize(animationData);
 
         postMessage({
@@ -41,7 +41,7 @@ onmessage = async function (evt) {
             animationHeight: AnimationPlayer.animationHeight,
         });
 
-        AnimationPlayer.playAnimation(true);
+        AnimationPlayer.playAnimation(configuration.loopAnimation);
     } else if (evt.data.width && evt.data.height && AnimationPlayer) {
         AnimationPlayer && AnimationPlayer.setSize(evt.data.width, evt.data.height);
     }
