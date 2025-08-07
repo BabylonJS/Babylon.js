@@ -35,7 +35,7 @@ coat_weight = uniforms.vCoatWeight;
 coat_roughness = uniforms.vCoatRoughness;
 // coat_roughness_anisotropy = uniforms.vCoatRoughnessAnisotropy;
 coat_ior = uniforms.vCoatIor;
-// coat_darkening = uniforms.vCoatDarkening;
+coat_darkening = uniforms.vCoatDarkening;
 
 // Apply texture values to coat layer properties
 #ifdef COAT_WEIGHT

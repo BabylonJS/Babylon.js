@@ -104,8 +104,28 @@
     slab_metal_ibl = baseSpecularEnvironmentLight * conductorIblFresnel * vLightingIntensity.z;
 
     // _____________________________ Coat Layer IBL _____________________________
+    // We will use this absorption value to darken the underlying layers. It includes both the
+    // abosorption of the coat layer and the darkening due to internal reflections.
+    vec3 coatAbsorption = vec3(1.0);
     if (coat_weight > 0.0) {
         slab_coat_ibl = coatEnvironmentLight * vLightingIntensity.z;
+        
+        // __________ Coat Darkening _____________
+        // Hemisphere-averaged Fresnel (empirical approximation)
+        float hemisphere_avg_fresnel = coatReflectance.F0 + 0.5 * (1.0 - coatReflectance.F0);
+        float averageReflectance = (coatIblFresnel + hemisphere_avg_fresnel) * 0.5;
+        
+        // Account for roughness - rougher surfaces have more diffuse internal reflections
+        // This reduces the darkening effect as roughness increases
+        float roughnessFactor = 1.0 - coat_roughness * 0.5;
+        averageReflectance *= roughnessFactor;
+
+        // Calculate transmission through multiple internal reflections
+        // This uses the geometric series for infinite reflections:
+        // T = (1-R) / (1 + R + R² + R³ + ...) = (1-R) / (1/(1-R)) = (1-R)²
+        float effectiveReflectance = averageReflectance * coat_weight;
+        float transmission = (1.0 - effectiveReflectance) / (1.0 + effectiveReflectance);
+        coatAbsorption = coat_color * mix(1.0, transmission, coat_darkening);
     }
 
     // TEMP
@@ -121,7 +141,7 @@
     vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
     vec3 material_dielectric_gloss_ibl = layer(material_dielectric_base_ibl, slab_glossy_ibl, dielectricIblFresnel, vec3(1.0), specular_color);
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
-    vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coat_color, vec3(1.0));
+    vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));
     material_surface_ibl = mix(material_coated_base_ibl, slab_fuzz_ibl, fuzz_weight);
     
 #endif
