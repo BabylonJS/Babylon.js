@@ -45,6 +45,12 @@ function createCamera() {
     camera = scene.activeCamera as ArcRotateCamera;
     camera.alpha = 1.8;
     camera.beta = 1.3;
+
+    const camera2 = camera.clone("camera2") as ArcRotateCamera;
+    camera2.alpha += Math.PI;
+
+    const camera3 = camera.clone("camera3") as ArcRotateCamera;
+    camera3.alpha += Math.PI * 0.5;
 }
 
 function createPostProcess() {

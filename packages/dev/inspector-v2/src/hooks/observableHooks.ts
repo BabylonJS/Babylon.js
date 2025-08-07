@@ -4,6 +4,8 @@ import type { ObservableCollection } from "../misc/observableCollection";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+
 /**
  * Returns the current value of the accessor and updates it when the specified event is fired on the specified element.
  * @param accessor A function that returns the current value.
@@ -72,6 +74,17 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
     }, [accessor, ...observables]);
 
     return current;
+}
+
+/**
+ * Triggers a re-render when any of the observables fire.
+ * @param observables The observables to listen for changes on.
+ */
+export function useObservableRenderer(...observables: Array<IReadonlyObservable | null | undefined>) {
+    useObservableState(
+        useCallback(() => UniqueIdGenerator.UniqueId, []),
+        ...observables
+    );
 }
 
 /**

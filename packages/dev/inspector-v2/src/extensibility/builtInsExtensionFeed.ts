@@ -28,7 +28,7 @@ const ImportToolsExtensionMetadata = {
     keywords: ["import", "tools"],
 } as const;
 
-const Extensions: readonly ExtensionMetadata[] = [CreationToolsExtensionMetadata, ExportToolsExtensionMetadata, CaptureToolsExtensionMetadata, ImportToolsExtensionMetadata];
+const Extensions: readonly ExtensionMetadata[] = [/*CreationToolsExtensionMetadata, */ ExportToolsExtensionMetadata, CaptureToolsExtensionMetadata, ImportToolsExtensionMetadata];
 
 /**
  * @internal
