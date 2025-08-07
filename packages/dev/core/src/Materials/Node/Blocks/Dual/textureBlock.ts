@@ -717,7 +717,9 @@ export class TextureBlock extends NodeMaterialBlock {
                     serializationObject.texture.name = serializationObject.texture.url;
                 }
             }
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
+            if (serializationObject.texture.base64String || serializationObject.texture.url) {
+                this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
+            }
         }
     }
 }
