@@ -13,10 +13,10 @@ type IsNullable<T> = null extends T ? true : undefined extends T ? true : false;
  */
 type BaseBoundPropertyProps<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>> = Omit<
     ComponentProps<ComponentT>,
-    "value" | "onChange" | "nullable" | "defaultValue"
+    "value" | "onChange" | "nullable" | "defaultValue" | "ignoreNullable"
 > & {
     component: ComponentT;
-    target: TargetT;
+    target: TargetT | null | undefined;
     propertyKey: PropertyKeyT;
     convertTo?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
     convertFrom?: (value: TargetT[PropertyKeyT]) => TargetT[PropertyKeyT];
@@ -33,16 +33,20 @@ export type BoundPropertyProps<TargetT extends object, PropertyKeyT extends keyo
     (IsNullable<TargetT[PropertyKeyT]> extends true
         ? ComponentProps<ComponentT> extends { nullable?: boolean }
             ? // Component supports nullable UI and thus requires a defaultValue to be sent with nullable = {true}
-              {
-                  nullable: true;
-                  defaultValue: NonNullable<TargetT[PropertyKeyT]>;
-              }
+              | {
+                        nullable: true;
+                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                    }
+                  | {
+                        ignoreNullable: true;
+                        defaultValue: NonNullable<TargetT[PropertyKeyT]>;
+                    }
             : // Component doesn't support nullable UI - prevent usage entirely with nullable properties
               never
         : {});
 
-function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>>(
-    props: BoundPropertyProps<TargetT, PropertyKeyT, ComponentT>,
+function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>>(
+    props: Omit<BoundPropertyProps<TargetT, PropertyKeyT, ComponentT>, "target"> & { target: TargetT },
     ref?: any
 ) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -61,6 +65,23 @@ function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof Ta
     };
 
     return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
+}
+
+const BoundPropertyCore = CreateGenericForwardRef(BoundPropertyCoreImpl);
+
+function BoundPropertyImpl<TargetT extends object, PropertyKeyT extends keyof TargetT, ComponentT extends ComponentType<any>>(
+    props: BoundPropertyProps<TargetT, PropertyKeyT, ComponentT>,
+    ref?: any
+) {
+    const { target, ...rest } = props;
+
+    // If target is null, don't render anything.
+    if (!target) {
+        return null;
+    }
+
+    // Target is guaranteed to be non-null here, pass to core implementation.
+    return <BoundPropertyCore {...rest} target={target} ref={ref} />;
 }
 
 // Custom generic forwardRef function (this is needed because using forwardRef with BoundPropertyImpl does not properly resolve Generic types)

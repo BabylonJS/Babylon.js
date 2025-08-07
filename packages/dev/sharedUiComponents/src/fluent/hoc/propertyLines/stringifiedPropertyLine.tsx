@@ -1,7 +1,7 @@
 import type { ImmutablePrimitiveProps } from "../../primitives/primitive";
-import type { PropertyLineProps } from "./propertyLine";
+import { PropertyLine, type PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
-import { TextPropertyLine } from "./textPropertyLine";
+import { Body1 } from "@fluentui/react-components";
 
 type StringifiedPropertyLineProps = PropertyLineProps<number> &
     ImmutablePrimitiveProps<number> & {
@@ -18,5 +18,9 @@ type StringifiedPropertyLineProps = PropertyLineProps<number> &
 export const StringifiedPropertyLine: FunctionComponent<StringifiedPropertyLineProps> = (props) => {
     const value = props.precision !== undefined ? props.value.toFixed(props.precision) : props.value.toLocaleString();
     const withUnits = props.units ? `${value} ${props.units}` : value;
-    return <TextPropertyLine {...props} nullable={false} value={withUnits} />;
+    return (
+        <PropertyLine {...props}>
+            <Body1 title={props.title}>{withUnits}</Body1>
+        </PropertyLine>
+    );
 };

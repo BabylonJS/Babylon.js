@@ -16,6 +16,7 @@ import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import type { FloatArray, Nullable } from "core/types";
 import { IsNoopNode } from "../exportUtils";
+import { GetTextureDataAsync } from "core/Misc/textureTools";
 
 /**
  * Ported from https://github.com/mrdoob/three.js/blob/master/examples/jsm/exporters/USDZExporter.js
@@ -362,7 +363,7 @@ function BuildTexture(
         float outputs:g
         float outputs:b
         float3 outputs:rgb
-        ${material.needAlphaBlending() ? "float outputs:a" : ""}
+        ${material.needAlphaBlending() || material.needAlphaTesting() ? "float outputs:a" : ""}
     }`;
 }
 
@@ -746,11 +747,7 @@ export async function USDZExportAsync(scene: Scene, options: Partial<IUSDZExport
 
         const size = texture.getSize();
         // eslint-disable-next-line no-await-in-loop
-        const textureData = await texture.readPixels();
-
-        if (!textureData) {
-            throw new Error("Texture data is not available");
-        }
+        const textureData = await GetTextureDataAsync(texture);
 
         // eslint-disable-next-line no-await-in-loop
         const fileContent = await DumpTools.DumpDataAsync(size.width, size.height, textureData, "image/png", undefined, false, true);

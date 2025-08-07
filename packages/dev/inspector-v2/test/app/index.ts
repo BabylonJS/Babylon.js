@@ -11,10 +11,13 @@ import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { ImageProcessingPostProcess } from "core/PostProcesses/imageProcessingPostProcess";
 import "core/Helpers/sceneHelpers";
-import { Color4 } from "core/Maths/math.color";
+import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MeshBuilder } from "core/Meshes";
+import { Texture } from "core/Materials/Textures/texture";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -39,7 +42,8 @@ function createCamera() {
     camera?.dispose();
     scene.createDefaultCameraOrLight(true, true, true);
     camera = scene.activeCamera as ArcRotateCamera;
-    camera.alpha = Math.PI / 2;
+    camera.alpha = 1.8;
+    camera.beta = 1.3;
 }
 
 function createPostProcess() {
@@ -63,6 +67,17 @@ async function createPhysics() {
     }
 }
 
+function createTestBoxes() {
+    const box = MeshBuilder.CreateBox("box1", { size: 0.15 }, scene);
+    const redMat = new StandardMaterial("redMat", scene);
+    redMat.emissiveColor = new Color3(1, 0, 0);
+    redMat.diffuseTexture = new Texture("https://i.imgur.com/Wk1cGEq.png", scene);
+    redMat.bumpTexture = new Texture("https://i.imgur.com/wGyk6os.png", scene);
+    box.material = redMat;
+    const boxInstance = box.createInstance("boxInstance");
+    boxInstance.position = new Vector3(0, 0, -0.5);
+}
+
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
@@ -70,6 +85,8 @@ async function createPhysics() {
     createPostProcess();
 
     await createPhysics();
+
+    createTestBoxes();
 
     engine.runRenderLoop(() => {
         scene.render();
