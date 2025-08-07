@@ -144,7 +144,9 @@ declare class GPUDevice extends EventTarget implements GPUObjectBase {
 
     createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline;
     createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline;
+    // eslint-disable-next-line no-restricted-syntax
     createComputePipelineAsync(descriptor: GPUComputePipelineDescriptor): Promise<GPUComputePipeline>;
+    // eslint-disable-next-line no-restricted-syntax
     createRenderPipelineAsync(descriptor: GPURenderPipelineDescriptor): Promise<GPURenderPipeline>;
 
     createCommandEncoder(descriptor?: GPUCommandEncoderDescriptor): GPUCommandEncoder;
