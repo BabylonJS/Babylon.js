@@ -142,8 +142,8 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
                 let offset1: vec2f = vec2f(0.0, radius);
                 let offset2: vec2f = vec2f(radius, 0.0);
 
-                let depth1: f32 = textureSample(${depthSource.samplerName}, ${depthSource.samplerName}Sampler, coords + offset1).r;
-                let depth2: f32 = textureSample(${depthSource.samplerName}, ${depthSource.samplerName}Sampler, coords + offset2).r;
+                let depth1: f32 = textureSampleLevel(${depthSource.samplerName}, ${depthSource.samplerName}Sampler, coords + offset1, 0.0).r;
+                let depth2: f32 = textureSampleLevel(${depthSource.samplerName}, ${depthSource.samplerName}Sampler, coords + offset2, 0.0).r;
 
                 let p1: vec3f = vec3f(offset1, depth1 - depth);
                 let p2: vec3f = vec3f(offset2, depth2 - depth);
@@ -159,8 +159,8 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
                 vec2 offset1 = vec2(0.0, radius);
                 vec2 offset2 = vec2(radius, 0.0);
 
-                float depth1 = texture2D(${depthSource.samplerName}, coords + offset1).r;
-                float depth2 = texture2D(${depthSource.samplerName}, coords + offset2).r;
+                float depth1 = textureLod(${depthSource.samplerName}, coords + offset1, 0.0).r;
+                float depth2 = textureLod(${depthSource.samplerName}, coords + offset2, 0.0).r;
 
                 vec3 p1 = vec3(offset1, depth1 - depth);
                 vec3 p2 = vec3(offset2, depth2 - depth);
@@ -202,8 +202,8 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
 
             fn computeOcclusion(screenSize: vec2f) -> f32 {
                 let uv: vec2f = fragmentInputs.position.xy / screenSize;
-                let random: vec3f = normalize(textureSample(${this._randomSamplerName}, ${this._randomSamplerName}Sampler, uv * 4.0).rgb);
-                let depth: f32 = textureSample(${depthSource.samplerName}, ${depthSource.samplerName}Sampler, uv).r;
+                let random: vec3f = normalize(textureSampleLevel(${this._randomSamplerName}, ${this._randomSamplerName}Sampler, uv * 4.0, 0.0).rgb);
+                let depth: f32 = textureSampleLevel(${depthSource.samplerName}, ${depthSource.samplerName}Sampler, uv, 0.0).r;
                 let position: vec3f = vec3f(uv, depth);
                 let normal: vec3f = normalFromDepth(depth, uv, ${this.radius}f);
 
@@ -252,8 +252,8 @@ export class AmbientOcclusionBlock extends NodeMaterialBlock {
 
             float computeOcclusion(vec2 screenSize) {
                 vec2 uv = gl_FragCoord.xy / screenSize;
-                vec3 random = normalize(texture2D(${this._randomSamplerName}, uv * 4.).rgb);
-                float depth = texture2D(${depthSource.samplerName}, uv).r;
+                vec3 random = normalize(textureLod(${this._randomSamplerName}, uv * 4., 0.0).rgb);
+                float depth = textureLod(${depthSource.samplerName}, uv, 0.0).r;              
                 vec3 position = vec3(uv, depth);
                 vec3 normal = normalFromDepth(depth, uv, ${this.radius} );
 
