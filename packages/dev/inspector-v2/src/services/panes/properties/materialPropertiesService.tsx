@@ -7,7 +7,14 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
-import { StandardMaterialLightingAndColorProperties } from "../../../components/properties/materials/standardMaterialLightingAndColorProperties";
+import {
+    StandardMaterialLevelsProperties,
+    StandardMaterialLightingAndColorProperties,
+    StandardMaterialTexturesProperties,
+} from "../../../components/properties/materials/standardMaterialProperties";
+import { PBRBaseSimpleMaterial } from "core/Materials/PBR/pbrBaseSimpleMaterial";
+import { type MaterialWithNormalMaps, NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { SettingsContextIdentity } from "../../settingsContext";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
@@ -39,8 +46,31 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             predicate: (entity: unknown) => entity instanceof StandardMaterial,
             content: [
                 {
+                    section: "Textures",
+                    component: ({ context }) => <StandardMaterialTexturesProperties standardMaterial={context} />,
+                },
+                {
                     section: "Lighting & Colors",
                     component: ({ context }) => <StandardMaterialLightingAndColorProperties standardMaterial={context} />,
+                },
+                {
+                    section: "Levels",
+                    component: ({ context }) => <StandardMaterialLevelsProperties standardMaterial={context} />,
+                },
+                {
+                    section: "Normal Map",
+                    component: ({ context }) => <NormalMapProperties material={context} />,
+                },
+            ],
+        });
+
+        const pbrMaterialNormalMapsContentRegistration = propertiesService.addSectionContent({
+            key: "PBR Material Normal Map Properties",
+            predicate: (entity: unknown): entity is MaterialWithNormalMaps => entity instanceof PBRMaterial || entity instanceof PBRBaseSimpleMaterial,
+            content: [
+                {
+                    section: "Normal Map",
+                    component: ({ context }) => <NormalMapProperties material={context} />,
                 },
             ],
         });
@@ -61,6 +91,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 materialContentRegistration.dispose();
                 skyMaterialRegistration.dispose();
                 standardMaterialContentRegistration.dispose();
+                pbrMaterialNormalMapsContentRegistration.dispose();
             },
         };
     },
