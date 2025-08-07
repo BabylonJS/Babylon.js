@@ -75,7 +75,7 @@ type GradientStop = {
  */
 export class SpritePacker {
     private readonly _engine: ThinEngine;
-    private readonly _configuration: Required<AnimationConfiguration>;
+    private readonly _configuration: AnimationConfiguration;
 
     private _spritesCanvas: OffscreenCanvas;
     private _spritesCanvasContext: OffscreenCanvasRenderingContext2D;
@@ -103,7 +103,7 @@ export class SpritePacker {
      * @param engine Engine that will render the sprites.
      * @param configuration Configuration options for the sprite packer.
      */
-    public constructor(engine: ThinEngine, configuration: Required<AnimationConfiguration>) {
+    public constructor(engine: ThinEngine, configuration: AnimationConfiguration) {
         this._engine = engine;
         this._configuration = configuration;
         this._isDirty = false;

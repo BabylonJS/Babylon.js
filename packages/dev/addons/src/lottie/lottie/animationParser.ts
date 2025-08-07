@@ -55,7 +55,7 @@ const DefaultPosition: IVector2Like = { x: 0, y: 0 };
 export class AnimationParser {
     private _packer: SpritePacker;
     private readonly _renderingManager: RenderingManager;
-    private readonly _configuration: Required<AnimationConfiguration>;
+    private readonly _configuration: AnimationConfiguration;
 
     private _unsupportedFeatures: string[];
 
@@ -71,7 +71,7 @@ export class AnimationParser {
      * @param renderingManager Object that manages the rendering of the sprites in the animation.
      * @param configuration Configuration options for the animation parser.
      */
-    public constructor(packer: SpritePacker, renderingManager: RenderingManager, configuration: Required<AnimationConfiguration>) {
+    public constructor(packer: SpritePacker, renderingManager: RenderingManager, configuration: AnimationConfiguration) {
         this._packer = packer;
         this._renderingManager = renderingManager;
         this._configuration = configuration;

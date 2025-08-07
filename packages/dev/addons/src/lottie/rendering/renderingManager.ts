@@ -19,7 +19,7 @@ export class RenderingManager {
     private readonly _spritesRenderer: SpriteRenderer;
     private readonly _spritesTexture: ThinTexture;
     private _sprites: ThinSprite[];
-    private readonly _configuration: Required<AnimationConfiguration>;
+    private readonly _configuration: AnimationConfiguration;
 
     /**
      * Creates a new instance of the RenderingManager.
@@ -27,7 +27,7 @@ export class RenderingManager {
      * @param spriteTexture The texture atlas containing the sprites.
      * @param configuration Configuration options for the rendering manager.
      */
-    public constructor(engine: ThinEngine, spriteTexture: ThinTexture, configuration: Required<AnimationConfiguration>) {
+    public constructor(engine: ThinEngine, spriteTexture: ThinTexture, configuration: AnimationConfiguration) {
         this._engine = engine;
         this._spritesTexture = spriteTexture;
         this._sprites = [];

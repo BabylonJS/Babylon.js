@@ -29,7 +29,7 @@ export class AnimationController {
     private _isReady: boolean;
 
     private readonly _canvas: HTMLCanvasElement;
-    private readonly _configuration: Required<AnimationConfiguration>;
+    private readonly _configuration: AnimationConfiguration;
     private readonly _engine: ThinEngine;
     private readonly _spritePacker: SpritePacker;
 
@@ -51,7 +51,7 @@ export class AnimationController {
     private _accumulatedTime: number;
     private _framesToAdvance: number;
 
-    private _renderingManager: RenderingManager;
+    private readonly _renderingManager: RenderingManager;
 
     /**
      * Gets the canvas used for rendering the animation.
@@ -82,7 +82,7 @@ export class AnimationController {
      * @param canvas The canvas element to render the animation on.
      * @param configuration The configuration for the animation player.
      */
-    public constructor(canvas: HTMLCanvasElement, configuration: Required<AnimationConfiguration>) {
+    public constructor(canvas: HTMLCanvasElement, configuration: AnimationConfiguration) {
         this._isReady = false;
         this._canvas = canvas;
         this._configuration = configuration;

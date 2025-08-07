@@ -1,39 +1,38 @@
+import type { Nullable } from "core/types";
+
 import type { AnimationConfiguration } from "./lottiePlayer";
 import { AnimationController } from "./rendering/animationController";
 
-let AnimationPlayer: AnimationController | null = null;
+let AnimationPlayer: Nullable<AnimationController> = null;
 
-const LoopAnimation = false; // By default do not loop animations
-const SpriteAtlasSize = 2048; // Size of the texture atlas
-const GapSize = 5; // Gap around the sprites in the atlas
-const Capacity = 64; // Maximum number of sprites the renderer can handle at once
-const White = { r: 1, g: 1, b: 1, a: 1 }; // Background color for the animation canvas
-const ScaleMultiplier = 5; // Minimum scale factor to prevent too small sprites
-const DevicePixelRatio = 1; // Scale factor
-const EasingSteps = 4; // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
-const IgnoreOpacityAnimations = true; // Whether to ignore opacity animations for performance
-const SupportDeviceLost = false; // Whether to support device lost events for WebGL contexts
+/**
+ * Default configuration for lottie animations playback.
+ */
+const DefaultConfiguration: AnimationConfiguration = {
+    loopAnimation: false, // By default do not loop animations
+    spriteAtlasSize: 2048, // Size of the texture atlas
+    gapSize: 5, // Gap around the sprites in the atlas
+    spritesCapacity: 64, // Maximum number of sprites the renderer can handle at once
+    backgroundColor: { r: 1, g: 1, b: 1, a: 1 }, // Background color for the animation canvas
+    scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,
+    devicePixelRatio: 1, // Scale factor,
+    easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
+    ignoreOpacityAnimations: true, // Whether to ignore opacity animations for performance
+    supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
+};
 
 onmessage = async function (evt) {
     if (evt.data.canvas && evt.data.file) {
         const canvas = evt.data.canvas as HTMLCanvasElement;
         const file = evt.data.file as string;
-        const originalConfig = evt.data.config as AnimationConfiguration | undefined;
-        const configuration = {
-            loopAnimation: originalConfig?.loopAnimation ?? LoopAnimation,
-            spriteAtlasSize: originalConfig?.spriteAtlasSize || SpriteAtlasSize,
-            gapSize: originalConfig?.gapSize || GapSize,
-            spritesCapacity: originalConfig?.spritesCapacity || Capacity,
-            backgroundColor: originalConfig?.backgroundColor || White,
-            scaleMultiplier: originalConfig?.scaleMultiplier || ScaleMultiplier,
-            devicePixelRatio: originalConfig?.devicePixelRatio || DevicePixelRatio,
-            easingSteps: originalConfig?.easingSteps || EasingSteps,
-            ignoreOpacityAnimations: originalConfig?.ignoreOpacityAnimations ?? IgnoreOpacityAnimations,
-            supportDeviceLost: originalConfig?.supportDeviceLost ?? SupportDeviceLost,
-        } as Required<AnimationConfiguration>;
+        const originalConfig = evt.data.config as AnimationConfiguration;
+        const finalConfig: AnimationConfiguration = {
+            ...DefaultConfiguration,
+            ...originalConfig,
+        };
 
         const animationData = await (await fetch(file)).text();
-        AnimationPlayer = new AnimationController(canvas, configuration);
+        AnimationPlayer = new AnimationController(canvas, finalConfig);
         AnimationPlayer.initialize(animationData);
 
         postMessage({
@@ -41,8 +40,8 @@ onmessage = async function (evt) {
             animationHeight: AnimationPlayer.animationHeight,
         });
 
-        AnimationPlayer.playAnimation(configuration.loopAnimation);
-    } else if (evt.data.width && evt.data.height && AnimationPlayer) {
+        AnimationPlayer.playAnimation(finalConfig.loopAnimation);
+    } else if (evt.data.width && evt.data.height) {
         AnimationPlayer && AnimationPlayer.setSize(evt.data.width, evt.data.height);
     }
 };
