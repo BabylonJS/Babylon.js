@@ -19,4 +19,4 @@ export const createScene = async function () {
     particleSystem.start();
 
     return scene;
-};
+}
