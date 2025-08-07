@@ -26,7 +26,7 @@ onmessage = async function (evt) {
             spritesCapacity: originalConfig?.spritesCapacity || Capacity,
             backgroundColor: originalConfig?.backgroundColor || White,
             scaleMultiplier: originalConfig?.scaleMultiplier || ScaleMultiplier,
-            devicePixelRatio: originalConfig?.devicePixelRatio || window.devicePixelRatio || DevicePixelRatio,
+            devicePixelRatio: originalConfig?.devicePixelRatio || DevicePixelRatio,
             easingSteps: originalConfig?.easingSteps || EasingSteps,
             ignoreOpacityAnimations: originalConfig?.ignoreOpacityAnimations ?? IgnoreOpacityAnimations,
             supportDeviceLost: originalConfig?.supportDeviceLost ?? SupportDeviceLost,
