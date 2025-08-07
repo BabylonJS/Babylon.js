@@ -113,10 +113,13 @@ import { MatrixSplitterBlock } from "core/Materials/Node/Blocks/matrixSplitterBl
 import { NodeMaterialDebugBlock } from "core/Materials/Node/Blocks/debugBlock";
 import { IridescenceBlock } from "core/Materials/Node/Blocks/PBR/iridescenceBlock";
 import { SmartFilterTextureBlock } from "core/Materials/Node/Blocks/Dual/smartFilterTextureBlock";
+import { AmbientOcclusionBlock } from "core/Materials/Node/Blocks/Fragment/ambientOcclusionBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "AmbientOcclusionBlock":
+                return new AmbientOcclusionBlock("Ambient Occlusion");
             case "DebugBlock":
                 return new NodeMaterialDebugBlock("Debug");
             case "MatrixSplitterBlock":
@@ -413,6 +416,11 @@ export class BlockTools {
                 const projectionMatrixBlock = new InputBlock("Projection");
                 projectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.Projection);
                 return projectionMatrixBlock;
+            }
+            case "ProjectionInverseMatrixBlock": {
+                const projectionInverseMatrixBlock = new InputBlock("ProjectionInverse");
+                projectionInverseMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.ProjectionInverse);
+                return projectionInverseMatrixBlock;
             }
             case "CameraPositionBlock": {
                 const cameraPosition = new InputBlock("Camera position");
