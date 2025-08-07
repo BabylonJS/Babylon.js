@@ -1,3 +1,6 @@
+// FidelityFX Shader Portability functions used by FSR 1, converted to WGSL
+// https://github.com/GPUOpen-Effects/FidelityFX-FSR/blob/master/ffx-fsr/ffx_a.h
+
 fn AMax3F1(x: f32, y: f32, z: f32) -> f32 {
     return max(x,max(y,z));
 }

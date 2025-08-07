@@ -7,19 +7,43 @@ import { PostProcess } from "../../postProcess";
 import { ThinFSR1UpscalePostProcess } from "../../thinFSR1UpscalePostProcess";
 import { ThinFSR1SharpenPostProcess } from "../../thinFSR1SharpenPostProcess";
 
+/**
+ * FideltyFX Super Resolution (FSR) 1 render pipeline.
+ * This can be used to render the scene at a lower resolution and upscale it.
+ */
 export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
+    /**
+     * AMD's recommended `scaleFactor` for an "Ultra Quality" preset (equal to 1.3)
+     */
     public static readonly SCALE_ULTRA_QUALITY = 1.3;
+    /**
+     * AMD's recommended `scaleFactor` for a "Quality" preset (equal to 1.5)
+     */
     public static readonly SCALE_QUALITY = 1.5;
+    /**
+     * AMD's recommended `scaleFactor` for a "Balanced" preset (equal to 1.7)
+     */
     public static readonly SCALE_BALANCED = 1.7;
+    /**
+     * AMD's recommended `scaleFactor` for a "Performance" preset (equal to 2)
+     */
     public static readonly SCALE_PERFORMANCE = 2;
 
     private readonly _scene: Scene;
 
+    /**
+     * Returns true if FSR is supported by the running hardware
+     */
     public override get isSupported(): boolean {
         return this.engine.isWebGPU;
     }
 
     private _samples = 4;
+    /**
+     * MSAA sample count (default: 4).
+     * Disabling MSAA is not recommended since aliased edges will be exagerrated by the FSR pass.
+     * Always have atleast one AA solution enabled, wether that be MSAA with this setting or a post-process effect like FXAA or TAA.
+     */
     public get samples(): number {
         return this._samples;
     }
@@ -35,6 +59,10 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _scaleFactor = FSR1RenderingPipeline.SCALE_QUALITY;
+    /**
+     * How much smaller to render the scene at (default: 1.5).
+     * For example, a value of 2 will render the scene at half resolution.
+     */
     public get scaleFactor(): number {
         return this._scaleFactor;
     }
@@ -48,6 +76,10 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _sharpnessStops = 0.2;
+    /**
+     * The number of stops (halving) of the reduction of sharpness (default: 0.2).
+     * A value of 0 indicates a maximum sharpness.
+     */
     public get sharpnessStops(): number {
         return this._sharpnessStops;
     }
@@ -60,16 +92,28 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
         this._thinSharpenPostProcess.updateConstants(this._sharpnessStops);
     }
 
+    /**
+     * The FSR upscale PostProcess ID in the pipeline
+     */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public FSR1UpscaleEffect = "FSR1UpscaleEffect";
     private readonly _thinUpscalePostProcess: ThinFSR1UpscalePostProcess;
     private _upscalePostProcess: Nullable<PostProcess>;
 
+    /**
+     * The FSR sharpen PostProcess ID in the pipeline
+     */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public FSR1SharpenEffect = "FSR1SharpenEffect";
     private readonly _thinSharpenPostProcess: ThinFSR1SharpenPostProcess;
     private _sharpenPostProcess: PostProcess;
 
+    /**
+     * Creates a new FSR 1 rendering pipeline
+     * @param name The rendering pipeline name
+     * @param scene The scene linked to this pipeline
+     * @param cameras The array of cameras that the rendering pipeline will be attached to (default: scene.cameras)
+     */
     constructor(name: string, scene: Scene, cameras = scene.cameras) {
         super(scene.getEngine(), name);
         this._scene = scene;
@@ -102,6 +146,9 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
         this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
     }
 
+    /**
+     * Disposes of the pipeline
+     */
     public override dispose(): void {
         this._disposeSharpenPostProcess();
         this._thinSharpenPostProcess.dispose();

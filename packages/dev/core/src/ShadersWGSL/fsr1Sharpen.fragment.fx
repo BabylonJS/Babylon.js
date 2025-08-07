@@ -1,3 +1,5 @@
+// FideltyFX FSR 1 converted to WGSL
+// https://github.com/GPUOpen-Effects/FidelityFX-FSR/blob/master/ffx-fsr/ffx_fsr1.h
 #include<ffxFunctions>
 
 // This is set at the limit of providing unnatural results for sharpening.
