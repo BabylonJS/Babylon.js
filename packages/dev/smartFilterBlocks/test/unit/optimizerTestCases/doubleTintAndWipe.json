@@ -1,0 +1,240 @@
+{
+    "format": "smartFilter",
+    "formatVersion": 1,
+    "name": "Default",
+    "namespace": null,
+    "comments": null,
+    "editorData": {
+        "locations": [
+            {
+                "blockId": 2,
+                "x": 840,
+                "y": 180,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 4,
+                "x": 0,
+                "y": 0,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 6,
+                "x": 380,
+                "y": 220,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 7,
+                "x": 660,
+                "y": 380,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 8,
+                "x": 360,
+                "y": 460,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 9,
+                "x": 20,
+                "y": 420,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 10,
+                "x": 54,
+                "y": 600,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 11,
+                "x": 40,
+                "y": 240,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 12,
+                "x": 440,
+                "y": 620,
+                "isCollapsed": false
+            }
+        ],
+        "x": 40,
+        "y": 67,
+        "zoom": 1
+    },
+    "blocks": [
+        {
+            "name": "output",
+            "uniqueId": 2,
+            "blockType": "OutputBlock",
+            "namespace": null,
+            "comments": null
+        },
+        {
+            "name": "Texture",
+            "uniqueId": 4,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 2,
+                "url": "/assets/logo.png",
+                "urlTypeHint": "image",
+                "flipY": true,
+                "anisotropicFilteringLevel": 4,
+                "forcedExtension": null,
+                "appMetadata": null
+            }
+        },
+        {
+            "name": "Tint",
+            "uniqueId": 6,
+            "blockType": "TintBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        },
+        {
+            "name": "Wipe",
+            "uniqueId": 7,
+            "blockType": "WipeBlock",
+            "namespace": "Babylon.Demo.Transitions",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        },
+        {
+            "name": "Tint",
+            "uniqueId": 8,
+            "blockType": "TintBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        },
+        {
+            "name": "input",
+            "uniqueId": 9,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 2,
+                "url": "/assets/logo.png",
+                "urlTypeHint": "image",
+                "flipY": true,
+                "anisotropicFilteringLevel": 4,
+                "forcedExtension": null
+            }
+        },
+        {
+            "name": "tint",
+            "uniqueId": 10,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 3,
+                "value": {
+                    "r": 1,
+                    "g": 0,
+                    "b": 0
+                },
+                "appMetadata": null
+            }
+        },
+        {
+            "name": "tint",
+            "uniqueId": 11,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 3,
+                "value": {
+                    "r": 0,
+                    "g": 0.8588235294117647,
+                    "b": 0.9607843137254902
+                }
+            }
+        },
+        {
+            "name": "progress",
+            "uniqueId": 12,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 1,
+                "value": 0.68,
+                "animationType": null,
+                "valueDeltaPerMs": null,
+                "min": 0,
+                "max": 1
+            }
+        }
+    ],
+    "connections": [
+        {
+            "inputBlock": 2,
+            "inputConnectionPoint": "input",
+            "outputBlock": 7,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 6,
+            "inputConnectionPoint": "input",
+            "outputBlock": 4,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 6,
+            "inputConnectionPoint": "tint",
+            "outputBlock": 11,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 7,
+            "inputConnectionPoint": "textureA",
+            "outputBlock": 6,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 7,
+            "inputConnectionPoint": "textureB",
+            "outputBlock": 8,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 7,
+            "inputConnectionPoint": "progress",
+            "outputBlock": 12,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 8,
+            "inputConnectionPoint": "input",
+            "outputBlock": 9,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 8,
+            "inputConnectionPoint": "tint",
+            "outputBlock": 10,
+            "outputConnectionPoint": "output"
+        }
+    ]
+}
