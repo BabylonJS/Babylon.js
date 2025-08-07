@@ -41,7 +41,7 @@ export const SkeletonPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             content: [
                 {
                     section: "General",
-                    component: ({ context }) => <BoneGeneralProperties bone={context} setSelectedEntity={(entity) => (selectionService.selectedEntity = entity)} />,
+                    component: ({ context }) => <BoneGeneralProperties bone={context} selectionService={selectionService} />,
                 },
             ],
         });

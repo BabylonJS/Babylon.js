@@ -8,6 +8,9 @@ import { Constants } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { ShaderLanguage } from "core/Materials";
+import type { Observable } from "./observable";
+import type { Nullable } from "../types";
+import { Clamp } from "../Maths/math.scalar.functions";
 
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
@@ -238,7 +241,63 @@ export function FromHalfFloat(value: number): number {
     return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + f / Math.pow(2, 10));
 }
 
-const ProcessAsync = async (texture: BaseTexture, width: number, height: number, face: number, lod: number): Promise<Uint8Array> => {
+function IsCompressedTextureFormat(format: number): boolean {
+    switch (format) {
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
+        case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+        case Constants.TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
+            return true;
+        default:
+            return false;
+    }
+}
+
+async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void> {
+    if (texture.isReady()) {
+        return;
+    }
+
+    if (texture.loadingError) {
+        throw new Error(texture.errorObject?.message || `Texture ${texture.name} errored while loading.`);
+    }
+
+    const onLoadObservable = (texture as any).onLoadObservable as Observable<BaseTexture>;
+    if (onLoadObservable) {
+        return await new Promise((res) => onLoadObservable.addOnce(() => res()));
+    }
+
+    const onLoadedObservable = texture._texture?.onLoadedObservable;
+    if (onLoadedObservable) {
+        return await new Promise((res) => onLoadedObservable.addOnce(() => res()));
+    }
+
+    throw new Error(`Cannot determine readiness of texture ${texture.name}.`);
+}
+
+/**
+ * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
+ * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format, which cannot be read using readPixels.
+ * @internal
+ */
+async function ReadPixelsUsingRTT(texture: BaseTexture, width: number, height: number, face: number, lod: number): Promise<Uint8Array> {
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
 
@@ -321,32 +380,49 @@ const ProcessAsync = async (texture: BaseTexture, width: number, height: number,
         rtt.dispose();
         lodPostProcess.dispose();
     }
-};
+}
 
 /**
- * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
- * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format.
+ * Gets the pixel data of the specified texture, either by reading it directly
+ * or by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
+ * This is convenient to get 8-bit RGBA values for a texture in a GPU compressed format.
  * @param texture the source texture
- * @param width the width of the result, which does not have to match the source texture width
- * @param height the height of the result, which does not have to match the source texture height
+ * @param width the target width of the result, which does not have to match the source texture width
+ * @param height the target height of the result, which does not have to match the source texture height
  * @param face if the texture has multiple faces, the face index to use for the source
  * @param lod if the texture has multiple LODs, the lod index to use for the source
  * @returns the 8-bit texture data
  */
-export async function GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number = 0, lod: number = 0): Promise<Uint8Array> {
-    if (!texture.isReady() && texture._texture) {
-        await new Promise((resolve, reject) => {
-            if (texture._texture === null) {
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                reject(0);
-                return;
-            }
-            texture._texture.onLoadedObservable.addOnce(() => {
-                resolve(0);
-            });
-        });
+export async function GetTextureDataAsync(texture: BaseTexture, width?: number, height?: number, face: number = 0, lod: number = 0): Promise<Uint8Array> {
+    await WhenTextureReadyAsync(texture);
+
+    const { width: textureWidth, height: textureHeight } = texture.getSize();
+    const targetWidth = width ?? textureWidth;
+    const targetHeight = height ?? textureHeight;
+
+    // If the internal texture format is compressed, we cannot read the pixels directly.
+    // Or, if we're resizing the texture, we need to use a render target texture.
+    if (IsCompressedTextureFormat(texture.textureFormat) || targetWidth !== textureWidth || targetHeight !== textureHeight) {
+        return await ReadPixelsUsingRTT(texture, targetWidth, targetHeight, face, lod);
     }
-    return await ProcessAsync(texture, width, height, face, lod);
+
+    let data = (await texture.readPixels(face, lod)) as Nullable<Uint8Array | Float32Array>;
+    if (!data) {
+        throw new Error(`Failed to read pixels from texture ${texture.name}.`);
+    }
+
+    // Convert float RGBA values to uint8, if necessary.
+    if (data instanceof Float32Array) {
+        const data2 = new Uint8Array(data.length);
+        let n = data.length;
+        while (n--) {
+            const v = data[n];
+            data2[n] = Math.round(Clamp(v) * 255);
+        }
+        data = data2;
+    }
+
+    return data;
 }
 
 /**
@@ -395,7 +471,6 @@ export const TextureTools = {
      * @param width the width of the result, which does not have to match the source texture width
      * @param height the height of the result, which does not have to match the source texture height
      * @param face if the texture has multiple faces, the face index to use for the source
-     * @param channels a filter for which of the RGBA channels to return in the result
      * @param lod if the texture has multiple LODs, the lod index to use for the source
      * @returns the 8-bit texture data
      */

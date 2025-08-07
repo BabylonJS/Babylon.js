@@ -54,7 +54,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     let normWorldRot: mat3x3f = inverseMat3(worldRot);
 
     var dir: vec3f = normalize(normWorldRot * (worldPos.xyz - uniforms.eyePosition.xyz));
-    dir *= viewDirectionFactor;
+    dir *= uniforms.viewDirectionFactor;
     vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, dir), splat.color.w);
 #else
     vertexOutputs.vColor = splat.color;

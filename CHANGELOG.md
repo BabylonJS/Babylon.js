@@ -1,5 +1,47 @@
 # Changelog
 
+## 8.22.0
+
+### Core
+
+- GreasedLine far positions precision loss fix - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16978](https://github.com/BabylonJS/Babylon.js/pull/16978))
+
+### Viewer
+
+
+## 8.21.1
+
+### Core
+
+- Serialize decorator: Handle arrays - by [alexchuber](https://github.com/alexchuber) ([#16977](https://github.com/BabylonJS/Babylon.js/pull/16977))
+- RH WebXR camera fix - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16974](https://github.com/BabylonJS/Babylon.js/pull/16974))
+- Exporters: Refactor texture pixel reading - by [alexchuber](https://github.com/alexchuber) ([#16972](https://github.com/BabylonJS/Babylon.js/pull/16972))
+- Fix shader material clone missing the alphaMode - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16970](https://github.com/BabylonJS/Babylon.js/pull/16970))
+- Add WebXR hand parenting - by [docEdub](https://github.com/docEdub) ([#16969](https://github.com/BabylonJS/Babylon.js/pull/16969))
+
+### Serializers
+
+- Exporters: Refactor texture pixel reading - by [alexchuber](https://github.com/alexchuber) ([#16972](https://github.com/BabylonJS/Babylon.js/pull/16972))
+
+## 8.21.0
+
+### Core
+
+- Allow NME to serialize RTTs - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16964](https://github.com/BabylonJS/Babylon.js/pull/16964))
+- Fix RH camera inputs - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#16849](https://github.com/BabylonJS/Babylon.js/pull/16849))
+
+### GUI
+
+- Fix GUI 2D optimization and consistently apply states when measuring - by [AmoebaChant](https://github.com/AmoebaChant) ([#16945](https://github.com/BabylonJS/Babylon.js/pull/16945))
+
+### Serializers
+
+- USDZ Exporter: Export alpha channel when alphatest on - by [alexchuber](https://github.com/alexchuber) ([#16948](https://github.com/BabylonJS/Babylon.js/pull/16948))
+
+### Viewer
+
+- Viewer v2: Switch back to WebGL as the default for now - by [ryantrem](https://github.com/ryantrem) ([#16946](https://github.com/BabylonJS/Babylon.js/pull/16946))
+
 ## 8.20.0
 
 ### Core
