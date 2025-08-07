@@ -82,12 +82,35 @@
         }
     #endif
 
+    vec3 coatAbsorption = vec3(1.0);
+    if (coat_weight > 0.0) {
+        // __________ Coat Darkening _____________
+        float cosTheta_view = max(preInfoCoat{X}.NdotV, 0.001);
+        float cosTheta_light = max(preInfoCoat{X}.NdotL, 0.001);
+        
+        // Fresnel reflectance for view direction
+        float fresnel_view = coatReflectance.F0 + (1.0 - coatReflectance.F0) * pow(1.0 - cosTheta_view, 5.0);
+
+        // Fresnel reflectance for light direction
+        float fresnel_light = coatReflectance.F0 + (1.0 - coatReflectance.F0) * pow(1.0 - cosTheta_light, 5.0);
+
+        // Average reflectance for the round trip (light in, view out)
+        float averageReflectance = (fresnel_view + fresnel_light) * 0.5;
+
+        // Calculate transmission through multiple internal reflections
+        // This uses the geometric series for infinite reflections:
+        // T = (1-R) / (1 + R + R² + R³ + ...) = (1-R) / (1/(1-R)) = (1-R)²
+        float effectiveReflectance = averageReflectance * coat_weight;
+        float transmission = (1.0 - effectiveReflectance) / (1.0 + effectiveReflectance);
+        coatAbsorption = coat_color * mix(1.0, transmission, coat_darkening);
+    }
+
     slab_diffuse *= base_color.rgb;
     vec3 material_opaque_base = mix(slab_diffuse, slab_subsurface, subsurface_weight);
     vec3 material_dielectric_base = mix(material_opaque_base, slab_translucent, transmission_weight);
     vec3 material_dielectric_gloss = layer(material_dielectric_base, slab_glossy, specularFresnel, vec3(1.0), specular_color);
     vec3 material_base_substrate = mix(material_dielectric_gloss, slab_metal, base_metalness);
-    vec3 material_coated_base = layer(material_base_substrate, slab_coat, coatFresnel, coat_color, vec3(1.0));
+    vec3 material_coated_base = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3(1.0));
     material_surface_direct += mix(material_coated_base, slab_fuzz, fuzz_weight);
 }
 #endif

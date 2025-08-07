@@ -45,6 +45,7 @@ uniform vCoatWeight: f32;
 uniform vCoatColor: vec3f;
 uniform vCoatRoughness: f32;
 uniform vCoatIor: f32;
+uniform vCoatDarkening : f32;
 uniform vEmissionColor: vec3f;
 
 uniform vBaseWeightInfos: vec2f;
@@ -65,6 +66,8 @@ uniform vCoatColorInfos: vec2f;
 uniform coatColorMatrix: mat4x4f;
 uniform vCoatRoughnessInfos: vec2f;
 uniform coatRoughnessMatrix: mat4x4f;
+uniform vCoatDarkeningInfos : vec2f;
+uniform coatDarkeningMatrix : mat4x4f;
 uniform vGeometryNormalInfos: vec2f;
 uniform geometryNormalMatrix: mat4x4f;
 uniform vGeometryCoatNormalInfos: vec2f;

@@ -82,12 +82,35 @@
         }
     #endif
 
+    var coatAbsorption = vec3f(1.0f);
+    if (coat_weight > 0.0) {
+        // __________ Coat Darkening _____________
+        let cosTheta_view: f32 = max(preInfoCoat{X}.NdotV, 0.001f);
+        let cosTheta_light: f32 = max(preInfoCoat{X}.NdotL, 0.001f);
+
+        // Fresnel reflectance for view direction
+        let fresnel_view: f32 = coatReflectance.F0 + (1.0f - coatReflectance.F0) * pow(1.0f - cosTheta_view, 5.0);
+
+        // Fresnel reflectance for light direction
+        let fresnel_light: f32 = coatReflectance.F0 + (1.0f - coatReflectance.F0) * pow(1.0f - cosTheta_light, 5.0);
+
+        // Average reflectance for the round trip (light in, view out)
+        let averageReflectance: f32 = (fresnel_view + fresnel_light) * 0.5;
+
+        // Calculate transmission through multiple internal reflections
+        // This uses the geometric series for infinite reflections:
+        // T = (1-R) / (1 + R + R² + R³ + ...) = (1-R) / (1/(1-R)) = (1-R)²
+        let effectiveReflectance: f32 = averageReflectance * coat_weight;
+        let transmission: f32 = (1.0f - effectiveReflectance) / (1.0f + effectiveReflectance);
+        coatAbsorption = coat_color * mix(1.0f, transmission, coat_darkening);
+    }
+
     slab_diffuse *= base_color.rgb;
     let material_opaque_base: vec3f = mix(slab_diffuse, slab_subsurface, subsurface_weight);
     let material_dielectric_base: vec3f = mix(material_opaque_base, slab_translucent, transmission_weight);
     let material_dielectric_gloss: vec3f = layer(material_dielectric_base, slab_glossy, specularFresnel, vec3f(1.0), specular_color);
     let material_base_substrate: vec3f = mix(material_dielectric_gloss, slab_metal, base_metalness);
-    let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coat_color, vec3f(1.0));
+    let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0));
     material_surface_direct += mix(material_coated_base, slab_fuzz, fuzz_weight);
 }
 #endif
