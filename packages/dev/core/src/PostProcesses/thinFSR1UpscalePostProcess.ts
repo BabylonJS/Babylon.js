@@ -7,7 +7,7 @@ import type { Nullable } from "core/types";
 
 export class ThinFSR1UpscalePostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "fsr1Upscale";
-    public static readonly UniformBuffers = ["RcpEasuCon"];
+    public static readonly UniformBuffers = ["constants"];
 
     private readonly _uniformBuffer: UniformBuffer;
 
@@ -30,11 +30,16 @@ export class ThinFSR1UpscalePostProcess extends EffectWrapper {
         this._uniformBuffer.addUniform("con2", 4);
         this._uniformBuffer.addUniform("con3", 4);
         this._uniformBuffer.create();
-        this._uniformBuffer.bindToEffect(this.effect, "RcpEasuCon");
+        this._uniformBuffer.bindToEffect(this.effect, "constants");
     }
 
     protected override _gatherImports(useWebGPU: boolean | undefined, list: Promise<any>[]): void {
         list.push(import("../ShadersWGSL/fsr1Upscale.fragment"));
+    }
+
+    public override bind(noDefaultBindings?: boolean): void {
+        super.bind(noDefaultBindings);
+        this._uniformBuffer.bindUniformBuffer();
     }
 
     public updateConstants(viewportWidth: number, viewportHeight: number, inputWidth: number, inputHeight: number, outputWidth: number, outputHeight: number): void {

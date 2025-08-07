@@ -7,7 +7,7 @@ import type { Nullable } from "core/types";
 
 export class ThinFSR1SharpenPostProcess extends EffectWrapper {
     public static readonly FragmentUrl = "fsr1Sharpen";
-    public static readonly UniformBuffers = ["FsrRcasCon"];
+    public static readonly UniformBuffers = ["constants"];
 
     private readonly _uniformBuffer: UniformBuffer;
 
@@ -27,11 +27,16 @@ export class ThinFSR1SharpenPostProcess extends EffectWrapper {
         this._uniformBuffer = new UniformBuffer(engine, [], false, name);
         this._uniformBuffer.addUniform("con", 4);
         this._uniformBuffer.create();
-        this._uniformBuffer.bindToEffect(this.effect, "RcpRcasCon");
+        this._uniformBuffer.bindToEffect(this.effect, "constants");
     }
 
     protected override _gatherImports(useWebGPU: boolean | undefined, list: Promise<any>[]): void {
         list.push(import("../ShadersWGSL/fsr1Sharpen.fragment"));
+    }
+
+    public override bind(noDefaultBindings?: boolean): void {
+        super.bind(noDefaultBindings);
+        this._uniformBuffer.bindUniformBuffer();
     }
 
     public updateConstants(sharpness: number): void {
@@ -40,7 +45,7 @@ export class ThinFSR1SharpenPostProcess extends EffectWrapper {
         sharpness = Math.pow(2, -sharpness);
 
         // Technically these are uints in the shader but they're bitwise converted to floats anyway
-        // Since we haven't added the half-float shader yet, we don't need the second constant, which would require JS half-float calculation anyway
+        // Since we haven't added the half-float shader yet, we don't need the second constant, which would require JS half-float calculation
         this._uniformBuffer.updateFloat4("con", sharpness, 0, 0, 0);
         this._uniformBuffer.update();
     }

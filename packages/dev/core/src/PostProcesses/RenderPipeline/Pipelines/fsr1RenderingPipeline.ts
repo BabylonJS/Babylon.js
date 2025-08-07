@@ -73,7 +73,7 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
     constructor(name: string, scene: Scene, cameras = scene.cameras) {
         super(scene.getEngine(), name);
         this._scene = scene;
-        this._cameras = cameras;
+        this._cameras = cameras.slice();
 
         this._thinUpscalePostProcess = new ThinFSR1UpscalePostProcess(name + "Upscale", this.engine);
         this._thinSharpenPostProcess = new ThinFSR1SharpenPostProcess(name + "Sharpen", this.engine);
@@ -89,7 +89,8 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
         if (!this.isSupported) {
             return;
         }
-        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+        const cameras = this._cameras.slice();
+        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, cameras);
         this._reset();
 
         this._disposeUpscalePostProcess();
@@ -98,7 +99,7 @@ export class FSR1RenderingPipeline extends PostProcessRenderPipeline {
         this.addEffect(new PostProcessRenderEffect(this.engine, this.FSR1UpscaleEffect, () => this._upscalePostProcess));
         this.addEffect(new PostProcessRenderEffect(this.engine, this.FSR1SharpenEffect, () => this._sharpenPostProcess));
 
-        this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, this._cameras);
+        this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
     }
 
     public override dispose(): void {
