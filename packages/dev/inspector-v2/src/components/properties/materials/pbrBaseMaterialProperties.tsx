@@ -1,4 +1,4 @@
-import type { FunctionComponent } from "react";
+import { useState, type FunctionComponent } from "react";
 
 import { Collapse } from "@fluentui/react-motion-components-preview";
 
@@ -17,12 +17,25 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { ReadFile } from "core/Misc/fileTools";
 import { Texture } from "core/Materials/Textures/texture";
 
-declare module "core/Materials/PBR/PBRSheenConfiguration" {
+declare module "core/Materials/PBR/pbrSheenConfiguration" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     interface PBRSheenConfiguration {
         _useRoughness: boolean;
     }
 }
+
+const UpdateTexture = (file: File, material: PBRBaseMaterial, textureSetter: (texture: BaseTexture) => void) => {
+    ReadFile(
+        file,
+        (data) => {
+            const blob = new Blob([data], { type: "octet/stream" });
+            const url = URL.createObjectURL(blob);
+            textureSetter(new Texture(url, material.getScene(), false, false));
+        },
+        undefined,
+        true
+    );
+};
 
 export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: PBRBaseMaterial }> = (props) => {
     const { material } = props;
@@ -30,19 +43,10 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
     const isEnabled = useProperty(material.clearCoat, "isEnabled");
     const isTintEnabled = useProperty(material.clearCoat, "isTintEnabled");
     const bumpTexture = useProperty(material.clearCoat, "bumpTexture");
-
-    const updateTexture = (file: File, _texture: BaseTexture | null) => {
-        ReadFile(
-            file,
-            (data) => {
-                const blob = new Blob([data], { type: "octet/stream" });
-                const url = URL.createObjectURL(blob);
-                _texture = new Texture(url, material.getScene(), false, false);
-            },
-            undefined,
-            true
-        );
-    };
+    const [, setClearCoatTexture] = useState(material.clearCoat.texture);
+    const [, setClearCoatRoughnessTexture] = useState(material.clearCoat.textureRoughness);
+    const [, setClearCoatBumpTexture] = useState(material.clearCoat.bumpTexture);
+    const [, setClearCoatTintTexture] = useState(material.clearCoat.tintTexture);
 
     return (
         <>
@@ -67,7 +71,7 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                updateTexture(files[0], material.clearCoat.texture);
+                                UpdateTexture(files[0], material, setClearCoatTexture);
                             }
                         }}
                     />
@@ -76,7 +80,7 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                updateTexture(files[0], material.clearCoat.textureRoughness);
+                                UpdateTexture(files[0], material, setClearCoatRoughnessTexture);
                             }
                         }}
                     />
@@ -85,14 +89,14 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                updateTexture(files[0], material.clearCoat.bumpTexture);
+                                UpdateTexture(files[0], material, setClearCoatBumpTexture);
                             }
                         }}
                     />
                     <Collapse visible={bumpTexture !== null}>
-                        <BoundProperty component={SyncedSliderPropertyLine} label="Bump strength" target={bumpTexture!} propertyKey="level" min={0} max={2} step={0.01} />
+                        <BoundProperty component={SyncedSliderPropertyLine} label="Bump Strength" target={bumpTexture} propertyKey="level" min={0} max={2} step={0.01} />
                     </Collapse>
-                    <BoundProperty component={SwitchPropertyLine} label="Use roughness from main texture" target={material.clearCoat} propertyKey="useRoughnessFromMainTexture" />
+                    <BoundProperty component={SwitchPropertyLine} label="Use Roughness from Main Texture" target={material.clearCoat} propertyKey="useRoughnessFromMainTexture" />
                     <BoundProperty component={SwitchPropertyLine} label="Tint" target={material.clearCoat} propertyKey="isTintEnabled" />
                     <Collapse visible={isTintEnabled}>
                         <div>
@@ -120,7 +124,7 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
                                 accept=".jpg, .png, .tga, .dds, .env, .exr"
                                 onClick={(files) => {
                                     if (files.length > 0) {
-                                        updateTexture(files[0], material.clearCoat.tintTexture);
+                                        UpdateTexture(files[0], material, setClearCoatTintTexture);
                                     }
                                 }}
                             />
@@ -136,19 +140,8 @@ export const PBRBaseMaterialIridescenceProperties: FunctionComponent<{ material:
     const { material } = props;
 
     const isEnabled = useProperty(material.iridescence, "isEnabled");
-
-    const updateTexture = (file: File, _texture: BaseTexture | null) => {
-        ReadFile(
-            file,
-            (data) => {
-                const blob = new Blob([data], { type: "octet/stream" });
-                const url = URL.createObjectURL(blob);
-                _texture = new Texture(url, material.getScene(), false, false);
-            },
-            undefined,
-            true
-        );
-    };
+    const [, setIridescenceTexture] = useState(material.iridescence.texture);
+    const [, setIridescenceThicknessTexture] = useState(material.iridescence.thicknessTexture);
 
     return (
         <>
@@ -189,7 +182,7 @@ export const PBRBaseMaterialIridescenceProperties: FunctionComponent<{ material:
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                updateTexture(files[0], material.iridescence.texture);
+                                UpdateTexture(files[0], material, setIridescenceTexture);
                             }
                         }}
                     />
@@ -198,7 +191,7 @@ export const PBRBaseMaterialIridescenceProperties: FunctionComponent<{ material:
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                updateTexture(files[0], material.iridescence.thicknessTexture);
+                                UpdateTexture(files[0], material, setIridescenceThicknessTexture);
                             }
                         }}
                     />
@@ -212,19 +205,7 @@ export const PBRBaseMaterialAnisotropicProperties: FunctionComponent<{ material:
     const { material } = props;
 
     const isEnabled = useProperty(material.anisotropy, "isEnabled");
-
-    const updateTexture = (file: File, _texture: BaseTexture | null) => {
-        ReadFile(
-            file,
-            (data) => {
-                const blob = new Blob([data], { type: "octet/stream" });
-                const url = URL.createObjectURL(blob);
-                _texture = new Texture(url, material.getScene(), false, false);
-            },
-            undefined,
-            true
-        );
-    };
+    const [, setAnisotropicTexture] = useState(material.anisotropy.texture);
 
     return (
         <>
@@ -239,7 +220,7 @@ export const PBRBaseMaterialAnisotropicProperties: FunctionComponent<{ material:
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                updateTexture(files[0], material.iridescence.texture);
+                                UpdateTexture(files[0], material, setAnisotropicTexture);
                             }
                         }}
                     />
@@ -254,19 +235,8 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
 
     const isEnabled = useProperty(material.sheen, "isEnabled");
     const useRoughness = useProperty(material.sheen, "_useRoughness");
-
-    const updateTexture = (file: File, _texture: BaseTexture | null) => {
-        ReadFile(
-            file,
-            (data) => {
-                const blob = new Blob([data], { type: "octet/stream" });
-                const url = URL.createObjectURL(blob);
-                _texture = new Texture(url, material.getScene(), false, false);
-            },
-            undefined,
-            true
-        );
-    };
+    const [, setSheenTexture] = useState(material.sheen.texture);
+    const [, setSheenRoughnessTexture] = useState(material.sheen.textureRoughness);
 
     return (
         <>
@@ -281,7 +251,7 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                updateTexture(files[0], material.sheen.texture);
+                                UpdateTexture(files[0], material, setSheenTexture);
                             }
                         }}
                     />
@@ -290,11 +260,11 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                updateTexture(files[0], material.sheen.textureRoughness);
+                                UpdateTexture(files[0], material, setSheenRoughnessTexture);
                             }
                         }}
                     />
-                    <BoundProperty component={SwitchPropertyLine} label="Use roughness" target={material.sheen} propertyKey="_useRoughness" />
+                    <BoundProperty component={SwitchPropertyLine} label="Use Roughness" target={material.sheen} propertyKey="_useRoughness" />
                     <Collapse visible={useRoughness}>
                         <BoundProperty
                             nullable
@@ -308,8 +278,8 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
                             step={0.01}
                         />
                     </Collapse>
-                    <BoundProperty component={SwitchPropertyLine} label="Use roughness from main texture" target={material.sheen} propertyKey="useRoughnessFromMainTexture" />
-                    <BoundProperty component={SwitchPropertyLine} label="Albedo scaling" target={material.sheen} propertyKey="albedoScaling" />
+                    <BoundProperty component={SwitchPropertyLine} label="Use Roughness from Main Texture" target={material.sheen} propertyKey="useRoughnessFromMainTexture" />
+                    <BoundProperty component={SwitchPropertyLine} label="Albedo Scaling" target={material.sheen} propertyKey="albedoScaling" />
                 </div>
             </Collapse>
         </>
