@@ -462,15 +462,6 @@ export interface ICanvasRenderingContext {
     rect(x: number, y: number, width: number, height: number): void;
 
     /**
-     * Creates a path for a rectangle with rounded corners at position (x, y) with a size that is determined by width and height.
-     * @param x The x-axis coordinate of the rectangle's starting point.
-     * @param y The y-axis coordinate of the rectangle's starting point.
-     * @param width The rectangle's width. Positive values are to the right, and negative to the left.
-     * @param height A number or list specifying the radii of the circular arc to be used for the corners of the rectangle. The radii of the corners can be specified in much the same way as the CSS border-radius property.
-     */
-    roundRect(x: number, y: number, width: number, height: number, radii: number | number[]): void;
-
-    /**
      * Creates a clipping path from the current sub-paths. Everything drawn after clip() is called appears inside the clipping path only.
      */
     clip(): void;
