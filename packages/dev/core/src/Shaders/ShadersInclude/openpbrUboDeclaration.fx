@@ -69,6 +69,7 @@ uniform Material {
     vec3 vCoatColor;
     float vCoatRoughness;
     float vCoatIor;
+    float vCoatDarkening;
     vec3 vEmissionColor;
 
     vec2 vBaseWeightInfos;
@@ -89,6 +90,8 @@ uniform Material {
     mat4 coatColorMatrix;
     vec2 vCoatRoughnessInfos;
     mat4 coatRoughnessMatrix;
+    vec2 vCoatDarkeningInfos;
+    mat4 coatDarkeningMatrix;
     vec2 vGeometryNormalInfos;
     mat4 geometryNormalMatrix;
     vec2 vGeometryCoatNormalInfos;

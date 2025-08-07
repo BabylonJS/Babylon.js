@@ -21,11 +21,6 @@ uniform mat4 baseDiffuseRoughnessMatrix;
 uniform vec2 vBaseDiffuseRoughnessInfos;
 #endif
 
-#ifdef GEOMETRY_OPACITY
-uniform mat4 geometryOpacityMatrix;
-uniform vec2 vGeometryOpacityInfos;
-#endif
-
 #ifdef AMBIENT_OCCLUSION
 uniform vec2 vAmbientOcclusionInfos;
 uniform mat4 ambientOcclusionMatrix;
@@ -56,6 +51,36 @@ uniform vec2 vSpecularColorInfos;
 uniform mat4 specularColorMatrix;
 #endif
 
+#ifdef COAT_WEIGHT
+uniform vec2 vCoatWeightInfos;
+uniform mat4 coatWeightMatrix;
+#endif
+
+#ifdef COAT_COLOR
+uniform vec2 vCoatColorInfos;
+uniform mat4 coatColorMatrix;
+#endif
+
+#ifdef COAT_ROUGHNESS
+uniform vec2 vCoatRoughnessInfos;
+uniform mat4 coatRoughnessMatrix;
+#endif
+
+#ifdef COAT_ROUGHNESS_ANISOTROPY
+uniform vec2 vCoatRoughnessAnisotropyInfos;
+uniform mat4 coatRoughnessAnisotropyMatrix;
+#endif
+
+#ifdef COAT_IOR
+uniform vec2 vCoatIorInfos;
+uniform mat4 coatIorMatrix;
+#endif
+
+#ifdef COAT_DARKENING
+uniform vec2 vCoatDarkeningInfos;
+uniform mat4 coatDarkeningMatrix;
+#endif
+
 #ifdef GEOMETRY_NORMAL
 uniform vec2 vGeometryNormalInfos;
 uniform mat4 geometryNormalMatrix;
@@ -64,6 +89,11 @@ uniform mat4 geometryNormalMatrix;
 #ifdef GEOMETRY_COAT_NORMAL
 uniform vec2 vGeometryCoatNormalInfos;
 uniform mat4 geometryCoatNormalMatrix;
+#endif
+
+#ifdef GEOMETRY_OPACITY
+uniform mat4 geometryOpacityMatrix;
+uniform vec2 vGeometryOpacityInfos;
 #endif
 
 #ifdef POINTSIZE

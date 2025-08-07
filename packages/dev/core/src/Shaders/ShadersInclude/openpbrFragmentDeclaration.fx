@@ -9,6 +9,7 @@ uniform float vCoatWeight;
 uniform vec3 vCoatColor;
 uniform float vCoatRoughness;
 uniform float vCoatIor;
+uniform float vCoatDarkening;
 uniform vec3 vEmissionColor;
 
 // CUSTOM CONTROLS
@@ -55,6 +56,10 @@ uniform vec2 vBaseMetalRoughInfos;
 
 #ifdef COAT_WEIGHT
 uniform vec2 vCoatWeightInfos;
+#endif
+
+#ifdef COAT_DARKENING
+uniform vec2 vCoatDarkeningInfos;
 #endif
 
 // Refraction Reflection

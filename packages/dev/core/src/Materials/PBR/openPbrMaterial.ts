@@ -614,6 +614,28 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _coatIor: Property<number> = new Property<number>("coat_ior", 1.5, "vCoatIor", 1, 0);
 
     /**
+     * Defines the amount that interreflections within the coat allow the underlying surface
+     * to be darkened. A value of 1.0 means that the physically correct amount of darkening
+     * is applied, while a value of 0.0 means that no darkening is applied.
+     * See OpenPBR's specs for coat_darkening
+     */
+    public coatDarkening: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatDarkening")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatDarkening: Property<number> = new Property<number>("coat_darkening", 0.0, "vCoatDarkening", 1, 0);
+
+    /**
+     * Defines the amount that interreflections within the coat allow the underlying surface
+     * to be darkened. A value of 1.0 means that the physically correct amount of darkening
+     * is applied, while a value of 0.0 means that no darkening is applied.
+     * See OpenPBR's specs for coat_darkening
+     */
+    public coatDarkeningTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatDarkeningTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatDarkeningTexture: Sampler = new Sampler("coat_darkening", "coatDarkening", "COAT_DARKENING");
+
+    /**
      * Specifies whether the coat roughness is taken from the
      * same texture as the coat_weight.
      */

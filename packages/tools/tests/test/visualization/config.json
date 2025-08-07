@@ -2837,6 +2837,16 @@
             "title": "OpenPBR IBL Normal and Coat Normal Mapping",
             "playgroundId": "#GRQHVV#44",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Coat Darkening",
+            "playgroundId": "#GRQHVV#46",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Coat Darkening",
+            "playgroundId": "#GRQHVV#47",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

@@ -35,7 +35,7 @@ coat_weight = vCoatWeight;
 coat_roughness = vCoatRoughness;
 // coat_roughness_anisotropy = vCoatRoughnessAnisotropy;
 coat_ior = vCoatIor;
-// coat_darkening = vCoatDarkening;
+coat_darkening = vCoatDarkening;
 
 // Apply texture values to coat layer properties
 #ifdef COAT_WEIGHT
