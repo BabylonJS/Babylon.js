@@ -8,6 +8,7 @@ export const enum PowerPreference {
 
 /** @internal */
 export const enum FeatureName {
+    CoreFeaturesAndLimits = "core-features-and-limits",
     DepthClipControl = "depth-clip-control",
     Depth32FloatStencil8 = "depth32float-stencil8",
     TextureCompressionBC = "texture-compression-bc",
@@ -24,6 +25,9 @@ export const enum FeatureName {
     Float32Blendable = "float32-blendable",
     ClipDistances = "clip-distances",
     DualSourceBlending = "dual-source-blending",
+    Subgroups = "subgroups",
+    TextureFormatsTier1 = "texture-formats-tier1",
+    TextureFormatsTier2 = "texture-formats-tier2",
 }
 
 /** @internal */
@@ -107,10 +111,6 @@ export const enum TextureFormat {
     RG8Sint = "rg8sint", // Red and green channels. 8 bit integer per channel. Signed in shader.
     R16Unorm = "r16unorm", // Red channel only. 16 bit integer per channel. [0, 65535] converted to float [0, 1] in shader.
     R16Snorm = "r16snorm", // Red channel only. 16 bit integer per channel. [-32768, 32767] converted to float [-1, 1] in shader.
-    RG16Unorm = "rg16unorm", // Red and green channels. 16 bit integer per channel. [0, 65535] converted to float [0, 1] in shader.
-    RG16Snorm = "rg16snorm", // Red and green channels. 16 bit integer per channel. [-32768, 32767] converted to float [-1, 1] in shader.
-    RGBA16Unorm = "rgba16unorm", // Red, green, blue, and alpha channels. 16 bit integer per channel. [0, 65535] converted to float [0, 1] in shader.
-    RGBA16Snorm = "rgba16snorm", // Red, green, blue, and alpha channels. 16 bit integer per channel. [-32768, 32767] converted to float [-1, 1] in shader.
 
     // 32-bit formats
     R32Uint = "r32uint", // Red channel only. 32 bit integer per channel. Unsigned in shader.
@@ -126,6 +126,8 @@ export const enum TextureFormat {
     RGBA8Sint = "rgba8sint", // Red, green, blue, and alpha channels. 8 bit integer per channel. Signed in shader.
     BGRA8Unorm = "bgra8unorm", // Blue, green, red, and alpha channels. 8 bit integer per channel. [0, 255] converted to/from float [0, 1] in shader.
     BGRA8UnormSRGB = "bgra8unorm-srgb", // Blue, green, red, and alpha channels. 8 bit integer per channel. Srgb-color [0, 255] converted to/from linear-color float [0, 1] in shader.
+    RG16Unorm = "rg16unorm", // Red and green channels. 16 bit integer per channel. [0, 65535] converted to float [0, 1] in shader.
+    RG16Snorm = "rg16snorm", // Red and green channels. 16 bit integer per channel. [-32768, 32767] converted to float [-1, 1] in shader.
     // Packed 32-bit formats
     RGB9E5UFloat = "rgb9e5ufloat", // Packed unsigned float with 9 bits mantisa for each RGB component, then a common 5 bits exponent
     RGB10A2UINT = "rgb10a2uint", // Red, green, blue, and alpha channels. 10 bit integer for RGB channels, 2 bit integer for alpha channel. [0, 1023] ([0, 3] for alpha).
@@ -139,6 +141,8 @@ export const enum TextureFormat {
     RGBA16Uint = "rgba16uint", // Red, green, blue, and alpha channels. 16 bit integer per channel. Unsigned in shader.
     RGBA16Sint = "rgba16sint", // Red, green, blue, and alpha channels. 16 bit integer per channel. Signed in shader.
     RGBA16Float = "rgba16float", // Red, green, blue, and alpha channels. 16 bit float per channel. Float in shader.
+    RGBA16Unorm = "rgba16unorm", // Red, green, blue, and alpha channels. 16 bit integer per channel. [0, 65535] converted to float [0, 1] in shader.
+    RGBA16Snorm = "rgba16snorm", // Red, green, blue, and alpha channels. 16 bit integer per channel. [-32768, 32767] converted to float [-1, 1] in shader.
 
     // 128-bit formats
     RGBA32Uint = "rgba32uint", // Red, green, blue, and alpha channels. 32 bit integer per channel. Unsigned in shader.
@@ -384,22 +388,31 @@ export const enum IndexFormat {
 
 /** @internal */
 export const enum VertexFormat {
+    Uint8 = "uint8",
     Uint8x2 = "uint8x2",
     Uint8x4 = "uint8x4",
+    Sint8 = "sint8",
     Sint8x2 = "sint8x2",
     Sint8x4 = "sint8x4",
+    Unorm8 = "unorm8",
     Unorm8x2 = "unorm8x2",
     Unorm8x4 = "unorm8x4",
+    Snorm8 = "snorm8",
     Snorm8x2 = "snorm8x2",
     Snorm8x4 = "snorm8x4",
+    Uint16 = "uint16",
     Uint16x2 = "uint16x2",
     Uint16x4 = "uint16x4",
+    Sint16 = "sint16",
     Sint16x2 = "sint16x2",
     Sint16x4 = "sint16x4",
+    Unorm16 = "unorm16",
     Unorm16x2 = "unorm16x2",
     Unorm16x4 = "unorm16x4",
+    Snorm16 = "snorm16",
     Snorm16x2 = "snorm16x2",
     Snorm16x4 = "snorm16x4",
+    Float16 = "float16",
     Float16x2 = "float16x2",
     Float16x4 = "float16x4",
     Float32 = "float32",
@@ -415,6 +428,7 @@ export const enum VertexFormat {
     Sint32x3 = "sint32x3",
     Sint32x4 = "sint32x4",
     UNORM10x10x10x2 = "unorm10-10-10-2",
+    UNORM8x4BGRA = "unorm8x4-bgra",
 }
 
 /** @internal */

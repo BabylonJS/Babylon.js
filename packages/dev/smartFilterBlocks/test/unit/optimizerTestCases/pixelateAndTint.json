@@ -1,0 +1,163 @@
+{
+    "format": "smartFilter",
+    "formatVersion": 1,
+    "name": "Default",
+    "namespace": null,
+    "comments": null,
+    "editorData": {
+        "locations": [
+            {
+                "blockId": 2,
+                "x": 820,
+                "y": 80,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 3,
+                "x": 240,
+                "y": 80,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 4,
+                "x": 0,
+                "y": 0,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 5,
+                "x": 0,
+                "y": 180,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 10,
+                "x": 520,
+                "y": 220,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 13,
+                "x": 190,
+                "y": 361,
+                "isCollapsed": false
+            }
+        ],
+        "x": 348,
+        "y": 152,
+        "zoom": 1
+    },
+    "blocks": [
+        {
+            "name": "output",
+            "uniqueId": 2,
+            "blockType": "OutputBlock",
+            "namespace": null,
+            "comments": null
+        },
+        {
+            "name": "Pixelate",
+            "uniqueId": 3,
+            "blockType": "PixelateBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        },
+        {
+            "name": "Texture",
+            "uniqueId": 4,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 2,
+                "url": "/assets/logo.png",
+                "urlTypeHint": "image",
+                "flipY": true,
+                "anisotropicFilteringLevel": 4,
+                "forcedExtension": null,
+                "appMetadata": null
+            }
+        },
+        {
+            "name": "Intensity",
+            "uniqueId": 5,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 1,
+                "value": 0.5,
+                "animationType": null,
+                "valueDeltaPerMs": null,
+                "min": 0,
+                "max": 1,
+                "appMetadata": null
+            }
+        },
+        {
+            "name": "Tint",
+            "uniqueId": 10,
+            "blockType": "TintBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        },
+        {
+            "name": "tint",
+            "uniqueId": 13,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 3,
+                "value": {
+                    "r": 1,
+                    "g": 0,
+                    "b": 0
+                },
+                "appMetadata": null
+            }
+        }
+    ],
+    "connections": [
+        {
+            "inputBlock": 2,
+            "inputConnectionPoint": "input",
+            "outputBlock": 10,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 3,
+            "inputConnectionPoint": "input",
+            "outputBlock": 4,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 3,
+            "inputConnectionPoint": "intensity",
+            "outputBlock": 5,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 10,
+            "inputConnectionPoint": "input",
+            "outputBlock": 3,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 10,
+            "inputConnectionPoint": "tint",
+            "outputBlock": 13,
+            "outputConnectionPoint": "output"
+        }
+    ]
+}

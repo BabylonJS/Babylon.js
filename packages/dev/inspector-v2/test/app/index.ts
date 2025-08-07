@@ -18,6 +18,8 @@ import { ShowInspector } from "../../src/inspector";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
+import { MultiMaterial } from "core/Materials/multiMaterial";
+import { Texture } from "core/Materials/Textures/texture";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -89,9 +91,16 @@ function createTestBoxes() {
     const box = MeshBuilder.CreateBox("box1", { size: 0.15 }, scene);
     const redMat = new StandardMaterial("redMat", scene);
     redMat.emissiveColor = new Color3(1, 0, 0);
+    redMat.diffuseTexture = new Texture("https://i.imgur.com/Wk1cGEq.png", scene);
+    redMat.bumpTexture = new Texture("https://i.imgur.com/wGyk6os.png", scene);
     box.material = redMat;
     const boxInstance = box.createInstance("boxInstance");
     boxInstance.position = new Vector3(0, 0, -0.5);
+}
+
+function createMaterials() {
+    const multiMaterial = new MultiMaterial("multi", scene);
+    multiMaterial.subMaterials.push(...scene.materials);
 }
 
 (async () => {
@@ -104,6 +113,8 @@ function createTestBoxes() {
 
     createTestBoxes();
     createTestPBRSphere();
+
+    createMaterials();
 
     engine.runRenderLoop(() => {
         scene.render();

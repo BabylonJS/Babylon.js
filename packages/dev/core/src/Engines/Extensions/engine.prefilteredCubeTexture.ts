@@ -81,7 +81,6 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
             return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { DDSTools } = await import("core/Misc/dds");
 
         const textures: BaseTexture[] = [];
