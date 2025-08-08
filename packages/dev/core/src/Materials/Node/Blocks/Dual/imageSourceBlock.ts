@@ -192,7 +192,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
                     serializationObject.texture.name = serializationObject.texture.url;
                 }
             }
-            if (serializationObject.texture.base64String || serializationObject.texture.url) {
+            if (serializationObject.texture.base64String || serializationObject.texture.url !== undefined) {
                 this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
             }
         }
