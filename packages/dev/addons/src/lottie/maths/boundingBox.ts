@@ -135,10 +135,25 @@ function CalculatePointsWithTangentZero(
     const rootsX = SolveQuadratic(ax, bx, cx);
     const rootsY = SolveQuadratic(ay, by, cy);
 
+    // Merge + dedupe (roots arrays are tiny: <=2 each)
+    const candidateTs = rootsX.slice(); // copy
+    for (let i = 0; i < rootsY.length; i++) {
+        const ty = rootsY[i];
+        let exists = false;
+        for (let j = 0; j < candidateTs.length; j++) {
+            if (candidateTs[j] === ty) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            candidateTs.push(ty);
+        }
+    }
+
     // Evaluate the bezier at the calculated t values to find the points of the curve where the tangent is zero
-    const allTs = new Set<number>(rootsX.concat(rootsY));
-    for (const t of allTs) {
-        // Only the values of t in the range [0, 1] are inside the bezier curve segment
+    for (let i = 0; i < candidateTs.length; i++) {
+        const t = candidateTs[i];
         if (t >= 0 && t <= 1) {
             const x = BezierPoint(t, startX, controlPoint1X, controlPoint2X, endX);
             const y = BezierPoint(t, startY, controlPoint1Y, controlPoint2Y, endY);
