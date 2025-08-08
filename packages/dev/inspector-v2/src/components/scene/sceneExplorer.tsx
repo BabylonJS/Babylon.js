@@ -91,7 +91,7 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
 }>;
 
-type Command<T extends EntityBase> = Partial<IDisposable> &
+type Command = Partial<IDisposable> &
     Readonly<{
         /**
          * The display name of the command (e.g. "Delete", "Rename", etc.).
@@ -109,7 +109,7 @@ type Command<T extends EntityBase> = Partial<IDisposable> &
         onChange?: IReadonlyObservable<unknown>;
     }>;
 
-type ActionCommand<T extends EntityBase> = Command<T> & {
+type ActionCommand = Command & {
     readonly type: "action";
 
     /**
@@ -118,7 +118,7 @@ type ActionCommand<T extends EntityBase> = Command<T> & {
     execute(): void;
 };
 
-type ToggleCommand<T extends EntityBase> = Command<T> & {
+type ToggleCommand = Command & {
     readonly type: "toggle";
 
     /**
@@ -127,7 +127,7 @@ type ToggleCommand<T extends EntityBase> = Command<T> & {
     isEnabled: boolean;
 };
 
-export type SceneExplorerCommand<T extends EntityBase> = ActionCommand<T> | ToggleCommand<T>;
+export type SceneExplorerCommand = ActionCommand | ToggleCommand;
 
 export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     /**
@@ -144,7 +144,7 @@ export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     /**
      * Gets the command information for the given entity.
      */
-    getCommand: (entity: T) => SceneExplorerCommand<T>;
+    getCommand: (entity: T) => SceneExplorerCommand;
 }>;
 
 type SceneTreeItemData = { type: "scene"; scene: Scene };
@@ -189,7 +189,7 @@ const useStyles = makeStyles({
     },
 });
 
-const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; entity: EntityBase }> = (props) => {
+const ActionCommand: FunctionComponent<{ command: ActionCommand; entity: EntityBase }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -205,7 +205,7 @@ const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; ent
     );
 };
 
-const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; entity: EntityBase }> = (props) => {
+const ToggleCommand: FunctionComponent<{ command: ToggleCommand; entity: EntityBase }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -300,7 +300,7 @@ const EntityTreeItem: FunctionComponent<{
     // Get the commands that apply to this entity.
     const commands = useResource(
         useCallback(() => {
-            const commands: readonly SceneExplorerCommand<EntityBase>[] = commandProviders
+            const commands: readonly SceneExplorerCommand[] = commandProviders
                 .filter((provider) => provider.predicate(entityItem.entity))
                 .map((provider) => provider.getCommand(entityItem.entity));
 
@@ -310,7 +310,7 @@ const EntityTreeItem: FunctionComponent<{
         }, [entityItem.entity, commandProviders])
     );
 
-    const [enabledToggleCommands, setEnabledToggleCommands] = useState<readonly ToggleCommand<EntityBase>[]>([]);
+    const [enabledToggleCommands, setEnabledToggleCommands] = useState<readonly ToggleCommand[]>([]);
 
     // For enabled/active toggle commands, we should always show them so the user knows this command is toggled on.
     useEffect(() => {
