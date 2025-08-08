@@ -19,15 +19,15 @@ export const SkeletonGeneralProperties: FunctionComponent<{ skeleton: Skeleton }
 
     return (
         <>
-            <StringifiedPropertyLine key="SkeletonBoneCount" label="Bone count" description="The number of bones of the skeleton." value={skeleton.bones.length} />
+            <StringifiedPropertyLine key="SkeletonBoneCount" label="Bone Count" description="The number of bones of the skeleton." value={skeleton.bones.length} />
             <BoundProperty
                 key="SkeletonUseTextureToStoreBoneMatrices2"
                 component={SwitchPropertyLine}
-                label="Use texture to store bone matrices"
+                label="Use Texture to Store Bone Matrices"
                 target={skeleton}
                 propertyKey="useTextureToStoreBoneMatrices"
             />
-            <ButtonLine key="SkeletonReturnToRest" label="Return to rest" onClick={() => skeleton.returnToRest()} />
+            <ButtonLine key="SkeletonReturnToRest" label="Return to Rest" onClick={() => skeleton.returnToRest()} />
         </>
     );
 };
