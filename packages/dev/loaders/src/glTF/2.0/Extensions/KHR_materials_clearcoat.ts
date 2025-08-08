@@ -8,7 +8,8 @@ import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
-import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { EXT_materials_clearcoat_darkening } from "./EXT_materials_clearcoat_darkening";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -80,6 +81,16 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
                 throw new Error(`${context}: Material type not supported`);
             }
             promises.push(this._loadClearCoatPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
+            if (useOpenPBR && extension.extensions && extension.extensions.EXT_materials_clearcoat_darkening) {
+                let darkeningExtension = await registeredGLTFExtensions.get("EXT_materials_clearcoat_darkening")?.factory(this._loader);
+                darkeningExtension = darkeningExtension as EXT_materials_clearcoat_darkening;
+                if (darkeningExtension && darkeningExtension.enabled && darkeningExtension.loadMaterialPropertiesAsync) {
+                    const promise = darkeningExtension.loadMaterialPropertiesAsync(extensionContext, extension as any, babylonMaterial, useOpenPBR);
+                    if (promise) {
+                        promises.push(promise);
+                    }
+                }
+            }
             await Promise.all(promises);
         });
     }
