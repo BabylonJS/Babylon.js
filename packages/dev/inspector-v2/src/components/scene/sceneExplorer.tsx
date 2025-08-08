@@ -9,7 +9,7 @@ import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useObservableRenderer, useObservableState } from "../../hooks/observableHooks";
+import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
@@ -106,7 +106,7 @@ type Command<T extends EntityBase> = Partial<IDisposable> &
         /**
          * An observable that notifies when the command state changes.
          */
-        onChange?: IReadonlyObservable<void>;
+        onChange?: IReadonlyObservable<unknown>;
     }>;
 
 type ActionCommand<T extends EntityBase> = Command<T> & {
@@ -192,11 +192,15 @@ const useStyles = makeStyles({
 const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; entity: EntityBase }> = (props) => {
     const { command } = props;
 
-    useObservableRenderer(command.onChange);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const [displayName, Icon, execute] = useObservableState(
+        useCallback(() => [command.displayName, command.icon, command.execute] as const, [command]),
+        command.onChange
+    );
 
     return (
-        <Tooltip key={command.displayName} content={command.displayName} relationship="label">
-            <Button icon={<command.icon />} appearance="subtle" onClick={() => command.execute()} />
+        <Tooltip content={displayName} relationship="label" positioning={"after"}>
+            <Button icon={<Icon />} appearance="subtle" onClick={() => execute()} />
         </Tooltip>
     );
 };
@@ -204,11 +208,15 @@ const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; ent
 const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; entity: EntityBase }> = (props) => {
     const { command } = props;
 
-    useObservableRenderer(command.onChange);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const [displayName, Icon, isEnabled] = useObservableState(
+        useCallback(() => [command.displayName, command.icon, command.isEnabled] as const, [command]),
+        command.onChange
+    );
 
     return (
-        <Tooltip content={command.displayName} relationship="label">
-            <ToggleButton icon={<command.icon />} appearance="transparent" checked={command.isEnabled} onClick={() => (command.isEnabled = !command.isEnabled)} />
+        <Tooltip content={displayName} relationship="label" positioning={"after"}>
+            <ToggleButton icon={<Icon />} appearance="transparent" checked={isEnabled} onClick={() => (command.isEnabled = !command.isEnabled)} />
         </Tooltip>
     );
 };
