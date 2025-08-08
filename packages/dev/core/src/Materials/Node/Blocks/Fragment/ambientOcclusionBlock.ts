@@ -6,14 +6,15 @@ import { NodeMaterialConnectionPointDirection, type NodeMaterialConnectionPoint 
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
-import { type DepthSourceBlock, ImageSourceBlock } from "../Dual";
 import { RandomRange } from "../../../../Maths/math.scalar.functions";
 import { RawTexture } from "../../../Textures/rawTexture";
 import { Constants } from "../../../../Engines/constants";
 import { Texture } from "../../../Textures/texture";
 import type { Effect } from "../../../effect";
-import type { AbstractEngine } from "../../../../Engines";
+import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { ImageSourceBlock } from "../Dual/imageSourceBlock";
+import type { DepthSourceBlock } from "../Dual/depthSourceBlock";
 
 /**
  * Block used to evaluate screen spaceambient occlusion in a shader
