@@ -9,12 +9,11 @@ import type { FunctionComponent } from "react";
 import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
-import { AttractorList } from "./attractor";
+import { AttractorList } from "./attractorList";
 
 export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
 
-    // TODO-iv2: Perhaps a common enough pattern to create a custom hook
     const emitRateGradients = useParticleSystemProperty(system, "getEmitRateGradients", "function", "addEmitRateGradient", "removeEmitRateGradient", "forceRefreshGradients");
 
     return (
@@ -76,8 +75,7 @@ export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSyst
     const { particleSystem: system } = props;
     const gizmoManager = new GizmoManager(system.getScene()!);
 
-    // TODO do we need refresh?
-    const attractors = useParticleSystemProperty(system, "attractors", "property", "addAttractor", "removeAttractor", "forceRefreshGradients"); // TODO
+    const attractors = useParticleSystemProperty(system, "attractors", "property", "addAttractor", "removeAttractor");
 
     return (
         <>
@@ -86,7 +84,6 @@ export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSyst
     );
 };
 
-// TODO can make this more general than particle system if common enough pattern
 const useParticleSystemProperty = (
     system: ParticleSystem,
     propertyKey: keyof ParticleSystem,
