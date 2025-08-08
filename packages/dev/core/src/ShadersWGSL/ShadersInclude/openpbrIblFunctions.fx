@@ -196,13 +196,10 @@
     fn conductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
     {
         #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
-            // For OpenPBR, we use a different specular lobe for metallic materials and then blend based on metalness. However,
-            // to do this correctly, we really need reflectanceOut to contain separate F0 and F90 values for purely dielectric
-            // and purely metal. Instead, the values are already a mix of dielectric and metallic values.
-            // So, for intermediate metallic values, the result isn't 100% correct but it seems to work well enough in practice.
-            // Because specular weight in OpenPBR removes the specular lobe entirely for metals, we do need the actual dielectric
-            // F0 value to pickup the weight from the dielectric lobe.
-            return getF82Specular(NdotV, reflectance.coloredF0, reflectance.coloredF90, roughness);
+            // This is an empirical hack to modify the F0 albedo based on roughness. It's not based on any paper
+            // or anything. Just trying to match results of rough metals in a pathtracer.
+            let albedoF0: vec3f = mix(reflectance.coloredF0, pow(reflectance.coloredF0, vec3f(1.4f)), roughness);
+            return getF82Specular(NdotV, albedoF0, reflectance.coloredF90, roughness);
         #else
             return getReflectanceFromBRDFLookup(reflectance.coloredF0, reflectance.coloredF90, environmentBrdf);
         #endif

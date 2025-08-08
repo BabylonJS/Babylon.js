@@ -126,7 +126,7 @@
         // This uses the geometric series for infinite reflections:
         // T = (1-R) / (1 + R + R² + R³ + ...) = (1-R) / (1/(1-R)) = (1-R)²
         let effectiveReflectance = averageReflectance * coat_weight;
-        let transmission = (1.0f - effectiveReflectance) / (1.0f + effectiveReflectance);
+        let transmission = (1.0f - effectiveReflectance) * (1.0f - effectiveReflectance);
         coatAbsorption = coat_color * mix(1.0f, transmission, coat_darkening);
     }
 

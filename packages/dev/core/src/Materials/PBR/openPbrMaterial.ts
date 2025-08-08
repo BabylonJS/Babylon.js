@@ -622,7 +622,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public coatDarkening: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatDarkening")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _coatDarkening: Property<number> = new Property<number>("coat_darkening", 0.0, "vCoatDarkening", 1, 0);
+    private _coatDarkening: Property<number> = new Property<number>("coat_darkening", 1.0, "vCoatDarkening", 1, 0);
 
     /**
      * Defines the amount that interreflections within the coat allow the underlying surface
@@ -1344,6 +1344,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._coatRoughness;
         this._coatRoughnessTexture;
         this._coatIor;
+        this._coatDarkening;
+        this._coatDarkeningTexture;
         this._geometryNormalTexture;
         this._geometryCoatNormalTexture;
         this._geometryOpacity;
