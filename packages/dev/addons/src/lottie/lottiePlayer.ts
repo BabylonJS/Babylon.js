@@ -178,5 +178,6 @@ export class LottiePlayer {
 
     private _onBeforeUnload = () => {
         this._worker?.terminate();
+        this._worker = null;
     };
 }
