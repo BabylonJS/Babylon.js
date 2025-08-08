@@ -46,6 +46,7 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
     const handleChange = (event: ChangeEvent<HTMLInputElement>, _: unknown) => {
         event.stopPropagation(); // Prevent event propagation
         setValue(event.target.value); // Update local state. Do not notify parent
+        tryCommitValue(event.target.value);
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -55,19 +56,19 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
         if (event.key === "Enter") {
             event.preventDefault();
 
-            // Update local state and try to commit the value if valid
-            const currVal = (event.target as any).value;
-            setValue(currVal);
-            tryCommitValue(currVal);
+            // // Update local state and try to commit the value if valid
+            // const currVal = (event.target as any).value;
+            // setValue(currVal);
+            // tryCommitValue(currVal);
         }
     };
 
     const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
         event.stopPropagation(); // Prevent event propagation
-        // Update local state and try to commit the value if valid
-        const currVal = (event.target as any).value;
-        setValue(currVal);
-        tryCommitValue(currVal);
+        // // Update local state and try to commit the value if valid
+        // const currVal = (event.target as any).value;
+        // setValue(currVal);
+        // tryCommitValue(currVal);
     };
 
     const invalidStyle = !validateValue(value)

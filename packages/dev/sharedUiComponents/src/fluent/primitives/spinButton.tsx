@@ -54,6 +54,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
         event.stopPropagation(); // Prevent event propagation
         if (data.value != null) {
             setValue(data.value); // Update local state. Do not notify parent
+            tryCommitValue(data.value);
         }
     };
 
@@ -64,19 +65,19 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
         if (event.key === "Enter") {
             event.preventDefault();
 
-            // Update local state and try to commit the value if valid
-            const currVal = parseFloat((event.target as any).value);
-            setValue(currVal);
-            tryCommitValue(currVal);
+            // // Update local state and try to commit the value if valid
+            // const currVal = parseFloat((event.target as any).value);
+            // setValue(currVal);
+            // tryCommitValue(currVal);
         }
     };
 
     const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
         event.stopPropagation(); // Prevent event propagation
         // Try to commit the current value when losing focus
-        const currVal = parseFloat(event.target.value);
-        setValue(currVal);
-        tryCommitValue(currVal);
+        // const currVal = parseFloat(event.target.value);
+        // setValue(currVal);
+        // tryCommitValue(currVal);
     };
 
     const invalidStyle = !validateValue(value)
