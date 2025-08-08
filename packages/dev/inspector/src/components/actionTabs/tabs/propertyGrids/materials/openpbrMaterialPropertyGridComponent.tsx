@@ -450,6 +450,14 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <TextureLinkLineComponent
+                        label="Darkening Texture"
+                        texture={material.coatDarkeningTexture}
+                        propertyName="coatDarkeningTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
                 </LineContainerComponent>
                 <LineContainerComponent title="EMISSION" selection={this.props.globalState}>
                     <Color3LineComponent
