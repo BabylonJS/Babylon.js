@@ -33,7 +33,6 @@ export class AnimationController {
     private readonly _engine: ThinEngine;
     private readonly _spritePacker: SpritePacker;
 
-    private _parser: AnimationParser;
     private _animation?: AnimationInfo;
 
     private readonly _viewport: Viewport;
@@ -80,9 +79,10 @@ export class AnimationController {
     /**
      * Creates a new instance of the Player.
      * @param canvas The canvas element to render the animation on.
+     * @param animationJson The JSON string of the Lottie animation to be played.
      * @param configuration The configuration for the animation player.
      */
-    public constructor(canvas: HTMLCanvasElement, configuration: AnimationConfiguration) {
+    public constructor(canvas: HTMLCanvasElement, animationJson: string, configuration: AnimationConfiguration) {
         this._isReady = false;
         this._canvas = canvas;
         this._configuration = configuration;
@@ -123,45 +123,23 @@ export class AnimationController {
         this._engine.setAlphaMode(AlphaCombine);
 
         this._spritePacker = new SpritePacker(this._engine, this._configuration);
-
         this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture, this._configuration);
-
-        this._parser = new AnimationParser(this._spritePacker, this._renderingManager, this._configuration);
 
         this._projectionMatrix = new ThinMatrix();
         this._worldMatrix = new ThinMatrix();
         this._worldMatrix.identity();
 
         this._viewport = new Viewport(0, 0, 1, 1);
-    }
 
-    /**
-     * Sets the player ready to play the animation.
-     * @param animationJson The JSON string of the Lottie animation to be played.
-     */
-    public initialize(animationJson: string): void {
-        this._animation = this._parser.loadFromData(animationJson);
-        this._parser = undefined as any; // Clear the reference to the parser to allow garbage collection
-        this.setSize(this._animation.widthPx, this._animation.heightPx);
+        // Parse the animation
+        const parser = new AnimationParser(this._spritePacker, animationJson, this._configuration, this._renderingManager);
+        this._animation = parser.animationInfo;
         this._frameDuration = 1000 / this._animation.frameRate;
 
+        this.setSize(this._animation.widthPx, this._animation.heightPx);
         this._cleanTree(this._animation.nodes);
 
         this._isReady = true;
-    }
-
-    private _cleanTree(nodes: Node[]): void {
-        // Remove non shape nodes
-        for (let i = 0; i < nodes.length; i++) {
-            const node = nodes[i];
-            if (node.children.length === 0 && !node.isShape) {
-                nodes.splice(i, 1);
-                i--;
-                continue;
-            }
-
-            this._cleanTree(node.children);
-        }
     }
 
     /**
@@ -227,6 +205,20 @@ export class AnimationController {
         this._engine.dispose();
         this._renderingManager.dispose();
         this._spritePacker.texture.dispose();
+    }
+
+    private _cleanTree(nodes: Node[]): void {
+        // Remove non shape nodes
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            if (node.children.length === 0 && !node.isShape) {
+                nodes.splice(i, 1);
+                i--;
+                continue;
+            }
+
+            this._cleanTree(node.children);
+        }
     }
 
     private _startRenderLoop(): void {

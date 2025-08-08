@@ -124,18 +124,14 @@ export class LottiePlayer {
 
             if ("ResizeObserver" in window) {
                 this._resizeObserver = new ResizeObserver(() => {
-                    if (this._disposed || !this._canvas) {
+                    if (this._disposed || !this._canvas || !this._worker) {
                         return;
                     }
 
-                    const newWidth = this._container.clientWidth;
-                    const newHeight = this._container.clientHeight;
+                    const w = this._canvas.clientWidth;
+                    const h = this._canvas.clientHeight;
 
-                    if (newWidth !== this._canvas.width || newHeight !== this._canvas.height) {
-                        this._canvas.width = newWidth;
-                        this._canvas.height = newHeight;
-                        this._worker?.postMessage({ width: newWidth, height: newHeight });
-                    }
+                    this._worker.postMessage({ width: w, height: h });
                 });
 
                 this._resizeObserver.observe(this._container);
@@ -170,16 +166,14 @@ export class LottiePlayer {
     }
 
     private _onWindowResize = () => {
-        if (this._disposed) {
+        if (this._disposed || !this._canvas || !this._worker) {
             return;
         }
 
-        const w = this._canvas?.clientWidth;
-        const h = this._canvas?.clientHeight;
+        const w = this._canvas.clientWidth;
+        const h = this._canvas.clientHeight;
 
-        if (w !== undefined && h !== undefined) {
-            this._worker?.postMessage({ width: w, height: h });
-        }
+        this._worker.postMessage({ width: w, height: h });
     };
 
     private _onBeforeUnload = () => {

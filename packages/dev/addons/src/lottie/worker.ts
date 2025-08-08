@@ -32,8 +32,7 @@ onmessage = async function (evt) {
         };
 
         const animationData = await (await fetch(file)).text();
-        AnimationPlayer = new AnimationController(canvas, finalConfig);
-        AnimationPlayer.initialize(animationData);
+        AnimationPlayer = new AnimationController(canvas, animationData, finalConfig);
 
         postMessage({
             animationWidth: AnimationPlayer.animationWidth,

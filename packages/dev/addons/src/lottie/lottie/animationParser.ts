@@ -56,6 +56,7 @@ export class AnimationParser {
     private _packer: SpritePacker;
     private readonly _renderingManager: RenderingManager;
     private readonly _configuration: AnimationConfiguration;
+    private readonly _animationInfo: AnimationInfo;
 
     private _unsupportedFeatures: string[];
 
@@ -66,12 +67,20 @@ export class AnimationParser {
     private _shape: RawGraphicElement | undefined = undefined;
 
     /**
+     * Get the animation information parsed from the Lottie file.
+     */
+    public get animationInfo(): AnimationInfo {
+        return this._animationInfo;
+    }
+
+    /**
      * Creates a new instance of the Lottie animations parser.
      * @param packer Object that packs the sprites from the animation into a texture atlas.
+     * @param fileContentAsJsonString The content of the lottie file as a JSON string.
      * @param renderingManager Object that manages the rendering of the sprites in the animation.
      * @param configuration Configuration options for the animation parser.
      */
-    public constructor(packer: SpritePacker, renderingManager: RenderingManager, configuration: AnimationConfiguration) {
+    public constructor(packer: SpritePacker, fileContentAsJsonString: string, configuration: AnimationConfiguration, renderingManager: RenderingManager) {
         this._packer = packer;
         this._renderingManager = renderingManager;
         this._configuration = configuration;
@@ -80,6 +89,8 @@ export class AnimationParser {
 
         this._parentNodes = new Map<number, Node>();
         this._rootNodes = [];
+
+        this._animationInfo = this._loadFromData(fileContentAsJsonString);
     }
 
     /**
@@ -92,12 +103,7 @@ export class AnimationParser {
         }
     }
 
-    /**
-     * Parses the Lottie file information so it can be rendered by Babylon.js
-     * @param fileContentAsJsonString The content of the lottie file as a JSON string.
-     * @returns An AnimationInfo instance containing the parsed animation data.
-     */
-    public loadFromData(fileContentAsJsonString: string): AnimationInfo {
+    private _loadFromData(fileContentAsJsonString: string): AnimationInfo {
         this._unsupportedFeatures.length = 0; // Clear previous errors
         const rawData = JSON.parse(fileContentAsJsonString) as RawLottieAnimation;
 
