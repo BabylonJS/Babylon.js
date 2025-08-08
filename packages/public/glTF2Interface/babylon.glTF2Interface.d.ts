@@ -1068,6 +1068,18 @@ declare module BABYLON.GLTF2 {
         clearcoatRoughnessFactor?: number;
         clearcoatRoughnessTexture?: ITextureInfo;
         clearcoatNormalTexture?: IMaterialNormalTextureInfo;
+        /**
+         * Dictionary object with extension-specific objects
+         */
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /** @internal */
+    interface IEXTMaterialsClearcoatDarkening {
+        clearcoatDarkeningFactor?: number;
+        clearcoatDarkeningTexture?: ITextureInfo;
     }
 
     /** @internal */
