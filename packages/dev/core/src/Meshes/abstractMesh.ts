@@ -2157,7 +2157,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             if (currentIntersectInfo) {
                 if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                     intersectInfo = currentIntersectInfo;
-                    intersectInfo.subMeshId = index;
+                    intersectInfo.subMeshId = subMesh._id;
+                    intersectInfo._internalSubMeshId = index;
 
                     if (fastCheck) {
                         break;
@@ -2184,7 +2185,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             pickingInfo.bu = intersectInfo.bu || 0;
             pickingInfo.bv = intersectInfo.bv || 0;
             pickingInfo.subMeshFaceId = intersectInfo.faceId;
-            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo.subMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
+            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo._internalSubMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
             pickingInfo.subMeshId = intersectInfo.subMeshId;
             return pickingInfo;
         }
@@ -2774,7 +2775,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             return this;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { OptimizeIndices } = await import("./mesh.vertexData.functions");
 
         OptimizeIndices(indices);

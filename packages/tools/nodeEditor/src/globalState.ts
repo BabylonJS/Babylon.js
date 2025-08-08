@@ -70,6 +70,7 @@ export class GlobalState {
     onPreviewSceneAfterRenderObservable = new Observable<void>();
     onPreviewUpdatedObservable = new Observable<NodeMaterial>();
     debugBlocksToRefresh: NodeMaterialDebugBlock[] = [];
+    forcedDebugBlock: Nullable<NodeMaterialDebugBlock> = null;
 
     /** Gets the mode */
     public get mode(): NodeMaterialModes {

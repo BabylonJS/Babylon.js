@@ -1,8 +1,7 @@
 import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-components";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
-import type { Nullable } from "core/types";
+import type { PrimitiveProps } from "./primitive";
 
 const useDropdownStyles = makeStyles({
     dropdownOption: {
@@ -12,9 +11,8 @@ const useDropdownStyles = makeStyles({
     optionsLine: {},
 });
 
-type DropdownOptionValue = string | number;
-export type AcceptedDropdownValue = Nullable<DropdownOptionValue> | undefined;
-export type DropdownOption = {
+export type AcceptedDropdownValue = string | number;
+export type DropdownOption<T extends AcceptedDropdownValue> = {
     /**
      * Defines the visible part of the option
      */
@@ -22,13 +20,11 @@ export type DropdownOption = {
     /**
      * Defines the value part of the option
      */
-    value: DropdownOptionValue;
+    value: T;
 };
 
-export type DropdownProps<V extends AcceptedDropdownValue> = BaseComponentProps<V> & {
-    options: readonly DropdownOption[];
-
-    includeNullAs?: "null" | "undefined"; // If supplied, adds an option with label 'Not Defined' and later sets value either null or undefined
+export type DropdownProps<V extends AcceptedDropdownValue> = PrimitiveProps<V> & {
+    options: readonly DropdownOption<V>[];
 };
 
 /**
@@ -39,32 +35,29 @@ export type DropdownProps<V extends AcceptedDropdownValue> = BaseComponentProps<
  */
 export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> = (props) => {
     const classes = useDropdownStyles();
-    // This component can handle both null and undefined values, so '==' null is intentionally used throughout to check for both cases.
-    const options = useMemo(
-        () => (props.includeNullAs ? [{ label: "<Not defined>", value: Number.MAX_SAFE_INTEGER }, ...props.options] : props.options),
-        [props.includeNullAs, props.options]
-    );
-    const [defaultVal, setDefaultVal] = useState(props.value == null ? Number.MAX_SAFE_INTEGER : props.value);
+    const { options, value } = props;
+    const [defaultVal, setDefaultVal] = useState(props.value);
+
     useEffect(() => {
-        setDefaultVal(props.value == null ? Number.MAX_SAFE_INTEGER : props.value);
+        setDefaultVal(value);
     }, [props.value]);
 
     return (
         <FluentDropdown
+            disabled={props.disabled}
             size="small"
             className={classes.dropdownOption}
             onOptionSelect={(evt, data) => {
                 const value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
                 if (value !== undefined) {
                     setDefaultVal(value);
-                    const nullVal = props.includeNullAs === "null" ? null : undefined;
-                    value === Number.MAX_SAFE_INTEGER ? props.onChange(nullVal) : props.onChange(value);
+                    props.onChange(value);
                 }
             }}
             selectedOptions={[defaultVal.toString()]}
             value={options.find((o) => o.value === defaultVal)?.label}
         >
-            {options.map((option: DropdownOption) => (
+            {options.map((option: DropdownOption<AcceptedDropdownValue>) => (
                 <Option className={classes.optionsLine} key={option.label} value={option.value.toString()} disabled={false}>
                     {option.label}
                 </Option>
@@ -72,3 +65,6 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
         </FluentDropdown>
     );
 };
+
+export const NumberDropdown = Dropdown as FunctionComponent<DropdownProps<number>>;
+export const StringDropdown = Dropdown as FunctionComponent<DropdownProps<string>>;

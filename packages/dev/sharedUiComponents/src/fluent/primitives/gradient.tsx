@@ -1,11 +1,11 @@
 import type { FunctionComponent } from "react";
+import type { PrimitiveProps } from "./primitive";
 import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 
 import { SyncedSliderInput } from "./syncedSlider";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { ColorPickerPopup } from "./colorPicker";
-import type { BaseComponentProps } from "../hoc/propertyLines/propertyLine";
 import { Color3Gradient, ColorGradient as Color4Gradient, FactorGradient } from "core/Misc/gradients";
 import { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
 
@@ -46,7 +46,7 @@ type GradientProps<T extends number | Color3 | Color4> = {
  * @param props - Component props containing gradient value and change handlers
  * @returns A React component
  */
-const Gradient: FunctionComponent<BaseComponentProps<GradientProps<number | Color3 | Color4>>> = (props) => {
+const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 | Color4>>> = (props) => {
     const [gradient, setGradient] = useState(props.value);
     const classes = useGradientStyles();
 
@@ -84,16 +84,16 @@ const Gradient: FunctionComponent<BaseComponentProps<GradientProps<number | Colo
     );
 };
 
-const FactorGradientCast = Gradient as FunctionComponent<BaseComponentProps<GradientProps<number>>>;
-const Color3GradientCast = Gradient as FunctionComponent<BaseComponentProps<GradientProps<Color3>>>;
-const Color4GradientCast = Gradient as FunctionComponent<BaseComponentProps<GradientProps<Color4>>>;
+const FactorGradientCast = Gradient as FunctionComponent<PrimitiveProps<GradientProps<number>>>;
+const Color3GradientCast = Gradient as FunctionComponent<PrimitiveProps<GradientProps<Color3>>>;
+const Color4GradientCast = Gradient as FunctionComponent<PrimitiveProps<GradientProps<Color4>>>;
 
 /**
  * Component wrapper for FactorGradient that provides slider inputs for factor1, factor2, and gradient step
  * @param props - Component props containing FactorGradient value and change handler
  * @returns A React component
  */
-export const FactorGradientComponent: FunctionComponent<BaseComponentProps<FactorGradient>> = (props) => {
+export const FactorGradientComponent: FunctionComponent<PrimitiveProps<FactorGradient>> = (props) => {
     return (
         <FactorGradientCast
             {...props}
@@ -107,7 +107,7 @@ export const FactorGradientComponent: FunctionComponent<BaseComponentProps<Facto
  * @param props - Component props containing Color3Gradient value and change handler
  * @returns A React component
  */
-export const Color3GradientComponent: FunctionComponent<BaseComponentProps<Color3Gradient>> = (props) => {
+export const Color3GradientComponent: FunctionComponent<PrimitiveProps<Color3Gradient>> = (props) => {
     return (
         <Color3GradientCast
             {...props}
@@ -121,7 +121,7 @@ export const Color3GradientComponent: FunctionComponent<BaseComponentProps<Color
  * @param props - Component props containing Color4Gradient value and change handler
  * @returns A React component
  */
-export const Color4GradientComponent: FunctionComponent<BaseComponentProps<Color4Gradient>> = (props) => {
+export const Color4GradientComponent: FunctionComponent<PrimitiveProps<Color4Gradient>> = (props) => {
     return (
         <Color4GradientCast
             {...props}
@@ -135,7 +135,7 @@ export const Color4GradientComponent: FunctionComponent<BaseComponentProps<Color
  * @param props - Component props containing GradientBlockColorStep value and change handler
  * @returns A React component
  */
-export const ColorStepGradientComponent: FunctionComponent<BaseComponentProps<GradientBlockColorStep>> = (props) => {
+export const ColorStepGradientComponent: FunctionComponent<PrimitiveProps<GradientBlockColorStep>> = (props) => {
     return (
         <Color3GradientCast
             {...props}

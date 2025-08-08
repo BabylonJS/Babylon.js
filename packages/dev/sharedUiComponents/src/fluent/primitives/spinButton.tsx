@@ -2,8 +2,7 @@ import { makeStyles, SpinButton as FluentSpinButton } from "@fluentui/react-comp
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent } from "react";
 import { useCallback, useState } from "react";
-import type { BaseComponentProps, PropertyLineProps } from "../hoc/propertyLines/propertyLine";
-import { PropertyLine } from "../hoc/propertyLines/propertyLine";
+import type { PrimitiveProps } from "./primitive";
 
 const useSpinStyles = makeStyles({
     base: {
@@ -12,7 +11,7 @@ const useSpinStyles = makeStyles({
     },
 });
 
-export type SpinButtonProps = BaseComponentProps<number> & {
+export type SpinButtonProps = PrimitiveProps<number> & {
     precision?: number; // Optional precision for the spin button
     step?: number; // Optional step value for the spin button
     min?: number;
@@ -47,9 +46,3 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
         </div>
     );
 };
-
-export const SpinButtonPropertyLine: FunctionComponent<SpinButtonProps & PropertyLineProps> = (props) => (
-    <PropertyLine {...props}>
-        <SpinButton {...props} />
-    </PropertyLine>
-);

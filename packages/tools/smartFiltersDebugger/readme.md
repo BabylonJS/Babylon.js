@@ -14,7 +14,12 @@ This browser extension is intended to aid in the development of web applications
 
 ### Usage
 
-1. Build: `npm install` then `npm run build -w @tools/smart-filters-debugger`
+1. Build
+
+    - `npm install`
+    - `npm run build:source:smart-filters`
+    - `npm run build -w @tools/smart-filters-debugger`
+
 1. Install in Chrome or Edge
     - Go to Manage Extensions
     - Turn on Developer Mode

@@ -2054,6 +2054,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const scene = this.getScene();
         const engine = scene.getEngine();
+        const currentMaterialContext = engine._currentMaterialContext;
+        const useVertexPulling = currentMaterialContext && currentMaterialContext.useVertexPulling;
 
         if ((this._unIndexed && fillMode !== Material.WireFrameFillMode) || fillMode == Material.PointFillMode) {
             // or triangles as points
@@ -2061,6 +2063,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         } else if (fillMode == Material.WireFrameFillMode) {
             // Triangles as wireframe
             engine.drawElementsType(fillMode, 0, subMesh._linesIndexCount, this.forcedInstanceCount || instancesCount);
+        } else if (useVertexPulling) {
+            // We're rendering the number of indices in the index buffer but the vertex shader is handling the data itself.
+            engine.drawArraysType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
         } else {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
         }

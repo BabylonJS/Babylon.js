@@ -1647,8 +1647,7 @@ export class Control implements IAnimatable, IFocusableControl {
         let newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
         let newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
 
-        const leftAndTopIgnoreAdaptiveScaling = this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling;
-        if (leftAndTopIgnoreAdaptiveScaling) {
+        if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
             if (Math.abs(newLeft - oldLeft) < 0.5) {
                 newLeft = oldLeft;
             }
@@ -1658,7 +1657,7 @@ export class Control implements IAnimatable, IFocusableControl {
             }
         }
 
-        if (!leftAndTopIgnoreAdaptiveScaling && oldLeft === newLeft && oldTop === newTop) {
+        if (oldLeft === newLeft && oldTop === newTop) {
             return;
         }
 
@@ -1919,16 +1918,14 @@ export class Control implements IAnimatable, IFocusableControl {
 
             context.save();
 
-            this._applyStates(context);
-
             let rebuildCount = 0;
             do {
                 this._rebuildLayout = false;
                 this._processMeasures(parentMeasure, context);
                 rebuildCount++;
-            } while (this._rebuildLayout && rebuildCount < 3);
+            } while (this._rebuildLayout && rebuildCount < 4);
 
-            if (rebuildCount >= 3) {
+            if (rebuildCount >= 4) {
                 Logger.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
             }
 
@@ -1947,6 +1944,9 @@ export class Control implements IAnimatable, IFocusableControl {
      * @internal
      */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        // Ensure we always apply states before measuring
+        this._applyStates(context);
+
         this._tempPaddingMeasure.copyFrom(parentMeasure);
 
         // Apply padding if in correct mode

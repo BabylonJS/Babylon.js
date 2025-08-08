@@ -3,9 +3,8 @@ import type { FunctionComponent } from "react";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import type { ISettingsContext } from "../../../services/settingsContext";
 
-import { Collapse } from "@fluentui/react-motion-components-preview";
-
 import { Camera } from "core/Cameras/camera";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { BoundProperty } from "../boundProperty";
@@ -18,18 +17,19 @@ import { useAngleConverters } from "../../../hooks/settingsHooks";
 const CameraModes = [
     { label: "Perspective", value: Camera.PERSPECTIVE_CAMERA },
     { label: "Orthographic", value: Camera.ORTHOGRAPHIC_CAMERA },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
+/**
+ * The general properties component for a camera.
+ * @param props - The component props containing the camera and settings context.
+ * @returns JSX.Element
+ */
 export const CameraGeneralProperties: FunctionComponent<{ camera: Camera; settings: ISettingsContext }> = (props) => {
     const { camera, settings } = props;
 
     const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
 
     const mode = useProperty(camera, "mode");
-    const orthoLeft = useProperty(camera, "orthoLeft") ?? 0;
-    const orthoRight = useProperty(camera, "orthoRight") ?? 0;
-    const orthoTop = useProperty(camera, "orthoTop") ?? 0;
-    const orthoBottom = useProperty(camera, "orthoBottom") ?? 0;
 
     return (
         <>
@@ -56,43 +56,10 @@ export const CameraGeneralProperties: FunctionComponent<{ camera: Camera; settin
             </Collapse>
             <Collapse visible={mode === Camera.ORTHOGRAPHIC_CAMERA}>
                 <div>
-                    {/* TODO: Is it possible to fix the BoundProperty typing such that conversion functions can change the value type, in this case number <-> Nullable<number>? */}
-                    {/* <BoundProperty component={NumberInputPropertyLine} label="Left" target={camera} propertyKey="orthoLeft" />
-                    <BoundProperty component={NumberInputPropertyLine} label="Right" target={camera} propertyKey="orthoRight" />
-                    <BoundProperty component={NumberInputPropertyLine} label="Top" target={camera} propertyKey="orthoTop" />
-                    <BoundProperty component={NumberInputPropertyLine} label="Bottom" target={camera} propertyKey="orthoBottom" /> */}
-                    <NumberInputPropertyLine
-                        label="Left"
-                        step={0.1}
-                        value={orthoLeft}
-                        onChange={(val) => {
-                            camera.orthoLeft = val;
-                        }}
-                    />
-                    <NumberInputPropertyLine
-                        label="Right"
-                        step={0.1}
-                        value={orthoRight}
-                        onChange={(val) => {
-                            camera.orthoRight = val;
-                        }}
-                    />
-                    <NumberInputPropertyLine
-                        label="Top"
-                        step={0.1}
-                        value={orthoTop}
-                        onChange={(val) => {
-                            camera.orthoTop = val;
-                        }}
-                    />
-                    <NumberInputPropertyLine
-                        label="Bottom"
-                        step={0.1}
-                        value={orthoBottom}
-                        onChange={(val) => {
-                            camera.orthoBottom = val;
-                        }}
-                    />
+                    <BoundProperty component={NumberInputPropertyLine} label="Left" target={camera} step={0.1} propertyKey="orthoLeft" nullable defaultValue={0} />
+                    <BoundProperty component={NumberInputPropertyLine} label="Right" target={camera} step={0.1} propertyKey="orthoRight" nullable defaultValue={0} />
+                    <BoundProperty component={NumberInputPropertyLine} label="Top" target={camera} step={0.1} propertyKey="orthoTop" nullable defaultValue={0} />
+                    <BoundProperty component={NumberInputPropertyLine} label="Bottom" target={camera} step={0.1} propertyKey="orthoBottom" nullable defaultValue={0} />
                 </div>
             </Collapse>
         </>

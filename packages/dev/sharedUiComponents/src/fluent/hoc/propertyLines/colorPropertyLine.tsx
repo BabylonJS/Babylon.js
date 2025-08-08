@@ -10,7 +10,7 @@ import { Color4 } from "core/Maths/math.color";
 import { ColorPickerPopup } from "../../primitives/colorPicker";
 import type { ColorPickerProps } from "../../primitives/colorPicker";
 
-export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & PropertyLineProps;
+export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & PropertyLineProps<Color3 | Color4>;
 
 /**
  * Reusable component which renders a color property line containing a label, colorPicker popout, and expandable RGBA values
@@ -57,5 +57,5 @@ const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((pr
     );
 });
 
-export const Color3PropertyLine = ColorPropertyLine as FunctionComponent<ColorPickerProps<Color3> & PropertyLineProps>;
-export const Color4PropertyLine = ColorPropertyLine as FunctionComponent<ColorPickerProps<Color4> & PropertyLineProps>;
+export const Color3PropertyLine = ColorPropertyLine as FunctionComponent<ColorPickerProps<Color3> & PropertyLineProps<Color3>>;
+export const Color4PropertyLine = ColorPropertyLine as FunctionComponent<ColorPickerProps<Color4> & PropertyLineProps<Color4>>;

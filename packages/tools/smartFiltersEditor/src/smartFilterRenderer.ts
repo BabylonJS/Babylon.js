@@ -2,7 +2,8 @@ import { Observable } from "core/Misc/observable";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Nullable } from "core/types";
 import { RenderTargetGenerator, ConnectionPointType, SmartFilterOptimizer, type InputBlock, type SmartFilter, type SmartFilterRuntime, Logger } from "smart-filters";
-import { LogEntry, RegisterAnimations, TextureAssetCache } from "smart-filters-editor-control";
+import { RegisterAnimations, TextureAssetCache } from "smart-filters-editor-control";
+import { RegisterOptimizedShaderBlockCodeForUnitTests } from "./optimizerUnitTestHelper";
 
 /**
  * Describes the result of rendering a Smart Filter
@@ -79,19 +80,18 @@ export class SmartFilterRenderer {
     /**
      * Starts rendering the filter. (won't stop until dispose is called)
      * @param filter - The Smart Filter to render
-     * @param onLogRequiredObservable - The observable to use to notify when a log entry is required
      * @returns A promise that resolves as true if the rendering started successfully, false otherwise
      */
-    public async startRenderingAsync(filter: SmartFilter, onLogRequiredObservable: Observable<LogEntry>): Promise<RenderResult> {
+    public async startRenderingAsync(filter: SmartFilter): Promise<RenderResult> {
         let optimizationTimeMs: Nullable<number> = null;
         let runtimeCreationTimeMs: Nullable<number> = null;
 
         try {
             this._lastRenderedSmartFilter = filter;
-            const filterToRender = filter;
+            let filterToRender = filter;
             if (this.optimize) {
                 const optimizeStartTime = performance.now();
-                this._optimize(filter);
+                filterToRender = this._optimize(filter);
                 optimizationTimeMs = performance.now() - optimizeStartTime;
             }
 
@@ -117,7 +117,7 @@ export class SmartFilterRenderer {
             };
         } catch (err: any) {
             const message = err["message"] || err["_compilationError"] || err;
-            onLogRequiredObservable.notifyObservers(new LogEntry(`Could not render Smart Filter:\n${message}`, true));
+            Logger.Error(`Could not render Smart Filter:\n${message}`);
             return {
                 succeeded: false,
                 optimizationTimeMs: null,
@@ -222,6 +222,9 @@ export class SmartFilterRenderer {
         if (optimizedSmartFilter === null) {
             throw new Error("Failed to optimize Smart Filter");
         }
+
+        RegisterOptimizedShaderBlockCodeForUnitTests(optimizedSmartFilter.attachedBlocks);
+
         return optimizedSmartFilter;
     }
 }

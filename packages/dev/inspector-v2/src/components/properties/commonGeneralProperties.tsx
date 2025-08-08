@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor, IsPropertyReadonly } from "../../instrumentation/propertyInstrumentation";
 
@@ -25,7 +26,7 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
 
     return (
         <>
-            {commonEntity.id !== undefined && <TextPropertyLine key="EntityId" label="ID" description="The id of the node." value={commonEntity.id.toString()} />}
+            {commonEntity.id !== undefined && <StringifiedPropertyLine key="EntityId" label="ID" description="The id of the node." value={commonEntity.id} />}
             {name !== undefined &&
                 (isNameReadonly ? (
                     <TextPropertyLine key="EntityName" label="Name" description="The name of the node." value={name} />
@@ -33,7 +34,7 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
                     <TextInputPropertyLine key="EntityName" label="Name" description="The name of the node." value={name} onChange={(newName) => (commonEntity.name = newName)} />
                 ))}
             {commonEntity.uniqueId !== undefined && (
-                <TextPropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node." value={commonEntity.uniqueId.toString()} />
+                <StringifiedPropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node." value={commonEntity.uniqueId} />
             )}
             {className !== undefined && <TextPropertyLine key="EntityClassName" label="Class" description="The class of the node." value={className} />}
         </>

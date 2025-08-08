@@ -4,6 +4,7 @@ import type { FunctionComponent } from "react";
 
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
 
 export const SystemStats: FunctionComponent<{ context: Scene }> = ({ context: scene }) => {
@@ -15,7 +16,7 @@ export const SystemStats: FunctionComponent<{ context: Scene }> = ({ context: sc
     return (
         <>
             <TextPropertyLine key="Resolution" label="Resolution" value={resolution} />
-            <TextPropertyLine key="HardwareScalingLevel" label="Hardware Scaling Level" value={hardwareScalingLevel.toString()} />
+            <StringifiedPropertyLine key="HardwareScalingLevel" label="Hardware Scaling Level" value={hardwareScalingLevel} />
             <TextPropertyLine key="Engine" label="Engine" value={engine.description} />
             <BooleanBadgePropertyLine key="StdDerivatives" label="StdDerivatives" value={caps.standardDerivatives} />
             <BooleanBadgePropertyLine key="CompressedTextures" label="Compressed Textures" value={caps.s3tc !== undefined} />
@@ -32,9 +33,9 @@ export const SystemStats: FunctionComponent<{ context: Scene }> = ({ context: sc
             <BooleanBadgePropertyLine key="TimerQuery" label="Timer Query" value={caps.timerQuery !== undefined} />
             <BooleanBadgePropertyLine key="Stencil" label="Stencil" value={engine.isStencilEnable} />
             <BooleanBadgePropertyLine key="ParallelShaderCompilation" label="Parallel Shader Compilation" value={caps.parallelShaderCompile != null} />
-            <TextPropertyLine key="MaxTexturesUnits" label="Max Textures Units" value={caps.maxTexturesImageUnits.toLocaleString()} />
-            <TextPropertyLine key="MaxTexturesSize" label="Max Textures Size" value={caps.maxTextureSize.toLocaleString()} />
-            <TextPropertyLine key="MaxAnisotropy" label="Max Anisotropy" value={caps.maxAnisotropy.toLocaleString()} />
+            <StringifiedPropertyLine key="MaxTexturesUnits" label="Max Textures Units" value={caps.maxTexturesImageUnits} />
+            <StringifiedPropertyLine key="MaxTexturesSize" label="Max Textures Size" value={caps.maxTextureSize} />
+            <StringifiedPropertyLine key="MaxAnisotropy" label="Max Anisotropy" value={caps.maxAnisotropy} />
             <TextPropertyLine key="Driver" label="Driver" value={engine.extractDriverInfo()} />
         </>
     );
