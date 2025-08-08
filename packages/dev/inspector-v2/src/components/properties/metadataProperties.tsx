@@ -1,9 +1,12 @@
+import type { Nullable } from "core/types";
 import type { FunctionComponent } from "react";
 
-import type { Nullable } from "core/types";
+import { Observable } from "core/Misc/observable";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextAreaPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textAreaPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { useObservableState } from "../../hooks/observableHooks";
 import { BoundProperty } from "./boundProperty";
 
 enum MetadataTypes {
@@ -11,6 +14,17 @@ enum MetadataTypes {
     STRING = "string",
     OBJECT = "Object",
     JSON = "JSON",
+}
+
+const PrettyJSONIndent = 2;
+
+function IsParsable(input: any): boolean {
+    try {
+        const parsed = JSON.parse(input);
+        return !!parsed && !IsString(parsed);
+    } catch (error) {
+        return false;
+    }
 }
 
 /**
@@ -21,20 +35,6 @@ enum MetadataTypes {
 function IsString(input: any): boolean {
     return typeof input === "string" || input instanceof String;
 }
-
-/**
- * Parses a string and returns a JSON object if the string is valid JSON, otherwise returns null
- * @param string - any string
- * @returns JSON object or null if the string is not valid JSON
- */
-// function ParseString(string: string): JSON | null {
-//     try {
-//         return JSON.parse(string);
-//         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-//     } catch (error) {
-//         return null;
-//     }
-// }
 
 /**
  * Checks recursively for functions on an object and returns `false` if any are found.
@@ -70,70 +70,158 @@ export interface IMetadataContainer {
 class MetadataUtils {
     private _editedMetadata: Nullable<string> = null;
 
-    static PrettyJSON = false;
-
-    static PreventObjectCorruption = true;
+    public readonly settingsChangedObservable = new Observable<MetadataUtils>();
 
     constructor(public readonly entity: IMetadataContainer) {}
 
     get editedMetadata(): string {
-        if (!this._editedMetadata) {
+        if (this._editedMetadata === null || this._editedMetadata === undefined) {
             this._editedMetadata = this.parsedMetadata;
         }
-        return this._editedMetadata;
+
+        if (this._editedMetadata && this.prettyJSON && this.isParsable) {
+            return JSON.stringify(JSON.parse(this._editedMetadata), undefined, PrettyJSONIndent);
+        }
+
+        return this._editedMetadata ?? "";
     }
 
     set editedMetadata(value: string) {
-        this._editedMetadata = value;
+        if (this._editedMetadata !== value) {
+            this._editedMetadata = value;
+            console.log(`MetadataUtils.editedMetadata set to: ${value}`);
+            this.settingsChangedObservable.notifyObservers(this);
+        }
     }
 
     get entityType(): MetadataTypes {
-        const metadata = this.entity.metadata;
+        const metadata = this._editedMetadata;
+
+        if (this.isParsable) {
+            return MetadataTypes.JSON;
+        }
 
         if (IsString(metadata)) {
             return MetadataTypes.STRING;
         }
+
         if (metadata === null) {
             return MetadataTypes.NULL;
         }
+
         if (!ObjectCanSafelyStringify(metadata)) {
             return MetadataTypes.OBJECT;
         }
 
-        return MetadataTypes.JSON;
+        return MetadataTypes.NULL;
+    }
+
+    get isChanged(): boolean {
+        const changed = this._editedMetadata !== this.parsedMetadata;
+        return changed;
     }
 
     /**
      * @returns whether the entity's metadata can be parsed as JSON.
      */
     get isParsable(): boolean {
-        if (!this.entity.metadata) {
-            return false;
-        }
-
-        try {
-            return !!JSON.parse(JSON.stringify(this.entity.metadata));
-        } catch (error) {
-            return false;
-        }
+        return IsParsable(this._editedMetadata);
     }
 
     get isReadonly(): boolean {
-        return this.entityType === MetadataTypes.OBJECT && MetadataUtils.PreventObjectCorruption;
+        return this.entityType === MetadataTypes.OBJECT && MetadataUtils._PreventObjectCorruption;
     }
 
-    get parsedMetadata(): string {
+    get parsedMetadata(): Nullable<string> {
         const metadata = this.entity.metadata;
-
-        if (this.isParsable) {
-            return JSON.stringify(metadata, undefined, MetadataUtils.PrettyJSON ? 2 : undefined);
-        }
 
         if (IsString(metadata)) {
             return metadata;
         }
 
-        return String(metadata);
+        if (this.isParsable) {
+            return JSON.stringify(metadata, undefined, this.prettyJSON ? PrettyJSONIndent : undefined);
+        }
+
+        if (metadata) {
+            return String(metadata);
+        }
+
+        return null;
+    }
+
+    get prettyJSON(): boolean {
+        return MetadataUtils._PrettyJSON;
+    }
+
+    set prettyJSON(value: boolean) {
+        if (MetadataUtils._PrettyJSON !== value) {
+            MetadataUtils._PrettyJSON = value;
+            this.settingsChangedObservable.notifyObservers(this);
+        }
+    }
+
+    get preventObjectCorruption(): boolean {
+        return MetadataUtils._PreventObjectCorruption;
+    }
+
+    set preventObjectCorruption(value: boolean) {
+        if (MetadataUtils._PreventObjectCorruption !== value) {
+            MetadataUtils._PreventObjectCorruption = value;
+            this.settingsChangedObservable.notifyObservers(this);
+        }
+    }
+
+    applyChanges() {
+        if (this._editedMetadata) {
+            if (this.isParsable) {
+                const parsed = JSON.parse(this._editedMetadata);
+                if (!IsString(parsed)) {
+                    this._setMetadata(parsed);
+                    return;
+                }
+            }
+
+            if (this.entityType === MetadataTypes.STRING) {
+                if (this._editedMetadata !== "") {
+                    this._setMetadata(this._editedMetadata);
+                    return;
+                }
+            }
+
+            // Object type or unparseable JSON. Leave as string.
+            this._setMetadata(this._editedMetadata);
+            return;
+        }
+
+        this._setMetadata(null);
+    }
+
+    private _setMetadata(value: any) {
+        if (this.entity.metadata !== value) {
+            this.entity.metadata = value;
+
+            this._editedMetadata = this.parsedMetadata;
+
+            this.settingsChangedObservable.notifyObservers(this);
+        }
+    }
+
+    private static _Instance: Nullable<MetadataUtils> = null;
+    private static _PrettyJSON = false;
+    private static _PreventObjectCorruption = true;
+
+    public static get Instance(): MetadataUtils {
+        if (!MetadataUtils._Instance) {
+            throw new Error("MetadataUtils not initialized.");
+        }
+        return MetadataUtils._Instance;
+    }
+
+    public static set Entity(entity: IMetadataContainer) {
+        if (!MetadataUtils._Instance || MetadataUtils._Instance.entity !== entity) {
+            MetadataUtils._Instance = new MetadataUtils(entity);
+        }
     }
 }
 
@@ -145,16 +233,37 @@ class MetadataUtils {
 export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer }> = (props) => {
     const { entity } = props;
 
-    const metadataUtils = new MetadataUtils(entity);
+    MetadataUtils.Entity = entity;
+    const metadataUtils = MetadataUtils.Instance;
+
+    const observableMetadataUtils = {
+        isChanged: useObservableState(() => metadataUtils.isChanged, metadataUtils.settingsChangedObservable),
+        isReadonly: useObservableState(() => metadataUtils.isReadonly, metadataUtils.settingsChangedObservable),
+        editedMetadata: useObservableState(() => metadataUtils.editedMetadata, metadataUtils.settingsChangedObservable),
+        prettyJSON: useObservableState(() => metadataUtils.prettyJSON, metadataUtils.settingsChangedObservable),
+        preventObjectCorruption: useObservableState(() => metadataUtils.preventObjectCorruption, metadataUtils.settingsChangedObservable),
+    };
 
     return (
         <>
             <BoundProperty component={TextPropertyLine} label={"Property type"} target={metadataUtils} propertyKey="entityType" />
-            <BoundProperty component={SwitchPropertyLine} label={"Prevent Object corruption"} target={MetadataUtils} propertyKey="PreventObjectCorruption" />
-            <BoundProperty component={SwitchPropertyLine} label={"Pretty JSON"} target={MetadataUtils} propertyKey="PrettyJSON" />
-            <BoundProperty disabled={metadataUtils.isReadonly} component={TextAreaPropertyLine} label={"Data"} target={metadataUtils} propertyKey="editedMetadata" />
-            {/* TODO: Update component when settings change. Toggling PrettyJSON and PreventObjectCorruption should update the text area, but they don't right now. */}
-            {/* TODO: Add buttons. See metadataPropertyGridComponent.tsx for v1 implementation. */}
+            <SwitchPropertyLine
+                label={"Prevent Object corruption"}
+                value={observableMetadataUtils.preventObjectCorruption}
+                onChange={(value) => (metadataUtils.preventObjectCorruption = value)}
+            />
+            <SwitchPropertyLine label={"Pretty JSON"} value={observableMetadataUtils.prettyJSON} onChange={(value) => (metadataUtils.prettyJSON = value)} />
+            <TextAreaPropertyLine
+                label={"Data"}
+                disabled={observableMetadataUtils.isReadonly}
+                value={observableMetadataUtils.editedMetadata}
+                onChange={(val) => (metadataUtils.editedMetadata = val)}
+            />
+            <ButtonLine
+                label={`${metadataUtils.editedMetadata ? "Update metadata as " + metadataUtils.entityType : "Clear metadata"}`}
+                disabled={!observableMetadataUtils.isChanged}
+                onClick={() => metadataUtils.applyChanges()}
+            />
         </>
     );
 };

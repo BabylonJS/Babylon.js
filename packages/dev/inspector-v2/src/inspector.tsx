@@ -225,6 +225,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             EffectLayerPropertiesServiceDefinition,
             FrameGraphPropertiesServiceDefinition,
             AnimationGroupPropertiesServiceDefinition,
+            MetadataPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
