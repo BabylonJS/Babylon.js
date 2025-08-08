@@ -77,8 +77,8 @@ export class AnimationParser {
      * Creates a new instance of the Lottie animations parser.
      * @param packer Object that packs the sprites from the animation into a texture atlas.
      * @param fileContentAsJsonString The content of the lottie file as a JSON string.
-     * @param renderingManager Object that manages the rendering of the sprites in the animation.
      * @param configuration Configuration options for the animation parser.
+     * @param renderingManager Object that manages the rendering of the sprites in the animation.
      */
     public constructor(packer: SpritePacker, fileContentAsJsonString: string, configuration: AnimationConfiguration, renderingManager: RenderingManager) {
         this._packer = packer;
