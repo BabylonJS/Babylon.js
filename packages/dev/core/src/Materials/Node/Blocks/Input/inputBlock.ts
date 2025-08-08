@@ -11,7 +11,7 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { GetClass, RegisterClass } from "../../../../Misc/typeStore";
-import { Color3, Color4, TmpColors } from "../../../../Maths/math";
+import { Color3, Color4, TmpColors, TmpVectors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
 import type { NodeMaterial } from "../../nodeMaterial";
@@ -181,6 +181,7 @@ export class InputBlock extends NodeMaterialBlock {
                     case NodeMaterialSystemValues.View:
                     case NodeMaterialSystemValues.ViewProjection:
                     case NodeMaterialSystemValues.Projection:
+                    case NodeMaterialSystemValues.ProjectionInverse:
                         this._type = NodeMaterialBlockConnectionPointTypes.Matrix;
                         return this._type;
                     case NodeMaterialSystemValues.CameraPosition:
@@ -678,6 +679,12 @@ export class InputBlock extends NodeMaterialBlock {
                 case NodeMaterialSystemValues.Projection:
                     effect.setMatrix(variableName, scene.getProjectionMatrix());
                     break;
+                case NodeMaterialSystemValues.ProjectionInverse: {
+                    const projectionMatrix = scene.getProjectionMatrix();
+                    projectionMatrix.invertToRef(TmpVectors.Matrix[0]);
+                    effect.setMatrix(variableName, TmpVectors.Matrix[0]);
+                    break;
+                }
                 case NodeMaterialSystemValues.ViewProjection:
                     effect.setMatrix(variableName, scene.getTransformMatrix());
                     break;
