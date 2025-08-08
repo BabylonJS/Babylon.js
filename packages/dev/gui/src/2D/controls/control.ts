@@ -2893,4 +2893,3 @@ export class Control implements IAnimatable, IFocusableControl {
     }
 }
 RegisterClass("BABYLON.GUI.Control", Control);
-
