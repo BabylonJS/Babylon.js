@@ -30,14 +30,14 @@ export const FrameGraphGeneralProperties: FunctionComponent<{ frameGraph: FrameG
         <>
             <BoundProperty
                 component={CheckboxPropertyLine}
-                label="Optimize texture allocation"
+                label="Optimize Texture Allocation"
                 description="Whether to optimize texture allocation."
                 target={frameGraph}
                 propertyKey="optimizeTextureAllocation"
             ></BoundProperty>
             {isSceneFrameGraph !== frameGraph && <ButtonLine onClick={() => (frameGraph.scene.frameGraph = frameGraph)} label="Set as scene's frame graph" />}
             <ButtonLine
-                label="Edit graph"
+                label="Edit Graph"
                 onClick={() => {
                     void frameGraph.getLinkedNodeRenderGraph()!.edit({ nodeRenderGraphEditorConfig: { hostScene: frameGraph.scene } });
                 }}

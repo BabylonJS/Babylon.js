@@ -177,7 +177,7 @@ export const BaseTextureTransformProperties: FunctionComponent<{ texture: BaseTe
         <>
             {texture.canRescale && (
                 <ButtonLine
-                    label="Scale up"
+                    label="Scale Up"
                     onClick={() => {
                         texture.scale(2);
                     }}
@@ -185,7 +185,7 @@ export const BaseTextureTransformProperties: FunctionComponent<{ texture: BaseTe
             )}
             {texture.canRescale && (
                 <ButtonLine
-                    label="Scale down"
+                    label="Scale Down"
                     onClick={() => {
                         texture.scale(0.5);
                     }}
