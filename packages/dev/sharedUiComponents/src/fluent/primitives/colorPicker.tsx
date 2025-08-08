@@ -166,7 +166,7 @@ export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
                 className={styles.input}
                 value={linearHex ? value.toLinearSpace().toHexString() : value.toHexString()}
                 validator={(val) => val != "" && HEX_REGEX.test(val)}
-                onChange={(val) => onChange(Color3.FromHexString(val).toGammaSpace())}
+                onChange={(val) => (linearHex ? onChange(Color3.FromHexString(val).toGammaSpace()) : onChange(Color3.FromHexString(val)))}
                 infoLabel={
                     title
                         ? {
