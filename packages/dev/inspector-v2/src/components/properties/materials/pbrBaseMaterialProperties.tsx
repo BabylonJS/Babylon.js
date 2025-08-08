@@ -1,6 +1,4 @@
-import { useState, type FunctionComponent } from "react";
-
-import { Collapse } from "@fluentui/react-motion-components-preview";
+import type { FunctionComponent } from "react";
 
 import { BoundProperty } from "../boundProperty";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
@@ -16,6 +14,7 @@ import { Vector2PropertyLine } from "shared-ui-components/fluent/hoc/propertyLin
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { ReadFile } from "core/Misc/fileTools";
 import { Texture } from "core/Materials/Textures/texture";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 
 declare module "core/Materials/PBR/pbrSheenConfiguration" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -44,94 +43,86 @@ export const PBRBaseMaterialClearCoatProperties: FunctionComponent<{ material: P
     const isEnabled = useProperty(material.clearCoat, "isEnabled");
     const isTintEnabled = useProperty(material.clearCoat, "isTintEnabled");
     const bumpTexture = useProperty(material.clearCoat, "bumpTexture");
-    const [, setClearCoatTexture] = useState(material.clearCoat.texture);
-    const [, setClearCoatRoughnessTexture] = useState(material.clearCoat.textureRoughness);
-    const [, setClearCoatBumpTexture] = useState(material.clearCoat.bumpTexture);
-    const [, setClearCoatTintTexture] = useState(material.clearCoat.tintTexture);
 
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Enabled" target={material.clearCoat} propertyKey="isEnabled" />
             <Collapse visible={isEnabled}>
-                <div>
-                    <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.clearCoat} propertyKey="intensity" min={0} max={1} step={0.01} />
-                    <BoundProperty component={SyncedSliderPropertyLine} label="Roughness" target={material.clearCoat} propertyKey="roughness" min={0} max={1} step={0.01} />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.clearCoat} propertyKey="intensity" min={0} max={1} step={0.01} />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Roughness" target={material.clearCoat} propertyKey="roughness" min={0} max={1} step={0.01} />
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="IOR"
+                    description="Index of Refraction"
+                    target={material.clearCoat}
+                    propertyKey="indexOfRefraction"
+                    min={1}
+                    max={3}
+                    step={0.01}
+                />
+                <BoundProperty component={SwitchPropertyLine} label="Remap F0" target={material.clearCoat} propertyKey="remapF0OnInterfaceChange" />
+                <FileUploadLine
+                    label="Clear coat"
+                    accept=".jpg, .png, .tga, .dds, .env, .exr"
+                    onClick={(files) => {
+                        if (files.length > 0) {
+                            UpdateTexture(files[0], material, (texture) => (material.clearCoat.texture = texture));
+                        }
+                    }}
+                />
+                <FileUploadLine
+                    label="Roughness"
+                    accept=".jpg, .png, .tga, .dds, .env, .exr"
+                    onClick={(files) => {
+                        if (files.length > 0) {
+                            UpdateTexture(files[0], material, (texture) => (material.clearCoat.textureRoughness = texture));
+                        }
+                    }}
+                />
+                <FileUploadLine
+                    label="Bump"
+                    accept=".jpg, .png, .tga, .dds, .env, .exr"
+                    onClick={(files) => {
+                        if (files.length > 0) {
+                            UpdateTexture(files[0], material, (texture) => (material.clearCoat.bumpTexture = texture));
+                        }
+                    }}
+                />
+                <Collapse visible={bumpTexture !== null}>
+                    <BoundProperty component={SyncedSliderPropertyLine} label="Bump Strength" target={bumpTexture} propertyKey="level" min={0} max={2} step={0.01} />
+                </Collapse>
+                <BoundProperty component={SwitchPropertyLine} label="Use Roughness from Main Texture" target={material.clearCoat} propertyKey="useRoughnessFromMainTexture" />
+                <BoundProperty component={SwitchPropertyLine} label="Tint" target={material.clearCoat} propertyKey="isTintEnabled" />
+                <Collapse visible={isTintEnabled}>
+                    <BoundProperty component={Color3PropertyLine} label="Tint Color" target={material.clearCoat} propertyKey="tintColor" isLinearMode={true} />
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
-                        label="IOR"
-                        description="Index of Refraction"
+                        label="At Distance"
                         target={material.clearCoat}
-                        propertyKey="indexOfRefraction"
-                        min={1}
-                        max={3}
-                        step={0.01}
+                        propertyKey="tintColorAtDistance"
+                        min={0}
+                        max={20}
+                        step={0.1}
                     />
-                    <BoundProperty component={SwitchPropertyLine} label="Remap F0" target={material.clearCoat} propertyKey="remapF0OnInterfaceChange" />
+                    <BoundProperty
+                        component={SyncedSliderPropertyLine}
+                        label="Tint Thickness"
+                        target={material.clearCoat}
+                        propertyKey="tintThickness"
+                        min={0}
+                        max={20}
+                        step={0.1}
+                    />
                     <FileUploadLine
-                        label="Clear coat"
+                        label="Tint"
                         accept=".jpg, .png, .tga, .dds, .env, .exr"
                         onClick={(files) => {
                             if (files.length > 0) {
-                                UpdateTexture(files[0], material, setClearCoatTexture);
+                                UpdateTexture(files[0], material, (texture) => (material.clearCoat.tintTexture = texture));
                             }
                         }}
                     />
-                    <FileUploadLine
-                        label="Roughness"
-                        accept=".jpg, .png, .tga, .dds, .env, .exr"
-                        onClick={(files) => {
-                            if (files.length > 0) {
-                                UpdateTexture(files[0], material, setClearCoatRoughnessTexture);
-                            }
-                        }}
-                    />
-                    <FileUploadLine
-                        label="Bump"
-                        accept=".jpg, .png, .tga, .dds, .env, .exr"
-                        onClick={(files) => {
-                            if (files.length > 0) {
-                                UpdateTexture(files[0], material, setClearCoatBumpTexture);
-                            }
-                        }}
-                    />
-                    <Collapse visible={bumpTexture !== null}>
-                        <BoundProperty component={SyncedSliderPropertyLine} label="Bump Strength" target={bumpTexture} propertyKey="level" min={0} max={2} step={0.01} />
-                    </Collapse>
-                    <BoundProperty component={SwitchPropertyLine} label="Use Roughness from Main Texture" target={material.clearCoat} propertyKey="useRoughnessFromMainTexture" />
-                    <BoundProperty component={SwitchPropertyLine} label="Tint" target={material.clearCoat} propertyKey="isTintEnabled" />
-                    <Collapse visible={isTintEnabled}>
-                        <div>
-                            <BoundProperty component={Color3PropertyLine} label="Tint Color" target={material.clearCoat} propertyKey="tintColor" isLinearMode={true} />
-                            <BoundProperty
-                                component={SyncedSliderPropertyLine}
-                                label="At Distance"
-                                target={material.clearCoat}
-                                propertyKey="tintColorAtDistance"
-                                min={0}
-                                max={20}
-                                step={0.1}
-                            />
-                            <BoundProperty
-                                component={SyncedSliderPropertyLine}
-                                label="Tint Thickness"
-                                target={material.clearCoat}
-                                propertyKey="tintThickness"
-                                min={0}
-                                max={20}
-                                step={0.1}
-                            />
-                            <FileUploadLine
-                                label="Tint"
-                                accept=".jpg, .png, .tga, .dds, .env, .exr"
-                                onClick={(files) => {
-                                    if (files.length > 0) {
-                                        UpdateTexture(files[0], material, setClearCoatTintTexture);
-                                    }
-                                }}
-                            />
-                        </div>
-                    </Collapse>
-                </div>
+                </Collapse>
             </Collapse>
         </>
     );
@@ -141,62 +132,58 @@ export const PBRBaseMaterialIridescenceProperties: FunctionComponent<{ material:
     const { material } = props;
 
     const isEnabled = useProperty(material.iridescence, "isEnabled");
-    const [, setIridescenceTexture] = useState(material.iridescence.texture);
-    const [, setIridescenceThicknessTexture] = useState(material.iridescence.thicknessTexture);
 
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Enabled" target={material.iridescence} propertyKey="isEnabled" />
             <Collapse visible={isEnabled}>
-                <div>
-                    <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.iridescence} propertyKey="intensity" min={0} max={1} step={0.01} />
-                    <BoundProperty
-                        component={SyncedSliderPropertyLine}
-                        label="IOR"
-                        description="Index of Refraction"
-                        target={material.iridescence}
-                        propertyKey="indexOfRefraction"
-                        min={1}
-                        max={3}
-                        step={0.01}
-                    />
-                    <BoundProperty
-                        component={SyncedSliderPropertyLine}
-                        label="Minimum Thickness"
-                        target={material.iridescence}
-                        propertyKey="minimumThickness"
-                        min={0}
-                        max={1000}
-                        step={10}
-                    />
-                    <BoundProperty
-                        component={SyncedSliderPropertyLine}
-                        label="Maxium Thickness"
-                        target={material.iridescence}
-                        propertyKey="maximumThickness"
-                        min={0}
-                        max={1000}
-                        step={10}
-                    />
-                    <FileUploadLine
-                        label="Iridescence"
-                        accept=".jpg, .png, .tga, .dds, .env, .exr"
-                        onClick={(files) => {
-                            if (files.length > 0) {
-                                UpdateTexture(files[0], material, setIridescenceTexture);
-                            }
-                        }}
-                    />
-                    <FileUploadLine
-                        label="Thickness"
-                        accept=".jpg, .png, .tga, .dds, .env, .exr"
-                        onClick={(files) => {
-                            if (files.length > 0) {
-                                UpdateTexture(files[0], material, setIridescenceThicknessTexture);
-                            }
-                        }}
-                    />
-                </div>
+                <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.iridescence} propertyKey="intensity" min={0} max={1} step={0.01} />
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="IOR"
+                    description="Index of Refraction"
+                    target={material.iridescence}
+                    propertyKey="indexOfRefraction"
+                    min={1}
+                    max={3}
+                    step={0.01}
+                />
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Minimum Thickness"
+                    target={material.iridescence}
+                    propertyKey="minimumThickness"
+                    min={0}
+                    max={1000}
+                    step={10}
+                />
+                <BoundProperty
+                    component={SyncedSliderPropertyLine}
+                    label="Maxium Thickness"
+                    target={material.iridescence}
+                    propertyKey="maximumThickness"
+                    min={0}
+                    max={1000}
+                    step={10}
+                />
+                <FileUploadLine
+                    label="Iridescence"
+                    accept=".jpg, .png, .tga, .dds, .env, .exr"
+                    onClick={(files) => {
+                        if (files.length > 0) {
+                            UpdateTexture(files[0], material, (texture) => (material.iridescence.texture = texture));
+                        }
+                    }}
+                />
+                <FileUploadLine
+                    label="Thickness"
+                    accept=".jpg, .png, .tga, .dds, .env, .exr"
+                    onClick={(files) => {
+                        if (files.length > 0) {
+                            UpdateTexture(files[0], material, (texture) => (material.iridescence.thicknessTexture = texture));
+                        }
+                    }}
+                />
             </Collapse>
         </>
     );
@@ -206,26 +193,23 @@ export const PBRBaseMaterialAnisotropicProperties: FunctionComponent<{ material:
     const { material } = props;
 
     const isEnabled = useProperty(material.anisotropy, "isEnabled");
-    const [, setAnisotropicTexture] = useState(material.anisotropy.texture);
 
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Enabled" target={material.anisotropy} propertyKey="isEnabled" />
             <Collapse visible={isEnabled}>
-                <div>
-                    <BoundProperty component={SwitchPropertyLine} label="Legacy Mode" target={material.anisotropy} propertyKey="legacy" />
-                    <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.anisotropy} propertyKey="intensity" min={0} max={1} step={0.01} />
-                    <BoundProperty component={Vector2PropertyLine} label="Direction" target={material.anisotropy} propertyKey="direction" />
-                    <FileUploadLine
-                        label="Anisotropic"
-                        accept=".jpg, .png, .tga, .dds, .env, .exr"
-                        onClick={(files) => {
-                            if (files.length > 0) {
-                                UpdateTexture(files[0], material, setAnisotropicTexture);
-                            }
-                        }}
-                    />
-                </div>
+                <BoundProperty component={SwitchPropertyLine} label="Legacy Mode" target={material.anisotropy} propertyKey="legacy" />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.anisotropy} propertyKey="intensity" min={0} max={1} step={0.01} />
+                <BoundProperty component={Vector2PropertyLine} label="Direction" target={material.anisotropy} propertyKey="direction" />
+                <FileUploadLine
+                    label="Anisotropic"
+                    accept=".jpg, .png, .tga, .dds, .env, .exr"
+                    onClick={(files) => {
+                        if (files.length > 0) {
+                            UpdateTexture(files[0], material, (texture) => (material.anisotropy.texture = texture));
+                        }
+                    }}
+                />
             </Collapse>
         </>
     );
@@ -236,52 +220,48 @@ export const PBRBaseMaterialSheenProperties: FunctionComponent<{ material: PBRBa
 
     const isEnabled = useProperty(material.sheen, "isEnabled");
     const useRoughness = useProperty(material.sheen, "_useRoughness");
-    const [, setSheenTexture] = useState(material.sheen.texture);
-    const [, setSheenRoughnessTexture] = useState(material.sheen.textureRoughness);
 
     return (
         <>
             <BoundProperty component={SwitchPropertyLine} label="Enabled" target={material.sheen} propertyKey="isEnabled" />
             <Collapse visible={isEnabled}>
-                <div>
-                    <BoundProperty component={SwitchPropertyLine} label="Link to Albedo" target={material.sheen} propertyKey="linkSheenWithAlbedo" />
-                    <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.sheen} propertyKey="intensity" min={0} max={1} step={0.01} />
-                    <BoundProperty component={Color3PropertyLine} label="Color" target={material.sheen} propertyKey="color" isLinearMode={true} />
-                    <FileUploadLine
-                        label="Sheen"
-                        accept=".jpg, .png, .tga, .dds, .env, .exr"
-                        onClick={(files) => {
-                            if (files.length > 0) {
-                                UpdateTexture(files[0], material, setSheenTexture);
-                            }
-                        }}
-                    />
-                    <FileUploadLine
+                <BoundProperty component={SwitchPropertyLine} label="Link to Albedo" target={material.sheen} propertyKey="linkSheenWithAlbedo" />
+                <BoundProperty component={SyncedSliderPropertyLine} label="Intensity" target={material.sheen} propertyKey="intensity" min={0} max={1} step={0.01} />
+                <BoundProperty component={Color3PropertyLine} label="Color" target={material.sheen} propertyKey="color" isLinearMode={true} />
+                <FileUploadLine
+                    label="Sheen"
+                    accept=".jpg, .png, .tga, .dds, .env, .exr"
+                    onClick={(files) => {
+                        if (files.length > 0) {
+                            UpdateTexture(files[0], material, (texture) => (material.sheen.texture = texture));
+                        }
+                    }}
+                />
+                <FileUploadLine
+                    label="Roughness"
+                    accept=".jpg, .png, .tga, .dds, .env, .exr"
+                    onClick={(files) => {
+                        if (files.length > 0) {
+                            UpdateTexture(files[0], material, (texture) => (material.sheen.textureRoughness = texture));
+                        }
+                    }}
+                />
+                <BoundProperty component={SwitchPropertyLine} label="Use Roughness" target={material.sheen} propertyKey="_useRoughness" />
+                <Collapse visible={useRoughness}>
+                    <BoundProperty
+                        nullable
+                        component={SyncedSliderPropertyLine}
                         label="Roughness"
-                        accept=".jpg, .png, .tga, .dds, .env, .exr"
-                        onClick={(files) => {
-                            if (files.length > 0) {
-                                UpdateTexture(files[0], material, setSheenRoughnessTexture);
-                            }
-                        }}
+                        target={material.sheen}
+                        propertyKey="roughness"
+                        defaultValue={0}
+                        min={0}
+                        max={1}
+                        step={0.01}
                     />
-                    <BoundProperty component={SwitchPropertyLine} label="Use Roughness" target={material.sheen} propertyKey="_useRoughness" />
-                    <Collapse visible={useRoughness}>
-                        <BoundProperty
-                            nullable
-                            component={SyncedSliderPropertyLine}
-                            label="Roughness"
-                            target={material.sheen}
-                            propertyKey="roughness"
-                            defaultValue={0}
-                            min={0}
-                            max={1}
-                            step={0.01}
-                        />
-                    </Collapse>
-                    <BoundProperty component={SwitchPropertyLine} label="Use Roughness from Main Texture" target={material.sheen} propertyKey="useRoughnessFromMainTexture" />
-                    <BoundProperty component={SwitchPropertyLine} label="Albedo Scaling" target={material.sheen} propertyKey="albedoScaling" />
-                </div>
+                </Collapse>
+                <BoundProperty component={SwitchPropertyLine} label="Use Roughness from Main Texture" target={material.sheen} propertyKey="useRoughnessFromMainTexture" />
+                <BoundProperty component={SwitchPropertyLine} label="Albedo Scaling" target={material.sheen} propertyKey="albedoScaling" />
             </Collapse>
         </>
     );
