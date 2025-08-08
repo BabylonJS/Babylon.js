@@ -152,7 +152,7 @@ type SceneTreeItemData = { type: "scene"; scene: Scene };
 type SectionTreeItemData = {
     type: "section";
     sectionName: string;
-    hasChildren: boolean;
+    children: EntityTreeItemData[];
 };
 
 type EntityTreeItemData = {
@@ -160,7 +160,7 @@ type EntityTreeItemData = {
     entity: EntityBase;
     depth: number;
     parent: SectionTreeItemData | EntityTreeItemData;
-    hasChildren: boolean;
+    children?: EntityTreeItemData[];
     icon?: ComponentType<{ entity: EntityBase }>;
     getDisplayInfo: () => EntityDisplayInfo;
 };
@@ -258,7 +258,7 @@ const SectionTreeItem: FunctionComponent<{
             key={section.sectionName}
             value={section.sectionName}
             // Disable manual expand/collapse when a filter is active.
-            itemType={!isFiltering && section.hasChildren ? "branch" : "leaf"}
+            itemType={!isFiltering && section.children.length > 0 ? "branch" : "leaf"}
             parentValue={undefined}
             aria-level={1}
             aria-setsize={1}
@@ -339,7 +339,7 @@ const EntityTreeItem: FunctionComponent<{
             key={entityItem.entity.uniqueId}
             value={entityItem.entity.uniqueId}
             // Disable manual expand/collapse when a filter is active.
-            itemType={!isFiltering && entityItem.hasChildren ? "branch" : "leaf"}
+            itemType={!isFiltering && (entityItem.children?.length ?? 0) > 0 ? "branch" : "leaf"}
             parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : entityItem.entity.uniqueId}
             aria-level={entityItem.depth}
             aria-setsize={1}
@@ -436,21 +436,14 @@ export const SceneExplorer: FunctionComponent<{
         };
     }, [sections, openItems]);
 
-    const visibleItems = useMemo(() => {
-        // This will track the items in the order they were traversed (which is what the flat tree expects).
-        const traversedItems: TreeItemData[] = [];
-        // This will track the items that are visible based on either the open state or the filter.
-        const visibleItems = new Set<TreeItemData>();
-        const filter = itemsFilter.toLocaleLowerCase();
+    const [sceneTreeItem, sectionTreeItems, allTreeItems] = useMemo(() => {
+        const sectionTreeItems: SectionTreeItemData[] = [];
+        const allTreeItems = new Map<TreeItemValue, TreeItemData>();
 
-        const sceneTreeItem = {
+        const sceneTreeItem: SceneTreeItemData = {
             type: "scene",
             scene: scene,
-        } as const satisfies SceneTreeItemData;
-
-        traversedItems.push(sceneTreeItem);
-        // The scene tree item is always visible.
-        visibleItems.add(sceneTreeItem);
+        };
 
         for (const section of sections) {
             const rootEntities = section.getRootEntities();
@@ -458,9 +451,70 @@ export const SceneExplorer: FunctionComponent<{
             const sectionTreeItem = {
                 type: "section",
                 sectionName: section.displayName,
-                hasChildren: rootEntities.length > 0,
+                children: [],
             } as const satisfies SectionTreeItemData;
 
+            sectionTreeItems.push(sectionTreeItem);
+            allTreeItems.set(sectionTreeItem.sectionName, sectionTreeItem);
+
+            let depth = 2;
+            const createEntityTreeItemData = (entity: EntityBase, parent: SectionTreeItemData | EntityTreeItemData) => {
+                const treeItemData = {
+                    type: "entity",
+                    entity,
+                    depth,
+                    parent,
+                    icon: section.entityIcon,
+                    getDisplayInfo: () => section.getEntityDisplayInfo(entity),
+                } as const satisfies EntityTreeItemData;
+
+                if (!parent.children) {
+                    parent.children = [];
+                }
+                parent.children.push(treeItemData);
+
+                allTreeItems.set(entity.uniqueId, treeItemData);
+                return treeItemData;
+            };
+
+            const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity, sectionTreeItem));
+
+            TraverseGraph(
+                rootEntityTreeItems,
+                // Get children
+                (treeItem) => {
+                    if (section.getEntityChildren) {
+                        const children = section.getEntityChildren(treeItem.entity);
+                        return children.filter((child) => !child.reservedDataStore?.hidden).map((child) => createEntityTreeItemData(child, treeItem));
+                    }
+                    return null;
+                },
+                // Before traverse
+                () => {
+                    depth++;
+                },
+                // After traverse
+                () => {
+                    depth--;
+                }
+            );
+        }
+
+        return [sceneTreeItem, sectionTreeItems, allTreeItems] as const;
+    }, [scene, sceneVersion, sections]);
+
+    const visibleItems = useMemo(() => {
+        // This will track the items in the order they were traversed (which is what the flat tree expects).
+        const traversedItems: TreeItemData[] = [];
+        // This will track the items that are visible based on either the open state or the filter.
+        const visibleItems = new Set<TreeItemData>();
+        const filter = itemsFilter.toLocaleLowerCase();
+
+        traversedItems.push(sceneTreeItem);
+        // The scene tree item is always visible.
+        visibleItems.add(sceneTreeItem);
+
+        for (const sectionTreeItem of sectionTreeItems) {
             traversedItems.push(sectionTreeItem);
             // Section tree items are always visible when not filtering.
             if (!filter) {
@@ -468,38 +522,18 @@ export const SceneExplorer: FunctionComponent<{
             }
 
             // When an item filter is present, always traverse the full scene graph (e.g. ignore the open item state).
-            if (filter || openItems.has(section.displayName)) {
-                let depth = 2;
-
-                const createEntityTreeItemData = (entity: EntityBase, parent: SectionTreeItemData | EntityTreeItemData) => {
-                    return {
-                        type: "entity",
-                        entity,
-                        depth,
-                        parent,
-                        hasChildren: !!section.getEntityChildren && section.getEntityChildren(entity).length > 0,
-                        icon: section.entityIcon,
-                        getDisplayInfo: () => section.getEntityDisplayInfo(entity),
-                    } as const satisfies EntityTreeItemData;
-                };
-
-                const rootEntityTreeItems = rootEntities.map((entity) => createEntityTreeItemData(entity, sectionTreeItem));
-
+            if (filter || openItems.has(sectionTreeItem.sectionName)) {
                 TraverseGraph(
-                    rootEntityTreeItems,
+                    sectionTreeItem.children,
                     // Get children
                     (treeItem) => {
-                        // When an item filter is present, always traverse the full scene graph (e.g. ignore the open item state).
-                        if ((filter || openItems.has(treeItem.entity.uniqueId)) && section.getEntityChildren) {
-                            const children = section.getEntityChildren(treeItem.entity);
-                            return children.map((child) => createEntityTreeItemData(child, treeItem));
+                        if (filter || openItems.has(treeItem.entity.uniqueId)) {
+                            return treeItem.children ?? null;
                         }
                         return null;
                     },
                     // Before traverse
                     (treeItem) => {
-                        depth++;
-
                         traversedItems.push(treeItem);
                         if (treeItem.entity.reservedDataStore?.hidden) {
                             return; // Don't display the treeItem or its children if reservedDataStore.hidden is true
@@ -534,10 +568,6 @@ export const SceneExplorer: FunctionComponent<{
                             }
                             displayInfo.dispose?.();
                         }
-                    },
-                    // After traverse
-                    () => {
-                        depth--;
                     }
                 );
             }
@@ -545,7 +575,7 @@ export const SceneExplorer: FunctionComponent<{
 
         // Filter the traversal ordered items by those that should actually be visible.
         return traversedItems.filter((item) => visibleItems.has(item));
-    }, [scene, sceneVersion, sections, openItems, itemsFilter]);
+    }, [sceneTreeItem, sectionTreeItems, allTreeItems, openItems, itemsFilter]);
 
     const getParentStack = useCallback(
         (entity: EntityBase) => {
