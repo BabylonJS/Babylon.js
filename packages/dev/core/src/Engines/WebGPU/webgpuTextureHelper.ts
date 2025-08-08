@@ -154,11 +154,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.R16Uint:
             case WebGPUConstants.TextureFormat.R16Sint:
             case WebGPUConstants.TextureFormat.R16Unorm:
-            case WebGPUConstants.TextureFormat.RG16Unorm:
-            case WebGPUConstants.TextureFormat.RGBA16Unorm:
             case WebGPUConstants.TextureFormat.R16Snorm:
-            case WebGPUConstants.TextureFormat.RG16Snorm:
-            case WebGPUConstants.TextureFormat.RGBA16Snorm:
             case WebGPUConstants.TextureFormat.R16Float:
             case WebGPUConstants.TextureFormat.RG8Unorm:
             case WebGPUConstants.TextureFormat.RG8Snorm:
@@ -173,6 +169,8 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RG16Uint:
             case WebGPUConstants.TextureFormat.RG16Sint:
             case WebGPUConstants.TextureFormat.RG16Float:
+            case WebGPUConstants.TextureFormat.RG16Unorm:
+            case WebGPUConstants.TextureFormat.RG16Snorm:
             case WebGPUConstants.TextureFormat.RGBA8Unorm:
             case WebGPUConstants.TextureFormat.RGBA8UnormSRGB:
             case WebGPUConstants.TextureFormat.RGBA8Snorm:
@@ -193,6 +191,8 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RGBA16Uint:
             case WebGPUConstants.TextureFormat.RGBA16Sint:
             case WebGPUConstants.TextureFormat.RGBA16Float:
+            case WebGPUConstants.TextureFormat.RGBA16Unorm:
+            case WebGPUConstants.TextureFormat.RGBA16Snorm:
                 return { width: 1, height: 1, length: 8 };
 
             // 128 bits formats

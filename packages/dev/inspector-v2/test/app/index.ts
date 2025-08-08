@@ -15,8 +15,11 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
-import { MeshBuilder } from "core/Meshes";
+import { MultiMaterial } from "core/Materials/multiMaterial";
+import { Texture } from "core/Materials/Textures/texture";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
@@ -43,6 +46,12 @@ function createCamera() {
     camera = scene.activeCamera as ArcRotateCamera;
     camera.alpha = 1.8;
     camera.beta = 1.3;
+
+    const camera2 = camera.clone("camera2") as ArcRotateCamera;
+    camera2.alpha += Math.PI;
+
+    const camera3 = camera.clone("camera3") as ArcRotateCamera;
+    camera3.alpha += Math.PI * 0.5;
 }
 
 function createPostProcess() {
@@ -66,13 +75,38 @@ async function createPhysics() {
     }
 }
 
+function createTestPBRSphere() {
+    const sphere = MeshBuilder.CreateSphere("pbrSphere", { diameter: 0.15 }, scene);
+    sphere.position.x = -0.15;
+
+    const glass = new PBRMaterial("glass", scene);
+    glass.indexOfRefraction = 0.52;
+    glass.alpha = 0.5;
+    glass.directIntensity = 0.0;
+    glass.environmentIntensity = 0.7;
+    glass.cameraExposure = 0.66;
+    glass.cameraContrast = 1.66;
+    glass.microSurface = 1;
+    glass.reflectivityColor = new Color3(0.2, 0.2, 0.2);
+    glass.albedoColor = new Color3(0.95, 0.95, 0.95);
+
+    sphere.material = glass;
+}
+
 function createTestBoxes() {
     const box = MeshBuilder.CreateBox("box1", { size: 0.15 }, scene);
     const redMat = new StandardMaterial("redMat", scene);
     redMat.emissiveColor = new Color3(1, 0, 0);
+    redMat.diffuseTexture = new Texture("https://i.imgur.com/Wk1cGEq.png", scene);
+    redMat.bumpTexture = new Texture("https://i.imgur.com/wGyk6os.png", scene);
     box.material = redMat;
     const boxInstance = box.createInstance("boxInstance");
     boxInstance.position = new Vector3(0, 0, -0.5);
+}
+
+function createMaterials() {
+    const multiMaterial = new MultiMaterial("multi", scene);
+    multiMaterial.subMaterials.push(...scene.materials);
 }
 
 (async () => {
@@ -84,6 +118,9 @@ function createTestBoxes() {
     await createPhysics();
 
     createTestBoxes();
+    createTestPBRSphere();
+
+    createMaterials();
 
     engine.runRenderLoop(() => {
         scene.render();

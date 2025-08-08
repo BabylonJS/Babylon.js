@@ -72,6 +72,16 @@ export class NodeMaterialConnectionPoint {
     }
 
     /** @internal */
+    public _isInactive: boolean = false;
+
+    /**
+     * Boolean used to provide visual clue to users when some ports are not active in the current block configuration
+     */
+    public get isInactive(): boolean {
+        return this._isInactive;
+    }
+
+    /** @internal */
     public _preventBubbleUp = false;
 
     /** @internal */
