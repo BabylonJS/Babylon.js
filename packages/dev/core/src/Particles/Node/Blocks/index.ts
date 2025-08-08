@@ -9,6 +9,7 @@ export * from "./Update/updatePositionBlock";
 export * from "./Update/updateColorBlock";
 export * from "./Update/updateScaleBlock";
 export * from "./Update/updateAngleBlock";
+export * from "./Update/updateAgeBlock";
 export * from "./Update/basicPositionUpdateBlock";
 export * from "./Update/basicSpriteUpdateBlock";
 export * from "./Update/updateSpriteCellIndexBlock";

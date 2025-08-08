@@ -19,6 +19,7 @@ import { ParticleElbowBlock } from "core/Particles/Node/Blocks/particleElbowBloc
 import { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
 import { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
 import { UpdateAngleBlock } from "core/Particles/Node/Blocks/Update/updateAngleBlock";
+import { UpdateAgeBlock } from "core/Particles/Node/Blocks/Update/updateAgeBlock";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 import { BasicPositionUpdateBlock } from "core/Particles/Node/Blocks/Update/basicPositionUpdateBlock";
 import { ParticleTriggerBlock } from "core/Particles/Node/Blocks/Triggers/particleTriggerBlock";
@@ -125,6 +126,8 @@ export class BlockTools {
                 return new UpdateScaleBlock("Update scale");
             case "UpdateAngleBlock":
                 return new UpdateAngleBlock("Update angle");
+            case "UpdateAgeBlock":
+                return new UpdateAgeBlock("Update age");
             case "UpdateFlowMapBlock":
                 return new UpdateFlowMapBlock("Update flow map");
             case "UpdateAttractorBlock":
