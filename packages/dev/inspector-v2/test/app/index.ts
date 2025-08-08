@@ -1,3 +1,7 @@
+// NOTE: This app is an easy place to test Inspector v2.
+// Additionally, here are some PGs that are helpful for testing specific features:
+// Animation groups: http://localhost:1338/?inspectorv2#FMAYKS
+
 import HavokPhysics from "@babylonjs/havok";
 import type { Nullable } from "core/types";
 
