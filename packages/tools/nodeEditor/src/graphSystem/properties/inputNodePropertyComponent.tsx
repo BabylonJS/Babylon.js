@@ -213,6 +213,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "View", value: NodeMaterialSystemValues.View },
                     { label: "View x Projection", value: NodeMaterialSystemValues.ViewProjection },
                     { label: "Projection", value: NodeMaterialSystemValues.Projection },
+                    { label: "Projection Inverse", value: NodeMaterialSystemValues.ProjectionInverse },
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Color3:

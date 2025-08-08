@@ -1,5 +1,27 @@
 # Changelog
 
+## 8.22.1
+
+### Core
+
+- Fix texture deserializer to not ignore base64String storage - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16992](https://github.com/BabylonJS/Babylon.js/pull/16992))
+- Add support for SSAO in NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16988](https://github.com/BabylonJS/Babylon.js/pull/16988))
+- Allow node to display visual clue when a port is not active due to th… - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16991](https://github.com/BabylonJS/Babylon.js/pull/16991))
+- spz v3 loader - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16949](https://github.com/BabylonJS/Babylon.js/pull/16949))
+- WebGPU: Sync with specification - by [Popov72](https://github.com/Popov72) ([#16985](https://github.com/BabylonJS/Babylon.js/pull/16985))
+
+### Loaders
+
+- spz v3 loader - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16949](https://github.com/BabylonJS/Babylon.js/pull/16949))
+
+### Node Editor
+
+- Add support for SSAO in NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16988](https://github.com/BabylonJS/Babylon.js/pull/16988))
+- Allow node to display visual clue when a port is not active due to th… - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16991](https://github.com/BabylonJS/Babylon.js/pull/16991))
+
+### Playground
+
+
 ## 8.22.0
 
 ### Core
