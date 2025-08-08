@@ -25,3 +25,4 @@ import "../../../Shaders/taa.fragment";
 import "../../../ShadersWGSL/taa.fragment";
 
 import "../../../ShadersWGSL/fsr1Upscale.fragment";
+import "../../../ShadersWGSL/fsr1Sharpen.fragment";
