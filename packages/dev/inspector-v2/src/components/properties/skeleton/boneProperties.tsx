@@ -11,7 +11,7 @@ export const BoneGeneralProperties: FunctionComponent<{ bone: Bone; selectionSer
         <>
             <LinkToEntityPropertyLine
                 key="Linked Transform Node"
-                label="Linked node"
+                label="Linked Node"
                 description="The transform node linked to this bone."
                 entity={bone.getTransformNode()}
                 selectionService={props.selectionService}
