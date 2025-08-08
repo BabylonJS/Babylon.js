@@ -251,6 +251,10 @@ export const commonDevWebpackConfiguration = (
 class CopyMinToMaxWebpackPlugin {
     apply(compiler: Compiler) {
         compiler.hooks.done.tap("CopyToMax", (stats) => {
+            if (stats.hasErrors()) {
+                console.error("Build had errors, skipping CopyMinToMax plugin");
+                return;
+            }
             const outputPath = stats.compilation.outputOptions.path;
             if (outputPath) {
                 for (const chunk of stats.compilation.chunks) {
