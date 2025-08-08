@@ -15,9 +15,10 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { MeshBuilder } from "core/Meshes";
 import { Texture } from "core/Materials/Textures/texture";
 
 // Register scene loader plugins.
@@ -74,6 +75,24 @@ async function createPhysics() {
     }
 }
 
+function createTestPBRSphere() {
+    const sphere = MeshBuilder.CreateSphere("pbrSphere", { diameter: 0.15 }, scene);
+    sphere.position.x = -0.15;
+
+    const glass = new PBRMaterial("glass", scene);
+    glass.indexOfRefraction = 0.52;
+    glass.alpha = 0.5;
+    glass.directIntensity = 0.0;
+    glass.environmentIntensity = 0.7;
+    glass.cameraExposure = 0.66;
+    glass.cameraContrast = 1.66;
+    glass.microSurface = 1;
+    glass.reflectivityColor = new Color3(0.2, 0.2, 0.2);
+    glass.albedoColor = new Color3(0.95, 0.95, 0.95);
+
+    sphere.material = glass;
+}
+
 function createTestBoxes() {
     const box = MeshBuilder.CreateBox("box1", { size: 0.15 }, scene);
     const redMat = new StandardMaterial("redMat", scene);
@@ -99,6 +118,7 @@ function createMaterials() {
     await createPhysics();
 
     createTestBoxes();
+    createTestPBRSphere();
 
     createMaterials();
 
