@@ -18,6 +18,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["PointShapeBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["CustomShapeBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SphereShapeBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["MeshShapeBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["CylinderShapeBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["CreateParticleBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SetupSpriteSheetBlock"] = EmitterDisplayManager;
