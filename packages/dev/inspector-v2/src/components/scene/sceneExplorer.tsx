@@ -9,7 +9,7 @@ import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useObservableState } from "../../hooks/observableHooks";
+import { useObservableRenderer, useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
@@ -101,7 +101,7 @@ type Command<T extends EntityBase> = Partial<IDisposable> &
         /**
          * An icon component to render for the command.
          */
-        icon: ComponentType<{ entity: T }>;
+        icon: ComponentType;
 
         /**
          * An observable that notifies when the command state changes.
@@ -113,9 +113,9 @@ type ActionCommand<T extends EntityBase> = Command<T> & {
     readonly type: "action";
 
     /**
-     * The function that executes the command on the given entity.
+     * The function that executes the command.
      */
-    execute(entity: T): void;
+    execute(): void;
 };
 
 type ToggleCommand<T extends EntityBase> = Command<T> & {
@@ -190,29 +190,25 @@ const useStyles = makeStyles({
 });
 
 const ActionCommand: FunctionComponent<{ command: ActionCommand<EntityBase>; entity: EntityBase }> = (props) => {
-    const { command, entity } = props;
+    const { command } = props;
+
+    useObservableRenderer(command.onChange);
 
     return (
         <Tooltip key={command.displayName} content={command.displayName} relationship="label">
-            <Button icon={<command.icon entity={entity} />} appearance="subtle" onClick={() => command.execute(entity)} />
+            <Button icon={<command.icon />} appearance="subtle" onClick={() => command.execute()} />
         </Tooltip>
     );
 };
 
 const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; entity: EntityBase }> = (props) => {
-    const { command, entity } = props;
-    const [checked, setChecked] = useState(command.isEnabled);
-    const toggle = useCallback(() => {
-        setChecked((prev) => {
-            const enabled = !prev;
-            command.isEnabled = enabled;
-            return enabled;
-        });
-    }, [setChecked]);
+    const { command } = props;
+
+    useObservableRenderer(command.onChange);
 
     return (
         <Tooltip content={command.displayName} relationship="label">
-            <ToggleButton icon={<command.icon entity={entity} />} appearance="transparent" checked={checked} onClick={toggle} />
+            <ToggleButton icon={<command.icon />} appearance="transparent" checked={command.isEnabled} onClick={() => (command.isEnabled = !command.isEnabled)} />
         </Tooltip>
     );
 };
