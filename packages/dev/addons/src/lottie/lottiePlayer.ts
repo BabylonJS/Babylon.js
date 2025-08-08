@@ -65,6 +65,7 @@ export class LottiePlayer {
     private _disposed: boolean = false;
     private _worker: Nullable<Worker> = null;
     private _canvas: Nullable<HTMLCanvasElement> = null;
+    private _resizeObserver: Nullable<ResizeObserver> = null;
 
     private _container: HTMLDivElement;
     private _animationFile: string;
@@ -107,17 +108,39 @@ export class LottiePlayer {
 
             const offscreen = this._canvas.transferControlToOffscreen();
 
-            this._worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
-            this._worker.postMessage({ canvas: offscreen, file: this._animationFile, config: this._configuration }, [offscreen]);
+            //this._worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+            this._worker = new Worker("worker.js", { type: "module" });
+            this._worker.onmessage = (evt: MessageEvent) => {
+                if (evt.data.animationWidth && evt.data.animationHeight && this._canvas) {
+                    this._canvas.style.width = `${evt.data.animationWidth}px`;
+                    this._canvas.style.height = `${evt.data.animationHeight}px`;
+                }
+            };
 
+            this._worker.postMessage({ canvas: offscreen, file: this._animationFile, config: this._configuration }, [offscreen]);
             this._playing = true;
 
-            // Listen for size information from worker
-            this._worker.onmessage = this._onWorkerMessage.bind(this);
+            window.addEventListener("resize", this._onWindowResize);
+            window.addEventListener("beforeunload", this._onBeforeUnload);
 
-            // Window events that affect the worker
-            window.addEventListener("resize", this._resizeEventListener.bind(this));
-            window.addEventListener("beforeunload", this._beforeUnloadEventListener.bind(this));
+            if ("ResizeObserver" in window) {
+                this._resizeObserver = new ResizeObserver(() => {
+                    if (this._disposed || !this._canvas) {
+                        return;
+                    }
+
+                    const newWidth = this._container.clientWidth;
+                    const newHeight = this._container.clientHeight;
+
+                    if (newWidth !== this._canvas.width || newHeight !== this._canvas.height) {
+                        this._canvas.width = newWidth;
+                        this._canvas.height = newHeight;
+                        this._worker?.postMessage({ width: newWidth, height: newHeight });
+                    }
+                });
+
+                this._resizeObserver.observe(this._container);
+            }
 
             return true;
         } else {
@@ -129,30 +152,38 @@ export class LottiePlayer {
      * Disposes the LottiePlayer instance, cleaning up resources and event listeners.
      */
     public dispose(): void {
-        window.removeEventListener("resize", this._resizeEventListener);
-        window.removeEventListener("beforeunload", this._beforeUnloadEventListener);
+        window.removeEventListener("resize", this._onWindowResize);
+        window.removeEventListener("beforeunload", this._onBeforeUnload);
 
-        this._beforeUnloadEventListener();
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
+
+        this._onBeforeUnload();
 
         if (this._canvas) {
             this._container.removeChild(this._canvas);
+            this._canvas = null;
         }
 
         this._disposed = true;
     }
 
-    private _onWorkerMessage(evt: MessageEvent): void {
-        if (evt.data.animationWidth && evt.data.animationHeight && this._canvas) {
-            this._canvas.style.width = `${evt.data.animationWidth}px`;
-            this._canvas.style.height = `${evt.data.animationHeight}px`;
+    private _onWindowResize = () => {
+        if (this._disposed) {
+            return;
         }
-    }
 
-    private _resizeEventListener() {
-        this._worker?.postMessage({ width: this._canvas?.clientWidth, height: this._canvas?.clientHeight });
-    }
+        const w = this._canvas?.clientWidth;
+        const h = this._canvas?.clientHeight;
 
-    private _beforeUnloadEventListener() {
+        if (w !== undefined && h !== undefined) {
+            this._worker?.postMessage({ width: w, height: h });
+        }
+    };
+
+    private _onBeforeUnload = () => {
         this._worker?.terminate();
-    }
+    };
 }
