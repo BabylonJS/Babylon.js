@@ -53,7 +53,7 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
         });
 
         const spritePlayStopCommandRegistration = sceneExplorerService.addCommand({
-            predicate: (entity: unknown) => IsSprite(entity),
+            predicate: (entity: unknown) => entity instanceof Sprite,
             getCommand: (sprite) => {
                 const onChangeObservable = new Observable<void>();
                 const playHook = InterceptFunction(sprite, "playAnimation", {
