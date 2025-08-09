@@ -157,6 +157,15 @@ type EntityTreeItemData = {
 
 type TreeItemData = SceneTreeItemData | SectionTreeItemData | EntityTreeItemData;
 
+function ExpandOrCollapseAll(treeItem: SectionTreeItemData | EntityTreeItemData, open: boolean, openItems: Set<TreeItemValue>) {
+    const addOrRemove = open ? openItems.add.bind(openItems) : openItems.delete.bind(openItems);
+    TraverseGraph(
+        [treeItem],
+        (treeItem) => treeItem.children,
+        (treeItem) => addOrRemove(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName)
+    );
+}
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
     rootDiv: {
@@ -618,12 +627,7 @@ export const SceneExplorer: FunctionComponent<{
                 if (event.shiftKey || event.ctrlKey) {
                     const treeItem = allTreeItems.get(data.value);
                     if (treeItem) {
-                        const addOrRemove = data.open ? data.openItems.add.bind(data.openItems) : data.openItems.delete.bind(data.openItems);
-                        TraverseGraph(
-                            [treeItem],
-                            (treeItem) => treeItem.children ?? null,
-                            (treeItem) => addOrRemove(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName)
-                        );
+                        ExpandOrCollapseAll(treeItem, data.open, data.openItems);
                     }
                 }
                 setOpenItems(data.openItems);
