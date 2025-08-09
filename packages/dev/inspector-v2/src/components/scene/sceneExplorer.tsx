@@ -620,10 +620,22 @@ export const SceneExplorer: FunctionComponent<{
         (event: TreeOpenChangeEvent, data: TreeOpenChangeData) => {
             // This makes it so we only consider a click on the chevron to be expanding/collapsing an item, not clicking anywhere on the item.
             if (data.type !== "Click" && data.type !== "Enter") {
+                // Shift or Ctrl mean expand/collapse all descendants.
+                if (event.shiftKey || event.ctrlKey) {
+                    const treeItem = allTreeItems.get(data.value);
+                    if (treeItem) {
+                        const addOrRemove = data.open ? data.openItems.add.bind(data.openItems) : data.openItems.delete.bind(data.openItems);
+                        TraverseGraph(
+                            [treeItem],
+                            (treeItem) => treeItem.children ?? null,
+                            (treeItem) => addOrRemove(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName)
+                        );
+                    }
+                }
                 setOpenItems(data.openItems);
             }
         },
-        [setOpenItems]
+        [setOpenItems, allTreeItems]
     );
 
     return (
