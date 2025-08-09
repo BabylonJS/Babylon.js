@@ -570,14 +570,12 @@ export const SceneExplorer: FunctionComponent<{
     const getParentStack = useCallback(
         (entity: EntityBase) => {
             const parentStack: TreeItemValue[] = [];
-
             for (let treeItem = allTreeItems.get(entity.uniqueId); treeItem; treeItem = treeItem?.type === "entity" ? treeItem.parent : undefined) {
                 parentStack.push(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName);
             }
-
             return parentStack;
         },
-        [sectionTreeItems, allTreeItems, sections]
+        [allTreeItems]
     );
 
     const [isScrollToPending, setIsScrollToPending] = useState(false);
