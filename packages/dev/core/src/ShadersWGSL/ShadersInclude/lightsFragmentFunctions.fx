@@ -179,3 +179,58 @@ fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_
 
 // End Area Light
 #endif
+
+#ifdef CLUSTLIGHT_BATCH
+#include<clusteredLightFunctions>
+
+fn computeClusteredLighting(
+	lightDataTexture: texture_2d<f32>,
+	tileMaskBuffer: ptr<storage, array<u32>>,
+	viewDirectionW: vec3f,
+	vNormal: vec3f,
+	lightData: vec4f,
+	numLights: i32,
+	glossiness: f32
+) -> lightingInfo {
+	var result: lightingInfo;
+	let tilePosition = vec2i(fragmentInputs.position.xy * lightData.xy);
+	let maskResolution = vec2i(lightData.zw);
+	var tileIndex = (tilePosition.x * maskResolution.x + tilePosition.y) * maskResolution.y;
+
+	let numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;
+	var batchOffset = 0u;
+
+	for (var i = 0; i < numBatches; i += 1) {
+		var mask = tileMaskBuffer[tileIndex];
+		tileIndex += 1;
+
+		while mask != 0 {
+			let trailing = firstTrailingBit(mask);
+			mask ^= 1u << trailing;
+			let light = getClusteredSpotLight(lightDataTexture, batchOffset + trailing);
+
+			let direction = light.vLightData.xyz - fragmentInputs.vPositionW;
+			let lightVectorW = normalize(direction);
+			var attenuation = max(0., 1.0 - length(direction) / light.vLightDiffuse.a);
+
+			// Assume an angle greater than 180º is a point light
+			if light.vLightDirection.w >= 0.0 {
+				let cosAngle = max(0., dot(light.vLightDirection.xyz, -lightVectorW));
+				if cosAngle < light.vLightDirection.w {
+					// Outside spotlight angle
+					continue;
+				}
+				attenuation *= getAttenuation(cosAngle, light.vLightData.w);
+			}
+
+			let info = computeBasicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, glossiness);
+			result.diffuse += info.diffuse;
+			#ifdef SPECULARTERM
+				result.specular += info.specular;
+			#endif
+		}
+		batchOffset += CLUSTLIGHT_BATCH;
+	}
+	return result;
+}
+#endif
