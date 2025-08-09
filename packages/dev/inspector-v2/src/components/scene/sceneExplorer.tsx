@@ -580,17 +580,13 @@ export const SceneExplorer: FunctionComponent<{
         [sectionTreeItems, allTreeItems, sections]
     );
 
-    // We only want the effect below to execute when the selectedEntity changes, so we use a ref to keep the latest version of getParentStack.
-    const getParentStackRef = useRef(getParentStack);
-    getParentStackRef.current = getParentStack;
-
     const [isScrollToPending, setIsScrollToPending] = useState(false);
 
     useEffect(() => {
         if (selectedEntity && selectedEntity !== previousSelectedEntity.current) {
             const entity = selectedEntity as EntityBase;
             if (entity.uniqueId != undefined) {
-                const parentStack = getParentStackRef.current(entity);
+                const parentStack = getParentStack(entity);
                 if (parentStack.length > 0) {
                     const newOpenItems = new Set<TreeItemValue>(openItems);
                     for (const parent of parentStack) {
@@ -603,7 +599,7 @@ export const SceneExplorer: FunctionComponent<{
         }
 
         previousSelectedEntity.current = selectedEntity;
-    }, [selectedEntity, setOpenItems, setIsScrollToPending]);
+    }, [selectedEntity]);
 
     // We need to wait for a render to complete before we can scroll to the item, hence the isScrollToPending.
     useEffect(() => {
