@@ -46,7 +46,3 @@ packages/public/@babylonjs/smart-filters-blocks/src
 # Smart Filters Editor files
 packages/tools/smartFiltersEditor/www/scripts/**
 packages/tools/smartFiltersEditor/www/index.html
-
-# Dev Host public folder
-packages/tools/devHost/public/**
-!packages/tools/devHost/public/index.html
