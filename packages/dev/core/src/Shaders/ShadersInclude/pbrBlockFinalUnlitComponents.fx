@@ -2,7 +2,7 @@
 vec3 finalDiffuse = diffuseBase;
 finalDiffuse *= surfaceAlbedo;
 
-#if defined(SS_REFRACTION) && !defined(UNLIT)
+#if defined(SS_REFRACTION) && !defined(UNLIT) && !defined(LEGACY_SPECULAR_ENERGY_CONSERVATION)
     finalDiffuse *= subSurfaceOut.refractionOpacity;
 #endif
 #if defined(SS_TRANSLUCENCY) && !defined(UNLIT)
