@@ -5,7 +5,24 @@ import type { ScrollToInterface } from "@fluentui/react-components/unstable";
 import type { ComponentType, FunctionComponent } from "react";
 
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
-import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, SearchBox, ToggleButton, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
+import {
+    Body1,
+    Body1Strong,
+    Button,
+    FlatTree,
+    FlatTreeItem,
+    makeStyles,
+    Menu,
+    MenuItem,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
+    SearchBox,
+    ToggleButton,
+    tokens,
+    Tooltip,
+    TreeItemLayout,
+} from "@fluentui/react-components";
 import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -188,7 +205,7 @@ const useStyles = makeStyles({
     },
 });
 
-const ActionCommand: FunctionComponent<{ command: ActionCommand; entity: EntityBase }> = (props) => {
+const ActionCommand: FunctionComponent<{ command: ActionCommand }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -204,7 +221,7 @@ const ActionCommand: FunctionComponent<{ command: ActionCommand; entity: EntityB
     );
 };
 
-const ToggleCommand: FunctionComponent<{ command: ToggleCommand; entity: EntityBase }> = (props) => {
+const ToggleCommand: FunctionComponent<{ command: ToggleCommand }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -249,26 +266,42 @@ const SectionTreeItem: FunctionComponent<{
     scene: Scene;
     section: SectionTreeItemData;
     isFiltering: boolean;
+    expandAll: () => void;
+    collapseAll: () => void;
 }> = (props) => {
-    const { section, isFiltering } = props;
+    const { section, isFiltering, expandAll, collapseAll } = props;
 
     return (
-        <FlatTreeItem
-            key={section.sectionName}
-            value={section.sectionName}
-            // Disable manual expand/collapse when a filter is active.
-            itemType={!isFiltering && section.children.length > 0 ? "branch" : "leaf"}
-            parentValue={undefined}
-            aria-level={1}
-            aria-setsize={1}
-            aria-posinset={1}
-        >
-            <TreeItemLayout>
-                <Body1Strong wrap={false} truncate>
-                    {section.sectionName.substring(0, 100)}
-                </Body1Strong>
-            </TreeItemLayout>
-        </FlatTreeItem>
+        <Menu openOnContext>
+            <MenuTrigger disableButtonEnhancement>
+                <FlatTreeItem
+                    key={section.sectionName}
+                    value={section.sectionName}
+                    // Disable manual expand/collapse when a filter is active.
+                    itemType={!isFiltering && section.children.length > 0 ? "branch" : "leaf"}
+                    parentValue={undefined}
+                    aria-level={1}
+                    aria-setsize={1}
+                    aria-posinset={1}
+                >
+                    <TreeItemLayout>
+                        <Body1Strong wrap={false} truncate>
+                            {section.sectionName.substring(0, 100)}
+                        </Body1Strong>
+                    </TreeItemLayout>
+                </FlatTreeItem>
+            </MenuTrigger>
+            <MenuPopover hidden={!section.children.length}>
+                <MenuList>
+                    <MenuItem onClick={expandAll}>
+                        <Body1>Expand All Descendants</Body1>
+                    </MenuItem>
+                    <MenuItem onClick={collapseAll}>
+                        <Body1>Collapse All Descendants</Body1>
+                    </MenuItem>
+                </MenuList>
+            </MenuPopover>
+        </Menu>
     );
 };
 
@@ -279,8 +312,10 @@ const EntityTreeItem: FunctionComponent<{
     select: () => void;
     isFiltering: boolean;
     commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+    expandAll: () => void;
+    collapseAll: () => void;
 }> = (props) => {
-    const { entityItem, isSelected, select, isFiltering, commandProviders } = props;
+    const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
 
     const displayInfo = useResource(
         useCallback(() => {
@@ -334,40 +369,54 @@ const EntityTreeItem: FunctionComponent<{
     }, [commands]);
 
     return (
-        <FlatTreeItem
-            key={entityItem.entity.uniqueId}
-            value={entityItem.entity.uniqueId}
-            // Disable manual expand/collapse when a filter is active.
-            itemType={!isFiltering && (entityItem.children?.length ?? 0) > 0 ? "branch" : "leaf"}
-            parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : entityItem.entity.uniqueId}
-            aria-level={entityItem.depth}
-            aria-setsize={1}
-            aria-posinset={1}
-            onClick={select}
-        >
-            <TreeItemLayout
-                iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
-                style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-                // Actions are only visible when the item is focused or has pointer hover.
-                actions={commands.map((command) =>
-                    command.type === "action" ? (
-                        <ActionCommand key={command.displayName} command={command} entity={entityItem.entity} />
-                    ) : (
-                        <ToggleCommand key={command.displayName} command={command} entity={entityItem.entity} />
-                    )
-                )}
-                // Asides are always visible.
-                aside={{
-                    // Match the gap and padding of the actions.
-                    style: { gap: 0, paddingRight: tokens.spacingHorizontalS },
-                    children: enabledToggleCommands.map((command) => <ToggleCommand key={command.displayName} command={command} entity={entityItem.entity} />),
-                }}
-            >
-                <Body1 wrap={false} truncate>
-                    {name.substring(0, 100)}
-                </Body1>
-            </TreeItemLayout>
-        </FlatTreeItem>
+        <Menu openOnContext>
+            <MenuTrigger disableButtonEnhancement>
+                <FlatTreeItem
+                    key={entityItem.entity.uniqueId}
+                    value={entityItem.entity.uniqueId}
+                    // Disable manual expand/collapse when a filter is active.
+                    itemType={!isFiltering && (entityItem.children?.length ?? 0) > 0 ? "branch" : "leaf"}
+                    parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : entityItem.entity.uniqueId}
+                    aria-level={entityItem.depth}
+                    aria-setsize={1}
+                    aria-posinset={1}
+                    onClick={select}
+                >
+                    <TreeItemLayout
+                        iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                        style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
+                        // Actions are only visible when the item is focused or has pointer hover.
+                        actions={commands.map((command) =>
+                            command.type === "action" ? (
+                                <ActionCommand key={command.displayName} command={command} />
+                            ) : (
+                                <ToggleCommand key={command.displayName} command={command} />
+                            )
+                        )}
+                        // Asides are always visible.
+                        aside={{
+                            // Match the gap and padding of the actions.
+                            style: { gap: 0, paddingRight: tokens.spacingHorizontalS },
+                            children: enabledToggleCommands.map((command) => <ToggleCommand key={command.displayName} command={command} />),
+                        }}
+                    >
+                        <Body1 wrap={false} truncate>
+                            {name.substring(0, 100)}
+                        </Body1>
+                    </TreeItemLayout>
+                </FlatTreeItem>
+            </MenuTrigger>
+            <MenuPopover hidden={!entityItem.children?.length}>
+                <MenuList>
+                    <MenuItem onClick={expandAll}>
+                        <Body1>Expand All Descendants</Body1>
+                    </MenuItem>
+                    <MenuItem onClick={collapseAll}>
+                        <Body1>Collapse All Descendants</Body1>
+                    </MenuItem>
+                </MenuList>
+            </MenuPopover>
+        </Menu>
     );
 };
 
@@ -636,6 +685,16 @@ export const SceneExplorer: FunctionComponent<{
         [setOpenItems, allTreeItems]
     );
 
+    const expandAll = (treeItem: SectionTreeItemData | EntityTreeItemData) => {
+        ExpandOrCollapseAll(treeItem, true, openItems);
+        setOpenItems(new Set(openItems));
+    };
+
+    const collapseAll = (treeItem: SectionTreeItemData | EntityTreeItemData) => {
+        ExpandOrCollapseAll(treeItem, false, openItems);
+        setOpenItems(new Set(openItems));
+    };
+
     return (
         <div className={classes.rootDiv}>
             <SearchBox
@@ -662,7 +721,16 @@ export const SceneExplorer: FunctionComponent<{
                                 />
                             );
                         } else if (item.type === "section") {
-                            return <SectionTreeItem key={item.sectionName} scene={scene} section={item} isFiltering={!!itemsFilter} />;
+                            return (
+                                <SectionTreeItem
+                                    key={item.sectionName}
+                                    scene={scene}
+                                    section={item}
+                                    isFiltering={!!itemsFilter}
+                                    expandAll={() => expandAll(item)}
+                                    collapseAll={() => collapseAll(item)}
+                                />
+                            );
                         } else {
                             return (
                                 <EntityTreeItem
@@ -673,6 +741,8 @@ export const SceneExplorer: FunctionComponent<{
                                     select={() => setSelectedEntity?.(item.entity)}
                                     isFiltering={!!itemsFilter}
                                     commandProviders={commandProviders}
+                                    expandAll={() => expandAll(item)}
+                                    collapseAll={() => collapseAll(item)}
                                 />
                             );
                         }
