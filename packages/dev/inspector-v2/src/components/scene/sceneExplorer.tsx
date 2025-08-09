@@ -4,8 +4,8 @@ import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fl
 import type { ScrollToInterface } from "@fluentui/react-components/unstable";
 import type { ComponentType, FunctionComponent } from "react";
 
+import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import { Body1, Body1Strong, Button, FlatTree, FlatTreeItem, makeStyles, SearchBox, ToggleButton, tokens, Tooltip, TreeItemLayout } from "@fluentui/react-components";
-import { VirtualizerScrollView } from "@fluentui/react-components/unstable";
 import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
