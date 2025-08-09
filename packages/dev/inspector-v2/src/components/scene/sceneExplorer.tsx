@@ -44,11 +44,6 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     order?: number;
 
     /**
-     * A predicate function that determines if the entity belongs to this section.
-     */
-    predicate: (entity: unknown) => entity is T;
-
-    /**
      * A function that returns the root entities for this section.
      */
     getRootEntities: () => readonly T[];
@@ -57,11 +52,6 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
      * An optional function that returns the children of a given entity.
      */
     getEntityChildren?: (entity: T) => readonly T[];
-
-    /**
-     * An optional function that returns the parent of a given entity.
-     */
-    getEntityParent?: (entity: T) => Nullable<T>;
 
     /**
      * Gets the display information for a given entity.
@@ -438,7 +428,7 @@ export const SceneExplorer: FunctionComponent<{
 
     const [sceneTreeItem, sectionTreeItems, allTreeItems] = useMemo(() => {
         const sectionTreeItems: SectionTreeItemData[] = [];
-        const allTreeItems = new Map<TreeItemValue, TreeItemData>();
+        const allTreeItems = new Map<TreeItemValue, SectionTreeItemData | EntityTreeItemData>();
 
         const sceneTreeItem: SceneTreeItemData = {
             type: "scene",
@@ -581,19 +571,13 @@ export const SceneExplorer: FunctionComponent<{
         (entity: EntityBase) => {
             const parentStack: TreeItemValue[] = [];
 
-            for (const section of sections) {
-                if (section.predicate(entity)) {
-                    for (let parent = section.getEntityParent?.(entity); parent; parent = section.getEntityParent?.(parent)) {
-                        parentStack.push(parent.uniqueId);
-                    }
-                    parentStack.push(section.displayName);
-                    break;
-                }
+            for (let treeItem = allTreeItems.get(entity.uniqueId); treeItem; treeItem = treeItem?.type === "entity" ? treeItem.parent : undefined) {
+                parentStack.push(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName);
             }
 
             return parentStack;
         },
-        [scene, openItems, sections]
+        [sectionTreeItems, allTreeItems, sections]
     );
 
     // We only want the effect below to execute when the selectedEntity changes, so we use a ref to keep the latest version of getParentStack.
