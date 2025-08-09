@@ -1,6 +1,8 @@
 // NOTE: This app is an easy place to test Inspector v2.
 // Additionally, here are some PGs that are helpful for testing specific features:
 // Frame graphs: http://localhost:1338/?inspectorv2#9YU4C5#23
+// Sprites: https://localhost:1338/?inspectorv2#YCY2IL#4
+// Animation groups: http://localhost:1338/?inspectorv2#FMAYKS
 
 import HavokPhysics from "@babylonjs/havok";
 import type { Nullable } from "core/types";
