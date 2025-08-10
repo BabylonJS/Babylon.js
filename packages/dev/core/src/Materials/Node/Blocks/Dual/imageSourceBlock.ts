@@ -168,7 +168,12 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     public override serialize(ignoreTexture = false): any {
         const serializationObject = super.serialize();
 
-        if (!ignoreTexture && this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
+        if (
+            !ignoreTexture &&
+            this.texture &&
+            (NodeMaterial.AllowSerializationOfRenderTargetTextures || !this.texture.isRenderTarget) &&
+            this.texture.getClassName() !== "VideoTexture"
+        ) {
             serializationObject.texture = this.texture.serialize();
         }
 
@@ -178,14 +183,18 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
         super._deserialize(serializationObject, scene, rootUrl, urlRewriter);
 
-        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
-            if (serializationObject.texture.url.indexOf("data:") === 0) {
-                rootUrl = "";
-            } else if (urlRewriter) {
-                serializationObject.texture.url = urlRewriter(serializationObject.texture.url);
-                serializationObject.texture.name = serializationObject.texture.url;
+        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
+            if (serializationObject.texture.url !== undefined) {
+                if (serializationObject.texture.url.indexOf("data:") === 0) {
+                    rootUrl = "";
+                } else if (urlRewriter) {
+                    serializationObject.texture.url = urlRewriter(serializationObject.texture.url);
+                    serializationObject.texture.name = serializationObject.texture.url;
+                }
             }
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
+            if (serializationObject.texture.base64String || serializationObject.texture.url !== undefined) {
+                this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSyste
             {!system.isNodeGenerated && (
                 <FactorGradientList
                     gradients={emitRateGradients}
-                    label="Emit rate gradient"
+                    label="Emit Rate Gradient"
                     removeGradient={(gradient: IValueGradient) => {
                         system.removeEmitRateGradient(gradient.gradient);
                         system.forceRefreshGradients();
@@ -48,7 +48,7 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
             {!system.isNodeGenerated && (
                 <Color4GradientList
                     gradients={colorGradients}
-                    label="Color gradient"
+                    label="Color Gradient"
                     removeGradient={(gradient: IValueGradient) => {
                         system.removeColorGradient(gradient.gradient);
                         system.forceRefreshGradients();

@@ -9,7 +9,7 @@ import { useRef, useEffect } from "react";
  * @param factory A function that creates the resource.
  * @returns The created resource.
  */
-export function useResource<T extends IDisposable>(factory: () => T): T {
+export function useResource<T extends IDisposable>(factory: () => T): Omit<T, "dispose"> {
     const resourceRef = useRef<T>();
     const factoryRef = useRef(factory);
 

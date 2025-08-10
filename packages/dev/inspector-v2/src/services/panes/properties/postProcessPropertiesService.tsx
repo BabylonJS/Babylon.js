@@ -1,3 +1,5 @@
+import { PostProcess } from "core/PostProcesses/postProcess";
+import { PostProcessProperties } from "../../../components/properties/postProcesses/postProcessProperties";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
 
@@ -7,11 +9,20 @@ export const PostProcessPropertiesServiceDefinition: ServiceDefinition<[], [IPro
     friendlyName: "Post Process Properties",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
-        // TODO: Add content registrations for each section and for each type in the PostProcess class hierarchy.
+        const postProcessContentRegistration = propertiesService.addSectionContent({
+            key: "Post Process Properties",
+            predicate: (entity: unknown) => entity instanceof PostProcess,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <PostProcessProperties postProcess={context} />,
+                },
+            ],
+        });
 
         return {
             dispose: () => {
-                // TODO: Dispose content registrations.
+                postProcessContentRegistration.dispose();
             },
         };
     },

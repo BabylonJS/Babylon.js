@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "SPZ v3 - Splat",
+            "playgroundId": "#V7CV8W#3",
+            "referenceImage": "gsplat-spz-v3.png"
+        },
+        {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png"
@@ -1116,6 +1121,11 @@
             "playgroundId": "#3A00GJ#42",
             "replace": "//options//, roundtripCount = 1; srcRH = false; destRH = false;",
             "referenceImage": "glTFSerializerCameraRotationAnimation.png"
+        },
+        {
+            "title": "GLTF Serializer compressed and uncompressed texture export",
+            "playgroundId": "#B03GUL#4",
+            "referenceImage": "glTFSerializerTextureExport.png"
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",

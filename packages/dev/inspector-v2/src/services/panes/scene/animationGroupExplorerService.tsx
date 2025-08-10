@@ -2,7 +2,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { FilmstripRegular, StackRegular } from "@fluentui/react-icons";
+import { FilmstripRegular, PauseFilled, PlayFilled, StackRegular } from "@fluentui/react-icons";
 
 import { AnimationGroup, TargetedAnimation } from "core/Animations/animationGroup";
 import { Observable } from "core/Misc";
@@ -54,9 +54,45 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
             getEntityRemovedObservables: () => [scene.onAnimationGroupRemovedObservable],
         });
 
+        const animationPlayPauseCommandRegistration = sceneExplorerService.addCommand({
+            predicate: (entity: unknown) => entity instanceof AnimationGroup,
+            getCommand: (animationGroup) => {
+                const onChangeObservable = new Observable<void>();
+                const playObserver = animationGroup.onAnimationGroupPlayObservable.add(() => onChangeObservable.notifyObservers());
+                const pauseObserver = animationGroup.onAnimationGroupPauseObservable.add(() => onChangeObservable.notifyObservers());
+                const endObserver = animationGroup.onAnimationGroupEndObservable.add(() => onChangeObservable.notifyObservers());
+
+                return {
+                    type: "toggle",
+                    get displayName() {
+                        return `${animationGroup.isPlaying ? "Pause" : "Play"} Animation`;
+                    },
+                    icon: () => (animationGroup.isPlaying ? <PauseFilled /> : <PlayFilled />),
+                    get isEnabled() {
+                        return animationGroup.isPlaying;
+                    },
+                    set isEnabled(enabled: boolean) {
+                        if (enabled) {
+                            animationGroup.play(true);
+                        } else {
+                            animationGroup.pause();
+                        }
+                    },
+                    onChange: onChangeObservable,
+                    dispose: () => {
+                        playObserver.remove();
+                        pauseObserver.remove();
+                        endObserver.remove();
+                        onChangeObservable.clear();
+                    },
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
+                animationPlayPauseCommandRegistration.dispose();
             },
         };
     },
