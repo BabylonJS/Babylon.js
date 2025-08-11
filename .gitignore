@@ -28,6 +28,7 @@ junit.xml
 *.pem
 packages/tools/babylonServer/public/localDev
 packages/tools/babylonServer/public/localDevWebGPU
+packages/tools/devHost/public/localDev
 packages/tools/playground/public/temp
 #playwright
 test-results
@@ -46,7 +47,3 @@ packages/public/@babylonjs/smart-filters-blocks/src
 # Smart Filters Editor files
 packages/tools/smartFiltersEditor/www/scripts/**
 packages/tools/smartFiltersEditor/www/index.html
-
-# Dev Host public folder
-packages/tools/devHost/public/**
-!packages/tools/devHost/public/index.html
