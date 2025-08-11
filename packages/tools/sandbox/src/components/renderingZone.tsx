@@ -417,8 +417,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 const loader = plugin as GLTFFileLoader;
                 loader.transparencyAsCoverage = this.props.globalState.commerceMode;
 
-                // Disable validation temporarily until Chrome 139 is in stable release due to https://issues.chromium.org/issues/419503126
-                loader.validate = false;
+                loader.validate = true;
 
                 loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {
                     this.props.globalState.glTFLoaderExtensions[extension.name] = extension;
