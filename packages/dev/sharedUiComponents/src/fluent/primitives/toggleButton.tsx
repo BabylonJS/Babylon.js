@@ -2,34 +2,20 @@ import { ToggleButton as FluentToggleButton } from "@fluentui/react-components";
 import type { PrimitiveProps } from "./primitive";
 import { useCallback, useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
+import type { FluentIcon } from "@fluentui/react-icons";
 
 type ToggleButtonProps = PrimitiveProps<boolean> & {
-    enabledIcon: JSX.Element;
-    disabledIcon?: JSX.Element;
+    enabledIcon: FluentIcon; // Intentionally using FluentIcon so that we can control the visual toggle look/feel
+    disabledIcon?: FluentIcon;
 };
 
 /**
  * Toggles between two states using a button with icons.
- * If no disabledIcon is provided, the button will toggle between enabled/disabled states without an icon change
+ * If no disabledIcon is provided, the button will toggle between visual enabled/disabled states without an icon change
  *
  * @param props
  * @returns
  */
-// export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
-//     const [checked, setChecked] = useState(props.value);
-//     useEffect(() => {
-//         setChecked(props.value);
-//     }, [props.value]);
-//     return (
-//         <FluentToggleButton
-//             appearance={!checked && !props.disabledIcon ? "transparent" : "primary"}
-//             icon={!checked && props.disabledIcon ? <props.disabledIcon /> : <props.enabledIcon />}
-//             onClick={() => props.onChange(!checked)}
-//             checked={checked}
-//         />
-//     );
-// };
-
 export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     const { value, onChange, title } = props;
     const [checked, setChecked] = useState(value);
@@ -46,13 +32,10 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     }, [props.value]);
 
     return (
-        // <Tooltip content={props.title} relationship="label">
-
-        // </Tooltip>
         <FluentToggleButton
             title={title}
-            icon={!checked && props.disabledIcon ? props.disabledIcon : props.enabledIcon}
-            appearance={checked ? "transparent" : "subtle"}
+            icon={checked ? <props.enabledIcon /> : props.disabledIcon ? <props.disabledIcon opacity={0.5} /> : <props.enabledIcon opacity={0.5} />}
+            appearance="transparent"
             checked={checked}
             onClick={toggle}
         />

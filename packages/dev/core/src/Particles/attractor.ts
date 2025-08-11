@@ -1,6 +1,7 @@
 import { Vector3 } from "core/Maths/math.vector";
 import type { Particle } from "./particle";
 import type { ThinParticleSystem } from "./thinParticleSystem";
+import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 
 const ToAttractor: Vector3 = Vector3.Zero();
 const Force: Vector3 = Vector3.Zero();
@@ -16,6 +17,8 @@ export class Attractor {
      * A positive value attracts particles, while a negative value repels them.
      */
     public strength = 0.0;
+
+    public uniqueId = UniqueIdGenerator.UniqueId;
 
     /**
      * Gets or sets the position of the attractor in 3D space.
