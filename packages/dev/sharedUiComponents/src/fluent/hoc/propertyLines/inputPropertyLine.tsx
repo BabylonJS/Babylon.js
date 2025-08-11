@@ -23,11 +23,9 @@ export const TextInputPropertyLine: FunctionComponent<TextInputProps & PropertyL
  * @returns property-line wrapped input component
  */
 export const NumberInputPropertyLine: FunctionComponent<SpinButtonProps & PropertyLineProps<number> & { forceInt?: boolean }> = (props) => {
-    const { forceInt, ...rest } = props;
-    const propsToAdd = forceInt ? { step: 0, validator: Number.isInteger } : {};
     return (
-        <PropertyLine {...rest}>
-            <SpinButton {...rest} {...propsToAdd} />
+        <PropertyLine {...props}>
+            <SpinButton {...props} />
         </PropertyLine>
     );
 };

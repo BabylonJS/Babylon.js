@@ -1,6 +1,6 @@
-import type { FunctionComponent, FocusEvent, KeyboardEvent, ChangeEvent } from "react";
+import type { FunctionComponent, KeyboardEvent, ChangeEvent, FocusEvent } from "react";
 import { useEffect, useRef, useState } from "react";
-
+import type { InputOnChangeData } from "@fluentui/react-components";
 import { Input as FluentInput, makeStyles, useId } from "@fluentui/react-components";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
@@ -43,10 +43,20 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
         }
     };
 
-    const handleChange = (event: ChangeEvent<HTMLInputElement>, _: unknown) => {
+    const handleChange = (event: ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
         event.stopPropagation(); // Prevent event propagation
-        setValue(event.target.value); // Update local state. Do not notify parent
-        tryCommitValue(event.target.value);
+        setValue(data.value); // Update local state. Do not notify parent
+        tryCommitValue(data.value);
+    };
+
+    const handleKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
+        event.stopPropagation(); // Prevent event propagation
+
+        if (event.key !== "Enter") {
+            // Update local state and try to commit the value if valid, applying styling if not
+            setValue((event.target as any).value);
+            tryCommitValue((event.target as any).value);
+        }
     };
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -55,22 +65,13 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
         // Prevent Enter key from causing form submission or value reversion
         if (event.key === "Enter") {
             event.preventDefault();
-
-            // // Update local state and try to commit the value if valid
-            // const currVal = (event.target as any).value;
-            // setValue(currVal);
-            // tryCommitValue(currVal);
         }
     };
 
-    const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
-        event.stopPropagation(); // Prevent event propagation
-        // // Update local state and try to commit the value if valid
-        // const currVal = (event.target as any).value;
-        // setValue(currVal);
-        // tryCommitValue(currVal);
+    const handleOnBlur = (event: FocusEvent<HTMLInputElement>) => {
+        event.stopPropagation();
+        event.preventDefault();
     };
-
     const invalidStyle = !validateValue(value)
         ? {
               backgroundColor: "#fdeaea",
@@ -82,7 +83,17 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
     return (
         <div className={classes.base}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
-            <FluentInput {...props} id={id} size="small" value={value} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} style={invalidStyle} />
+            <FluentInput
+                {...props}
+                id={id}
+                size="small"
+                value={value}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                onKeyUp={handleKeyUp}
+                onBlur={handleOnBlur}
+                style={invalidStyle}
+            />
         </div>
     );
 };

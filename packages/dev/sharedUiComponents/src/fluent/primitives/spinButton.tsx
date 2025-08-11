@@ -14,10 +14,10 @@ const useSpinStyles = makeStyles({
 });
 
 export type SpinButtonProps = PrimitiveProps<number> & {
-    precision?: number; // Optional precision for the spin button
-    step?: number; // Optional step value for the spin button
     min?: number;
     max?: number;
+    step?: number;
+    forceInt?: boolean;
     validator?: (value: number) => boolean;
 };
 
@@ -27,6 +27,8 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
 
     const [value, setValue] = useState(props.value);
     const lastCommittedValue = useRef(props.value);
+    // step and forceInt are  not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
+    const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
 
     useEffect(() => {
         if (props.value != lastCommittedValue.current) {
@@ -38,7 +40,8 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const validateValue = (numericValue: number): boolean => {
         const outOfBounds = (min !== undefined && numericValue < min) || (max !== undefined && numericValue > max);
         const failsValidator = props.validator && !props.validator(numericValue);
-        const invalid = !!outOfBounds || !!failsValidator || isNaN(numericValue);
+        const failsIntCheck = props.forceInt ? !Number.isInteger(numericValue) : false;
+        const invalid = !!outOfBounds || !!failsValidator || isNaN(numericValue) || !!failsIntCheck;
         return !invalid;
     };
 
@@ -52,9 +55,20 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
 
     const handleChange = (event: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {
         event.stopPropagation(); // Prevent event propagation
-        if (data.value != null) {
+        if (data.value != null && !Number.isNaN(data.value)) {
             setValue(data.value); // Update local state. Do not notify parent
             tryCommitValue(data.value);
+        }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
+        event.stopPropagation(); // Prevent event propagation
+
+        if (event.key !== "Enter") {
+            // Update local state and try to commit the value if valid, applying styling if not
+            const currVal = parseFloat((event.target as any).value);
+            setValue(currVal);
+            tryCommitValue(currVal);
         }
     };
 
@@ -64,20 +78,12 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
         // Prevent Enter key from causing form submission or value reversion
         if (event.key === "Enter") {
             event.preventDefault();
-
-            // // Update local state and try to commit the value if valid
-            // const currVal = parseFloat((event.target as any).value);
-            // setValue(currVal);
-            // tryCommitValue(currVal);
         }
     };
 
-    const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
-        event.stopPropagation(); // Prevent event propagation
-        // Try to commit the current value when losing focus
-        // const currVal = parseFloat(event.target.value);
-        // setValue(currVal);
-        // tryCommitValue(currVal);
+    const handleOnBlur = (event: FocusEvent<HTMLInputElement>) => {
+        event.stopPropagation();
+        event.preventDefault();
     };
 
     const invalidStyle = !validateValue(value)
@@ -91,7 +97,18 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     return (
         <div className={classes.base}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
-            <FluentSpinButton {...props} id={id} size="small" value={value} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} style={invalidStyle} />
+            <FluentSpinButton
+                {...props}
+                step={step}
+                id={id}
+                size="small"
+                value={value}
+                onChange={handleChange}
+                onKeyUp={handleKeyUp}
+                onKeyDown={handleKeyDown}
+                onBlur={handleOnBlur}
+                style={invalidStyle}
+            />
         </div>
     );
 };

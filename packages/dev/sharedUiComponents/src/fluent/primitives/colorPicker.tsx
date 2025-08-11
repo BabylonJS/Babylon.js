@@ -224,7 +224,7 @@ const InputRgbField: FunctionComponent<InputRgbFieldProps> = (props) => {
                 min={0}
                 max={255}
                 value={value[rgbKey] * 255.0}
-                step={1}
+                forceInt
                 onChange={handleChange}
             />
         </div>
@@ -275,7 +275,7 @@ export const InputHsvField: FunctionComponent<InputHsvFieldProps> = (props) => {
                 min={0}
                 max={max}
                 value={rgbaToHsv(value)[hsvKey] * scale}
-                step={1}
+                forceInt
                 onChange={handleChange}
             />
         </div>
