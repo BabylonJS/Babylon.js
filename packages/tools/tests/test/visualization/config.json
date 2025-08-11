@@ -2736,6 +2736,11 @@
         {
             "title": "Test code inlining",
             "playgroundId": "#YG3BBF#51"
+        },
+        {
+            "title": "Sponza Clustered Lighting",
+            "playgroundId": "#CSCJO2#12",
+            "referenceImage": "sponza-clustered-lighting.png"
         }
     ]
 }
