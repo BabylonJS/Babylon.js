@@ -70,6 +70,16 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.outputDepth._typeConnectionSource = this.depth;
     }
 
+    /** Indicates that this object renderer is the main object renderer of the frame graph. */
+    @editableInPropertyPage("Is main object renderer", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get isMainObjectRenderer() {
+        return this._frameGraphTask.isMainObjectRenderer;
+    }
+
+    public set isMainObjectRenderer(value: boolean) {
+        this._frameGraphTask.isMainObjectRenderer = value;
+    }
+
     /** Indicates if depth testing must be enabled or disabled */
     @editableInPropertyPage("Depth test", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get depthTest() {
@@ -216,6 +226,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
         codes.push(`${this._codeVariableName}.disableShadows = ${this.disableShadows};`);
         codes.push(`${this._codeVariableName}.renderInLinearSpace = ${this.renderInLinearSpace};`);
+        codes.push(`${this._codeVariableName}.isMainObjectRenderer = ${this.isMainObjectRenderer};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -225,6 +236,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         serializationObject.depthWrite = this.depthWrite;
         serializationObject.disableShadows = this.disableShadows;
         serializationObject.renderInLinearSpace = this.renderInLinearSpace;
+        serializationObject.isMainObjectRenderer = this.isMainObjectRenderer;
         return serializationObject;
     }
 
@@ -234,5 +246,6 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.depthWrite = serializationObject.depthWrite;
         this.disableShadows = serializationObject.disableShadows;
         this.renderInLinearSpace = !!serializationObject.renderInLinearSpace;
+        this.isMainObjectRenderer = !!serializationObject.isMainObjectRenderer;
     }
 }
