@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "NPE - Angle align",
+            "playgroundId": "#H5RP91",
+            "referenceImage": "npe-angle-align.png"
+        },
+        {
             "title": "SPZ v3 - Splat",
             "playgroundId": "#V7CV8W#3",
             "referenceImage": "gsplat-spz-v3.png"

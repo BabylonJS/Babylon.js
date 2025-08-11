@@ -40,7 +40,6 @@ export interface INodeParticleEditorOptions {
 
 /**
  * Defines a set of particle systems defined as a node graph.
- * @experimental This API is experimental and may change in future releases.
  * NPE: #K6F1ZB#1
  * PG: #ZT509U#1
  */
