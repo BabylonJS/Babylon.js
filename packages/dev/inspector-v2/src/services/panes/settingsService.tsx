@@ -105,7 +105,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                         }}
                                     />
                                     <SwitchPropertyLine
-                                        label="Ignore backfaces for picking"
+                                        label="Ignore Backfaces for Picking"
                                         description="Ignore backfaces when picking."
                                         value={settings.ignoreBackfacesForPicking}
                                         onChange={(checked) => {

@@ -293,6 +293,12 @@ export class NodeRenderGraph {
             this._autoFillExternalInputs();
         }
 
+        // Make sure that one of the object renderer is flagged as the main object renderer
+        const objectRendererBlocks = this.getBlocksByPredicate<NodeRenderGraphObjectRendererBlock>((block) => block instanceof NodeRenderGraphObjectRendererBlock);
+        if (objectRendererBlocks.length > 0 && !objectRendererBlocks.find((block) => block.isMainObjectRenderer)) {
+            objectRendererBlocks[0].isMainObjectRenderer = true;
+        }
+
         try {
             this.outputBlock.build(state);
 

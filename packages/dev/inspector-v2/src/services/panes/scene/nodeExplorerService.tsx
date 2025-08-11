@@ -1,4 +1,4 @@
-import type { Gizmo, Nullable } from "core/index";
+import type { Gizmo, IObserver, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
@@ -11,6 +11,8 @@ import {
     Cone16Regular,
     EyeOffRegular,
     EyeRegular,
+    FlashlightOffRegular,
+    FlashlightRegular,
     LightbulbRegular,
     VideoFilled,
     VideoRegular,
@@ -19,6 +21,7 @@ import {
 import { Camera } from "core/Cameras/camera";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 import { CameraGizmo } from "core/Gizmos/cameraGizmo";
+import { LightGizmo } from "core/Gizmos/lightGizmo";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
@@ -161,7 +164,6 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
-        const gizmos = new Set<Gizmo>();
         let utilityLayer: Nullable<UtilityLayerRenderer> = null;
         const getOrCreateUtilityLayer = () => {
             if (!utilityLayer) {
@@ -170,76 +172,104 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             return utilityLayer;
         };
 
-        const cameraGizmoCommandRegistration = sceneExplorerService.addCommand({
-            predicate: (entity: unknown) => entity instanceof Camera,
-            getCommand: (camera) => {
-                const onChangeObservable = new Observable<void>();
+        function addGizmoCommand<NodeT extends Node, GizmoT extends Gizmo>(
+            nodeClass: abstract new (...args: any[]) => NodeT,
+            gizmoClass: new (...args: ConstructorParameters<typeof Gizmo>) => GizmoT,
+            gizmoMap: WeakMap<NodeT, GizmoT>,
+            onGizmoCreated: (node: NodeT, gizmo: GizmoT) => void
+        ) {
+            return sceneExplorerService.addCommand({
+                predicate: (entity: unknown): entity is NodeT => entity instanceof nodeClass,
+                getCommand: (node) => {
+                    const onChangeObservable = new Observable<void>();
 
-                const getGizmo = () => {
-                    return camera.reservedDataStore?.cameraGizmo as Nullable<CameraGizmo>;
-                };
+                    const getGizmo = () => {
+                        return gizmoMap.get(node);
+                    };
 
-                const createGizmo = () => {
-                    const gizmo = new CameraGizmo(getOrCreateUtilityLayer());
-                    gizmo.camera = camera;
-                    gizmo.material.reservedDataStore = { hidden: true };
+                    let nodeDisposedObserver: Nullable<IObserver> = null;
 
-                    gizmos.add(gizmo);
-                    if (!camera.reservedDataStore) {
-                        camera.reservedDataStore = {};
-                    }
-                    camera.reservedDataStore.cameraGizmo = gizmo;
+                    const disposeGizmo = () => {
+                        const gizmo = getGizmo();
+                        if (gizmo) {
+                            gizmoMap.delete(node);
+                            gizmo.dispose();
+                            nodeDisposedObserver?.remove();
+                            onChangeObservable.notifyObservers();
+                        }
+                    };
 
-                    onChangeObservable.notifyObservers();
+                    const createGizmo = () => {
+                        const gizmo = new gizmoClass(getOrCreateUtilityLayer());
+                        onGizmoCreated(node, gizmo);
+                        gizmoMap.set(node, gizmo);
+                        nodeDisposedObserver = node.onDisposeObservable.addOnce(disposeGizmo);
+                        onChangeObservable.notifyObservers();
+                        return gizmo;
+                    };
 
-                    return gizmo;
-                };
+                    return {
+                        type: "toggle",
+                        get displayName() {
+                            return `Turn ${getGizmo() ? "Off" : "On"} Gizmo`;
+                        },
+                        icon: () => (getGizmo() ? <Cone16Filled /> : <Cone16Regular />),
+                        get isEnabled() {
+                            return !!getGizmo();
+                        },
+                        set isEnabled(enabled: boolean) {
+                            if (enabled) {
+                                if (!getGizmo()) {
+                                    createGizmo();
+                                }
+                            } else {
+                                disposeGizmo();
+                            }
+                        },
+                        onChange: onChangeObservable,
+                        dispose: () => {
+                            onChangeObservable.clear();
+                        },
+                    };
+                },
+            });
+        }
 
-                const disposeGizmo = () => {
-                    const gizmo = getGizmo();
-                    if (gizmo) {
-                        gizmos.delete(gizmo);
-                        delete camera.reservedDataStore.cameraGizmo;
-                        gizmo.dispose();
-                    }
+        const cameraGizmos = new WeakMap<Camera, CameraGizmo>();
+        const cameraGizmoCommandRegistration = addGizmoCommand(Camera, CameraGizmo, cameraGizmos, (camera, gizmo) => (gizmo.camera = camera));
 
-                    onChangeObservable.notifyObservers();
-                };
-
+        const lightEnabledCommandRegistration = sceneExplorerService.addCommand({
+            predicate: (entity: unknown): entity is Light => entity instanceof Light,
+            getCommand: (light) => {
                 return {
                     type: "toggle",
                     get displayName() {
-                        return `Turn ${getGizmo() ? "Off" : "On"} Gizmo`;
+                        return `Turn Light ${light.isEnabled() ? "Off" : "On"}`;
                     },
-                    icon: () => (getGizmo() ? <Cone16Filled /> : <Cone16Regular />),
+                    icon: () => (light.isEnabled() ? <FlashlightRegular /> : <FlashlightOffRegular />),
                     get isEnabled() {
-                        return !!getGizmo();
+                        return !light.isEnabled();
                     },
                     set isEnabled(enabled: boolean) {
-                        if (enabled) {
-                            if (!getGizmo()) {
-                                createGizmo();
-                            }
-                        } else {
-                            disposeGizmo();
-                        }
+                        light.setEnabled(!enabled);
                     },
-                    onChange: onChangeObservable,
-                    dispose: () => {
-                        onChangeObservable.clear();
-                    },
+                    onChange: light.onEnabledStateChangedObservable,
                 };
             },
         });
 
+        const lightGizmos = new WeakMap<Light, LightGizmo>();
+        const lightGizmoCommandRegistration = addGizmoCommand(Light, LightGizmo, lightGizmos, (light, gizmo) => (gizmo.light = light));
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
-                gizmos.forEach((gizmo) => gizmo.dispose());
                 utilityLayer?.dispose();
                 abstractMeshVisibilityCommandRegistration.dispose();
                 activeCameraCommandRegistration.dispose();
                 cameraGizmoCommandRegistration.dispose();
+                lightEnabledCommandRegistration.dispose();
+                lightGizmoCommandRegistration.dispose();
             },
         };
     },

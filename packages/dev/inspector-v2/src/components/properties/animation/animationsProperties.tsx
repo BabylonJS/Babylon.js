@@ -175,7 +175,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
                             {mainAnimatable && (ranges.length > 0 || animations.length > 0) ? (
                                 <>
                                     <SwitchPropertyLine
-                                        label="Enable override"
+                                        label="Enable Override"
                                         value={animationPropertiesOverride != null}
                                         onChange={(value) => {
                                             if (value) {
@@ -196,7 +196,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
                                             />
                                             <BoundProperty
                                                 component={SyncedSliderPropertyLine}
-                                                label="Blending speed"
+                                                label="Blending Speed"
                                                 target={animationPropertiesOverride!}
                                                 propertyKey="blendingSpeed"
                                                 min={0}

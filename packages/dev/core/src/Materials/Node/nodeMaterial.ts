@@ -1038,8 +1038,8 @@ export class NodeMaterial extends PushMaterial {
 
         this._buildIsInProgress = false;
         if (noError) {
-            this.onBuildObservable.notifyObservers(this);
             this._buildWasSuccessful = true;
+            this.onBuildObservable.notifyObservers(this);
         }
 
         // Wipe defines

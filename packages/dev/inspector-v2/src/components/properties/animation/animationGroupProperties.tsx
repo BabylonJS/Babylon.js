@@ -43,10 +43,10 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
         <>
             <ButtonLine label={isPlaying ? "Pause" : "Play"} onClick={() => (isPlaying ? animationGroup.pause() : animationGroup.play(true))} />
             <ButtonLine label="Stop" onClick={() => animationGroup.stop()} />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Speed ratio" min={0} max={10} step={0.1} target={animationGroup} propertyKey="speedRatio" />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Speed Ratio" min={0} max={10} step={0.1} target={animationGroup} propertyKey="speedRatio" />
             {currentFrameHolder ? (
                 <SyncedSliderPropertyLine
-                    label="Current frame"
+                    label="Current Frame"
                     min={animationGroup.from}
                     max={animationGroup.to}
                     step={(animationGroup.to - animationGroup.from) / 1000.0}
@@ -67,7 +67,7 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
                 <>
                     <BoundProperty
                         component={SyncedSliderPropertyLine}
-                        label="Blending speed"
+                        label="Blending Speed"
                         min={0}
                         max={1}
                         step={0.01}
@@ -76,7 +76,7 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
                         ignoreNullable
                         defaultValue={0}
                     />
-                    <BoundProperty component={SwitchPropertyLine} label="Is additive" target={animationGroup} propertyKey="isAdditive" />
+                    <BoundProperty component={SwitchPropertyLine} label="Is Additive" target={animationGroup} propertyKey="isAdditive" />
                     <BoundProperty component={NumberInputPropertyLine} label="Weight" target={animationGroup} propertyKey="weight" step={0.1} />
                     <BoundProperty component={NumberInputPropertyLine} label="Play order" target={animationGroup} propertyKey="playOrder" forceInt />
                 </>
