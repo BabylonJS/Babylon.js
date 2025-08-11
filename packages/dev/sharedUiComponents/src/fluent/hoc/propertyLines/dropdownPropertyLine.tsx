@@ -5,8 +5,7 @@ import type { PropertyLineProps } from "./propertyLine";
 import { forwardRef } from "react";
 import type { FunctionComponent } from "react";
 
-// In a follow-up PR i will remove the nullAs concept from dropdown
-type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = Omit<DropdownProps<V>, "includeNullAs"> & PropertyLineProps<AcceptedDropdownValue>;
+type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = DropdownProps<V> & PropertyLineProps<V>;
 
 /**
  * Wraps a dropdown in a property line
@@ -14,7 +13,7 @@ type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = Omit<DropdownP
  * @returns property-line wrapped dropdown
  */
 
-const DropdownPropertyLine = forwardRef<HTMLDivElement, DropdownProps<AcceptedDropdownValue> & PropertyLineProps<AcceptedDropdownValue>>((props, ref) => {
+const DropdownPropertyLine = forwardRef<HTMLDivElement, DropdownPropertyLineProps<AcceptedDropdownValue>>((props, ref) => {
     return (
         <PropertyLine {...props} ref={ref}>
             <Dropdown {...props} />

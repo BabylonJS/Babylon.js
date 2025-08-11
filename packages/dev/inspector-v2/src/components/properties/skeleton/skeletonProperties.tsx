@@ -3,14 +3,13 @@ import type { FunctionComponent } from "react";
 
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 
-import { makeStyles } from "@fluentui/react-components";
-import { Collapse } from "@fluentui/react-motion-components-preview";
 import { useReducer, useState } from "react";
 
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { BoundProperty } from "../boundProperty";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
@@ -20,15 +19,15 @@ export const SkeletonGeneralProperties: FunctionComponent<{ skeleton: Skeleton }
 
     return (
         <>
-            <StringifiedPropertyLine key="SkeletonBoneCount" label="Bone count" description="The number of bones of the skeleton." value={skeleton.bones.length} />
+            <StringifiedPropertyLine key="SkeletonBoneCount" label="Bone Count" description="The number of bones of the skeleton." value={skeleton.bones.length} />
             <BoundProperty
                 key="SkeletonUseTextureToStoreBoneMatrices2"
                 component={SwitchPropertyLine}
-                label="Use texture to store bone matrices"
+                label="Use Texture to Store Bone Matrices"
                 target={skeleton}
                 propertyKey="useTextureToStoreBoneMatrices"
             />
-            <ButtonLine key="SkeletonReturnToRest" label="Return to rest" onClick={() => skeleton.returnToRest()} />
+            <ButtonLine key="SkeletonReturnToRest" label="Return to Rest" onClick={() => skeleton.returnToRest()} />
         </>
     );
 };
@@ -37,21 +36,13 @@ const ViewerDisplayModes = [
     { label: "Lines", value: SkeletonViewer.DISPLAY_LINES },
     { label: "Spheres", value: SkeletonViewer.DISPLAY_SPHERES },
     { label: "Sphere and Spurs", value: SkeletonViewer.DISPLAY_SPHERE_AND_SPURS },
-] as const satisfies DropdownOption[];
-
-const useStyles = makeStyles({
-    contentDiv: {
-        overflow: "hidden",
-    },
-});
+] as const satisfies DropdownOption<number>[];
 
 interface IViewerOptions extends Required<ISkeletonViewerDisplayOptions> {
     displayMode: number;
 }
 
 export const SkeletonViewerProperties: FunctionComponent<{ skeleton: Skeleton }> = (props) => {
-    const classes = useStyles();
-
     const { skeleton } = props;
     const scene = skeleton.getScene();
 
@@ -128,7 +119,7 @@ export const SkeletonViewerProperties: FunctionComponent<{ skeleton: Skeleton }>
             />
 
             <Collapse visible={enabled}>
-                <div className={classes.contentDiv}>
+                <>
                     <NumberDropdownPropertyLine
                         key="SkeletonViewerDisplayMode"
                         label="Display Mode"
@@ -138,7 +129,7 @@ export const SkeletonViewerProperties: FunctionComponent<{ skeleton: Skeleton }>
                         onChange={(value) => updateOptions({ displayMode: value })}
                     />
                     <Collapse visible={options.displayMode !== SkeletonViewer.DISPLAY_LINES}>
-                        <div className={classes.contentDiv}>
+                        <>
                             <NumberInputPropertyLine
                                 key="SkeletonViewerDisplayOptionsMidStep"
                                 label="Mid Step"
@@ -195,9 +186,9 @@ export const SkeletonViewerProperties: FunctionComponent<{ skeleton: Skeleton }>
                                 description="Length of each local axis."
                                 onChange={(value) => updateOptions({ localAxesSize: value })}
                             />
-                        </div>
+                        </>
                     </Collapse>
-                </div>
+                </>
             </Collapse>
         </>
     );

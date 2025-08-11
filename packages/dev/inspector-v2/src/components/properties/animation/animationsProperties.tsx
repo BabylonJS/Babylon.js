@@ -7,6 +7,7 @@ import { PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/prop
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
@@ -17,7 +18,6 @@ import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { Scene } from "core/scene";
 import { AnimationPropertiesOverride } from "core/Animations/animationPropertiesOverride";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
-import { Collapse } from "@fluentui/react-motion-components-preview";
 import { BoundProperty } from "../boundProperty";
 
 export interface IAnimationRangeContainer {
@@ -40,7 +40,8 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
 
     const animations = entity.animations ?? [];
     const ranges = entity.getAnimationRanges?.()?.filter((range) => !!range) ?? [];
-    const childAnimatables = entity.getAnimatables?.() ?? [];
+    const childAnimatablesAnimations = entity.getAnimatables?.().flatMap((animatable) => animatable.animations ?? []) ?? [];
+    animations.concat(childAnimatablesAnimations);
 
     const lastFrom = useRef(0);
     const lastTo = useRef(0);
@@ -58,7 +59,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
         lastLoop.current = mainAnimatable.loopAnimation;
     }
 
-    const hasAnimations = animations.length > 0 || ranges.length > 0 || childAnimatables.length > 0;
+    const hasAnimations = animations.length > 0 || ranges.length > 0;
 
     const currentFrame = useObservableState(
         useCallback(() => {
@@ -174,7 +175,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
                             {mainAnimatable && (ranges.length > 0 || animations.length > 0) ? (
                                 <>
                                     <SwitchPropertyLine
-                                        label="Enable override"
+                                        label="Enable Override"
                                         value={animationPropertiesOverride != null}
                                         onChange={(value) => {
                                             if (value) {
@@ -195,7 +196,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
                                             />
                                             <BoundProperty
                                                 component={SyncedSliderPropertyLine}
-                                                label="Blending speed"
+                                                label="Blending Speed"
                                                 target={animationPropertiesOverride!}
                                                 propertyKey="blendingSpeed"
                                                 min={0}

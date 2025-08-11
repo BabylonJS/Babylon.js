@@ -50,7 +50,7 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
                 break;
         }
 
-        const isOptional = point.isOptional && !point.isConnected;
+        const isOptional = point.isInactive || (point.isOptional && !point.isConnected);
 
         if (isOptional) {
             const decoded = atob(svg);

@@ -29,7 +29,7 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
             content: [
                 {
                     section: "General",
-                    component: ({ context }) => <NodeGeneralProperties node={context} setSelectedEntity={(entity) => (selectionService.selectedEntity = entity)} />,
+                    component: ({ context }) => <NodeGeneralProperties node={context} selectionService={selectionService} />,
                 },
             ],
         });

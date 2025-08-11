@@ -3,7 +3,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { LayerDiagonalPersonRegular, PersonSquareRegular } from "@fluentui/react-icons";
+import { LayerDiagonalPersonRegular, PersonSquareRegular, PlayFilled, StopFilled } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
@@ -12,6 +12,7 @@ import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Sprites/spriteSceneComponent";
+import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
 
 function IsSpriteManager(entity: unknown): entity is ISpriteManager {
     return (entity as ISpriteManager).sprites !== undefined;
@@ -60,9 +61,42 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
             getEntityRemovedObservables: () => [scene.onSpriteManagerRemovedObservable],
         });
 
+        const spritePlayStopCommandRegistration = sceneExplorerService.addCommand({
+            predicate: (entity: unknown) => IsSprite(entity),
+            getCommand: (sprite) => {
+                const onChangeObservable = new Observable<void>();
+                const playHook = InterceptFunction(sprite, "playAnimation", {
+                    afterCall: () => onChangeObservable.notifyObservers(),
+                });
+                const stopHook = InterceptFunction(sprite, "stopAnimation", {
+                    afterCall: () => onChangeObservable.notifyObservers(),
+                });
+                const animateHook = InterceptFunction(sprite, "_animate", {
+                    afterCall: () => onChangeObservable.notifyObservers(),
+                });
+
+                return {
+                    type: "action",
+                    get displayName() {
+                        return `${sprite.animationStarted ? "Stop" : "Play"} Animation`;
+                    },
+                    icon: () => (sprite.animationStarted ? <StopFilled /> : <PlayFilled />),
+                    execute: () => (sprite.animationStarted ? sprite.stopAnimation() : sprite.playAnimation(sprite.fromIndex, sprite.toIndex, sprite.loopAnimation, sprite.delay)),
+                    onChange: onChangeObservable,
+                    dispose: () => {
+                        playHook.dispose();
+                        stopHook.dispose();
+                        animateHook.dispose();
+                        onChangeObservable.clear();
+                    },
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
+                spritePlayStopCommandRegistration.dispose();
             },
         };
     },

@@ -1030,7 +1030,8 @@ export class Texture extends BaseTexture {
                     mirrorTexture.mirrorPlane = Plane.FromArray(parsedTexture.mirrorPlane);
                     onLoaded(mirrorTexture);
                     return mirrorTexture;
-                } else if (parsedTexture.isRenderTarget) {
+                } else if (parsedTexture.isRenderTarget && !parsedTexture.base64String) {
+                    // if base64string is set it means the original RTT was baked
                     let renderTargetTexture: Nullable<RenderTargetTexture> = null;
                     if (parsedTexture.isCube) {
                         // Search for an existing reflection probe (which contains a cube render target texture)

@@ -110,7 +110,7 @@ const CoordinatesMode = [
     { label: "Projection", value: Texture.PROJECTION_MODE },
     { label: "Skybox", value: Texture.SKYBOX_MODE },
     { label: "Spherical", value: Texture.SPHERICAL_MODE },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 const SamplingMode = [
     { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
@@ -129,7 +129,7 @@ const SamplingMode = [
     { label: "Linear/Nearest", value: Texture.LINEAR_NEAREST }, // 12
     { label: "Linear/Nearest & linear mip", value: Texture.LINEAR_NEAREST_MIPLINEAR }, // 10
     { label: "Linear/Nearest & nearest mip", value: Texture.LINEAR_NEAREST_MIPNEAREST }, // 9
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
     const { texture } = props;
@@ -177,7 +177,7 @@ export const BaseTextureTransformProperties: FunctionComponent<{ texture: BaseTe
         <>
             {texture.canRescale && (
                 <ButtonLine
-                    label="Scale up"
+                    label="Scale Up"
                     onClick={() => {
                         texture.scale(2);
                     }}
@@ -185,7 +185,7 @@ export const BaseTextureTransformProperties: FunctionComponent<{ texture: BaseTe
             )}
             {texture.canRescale && (
                 <ButtonLine
-                    label="Scale down"
+                    label="Scale Down"
                     onClick={() => {
                         texture.scale(0.5);
                     }}

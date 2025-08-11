@@ -198,7 +198,7 @@ export class WebXRCamera extends FreeCamera {
         target.subtractToRef(this.position, tmpVector);
         tmpVector.y = 0;
         tmpVector.normalize();
-        const yRotation = Math.atan2(tmpVector.x, tmpVector.z);
+        const yRotation = Math.atan2(tmpVector.x, tmpVector.z) + (this._scene.useRightHandedSystem ? Math.PI : 0);
         this.rotationQuaternion.toEulerAnglesToRef(tmpVector);
         Quaternion.FromEulerAnglesToRef(tmpVector.x, yRotation, tmpVector.z, this.rotationQuaternion);
     }
@@ -221,8 +221,6 @@ export class WebXRCamera extends FreeCamera {
         this._cache.minZ = this.minZ;
         this._cache.maxZ = far;
     }
-
-    private _rotate180 = new Quaternion(0, 1, 0, 0);
 
     private _updateFromXRSession() {
         const pose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.referenceSpace);
@@ -256,8 +254,6 @@ export class WebXRCamera extends FreeCamera {
                 this._referencedPosition.z *= -1;
                 this._referenceQuaternion.z *= -1;
                 this._referenceQuaternion.w *= -1;
-            } else {
-                this._referenceQuaternion.multiplyInPlace(this._rotate180);
             }
 
             if (this._firstFrame) {
@@ -314,8 +310,6 @@ export class WebXRCamera extends FreeCamera {
                 currentRig.position.z *= -1;
                 currentRig.rotationQuaternion.z *= -1;
                 currentRig.rotationQuaternion.w *= -1;
-            } else {
-                currentRig.rotationQuaternion.multiplyInPlace(this._rotate180);
             }
             Matrix.FromFloat32ArrayToRefScaled(view.projectionMatrix, 0, 1, currentRig._projectionMatrix);
 

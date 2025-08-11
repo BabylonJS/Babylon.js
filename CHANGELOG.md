@@ -1,5 +1,59 @@
 # Changelog
 
+## 8.22.2
+
+### Core
+
+
+### GUI
+
+- Update GUI control to be forgiving of text resizeToFit layout calculations - by [georginahalpern](https://github.com/georginahalpern) ([#16997](https://github.com/BabylonJS/Babylon.js/pull/16997))
+
+## 8.22.1
+
+### Core
+
+- Fix texture deserializer to not ignore base64String storage - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16992](https://github.com/BabylonJS/Babylon.js/pull/16992))
+- Add support for SSAO in NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16988](https://github.com/BabylonJS/Babylon.js/pull/16988))
+- Allow node to display visual clue when a port is not active due to th… - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16991](https://github.com/BabylonJS/Babylon.js/pull/16991))
+- spz v3 loader - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16949](https://github.com/BabylonJS/Babylon.js/pull/16949))
+- WebGPU: Sync with specification - by [Popov72](https://github.com/Popov72) ([#16985](https://github.com/BabylonJS/Babylon.js/pull/16985))
+
+### Loaders
+
+- spz v3 loader - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16949](https://github.com/BabylonJS/Babylon.js/pull/16949))
+
+### Node Editor
+
+- Add support for SSAO in NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16988](https://github.com/BabylonJS/Babylon.js/pull/16988))
+- Allow node to display visual clue when a port is not active due to th… - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16991](https://github.com/BabylonJS/Babylon.js/pull/16991))
+
+### Playground
+
+
+## 8.22.0
+
+### Core
+
+- GreasedLine far positions precision loss fix - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16978](https://github.com/BabylonJS/Babylon.js/pull/16978))
+
+### Viewer
+
+
+## 8.21.1
+
+### Core
+
+- Serialize decorator: Handle arrays - by [alexchuber](https://github.com/alexchuber) ([#16977](https://github.com/BabylonJS/Babylon.js/pull/16977))
+- RH WebXR camera fix - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16974](https://github.com/BabylonJS/Babylon.js/pull/16974))
+- Exporters: Refactor texture pixel reading - by [alexchuber](https://github.com/alexchuber) ([#16972](https://github.com/BabylonJS/Babylon.js/pull/16972))
+- Fix shader material clone missing the alphaMode - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16970](https://github.com/BabylonJS/Babylon.js/pull/16970))
+- Add WebXR hand parenting - by [docEdub](https://github.com/docEdub) ([#16969](https://github.com/BabylonJS/Babylon.js/pull/16969))
+
+### Serializers
+
+- Exporters: Refactor texture pixel reading - by [alexchuber](https://github.com/alexchuber) ([#16972](https://github.com/BabylonJS/Babylon.js/pull/16972))
+
 ## 8.21.0
 
 ### Core
