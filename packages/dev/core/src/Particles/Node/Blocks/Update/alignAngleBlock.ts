@@ -7,6 +7,7 @@ import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { Particle } from "core/Particles/particle";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import { Vector3 } from "../../../../Maths/math.vector";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
 /**
  * Block used to align the angle of a particle to its direction
@@ -15,6 +16,12 @@ import { Vector3 } from "../../../../Maths/math.vector";
  * PG: #H5RP91
  */
 export class AlignAngleBlock extends NodeParticleBlock {
+    /**
+     * Gets or sets the strenght of the flow map effect
+     */
+    @editableInPropertyPage("alignment", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: -0, max: 2 * Math.PI })
+    public alignment = Math.PI / 2; // Default to 90 degrees, aligning +Y with direction
+
     /**
      * Create a new AlignAngleBlock
      * @param name defines the block name
@@ -70,7 +77,7 @@ export class AlignAngleBlock extends NodeParticleBlock {
             const dirInView = Vector3.TransformNormalToRef(dir, view, tempVector3);
 
             // Angle so sprite’s +Y aligns with projected direction
-            const angle = Math.atan2(dirInView.y, dirInView.x) + Math.PI / 2;
+            const angle = Math.atan2(dirInView.y, dirInView.x) + this.alignment;
             particle.angle = angle; // radians
         };
 
