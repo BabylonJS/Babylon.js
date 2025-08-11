@@ -215,6 +215,7 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommand<EntityBase>; ent
         command.onChange
     );
 
+    // TODO-iv2: Consolidate icon prop passing approach for inspector and shared components
     return <ToggleButton title={displayName} enabledIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
 };
 

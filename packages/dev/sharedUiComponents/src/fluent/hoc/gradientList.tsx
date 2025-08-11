@@ -42,10 +42,9 @@ export const FactorGradientList: FunctionComponent<GradientListProps<FactorGradi
                 }
             }}
             renderItem={(item) => {
-                const gradient = item.data;
                 return (
                     <FactorGradientComponent
-                        value={gradient}
+                        value={item.data}
                         onChange={(newGradient: FactorGradient) => {
                             item.data.gradient = newGradient.gradient;
                             item.data.factor1 = newGradient.factor1;
@@ -76,10 +75,9 @@ export const Color3GradientList: FunctionComponent<GradientListProps<Color3Gradi
                 }
             }}
             renderItem={(item) => {
-                const gradient = item.data;
                 return (
                     <Color3GradientComponent
-                        value={gradient}
+                        value={item.data}
                         onChange={(newGradient: Color3Gradient) => {
                             item.data.gradient = newGradient.gradient;
                             item.data.color = newGradient.color;
@@ -91,6 +89,7 @@ export const Color3GradientList: FunctionComponent<GradientListProps<Color3Gradi
         />
     );
 };
+
 export const Color4GradientList: FunctionComponent<GradientListProps<Color4Gradient>> = (props) => {
     const { gradients } = props;
     const items = GradientsToListItems<Color4Gradient>(gradients);
@@ -108,10 +107,9 @@ export const Color4GradientList: FunctionComponent<GradientListProps<Color4Gradi
                 }
             }}
             renderItem={(item) => {
-                const gradient = item.data;
                 return (
                     <Color4GradientComponent
-                        value={gradient}
+                        value={item.data}
                         onChange={(newGradient: Color4Gradient) => {
                             item.data.gradient = newGradient.gradient;
                             item.data.color1 = newGradient.color1;

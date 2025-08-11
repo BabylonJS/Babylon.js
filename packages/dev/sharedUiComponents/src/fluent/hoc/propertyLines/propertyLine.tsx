@@ -8,22 +8,6 @@ import { ToolContext } from "../fluentToolWrapper";
 import type { PrimitiveProps } from "../../primitives/primitive";
 
 const usePropertyLineStyles = makeStyles({
-    // container: {
-    //     // top-level div used for lineContainer
-    //     width: "100%",
-    //     display: "flex", // Makes this a flex container
-    //     flexDirection: "row", // Arranges children horizontally, main-axis=horizontal
-    //     padding: `${tokens.spacingVerticalXS} 0px`,
-    //     borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
-    // },
-    // primaryContent: {
-    //     // child of container, sibling of expandableContent
-    //     display: "flex",
-    //     // alignItems: "flex-start", // aligns items vertically in the center
-    //     // justifyContent: "center",
-    //     // flexDirection: "column", // arranges items vertically, ensures the primaryContent and expandedContent are vertically stacked
-    //     width: "100%",
-    // },
     container: {
         width: "100%",
         display: "flex",
