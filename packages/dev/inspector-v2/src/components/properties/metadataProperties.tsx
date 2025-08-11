@@ -89,7 +89,6 @@ class MetadataUtils {
     set editedMetadata(value: string) {
         if (this._editedMetadata !== value) {
             this._editedMetadata = value;
-            console.log(`MetadataUtils.editedMetadata set to: ${value}`);
             this.settingsChangedObservable.notifyObservers(this);
         }
     }

@@ -5,6 +5,7 @@ import type { PrimitiveProps } from "./primitive";
 
 const useInputStyles = makeStyles({
     textarea: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         "& textarea": {
             minHeight: "100px",
             maxHeight: "500px",
