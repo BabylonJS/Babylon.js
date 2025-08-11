@@ -8,7 +8,7 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { TmpColors } from "core/Maths/math.color";
-import { Vector3 } from "core/Maths/math.vector";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { CreateDisc } from "core/Meshes/Builders/discBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { _WarnImport } from "core/Misc/devTools";
@@ -21,8 +21,8 @@ import type { Nullable } from "core/types";
 
 import { Light } from "../light";
 import { LightConstants } from "../lightConstants";
-import { PointLight } from "../pointLight";
-import { SpotLight } from "../spotLight";
+import type { PointLight } from "../pointLight";
+import type { SpotLight } from "../spotLight";
 
 import "core/Meshes/thinInstanceMesh";
 
@@ -70,11 +70,11 @@ export class ClusteredLight extends Light {
         } else if (light.falloffType !== Light.FALLOFF_DEFAULT) {
             // Only the default falloff is supported
             return false;
-        } else if (light instanceof PointLight) {
+        } else if (light.getTypeID() === LightConstants.LIGHTTYPEID_POINTLIGHT) {
             return true;
-        } else if (light instanceof SpotLight) {
+        } else if (light.getTypeID() === LightConstants.LIGHTTYPEID_SPOTLIGHT) {
             // Extra texture bindings per light are not supported
-            return !light.projectionTexture && !light.iesProfileTexture;
+            return !(<SpotLight>light).projectionTexture && !(<SpotLight>light).iesProfileTexture;
         } else {
             // Currently only point and spot lights are supported
             return false;
@@ -233,18 +233,10 @@ export class ClusteredLight extends Light {
         }
     }
 
-    /**
-     * Returns the string "ClusteredLight".
-     * @returns the class name
-     */
     public override getClassName(): string {
         return "ClusteredLight";
     }
 
-    /**
-     * Returns the light type ID (integer).
-     * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
-     */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
         return LightConstants.LIGHTTYPEID_CLUSTERED;
@@ -322,8 +314,12 @@ export class ClusteredLight extends Light {
         });
 
         this._tileMaskTexture.onClearObservable.add(() => {
-            // Clear the storage buffer if it exists
-            this._tileMaskBuffer?.clear();
+            if (engine.isWebGPU) {
+                // Clear the storage buffer for WebGPU
+                this._tileMaskBuffer?.clear();
+            } else {
+                // Only clear the texture on WebGL
+            }
             engine.clear({ r: 0, g: 0, b: 0, a: 1 }, true, false);
         });
 
@@ -345,9 +341,10 @@ export class ClusteredLight extends Light {
     }
 
     private _updateLightData(): void {
+        const buf = this._lightDataBuffer;
         for (let i = 0; i < this._lights.length; i += 1) {
             const light = this._lights[i];
-            const offset = i * 20;
+            const off = i * 20;
             const computed = light.computeTransformedInformation();
             const scaledIntensity = light.getScaledIntensity();
 
@@ -356,52 +353,52 @@ export class ClusteredLight extends Light {
             const specular = light.specular.scaleToRef(scaledIntensity, TmpColors.Color3[1]);
             const range = Math.min(light.range, this.maxRange);
             const inverseSquaredRange = Math.max(light._inverseSquaredRange, this._minInverseSquaredRange);
-            this._lightDataBuffer.set(
-                [
-                    // vLightData
-                    position.x,
-                    position.y,
-                    position.z,
-                    0,
-                    // vLightDiffuse
-                    diffuse.r,
-                    diffuse.g,
-                    diffuse.b,
-                    range,
-                    // vLightSpecular
-                    specular.r,
-                    specular.g,
-                    specular.b,
-                    light.radius,
-                    // vLightDirection
-                    0,
-                    0,
-                    0,
-                    -1,
-                    // vLightFalloff
-                    range,
-                    inverseSquaredRange,
-                    0,
-                    0,
-                ],
-                offset
-            );
 
-            if (light instanceof SpotLight) {
-                const direction = Vector3.Normalize(computed ? light.transformedDirection : light.direction);
-                this._lightDataBuffer[offset + 3] = light.exponent; // vLightData.a
-                this._lightDataBuffer.set([direction.x, direction.y, direction.z, light._cosHalfAngle], offset + 12); // vLightDirection
-                this._lightDataBuffer.set([light._lightAngleScale, light._lightAngleOffset], offset + 18); // vLightFalloff.zw
+            // vLightData
+            buf[off + 0] = position.x;
+            buf[off + 1] = position.y;
+            buf[off + 2] = position.z;
+            buf[off + 3] = 0;
+            // vLightDiffuse
+            buf[off + 4] = diffuse.r;
+            buf[off + 5] = diffuse.g;
+            buf[off + 6] = diffuse.b;
+            buf[off + 7] = range;
+            // vLightSpecular
+            buf[off + 8] = specular.r;
+            buf[off + 9] = specular.g;
+            buf[off + 10] = specular.b;
+            buf[off + 11] = light.radius;
+            // vLightDirection
+            buf[off + 12] = 0;
+            buf[off + 13] = 0;
+            buf[off + 14] = 0;
+            buf[off + 15] = -1;
+            // vLightFalloff
+            buf[off + 16] = range;
+            buf[off + 17] = inverseSquaredRange;
+            buf[off + 18] = 0;
+            buf[off + 19] = 0;
+
+            if (light.getTypeID() === LightConstants.LIGHTTYPEID_SPOTLIGHT) {
+                const spotLight = <SpotLight>light;
+                const direction = Vector3.NormalizeToRef(computed ? spotLight.transformedDirection : spotLight.direction, TmpVectors.Vector3[0]);
+
+                // vLightData.a
+                buf[off + 3] = spotLight.exponent;
+                // vLightDirection
+                buf[off + 12] = direction.x;
+                buf[off + 13] = direction.y;
+                buf[off + 14] = direction.z;
+                buf[off + 15] = spotLight._cosHalfAngle;
+                // vLightFalloff.zw
+                buf[off + 18] = spotLight._lightAngleScale;
+                buf[off + 19] = spotLight._lightAngleOffset;
             }
         }
         this._lightDataTexture.update(this._lightDataBuffer);
     }
 
-    /**
-     * Releases resources associated with this node.
-     * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-     * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-     */
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         for (const light of this._lights) {
             light.dispose(doNotRecurse, disposeMaterialAndTextures);
@@ -459,12 +456,6 @@ export class ClusteredLight extends Light {
         this._uniformBuffer.create();
     }
 
-    /**
-     * Sets the passed Effect "effect" with the Light information.
-     * @param effect The effect to update
-     * @param lightIndex The index of the light in the effect to update
-     * @returns The light
-     */
     public override transferToEffect(effect: Effect, lightIndex: string): Light {
         const engine = this.getEngine();
         const hscale = this._horizontalTiles / engine.getRenderWidth();
@@ -474,12 +465,6 @@ export class ClusteredLight extends Light {
         return this;
     }
 
-    /**
-     * Sets the passed Effect "effect" with the Light textures.
-     * @param effect The effect to update
-     * @param lightIndex The index of the light in the effect to update
-     * @returns The light
-     */
     public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
         const engine = this.getEngine();
         effect.setTexture("lightDataTexture" + lightIndex, this._lightDataTexture);
@@ -491,26 +476,16 @@ export class ClusteredLight extends Light {
         return this;
     }
 
-    /**
-     * Sets the passed Effect "effect" with the Light information.
-     * @returns The light
-     */
     public override transferToNodeMaterialEffect(): Light {
         // TODO: ????
         return this;
     }
 
-    /**
-     * Prepares the list of defines specific to the light type.
-     * @param defines the list of defines
-     * @param lightIndex defines the index of the light for the effect
-     */
     public override prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["CLUSTLIGHT" + lightIndex] = true;
         defines["CLUSTLIGHT_BATCH"] = this._batchSize;
     }
 
-    /** @internal */
     public override _isReady(): boolean {
         this._updateBatches();
         return this._proxyMesh.isReady(true, true);

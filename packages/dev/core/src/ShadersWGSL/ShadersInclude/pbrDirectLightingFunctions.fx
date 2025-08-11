@@ -220,6 +220,9 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         posW: vec3f,
         surfaceAlbedo: vec3f,
         reflectivityOut: reflectivityOutParams,
+        #ifdef IRIDESCENCE
+            iridescenceIntensity: f32,
+        #endif
         #ifdef SS_TRANSLUCENCY
             subSurfaceOut: subSurfaceOutParams,
         #endif
@@ -272,6 +275,10 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
                 preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, light.vLightSpecular.a, preInfo.lightDistance);
                 preInfo.diffuseRoughness = reflectivityOut.diffuseRoughness;
                 preInfo.surfaceAlbedo = surfaceAlbedo;
+
+                #ifdef IRIDESCENCE
+                    preInfo.iridescenceIntensity = iridescenceIntensity;
+                #endif
                 var info: lightingInfo;
 
                 // Diffuse contribution

@@ -17,6 +17,9 @@
                 fragmentInputs.vPositionW,
                 surfaceAlbedo,
                 reflectivityOut,
+                #ifdef IRIDESCENCE
+                    iridescenceIntensity,
+                #endif
                 #ifdef SS_TRANSLUCENCY
                     subSurfaceOut,
                 #endif

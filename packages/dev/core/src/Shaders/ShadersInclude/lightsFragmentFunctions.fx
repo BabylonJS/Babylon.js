@@ -211,21 +211,13 @@ lightingInfo computeClusteredLighting(
 			int position = onlyBitPosition(bit);
 			SpotLight light = getClusteredSpotLight(lightDataTexture, batchOffset + position);
 
-			vec3 direction = light.vLightData.xyz - vPositionW;
-			vec3 lightVectorW = normalize(direction);
-			float attenuation = max(0., 1.0 - length(direction) / light.vLightDiffuse.a);
-
-			// Assume an angle greater than 180º is a point light
-			if (light.vLightDirection.w >= 0.0) {
-				float cosAngle = max(0., dot(light.vLightDirection.xyz, -lightVectorW));
-				if (cosAngle < light.vLightDirection.w) {
-					// Outside spotlight angle
-					continue;
-				}
-				attenuation *= getAttenuation(cosAngle, light.vLightData.w);
+			lightingInfo info;
+			if (light.vLightDirection.w < 0.0) {
+				// Assume an angle greater than 180º is a point light
+				info = computeLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
+			} else {
+				info = computeSpotLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDirection, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
 			}
-
-			lightingInfo info = basicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, glossiness);
 			result.diffuse += info.diffuse;
 			#ifdef SPECULARTERM
 				result.specular += info.specular;

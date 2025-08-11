@@ -11,6 +11,9 @@
         vec3 posW,
         vec3 surfaceAlbedo,
         reflectivityOutParams reflectivityOut
+        #ifdef IRIDESCENCE
+            , float iridescenceIntensity
+        #endif
         #ifdef SS_TRANSLUCENCY
             , subSurfaceOutParams subSurfaceOut
         #endif
@@ -65,6 +68,10 @@
                 preInfo.roughness = adjustRoughnessFromLightProperties(reflectivityOut.roughness, light.vLightSpecular.a, preInfo.lightDistance);
                 preInfo.diffuseRoughness = reflectivityOut.diffuseRoughness;
                 preInfo.surfaceAlbedo = surfaceAlbedo;
+
+                #ifdef IRIDESCENCE
+                    preInfo.iridescenceIntensity = iridescenceIntensity;
+                #endif
                 lightingInfo info;
 
                 // Diffuse contribution

@@ -1,7 +1,9 @@
 import type { Scene } from "core/scene";
-import { type RenderTargetsStageAction, SceneComponentConstants, type ISceneComponent } from "core/sceneComponent";
+import type { RenderTargetsStageAction, ISceneComponent } from "core/sceneComponent";
+import { SceneComponentConstants } from "core/sceneComponent";
 
 import { ClusteredLight } from "./clusteredLight";
+import { LightConstants } from "../lightConstants";
 
 /**
  * A scene component required for running the clustering step in clustered lights
@@ -49,8 +51,8 @@ export class ClusteredLightSceneComponent implements ISceneComponent {
 
     private _gatherActiveCameraRenderTargets: RenderTargetsStageAction = (renderTargets) => {
         for (const light of this.scene.lights) {
-            if (light instanceof ClusteredLight && light.isSupported) {
-                renderTargets.push(light._updateBatches());
+            if (light.getTypeID() === LightConstants.LIGHTTYPEID_CLUSTERED && (<ClusteredLight>light).isSupported) {
+                renderTargets.push((<ClusteredLight>light)._updateBatches());
             }
         }
     };

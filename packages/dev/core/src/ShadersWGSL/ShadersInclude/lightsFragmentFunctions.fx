@@ -19,7 +19,7 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 	{
 		var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
 
-		var attenuation: f32 = max(0., 1.0 - length(direction) / range);
+		attenuation = max(0., 1.0 - length(direction) / range);
 		lightVectorW = normalize(direction);
 	}
 	else
@@ -209,21 +209,13 @@ fn computeClusteredLighting(
 			mask ^= 1u << trailing;
 			let light = getClusteredSpotLight(lightDataTexture, batchOffset + trailing);
 
-			let direction = light.vLightData.xyz - fragmentInputs.vPositionW;
-			let lightVectorW = normalize(direction);
-			var attenuation = max(0., 1.0 - length(direction) / light.vLightDiffuse.a);
-
-			// Assume an angle greater than 180º is a point light
-			if light.vLightDirection.w >= 0.0 {
-				let cosAngle = max(0., dot(light.vLightDirection.xyz, -lightVectorW));
-				if cosAngle < light.vLightDirection.w {
-					// Outside spotlight angle
-					continue;
-				}
-				attenuation *= getAttenuation(cosAngle, light.vLightData.w);
+			var info: lightingInfo;
+			if light.vLightDirection.w < 0.0 {
+				// Assume an angle greater than 180º is a point light
+				info = computeLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
+			} else {
+				info = computeSpotLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDirection, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
 			}
-
-			let info = computeBasicSpotLighting(viewDirectionW, lightVectorW, vNormal, attenuation, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, glossiness);
 			result.diffuse += info.diffuse;
 			#ifdef SPECULARTERM
 				result.specular += info.specular;
