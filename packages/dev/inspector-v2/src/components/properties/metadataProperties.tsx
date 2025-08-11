@@ -4,8 +4,8 @@ import type { FunctionComponent } from "react";
 import { Observable } from "core/Misc/observable";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { TextAreaPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textAreaPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { Textarea } from "shared-ui-components/fluent/primitives/textarea";
 import { useObservableState } from "../../hooks/observableHooks";
 import { BoundProperty } from "./boundProperty";
 
@@ -95,22 +95,18 @@ class MetadataUtils {
     }
 
     get entityType(): MetadataTypes {
-        const metadata = this._editedMetadata;
-
-        if (this.isParsable) {
+        if (Object.prototype.hasOwnProperty.call(this.entity, "metadata")) {
+            const meta = this.entity.metadata;
+            if (IsString(meta)) {
+                return MetadataTypes.STRING;
+            }
+            if (meta === null) {
+                return MetadataTypes.NULL;
+            }
+            if (!ObjectCanSafelyStringify(meta)) {
+                return MetadataTypes.OBJECT;
+            }
             return MetadataTypes.JSON;
-        }
-
-        if (IsString(metadata)) {
-            return MetadataTypes.STRING;
-        }
-
-        if (metadata === null) {
-            return MetadataTypes.NULL;
-        }
-
-        if (!ObjectCanSafelyStringify(metadata)) {
-            return MetadataTypes.OBJECT;
         }
 
         return MetadataTypes.NULL;
@@ -284,7 +280,7 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
             <BoundProperty component={TextPropertyLine} label={"Property type"} target={metadataUtils} propertyKey="entityType" />
             <SwitchPropertyLine label={"Prevent Object corruption"} value={preventObjectCorruption} onChange={(value) => (metadataUtils.preventObjectCorruption = value)} />
             <SwitchPropertyLine label={"Pretty JSON"} value={prettyJSON} onChange={(value) => (metadataUtils.prettyJSON = value)} />
-            <TextAreaPropertyLine label={"Data"} disabled={isReadonly} value={editedMetadata} onChange={(val) => (metadataUtils.editedMetadata = val)} />
+            <Textarea disabled={isReadonly} value={editedMetadata} onChange={(val) => (metadataUtils.editedMetadata = val)} />
             <ButtonLine label={"Populate glTF extras"} disabled={metadataUtils.hasGLTFExtras} onClick={() => metadataUtils.populateGLTFExtras()} />
             <ButtonLine label={"Save"} disabled={!isChanged} onClick={() => metadataUtils.save()} />
         </>

@@ -4,7 +4,12 @@ import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
 import type { PrimitiveProps } from "./primitive";
 
 const useInputStyles = makeStyles({
-    textarea: {},
+    textarea: {
+        "& textarea": {
+            minHeight: "100px",
+            maxHeight: "500px",
+        },
+    },
 });
 
 export type TextareaProps = PrimitiveProps<string> & {
