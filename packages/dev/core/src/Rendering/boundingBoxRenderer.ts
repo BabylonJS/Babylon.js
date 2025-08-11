@@ -246,7 +246,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
      * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
      * @returns The promise that resolves when the renderer is ready
      */
-    public async isReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
         this._prepareResources();
         return await new Promise((resolve) => {
             _RetryWithInterval(
