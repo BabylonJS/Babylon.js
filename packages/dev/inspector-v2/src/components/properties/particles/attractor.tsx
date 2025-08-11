@@ -1,4 +1,3 @@
-// import { makeStyles } from "@fluentui/react-components";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { ArrowMoveFilled, EyeFilled, EyeOffFilled } from "@fluentui/react-icons";
 import { FontAsset } from "addons/msdfText/fontAsset";
