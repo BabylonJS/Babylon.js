@@ -165,6 +165,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
         this._renderer.disableImageProcessing = this.disableImageProcessing;
+        this._renderer.enableBoundingBoxRendering = this.isMainObjectRenderer;
 
         const targetTextures = Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
 
