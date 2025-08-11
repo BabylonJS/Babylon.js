@@ -12,7 +12,7 @@ import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import type { AnimationGroup } from "core/Animations/animationGroup";
+import { AnimationGroup } from "core/Animations/animationGroup";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
@@ -83,6 +83,8 @@ import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions"
 import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
+
+import "./glTFLoaderAnimation";
 
 export { GLTFFileLoader };
 
@@ -1615,6 +1617,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadAnimationsAsync(): Promise<void> {
+        this._parent._startPerformanceCounter("Load animations");
+
         const animations = this._gltf.animations;
         if (!animations) {
             return Promise.resolve();
@@ -1634,7 +1638,9 @@ export class GLTFLoader implements IGLTFLoader {
             );
         }
 
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => {
+            this._parent._endPerformanceCounter("Load animations");
+        });
     }
 
     /**
@@ -1644,38 +1650,39 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
      */
     public loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup> {
+        this._parent._startPerformanceCounter("Load animation");
+
         const promise = this._extensionsLoadAnimationAsync(context, animation);
         if (promise) {
             return promise;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        return import("core/Animations/animationGroup").then(({ AnimationGroup }) => {
-            this._babylonScene._blockEntityCollection = !!this._assetContainer;
-            const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
-            babylonAnimationGroup._parentContainer = this._assetContainer;
-            this._babylonScene._blockEntityCollection = false;
-            animation._babylonAnimationGroup = babylonAnimationGroup;
+        this._babylonScene._blockEntityCollection = !!this._assetContainer;
+        const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
+        babylonAnimationGroup._parentContainer = this._assetContainer;
+        this._babylonScene._blockEntityCollection = false;
+        animation._babylonAnimationGroup = babylonAnimationGroup;
 
-            const promises = new Array<Promise<unknown>>();
+        const promises = new Array<Promise<unknown>>();
 
-            ArrayItem.Assign(animation.channels);
-            ArrayItem.Assign(animation.samplers);
+        ArrayItem.Assign(animation.channels);
+        ArrayItem.Assign(animation.samplers);
 
-            for (const channel of animation.channels) {
-                promises.push(
-                    this._loadAnimationChannelAsync(`${context}/channels/${channel.index}`, context, animation, channel, (babylonTarget, babylonAnimation) => {
-                        babylonTarget.animations = babylonTarget.animations || [];
-                        babylonTarget.animations.push(babylonAnimation);
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTarget);
-                    })
-                );
-            }
+        for (const channel of animation.channels) {
+            promises.push(
+                this._loadAnimationChannelAsync(`${context}/channels/${channel.index}`, context, animation, channel, (babylonTarget, babylonAnimation) => {
+                    babylonTarget.animations = babylonTarget.animations || [];
+                    babylonTarget.animations.push(babylonAnimation);
+                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTarget);
+                })
+            );
+        }
 
-            return Promise.all(promises).then(() => {
-                babylonAnimationGroup.normalize(0);
-                return babylonAnimationGroup;
-            });
+        this._parent._endPerformanceCounter("Load animation");
+
+        return Promise.all(promises).then(() => {
+            babylonAnimationGroup.normalize(0);
+            return babylonAnimationGroup;
         });
     }
 
@@ -1718,8 +1725,6 @@ export class GLTFLoader implements IGLTFLoader {
         if (!this._parent.loadNodeAnimations && !pathIsWeights && !targetNode._isJoint) {
             return await Promise.resolve();
         }
-        // async-load the animation sampler to provide the interpolation of the channelTargetPath
-        await import("./glTFLoaderAnimation");
 
         let properties: IInterpolationPropertyInfo[];
         switch (channelTargetPath) {
