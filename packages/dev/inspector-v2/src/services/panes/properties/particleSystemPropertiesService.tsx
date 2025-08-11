@@ -13,7 +13,7 @@ export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [I
     friendlyName: "Particle System Properties",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
-        // TODO-iv2 complete the ParticleSystemPropertiesService registrations and the ParticleSystemProperties component(s)
+        // TODO-iv2 complete the ParticleSystemPropertiesService registrations and the ParticleSystemProperties component(s) - ensuring the proper predicates (IParticleSystem vs ParticleSystem)
 
         const particleSystemContent = propertiesService.addSectionContent({
             key: "Particle System Properties",

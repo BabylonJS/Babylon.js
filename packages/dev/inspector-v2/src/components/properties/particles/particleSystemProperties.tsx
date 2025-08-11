@@ -1,6 +1,5 @@
 import type { FactorGradient, ColorGradient as Color4Gradient, IValueGradient, ParticleSystem } from "core/index";
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { GizmoManager } from "core/index";
+import { GizmoManager } from "core/Gizmos";
 
 import { Color3, Color4 } from "core/Maths/math.color";
 import { useCallback } from "react";
@@ -84,6 +83,7 @@ export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSyst
     );
 };
 
+// TODO-iv2: This can be more generic to work for not just particleSystems
 const useParticleSystemProperty = (
     system: ParticleSystem,
     propertyKey: keyof ParticleSystem,
