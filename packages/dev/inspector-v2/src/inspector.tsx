@@ -1,4 +1,3 @@
-import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
@@ -11,18 +10,23 @@ import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { DebugServiceDefinition } from "./services/panes/debugService";
+import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
+import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
+import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
 import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
 import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
+import { PostProcessPropertiesServiceDefinition } from "./services/panes/properties/postProcessPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
+import { RenderingPipelinePropertiesServiceDefinition } from "./services/panes/properties/renderingPipelinePropertiesService";
 import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
 import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
+import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
 import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
@@ -43,6 +47,10 @@ import { ToolsServiceDefinition } from "./services/panes/toolsService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
+import { ScenePropertiesServiceDefinition } from "./services/panes/properties/scenePropertiesService";
+import type { IDisposable, Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { IInspectorOptions } from "core/Debug/debugLayer";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
@@ -197,12 +205,13 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             FrameGraphExplorerServiceDefinition,
 
             // Properties pane tab and related services.
+            ScenePropertiesServiceDefinition,
             PropertiesServiceDefinition,
+            TexturePropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
             TransformPropertiesServiceDefinition,
             AnimationPropertiesServiceDefinition,
             NodePropertiesServiceDefinition,
-            MeshPropertiesServiceDefinition,
             PhysicsPropertiesServiceDefinition,
             SkeletonPropertiesServiceDefinition,
             MaterialPropertiesServiceDefinition,
@@ -210,6 +219,11 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             SpritePropertiesServiceDefinition,
             ParticleSystemPropertiesServiceDefinition,
             CameraPropertiesServiceDefinition,
+            PostProcessPropertiesServiceDefinition,
+            RenderingPipelinePropertiesServiceDefinition,
+            EffectLayerPropertiesServiceDefinition,
+            FrameGraphPropertiesServiceDefinition,
+            AnimationGroupPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

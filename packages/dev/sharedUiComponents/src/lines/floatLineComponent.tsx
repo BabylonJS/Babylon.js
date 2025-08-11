@@ -10,7 +10,7 @@ import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyComman
 import copyIcon from "../imgs/copy.svg";
 import { NumberInputPropertyLine } from "../fluent/hoc/propertyLines/inputPropertyLine";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
-import { SpinButtonPropertyLine } from "shared-ui-components/fluent/primitives/spinButton";
+import { SpinButtonPropertyLine } from "../fluent/hoc/propertyLines/spinButtonPropertyLine";
 
 interface IFloatLineComponentProps {
     label: string;

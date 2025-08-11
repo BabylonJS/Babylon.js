@@ -1,5 +1,97 @@
 # Changelog
 
+## 8.22.0
+
+### Core
+
+- GreasedLine far positions precision loss fix - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#16978](https://github.com/BabylonJS/Babylon.js/pull/16978))
+
+### Viewer
+
+
+## 8.21.1
+
+### Core
+
+- Serialize decorator: Handle arrays - by [alexchuber](https://github.com/alexchuber) ([#16977](https://github.com/BabylonJS/Babylon.js/pull/16977))
+- RH WebXR camera fix - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#16974](https://github.com/BabylonJS/Babylon.js/pull/16974))
+- Exporters: Refactor texture pixel reading - by [alexchuber](https://github.com/alexchuber) ([#16972](https://github.com/BabylonJS/Babylon.js/pull/16972))
+- Fix shader material clone missing the alphaMode - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16970](https://github.com/BabylonJS/Babylon.js/pull/16970))
+- Add WebXR hand parenting - by [docEdub](https://github.com/docEdub) ([#16969](https://github.com/BabylonJS/Babylon.js/pull/16969))
+
+### Serializers
+
+- Exporters: Refactor texture pixel reading - by [alexchuber](https://github.com/alexchuber) ([#16972](https://github.com/BabylonJS/Babylon.js/pull/16972))
+
+## 8.21.0
+
+### Core
+
+- Allow NME to serialize RTTs - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16964](https://github.com/BabylonJS/Babylon.js/pull/16964))
+- Fix RH camera inputs - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#16849](https://github.com/BabylonJS/Babylon.js/pull/16849))
+
+### GUI
+
+- Fix GUI 2D optimization and consistently apply states when measuring - by [AmoebaChant](https://github.com/AmoebaChant) ([#16945](https://github.com/BabylonJS/Babylon.js/pull/16945))
+
+### Serializers
+
+- USDZ Exporter: Export alpha channel when alphatest on - by [alexchuber](https://github.com/alexchuber) ([#16948](https://github.com/BabylonJS/Babylon.js/pull/16948))
+
+### Viewer
+
+- Viewer v2: Switch back to WebGL as the default for now - by [ryantrem](https://github.com/ryantrem) ([#16946](https://github.com/BabylonJS/Babylon.js/pull/16946))
+
+## 8.20.0
+
+### Core
+
+- Introduce DepthSourceBlock to read depth data in NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16936](https://github.com/BabylonJS/Babylon.js/pull/16936))
+- Add sampler2dArray support to ImageSourceBlock - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16933](https://github.com/BabylonJS/Babylon.js/pull/16933))
+
+### Node Editor
+
+- Introduce DepthSourceBlock to read depth data in NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16936](https://github.com/BabylonJS/Babylon.js/pull/16936))
+
+## 8.19.1
+
+### Viewer
+
+- add protected function to expose camera limit, world bounds - by [alexandremottet](https://github.com/alexandremottet) ([#16928](https://github.com/BabylonJS/Babylon.js/pull/16928))
+
+## 8.19.0
+
+### Core
+
+- Fix bug when blob where requested to IDB - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16930](https://github.com/BabylonJS/Babylon.js/pull/16930))
+- Support vertex pulling - by [MiiBond](https://github.com/MiiBond) ([#16826](https://github.com/BabylonJS/Babylon.js/pull/16826))
+- PBR node material: Fix iblIntensity in reflection block - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#16926](https://github.com/BabylonJS/Babylon.js/pull/16926))
+- Fix submesh identification with picking octrees - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#16924](https://github.com/BabylonJS/Babylon.js/pull/16924))
+- Fix alphaMode serialization of Node Materials - by [sebavan](https://github.com/sebavan) ([#16922](https://github.com/BabylonJS/Babylon.js/pull/16922))
+- Improved depth/stencil support in the engine and in frame graphs + miscellaneous - by [Popov72](https://github.com/Popov72) ([#16916](https://github.com/BabylonJS/Babylon.js/pull/16916))
+
+### Node Editor
+
+
+### Serializers
+
+- USDZ Exporter: Place "Materials" under the default prim - by [alexchuber](https://github.com/alexchuber) ([#16929](https://github.com/BabylonJS/Babylon.js/pull/16929))
+
+### Viewer
+
+- _updateLight now works with _loadedModels - by [alexandremottet](https://github.com/alexandremottet) ([#16927](https://github.com/BabylonJS/Babylon.js/pull/16927))
+- Don't apply fog on skybox by default - by [alexandremottet](https://github.com/alexandremottet) ([#16923](https://github.com/BabylonJS/Babylon.js/pull/16923))
+
+## 8.18.0
+
+### Core
+
+- Fix bug where glow layer is recreated every frame under NullEngine - by [djn24](https://github.com/djn24) ([#16908](https://github.com/BabylonJS/Babylon.js/pull/16908))
+
+### Serializers
+
+- glTF Exporter: Fix false positive test and add extra winding order handling - by [alexchuber](https://github.com/alexchuber) ([#16915](https://github.com/BabylonJS/Babylon.js/pull/16915))
+
 ## 8.17.2
 
 ### Core

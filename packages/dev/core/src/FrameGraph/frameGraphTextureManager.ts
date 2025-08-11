@@ -287,29 +287,38 @@ export class FrameGraphTextureManager {
      * @param name Name of the render target wrapper
      * @param renderTargets Render target handles (textures) to use
      * @param renderTargetDepth Render target depth handle (texture) to use
+     * @param depthReadOnly If true, the depth buffer will be read-only
+     * @param stencilReadOnly If true, the stencil buffer will be read-only
      * @returns The created render target wrapper
      */
     public createRenderTarget(
         name: string,
         renderTargets?: FrameGraphTextureHandle | FrameGraphTextureHandle[],
-        renderTargetDepth?: FrameGraphTextureHandle
+        renderTargetDepth?: FrameGraphTextureHandle,
+        depthReadOnly?: boolean,
+        stencilReadOnly?: boolean
     ): FrameGraphRenderTarget {
         const renderTarget = new FrameGraphRenderTarget(name, this, renderTargets, renderTargetDepth);
 
         const rtw = renderTarget.renderTargetWrapper;
 
-        if (rtw !== undefined && renderTargets) {
-            const handles = Array.isArray(renderTargets) ? renderTargets : [renderTargets];
+        if (rtw !== undefined) {
+            rtw.depthReadOnly = !!depthReadOnly;
+            rtw.stencilReadOnly = !!stencilReadOnly;
 
-            for (let i = 0; i < handles.length; i++) {
-                let handle = handles[i];
-                handle = this._textures.get(handle)?.refHandle ?? handle;
+            if (renderTargets) {
+                const handles = Array.isArray(renderTargets) ? renderTargets : [renderTargets];
 
-                const historyEntry = this._historyTextures.get(handle);
-                if (historyEntry) {
-                    historyEntry.references.push({ renderTargetWrapper: rtw, textureIndex: i });
+                for (let i = 0; i < handles.length; i++) {
+                    let handle = handles[i];
+                    handle = this._textures.get(handle)?.refHandle ?? handle;
 
-                    rtw.setTexture(historyEntry.textures[historyEntry.index]!, i, false);
+                    const historyEntry = this._historyTextures.get(handle);
+                    if (historyEntry) {
+                        historyEntry.references.push({ renderTargetWrapper: rtw, textureIndex: i });
+
+                        rtw.setTexture(historyEntry.textures[historyEntry.index]!, i, false);
+                    }
                 }
             }
         }

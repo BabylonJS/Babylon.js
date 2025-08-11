@@ -880,6 +880,19 @@ export class ShaderMaterial extends PushMaterial {
             shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
+        const renderingMesh = subMesh ? subMesh.getRenderingMesh() : mesh;
+        if (renderingMesh && this.useVertexPulling) {
+            defines.push("#define USE_VERTEX_PULLING");
+
+            const indexBuffer = renderingMesh.geometry?.getIndexBuffer();
+            if (indexBuffer) {
+                defines.push("#define VERTEX_PULLING_USE_INDEX_BUFFER");
+                if (indexBuffer.is32Bits) {
+                    defines.push("#define VERTEX_PULLING_INDEX_BUFFER_32BITS");
+                }
+            }
+        }
+
         const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper(undefined, true) : this._drawWrapper;
         const previousEffect = drawWrapper?.effect ?? null;
         const previousDefines = drawWrapper?.defines ?? null;

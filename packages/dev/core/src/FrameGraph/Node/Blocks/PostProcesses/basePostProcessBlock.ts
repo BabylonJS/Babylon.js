@@ -5,7 +5,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 
 interface IPostProcessLike {
     sourceSamplingMode: number;
-    sourceTexture: FrameGraphTextureHandle;
+    sourceTexture?: FrameGraphTextureHandle;
     targetTexture?: FrameGraphTextureHandle;
     outputTexture: FrameGraphTextureHandle;
 }

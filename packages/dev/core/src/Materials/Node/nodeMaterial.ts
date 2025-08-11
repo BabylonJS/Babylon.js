@@ -298,6 +298,9 @@ export class NodeMaterial extends PushMaterial {
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
 
+    /** Gets or sets a boolean indicating that render target textures can be serialized */
+    public static AllowSerializationOfRenderTargetTextures = false;
+
     /** Defines default shader language when no option is defined */
     public static DefaultShaderLanguage = ShaderLanguage.GLSL;
 
@@ -2353,6 +2356,7 @@ export class NodeMaterial extends PushMaterial {
     public override serialize(selectedBlocks?: NodeMaterialBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
+        serializationObject.alphaMode = this._alphaMode;
 
         let blocks: NodeMaterialBlock[] = [];
 
@@ -2528,6 +2532,12 @@ export class NodeMaterial extends PushMaterial {
 
         if (source.alphaMode !== undefined) {
             this.alphaMode = source.alphaMode;
+        }
+
+        if (!Array.isArray(source.alphaMode)) {
+            this._alphaMode = [source.alphaMode ?? Constants.ALPHA_COMBINE];
+        } else {
+            this._alphaMode = source.alphaMode;
         }
 
         if (!merge) {

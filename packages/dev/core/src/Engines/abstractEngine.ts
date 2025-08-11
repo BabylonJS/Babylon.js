@@ -249,6 +249,8 @@ export abstract class AbstractEngine {
     protected _cachedViewport: Nullable<IViewportLike>;
     /** @internal */
     public _currentDrawContext: IDrawContext;
+    /** @internal */
+    public _currentMaterialContext: IMaterialContext;
 
     /** @internal */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
@@ -1400,8 +1402,9 @@ export abstract class AbstractEngine {
      * @param backBuffer defines if the back buffer must be cleared
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
+     * @param stencilClearValue defines the value to use to clear the stencil buffer
      */
-    public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+    public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean, stencilClearValue?: number): void;
 
     /**
      * Gets a boolean indicating that only power of 2 textures are supported
@@ -1904,14 +1907,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.17.2";
+        return "babylonjs@8.22.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.17.2";
+        return "8.22.0";
     }
 
     /**

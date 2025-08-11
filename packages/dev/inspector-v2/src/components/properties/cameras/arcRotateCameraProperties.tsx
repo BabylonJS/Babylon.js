@@ -105,24 +105,16 @@ export const ArcRotateCameraCollisionProperties: FunctionComponent<{ camera: Arc
 
 export const ArcRotateCameraLimitsProperties: FunctionComponent<{ camera: ArcRotateCamera }> = (props) => {
     const { camera } = props;
-
-    const lowerAlphaLimit = useProperty(camera, "lowerAlphaLimit") ?? 0;
-    const upperAlphaLimit = useProperty(camera, "upperAlphaLimit") ?? 0;
-    const lowerBetaLimit = useProperty(camera, "lowerBetaLimit") ?? 0;
-    const upperBetaLimit = useProperty(camera, "upperBetaLimit") ?? 0;
-    const lowerRadiusLimit = useProperty(camera, "lowerRadiusLimit") ?? 0;
-    const upperRadiusLimit = useProperty(camera, "upperRadiusLimit") ?? 0;
-    const lowerTargetYLimit = useProperty(camera, "lowerTargetYLimit") ?? 0;
-
+    // TODO-Iv2: Update defaultValues
     return (
         <>
-            <NumberInputPropertyLine label="Lower Alpha Limit" value={lowerAlphaLimit} onChange={(val) => (camera.lowerAlphaLimit = val)} />
-            <NumberInputPropertyLine label="Upper Alpha Limit" value={upperAlphaLimit} onChange={(val) => (camera.upperAlphaLimit = val)} />
-            <NumberInputPropertyLine label="Lower Beta Limit" value={lowerBetaLimit} onChange={(val) => (camera.lowerBetaLimit = val)} />
-            <NumberInputPropertyLine label="Upper Beta Limit" value={upperBetaLimit} onChange={(val) => (camera.upperBetaLimit = val)} />
-            <NumberInputPropertyLine label="Lower Radius Limit" value={lowerRadiusLimit} onChange={(val) => (camera.lowerRadiusLimit = val)} />
-            <NumberInputPropertyLine label="Upper Radius Limit" value={upperRadiusLimit} onChange={(val) => (camera.upperRadiusLimit = val)} />
-            <NumberInputPropertyLine label="Lower Target Y Limit" value={lowerTargetYLimit} onChange={(val) => (camera.lowerTargetYLimit = val)} />
+            <BoundProperty component={NumberInputPropertyLine} label="Lower Alpha Limit" target={camera} propertyKey="lowerAlphaLimit" nullable defaultValue={0} />
+            <BoundProperty component={NumberInputPropertyLine} label="Upper Alpha Limit" target={camera} propertyKey="upperAlphaLimit" nullable defaultValue={Infinity} />
+            <BoundProperty component={NumberInputPropertyLine} label="Lower Beta Limit" target={camera} propertyKey="lowerBetaLimit" nullable defaultValue={-Math.PI} />
+            <BoundProperty component={NumberInputPropertyLine} label="Upper Beta Limit" target={camera} propertyKey="upperBetaLimit" nullable defaultValue={Math.PI} />
+            <BoundProperty component={NumberInputPropertyLine} label="Lower Radius Limit" target={camera} propertyKey="lowerRadiusLimit" nullable defaultValue={0} />
+            <BoundProperty component={NumberInputPropertyLine} label="Upper Radius Limit" target={camera} propertyKey="upperRadiusLimit" nullable defaultValue={100} />
+            <BoundProperty component={NumberInputPropertyLine} label="Lower Target Y Limit" target={camera} propertyKey="lowerTargetYLimit" />
         </>
     );
 };

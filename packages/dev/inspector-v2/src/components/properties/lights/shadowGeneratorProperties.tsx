@@ -16,12 +16,12 @@ import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
 type ShadowGeneratorType = "Default" | "Cascade";
 
-const DefaultShadowGeneratorOptions = [{ label: "Shadow Generator", value: "Default" satisfies ShadowGeneratorType }] as const satisfies DropdownOption[];
+const DefaultShadowGeneratorOptions = [{ label: "Shadow Generator", value: "Default" satisfies ShadowGeneratorType }] as const satisfies DropdownOption<ShadowGeneratorType>[];
 
 const DirectionalLightGeneratorOptions = [
     ...DefaultShadowGeneratorOptions,
     { label: "Cascaded Shadow Generator", value: "Cascade" satisfies ShadowGeneratorType },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<ShadowGeneratorType>[];
 
 const MapSizeOptions = [
     { label: "4096 x 4096", value: 4096 },
@@ -29,7 +29,7 @@ const MapSizeOptions = [
     { label: "1024 x 1024", value: 1024 },
     { label: "512 x 512", value: 512 },
     { label: "256 x 256", value: 256 },
-] as const satisfies DropdownOption[];
+] as const satisfies DropdownOption<number>[];
 
 type ShadowGeneratorSettings = {
     generatorType: ShadowGeneratorType; // Type of shadow generator
@@ -84,13 +84,13 @@ export const ShadowGeneratorSetupProperties: FunctionComponent<{ context: Shadow
                         label="Type"
                         options={shadowGeneratorOptions}
                         value={shadowGeneratorSettings.generatorType}
-                        onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, generatorType: String(value) as ShadowGeneratorType }))}
+                        onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, generatorType: value as ShadowGeneratorType }))}
                     />
                     <NumberDropdownPropertyLine
                         label="Map Size"
                         options={MapSizeOptions}
                         value={shadowGeneratorSettings.mapSize}
-                        onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, mapSize: Number(value) }))}
+                        onChange={(value) => setShadowGeneratorSettings((prev) => ({ ...prev, mapSize: value }))}
                     />
                     <ButtonLine
                         label="Create Generator"

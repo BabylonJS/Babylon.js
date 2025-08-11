@@ -200,7 +200,7 @@ export class TextInputLineComponent extends Component<ITextInputLineComponentPro
         return (
             <PropertyLine label={this.props.label || ""}>
                 {this.props.multilines ? (
-                    <Textarea value={this.state.value} onChange={(evt) => this.updateValue(evt.target.value)} disabled={this.props.disabled} />
+                    <Textarea value={this.state.value} onChange={(val) => this.updateValue(val)} disabled={this.props.disabled} />
                 ) : this.props.numeric ? (
                     <NumberInput value={this.getCurrentNumericValue(value)} onChange={(val) => this.updateValue(val.toString())} step={step} disabled={this.props.disabled} />
                 ) : (

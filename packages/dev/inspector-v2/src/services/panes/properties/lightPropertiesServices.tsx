@@ -7,13 +7,13 @@ import { PointLight } from "core/Lights/pointLight";
 import { RectAreaLight } from "core/Lights/rectAreaLight";
 import { ShadowLight } from "core/Lights/shadowLight";
 import { SpotLight } from "core/Lights/spotLight";
-import { AreaLightSetupProperties } from "../../../components/properties/lights/areaLightSetupProperties";
-import { DirectionalLightSetupProperties } from "../../../components/properties/lights/directionalLightSetupProperties";
-import { HemisphericLightSetupProperties } from "../../../components/properties/lights/hemisphericLightSetupProperties";
-import { PointLightSetupProperties } from "../../../components/properties/lights/pointLightSetupProperties";
-import { ShadowGeneratorSetupProperties } from "../../../components/properties/lights/shadowGeneratorSetupProperties";
-import { ShadowsSetupProperties } from "../../../components/properties/lights/shadowsSetupProperties";
-import { SpotLightSetupProperties } from "../../../components/properties/lights/spotLightSetupProperties";
+import { AreaLightSetupProperties } from "../../../components/properties/lights/areaLightProperties";
+import { DirectionalLightSetupProperties } from "../../../components/properties/lights/directionalLightProperties";
+import { HemisphericLightSetupProperties } from "../../../components/properties/lights/hemisphericLightProperties";
+import { PointLightSetupProperties } from "../../../components/properties/lights/pointLightProperties";
+import { ShadowGeneratorSetupProperties } from "../../../components/properties/lights/shadowGeneratorProperties";
+import { ShadowsSetupProperties } from "../../../components/properties/lights/shadowLightProperties";
+import { SpotLightSetupProperties } from "../../../components/properties/lights/spotLightProperties";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const LightPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {

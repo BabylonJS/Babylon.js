@@ -523,7 +523,7 @@ export class NativeEngine extends Engine {
         return null;
     }
 
-    public override clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public override clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, stencilClearValue = 0): void {
         if (this.useReverseDepthBuffer) {
             throw new Error("reverse depth buffer is not currently implemented");
         }
@@ -537,7 +537,7 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(depth ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(1);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilClearValue);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 

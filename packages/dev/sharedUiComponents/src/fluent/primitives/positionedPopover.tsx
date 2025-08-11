@@ -36,7 +36,6 @@ export const PositionedPopover: FunctionComponent<PropsWithChildren<PositionedPo
             onOpenChange={handleOpenChange}
             positioning={{
                 position: "below", // Places the popover directly below the trigger element
-                align: "center", // Centers the popover horizontally relative to the trigger element
                 autoSize: "height-always", //Automatically adjusts the popover height to fit within the viewport
                 fallbackPositions: ["above", "after", "before"], //If the primary position doesn't fit, automatically tries these positions in order
             }}
@@ -49,9 +48,7 @@ export const PositionedPopover: FunctionComponent<PropsWithChildren<PositionedPo
                         position: "absolute",
                         left: `${props.x}px`,
                         top: `${props.y}px`,
-                        width: 1,
-                        height: 1,
-                        pointerEvents: "none", // so it's invisible to interaction
+                        visibility: "hidden",
                     }}
                 />
             </PopoverTrigger>
