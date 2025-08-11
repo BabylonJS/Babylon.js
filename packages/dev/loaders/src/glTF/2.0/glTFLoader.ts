@@ -1696,7 +1696,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onLoad Called for each animation loaded
      * @returns A void promise that resolves when the load is complete
      */
-    public async _loadAnimationChannelAsync(
+    public _loadAnimationChannelAsync(
         context: string,
         animationContext: string,
         animation: IAnimation,
@@ -1705,11 +1705,11 @@ export class GLTFLoader implements IGLTFLoader {
     ): Promise<void> {
         const promise = this._extensionsLoadAnimationChannelAsync(context, animationContext, animation, channel, onLoad);
         if (promise) {
-            return await promise;
+            return promise;
         }
 
         if (channel.target.node == undefined) {
-            return await Promise.resolve();
+            return Promise.resolve();
         }
 
         const targetNode = ArrayItem.Get(`${context}/target/node`, this._gltf.nodes, channel.target.node);
@@ -1718,12 +1718,12 @@ export class GLTFLoader implements IGLTFLoader {
 
         // Ignore animations that have no animation targets.
         if ((pathIsWeights && !targetNode._numMorphTargets) || (!pathIsWeights && !targetNode._babylonTransformNode)) {
-            return await Promise.resolve();
+            return Promise.resolve();
         }
 
         // Don't load node animations if disabled.
         if (!this._parent.loadNodeAnimations && !pathIsWeights && !targetNode._isJoint) {
-            return await Promise.resolve();
+            return Promise.resolve();
         }
 
         let properties: IInterpolationPropertyInfo[];
@@ -1758,7 +1758,7 @@ export class GLTFLoader implements IGLTFLoader {
             info: properties,
         };
 
-        return await this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+        return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
     }
 
     /**
