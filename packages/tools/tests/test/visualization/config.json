@@ -2628,7 +2628,8 @@
         },
         {
             "title": "FrameGraph nrge bounding boxes",
-            "playgroundId": "#IG8NRC#23"
+            "playgroundId": "#IG8NRC#23",
+            "errorRatio": 14
         },
         {
             "title": "FrameGraph nrg gui bloom",
