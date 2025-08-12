@@ -23,7 +23,7 @@ export async function PasteSmartFilterFromClipboardAsync(smartFilterDeserializer
  * @param smartFilterDeserializer - SmartFilterDeserializer to use
  * @param engine - ThinEngine to use
  * @param input - The input string to paste
- * @returns Promise that resolves with the pasted Smart Filter
+ * @returns Promise that resolves with the new Smart Filter
  */
 export async function PasteSmartFilterFromStringAsync(smartFilterDeserializer: SmartFilterDeserializer, engine: ThinEngine, input: string): Promise<Nullable<SmartFilter>> {
     try {
