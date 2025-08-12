@@ -45,12 +45,12 @@ const CreateImpostor = (id: number, scene: Scene, attractor: Attractor, initialS
     return impostor;
 };
 
-async function CreateTextRendererAsync(scene: Scene, impostor: AbstractMesh, index: number, color: Color3) {
+async function CreateTextRendererAsync(id: number, scene: Scene, impostor: AbstractMesh, color: Color3) {
     const sdfFontDefinition = await (await fetch("https://assets.babylonjs.com/fonts/roboto-regular.json")).text();
     const fontAsset = new FontAsset(sdfFontDefinition, "https://assets.babylonjs.com/fonts/roboto-regular.png");
 
     const textRenderer = await TextRenderer.CreateTextRendererAsync(fontAsset, scene.getEngine());
-    textRenderer.addParagraph("#" + index, {}, Matrix.Scaling(0.5, 0.5, 0.5).multiply(Matrix.Translation(0, 1, 0)));
+    textRenderer.addParagraph("#" + id, {}, Matrix.Scaling(0.5, 0.5, 0.5).multiply(Matrix.Translation(0, 1, 0)));
     textRenderer.isBillboard = true;
     textRenderer.color = Color4.FromColor3(color, 1.0);
     textRenderer.parent = impostor;
@@ -63,27 +63,27 @@ async function CreateTextRendererAsync(scene: Scene, impostor: AbstractMesh, ind
  * @returns
  */
 export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => {
-    const { attractor, id, impostorScale, impostorMaterial, scene } = props;
+    const { attractor, id, impostorScale, impostorMaterial, impostorColor, scene, onControl, isControlled } = props;
     const classes = useAttractorStyles();
     const [shown, setShown] = useState(true);
 
     // We only want to recreate the impostor mesh and associated if id, scene, or attractor/impostor changes
     const impostor = useResource(useCallback(() => CreateImpostor(id, scene, attractor, impostorScale, impostorMaterial), [id, scene, attractor]));
-    const label = useAsyncResource(useCallback(async () => await CreateTextRendererAsync(scene, impostor, id, props.impostorColor), [scene, impostor, id]));
+    const label = useAsyncResource(useCallback(async () => await CreateTextRendererAsync(id, scene, impostor, impostorColor), [id, scene, impostor]));
 
     // If impostor, color, or label change, recreate the observer function so that it isnt hooked to old state
     useEffect(() => {
         const onAfterRender = scene.onAfterRenderObservable.add(() => {
             attractor.position.copyFrom(impostor.position);
             if (label) {
-                label.color = Color4.FromColor3(props.impostorColor);
+                label.color = Color4.FromColor3(impostorColor);
                 label.render(scene.getViewMatrix(), scene.getProjectionMatrix());
             }
         });
         return () => {
-            scene.onAfterRenderObservable.remove(onAfterRender);
+            onAfterRender.remove();
         };
-    }, [impostor, label, props.impostorColor]);
+    }, [impostor, scene, label, impostorColor]);
 
     // If impostor or impostorScale change, update impostor scaling
     useEffect(() => {
@@ -106,8 +106,8 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
             <ToggleButton
                 title="Add / remove position gizmo from particle attractor"
                 enabledIcon={ArrowMoveFilled}
-                value={props.isControlled(impostor)}
-                onChange={(control: boolean) => props.onControl(control ? impostor : undefined)}
+                value={isControlled(impostor)}
+                onChange={(control: boolean) => onControl(control ? impostor : undefined)}
             />
         </div>
     );
