@@ -108,7 +108,8 @@ export class LottiePlayer {
 
             const offscreen = this._canvas.transferControlToOffscreen();
 
-            this._worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+            // Use an extensionless path so Webpack resolves to .ts in dev and .js in published output
+            this._worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
             this._worker.onmessage = (evt: MessageEvent) => {
                 if (evt.data.animationWidth && evt.data.animationHeight && this._canvas) {
                     this._canvas.style.width = `${evt.data.animationWidth}px`;
