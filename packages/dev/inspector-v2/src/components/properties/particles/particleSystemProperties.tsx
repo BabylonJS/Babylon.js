@@ -1,5 +1,4 @@
 import type { FactorGradient, ColorGradient as Color4Gradient, IValueGradient, ParticleSystem } from "core/index";
-import { GizmoManager } from "core/Gizmos";
 
 import { Color3, Color4 } from "core/Maths/math.color";
 import { useCallback } from "react";
@@ -72,13 +71,12 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
 
 export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
-    const gizmoManager = new GizmoManager(system.getScene()!);
 
     const attractors = useParticleSystemProperty(system, "attractors", "property", "addAttractor", "removeAttractor");
 
     return (
         <>
-            <AttractorList gizmoManager={gizmoManager} attractors={attractors} scene={system.getScene()!} system={system} />
+            <AttractorList attractors={attractors} scene={system.getScene()!} system={system} />
         </>
     );
 };

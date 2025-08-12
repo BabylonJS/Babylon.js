@@ -69,9 +69,8 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
     const classes = useAttractorStyles();
     const [shown, setShown] = useState(true);
 
-    // Create observer and cleanup on unmount (we can't use useResource since Observer is not an IDisposable)
+    // Create observer and cleanup on unmount via useEffect below (we can't use useResource since Observer is not an IDisposable)
     const sceneOnAfterRenderObserverRef = useRef<Observer<Scene>>();
-    useEffect(() => () => sceneOnAfterRenderObserverRef.current?.remove(), []);
 
     // We only want to recreate the impostor mesh and associated if id, scene, or attractor/impostor changes
     const impostor = useResource(useCallback(() => CreateImpostor(id, scene, attractor, impostorScale, impostorMaterial), [id, scene, attractor]));
@@ -87,11 +86,15 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
                 label.render(scene.getViewMatrix(), scene.getProjectionMatrix());
             }
         });
+        return () => {
+            sceneOnAfterRenderObserverRef.current?.remove();
+        };
     }, [impostor, label, props.impostorColor]);
 
+    // If impostor or impostorScale change, update impostor scaling
     useEffect(() => {
         impostor.scaling.setAll(impostorScale);
-    }, [impostorScale]);
+    }, [impostor, impostorScale]);
 
     return (
         <div className={classes.container}>
