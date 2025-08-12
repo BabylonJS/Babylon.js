@@ -35,7 +35,7 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
         return {
             dumpCanvas,
             drawToDumpCanvasAsync: async (width: number, height: number, data: ArrayBufferView, invertY?: boolean) => {
-                const ctx = dumpCanvas.getContext("bitmaprenderer")!;
+                const ctx = dumpCanvas.getContext("bitmaprenderer") as ImageBitmapRenderingContext;
                 dumpCanvas.width = width;
                 dumpCanvas.height = height;
 
