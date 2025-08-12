@@ -8,7 +8,7 @@ let AnimationPlayer: Nullable<AnimationController> = null;
 /**
  * Default configuration for lottie animations playback.
  */
-const DefaultConfiguration: AnimationConfiguration = {
+const DefaultConfiguration = {
     loopAnimation: false, // By default do not loop animations
     spriteAtlasSize: 2048, // Size of the texture atlas
     gapSize: 5, // Gap around the sprites in the atlas
@@ -19,7 +19,7 @@ const DefaultConfiguration: AnimationConfiguration = {
     easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
     ignoreOpacityAnimations: true, // Whether to ignore opacity animations for performance
     supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
-};
+} as const satisfies AnimationConfiguration;
 
 onmessage = async function (evt) {
     if (evt.data.canvas && evt.data.file) {

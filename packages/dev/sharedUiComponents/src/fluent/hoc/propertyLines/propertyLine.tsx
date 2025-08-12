@@ -22,7 +22,7 @@ const usePropertyLineStyles = makeStyles({
         width: "100%",
     },
     label: {
-        flex: "1 1 0",
+        flex: "1 1 0", // grow=1, shrink =1, basis = 0 initial size before
         minWidth: "50px",
         textAlign: "left",
         whiteSpace: "nowrap",
