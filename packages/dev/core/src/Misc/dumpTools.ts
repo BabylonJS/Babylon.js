@@ -214,7 +214,7 @@ export async function DumpDataAsync(
                 quality
             );
         } else {
-            Tools.EncodeScreenshotCanvasData(renderer.dumpCanvas, (base64Data) => resolve(base64Data), mimeType, fileName, quality);
+            Tools.EncodeScreenshotCanvasData(renderer.dumpCanvas, resolve, mimeType, fileName, quality);
         }
     });
 }
