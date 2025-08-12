@@ -7,10 +7,9 @@ import type { Color3 } from "core/Maths";
 import { Color4, Matrix } from "core/Maths";
 import type { AbstractMesh } from "core/Meshes";
 import { CreateSphere } from "core/Meshes";
-import type { Observer } from "core/Misc";
 import type { Attractor } from "core/Particles";
 import type { Scene } from "core/scene";
-import { useCallback, useEffect, useRef, useState, type FunctionComponent } from "react";
+import { useCallback, useEffect, useState, type FunctionComponent } from "react";
 import { SyncedSliderInput } from "shared-ui-components/fluent/primitives/syncedSlider";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useAsyncResource, useResource } from "../../../hooks/resourceHooks";
@@ -54,7 +53,6 @@ async function CreateTextRendererAsync(scene: Scene, impostor: AbstractMesh, ind
     textRenderer.addParagraph("#" + index, {}, Matrix.Scaling(0.5, 0.5, 0.5).multiply(Matrix.Translation(0, 1, 0)));
     textRenderer.isBillboard = true;
     textRenderer.color = Color4.FromColor3(color, 1.0);
-    textRenderer.render(scene.getViewMatrix(), scene.getProjectionMatrix());
     textRenderer.parent = impostor;
     return textRenderer;
 }
@@ -69,17 +67,13 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
     const classes = useAttractorStyles();
     const [shown, setShown] = useState(true);
 
-    // Create observer and cleanup on unmount via useEffect below (we can't use useResource since Observer is not an IDisposable)
-    const sceneOnAfterRenderObserverRef = useRef<Observer<Scene>>();
-
     // We only want to recreate the impostor mesh and associated if id, scene, or attractor/impostor changes
     const impostor = useResource(useCallback(() => CreateImpostor(id, scene, attractor, impostorScale, impostorMaterial), [id, scene, attractor]));
     const label = useAsyncResource(useCallback(async () => await CreateTextRendererAsync(scene, impostor, id, props.impostorColor), [scene, impostor, id]));
 
     // If impostor, color, or label change, recreate the observer function so that it isnt hooked to old state
     useEffect(() => {
-        sceneOnAfterRenderObserverRef.current?.remove();
-        sceneOnAfterRenderObserverRef.current = scene.onAfterRenderObservable.add(() => {
+        const onAfterRender = scene.onAfterRenderObservable.add(() => {
             attractor.position.copyFrom(impostor.position);
             if (label) {
                 label.color = Color4.FromColor3(props.impostorColor);
@@ -87,7 +81,7 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
             }
         });
         return () => {
-            sceneOnAfterRenderObserverRef.current?.remove();
+            scene.onAfterRenderObservable.remove(onAfterRender);
         };
     }, [impostor, label, props.impostorColor]);
 

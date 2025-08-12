@@ -1,6 +1,6 @@
 import type { IDisposable } from "core/index";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 /**
  * Custom hook to manage a resource with automatic disposal. The resource is created once initially, and recreated
@@ -44,46 +44,43 @@ export function useResource<T extends IDisposable>(factory: () => T): T {
  * @returns The created resource.
  */
 export function useAsyncResource<T extends IDisposable>(factory: (abortSignal: AbortSignal) => Promise<T>): T | undefined {
-    const resourceRef = useRef<T>();
+    const [resource, setResource] = useState<T | undefined>();
     const factoryRef = useRef(factory);
 
     // Update refs to capture latest values
     factoryRef.current = factory;
 
     useEffect(() => {
-        const abortController = new AbortController(); // Create AbortController
-        const currentResource: T | undefined = resourceRef.current;
+        const abortController = new AbortController();
+        let isMounted = true;
 
         // Dispose old resource if it exists
-        currentResource?.dispose();
-        resourceRef.current = undefined;
+        resource?.dispose();
+        setResource(undefined);
 
         // Create new resource
         void (async () => {
             try {
-                const newVal = await factory(abortController.signal); // Pass the signal
-                if (!abortController.signal.aborted) {
-                    resourceRef.current = newVal;
+                const newVal = await factory(abortController.signal);
+                if (isMounted && !abortController.signal.aborted) {
+                    setResource(newVal); // This will trigger a re-render so the new resource is returned to caller
                 } else {
                     newVal.dispose();
                 }
             } catch (error) {
-                // Handle abortion gracefully
                 if (error instanceof Error && error.name === "AbortError") {
-                    // Request was aborted, this is expected
                     return;
                 }
-                // Optionally handle other errors here
-                global.console.error("Failed to create async resource:", error);
             }
         })();
 
         return () => {
-            abortController.abort(); // Abort the operation
-            resourceRef.current?.dispose();
-            resourceRef.current = undefined;
+            isMounted = false;
+            abortController.abort();
+            resource?.dispose();
+            setResource(undefined);
         };
     }, [factory]);
 
-    return resourceRef.current;
+    return resource;
 }

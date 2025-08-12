@@ -8,6 +8,7 @@ import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
 import { AttractorList } from "./attractorList";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 
 export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
@@ -73,10 +74,16 @@ export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSyst
     const { particleSystem: system } = props;
 
     const attractors = useParticleSystemProperty(system, "attractors", "property", "addAttractor", "removeAttractor");
+    const scene = system.getScene();
 
     return (
         <>
-            <AttractorList attractors={attractors} scene={system.getScene()!} system={system} />
+            {scene ? (
+                <AttractorList attractors={attractors} scene={scene} system={system} />
+            ) : (
+                // Should never get here since sceneExplorer only displays if there is a scene, but adding UX in case that assumption changes in future
+                <MessageBar intent="info" title="No Scene Available" message="Cannot display attractors without a scene" />
+            )}
         </>
     );
 };
