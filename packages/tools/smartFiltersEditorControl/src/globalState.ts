@@ -55,6 +55,8 @@ export class GlobalState {
 
     stateManager: StateManager;
 
+    onClearUndoStack = new Observable<void>();
+
     beforeRenderObservable: Nullable<Observable<void>>;
 
     lockObject: any;

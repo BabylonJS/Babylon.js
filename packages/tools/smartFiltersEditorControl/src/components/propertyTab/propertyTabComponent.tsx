@@ -135,6 +135,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                 this.props.globalState.smartFilter = newSmartFilter;
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                 this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+                this.props.globalState.onClearUndoStack.notifyObservers();
             }
         }
     }
@@ -157,6 +158,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
         if (this.props.globalState.pasteSmartFilterAsync) {
             this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
             await this.props.globalState.pasteSmartFilterAsync();
+            this.props.globalState.onClearUndoStack.notifyObservers();
         }
     }
 
