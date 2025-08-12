@@ -213,6 +213,13 @@ export class HistoryStack implements IDisposable {
     }
 
     /**
+     * Checks if there is any data in the history stack
+     */
+    public get hasData(): boolean {
+        return this._historyStack.length > 0;
+    }
+
+    /**
      * Undo the latest operation
      */
     public undo() {

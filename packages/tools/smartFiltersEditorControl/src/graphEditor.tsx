@@ -103,29 +103,28 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     }
 
     prepareHistoryStack() {
-        const smartFilter = this.props.globalState.smartFilter;
         const globalState = this.props.globalState;
 
         // eslint-disable-next-line no-restricted-syntax
         const dataProvider = async () => {
             // return the serialized version to store
-            this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
+            if (globalState.copySmartFilterToStringAsync) {
+                this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
+                return await globalState.copySmartFilterToStringAsync();
+            }
 
-            const serializerModule = await import(/* webpackChunkName: "serializers" */ "smart-filters-blocks/registration/blockSerializers");
-            const serializer = new SmartFilterSerializer(serializerModule.blocksUsingDefaultSerialization, serializerModule.additionalBlockSerializers);
-
-            return JSON.stringify(serializer.serialize(smartFilter), null, 2);
+            return "";
         };
 
-        const applyUpdate = (data: any) => {
-            globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
-            // Deserialize here!
-
-            globalState.onResetRequiredObservable.notifyObservers(false);
+        const applyUpdateAsync = async (data: any) => {
+            if (this.props.globalState.pasteSmartFilterFromStringAsync) {
+                this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
+                await this.props.globalState.pasteSmartFilterFromStringAsync(data);
+            }
         };
 
         // Create the stack
-        this._historyStack = new HistoryStack(dataProvider, applyUpdate);
+        this._historyStack = new HistoryStack(dataProvider, applyUpdateAsync);
         globalState.stateManager.historyStack = this._historyStack;
 
         // Connect to relevant events
@@ -183,6 +182,14 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.onSmartFilterLoadedObservable?.add((smartFilter: SmartFilter) => {
             this.props.globalState.smartFilter = smartFilter;
             this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+
+            if (!this._historyStack.hasData) {
+                // For the first load when there is no history, we capture the baseline
+                setTimeout(() => {
+                    // We skip the current frame to let the location being updated
+                    this.props.globalState.onClearUndoStack.notifyObservers();
+                });
+            }
         });
 
         this.props.globalState.onlyShowCustomBlocksObservable.notifyObservers(DataStorage.ReadBoolean("OnlyShowCustomBlocks", OnlyShowCustomBlocksDefaultValue));
