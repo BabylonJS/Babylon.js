@@ -1,0 +1,448 @@
+import { Crowd } from "@recast-navigation/core";
+
+import type { AbstractEngine } from "core/Engines";
+import type { Scene } from "core/index";
+import { Vector3, type IVector3Like, Epsilon } from "core/Maths";
+import type { TransformNode } from "core/Meshes";
+import { type Observer, Observable } from "core/Misc";
+import type { ICrowd, IAgentParameters } from "core/Navigation";
+import type { Nullable } from "core/types";
+
+import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
+
+/**
+ * Recast detour crowd implementation
+ */
+
+/**
+ *
+ */
+export class RecastJSCrowd implements ICrowd {
+    /**
+     * Recast plugin
+     */
+    public navigationPlugin: RecastNavigationJSPluginV2;
+    /**
+     * Link to the detour crowd
+     */
+    public recastCrowd: Crowd;
+    /**
+     * One transform per agent
+     */
+    public transforms: TransformNode[] = new Array<TransformNode>();
+    /**
+     * All agents created
+     */
+    public agents: number[] = new Array<number>();
+    /**
+     * agents reach radius
+     */
+    public reachRadii: number[] = new Array<number>();
+    /**
+     * true when a destination is active for an agent and notifier hasn't been notified of reach
+     */
+    private _agentDestinationArmed: boolean[] = new Array<boolean>();
+    /**
+     * agent current target
+     */
+    private _agentDestination: Vector3[] = new Array<Vector3>();
+    /**
+     * Link to the scene is kept to unregister the crowd from the scene
+     */
+    private _scene: Scene;
+
+    private _engine: AbstractEngine;
+
+    /**
+     * Observer for crowd updates
+     */
+    private _onBeforeAnimationsObserver: Nullable<Observer<Scene>> = null;
+
+    /**
+     * Fires each time an agent is in reach radius of its destination
+     */
+    public onReachTargetObservable = new Observable<{
+        /**
+         *
+         */
+        agentIndex: number;
+        /**
+         *
+         */
+        destination: Vector3;
+    }>();
+
+    /**
+     * Constructor
+     * @param plugin recastJS plugin
+     * @param maxAgents the maximum agent count in the crowd
+     * @param maxAgentRadius the maximum radius an agent can have
+     * @param scene to attach the crowd to
+     * @returns the crowd you can add agents to
+     */
+    public constructor(plugin: RecastNavigationJSPluginV2, maxAgents: number, maxAgentRadius: number, scene: Scene) {
+        this.navigationPlugin = plugin;
+
+        if (!plugin.navMesh) {
+            throw new Error("There is no NavMesh generated.");
+        }
+
+        this.recastCrowd = new Crowd(plugin.navMesh, {
+            maxAgents,
+            maxAgentRadius,
+        });
+
+        this._scene = scene;
+        this._engine = scene.getEngine();
+
+        this._onBeforeAnimationsObserver = scene.onBeforeAnimationsObservable.add(() => {
+            this.update(this._engine.getDeltaTime() * 0.001 * plugin.timeFactor);
+        });
+    }
+
+    /**
+     * Add a new agent to the crowd with the specified parameter a corresponding transformNode.
+     * You can attach anything to that node. The node position is updated in the scene update tick.
+     * @param pos world position that will be constrained by the navigation mesh
+     * @param parameters agent parameters
+     * @param transform hooked to the agent that will be update by the scene
+     * @returns agent index
+     */
+    public addAgent(pos: IVector3Like, parameters: IAgentParameters, transform: TransformNode): number {
+        const agentParams: IAgentParameters = {
+            radius: parameters.radius,
+            height: parameters.height,
+            maxAcceleration: parameters.maxAcceleration,
+            maxSpeed: parameters.maxSpeed,
+            collisionQueryRange: parameters.collisionQueryRange,
+            pathOptimizationRange: parameters.pathOptimizationRange,
+            separationWeight: parameters.separationWeight,
+            reachRadius: parameters.reachRadius ? parameters.reachRadius : parameters.radius,
+            // updateFlags : 7,
+            // obstacleAvoidanceType : 0,
+            // queryFilterType : 0,
+            // userData : 0,
+        };
+
+        const agent = this.recastCrowd.addAgent({ x: pos.x, y: pos.y, z: pos.z }, agentParams);
+
+        this.transforms.push(transform);
+        this.agents.push(agent.agentIndex);
+        this.reachRadii.push(parameters.reachRadius ? parameters.reachRadius : parameters.radius);
+        this._agentDestinationArmed.push(false);
+        this._agentDestination.push(new Vector3(0, 0, 0));
+
+        return agent.agentIndex;
+    }
+
+    /**
+     * Returns the agent position in world space
+     * @param index agent index returned by addAgent
+     * @returns world space position
+     */
+    public getAgentPosition(index: number): Vector3 {
+        const agentPos = this.recastCrowd.getAgent(index)?.position() ?? {
+            x: 0,
+            y: 0,
+            z: 0,
+        };
+        return new Vector3(agentPos.x, agentPos.y, agentPos.z);
+    }
+
+    /**
+     * Returns the agent position result in world space
+     * @param index agent index returned by addAgent
+     * @param result output world space position
+     */
+    public getAgentPositionToRef(index: number, result: Vector3): void {
+        const agentPos = this.recastCrowd.getAgent(index)?.position() ?? {
+            x: 0,
+            y: 0,
+            z: 0,
+        };
+        result.set(agentPos.x, agentPos.y, agentPos.z);
+    }
+
+    /**
+     * Returns the agent velocity in world space
+     * @param index agent index returned by addAgent
+     * @returns world space velocity
+     */
+    public getAgentVelocity(index: number): Vector3 {
+        const agentVel = this.recastCrowd.getAgent(index)?.velocity() ?? {
+            x: 0,
+            y: 0,
+            z: 0,
+        };
+        return new Vector3(agentVel.x, agentVel.y, agentVel.z);
+    }
+
+    /**
+     * Returns the agent velocity result in world space
+     * @param index agent index returned by addAgent
+     * @param result output world space velocity
+     */
+    public getAgentVelocityToRef(index: number, result: Vector3): void {
+        const agentVel = this.recastCrowd.getAgent(index)?.velocity() ?? {
+            x: 0,
+            y: 0,
+            z: 0,
+        };
+        result.set(agentVel.x, agentVel.y, agentVel.z);
+    }
+
+    /**
+     * Returns the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @returns world space position
+     */
+    public getAgentNextTargetPath(index: number): Vector3 {
+        const pathTargetPos = this.recastCrowd.getAgent(index)?.nextTargetInPath() ?? {
+            x: 0,
+            y: 0,
+            z: 0,
+        };
+        return new Vector3(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
+    }
+
+    /**
+     * Returns the agent next target point on the path
+     * @param index agent index returned by addAgent
+     * @param result output world space position
+     */
+    public getAgentNextTargetPathToRef(index: number, result: Vector3): void {
+        const pathTargetPos = this.recastCrowd.getAgent(index)?.nextTargetInPath() ?? {
+            x: 0,
+            y: 0,
+            z: 0,
+        };
+        result.set(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
+    }
+
+    /**
+     * Gets the agent state
+     * @param index agent index returned by addAgent
+     * @returns agent state
+     */
+    public getAgentState(index: number): number {
+        return this.recastCrowd.getAgent(index)?.state() ?? 0; // invalid
+    }
+
+    /**
+     * returns true if the agent in over an off mesh link connection
+     * @param index agent index returned by addAgent
+     * @returns true if over an off mesh link connection
+     */
+    public overOffmeshConnection(index: number): boolean {
+        return this.recastCrowd.getAgent(index)?.overOffMeshConnection() ?? false;
+    }
+
+    /**
+     * Asks a particular agent to go to a destination. That destination is constrained by the navigation mesh
+     * @param index agent index returned by addAgent
+     * @param destination targeted world position
+     */
+    public agentGoto(index: number, destination: IVector3Like): void {
+        this.recastCrowd.getAgent(index)?.requestMoveTarget(destination);
+
+        // arm observer
+        const item = this.agents.indexOf(index);
+        if (item > -1) {
+            this._agentDestinationArmed[item] = true;
+            this._agentDestination[item].set(destination.x, destination.y, destination.z);
+        }
+    }
+
+    /**
+     * Teleport the agent to a new position
+     * @param index agent index returned by addAgent
+     * @param destination targeted world position
+     */
+    public agentTeleport(index: number, destination: IVector3Like): void {
+        this.recastCrowd.getAgent(index)?.teleport(destination);
+    }
+
+    /**
+     * Update agent parameters
+     * @param index agent index returned by addAgent
+     * @param parameters agent parameters
+     */
+    public updateAgentParameters(index: number, parameters: IAgentParameters): void {
+        const agent = this.recastCrowd.getAgent(index);
+        if (!agent) {
+            return;
+        }
+
+        const agentParams = agent.parameters();
+
+        if (!agentParams) {
+            return;
+        }
+
+        if (parameters.radius !== undefined) {
+            agentParams.radius = parameters.radius;
+        }
+        if (parameters.height !== undefined) {
+            agentParams.height = parameters.height;
+        }
+        if (parameters.maxAcceleration !== undefined) {
+            agentParams.maxAcceleration = parameters.maxAcceleration;
+        }
+        if (parameters.maxSpeed !== undefined) {
+            agentParams.maxSpeed = parameters.maxSpeed;
+        }
+        if (parameters.collisionQueryRange !== undefined) {
+            agentParams.collisionQueryRange = parameters.collisionQueryRange;
+        }
+        if (parameters.pathOptimizationRange !== undefined) {
+            agentParams.pathOptimizationRange = parameters.pathOptimizationRange;
+        }
+        if (parameters.separationWeight !== undefined) {
+            agentParams.separationWeight = parameters.separationWeight;
+        }
+
+        agent.updateParameters(agentParams);
+    }
+
+    /**
+     * remove a particular agent previously created
+     * @param index agent index returned by addAgent
+     */
+    public removeAgent(index: number): void {
+        this.recastCrowd.removeAgent(index);
+
+        const item = this.agents.indexOf(index);
+        if (item > -1) {
+            this.agents.splice(item, 1);
+            this.transforms.splice(item, 1);
+            this.reachRadii.splice(item, 1);
+            this._agentDestinationArmed.splice(item, 1);
+            this._agentDestination.splice(item, 1);
+        }
+    }
+
+    /**
+     * get the list of all agents attached to this crowd
+     * @returns list of agent indices
+     */
+    public getAgents(): number[] {
+        return this.agents;
+    }
+
+    /**
+     * Tick update done by the Scene. Agent position/velocity/acceleration is updated by this function
+     * @param deltaTime in seconds
+     */
+    public update(deltaTime: number): void {
+        // update obstacles
+        this.recastCrowd.update(deltaTime);
+
+        if (deltaTime <= Epsilon) {
+            return;
+        }
+
+        // update crowd
+        const timeStep = this.navigationPlugin.getTimeStep();
+        const maxStepCount = this.navigationPlugin.getMaximumSubStepCount();
+        if (timeStep <= Epsilon) {
+            this.recastCrowd.update(deltaTime);
+        } else {
+            let iterationCount = Math.floor(deltaTime / timeStep);
+            if (maxStepCount && iterationCount > maxStepCount) {
+                iterationCount = maxStepCount;
+            }
+            if (iterationCount < 1) {
+                iterationCount = 1;
+            }
+
+            const step = deltaTime / iterationCount;
+            for (let i = 0; i < iterationCount; i++) {
+                this.recastCrowd.update(step);
+            }
+        }
+
+        // update transforms
+        for (let index = 0; index < this.agents.length; index++) {
+            // update transform position
+            const agentIndex = this.agents[index];
+            const agentPosition = this.getAgentPosition(agentIndex);
+            this.transforms[index].position = agentPosition;
+            // check agent reach destination
+            if (this._agentDestinationArmed[index]) {
+                const dx = agentPosition.x - this._agentDestination[index].x;
+                const dz = agentPosition.z - this._agentDestination[index].z;
+                const radius = this.reachRadii[index];
+                const groundY = this._agentDestination[index].y - this.reachRadii[index];
+                const ceilingY = this._agentDestination[index].y + this.reachRadii[index];
+                const distanceXZSquared = dx * dx + dz * dz;
+                if (agentPosition.y > groundY && agentPosition.y < ceilingY && distanceXZSquared < radius * radius) {
+                    this._agentDestinationArmed[index] = false;
+                    this.onReachTargetObservable.notifyObservers({
+                        agentIndex: agentIndex,
+                        destination: this._agentDestination[index],
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * Set the Bounding box extent for doing spatial queries (getClosestPoint, getRandomPointAround, ...)
+     * The queries will try to find a solution within those bounds
+     * default is (1,1,1)
+     * @param extent x,y,z value that define the extent around the queries point of reference
+     */
+    setDefaultQueryExtent(extent: IVector3Like): void {
+        this.navigationPlugin.setDefaultQueryExtent(extent);
+    }
+
+    /**
+     * Get the Bounding box extent specified by setDefaultQueryExtent
+     * @returns the box extent values
+     */
+    getDefaultQueryExtent(): Vector3 {
+        const p = this.navigationPlugin.getDefaultQueryExtent();
+        return new Vector3(p.x, p.y, p.z);
+    }
+
+    /**
+     * Get the Bounding box extent result specified by setDefaultQueryExtent
+     * @param result output the box extent values
+     */
+    getDefaultQueryExtentToRef(result: Vector3): void {
+        const p = this.navigationPlugin.getDefaultQueryExtent();
+        result.set(p.x, p.y, p.z);
+    }
+
+    /**
+     * Get the next corner points composing the path (max 4 points)
+     * @param index agent index returned by addAgent
+     * @returns array containing world position composing the path
+     */
+    public getCorners(index: number): Vector3[] {
+        const corners = this.recastCrowd.getAgent(index)?.corners();
+        if (!corners) {
+            return [];
+        }
+
+        const positions = [];
+        for (let i = 0; i < corners.length; i++) {
+            positions.push(new Vector3(corners[i].x, corners[i].y, corners[i].z));
+        }
+        return positions;
+    }
+
+    /**
+     * Release all resources
+     */
+    public dispose(): void {
+        this.recastCrowd.destroy();
+
+        if (this._onBeforeAnimationsObserver) {
+            this._scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
+            this._onBeforeAnimationsObserver = null;
+        }
+
+        this.onReachTargetObservable.clear();
+    }
+}
