@@ -52,7 +52,6 @@ export function useAsyncResource<T extends IDisposable>(factory: (abortSignal: A
 
     useEffect(() => {
         const abortController = new AbortController();
-        let isMounted = true;
 
         // Dispose old resource if it exists
         resource?.dispose();
@@ -62,7 +61,7 @@ export function useAsyncResource<T extends IDisposable>(factory: (abortSignal: A
         void (async () => {
             try {
                 const newVal = await factory(abortController.signal);
-                if (isMounted && !abortController.signal.aborted) {
+                if (!abortController.signal.aborted) {
                     setResource(newVal); // This will trigger a re-render so the new resource is returned to caller
                 } else {
                     newVal.dispose();
@@ -75,7 +74,6 @@ export function useAsyncResource<T extends IDisposable>(factory: (abortSignal: A
         })();
 
         return () => {
-            isMounted = false;
             abortController.abort();
             resource?.dispose();
             setResource(undefined);
