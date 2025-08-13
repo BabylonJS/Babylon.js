@@ -28,7 +28,10 @@ export function GenerateNavMesh(meshes: Array<Mesh>, parameters: INavMeshParamet
     }
 
     const config = CreateNavMeshConfig(parameters);
-    const result = "tileSize" in config ? generateTiledNavMesh(positions, indices, config as TiledNavMeshGeneratorConfig) : generateSoloNavMesh(positions, indices, config);
+    const result =
+        "tileSize" in config
+            ? generateTiledNavMesh(positions, indices, config as TiledNavMeshGeneratorConfig, parameters.keepIntermediates)
+            : generateSoloNavMesh(positions, indices, config, parameters.keepIntermediates);
 
     if (!result.success) {
         throw new Error(`Unable to generateSoloNavMesh: ${result.error}`);

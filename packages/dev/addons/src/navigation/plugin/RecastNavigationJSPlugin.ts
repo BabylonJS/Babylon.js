@@ -10,7 +10,7 @@ import type { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math";
 import type { IVector3Like } from "core/Maths/math.like";
 
-import type { CreateNavMeshresult, INavigationEnginePluginV2, INavMeshParametersV2 } from "../types";
+import type { CreateNavMeshresult, GeneratorIntermediates, INavigationEnginePluginV2, INavMeshParametersV2 } from "../types";
 import { RecastJSCrowd } from "./RecastJSCrowd";
 import { convertNavPathPoints } from "../common/convert";
 import { computePathSmooth } from "../common/smooth-path";
@@ -61,7 +61,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
     /**
      *
      */
-    public intermediates?: SoloNavMeshGeneratorIntermediates | TiledNavMeshGeneratorIntermediates;
+    public intermediates?: GeneratorIntermediates;
 
     /**
      * Link to the scene is kept to unregister the crowd from the scene
@@ -168,10 +168,12 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
 
         this.navMesh = result.navMesh;
         this.navMeshQuery = result.navMeshQuery;
+        this.intermediates = result.intermediates;
 
         return {
             navMesh: result.navMesh,
             navMeshQuery: result.navMeshQuery,
+            intermediates: result.intermediates,
         };
     }
     /**
@@ -194,10 +196,12 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
 
         this.navMesh = result.navMesh;
         this.navMeshQuery = result.navMeshQuery;
+        this.intermediates = result.intermediates;
 
         return {
             navMesh: result.navMesh,
             navMeshQuery: result.navMeshQuery,
+            intermediates: result.intermediates,
         };
     }
 

@@ -92,9 +92,6 @@ export function CreateNavMeshConfig<T extends INavMeshParametersV2>(
 
         // OffMeshConnections (teleports) to be added to the NavMesh.
         offMeshConnections: parameters.offMeshConnections,
-
-        // Whether to keep intermediate navigation mesh data for debug visualization
-        keepIntermediates: parameters.keepIntermediates,
     };
 
     // If tileSize is present and > 0, return the config as TiledNavMeshGeneratorConfig

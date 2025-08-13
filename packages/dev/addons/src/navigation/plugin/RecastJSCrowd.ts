@@ -118,6 +118,7 @@ export class RecastJSCrowd implements ICrowd {
             pathOptimizationRange: parameters.pathOptimizationRange,
             separationWeight: parameters.separationWeight,
             reachRadius: parameters.reachRadius ? parameters.reachRadius : parameters.radius,
+            // TODO: add more parameters
             // updateFlags : 7,
             // obstacleAvoidanceType : 0,
             // queryFilterType : 0,

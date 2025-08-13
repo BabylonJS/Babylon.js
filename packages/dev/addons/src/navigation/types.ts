@@ -42,13 +42,19 @@ export interface IOffMeshConnection {
 
 export type CreateNavMeshresult = Nullable<{
     /**
-     *
+     * Navigation mesh
      */
     navMesh: NavMesh;
     /**
-     *
+     * Navigation mesh query
      */
     navMeshQuery: NavMeshQuery;
+    /**
+     * Intermediates generated during the NavMesh creation process.
+     * @remarks This is only available if the `keepIntermediates` parameter is set to true in the `INavMeshParametersV2`.
+     * It can be used for debugging or visualization purposes.
+     */
+    intermediates?: GeneratorIntermediates;
 }>;
 
 /**
