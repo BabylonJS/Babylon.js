@@ -66,7 +66,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     private _graphCanvas!: GraphCanvasComponent;
     private _diagramContainer!: HTMLDivElement;
     private _canvasResizeObserver: Nullable<ResizeObserver> = null;
-    private _historyStack: HistoryStack;
+    private _historyStack: Nullable<HistoryStack> = null;
 
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
@@ -128,19 +128,19 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         // Connect to relevant events
         globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            void this._historyStack.storeAsync();
+            void this._historyStack!.storeAsync();
         });
         globalState.stateManager.onRebuildRequiredObservable.add(() => {
-            void this._historyStack.storeAsync();
+            void this._historyStack!.storeAsync();
         });
         globalState.stateManager.onNodeMovedObservable.add(() => {
-            void this._historyStack.storeAsync();
+            void this._historyStack!.storeAsync();
         });
         globalState.stateManager.onNewNodeCreatedObservable.add(() => {
-            void this._historyStack.storeAsync();
+            void this._historyStack!.storeAsync();
         });
         globalState.onClearUndoStack.add(() => {
-            this._historyStack.reset();
+            this._historyStack!.reset();
         });
     }
 
@@ -179,6 +179,10 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.props.globalState.onSmartFilterLoadedObservable?.add((smartFilter: SmartFilter) => {
+            if (!this._historyStack) {
+                return;
+            }
+
             this.props.globalState.smartFilter = smartFilter;
             this.props.globalState.onResetRequiredObservable.notifyObservers(false);
 
@@ -291,7 +295,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         };
 
         this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
-            if (this._historyStack.processKeyEvent(evt)) {
+            if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
                 return;
             }
 
