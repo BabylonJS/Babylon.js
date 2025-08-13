@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { _WarnImport } from "./devTools";
 
+import type { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import { Tools } from "./tools";
@@ -8,50 +9,33 @@ import { Clamp } from "../Maths/math.scalar.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
-import { AsyncLock } from "./asyncLock";
 
-type DumpToolsEngine = {
-    asyncLock: AsyncLock;
-    dumpCanvas: HTMLCanvasElement | OffscreenCanvas;
-    drawToDumpCanvasAsync: (width: number, height: number, data: ArrayBufferView, invertY?: boolean) => Promise<void>;
-    dispose?: () => void;
+type DumpResources = {
+    canvas: HTMLCanvasElement | OffscreenCanvas;
+    dumpEngine?: {
+        engine: ThinEngine;
+        renderer: EffectRenderer;
+        wrapper: EffectWrapper;
+    };
 };
 
-let EnginePromise: Promise<DumpToolsEngine> | null = null;
+let ResourcesPromise: Promise<DumpResources> | null = null;
 
-async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
+async function _CreateDumpResourcesAsync(): Promise<DumpResources> {
     // Create a compatible canvas. Prefer an HTMLCanvasElement if possible to avoid alpha issues with OffscreenCanvas + WebGL in many browsers.
-    const dumpCanvas = (EngineStore.LastCreatedEngine?.createCanvas(100, 100) ?? new OffscreenCanvas(100, 100)) as HTMLCanvasElement | OffscreenCanvas; // will be resized later
-    if (dumpCanvas instanceof OffscreenCanvas) {
+    const canvas = (EngineStore.LastCreatedEngine?.createCanvas(100, 100) ?? new OffscreenCanvas(100, 100)) as HTMLCanvasElement | OffscreenCanvas; // will be resized later
+    if (canvas instanceof OffscreenCanvas) {
         Logger.Warn("DumpData: OffscreenCanvas will be used for dumping data. This may result in lossy alpha values.");
     }
-
-    // Use an async lock for a quick way to ensure that the rendering and reading from the canvas is always atomic.
-    const asyncLock = new AsyncLock();
 
     // If WebGL via ThinEngine is not available (e.g. Native), use the BitmapRenderer.
     // If https://github.com/whatwg/html/issues/10142 is resolved, we can migrate to just BitmapRenderer and avoid an engine dependency altogether.
     const { ThinEngine: thinEngineClass } = await import("../Engines/thinEngine");
     if (!thinEngineClass.IsSupported) {
-        if (!dumpCanvas.getContext("bitmaprenderer")) {
+        if (!canvas.getContext("bitmaprenderer")) {
             throw new Error("DumpData: No WebGL or bitmap rendering context available. Cannot dump data.");
         }
-
-        return {
-            asyncLock,
-            dumpCanvas,
-            drawToDumpCanvasAsync: async (width: number, height: number, data: ArrayBufferView, invertY?: boolean) => {
-                const ctx = dumpCanvas.getContext("bitmaprenderer") as ImageBitmapRenderingContext;
-                dumpCanvas.width = width;
-                dumpCanvas.height = height;
-
-                const imageData = new ImageData(width, height); // ImageData(data, sw, sh) ctor not yet widely implemented
-                imageData.data.set(data as Uint8ClampedArray);
-                const imageBitmap = await createImageBitmap(imageData, { premultiplyAlpha: "none", imageOrientation: invertY ? "flipY" : "from-image" });
-
-                ctx.transferFromImageBitmap(imageBitmap);
-            },
-        };
+        return { canvas };
     }
 
     const options = {
@@ -63,7 +47,7 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
         antialias: false,
         failIfMajorPerformanceCaveat: false,
     };
-    const engine = new thinEngineClass(dumpCanvas, false, options);
+    const engine = new thinEngineClass(canvas, false, options);
 
     // remove this engine from the list of instances to avoid using it for other purposes
     EngineStore.Instances.pop();
@@ -89,34 +73,16 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
     });
 
     return {
-        asyncLock,
-        dumpCanvas,
-        drawToDumpCanvasAsync: async (width: number, height: number, data: ArrayBufferView, invertY?: boolean) => {
-            engine.setSize(width, height, true);
-
-            // Create the image
-            const texture = engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
-
-            renderer.setViewport();
-            renderer.applyEffectWrapper(wrapper);
-            wrapper.effect._bindTexture("textureSampler", texture);
-            renderer.draw();
-
-            texture.dispose();
-        },
-        dispose: () => {
-            wrapper.dispose();
-            renderer.dispose();
-            engine.dispose();
-        },
+        canvas: canvas,
+        dumpEngine: { engine, renderer, wrapper },
     };
 }
 
-async function _GetDumpRendererAsync() {
-    if (!EnginePromise) {
-        EnginePromise = _CreateDumpRendererAsync();
+async function _GetDumpResourcesAsync() {
+    if (!ResourcesPromise) {
+        ResourcesPromise = _CreateDumpResourcesAsync();
     }
-    return await EnginePromise;
+    return await ResourcesPromise;
 }
 
 /**
@@ -202,30 +168,54 @@ export async function DumpDataAsync(
         data = data2;
     }
 
-    const renderer = await _GetDumpRendererAsync();
+    const resources = await _GetDumpResourcesAsync();
 
     // Keep the async render + read from the shared canvas atomic
-    return await renderer.asyncLock.lockAsync(async () => {
-        await renderer.drawToDumpCanvasAsync(width, height, data, invertY);
-        return await new Promise<string | ArrayBuffer>((resolve) => {
-            if (toArrayBuffer) {
-                Tools.ToBlob(
-                    renderer.dumpCanvas,
-                    (blob) => {
-                        const fileReader = new FileReader();
-                        fileReader.onload = (event: any) => {
-                            const arrayBuffer = event.target!.result as ArrayBuffer;
-                            resolve(arrayBuffer);
-                        };
-                        fileReader.readAsArrayBuffer(blob!);
-                    },
-                    mimeType,
-                    quality
-                );
-            } else {
-                Tools.EncodeScreenshotCanvasData(renderer.dumpCanvas, resolve, mimeType, fileName, quality);
-            }
-        });
+    // eslint-disable-next-line no-async-promise-executor
+    return await new Promise<string | ArrayBuffer>(async (resolve) => {
+        if (resources.dumpEngine) {
+            const dumpEngine = resources.dumpEngine;
+            dumpEngine.engine.setSize(width, height, true);
+
+            // Create the image
+            const texture = dumpEngine.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+
+            dumpEngine.renderer.setViewport();
+            dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
+            dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
+            dumpEngine.renderer.draw();
+
+            texture.dispose();
+        } else {
+            const ctx = resources.canvas.getContext("bitmaprenderer") as ImageBitmapRenderingContext;
+            resources.canvas.width = width;
+            resources.canvas.height = height;
+
+            const imageData = new ImageData(width, height); // ImageData(data, sw, sh) ctor not yet widely implemented
+            imageData.data.set(data as Uint8ClampedArray);
+            const imageBitmap = await createImageBitmap(imageData, { premultiplyAlpha: "none", imageOrientation: invertY ? "flipY" : "from-image" });
+
+            ctx.transferFromImageBitmap(imageBitmap);
+        }
+
+        // Download the result
+        if (toArrayBuffer) {
+            Tools.ToBlob(
+                resources.canvas,
+                (blob) => {
+                    const fileReader = new FileReader();
+                    fileReader.onload = (event: any) => {
+                        const arrayBuffer = event.target!.result as ArrayBuffer;
+                        resolve(arrayBuffer);
+                    };
+                    fileReader.readAsArrayBuffer(blob!);
+                },
+                mimeType,
+                quality
+            );
+        } else {
+            Tools.EncodeScreenshotCanvasData(resources.canvas, resolve, mimeType, fileName, quality);
+        }
     });
 }
 
@@ -266,20 +256,24 @@ export function DumpData(
  * Dispose the dump tools associated resources
  */
 export function Dispose() {
-    if (!EnginePromise) {
+    if (!ResourcesPromise) {
         return;
     }
 
     // in cases where the engine is not yet created, we need to wait for it to dispose it
     // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-    EnginePromise?.then((dumpToolsEngine) => {
-        if (dumpToolsEngine.dumpCanvas instanceof HTMLCanvasElement) {
-            dumpToolsEngine.dumpCanvas.remove();
+    ResourcesPromise?.then((resources) => {
+        if (resources.canvas instanceof HTMLCanvasElement) {
+            resources.canvas.remove();
         }
-        dumpToolsEngine.dispose?.();
+        if (resources.dumpEngine) {
+            resources.dumpEngine.engine.dispose();
+            resources.dumpEngine.renderer.dispose();
+            resources.dumpEngine.wrapper.dispose();
+        }
     });
 
-    EnginePromise = null;
+    ResourcesPromise = null;
 }
 
 /**
