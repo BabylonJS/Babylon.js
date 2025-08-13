@@ -292,5 +292,6 @@ async function Main(): Promise<void> {
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises,  @typescript-eslint/no-misused-promises, github/no-then
 Main().catch((error) => {
+    Logger.Log("SFE Test 1");
     Logger.Error(error);
 });
