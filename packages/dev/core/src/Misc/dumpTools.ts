@@ -8,8 +8,10 @@ import { Clamp } from "../Maths/math.scalar.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
+import { AsyncLock } from "./asyncLock";
 
 type DumpToolsEngine = {
+    asyncLock: AsyncLock;
     dumpCanvas: HTMLCanvasElement | OffscreenCanvas;
     drawToDumpCanvasAsync: (width: number, height: number, data: ArrayBufferView, invertY?: boolean) => Promise<void>;
     dispose?: () => void;
@@ -24,6 +26,9 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
         Logger.Warn("DumpData: OffscreenCanvas will be used for dumping data. This may result in lossy alpha values.");
     }
 
+    // Use an async lock for a quick way to ensure that the rendering and reading from the canvas is always atomic.
+    const asyncLock = new AsyncLock();
+
     // If WebGL via ThinEngine is not available (e.g. Native), use the BitmapRenderer.
     // If https://github.com/whatwg/html/issues/10142 is resolved, we can migrate to just BitmapRenderer and avoid an engine dependency altogether.
     const { ThinEngine: thinEngineClass } = await import("../Engines/thinEngine");
@@ -33,6 +38,7 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
         }
 
         return {
+            asyncLock,
             dumpCanvas,
             drawToDumpCanvasAsync: async (width: number, height: number, data: ArrayBufferView, invertY?: boolean) => {
                 const ctx = dumpCanvas.getContext("bitmaprenderer") as ImageBitmapRenderingContext;
@@ -83,6 +89,7 @@ async function _CreateDumpRendererAsync(): Promise<DumpToolsEngine> {
     });
 
     return {
+        asyncLock,
         dumpCanvas,
         drawToDumpCanvasAsync: async (width: number, height: number, data: ArrayBufferView, invertY?: boolean) => {
             engine.setSize(width, height, true);
@@ -196,26 +203,29 @@ export async function DumpDataAsync(
     }
 
     const renderer = await _GetDumpRendererAsync();
-    await renderer.drawToDumpCanvasAsync(width, height, data, invertY);
 
-    return await new Promise<string | ArrayBuffer>((resolve) => {
-        if (toArrayBuffer) {
-            Tools.ToBlob(
-                renderer.dumpCanvas,
-                (blob) => {
-                    const fileReader = new FileReader();
-                    fileReader.onload = (event: any) => {
-                        const arrayBuffer = event.target!.result as ArrayBuffer;
-                        resolve(arrayBuffer);
-                    };
-                    fileReader.readAsArrayBuffer(blob!);
-                },
-                mimeType,
-                quality
-            );
-        } else {
-            Tools.EncodeScreenshotCanvasData(renderer.dumpCanvas, resolve, mimeType, fileName, quality);
-        }
+    // Keep the async render + read from the shared canvas atomic
+    return await renderer.asyncLock.lockAsync(async () => {
+        await renderer.drawToDumpCanvasAsync(width, height, data, invertY);
+        return await new Promise<string | ArrayBuffer>((resolve) => {
+            if (toArrayBuffer) {
+                Tools.ToBlob(
+                    renderer.dumpCanvas,
+                    (blob) => {
+                        const fileReader = new FileReader();
+                        fileReader.onload = (event: any) => {
+                            const arrayBuffer = event.target!.result as ArrayBuffer;
+                            resolve(arrayBuffer);
+                        };
+                        fileReader.readAsArrayBuffer(blob!);
+                    },
+                    mimeType,
+                    quality
+                );
+            } else {
+                Tools.EncodeScreenshotCanvasData(renderer.dumpCanvas, resolve, mimeType, fileName, quality);
+            }
+        });
     });
 }
 
