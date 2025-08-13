@@ -271,14 +271,12 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
     const isChanged = useObservableState(() => metadataUtils.isChanged, metadataUtils.settingsChangedObservable);
     const isReadonly = useObservableState(() => metadataUtils.isReadonly, metadataUtils.settingsChangedObservable);
     const editedMetadata = useObservableState(() => metadataUtils.editedMetadata, metadataUtils.settingsChangedObservable);
-    const prettyJSON = useObservableState(() => metadataUtils.prettyJSON, metadataUtils.settingsChangedObservable);
-    const preventObjectCorruption = useObservableState(() => metadataUtils.preventObjectCorruption, metadataUtils.settingsChangedObservable);
 
     return (
         <>
-            <BoundProperty component={TextPropertyLine} label={"Property type"} target={metadataUtils} propertyKey="entityType" />
-            <SwitchPropertyLine label={"Prevent Object corruption"} value={preventObjectCorruption} onChange={(value) => (metadataUtils.preventObjectCorruption = value)} />
-            <SwitchPropertyLine label={"Pretty JSON"} value={prettyJSON} onChange={(value) => (metadataUtils.prettyJSON = value)} />
+            <BoundProperty component={TextPropertyLine} label={"Property type"} target={metadataUtils} propertyKey={"entityType"} />
+            <BoundProperty component={SwitchPropertyLine} label={"Prevent Object corruption"} target={metadataUtils} propertyKey={"preventObjectCorruption"} />
+            <BoundProperty component={SwitchPropertyLine} label={"Pretty JSON"} target={metadataUtils} propertyKey={"prettyJSON"} />
             <Textarea disabled={isReadonly} value={editedMetadata} onChange={(val) => (metadataUtils.editedMetadata = val)} />
             <ButtonLine label={"Populate glTF extras"} disabled={metadataUtils.hasGLTFExtras} onClick={() => metadataUtils.populateGLTFExtras()} />
             <ButtonLine label={"Save"} disabled={!isChanged} onClick={() => metadataUtils.save()} />
