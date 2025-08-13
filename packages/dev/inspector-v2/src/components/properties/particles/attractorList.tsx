@@ -15,7 +15,6 @@ import { useResource } from "../../../hooks/resourceHooks";
 import { AttractorComponent } from "./attractor";
 type AttractorListProps = {
     scene: Scene;
-    gizmoManager: GizmoManager;
     attractors: Array<Attractor>;
     system: ParticleSystem;
 };
@@ -52,7 +51,7 @@ export const AttractorList: FunctionComponent<AttractorListProps> = (props) => {
 
     // All impostors share a scale and material/color (for now!)
     const [impostorScale, setImpostorScale] = useState(1);
-    const [impostorColor, setImpostorColor] = useState<Color3>(() => Color3.White());
+    const [impostorColor, setImpostorColor] = useState(() => Color3.White());
     const impostorMaterial = useResource(useCallback(() => CreateSharedMaterial(scene, impostorColor), [scene]));
 
     // All impostors share a gizmoManager. controlledImpostor state ensures re-render of children so that their gizmoEnabled toggle is accurate

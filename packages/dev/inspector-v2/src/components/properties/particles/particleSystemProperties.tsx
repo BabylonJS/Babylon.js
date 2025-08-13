@@ -1,5 +1,4 @@
 import type { FactorGradient, ColorGradient as Color4Gradient, IValueGradient, ParticleSystem } from "core/index";
-import { GizmoManager } from "core/Gizmos";
 
 import { Color3, Color4 } from "core/Maths/math.color";
 import { useCallback } from "react";
@@ -9,6 +8,7 @@ import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
 import { useObservableState } from "../../../hooks/observableHooks";
 import { Color4GradientList, FactorGradientList } from "shared-ui-components/fluent/hoc/gradientList";
 import { AttractorList } from "./attractorList";
+import { MessageBar } from "shared-ui-components/fluent/primitives/messageBar";
 
 export const ParticleSystemEmissionProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
@@ -72,13 +72,18 @@ export const ParticleSystemColorProperties: FunctionComponent<{ particleSystem: 
 
 export const ParticleSystemAttractorProperties: FunctionComponent<{ particleSystem: ParticleSystem }> = (props) => {
     const { particleSystem: system } = props;
-    const gizmoManager = new GizmoManager(system.getScene()!);
 
     const attractors = useParticleSystemProperty(system, "attractors", "property", "addAttractor", "removeAttractor");
+    const scene = system.getScene();
 
     return (
         <>
-            <AttractorList gizmoManager={gizmoManager} attractors={attractors} scene={system.getScene()!} system={system} />
+            {scene ? (
+                <AttractorList attractors={attractors} scene={scene} system={system} />
+            ) : (
+                // Should never get here since sceneExplorer only displays if there is a scene, but adding UX in case that assumption changes in future
+                <MessageBar intent="info" title="No Scene Available" message="Cannot display attractors without a scene" />
+            )}
         </>
     );
 };
