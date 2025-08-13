@@ -19,7 +19,7 @@ import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
-import { ISerializedBlockV1, Logger, SmartFilterDeserializer, SmartFilterSerializer, type BaseBlock, type SmartFilter } from "smart-filters";
+import { Logger, type BaseBlock, type SmartFilter } from "smart-filters";
 import { inputsNamespace } from "smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
@@ -37,7 +37,6 @@ import { DataStorage } from "core/Misc/dataStorage.js";
 import { OnlyShowCustomBlocksDefaultValue } from "./constants.js";
 import { ThinEngine } from "core/Engines/thinEngine.js";
 import { HistoryStack } from "shared-ui-components/historyStack.js";
-import { InputBlockDeserializer } from "./configuration/editorBlocks/inputBlockDeserializer.js";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
