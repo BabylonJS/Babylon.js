@@ -1017,11 +1017,7 @@ export class Image extends Control {
     }
 
     private _renderNinePatch(context: ICanvasRenderingContext, sx: number, sy: number, sw: number, sh: number): void {
-        const idealRatio = this.host.idealWidth
-            ? this._currentMeasure.width / this.host.idealWidth
-            : this.host.idealHeight
-              ? this._currentMeasure.height / this.host.idealHeight
-              : 1;
+        const idealRatio = this.host.idealRatio;
         const leftWidth = this._sliceLeft;
         const topHeight = this._sliceTop;
         const bottomHeight = sh - this._sliceBottom;
