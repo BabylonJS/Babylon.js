@@ -21,6 +21,7 @@ import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleport
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Color4 } from "core/Maths/math.color";
+import type { Nullable } from "../../types";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;
@@ -108,6 +109,56 @@ export class NodeParticleSystemSet {
         return blocks;
     }
 
+    /**
+     * Get a block by its name
+     * @param name defines the name of the block to retrieve
+     * @returns the required block or null if not found
+     */
+    public getBlockByName(name: string) {
+        let result = null;
+        for (const block of this.attachedBlocks) {
+            if (block.name === name) {
+                if (!result) {
+                    result = block;
+                } else {
+                    Tools.Warn("More than one block was found with the name `" + name + "`");
+                    return result;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get a block using a predicate
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required block or null if not found
+     */
+    public getBlockByPredicate(predicate: (block: NodeParticleBlock) => boolean) {
+        for (const block of this.attachedBlocks) {
+            if (predicate(block)) {
+                return block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get an input block using a predicate
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required input block or null if not found
+     */
+    public getInputBlockByPredicate(predicate: (block: ParticleInputBlock) => boolean): Nullable<ParticleInputBlock> {
+        for (const block of this.attachedBlocks) {
+            if (block.isInput && predicate(block as ParticleInputBlock)) {
+                return block as ParticleInputBlock;
+            }
+        }
+
+        return null;
+    }
     /**
      * Creates a new set
      * @param name defines the name of the set
