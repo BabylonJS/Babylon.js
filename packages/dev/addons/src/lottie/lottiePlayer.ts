@@ -67,9 +67,9 @@ export class LottiePlayer {
     private _canvas: Nullable<HTMLCanvasElement> = null;
     private _resizeObserver: Nullable<ResizeObserver> = null;
 
-    private _container: HTMLDivElement;
-    private _animationFile: string;
-    private _configuration: Partial<AnimationConfiguration>;
+    private readonly _container: HTMLDivElement;
+    private readonly _animationFile: string;
+    private readonly _configuration: Partial<AnimationConfiguration>;
 
     /**
      * Creates a new instance of the LottiePlayer.

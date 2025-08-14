@@ -135,6 +135,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                 this.props.globalState.smartFilter = newSmartFilter;
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
                 this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+                this.props.globalState.onClearUndoStack.notifyObservers();
             }
         }
     }
@@ -147,16 +148,17 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
     }
 
     private _copySmartFilter() {
-        if (this.props.globalState.copySmartFilter) {
+        if (this.props.globalState.copySmartFilterToClipboard) {
             this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
-            this.props.globalState.copySmartFilter();
+            this.props.globalState.copySmartFilterToClipboard();
         }
     }
 
     private async _pasteSmartFilterAsync() {
-        if (this.props.globalState.pasteSmartFilterAsync) {
+        if (this.props.globalState.pasteSmartFilterFromClipboardAsync) {
             this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
-            await this.props.globalState.pasteSmartFilterAsync();
+            await this.props.globalState.pasteSmartFilterFromClipboardAsync();
+            this.props.globalState.onClearUndoStack.notifyObservers();
         }
     }
 
@@ -316,8 +318,8 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                     </LineContainerComponent>
                     {(this.props.globalState.loadSmartFilterAsync ||
                         this.props.globalState.downloadSmartFilter ||
-                        this.props.globalState.copySmartFilter ||
-                        this.props.globalState.pasteSmartFilterAsync ||
+                        this.props.globalState.copySmartFilterToClipboard ||
+                        this.props.globalState.pasteSmartFilterFromClipboardAsync ||
                         this.props.globalState.saveToSnippetServer) && (
                         <LineContainerComponent title="FILE">
                             {this.props.globalState.loadSmartFilterAsync && (
@@ -331,7 +333,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                                     }}
                                 />
                             )}
-                            {this.props.globalState.copySmartFilter && (
+                            {this.props.globalState.copySmartFilterToClipboard && (
                                 <ButtonLineComponent
                                     label="Copy to Clipboard"
                                     onClick={() => {
@@ -339,7 +341,7 @@ export class PropertyTabComponent extends react.Component<IPropertyTabComponentP
                                     }}
                                 />
                             )}
-                            {this.props.globalState.pasteSmartFilterAsync && (
+                            {this.props.globalState.pasteSmartFilterFromClipboardAsync && (
                                 <ButtonLineComponent
                                     label="Paste from Clipboard"
                                     onClick={() => {

@@ -3,7 +3,7 @@ import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/ind
 import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { ScrollToInterface } from "@fluentui/react-components/unstable";
 import type { ComponentType, FunctionComponent } from "react";
-
+import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
     Body1,
@@ -18,12 +18,12 @@ import {
     MenuPopover,
     MenuTrigger,
     SearchBox,
-    ToggleButton,
     tokens,
     Tooltip,
     TreeItemLayout,
 } from "@fluentui/react-components";
 import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
+import type { FluentIcon } from "@fluentui/react-icons";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useObservableState } from "../../hooks/observableHooks";
@@ -230,11 +230,8 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommand }> = (props) => 
         command.onChange
     );
 
-    return (
-        <Tooltip content={displayName} relationship="label" positioning={"after"}>
-            <ToggleButton icon={<Icon />} appearance="transparent" checked={isEnabled} onClick={() => (command.isEnabled = !command.isEnabled)} />
-        </Tooltip>
-    );
+    // TODO-iv2: Consolidate icon prop passing approach for inspector and shared components
+    return <ToggleButton title={displayName} enabledIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
 };
 
 const SceneTreeItem: FunctionComponent<{
