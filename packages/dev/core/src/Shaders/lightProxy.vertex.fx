@@ -10,15 +10,48 @@ uniform vec3 tileMaskResolution;
 
 #include<clusteredLightFunctions>
 
+// TODO: make direction a vector and compute projected position
+mat2 rotateToHorizon(vec2 position, float rangeSq, float direction, inout float projOverride) {
+    float distSq = dot(position, position);
+    float sinSq = rangeSq / distSq;
+    float cosSq = 1.0 - sinSq;
+    if (cosSq < 0.01) {
+        cosSq = 0.01;
+        projOverride = direction;
+    }
+    float sinCos = direction * sqrt(sinSq * cosSq);
+    return mat2(cosSq, -sinCos, sinCos, cosSq);
+}
+
 void main(void) {
     SpotLight light = getClusteredSpotLight(lightDataTexture, gl_InstanceID);
+    float range = light.vLightFalloff.x;
 
-    // We don't apply the view matrix to the disc since we want it always facing the camera
-    vec4 viewPosition = view * vec4(light.vLightData.xyz, 1) + vec4(position * light.vLightFalloff.x, 0);
-    vec4 projPosition = projection * viewPosition;
+    vec4 viewPosition = view * vec4(light.vLightData.xyz, 1);
+    vec4 viewPositionSq = viewPosition * viewPosition;
+
+    // Squared distance for both XZ and YZ
+    vec2 distSq = viewPositionSq.xy + viewPositionSq.z;
+    // Compute the horizontal and vertical angles to rotate by to get the sphere horizon positions
+    vec2 sinSq = (range * range) / distSq;
+    // Rotation is multiplied by cos (cos^2 and sin*cos) to scale down the vector after rotation
+    vec2 cosSq = max(1.0 - sinSq, 0.01);
+    // Flip the sin values (reversing rotation) if the position is negative
+    vec2 sinCos = position.xy * sqrt(sinSq * cosSq);
+
+    // Apply rotation
+    vec2 rotatedX = mat2(cosSq.x, -sinCos.x, sinCos.x, cosSq.x) * viewPosition.xz;
+    vec2 rotatedY = mat2(cosSq.y, -sinCos.y, sinCos.y, cosSq.y) * viewPosition.yz;
+    // Apply projection
+    vec4 projX = projection * vec4(rotatedX.x, 0, rotatedX.y, 1);
+    vec4 projY = projection * vec4(0, rotatedY.x, rotatedY.y, 1);
+    vec2 projPosition = vec2(projX.x / max(projX.w, 0.01), projY.y / max(projY.w, 0.01));
+    // Override with screen extents if rotation invalid (occurs when inside the sphere)
+    projPosition = mix(projPosition, position.xy, equal(cosSq, vec2(0.01)));
 
     // Convert to NDC 0->1 space and scale to the tile resolution
-    vec2 tilePosition = (projPosition.xy / projPosition.w + 1.0) / 2.0 * tileMaskResolution.xy;
+    vec2 halfTileRes = tileMaskResolution.xy / 2.0;
+    vec2 tilePosition = (projPosition.xy + 1.0) * halfTileRes;
     // Round to a whole tile boundary with a bit of wiggle room
     tilePosition = mix(floor(tilePosition) - 0.01, ceil(tilePosition) + 0.01, greaterThan(position.xy, vec2(0)));
     // Reposition vertically based on current batch
@@ -26,7 +59,7 @@ void main(void) {
     tilePosition.y = (tilePosition.y + offset) / tileMaskResolution.z;
 
     // We don't care about depth and don't want it to be clipped so set Z to 0
-    gl_Position = vec4(tilePosition / tileMaskResolution.xy * 2.0 - 1.0, 0, 1);
+    gl_Position = vec4(tilePosition / halfTileRes - 1.0, 0, 1);
     vLimits = vec2(offset, offset + tileMaskResolution.y);
     vMask = 1u << (gl_InstanceID % CLUSTLIGHT_BATCH);
 }

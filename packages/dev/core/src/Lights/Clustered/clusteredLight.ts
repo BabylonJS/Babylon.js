@@ -9,7 +9,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { TmpColors } from "core/Maths/math.color";
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
-import { CreateDisc } from "core/Meshes/Builders/discBuilder";
+import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import type { Mesh } from "core/Meshes/mesh";
 import { _WarnImport } from "core/Misc/devTools";
 import { serialize } from "core/Misc/decorators";
@@ -149,26 +149,7 @@ export class ClusteredLight extends Light {
     }
 
     private readonly _proxyMaterial: ShaderMaterial;
-    private _proxyMesh: Mesh;
-
-    private _proxyTesselation = 8;
-    /**
-     * The amount of tesselation the light proxy (or light mesh) should have.
-     * A higher value increases memory and makes the clustering step slower, but reduces the amount of "false-positives" (lights marked as being in a tile when its not) which could slow down rendering.
-     */
-    @serialize()
-    public get proxyTesselation(): number {
-        return this._proxyTesselation;
-    }
-
-    public set proxyTesselation(tesselation: number) {
-        if (this._proxyTesselation === tesselation) {
-            return;
-        }
-        this._proxyTesselation = tesselation;
-        this._proxyMesh.dispose();
-        this._createProxyMesh();
-    }
+    private readonly _proxyMesh: Mesh;
 
     private _maxRange = 16383;
     private _minInverseSquaredRange = 1 / (this._maxRange * this._maxRange);
@@ -222,7 +203,11 @@ export class ClusteredLight extends Light {
         this._proxyMaterial.transparencyMode = ShaderMaterial.MATERIAL_ALPHABLEND;
         this._proxyMaterial.alphaMode = Constants.ALPHA_ADD;
 
-        this._createProxyMesh();
+        this._proxyMesh = CreatePlane("ProxyMesh", { size: 2 });
+        // Make sure it doesn't render for the default scene
+        this._scene.removeMesh(this._proxyMesh);
+        this._proxyMesh.material = this._proxyMaterial;
+
         this._updateBatches();
 
         if (this._batchSize > 0) {
@@ -240,26 +225,6 @@ export class ClusteredLight extends Light {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
         return LightConstants.LIGHTTYPEID_CLUSTERED;
-    }
-
-    private _createProxyMesh(): void {
-        // The disc is made of `tesselation` isoceles triangles, and the lowest radius is the height of one of those triangles
-        // We can get the height from half the angle of that triangle (assuming a side length of 1)
-        const lowRadius = Math.cos(Math.PI / this._proxyTesselation);
-        // We scale up the disc so the lowest radius still wraps the light
-        this._proxyMesh = CreateDisc("ProxyMesh", { radius: 1 / lowRadius, tessellation: this._proxyTesselation });
-        // Make sure it doesn't render for the default scene
-        this._scene.removeMesh(this._proxyMesh);
-        this._proxyMesh.material = this._proxyMaterial;
-
-        if (this._tileMaskBatches > 0) {
-            this._tileMaskTexture.renderList = [this._proxyMesh];
-
-            // We don't actually use the matrix data but we need enough capacity for the lights
-            this._proxyMesh.thinInstanceSetBuffer("matrix", new Float32Array(this._tileMaskBatches * this._batchSize * 16));
-            this._proxyMesh.thinInstanceCount = this._lights.length;
-            this._proxyMesh.isVisible = this._lights.length > 0;
-        }
     }
 
     /** @internal */
