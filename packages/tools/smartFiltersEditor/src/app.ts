@@ -23,9 +23,9 @@ import { SaveToSnippetServerAsync } from "./smartFilterLoadSave/saveToSnipperSer
 import { RemoveCustomBlockFromBlockEditorRegistration } from "./blockRegistration/removeCustomBlockFromBlockEditorRegistration";
 import { AddCustomBlockToBlockEditorRegistration } from "./blockRegistration/addCustomBlockToBlockEditorRegistration";
 import { DownloadSmartFilter } from "./smartFilterLoadSave/downloadSmartFilter";
-import { CopySmartFilter } from "./smartFilterLoadSave/copySmartFilter";
+import { CopySmartFilterToClipboard, CopySmartFilterToString } from "./smartFilterLoadSave/copySmartFilter";
 import { LoadSmartFilterFromFile } from "./smartFilterLoadSave/loadSmartFilterFromFile";
-import { PasteSmartFilterAsync } from "./smartFilterLoadSave/pasteSmartFilter";
+import { PasteSmartFilterFromClipboardAsync, PasteSmartFilterFromStringAsync } from "./smartFilterLoadSave/pasteSmartFilter";
 import { TexturePresets } from "./texturePresets";
 import { SerializeSmartFilter } from "./smartFilterLoadSave/serializeSmartFilter";
 
@@ -205,12 +205,23 @@ async function Main(): Promise<void> {
     const copySmartFilterAsync = async () => {
         if (currentSmartFilter) {
             try {
-                await CopySmartFilter(currentSmartFilter);
+                await CopySmartFilterToClipboard(currentSmartFilter);
                 Logger.Log("Smart Filter JSON copied to clipboard");
             } catch (err: unknown) {
                 Logger.Error(`Could not copy Smart Filter to clipboard:\n${err}`);
             }
         }
+    };
+
+    const copySmartFilterToStringAsync = async () => {
+        if (currentSmartFilter) {
+            try {
+                return await CopySmartFilterToString(currentSmartFilter);
+            } catch (err: unknown) {
+                Logger.Error(`Could not copy Smart Filter to string:\n${err}`);
+            }
+        }
+        return "";
     };
 
     const downloadSmartFilterAsync = async () => {
@@ -244,13 +255,14 @@ async function Main(): Promise<void> {
             }
             return null;
         },
-        copySmartFilter: () => {
+        copySmartFilterToClipboard: () => {
             void copySmartFilterAsync();
         },
-        pasteSmartFilterAsync: async () => {
+        copySmartFilterToStringAsync: copySmartFilterToStringAsync,
+        pasteSmartFilterFromClipboardAsync: async () => {
             if (renderer && engine) {
                 try {
-                    const smartFilter = await PasteSmartFilterAsync(smartFilterDeserializer, engine);
+                    const smartFilter = await PasteSmartFilterFromClipboardAsync(smartFilterDeserializer, engine);
                     if (smartFilter) {
                         currentSmartFilter = smartFilter;
                         onSmartFilterLoadedObservable.notifyObservers(currentSmartFilter);
@@ -260,6 +272,23 @@ async function Main(): Promise<void> {
                     }
                 } catch (err: unknown) {
                     Logger.Error(`Could not paste Smart Filter from clipboard:\n${err}`);
+                }
+            }
+            return null;
+        },
+        pasteSmartFilterFromStringAsync: async (data) => {
+            if (renderer && engine) {
+                try {
+                    const smartFilter = await PasteSmartFilterFromStringAsync(smartFilterDeserializer, engine, data);
+                    if (smartFilter) {
+                        currentSmartFilter = smartFilter;
+                        onSmartFilterLoadedObservable.notifyObservers(currentSmartFilter);
+                        Logger.Log("Smart Filter pasted from string");
+                        await startRenderingAsync();
+                        return currentSmartFilter;
+                    }
+                } catch (err: unknown) {
+                    Logger.Error(`Could not paste Smart Filter from string:\n${err}`);
                 }
             }
             return null;
