@@ -1,5 +1,14 @@
 # Changelog
 
+## 8.23.1
+
+### Core
+
+- Add metadata to Skeleton, MorphTargetManager, and ParticleSystem - by [kzhsw](https://github.com/kzhsw) ([#17025](https://github.com/BabylonJS/Babylon.js/pull/17025))
+
+### GUI
+
+
 ## 8.23.0
 
 ### Core
