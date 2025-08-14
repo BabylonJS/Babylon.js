@@ -294,10 +294,10 @@ const SectionTreeItem: FunctionComponent<{
             <MenuPopover hidden={!section.children.length}>
                 <MenuList>
                     <MenuItem onClick={expandAll}>
-                        <Body1>Expand All Descendants</Body1>
+                        <Body1>Expand All</Body1>
                     </MenuItem>
                     <MenuItem onClick={collapseAll}>
-                        <Body1>Collapse All Descendants</Body1>
+                        <Body1>Collapse All</Body1>
                     </MenuItem>
                 </MenuList>
             </MenuPopover>
@@ -409,10 +409,10 @@ const EntityTreeItem: FunctionComponent<{
             <MenuPopover hidden={!entityItem.children?.length}>
                 <MenuList>
                     <MenuItem onClick={expandAll}>
-                        <Body1>Expand All Descendants</Body1>
+                        <Body1>Expand All</Body1>
                     </MenuItem>
                     <MenuItem onClick={collapseAll}>
-                        <Body1>Collapse All Descendants</Body1>
+                        <Body1>Collapse All</Body1>
                     </MenuItem>
                 </MenuList>
             </MenuPopover>
