@@ -1,3 +1,9 @@
+// NOTE: This app is an easy place to test Inspector v2.
+// Additionally, here are some PGs that are helpful for testing specific features:
+// Frame graphs: http://localhost:1338/?inspectorv2#9YU4C5#23
+// Sprites: https://localhost:1338/?inspectorv2#YCY2IL#4
+// Animation groups: http://localhost:1338/?inspectorv2#FMAYKS
+
 import HavokPhysics from "@babylonjs/havok";
 import type { Nullable } from "core/types";
 
@@ -15,9 +21,10 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 import { ShowInspector } from "../../src/inspector";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { MeshBuilder } from "core/Meshes";
 import { Texture } from "core/Materials/Textures/texture";
 
 // Register scene loader plugins.
@@ -45,6 +52,12 @@ function createCamera() {
     camera = scene.activeCamera as ArcRotateCamera;
     camera.alpha = 1.8;
     camera.beta = 1.3;
+
+    const camera2 = camera.clone("camera2") as ArcRotateCamera;
+    camera2.alpha += Math.PI;
+
+    const camera3 = camera.clone("camera3") as ArcRotateCamera;
+    camera3.alpha += Math.PI * 0.5;
 }
 
 function createPostProcess() {
@@ -68,6 +81,24 @@ async function createPhysics() {
     }
 }
 
+function createTestPBRSphere() {
+    const sphere = MeshBuilder.CreateSphere("pbrSphere", { diameter: 0.15 }, scene);
+    sphere.position.x = -0.15;
+
+    const glass = new PBRMaterial("glass", scene);
+    glass.indexOfRefraction = 0.52;
+    glass.alpha = 0.5;
+    glass.directIntensity = 0.0;
+    glass.environmentIntensity = 0.7;
+    glass.cameraExposure = 0.66;
+    glass.cameraContrast = 1.66;
+    glass.microSurface = 1;
+    glass.reflectivityColor = new Color3(0.2, 0.2, 0.2);
+    glass.albedoColor = new Color3(0.95, 0.95, 0.95);
+
+    sphere.material = glass;
+}
+
 function createTestBoxes() {
     const box = MeshBuilder.CreateBox("box1", { size: 0.15 }, scene);
     const redMat = new StandardMaterial("redMat", scene);
@@ -77,6 +108,42 @@ function createTestBoxes() {
     box.material = redMat;
     const boxInstance = box.createInstance("boxInstance");
     boxInstance.position = new Vector3(0, 0, -0.5);
+}
+
+function createTestMetadata() {
+    const materialMeta = new StandardMaterial("material.meta", scene);
+    materialMeta.emissiveColor = Color3.Red();
+    materialMeta.metadata = {
+        test: "test string",
+        description: "Material JSON metadata.",
+        someNumber: 73,
+    };
+
+    const defaultMeta = MeshBuilder.CreateBox("default.metadata", { size: 0.15 }, scene);
+
+    const undefinedMeta = defaultMeta.clone("undefined.metadata");
+    undefinedMeta.material = materialMeta;
+    undefinedMeta.metadata = undefined;
+
+    const jsonMeta = defaultMeta.clone("json.metadata");
+    jsonMeta.material = materialMeta;
+    jsonMeta.metadata = {
+        test: "test string",
+        description: "JSON metadata.",
+        someNumber: 42,
+    };
+
+    const nullMeta = defaultMeta.clone("null.metadata");
+    nullMeta.material = materialMeta;
+    nullMeta.metadata = null;
+
+    const stringMeta = defaultMeta.clone("string.metadata");
+    stringMeta.material = materialMeta;
+    stringMeta.metadata = "String metadata.";
+
+    const objectMeta = defaultMeta.clone("object.metadata");
+    objectMeta.material = materialMeta;
+    objectMeta.metadata = jsonMeta;
 }
 
 function createMaterials() {
@@ -93,8 +160,11 @@ function createMaterials() {
     await createPhysics();
 
     createTestBoxes();
+    createTestPBRSphere();
 
     createMaterials();
+
+    createTestMetadata();
 
     engine.runRenderLoop(() => {
         scene.render();

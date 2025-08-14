@@ -147,7 +147,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 systemSourcesOptions = [{ label: "Emitter", value: NodeParticleSystemSources.Emitter }];
                 break;
             case NodeParticleBlockConnectionPointTypes.Color4:
-                contextualSourcesOptions = [{ label: "Color", value: NodeParticleContextualSources.Color }];
+                contextualSourcesOptions = [
+                    { label: "Color", value: NodeParticleContextualSources.Color },
+                    { label: "Initial Color", value: NodeParticleContextualSources.InitialColor },
+                ];
                 break;
         }
 

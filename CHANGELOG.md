@@ -1,5 +1,80 @@
 # Changelog
 
+## 8.23.1
+
+### Core
+
+- Add metadata to Skeleton, MorphTargetManager, and ParticleSystem - by [kzhsw](https://github.com/kzhsw) ([#17025](https://github.com/BabylonJS/Babylon.js/pull/17025))
+
+### GUI
+
+
+## 8.23.0
+
+### Core
+
+- DumpTools: Add bitmaprenderer fallback when ThinEngine is unavailable - by [alexchuber](https://github.com/alexchuber) ([#17015](https://github.com/BabylonJS/Babylon.js/pull/17015))
+
+### GUI
+
+- GUI: Image nine-patch - [_Bug Fix_] by [MackeyK24](https://github.com/MackeyK24) ([#17018](https://github.com/BabylonJS/Babylon.js/pull/17018))
+
+### Loaders
+
+- enable bvhFileLoader - by [xuhuisheng](https://github.com/xuhuisheng) ([#17020](https://github.com/BabylonJS/Babylon.js/pull/17020))
+
+### Node Editor
+
+- SFE: Add undo/redo stack - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17017](https://github.com/BabylonJS/Babylon.js/pull/17017))
+
+## 8.22.3
+
+### Core
+
+- Project to Screen node, e.g. for particle direction - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17013](https://github.com/BabylonJS/Babylon.js/pull/17013))
+- FrameGraph: Add support for bounding box renderer - by [Popov72](https://github.com/Popov72) ([#17011](https://github.com/BabylonJS/Babylon.js/pull/17011))
+- Fix shader emission for NME - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17010](https://github.com/BabylonJS/Babylon.js/pull/17010))
+- Fix Legacy Specular Energy Conservation - by [sebavan](https://github.com/sebavan) ([#17008](https://github.com/BabylonJS/Babylon.js/pull/17008))
+
+### Inspector
+
+- Particle attractors - by [georginahalpern](https://github.com/georginahalpern) ([#17012](https://github.com/BabylonJS/Babylon.js/pull/17012))
+
+### Node Editor
+
+- Fix shader emission for NME - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17010](https://github.com/BabylonJS/Babylon.js/pull/17010))
+
+## 8.22.2
+
+### Core
+
+
+### GUI
+
+- Update GUI control to be forgiving of text resizeToFit layout calculations - by [georginahalpern](https://github.com/georginahalpern) ([#16997](https://github.com/BabylonJS/Babylon.js/pull/16997))
+
+## 8.22.1
+
+### Core
+
+- Fix texture deserializer to not ignore base64String storage - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16992](https://github.com/BabylonJS/Babylon.js/pull/16992))
+- Add support for SSAO in NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16988](https://github.com/BabylonJS/Babylon.js/pull/16988))
+- Allow node to display visual clue when a port is not active due to th… - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16991](https://github.com/BabylonJS/Babylon.js/pull/16991))
+- spz v3 loader - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16949](https://github.com/BabylonJS/Babylon.js/pull/16949))
+- WebGPU: Sync with specification - by [Popov72](https://github.com/Popov72) ([#16985](https://github.com/BabylonJS/Babylon.js/pull/16985))
+
+### Loaders
+
+- spz v3 loader - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#16949](https://github.com/BabylonJS/Babylon.js/pull/16949))
+
+### Node Editor
+
+- Add support for SSAO in NME - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16988](https://github.com/BabylonJS/Babylon.js/pull/16988))
+- Allow node to display visual clue when a port is not active due to th… - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#16991](https://github.com/BabylonJS/Babylon.js/pull/16991))
+
+### Playground
+
+
 ## 8.22.0
 
 ### Core

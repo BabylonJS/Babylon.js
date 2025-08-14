@@ -19,6 +19,7 @@ import { ParticleElbowBlock } from "core/Particles/Node/Blocks/particleElbowBloc
 import { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
 import { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
 import { UpdateAngleBlock } from "core/Particles/Node/Blocks/Update/updateAngleBlock";
+import { UpdateAgeBlock } from "core/Particles/Node/Blocks/Update/updateAgeBlock";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 import { BasicPositionUpdateBlock } from "core/Particles/Node/Blocks/Update/basicPositionUpdateBlock";
 import { ParticleTriggerBlock } from "core/Particles/Node/Blocks/Triggers/particleTriggerBlock";
@@ -35,6 +36,7 @@ import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShap
 import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinderShapeBlock";
 import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
 import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
+import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlock";
 
 /**
  * Static class for BlockTools
@@ -42,6 +44,8 @@ import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAt
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "AlignAngleBlock":
+                return new AlignAngleBlock("Align angle");
             case "CreateParticleBlock":
                 return new CreateParticleBlock("Create particle");
             case "EqualBlock": {
@@ -125,6 +129,8 @@ export class BlockTools {
                 return new UpdateScaleBlock("Update scale");
             case "UpdateAngleBlock":
                 return new UpdateAngleBlock("Update angle");
+            case "UpdateAgeBlock":
+                return new UpdateAgeBlock("Update age");
             case "UpdateFlowMapBlock":
                 return new UpdateFlowMapBlock("Update flow map");
             case "UpdateAttractorBlock":
@@ -168,6 +174,11 @@ export class BlockTools {
             case "ColorBlock": {
                 const block = new ParticleInputBlock("Color");
                 block.contextualValue = NodeParticleContextualSources.Color;
+                return block;
+            }
+            case "InitialColorBlock": {
+                const block = new ParticleInputBlock("Initial Color");
+                block.contextualValue = NodeParticleContextualSources.InitialColor;
                 return block;
             }
             case "AgeBlock": {

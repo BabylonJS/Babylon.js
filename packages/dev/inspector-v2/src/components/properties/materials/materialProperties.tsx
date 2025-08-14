@@ -85,7 +85,7 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
                 defaultValue={material.getScene().useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation}
             />
             {/* TODO: Property name is different per material type
-            <BoundProperty component={SwitchPropertyLine} label="Disable lighting" target={material} propertyKey="disableLighting" /> */}
+            <BoundProperty component={SwitchPropertyLine} label="Disable Lighting" target={material} propertyKey="disableLighting" /> */}
             <BoundProperty component={SwitchPropertyLine} label="Disable Color Write" target={material} propertyKey="disableColorWrite" />
             <BoundProperty component={SwitchPropertyLine} label="Disable Depth Write" target={material} propertyKey="disableDepthWrite" />
             <BoundProperty component={NumberDropdownPropertyLine} label="Depth Function" options={DepthFunctionOptions} target={material} propertyKey="depthFunction" />
@@ -147,8 +147,8 @@ export const MaterialStencilProperties: FunctionComponent<{ material: Material }
             <Collapse visible={stencilEnabled}>
                 <>
                     {/* TODO: Make HexPropertyLine work in the case of simply editing a hex value */}
-                    {/* <BoundProperty component={HexPropertyLine} label="Write mask" target={material.stencil} propertyKey="mask" /> */}
-                    {/* <BoundProperty component={HexPropertyLine} label="Read mask" target={material.stencil} propertyKey="funcMask" /> */}
+                    {/* <BoundProperty component={HexPropertyLine} label="Write Mask" target={material.stencil} propertyKey="mask" /> */}
+                    {/* <BoundProperty component={HexPropertyLine} label="Read Mask" target={material.stencil} propertyKey="funcMask" /> */}
                     {/** TODO: Force int integer-only for NumberInputPropertyLine */}
                     <BoundProperty component={NumberInputPropertyLine} label="Reference Value" target={material.stencil} propertyKey="funcRef" step={0} />
                     <PropertyLine

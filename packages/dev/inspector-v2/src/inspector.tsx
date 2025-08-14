@@ -19,6 +19,7 @@ import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properti
 import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
 import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { MetadataPropertiesServiceDefinition } from "./services/panes/properties/metadataPropertiesService";
 import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
 import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
 import { PostProcessPropertiesServiceDefinition } from "./services/panes/properties/postProcessPropertiesService";
@@ -224,6 +225,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             EffectLayerPropertiesServiceDefinition,
             FrameGraphPropertiesServiceDefinition,
             AnimationGroupPropertiesServiceDefinition,
+            MetadataPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

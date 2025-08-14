@@ -169,6 +169,11 @@ export class ParticleSystem extends ThinParticleSystem {
     }
 
     /**
+     * Gets or sets an object used to store user defined information for the particle system
+     */
+    public metadata: any = null;
+
+    /**
      * Add an attractor to the particle system. Attractors are used to change the direction of the particles in the system.
      * @param attractor The attractor to add to the particle system
      */
@@ -829,6 +834,10 @@ export class ParticleSystem extends ThinParticleSystem {
             particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
         }
 
+        if (parsedParticleSystem.metadata) {
+            particleSystem.metadata = parsedParticleSystem.metadata;
+        }
+
         if (!doNotStart && !particleSystem.preventAutoStart) {
             particleSystem.start();
         }
@@ -850,6 +859,10 @@ export class ParticleSystem extends ThinParticleSystem {
         serializationObject.customShader = this.customShader;
         serializationObject.preventAutoStart = this.preventAutoStart;
         serializationObject.worldOffset = this.worldOffset.asArray();
+
+        if (this.metadata) {
+            serializationObject.metadata = this.metadata;
+        }
 
         // SubEmitters
         if (this.subEmitters) {

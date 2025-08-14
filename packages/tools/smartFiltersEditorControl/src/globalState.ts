@@ -55,6 +55,8 @@ export class GlobalState {
 
     stateManager: StateManager;
 
+    onClearUndoStack = new Observable<void>();
+
     beforeRenderObservable: Nullable<Observable<void>>;
 
     lockObject: any;
@@ -85,9 +87,13 @@ export class GlobalState {
 
     loadSmartFilterAsync?: (file: File, engine: ThinEngine) => Promise<Nullable<SmartFilter>>;
 
-    copySmartFilter?: () => void;
+    copySmartFilterToClipboard?: () => void;
 
-    pasteSmartFilterAsync?: () => Promise<Nullable<SmartFilter>>;
+    pasteSmartFilterFromClipboardAsync?: () => Promise<Nullable<SmartFilter>>;
+
+    copySmartFilterToStringAsync?: () => Promise<string>;
+
+    pasteSmartFilterFromStringAsync?: (data: string) => Promise<Nullable<SmartFilter>>;
 
     saveToSnippetServer?: (() => void) | undefined;
 
@@ -122,8 +128,10 @@ export class GlobalState {
         texturePresets: Nullable<TexturePreset[]>,
         downloadSmartFilter?: () => void,
         loadSmartFilterAsync?: (file: File, engine: ThinEngine) => Promise<Nullable<SmartFilter>>,
-        copySmartFilter?: () => void,
-        pasteSmartFilterAsync?: () => Promise<Nullable<SmartFilter>>,
+        copySmartFilterToClipboard?: () => void,
+        copySmartFilterToStringAsync?: () => Promise<string>,
+        pasteSmartFilterFromClipboardAsync?: () => Promise<Nullable<SmartFilter>>,
+        pasteSmartFilterFromStringAsync?: (data: string) => Promise<Nullable<SmartFilter>>,
         saveToSnippetServer?: () => void,
         addCustomBlock?: (serializedData: string) => void,
         deleteCustomBlock?: (blockRegistration: IBlockRegistration) => void,
@@ -160,8 +168,10 @@ export class GlobalState {
         this.stateManager.hostDocument = this.hostDocument;
         this.downloadSmartFilter = downloadSmartFilter;
         this.loadSmartFilterAsync = loadSmartFilterAsync;
-        this.copySmartFilter = copySmartFilter;
-        this.pasteSmartFilterAsync = pasteSmartFilterAsync;
+        this.copySmartFilterToClipboard = copySmartFilterToClipboard;
+        this.copySmartFilterToStringAsync = copySmartFilterToStringAsync;
+        this.pasteSmartFilterFromClipboardAsync = pasteSmartFilterFromClipboardAsync;
+        this.pasteSmartFilterFromStringAsync = pasteSmartFilterFromStringAsync;
         this.saveToSnippetServer = saveToSnippetServer;
         this.texturePresets = texturePresets || [];
         this.beforeRenderObservable = beforeRenderObservable;
