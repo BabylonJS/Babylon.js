@@ -10,19 +10,6 @@ uniform vec3 tileMaskResolution;
 
 #include<clusteredLightFunctions>
 
-// TODO: make direction a vector and compute projected position
-mat2 rotateToHorizon(vec2 position, float rangeSq, float direction, inout float projOverride) {
-    float distSq = dot(position, position);
-    float sinSq = rangeSq / distSq;
-    float cosSq = 1.0 - sinSq;
-    if (cosSq < 0.01) {
-        cosSq = 0.01;
-        projOverride = direction;
-    }
-    float sinCos = direction * sqrt(sinSq * cosSq);
-    return mat2(cosSq, -sinCos, sinCos, cosSq);
-}
-
 void main(void) {
     SpotLight light = getClusteredSpotLight(lightDataTexture, gl_InstanceID);
     float range = light.vLightFalloff.x;
