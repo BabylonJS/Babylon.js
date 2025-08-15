@@ -445,12 +445,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
-    handleKeyDown(
+    async handleKeyDownAsync(
         evt: KeyboardEvent,
         onRemove: (nodeData: INodeData) => void,
         mouseLocationX: number,
         mouseLocationY: number,
-        dataGenerator: (nodeData: INodeData) => any,
+        dataGenerator: (nodeData: INodeData) => Promise<Nullable<GraphNode>>,
         rootElement: HTMLDivElement
     ) {
         if (this.stateManager.modalIsDisplayed) {
@@ -523,7 +523,8 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                         currentY = newFrame.y + frame.nodes[0].y - frame.y;
 
                         this._frameIsMoving = true;
-                        const newNodes = this.pasteSelection(frame.nodes, currentX, currentY, dataGenerator);
+                        // eslint-disable-next-line no-await-in-loop
+                        const newNodes = await this.pasteSelectionAsync(frame.nodes, currentX, currentY, dataGenerator);
                         if (newNodes) {
                             for (const node of newNodes) {
                                 newFrame.syncNode(node);
@@ -549,11 +550,17 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             }
 
             const currentX = (mouseLocationX - rootElement.offsetLeft - this.x - GraphCanvasComponent.NodeWidth) / zoomLevel;
-            this.pasteSelection(this._copiedNodes, currentX, currentY, dataGenerator, true);
+            await this.pasteSelectionAsync(this._copiedNodes, currentX, currentY, dataGenerator, true);
         }
     }
 
-    pasteSelection(copiedNodes: GraphNode[], currentX: number, currentY: number, dataGenerator: (nodeData: INodeData) => any, selectNew = false) {
+    async pasteSelectionAsync(
+        copiedNodes: GraphNode[],
+        currentX: number,
+        currentY: number,
+        dataGenerator: (nodeData: INodeData) => Promise<Nullable<GraphNode>>,
+        selectNew = false
+    ) {
         let originalNode: Nullable<GraphNode> = null;
 
         const newNodes: GraphNode[] = [];
@@ -572,7 +579,12 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
                 continue;
             }
 
-            const newNode = dataGenerator(node.content);
+            // eslint-disable-next-line no-await-in-loop
+            const newNode = await dataGenerator(node.content);
+
+            if (!newNode) {
+                continue;
+            }
 
             let x = 0;
             let y = 0;

@@ -30,7 +30,7 @@ import { InitializePreview } from "./initializePreview.js";
 import { PreviewAreaControlComponent } from "./components/preview/previewAreaControlComponent.js";
 import { CreatePopup } from "shared-ui-components/popupHelper.js";
 import type { IInspectorOptions } from "core/Debug/debugLayer.js";
-import { DecodeBlockKey } from "./helpers/blockKeyConverters.js";
+import { DecodeBlockKey, GetBlockKey } from "./helpers/blockKeyConverters.js";
 import { OutputBlockName } from "./configuration/constants.js";
 import type { BlockNodeData } from "./graphSystem/blockNodeData";
 import { DataStorage } from "core/Misc/dataStorage.js";
@@ -294,7 +294,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             return this._graphCanvas.findNodeFromData(block);
         };
 
-        this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+        this.props.globalState.hostDocument!.addEventListener("keydown", async (evt) => {
             if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
                 return;
             }
@@ -313,7 +313,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 }
             }
 
-            this._graphCanvas.handleKeyDown(
+            await this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
                     if (!nodeData.data.isOutput) {
@@ -323,14 +323,14 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
-                (_nodeData) => {
-                    // TODO manage paste
-                    // const block = nodeData.data as SmartFilterBlock;
-                    // const clone = block.clone(this.props.globalState.smartFilter);
-                    // if (!clone) {
-                    //     return null;
-                    // }
-                    // return this.appendBlock(clone, false);
+                async (_nodeData) => {
+                    const oldBlock = _nodeData.data as BaseBlock;
+                    const blockTypeAndNamespace = GetBlockKey(oldBlock.blockType, oldBlock.namespace);
+                    const newBlock = await this.createBlockAsync(blockTypeAndNamespace);
+                    if (!newBlock) {
+                        return null;
+                    }
+                    return this.appendBlock(newBlock, false);
                 },
                 this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
             );
@@ -418,7 +418,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         }
     };
 
-    async emitNewBlockAsync(blockTypeAndNamespace: string, targetX: number, targetY: number) {
+    async createBlockAsync(blockTypeAndNamespace: string): Promise<Nullable<BaseBlock>> {
         const { blockType, namespace } = DecodeBlockKey(blockTypeAndNamespace);
 
         let block: Nullable<BaseBlock> = null;
@@ -436,7 +436,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         // If we don't have a block yet, display an error
         if (!block) {
             this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`Could not create a block of type ${blockTypeAndNamespace}`);
-            return;
+            return null;
         }
 
         // Enforce uniqueness if applicable
@@ -445,9 +445,18 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             for (const other of this._graphCanvas.getCachedData()) {
                 if (other !== block && other.getClassName() === className) {
                     this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);
-                    return;
+                    return null;
                 }
             }
+        }
+
+        return block;
+    }
+
+    async emitNewBlockAsync(blockTypeAndNamespace: string, targetX: number, targetY: number) {
+        const block = await this.createBlockAsync(blockTypeAndNamespace);
+        if (!block) {
+            return;
         }
 
         const newNode = this.appendBlock(block);
