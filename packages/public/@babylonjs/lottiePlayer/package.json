@@ -33,9 +33,9 @@
         "license.md"
     ],
     "scripts": {
-        "build": "npm run clean && npm run copySrc && npm run compile",
+        "build": "npm run clean && npm run compile",
         "clean": "rimraf dist && rimraf src && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
-        "compile": "node src/utils/buildTools/recordVersionNumber.js && tsc -b tsconfig.build.json",
+        "compile": "tsc -b tsconfig.build.json",
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
