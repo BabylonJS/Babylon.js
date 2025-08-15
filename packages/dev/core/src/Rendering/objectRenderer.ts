@@ -599,7 +599,7 @@ export class ObjectRenderer {
 
         this._renderingManager.reset();
 
-        const boundingBoxRenderer = scene.getBoundingBoxRenderer();
+        const boundingBoxRenderer = scene.getBoundingBoxRenderer?.();
 
         boundingBoxRenderer && boundingBoxRenderer.reset();
 
@@ -785,3 +785,4 @@ export class ObjectRenderer {
         }
     }
 }
+
