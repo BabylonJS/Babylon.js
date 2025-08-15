@@ -16,8 +16,8 @@ const useSyncedSliderStyles = makeStyles({
         flexGrow: 1, // Let slider grow
         minWidth: "40px", // Minimum width for slider to remain usable
     },
-    input: {
-        flexShrink: 0,
+    spinButton: {
+        width: "60px",
     },
 });
 
@@ -102,7 +102,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                     onPointerUp={handleSliderPointerUp}
                 />
             )}
-            <SpinButton {...props} className={classes.input} value={Math.round(value / step) * step} onChange={handleInputChange} step={props.step} />
+            <SpinButton {...props} className={classes.spinButton} value={Math.round(value / step) * step} onChange={handleInputChange} step={props.step} />
         </div>
     );
 };

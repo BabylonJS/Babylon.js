@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { FunctionComponent } from "react";
 import {
     ColorPicker as FluentColorPicker,
@@ -54,7 +54,7 @@ const useColorPickerStyles = makeStyles({
         width: "80px",
     },
     spinButton: {
-        minWidth: "60px",
+        width: "50px",
     },
     container: {
         display: "flex",
@@ -209,11 +209,14 @@ const InputRgbField: FunctionComponent<InputRgbFieldProps> = (props) => {
     const { value, onChange, title, rgbKey } = props;
     const classes = useColorPickerStyles();
 
-    const handleChange = (val: number) => {
-        const newColor = value.clone();
-        newColor[rgbKey] = val / 255.0; // Convert to 0-1 range
-        onChange(newColor);
-    };
+    const handleChange = useCallback(
+        (val: number) => {
+            const newColor = value.clone();
+            newColor[rgbKey] = val / 255.0; // Convert to 0-1 range
+            onChange(newColor);
+        },
+        [value, onChange, rgbKey]
+    );
 
     return (
         <div className={classes.colorFieldWrapper}>
@@ -223,7 +226,7 @@ const InputRgbField: FunctionComponent<InputRgbFieldProps> = (props) => {
                 className={classes.spinButton}
                 min={0}
                 max={255}
-                value={value[rgbKey] * 255.0}
+                value={Math.round(value[rgbKey] * 255)}
                 forceInt
                 onChange={handleChange}
             />
@@ -251,20 +254,23 @@ type InputHsvFieldProps = PrimitiveProps<Color3 | Color4> & {
  * @param props - The properties for the InputHsvField component.
  */
 export const InputHsvField: FunctionComponent<InputHsvFieldProps> = (props) => {
-    const { value, title, hsvKey, max, scale = 1 } = props;
+    const { value, title, hsvKey, max, onChange, scale = 1 } = props;
 
     const classes = useColorPickerStyles();
 
-    const handleChange = (val: number) => {
-        // Convert current color to HSV, update the new hsv value, then call onChange prop
-        const hsv = rgbaToHsv(value);
-        hsv[hsvKey] = val / scale;
-        let newColor: Color3 | Color4 = Color3.FromHSV(hsv.h, hsv.s, hsv.v);
-        if (value instanceof Color4) {
-            newColor = Color4.FromColor3(newColor, value.a ?? 1);
-        }
-        props.onChange(newColor);
-    };
+    const handleChange = useCallback(
+        (val: number) => {
+            // Convert current color to HSV, update the new hsv value, then call onChange prop
+            const hsv = rgbaToHsv(value);
+            hsv[hsvKey] = val / scale;
+            let newColor: Color3 | Color4 = Color3.FromHSV(hsv.h, hsv.s, hsv.v);
+            if (value instanceof Color4) {
+                newColor = Color4.FromColor3(newColor, value.a ?? 1);
+            }
+            props.onChange(newColor);
+        },
+        [value, onChange, hsvKey, scale]
+    );
 
     return (
         <div className={classes.colorFieldWrapper}>
@@ -274,7 +280,7 @@ export const InputHsvField: FunctionComponent<InputHsvFieldProps> = (props) => {
                 className={classes.spinButton}
                 min={0}
                 max={max}
-                value={rgbaToHsv(value)[hsvKey] * scale}
+                value={Math.round(rgbaToHsv(value)[hsvKey] * scale)}
                 forceInt
                 onChange={handleChange}
             />
@@ -294,21 +300,24 @@ type InputAlphaProps = {
  */
 const InputAlphaField: FunctionComponent<InputAlphaProps> = (props) => {
     const classes = useColorPickerStyles();
-    const { color } = props;
+    const { color, onChange } = props;
 
-    const onChange = (value: number) => {
-        if (Number.isNaN(value) || value < 0 || value > 1) {
-            return;
-        }
+    const handleChange = useCallback(
+        (value: number) => {
+            if (Number.isNaN(value) || value < 0 || value > 1) {
+                return;
+            }
 
-        if (color instanceof Color4) {
-            const newColor = color.clone();
-            newColor.a = value;
-            return newColor;
-        } else {
-            return Color4.FromColor3(color, value);
-        }
-    };
+            if (color instanceof Color4) {
+                const newColor = color.clone();
+                newColor.a = value;
+                return newColor;
+            } else {
+                return Color4.FromColor3(color, value);
+            }
+        },
+        [onChange]
+    );
 
     return (
         <div className={classes.colorFieldWrapper}>
@@ -319,7 +328,7 @@ const InputAlphaField: FunctionComponent<InputAlphaProps> = (props) => {
                 className={classes.spinButton}
                 value={color instanceof Color3 ? 1 : color.a}
                 step={0.01}
-                onChange={onChange}
+                onChange={handleChange}
                 infoLabel={{
                     label: "Alpha",
                     info:

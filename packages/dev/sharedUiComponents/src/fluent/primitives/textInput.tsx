@@ -72,12 +72,7 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
         event.stopPropagation();
         event.preventDefault();
     };
-    const invalidStyle = !validateValue(value)
-        ? {
-              backgroundColor: "#fdeaea",
-              borderColor: "#d13438",
-          }
-        : {};
+    const invalidStyle = !validateValue(value) ? { backgroundColor: "#fdeaea" } : {};
 
     const id = useId("input-button");
     return (

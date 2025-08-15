@@ -9,7 +9,7 @@ const useSpinStyles = makeStyles({
     base: {
         display: "flex",
         flexDirection: "column",
-        width: "100px",
+        minWidth: "50px",
     },
 });
 
@@ -29,7 +29,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const [value, setValue] = useState(props.value);
     const lastCommittedValue = useRef(props.value);
     // step and forceInt are not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
-    const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
+    const step = props.step != undefined ? props.step : props.forceInt ? 1 : 2;
 
     useEffect(() => {
         if (props.value != lastCommittedValue.current) {
@@ -103,7 +103,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 step={step}
                 id={id}
                 size="small"
-                displayValue={props.unit ? `${value} ${props.unit}` : `${value}`} // round?
+                displayValue={props.unit ? `${step !== undefined ? value.toPrecision(step) : value} ${props.unit}` : undefined}
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}
