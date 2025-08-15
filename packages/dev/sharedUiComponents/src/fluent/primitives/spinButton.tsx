@@ -9,7 +9,7 @@ const useSpinStyles = makeStyles({
     base: {
         display: "flex",
         flexDirection: "column",
-        minWidth: "50px",
+        minWidth: "55px",
     },
 });
 
@@ -87,12 +87,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
         event.preventDefault();
     };
 
-    const invalidStyle = !validateValue(value)
-        ? {
-              backgroundColor: "#fdeaea",
-              borderColor: "#d13438",
-          }
-        : {};
+    const invalidStyle = !validateValue(value) ? { backgroundColor: "#fdeaea" } : {};
 
     const id = useId("spin-button");
     return (
