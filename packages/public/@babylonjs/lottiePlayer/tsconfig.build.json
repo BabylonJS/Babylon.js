@@ -28,5 +28,5 @@
         ]
     },
 
-    "include": ["./src/**/*"]
+    "include": ["../../../dev/lottiePlayer/src/**/*"]
 }
