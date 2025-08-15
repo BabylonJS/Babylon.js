@@ -214,6 +214,24 @@
             "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
+            "label": "Run Dev host lottie (Dev)",
+            "dependsOn": ["Build (Dev)", "Build (Lottie)"],
+            "type": "shell",
+            "command": "npm",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/dev-host"],
+            "isBackground": true,
+            "presentation": {
+                "group": "watch"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
             "label": "Run and Watch Dev host (Dev)",
             "dependsOn": ["Watch all (Dev)"],
             "type": "shell",
