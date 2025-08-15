@@ -17,6 +17,7 @@ export type SpinButtonProps = PrimitiveProps<number> & {
     min?: number;
     max?: number;
     step?: number;
+    unit?: string;
     forceInt?: boolean;
     validator?: (value: number) => boolean;
 };
@@ -27,13 +28,13 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
 
     const [value, setValue] = useState(props.value);
     const lastCommittedValue = useRef(props.value);
-    // step and forceInt are  not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
+    // step and forceInt are not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
     const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
 
     useEffect(() => {
         if (props.value != lastCommittedValue.current) {
-            setValue(props.value); // Update local state when props.value changes
             lastCommittedValue.current = props.value;
+            setValue(props.value); // Update local state when props.value changes
         }
     }, [props.value]);
 
@@ -102,6 +103,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 step={step}
                 id={id}
                 size="small"
+                displayValue={props.unit ? `${value} ${props.unit}` : `${value}`} // round?
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}

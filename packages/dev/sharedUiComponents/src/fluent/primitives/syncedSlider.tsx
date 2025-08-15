@@ -28,6 +28,8 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
     max?: number;
     /** Step size for the slider */
     step?: number;
+    /** Displayed in the ux to indicate unit of measurement */
+    unit?: string;
     /** When true, onChange is only called when the user releases the slider, not during drag */
     notifyOnlyOnRelease?: boolean;
 };
