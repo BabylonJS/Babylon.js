@@ -5,20 +5,15 @@ import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 
-import { useColor3Property, useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 
 export const HemisphericLightSetupProperties: FunctionComponent<{ context: HemisphericLight }> = ({ context: hemisphericLight }) => {
-    const direction = useVector3Property(hemisphericLight, "direction");
-    const diffuseColor = useColor3Property(hemisphericLight, "diffuse");
-    const groundColor = useColor3Property(hemisphericLight, "groundColor");
-
     return (
         <>
-            <Vector3PropertyLine label="Direction" value={direction} onChange={(val) => (hemisphericLight.direction = val)} />
-            <Color3PropertyLine label="Diffuse" value={diffuseColor} onChange={(val) => (hemisphericLight.diffuse = val)} />
-            <Color3PropertyLine label="Ground" value={groundColor} onChange={(val) => (hemisphericLight.groundColor = val)} />
-            <BoundProperty component={NumberInputPropertyLine} label="Intensity" target={hemisphericLight} propertyKey="intensity" />
+            <BoundProperty label="Direction" component={Vector3PropertyLine} target={hemisphericLight} propertyKey="direction" />
+            <BoundProperty label="Diffuse" component={Color3PropertyLine} target={hemisphericLight} propertyKey="diffuse" />
+            <BoundProperty label="Ground" component={Color3PropertyLine} target={hemisphericLight} propertyKey="groundColor" />
+            <BoundProperty label="Intensity" component={NumberInputPropertyLine} target={hemisphericLight} propertyKey="intensity" />
         </>
     );
 };
