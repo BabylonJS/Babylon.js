@@ -5,17 +5,17 @@ import "core/Shaders/sprites.fragment";
 import { ThinEngine } from "core/Engines/thinEngine";
 import { Viewport } from "core/Maths/math.viewport";
 
-import type { Node } from "./node";
-import { RenderingManager } from "./renderingManager";
+import type { Node } from "./rendering/node";
+import { RenderingManager } from "./rendering/renderingManager";
 
-import type { AnimationInfo } from "../parsing/parsedTypes";
-import { AnimationParser } from "../parsing/animationParser";
+import type { AnimationInfo } from "./parsing/parsedTypes";
+import { AnimationParser } from "./parsing/animationParser";
 
-import { ThinMatrix } from "../maths/matrix";
+import { ThinMatrix } from "./maths/matrix";
 
-import { SpritePacker } from "../sprites/spritePacker";
+import { SpritePacker } from "./sprites/spritePacker";
 
-import type { AnimationConfiguration } from "../player";
+import type { AnimationConfiguration } from "./player";
 
 /**
  * Defines the babylon combine alpha value to prevent a large import.
