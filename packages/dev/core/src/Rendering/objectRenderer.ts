@@ -785,4 +785,3 @@ export class ObjectRenderer {
         }
     }
 }
-
