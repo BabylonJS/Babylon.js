@@ -2,17 +2,17 @@ import type { Scene } from "core/scene";
 import type { RenderTargetsStageAction, ISceneComponent } from "core/sceneComponent";
 import { SceneComponentConstants } from "core/sceneComponent";
 
-import { ClusteredLight } from "./clusteredLight";
+import { ClusteredLightContainer } from "./clusteredLightContainer";
 import { LightConstants } from "../lightConstants";
 
 /**
  * A scene component required for running the clustering step in clustered lights
  */
-export class ClusteredLightSceneComponent implements ISceneComponent {
+export class ClusteredLightingSceneComponent implements ISceneComponent {
     /**
      * The name of the component. Each component must have a unique name.
      */
-    public name = SceneComponentConstants.NAME_CLUSTEREDLIGHT;
+    public name = SceneComponentConstants.NAME_CLUSTEREDLIGHTING;
 
     /**
      * The scene the component belongs to.
@@ -43,7 +43,7 @@ export class ClusteredLightSceneComponent implements ISceneComponent {
      */
     public register(): void {
         this.scene._gatherActiveCameraRenderTargetsStage.registerStep(
-            SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHT,
+            SceneComponentConstants.STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHTING,
             this,
             this._gatherActiveCameraRenderTargets
         );
@@ -51,15 +51,15 @@ export class ClusteredLightSceneComponent implements ISceneComponent {
 
     private _gatherActiveCameraRenderTargets: RenderTargetsStageAction = (renderTargets) => {
         for (const light of this.scene.lights) {
-            if (light.getTypeID() === LightConstants.LIGHTTYPEID_CLUSTERED && (<ClusteredLight>light).isSupported) {
-                renderTargets.push((<ClusteredLight>light)._updateBatches());
+            if (light.getTypeID() === LightConstants.LIGHTTYPEID_CLUSTERED_CONTAINER && (<ClusteredLightContainer>light).isSupported) {
+                renderTargets.push((<ClusteredLightContainer>light)._updateBatches());
             }
         }
     };
 }
 
-ClusteredLight._SceneComponentInitialization = (scene) => {
-    if (!scene._getComponent(SceneComponentConstants.NAME_CLUSTEREDLIGHT)) {
-        scene._addComponent(new ClusteredLightSceneComponent(scene));
+ClusteredLightContainer._SceneComponentInitialization = (scene) => {
+    if (!scene._getComponent(SceneComponentConstants.NAME_CLUSTEREDLIGHTING)) {
+        scene._addComponent(new ClusteredLightingSceneComponent(scene));
     }
 };

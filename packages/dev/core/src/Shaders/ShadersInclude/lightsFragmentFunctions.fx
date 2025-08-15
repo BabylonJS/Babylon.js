@@ -181,7 +181,7 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 #endif
 
 #if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
-#include<clusteredLightFunctions>
+#include<clusteredLightingFunctions>
 
 lightingInfo computeClusteredLighting(
 	sampler2D lightDataTexture,
@@ -209,7 +209,7 @@ lightingInfo computeClusteredLighting(
 			uint bit = mask & -mask;
 			mask ^= bit;
 			int position = onlyBitPosition(bit);
-			SpotLight light = getClusteredSpotLight(lightDataTexture, batchOffset + position);
+			ClusteredLight light = getClusteredLight(lightDataTexture, batchOffset + position);
 
 			lightingInfo info;
 			if (light.vLightDirection.w < 0.0) {

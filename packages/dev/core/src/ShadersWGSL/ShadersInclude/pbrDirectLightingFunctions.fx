@@ -208,7 +208,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
 #endif
 
 #ifdef CLUSTLIGHT_BATCH
-#include<clusteredLightFunctions>
+#include<clusteredLightingFunctions>
 
     fn computeClusteredLighting(
         lightDataTexture: texture_2d<f32>,
@@ -260,7 +260,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             while mask != 0 {
                 let trailing = firstTrailingBit(mask);
                 mask ^= 1u << trailing;
-                let light = getClusteredSpotLight(lightDataTexture, batchOffset + trailing);
+                let light = getClusteredLight(lightDataTexture, batchOffset + trailing);
 
                 var preInfo = computePointAndSpotPreLightingInfo(light.vLightData, V, N, posW);
                 preInfo.NdotV = NdotV;

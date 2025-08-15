@@ -9,11 +9,11 @@ var lightDataTexture: texture_2d<f32>;
 uniform tileMaskResolution: vec3f;
 uniform halfTileRes: vec2f;
 
-#include<clusteredLightFunctions>
+#include<clusteredLightingFunctions>
 
 @vertex
 fn main(input: VertexInputs) -> FragmentInputs {
-    let light = getClusteredSpotLight(lightDataTexture, vertexInputs.instanceIndex);
+    let light = getClusteredLight(lightDataTexture, vertexInputs.instanceIndex);
     let range = light.vLightFalloff.x;
 
     let viewPosition = scene.view * vec4f(light.vLightData.xyz, 1);

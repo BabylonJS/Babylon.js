@@ -8,10 +8,10 @@ flat varying highp uint vMask;
 uniform sampler2D lightDataTexture;
 uniform vec3 tileMaskResolution;
 
-#include<clusteredLightFunctions>
+#include<clusteredLightingFunctions>
 
 void main(void) {
-    SpotLight light = getClusteredSpotLight(lightDataTexture, gl_InstanceID);
+    ClusteredLight light = getClusteredLight(lightDataTexture, gl_InstanceID);
     float range = light.vLightFalloff.x;
 
     vec4 viewPosition = view * vec4(light.vLightData.xyz, 1);

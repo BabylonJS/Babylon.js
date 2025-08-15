@@ -1,4 +1,4 @@
-struct SpotLight {
+struct ClusteredLight {
     vec4 vLightData;
     vec4 vLightDiffuse;
     vec4 vLightSpecular;
@@ -6,8 +6,8 @@ struct SpotLight {
     vec4 vLightFalloff;
 };
 
-SpotLight getClusteredSpotLight(sampler2D lightDataTexture, int index) {
-    return SpotLight(
+ClusteredLight getClusteredLight(sampler2D lightDataTexture, int index) {
+    return ClusteredLight(
         texelFetch(lightDataTexture, ivec2(0, index), 0),
         texelFetch(lightDataTexture, ivec2(1, index), 0),
         texelFetch(lightDataTexture, ivec2(2, index), 0),

@@ -27,13 +27,13 @@ import type { SpotLight } from "../spotLight";
 import "core/Meshes/thinInstanceMesh";
 
 Node.AddNodeConstructor("Light_Type_5", (name, scene) => {
-    return () => new ClusteredLight(name, [], scene);
+    return () => new ClusteredLightContainer(name, [], scene);
 });
 
 /**
  * A special light that renders all its associated spot or point lights using a clustered or forward+ system.
  */
-export class ClusteredLight extends Light {
+export class ClusteredLightContainer extends Light {
     private static _GetEngineBatchSize(engine: AbstractEngine): number {
         const caps = engine._caps;
         if (!caps.texelFetch) {
@@ -62,7 +62,7 @@ export class ClusteredLight extends Light {
      * @returns true if the light and its engine is supported
      */
     public static IsLightSupported(light: Light): boolean {
-        if (ClusteredLight._GetEngineBatchSize(light.getEngine()) === 0) {
+        if (ClusteredLightContainer._GetEngineBatchSize(light.getEngine()) === 0) {
             return false;
         } else if (light.shadowEnabled && light._scene.shadowsEnabled && light.getShadowGenerators()) {
             // Shadows are not supported
@@ -83,7 +83,7 @@ export class ClusteredLight extends Light {
 
     /** @internal */
     public static _SceneComponentInitialization: (scene: Scene) => void = () => {
-        throw _WarnImport("ClusteredLightSceneComponent");
+        throw _WarnImport("ClusteredLightingSceneComponent");
     };
 
     private readonly _batchSize: number;
@@ -172,14 +172,14 @@ export class ClusteredLight extends Light {
     /**
      * Creates a new clustered light system with an initial set of lights.
      *
-     * @param name The name of the ClusteredLight
+     * @param name The name of the clustered light container
      * @param lights The initial set of lights to add
-     * @param scene The scene the ClusteredLight belongs to
+     * @param scene The scene the clustered light container belongs to
      */
     constructor(name: string, lights: Light[] = [], scene?: Scene) {
         super(name, scene);
         const engine = this.getEngine();
-        this._batchSize = ClusteredLight._GetEngineBatchSize(engine);
+        this._batchSize = ClusteredLightContainer._GetEngineBatchSize(engine);
 
         const proxyShader = { vertex: "lightProxy", fragment: "lightProxy" };
         this._proxyMaterial = new ShaderMaterial("ProxyMaterial", this._scene, proxyShader, {
@@ -211,7 +211,7 @@ export class ClusteredLight extends Light {
         this._updateBatches();
 
         if (this._batchSize > 0) {
-            ClusteredLight._SceneComponentInitialization(this._scene);
+            ClusteredLightContainer._SceneComponentInitialization(this._scene);
             for (const light of lights) {
                 this.addLight(light);
             }
@@ -219,12 +219,12 @@ export class ClusteredLight extends Light {
     }
 
     public override getClassName(): string {
-        return "ClusteredLight";
+        return "ClusteredLightContainer";
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public override getTypeID(): number {
-        return LightConstants.LIGHTTYPEID_CLUSTERED;
+        return LightConstants.LIGHTTYPEID_CLUSTERED_CONTAINER;
     }
 
     /** @internal */
@@ -380,7 +380,7 @@ export class ClusteredLight extends Light {
      * @param light The light to add
      */
     public addLight(light: Light): void {
-        if (!ClusteredLight.IsLightSupported(light)) {
+        if (!ClusteredLightContainer.IsLightSupported(light)) {
             Logger.Warn("Attempting to add a light to cluster that does not support clustering");
             return;
         }
@@ -458,4 +458,4 @@ export class ClusteredLight extends Light {
 }
 
 // Register Class Name
-RegisterClass("BABYLON.ClusteredLight", ClusteredLight);
+RegisterClass("BABYLON.ClusteredLightContainer", ClusteredLightContainer);

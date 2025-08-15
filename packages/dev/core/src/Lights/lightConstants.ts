@@ -94,7 +94,7 @@ export class LightConstants {
     /**
      * Light type const id of the clustered light.
      */
-    public static readonly LIGHTTYPEID_CLUSTERED = 5;
+    public static readonly LIGHTTYPEID_CLUSTERED_CONTAINER = 5;
 
     /**
      * Sort function to order lights for rendering.

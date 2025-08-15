@@ -181,7 +181,7 @@ fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_
 #endif
 
 #ifdef CLUSTLIGHT_BATCH
-#include<clusteredLightFunctions>
+#include<clusteredLightingFunctions>
 
 fn computeClusteredLighting(
 	lightDataTexture: texture_2d<f32>,
@@ -207,7 +207,7 @@ fn computeClusteredLighting(
 		while mask != 0 {
 			let trailing = firstTrailingBit(mask);
 			mask ^= 1u << trailing;
-			let light = getClusteredSpotLight(lightDataTexture, batchOffset + trailing);
+			let light = getClusteredLight(lightDataTexture, batchOffset + trailing);
 
 			var info: lightingInfo;
 			if light.vLightDirection.w < 0.0 {
