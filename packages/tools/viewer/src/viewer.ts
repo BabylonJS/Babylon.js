@@ -1917,6 +1917,11 @@ export class Viewer implements IDisposable {
                 },
                 refreshLightPositionDirection(reflectionRotation: number) {
                     let effectiveSourceDir = this.iblDirection.direction.normalizeToNew();
+
+                    if (this.light.getScene().useRightHandedSystem) {
+                        effectiveSourceDir.z *= -1;
+                    }
+
                     const rotationYMatrix = Matrix.RotationY(reflectionRotation * -1);
                     effectiveSourceDir = Vector3.TransformCoordinates(effectiveSourceDir, rotationYMatrix);
 
