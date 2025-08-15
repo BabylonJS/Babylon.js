@@ -179,3 +179,52 @@ lightingInfo computeAreaLighting(sampler2D ltc1, sampler2D ltc2, vec3 viewDirect
 
 // End Area Light
 #endif
+
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+#include<clusteredLightingFunctions>
+
+lightingInfo computeClusteredLighting(
+	sampler2D lightDataTexture,
+	sampler2D tileMaskTexture,
+	vec3 viewDirectionW,
+	vec3 vNormal,
+	vec4 lightData,
+	int numLights,
+	float glossiness
+) {
+	lightingInfo result;
+	ivec2 tilePosition = ivec2(gl_FragCoord.xy * lightData.xy);
+	int maskHeight = int(lightData.z);
+	tilePosition.y = min(tilePosition.y, maskHeight - 1);
+
+	int numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;
+	int batchOffset = 0;
+
+	for (int i = 0; i < numBatches; i += 1) {
+		uint mask = uint(texelFetch(tileMaskTexture, tilePosition, 0).r);
+		tilePosition.y += maskHeight;
+
+		while (mask != 0u) {
+			// This gets the lowest set bit
+			uint bit = mask & -mask;
+			mask ^= bit;
+			int position = onlyBitPosition(bit);
+			ClusteredLight light = getClusteredLight(lightDataTexture, batchOffset + position);
+
+			lightingInfo info;
+			if (light.vLightDirection.w < 0.0) {
+				// Assume an angle greater than 180º is a point light
+				info = computeLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
+			} else {
+				info = computeSpotLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDirection, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
+			}
+			result.diffuse += info.diffuse;
+			#ifdef SPECULARTERM
+				result.specular += info.specular;
+			#endif
+		}
+		batchOffset += CLUSTLIGHT_BATCH;
+	}
+	return result;
+}
+#endif

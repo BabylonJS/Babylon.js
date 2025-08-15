@@ -6,7 +6,38 @@
         var diffuse{X}: vec4f = light{X}.vLightDiffuse;
         #define CUSTOM_LIGHT{X}_COLOR // Use to modify light color. Currently only supports diffuse.
 
-        #ifdef PBR
+        #if defined(PBR) && defined(CLUSTLIGHT{X})
+            info = computeClusteredLighting(
+                lightDataTexture{X},
+                &tileMaskBuffer{X},
+                light{X}.vLightData,
+                i32(light{X}.vNumLights),
+                viewDirectionW,
+                normalW,
+                fragmentInputs.vPositionW,
+                surfaceAlbedo,
+                reflectivityOut,
+                #ifdef IRIDESCENCE
+                    iridescenceIntensity,
+                #endif
+                #ifdef SS_TRANSLUCENCY
+                    subSurfaceOut,
+                #endif
+                #ifdef SPECULARTERM
+                    AARoughnessFactors.x,
+                #endif
+                #ifdef ANISOTROPIC
+                    anisotropicOut,
+                #endif
+                #ifdef SHEEN
+                    sheenOut,
+                #endif
+                #ifdef CLEARCOAT
+                    clearcoatOut,
+                #endif
+            );
+        #elif defined(PBR)
+
             // Compute Pre Lighting infos
             #ifdef SPOTLIGHT{X}
                 preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, fragmentInputs.vPositionW);
@@ -206,6 +237,8 @@
                     uniforms.vReflectionInfos.y
                 #endif
                     );
+            #elif defined(CLUSTLIGHT{X})
+                info = computeClusteredLighting(lightDataTexture{X}, &tileMaskBuffer{X}, viewDirectionW, normalW, light{X}.vLightData, i32(light{X}.vNumLights), glossiness);
             #endif
         #endif
 

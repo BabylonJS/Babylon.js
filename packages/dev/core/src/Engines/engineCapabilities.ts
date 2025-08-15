@@ -27,6 +27,8 @@ export interface EngineCapabilities {
     maxVertexUniformVectors: number;
     /** Maximum number of uniforms per fragment shader */
     maxFragmentUniformVectors: number;
+    /** The number of bits that can be accurately represented in shader floats */
+    shaderFloatPrecision: number;
     /** Defines if standard derivatives (dx/dy) are supported */
     standardDerivatives: boolean;
     /** Defines if s3tc texture compression is supported */
@@ -80,6 +82,8 @@ export interface EngineCapabilities {
     depthTextureExtension: boolean;
     /** Defines if float color buffer are supported */
     colorBufferFloat: boolean;
+    /** Defines if float color blending is supported */
+    blendFloat: boolean;
     /** Defines if half float color buffer are supported */
     colorBufferHalfFloat?: boolean;
     /** Gets disjoint timer query extension (null if not supported) */
