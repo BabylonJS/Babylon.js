@@ -310,7 +310,7 @@ export class Geometry implements IGetSetVerticesData {
         if (kind === VertexBuffer.PositionKind) {
             this._totalVertices = totalVertices ?? buffer._maxVerticesCount;
 
-            this._updateExtend(buffer.getFloatData(this._totalVertices));
+            this._updateExtend(this.useBoundingInfoFromGeometry && this._boundingInfo ? null : buffer.getFloatData(this._totalVertices));
             this._resetPointsArrayCache();
 
             // this._extend can be empty if buffer.getFloatData(this._totalVertices) returned null
@@ -1679,3 +1679,4 @@ export class Geometry implements IGetSetVerticesData {
         return geometry;
     }
 }
+
