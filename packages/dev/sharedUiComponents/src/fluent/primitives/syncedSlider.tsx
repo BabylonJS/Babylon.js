@@ -1,6 +1,6 @@
 import type { SliderOnChangeData } from "@fluentui/react-components";
 import { makeStyles, Slider, tokens } from "@fluentui/react-components";
-import { NumberInput } from "./input";
+import { SpinButton } from "./spinButton";
 import type { ChangeEvent, FunctionComponent } from "react";
 import { useEffect, useState, useRef } from "react";
 import type { PrimitiveProps } from "./primitive";
@@ -16,9 +16,8 @@ const useSyncedSliderStyles = makeStyles({
         flexGrow: 1, // Let slider grow
         minWidth: "40px", // Minimum width for slider to remain usable
     },
-    input: {
-        width: "40px", // Fixed width for input - always 40px
-        flexShrink: 0,
+    spinButton: {
+        width: "60px",
     },
 });
 
@@ -29,6 +28,8 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
     max?: number;
     /** Step size for the slider */
     step?: number;
+    /** Displayed in the ux to indicate unit of measurement */
+    unit?: string;
     /** When true, onChange is only called when the user releases the slider, not during drag */
     notifyOnlyOnRelease?: boolean;
 };
@@ -80,12 +81,9 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
         isDraggingRef.current = false;
     };
 
-    const handleInputChange = (value: string | number) => {
-        const newValue = Number(value);
-        if (!isNaN(newValue)) {
-            setValue(newValue);
-            props.onChange(newValue); // Input always updates immediately
-        }
+    const handleInputChange = (value: number) => {
+        setValue(value);
+        props.onChange(value); // Input always updates immediately
     };
 
     return (
@@ -104,7 +102,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                     onPointerUp={handleSliderPointerUp}
                 />
             )}
-            <NumberInput {...props} className={classes.input} value={Math.round(value / step) * step} onChange={handleInputChange} step={step} />
+            <SpinButton {...props} className={classes.spinButton} value={Math.round(value / step) * step} onChange={handleInputChange} step={props.step} />
         </div>
     );
 };
