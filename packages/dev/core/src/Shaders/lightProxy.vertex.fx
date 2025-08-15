@@ -32,13 +32,14 @@ void main(void) {
     // Apply projection
     vec4 projX = projection * vec4(rotatedX.x, 0, rotatedX.y, 1);
     vec4 projY = projection * vec4(0, rotatedY.x, rotatedY.y, 1);
+    // We really do be `max(..., 0.01)` all through this to get rid of them pesky zeros
     vec2 projPosition = vec2(projX.x / max(projX.w, 0.01), projY.y / max(projY.w, 0.01));
     // Override with screen extents if rotation invalid (occurs when inside the sphere)
-    projPosition = mix(projPosition, position.xy, equal(cosSq, vec2(0.01)));
+    projPosition = mix(position.xy, projPosition, greaterThan(cosSq, vec2(0.01)));
 
     // Convert to NDC 0->1 space and scale to the tile resolution
     vec2 halfTileRes = tileMaskResolution.xy / 2.0;
-    vec2 tilePosition = (projPosition.xy + 1.0) * halfTileRes;
+    vec2 tilePosition = (projPosition + 1.0) * halfTileRes;
     // Round to a whole tile boundary with a bit of wiggle room
     tilePosition = mix(floor(tilePosition) - 0.01, ceil(tilePosition) + 0.01, greaterThan(position.xy, vec2(0)));
     // Reposition vertically based on current batch
