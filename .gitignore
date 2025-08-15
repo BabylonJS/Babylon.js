@@ -28,6 +28,7 @@ junit.xml
 *.pem
 packages/tools/babylonServer/public/localDev
 packages/tools/babylonServer/public/localDevWebGPU
+packages/tools/devHost/public/localDev
 packages/tools/playground/public/temp
 #playwright
 test-results

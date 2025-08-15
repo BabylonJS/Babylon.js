@@ -600,6 +600,7 @@ const rules = {
         "no-async-promise-executor": "warn",
         "no-throw-literal": "error",
         curly: "error",
+        "babylonjs/no-cross-package-relative-imports": "error",
     },
 };
 
