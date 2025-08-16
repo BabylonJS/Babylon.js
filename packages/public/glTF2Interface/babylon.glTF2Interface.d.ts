@@ -691,7 +691,7 @@ declare module BABYLON.GLTF2 {
          */
         mode?: MeshPrimitiveMode;
         /**
-         * An array of Morph Targets, each  Morph Target is a dictionary mapping attributes (only POSITION, NORMAL, and TANGENT supported) to their deviations in the Morph Target
+         * An array of morph targets, each morph target is a dictionary mapping attributes (only POSITION, NORMAL, and TANGENT supported) to their deviations in the morph target
          */
         targets?: {
             [name: string]: number;

@@ -8,7 +8,7 @@ import { ParseFlowGraphAsync } from "core/FlowGraph";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import "loaders/glTF/2.0/glTFLoaderAnimation";
 import "loaders/glTF/2.0/Extensions/KHR_animation_pointer.data";
-import { _AddInteractivityObjectModel } from "loaders/glTF/2.0/Extensions/KHR_interactivity";
+import "loaders/glTF/2.0/Extensions/KHR_interactivity";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
 import { IKHRInteractivity_Declaration, IKHRInteractivity_Graph, IKHRInteractivity_Node, IKHRInteractivity_Type, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import { Mesh } from "core/Meshes/mesh";
@@ -72,7 +72,6 @@ describe("glTF interactivity Object Model", () => {
         new ArcRotateCamera("", Math.PI / 2, Math.PI / 2, 4, new Vector3(0, 0, 0));
         log.mockClear();
         errorLog.mockClear();
-        _AddInteractivityObjectModel(scene);
         renderInterval = setInterval(() => scene?.render(), 16);
     });
 
@@ -169,7 +168,9 @@ describe("glTF interactivity Object Model", () => {
         await generateSimpleNodeGraph(
             {
                 extensions: {
-                    KHR_interactivity: {},
+                    KHR_interactivity: {
+                        _babylonScene: scene,
+                    },
                 },
             },
             [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
@@ -206,7 +207,9 @@ describe("glTF interactivity Object Model", () => {
         await generateSimpleNodeGraph(
             {
                 extensions: {
-                    KHR_interactivity: {},
+                    KHR_interactivity: {
+                        _babylonScene: scene,
+                    },
                 },
             },
             [{ op: "pointer/get" }, { op: "flow/log", extension: "BABYLON" }],
