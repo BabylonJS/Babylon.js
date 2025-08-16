@@ -80,11 +80,6 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
 
     private _crowd?: ICrowd;
 
-    // Cached positions and indices of the meshes used to create the navmesh
-    // TODO: check this, remove if not needed
-    private _positions: Float32Array = new Float32Array();
-    private _indices: Uint32Array = new Uint32Array();
-
     /**
      * Link to the scene is kept to unregister the crowd from the scene
      */
