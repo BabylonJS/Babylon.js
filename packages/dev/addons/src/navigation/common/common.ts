@@ -6,7 +6,7 @@ import type { Node } from "core/node";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 
-import { getReversedIndices } from "./getters";
+import { GetReversedIndices } from "./getters";
 
 /**
  * Creates a debug mesh for visualizing a NavMesh in the scene.
@@ -27,7 +27,7 @@ export function createDebugNavMesh(navMesh: NavMesh, scene: Scene, parent?: Node
         [indices[i + 1], indices[i + 2]] = [indices[i + 2], indices[i + 1]];
     }
 
-    vertexData.indices = getReversedIndices(indices);
+    vertexData.indices = GetReversedIndices(indices);
     vertexData.positions = positions;
     vertexData.applyToMesh(mesh, false);
 

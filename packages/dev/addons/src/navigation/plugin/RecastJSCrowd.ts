@@ -11,11 +11,10 @@ import type { Nullable } from "core/types";
 import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
 
 /**
- * Recast detour crowd implementation
- */
-
-/**
- *
+ * Recast Detour crowd implementation
+ * This class provides methods to manage a crowd of agents, allowing them to navigate a navigation mesh.
+ * It supports adding agents, updating their parameters, moving them to destinations, and checking their states.
+ * The crowd is updated in the scene's animation loop, and it notifies observers when agents reach their destinations.
  */
 export class RecastJSCrowd implements ICrowd {
     /**

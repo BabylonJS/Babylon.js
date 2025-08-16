@@ -1,31 +1,79 @@
-import type { RecastConfig } from "@recast-navigation/core";
-import { exportNavMesh, init as initRecast } from "@recast-navigation/core";
-import { generateSoloNavMesh, generateTiledNavMesh } from "@recast-navigation/generators";
+import { exportNavMesh, exportTileCache, init as initRecast } from "@recast-navigation/core";
+import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "@recast-navigation/generators";
+import { generateSoloNavMesh, generateTileCache, generateTiledNavMesh } from "@recast-navigation/generators";
 
-self.onmessage = async (event: {
-    data: {
-        positions: Float32Array;
-        indices: Uint32Array;
-        config: Partial<RecastConfig>;
+import { CreateSoloNavMeshConfig, CreateTileCacheNavMeshConfig } from "../common/config";
+import type { INavMeshParametersV2 } from "../types";
+
+/**
+ *
+ */
+export function GenerateNavMeshWorker() {
+    self.onmessage = async (event: {
+        /**
+         * The data sent to the worker.
+         */
+        data: {
+            /**
+             *  The positions of the vertices in the nav mesh.
+             */
+            positions: Float32Array;
+            /**
+             *  The indices of the vertices in the nav mesh.
+             */
+            indices: Uint32Array;
+            /**
+             *  The parameters used to configure the nav mesh generation.
+             */
+            parameters: INavMeshParametersV2;
+        };
+    }) => {
+        if (!event.data || !event.data.positions || !event.data.indices || !event.data.parameters) {
+            self.postMessage({ success: false, error: "Invalid input data." });
+            return;
+        }
+
+        await initRecast();
+
+        const { positions, indices, parameters } = event.data;
+
+        // Decide on the type of nav mesh to generate based on parameters
+        // If tileSize is set, we will generate a tiled nav mesh
+        // If maxObstacles is set, we will generate a tile cache nav mesh
+        // Otherwise, we will generate a solo nav mesh
+        const needsTileCache = (parameters.maxObstacles ?? 0) > 0;
+        const needsTiledNavMesh = "tileSize" in parameters && (parameters.tileSize ?? 0) > 0;
+        const config = needsTileCache ? CreateTileCacheNavMeshConfig(parameters) : needsTileCache ? CreateTileCacheNavMeshConfig(parameters) : CreateSoloNavMeshConfig(parameters);
+
+        const result = needsTiledNavMesh
+            ? needsTileCache
+                ? generateTileCache(positions, indices, config as TileCacheGeneratorConfig)
+                : generateTiledNavMesh(positions, indices, config as TiledNavMeshGeneratorConfig)
+            : generateSoloNavMesh(positions, indices, config as SoloNavMeshGeneratorConfig);
+
+        if (!result.success || !result.navMesh) {
+            self.postMessage(result);
+            return;
+        }
+
+        const navMeshExport = exportNavMesh(result.navMesh);
+
+        // prepare the transferables
+        const transferables: Transferable[] = [navMeshExport.buffer];
+        const message: any = { navMesh: navMeshExport };
+
+        // If tile cache is present, serialize it and add to the message
+        if ("tileCache" in result && result.tileCache) {
+            if (result.tileCache) {
+                const tileCacheExport = exportTileCache(result.navMesh, result.tileCache);
+                message.tileCache = tileCacheExport;
+                transferables.push(tileCacheExport.buffer);
+            }
+        }
+
+        // send tansferable message
+        self.postMessage(message, { transfer: transferables });
+
+        result.navMesh?.destroy();
     };
-}) => {
-    if (!event.data || !event.data.positions || !event.data.indices || !event.data.config) {
-        self.postMessage({ success: false, error: "Invalid input data" });
-        return;
-    }
-
-    await initRecast();
-
-    const { positions, indices, config } = event.data;
-
-    const result = config && "tileSize" in config ? generateTiledNavMesh(positions, indices, config) : generateSoloNavMesh(positions, indices, config);
-    if (!result.success || !result.navMesh) {
-        self.postMessage(result);
-        return;
-    }
-
-    const navMeshExport = exportNavMesh(result.navMesh);
-    self.postMessage(navMeshExport, { transfer: [navMeshExport.buffer] });
-
-    result.navMesh?.destroy();
-};
+}

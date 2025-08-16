@@ -4,7 +4,7 @@ import { Detour, type NavMesh, type QueryFilter } from "@recast-navigation/core"
 import type { IVector3Like } from "core/Maths/math.like";
 import { Vector3 } from "core/Maths/math.vector";
 
-import { convertNavPathPoints } from "./convert";
+import { ConvertNavPathPoints } from "./convert";
 import type { SteerTargetResult } from "../types";
 import { ComputePathError, type ComputeSmoothPathResult } from "../types";
 
@@ -20,7 +20,7 @@ const _MOVE_TARGET = new Vector3();
  * @param options options object
  * @returns array containing world position composing the path
  */
-export function computePathSmooth(
+export function ComputeSmoothPath(
     navMesh: NavMesh,
     navmeshQuery: NavMeshQuery,
     start: IVector3Like,
@@ -50,10 +50,11 @@ export function computePathSmooth(
         slop?: number;
     }
 ): Vector3[] {
-    return convertNavPathPoints(computeSmoothPathImpl(navMesh, navmeshQuery, start, end, options));
+    // TODO: should we return IVector3Like[] instead of Vector3[]?
+    return ConvertNavPathPoints(ComputeSmoothPathImpl(navMesh, navmeshQuery, start, end, options));
 }
 
-function computeSmoothPathImpl(
+function ComputeSmoothPathImpl(
     navMesh: NavMesh,
     navMeshQuery: NavMeshQuery,
     start: IVector3Like,

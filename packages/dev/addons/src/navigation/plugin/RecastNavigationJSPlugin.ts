@@ -1,5 +1,6 @@
-import type { SoloNavMeshGeneratorIntermediates, TiledNavMeshGeneratorIntermediates } from "@recast-navigation/generators";
-import { generateTileCache } from "@recast-navigation/generators";
+// TODO: use extents where applicable
+// http://localhost:1338/#KVQP83#155
+// http://localhost:1338/#KVQP83#162 = obstacles
 import type { NavMesh, QueryFilter, TileCache } from "@recast-navigation/core";
 import { exportNavMesh, getRandomSeed, importNavMesh, NavMeshQuery, setRandomSeed } from "@recast-navigation/core";
 
@@ -12,12 +13,17 @@ import type { IVector3Like } from "core/Maths/math.like";
 
 import type { CreateNavMeshresult, GeneratorIntermediates, INavigationEnginePluginV2, INavMeshParametersV2 } from "../types";
 import { RecastJSCrowd } from "./RecastJSCrowd";
-import { convertNavPathPoints } from "../common/convert";
-import { computePathSmooth } from "../common/smooth-path";
+import { ConvertNavPathPoints } from "../common/convert";
+import { ComputeSmoothPath } from "../common/smooth-path";
 import { createDebugNavMesh } from "../common/common";
 
 /**
- * RecastJS navigation plugin
+ * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
+ * @remarks This plugin provides navigation mesh generation and pathfinding capabilities using the recast-navigation-js library
+ * @remarks It supports both single-threaded and multi-threaded generation of navigation meshes.
+ * @remarks The plugin can be used to create navigation meshes from meshes in a scene, compute paths, and manage crowd agents, etc.
+ * @remarks It also provides methods for creating obstacles and querying the navigation mesh.
+ * @see https://github.com/isaac-mason/recast-navigation-js
  */
 export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
     /**
@@ -27,6 +33,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @returns the created navmesh and navmesh query
      */
     createNavMeshImpl: (meshes: Array<Mesh>, parameters: INavMeshParametersV2) => CreateNavMeshresult;
+
     /**
      *  Creates a navigation mesh - will be injected by the factory
      * @param meshes array of all the geometry used to compute the navigation mesh
@@ -41,27 +48,42 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
     public name: string = "RecastNavigationJSPlugin";
 
     /**
-     * the first navmesh created. We might extend this to support multiple navmeshes
+     * the navesh created
      */
     public navMesh?: NavMesh;
+
     /**
-     *
+     * The navmesh query created from the navmesh
+     * @remarks This is used to query the navmesh for pathfinding and other navigation tasks
      */
     public navMeshQuery!: NavMeshQuery;
 
+    /**
+     * Intermediates generated during the navmesh creation
+     * @remarks This is used for debugging and visualization purposes.
+     * @remarks You have access to vertices, indices and vertex colors to visusalize the navmesh creation process.
+     * @remarks This is only available if the `keepIntermediates` parameter is set
+     * @remarks to true during navmesh generation.
+     */
+    public intermediates?: GeneratorIntermediates;
+
+    /**
+     * Tile cache used for tiled navigation meshes
+     * @remarks This is used to store and manage tiles of the navigation mesh for efficient path and when obstacles are used.
+     */
+    public tileCache?: TileCache;
+
+    // Crowd specific properties
     private _maximumSubStepCount: number = 10;
     private _timeStep: number = 1 / 60;
     private _timeFactor: number = 1;
 
-    private _tileCache?: TileCache;
+    private _crowd?: ICrowd;
 
+    // Cached positions and indices of the meshes used to create the navmesh
+    // TODO: check this, remove if not needed
     private _positions: Float32Array = new Float32Array();
     private _indices: Uint32Array = new Uint32Array();
-
-    /**
-     *
-     */
-    public intermediates?: GeneratorIntermediates;
 
     /**
      * Link to the scene is kept to unregister the crowd from the scene
@@ -92,7 +114,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
             Logger.Error("No navmesh available. Cannot compute smooth path.");
             return [];
         }
-        return computePathSmooth(this.navMesh, this.navMeshQuery, start, end, options);
+        return ComputeSmoothPath(this.navMesh, this.navMeshQuery, start, end, options);
     }
 
     /**
@@ -169,13 +191,16 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
         this.navMesh = result.navMesh;
         this.navMeshQuery = result.navMeshQuery;
         this.intermediates = result.intermediates;
+        this.tileCache = result.tileCache;
 
         return {
             navMesh: result.navMesh,
             navMeshQuery: result.navMeshQuery,
             intermediates: result.intermediates,
+            tileCache: result.tileCache, // tileCache is optional
         };
     }
+
     /**
      * Creates a navigation mesh - will be injected by the factory
      * @param meshes array of all the geometry used to compute the navigation mesh
@@ -197,11 +222,13 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
         this.navMesh = result.navMesh;
         this.navMeshQuery = result.navMeshQuery;
         this.intermediates = result.intermediates;
+        this.tileCache = result.tileCache;
 
         return {
             navMesh: result.navMesh,
             navMeshQuery: result.navMeshQuery,
             intermediates: result.intermediates,
+            tileCache: result.tileCache, // tileCache is optional
         };
     }
 
@@ -323,7 +350,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @returns array containing world position composing the path
      */
     public computePath(start: IVector3Like, end: IVector3Like): Vector3[] {
-        return convertNavPathPoints(
+        return ConvertNavPathPoints(
             this.navMeshQuery.computePath(start, end, {
                 // halfExtents: new Vector3(3, 3, 3),
             })
@@ -339,6 +366,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      */
     public createCrowd(maxAgents: number, maxAgentRadius: number, scene: Scene): ICrowd {
         const crowd = new RecastJSCrowd(this, maxAgents, maxAgentRadius, scene);
+        this._crowd = crowd;
         return crowd;
     }
 
@@ -393,21 +421,10 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * Disposes
      */
     public dispose() {
-        // nothing to dispose - mimics the behavior of the original navgiation plugin
-    }
-
-    private _createTileCache(tileSize = 32) {
-        if (!this._tileCache) {
-            const { success, navMesh, tileCache } = generateTileCache(this._positions, this._indices, {
-                tileSize,
-            });
-            if (!success) {
-                Logger.Error("Unable to generateTileCache.");
-            } else {
-                this._tileCache = tileCache;
-                this.navMesh = navMesh;
-            }
-        }
+        this._crowd?.dispose();
+        this.navMesh?.destroy();
+        this.navMeshQuery?.destroy();
+        this.tileCache?.destroy();
     }
 
     /**
@@ -418,8 +435,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @returns the obstacle freshly created
      */
     public addCylinderObstacle(position: IVector3Like, radius: number, height: number): IObstacle {
-        this._createTileCache();
-        return this._tileCache?.addCylinderObstacle(position, radius, height) ?? (null as unknown as IObstacle);
+        return this.tileCache?.addCylinderObstacle(position, radius, height) ?? (null as unknown as IObstacle);
     }
 
     /**
@@ -430,8 +446,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @returns the obstacle freshly created
      */
     public addBoxObstacle(position: IVector3Like, extent: IVector3Like, angle: number): IObstacle {
-        this._createTileCache();
-        return this._tileCache?.addBoxObstacle(position, extent, angle) ?? (null as unknown as IObstacle);
+        return this.tileCache?.addBoxObstacle(position, extent, angle) ?? (null as unknown as IObstacle);
     }
 
     /**
@@ -439,7 +454,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @param obstacle obstacle to remove from the navigation
      */
     public removeObstacle(obstacle: IObstacle): void {
-        this._tileCache?.removeObstacle(obstacle);
+        this.tileCache?.removeObstacle(obstacle);
     }
 
     /**

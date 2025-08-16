@@ -8,7 +8,8 @@ import { Logger } from "core/Misc";
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
 import type { INavMeshParametersV2 } from "../types";
 import { GenerateNavMeshWithWorker } from "../generator/generator.worker";
-import { NavigationPluginCreateAsync } from "./factory.single-thread";
+import { CreateNavigationPluginsync } from "./factory.single-thread";
+import { GenerateNavMeshWorker } from "../worker/navmesh-worker";
 
 /**
  * Creates a navigation plugin for the given scene using a worker.
@@ -18,19 +19,19 @@ import { NavigationPluginCreateAsync } from "./factory.single-thread";
  * The worker is used to handle the creation of the navigation mesh asynchronously.
  * The `createNavMesh` method is not supported in worker mode, use `createNavMeshAsync` instead.
  */
-export async function NavigationPluginWorkerCreateAsync(scene: Scene) {
+export async function CreateNavigationPluginWorkerAsync(scene: Scene) {
     if (window && !window.Worker) {
         Logger.Error("Web Workers are not supported in this environment. Please ensure your environment supports Web Workers.");
-        return await NavigationPluginCreateAsync(scene); // Fallback to single-threaded version
+        return await CreateNavigationPluginsync(scene); // Fallback to single-threaded version
     }
 
     await initRecast();
 
     const plugin = new RecastNavigationJSPluginV2(scene);
 
-    const worker = new Worker(new URL("../worker/navmesh-worker", import.meta.url), {
-        type: "module",
-    });
+    // Convert the worker function to a blob
+    const workerBlob = new Blob([`(${GenerateNavMeshWorker.toString()})()`], { type: "application/javascript" });
+    const worker = new Worker(URL.createObjectURL(workerBlob));
 
     plugin.createNavMesh = () => {
         Logger.Warn("createNavMesh is not supported in worker mode, use createNavMeshAsync instead.");

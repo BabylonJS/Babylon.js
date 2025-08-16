@@ -1,29 +1,16 @@
-// https://docs.recast-navigation-js.isaacmason.com/types/index.RecastConfig.html
-// Detailed config info: https://rwindegger.github.io/recastnavigation/structrcConfig.html
-
-import type { SoloNavMeshGeneratorConfig, TiledNavMeshGeneratorConfig } from "recast-navigation/generators";
-import { TileCacheMeshProcess } from "@recast-navigation/core";
+import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "recast-navigation/generators";
 
 import type { INavMeshParametersV2 } from "../types";
+import { DefaultTileCacheMeshProcess } from "./tile-cache";
 
 /**
- *  Creates a NavMesh configuration based on the provided parameters.
- *  @param parameters The parameters used to configure the NavMesh generation.
- *  @returns A configuration object for generating a NavMesh.
+ * Creates a SoloNavMesh configuration based on the provided parameters.
+ * @param parameters The parameters used to configure the SoloNavMesh generation.
+ * @returns A configuration object for generating a SoloNavMesh.
+ * @see https://docs.recast-navigation-js.isaacmason.com/types/index.RecastConfig.html
  */
-export function CreateNavMeshConfig<T extends INavMeshParametersV2>(
-    parameters: T
-): T extends {
-    /**
-     *  The size of the tile in world units.
-     *  If this is set to a value greater than 0, the configuration will be returned as a TiledNavMeshGeneratorConfig.
-     *  If this is not set or set to 0, the configuration will be returned as a SoloNavMeshGeneratorConfig.
-     */
-    tileSize: number;
-}
-    ? Partial<TiledNavMeshGeneratorConfig>
-    : SoloNavMeshGeneratorConfig {
-    const cfg: any = {
+export function CreateSoloNavMeshConfig(parameters: INavMeshParametersV2): SoloNavMeshGeneratorConfig {
+    const cfg: SoloNavMeshGeneratorConfig = {
         // The size of the non-navigable border around the heightfield.
         // [Limit: >=0]
         // [Units: vx] [0]
@@ -93,38 +80,34 @@ export function CreateNavMeshConfig<T extends INavMeshParametersV2>(
         // OffMeshConnections (teleports) to be added to the NavMesh.
         offMeshConnections: parameters.offMeshConnections,
     };
+    return cfg;
+}
 
-    // If tileSize is present and > 0, return the config as TiledNavMeshGeneratorConfig
-    if ("tileSize" in parameters) {
-        if (parameters.tileSize! > 0) {
-            const newCfg = {
-                ...cfg,
-                tileSize: parameters.tileSize,
-            } as TiledNavMeshGeneratorConfig;
+/**
+ * Creates a TiledNavMesh configuration based on the provided parameters.
+ * @param parameters The parameters used to configure the TiledNavMesh generation.
+ * @returns A configuration object for generating a TiledNavMesh.
+ */
+export function CreateTiledNavMeshConfig(parameters: INavMeshParametersV2): TiledNavMeshGeneratorConfig {
+    const cfg: TiledNavMeshGeneratorConfig = {
+        ...CreateSoloNavMeshConfig(parameters),
+        tileSize: parameters.tileSize ?? 32,
+    };
+    return cfg;
+}
 
-            if ("offMeshConnections" in parameters) {
-                if (!("tileCacheMeshProcess" in parameters)) {
-                    const tileCacheMeshProcess = new TileCacheMeshProcess((navMeshCreateParams, polyAreas, polyFlags) => {
-                        for (let i = 0; i < navMeshCreateParams.polyCount(); ++i) {
-                            polyAreas.set(i, 0);
-                            polyFlags.set(i, 1);
-                        }
+/**
+ * Creates a TileCacheNavMesh configuration based on the provided parameters.
+ * @param parameters The parameters used to configure the TileCacheNavMesh generation.
+ * @returns A configuration object for generating a TileCacheNavMesh.
+ */
+export function CreateTileCacheNavMeshConfig(parameters: INavMeshParametersV2): TileCacheGeneratorConfig {
+    const cfg: TileCacheGeneratorConfig = {
+        ...CreateTiledNavMeshConfig(parameters),
+        expectedLayersPerTile: parameters.expectedLayersPerTile ?? 1,
+        tileCacheMeshProcess: parameters.tileCacheMeshProcess ?? DefaultTileCacheMeshProcess,
+        maxObstacles: parameters.maxObstacles ?? 32,
+    };
 
-                        if (parameters.offMeshConnections) {
-                            navMeshCreateParams.setOffMeshConnections(parameters.offMeshConnections);
-                        }
-                    });
-
-                    newCfg.tileCacheMeshProcess = tileCacheMeshProcess;
-                }
-            }
-
-            return newCfg;
-        }
-    }
-
-    // delete parameters.tileSize;
-
-    // If no tileSize, return the config as SoloNavMeshGeneratorConfig
-    return cfg as SoloNavMeshGeneratorConfig;
+    return cfg;
 }

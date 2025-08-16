@@ -1,41 +1,43 @@
+import type { NavMesh, NavMeshQuery, QueryFilter, TileCache, TileCacheMeshProcess } from "@recast-navigation/core";
+import type { SoloNavMeshGeneratorIntermediates, TileCacheGeneratorIntermediates, TiledNavMeshGeneratorIntermediates } from "recast-navigation/generators";
+
 import type { IVector3Like } from "core/Maths/math.like";
 import type { Vector3 } from "core/Maths/math.vector";
 import type { Mesh } from "core/Meshes/mesh";
 import type { INavigationEnginePlugin, INavMeshParameters } from "core/Navigation/INavigationEngine";
 import type { Nullable } from "core/types";
-import type { NavMesh, NavMeshQuery, QueryFilter } from "recast-navigation";
-import type { SoloNavMeshGeneratorIntermediates, TileCacheGeneratorIntermediates, TiledNavMeshGeneratorIntermediates } from "recast-navigation/generators";
 
 /**
  *
  */
 export interface IOffMeshConnection {
     /**
-     *
+     * The start position of the off-mesh connection.
      */
     startPosition: IVector3Like;
     /**
-     *
+     * The end position of the off-mesh connection.
      */
     endPosition: IVector3Like;
     /**
-     *
+     * The radius of the off-mesh connection.
      */
     radius: number;
     /**
-     *
+     * The type of the off-mesh connection.
      */
     bidirectional: boolean;
     /**
-     *
+     * The area type of the off-mesh connection.
      */
     area: number;
     /**
-     *
+     * The flags of the off-mesh connection.
      */
     flags: number;
     /**
-     *
+     * The user ID of the off-mesh connection.
+     * @remarks This can be used to associate the off-mesh connection with a specific user
      */
     userId?: number;
 }
@@ -55,6 +57,13 @@ export type CreateNavMeshresult = Nullable<{
      * It can be used for debugging or visualization purposes.
      */
     intermediates?: GeneratorIntermediates;
+    /**
+     * Tile cache generated during the NavMesh creation process.
+     * @remarks This is only available if the `maxObstacles` parameter is set to a value greater than 0 in the `INavMeshParametersV2`.
+     * It can be used for obstacle avoidance and dynamic navigation mesh updates.
+     * @see {@link INavMeshParametersV2}
+     */
+    tileCache?: TileCache;
 }>;
 
 /**
@@ -66,9 +75,22 @@ export interface INavMeshParametersV2 extends INavMeshParameters {
      */
     offMeshConnections?: IOffMeshConnection[];
     /**
-     * Whether to keep intermediate navigation mesh data for debug visualization
+     * Whether to keep intermediate navigation mesh data for debug visualization. Default is false.
      */
     keepIntermediates?: boolean;
+    /**
+     * The maximum number of obstacles that can be added to the navigation mesh. Default is 32.
+     * If this values is > 0, the navigation mesh will be generated with a tile cache.
+     */
+    maxObstacles?: number;
+    /**
+     * The size of each tile in the tiled navigation mesh. Default is 32.
+     */
+    expectedLayersPerTile?: number;
+    /**
+     * Function which is sets the polyAreas and polyFlags for the tile cache mesh. Defaults to a function that sets all areas to 0 and flags to 1.
+     */
+    tileCacheMeshProcess?: TileCacheMeshProcess;
 }
 
 /**
@@ -76,16 +98,13 @@ export interface INavMeshParametersV2 extends INavMeshParameters {
  */
 export interface INavigationEnginePluginV2 extends INavigationEnginePlugin {
     /**
-     *
+     * The navigation mesh used by the plugin.
      */
     navMesh?: NavMesh;
     /**
-     *
+     * The navigation mesh query used by the plugin.
      */
     navMeshQuery: NavMeshQuery;
-    /**
-     *
-     */
     getClosestPoint(
         position: IVector3Like,
         options?: {
@@ -160,29 +179,29 @@ export interface INavigationEnginePluginV2 extends INavigationEnginePlugin {
 export type SteerTargetResult =
     | {
           /**
-           *
+           * Indicates whether the steering target computation was successful.
            */
           success: false;
       }
     | {
           /**
-           *
+           * Indicates whether the steering target computation was successful.
            */
           success: true;
           /**
-           *
+           * The position to steer towards.
            */
           steerPos: Vector3;
           /**
-           *
+           * The flag indicating the type of steering position.
            */
           steerPosFlag: number;
           /**
-           *
+           * The reference to the polygon that the steering position is associated with.
            */
           steerPosRef: number;
           /**
-           *
+           * The points that make up the path to the steering position.
            */
           points: Vector3[];
       };
@@ -199,25 +218,27 @@ export type ComputeSmoothPathErrorType = (typeof ComputePathError)[keyof typeof 
 
 export type ComputeSmoothPathResult = {
     /**
-     *
+     * Indicates whether the path computation was successful.
      */
     success: boolean;
     /**
-     *
+     * The error message if the path computation failed.
      */
     error?: {
         /**
-         *
+         * The type of error that occurred during path computation.
+         * @remarks This will be one of the values from `ComputePathError`.
          */
         type: ComputeSmoothPathErrorType;
         /**
-         *
+         * Statusring describing the error.
          */
         status?: number;
     };
     /**
-     *
+     * The computed path as an array of Vector3 points.
      */
+    // TODO: IVector3Like instead of Vector3?
     path: Vector3[];
 };
 

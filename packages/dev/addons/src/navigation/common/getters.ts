@@ -7,7 +7,7 @@ import { Mesh } from "core/Meshes/mesh";
  *  @param meshes The array of meshes from which to extract positions and indices.
  *  @returns A tuple containing a Float32Array of positions and a Uint32Array of
  */
-export function getPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array, indices: Uint32Array] {
+export function GetPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array, indices: Uint32Array] {
     let offset = 0;
     let index: number;
     let tri: number;
@@ -19,7 +19,7 @@ export function getPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array
         if (meshes[index]) {
             const mesh = meshes[index];
 
-            const meshIndices = getReversedIndices(mesh);
+            const meshIndices = GetReversedIndices(mesh);
             if (!meshIndices) {
                 continue;
             }
@@ -44,15 +44,15 @@ export function getPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array
                 worldMatrices.push(worldMatrix);
             }
 
+            const transformed = Vector3.Zero();
+            const position = Vector3.Zero();
+
             for (let matrixIndex = 0; matrixIndex < worldMatrices.length; matrixIndex++) {
                 const wm = worldMatrices[matrixIndex];
                 for (tri = 0; tri < meshIndices.length; tri++) {
                     indices.push(meshIndices[tri] + offset);
                 }
 
-                // TODO: use tmp vectors
-                const transformed = Vector3.Zero();
-                const position = Vector3.Zero();
                 for (pt = 0; pt < meshPositions.length; pt += 3) {
                     Vector3.FromArrayToRef(meshPositions, pt, position);
                     Vector3.TransformCoordinatesToRef(position, wm, transformed);
@@ -73,7 +73,7 @@ export function getPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array
  * @param meshOrIndices The mesh from which to extract indices or the indices themselves.
  * @returns Array of indices with reversed winding order.
  */
-export function getReversedIndices(meshOrIndices: Mesh | Uint32Array | number[]) {
+export function GetReversedIndices(meshOrIndices: Mesh | Uint32Array | number[]) {
     const indices = meshOrIndices instanceof Mesh ? meshOrIndices.getIndices() : meshOrIndices;
 
     if (indices) {

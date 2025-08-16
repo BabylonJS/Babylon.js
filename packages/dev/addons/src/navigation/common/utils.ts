@@ -7,7 +7,7 @@ import { Vector3 } from "core/Maths/math.vector";
  * @param iterations Number of smoothing iterations to apply. Default 1.
  * @returns A new array of smoothed points after applying the Chaikin's algorithm.
  */
-export function chaikinSmoothing(points: IVector3Like[], iterations = 1) {
+export function GetChaikinSmoothPath(points: IVector3Like[], iterations = 1) {
     for (let i = 0; i < iterations; i++) {
         const smoothed = [];
         for (let j = 0; j < points.length - 1; j++) {
@@ -43,7 +43,8 @@ export function chaikinSmoothing(points: IVector3Like[], iterations = 1) {
  * @param navSegment An array of Vector3 points representing the navigation segment.
  * @returns An array of Vector3 points representing the L-shaped path.
  */
-export function getLShapedNavSegment(navSegment: Vector3[]) {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function GetLShapedPath(navSegment: Vector3[]) {
     const points = [];
     for (let j = 0; j < navSegment.length - 1; j++) {
         const p0 = navSegment[j];
@@ -54,6 +55,7 @@ export function getLShapedNavSegment(navSegment: Vector3[]) {
     return points;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function getLShapedPoint(pointA: IVector3Like, pointB: IVector3Like) {
     const { x: x1, z: y1 } = pointA;
     const { x: x2, z: y2 } = pointB;

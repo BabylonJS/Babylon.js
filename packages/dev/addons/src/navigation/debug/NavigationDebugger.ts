@@ -1,4 +1,3 @@
-// http://localhost:1338/#KVQP83#133
 import type {
     DebugDrawerPrimitive,
     DebugDrawerPrimitiveType,
@@ -29,6 +28,7 @@ import type { Nullable } from "core/types";
 import type { GeneratorIntermediates } from "../types";
 import { CreateBox } from "core/Meshes";
 
+// TODO: Enum?
 export const DebugLayerOption = {
     HEIGHTFIELD_SOLID: "heightfield solid",
     HEIGHTFIELD_WALKABLE: "heightfield walkable",
@@ -46,7 +46,9 @@ export const DebugLayerOption = {
 export type DebugLayerOptions = (typeof DebugLayerOption)[keyof typeof DebugLayerOption];
 
 /**
- *
+ * NavigationDebugger is a utility class for visualizing navigation meshes and related data in a Babylon.js scene.
+ * It provides methods to draw various navigation-related primitives such as points, lines, triangles, and quads.
+ * It also supports drawing heightfields, compact heightfields, contours, poly meshes, and nav meshes.
  */
 export class NavigationDebugger {
     /**
@@ -200,8 +202,9 @@ export class NavigationDebugger {
      * This method iterates through the provided primitives and draws them based on their type.
      * It supports drawing points, lines, triangles, and quads, depending on the primitive type.
      * @param primitives An array of debug drawer primitives to be drawn.
+     * @param options Optional parameters to control the drawing behavior, such as whether to join meshes.
      */
-    public drawPrimitives(primitives: DebugDrawerPrimitive[]) {
+    public drawPrimitives(primitives: DebugDrawerPrimitive[], options?: { joinMeshes?: boolean }) {
         let linesInstance = null;
 
         for (const primitive of primitives) {
@@ -231,69 +234,130 @@ export class NavigationDebugger {
         }
 
         linesInstance?.updateLazy();
-        this._joinDebugMeshes();
+
+        if (options?.joinMeshes ?? true) {
+            // Join the debug meshes into a single mesh for better performance
+            this._joinDebugMeshes();
+        }
     }
 
+    /**
+     * Draws a heightfield as solid using the debug drawer utilities.
+     * @param hf The heightfield to draw as solid.
+     */
     public drawHeightfieldSolid(hf: RecastHeightfield): void {
         const primitives = this._debugDrawerUtils.drawHeightfieldSolid(hf);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws a heightfield as walkable using the debug drawer utilities.
+     * @param hf The heightfield to draw as walkable.
+     */
     public drawHeightfieldWalkable(hf: RecastHeightfield): void {
         const primitives = this._debugDrawerUtils.drawHeightfieldWalkable(hf);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws a compact heightfield as solid using the debug drawer utilities.
+     * @param chf The compact heightfield to draw as solid.
+     */
     public drawCompactHeightfieldSolid(chf: RecastCompactHeightfield): void {
         const primitives = this._debugDrawerUtils.drawCompactHeightfieldSolid(chf);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws the regions of a compact heightfield using the debug drawer utilities.
+     * @param chf The compact heightfield to draw regions for.
+     */
     public drawCompactHeightfieldRegions(chf: RecastCompactHeightfield): void {
         const primitives = this._debugDrawerUtils.drawCompactHeightfieldRegions(chf);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws the distance field of a compact heightfield using the debug drawer utilities.
+     * @param chf The compact heightfield to draw the distance for.
+     */
     public drawCompactHeightfieldDistance(chf: RecastCompactHeightfield): void {
         const primitives = this._debugDrawerUtils.drawCompactHeightfieldDistance(chf);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws a heightfield layer using the debug drawer utilities.
+     * @param layer The heightfield layer to draw.
+     * @param idx The index of the layer to draw.
+     */
     public drawHeightfieldLayer(layer: RecastHeightfieldLayer, idx: number): void {
         const primitives = this._debugDrawerUtils.drawHeightfieldLayer(layer, idx);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws the layers of a heightfield using the debug drawer utilities.
+     * @param lset The heightfield layer set containing the layers to draw.
+     */
     public drawHeightfieldLayers(lset: RecastHeightfieldLayerSet): void {
         const primitives = this._debugDrawerUtils.drawHeightfieldLayers(lset);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws the region connections of a RecastContourSet using the debug drawer utilities.
+     * @param cset RecastContourSet to draw
+     * @param alpha The alpha value for the drawn contours, default is 1.
+     */
     public drawRegionConnections(cset: RecastContourSet, alpha: number = 1): void {
         const primitives = this._debugDrawerUtils.drawRegionConnections(cset, alpha);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws raw contours from a RecastContourSet using the debug drawer utilities.
+     * @param cset RecastContourSet to draw
+     * @param alpha The alpha value for the drawn contours, default is 1.
+     */
     public drawRawContours(cset: RecastContourSet, alpha: number = 1): void {
         const primitives = this._debugDrawerUtils.drawRawContours(cset, alpha);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws contours from a RecastContourSet using the debug drawer utilities.
+     * @param cset RecastContourSet to draw
+     * @param alpha The alpha value for the drawn contours, default is 1.
+     */
     public drawContours(cset: RecastContourSet, alpha: number = 1): void {
         const primitives = this._debugDrawerUtils.drawContours(cset, alpha);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws a poly mesh using the debug drawer utilities.
+     * @param mesh RecastPolyMesh to draw
+     */
     public drawPolyMesh(mesh: RecastPolyMesh): void {
         const primitives = this._debugDrawerUtils.drawPolyMesh(mesh);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws a poly mesh detail using the debug drawer utilities.
+     * @param dmesh RecastPolyMeshDetail to draw
+     */
     public drawPolyMeshDetail(dmesh: RecastPolyMeshDetail): void {
         const primitives = this._debugDrawerUtils.drawPolyMeshDetail(dmesh);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws a NavMesh using the debug drawer utilities.
+     * @param mesh NavMesh to draw
+     * @param flags Flags to control the drawing behavior, default is 0.
+     */
     public drawNavMesh(mesh: NavMesh, flags: number = 0): void {
         const primitives = this._debugDrawerUtils.drawNavMesh(mesh, flags);
         this.drawPrimitives(primitives);
@@ -305,34 +369,198 @@ export class NavigationDebugger {
     // - drawTileCacheContours
     // - drawTileCachePolyMesh
 
+    /**
+     * Draws a NavMesh with closed list using the debug drawer utilities.
+     * @param mesh NavMesh to draw
+     * @param query NavMeshQuery to use for drawing the closed list.
+     * @param flags Flags to control the drawing behavior, default is 0.
+     */
     public drawNavMeshWithClosedList(mesh: NavMesh, query: NavMeshQuery, flags: number = 0): void {
         const primitives = this._debugDrawerUtils.drawNavMeshWithClosedList(mesh, query, flags);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws the nodes of a NavMesh using the debug drawer utilities.
+     * @param query NavMeshQuery to use for drawing the nodes.
+     */
     public drawNavMeshNodes(query: NavMeshQuery): void {
         const primitives = this._debugDrawerUtils.drawNavMeshNodes(query);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws the bounding volume tree of a NavMesh using the debug drawer utilities.
+     * @param mesh NavMesh to draw the bounding volume tree for.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public drawNavMeshBVTree(mesh: NavMesh): void {
         const primitives = this._debugDrawerUtils.drawNavMeshBVTree(mesh);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws the portals of a NavMesh using the debug drawer utilities.
+     * @param mesh NavMesh to draw the portals for.
+     */
     public drawNavMeshPortals(mesh: NavMesh): void {
         const primitives = this._debugDrawerUtils.drawNavMeshPortals(mesh);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws polygons of a NavMesh with specific flags using the debug drawer utilities.
+     * @param mesh NavMesh to draw the polygons with specific flags.
+     * @param flags The flags to filter the polygons to be drawn.
+     * @param col The color to use for the drawn polygons, represented as a number.
+     */
     public drawNavMeshPolysWithFlags(mesh: NavMesh, flags: number, col: number): void {
         const primitives = this._debugDrawerUtils.drawNavMeshPolysWithFlags(mesh, flags, col);
         this.drawPrimitives(primitives);
     }
 
+    /**
+     * Draws polygons of a NavMesh with specific reference and color using the debug drawer utilities.
+     * @param mesh NavMesh to draw the polygons with specific reference and color.
+     * @param ref The reference number of the polygons to be drawn.
+     * @param col The color to use for the drawn polygons, represented as a number.
+     */
     public drawNavMeshPoly(mesh: NavMesh, ref: number, col: number): void {
         const primitives = this._debugDrawerUtils.drawNavMeshPoly(mesh, ref, col);
         this.drawPrimitives(primitives);
+    }
+
+    /**
+     *  Get the intermediates from the generator
+     *  @param intermediates - The generator intermediates
+     *  @returns An object containing lists of heightfields, compact heightfields, contour sets
+     */
+    public getIntermediates = (intermediates: GeneratorIntermediates) => {
+        const heightfieldList: RecastHeightfield[] = [];
+        const compactHeightfieldList: RecastCompactHeightfield[] = [];
+        const contourSetList: RecastContourSet[] = [];
+        const polyMeshList: RecastPolyMesh[] = [];
+        const polyMeshDetailList: RecastPolyMeshDetail[] = [];
+
+        if (intermediates) {
+            if (intermediates.type === "solo") {
+                if (intermediates.heightfield) {
+                    heightfieldList.push(intermediates.heightfield);
+                }
+
+                if (intermediates.compactHeightfield) {
+                    compactHeightfieldList.push(intermediates.compactHeightfield);
+                }
+
+                if (intermediates.contourSet) {
+                    contourSetList.push(intermediates.contourSet);
+                }
+
+                if (intermediates.polyMesh) {
+                    polyMeshList.push(intermediates.polyMesh);
+                }
+
+                if (intermediates.polyMeshDetail) {
+                    polyMeshDetailList.push(intermediates.polyMeshDetail);
+                }
+            } else if (intermediates.type === "tiled") {
+                for (const tile of intermediates.tileIntermediates) {
+                    if (tile.heightfield) {
+                        heightfieldList.push(tile.heightfield);
+                    }
+
+                    if (tile.compactHeightfield) {
+                        compactHeightfieldList.push(tile.compactHeightfield);
+                    }
+
+                    if (tile.contourSet) {
+                        contourSetList.push(tile.contourSet);
+                    }
+
+                    if (tile.polyMesh) {
+                        polyMeshList.push(tile.polyMesh);
+                    }
+
+                    if (tile.polyMeshDetail) {
+                        polyMeshDetailList.push(tile.polyMeshDetail);
+                    }
+                }
+            } else if (intermediates.type === "tilecache") {
+                for (const tile of intermediates.tileIntermediates) {
+                    if (tile.heightfield) {
+                        heightfieldList.push(tile.heightfield);
+                    }
+
+                    if (tile.compactHeightfield) {
+                        compactHeightfieldList.push(tile.compactHeightfield);
+                    }
+                }
+            }
+        }
+
+        return {
+            heightfieldList,
+            compactHeightfieldList,
+            contourSetList,
+            polyMeshList,
+            polyMeshDetailList,
+        };
+    };
+
+    /**
+     *  Draw debug information based on the selected option
+     *  @param navMesh - The navigation mesh to draw
+     *  @param intermediates - The generator intermediates containing the data to draw
+     *  @param scene - The scene to draw in
+     *  @param option - The debug drawer option to use
+     *  @remarks This method will reset the debug drawer before drawing.
+     */
+    public draw(navMesh: NavMesh, intermediates: GeneratorIntermediates, scene: Scene, option: DebugLayerOptions) {
+        this.reset();
+
+        const { heightfieldList, compactHeightfieldList, contourSetList, polyMeshList, polyMeshDetailList } = this.getIntermediates(intermediates);
+
+        if (option === DebugLayerOption.HEIGHTFIELD_SOLID) {
+            for (const heightfield of heightfieldList) {
+                this.drawHeightfieldSolid(heightfield);
+            }
+        } else if (option === DebugLayerOption.HEIGHTFIELD_WALKABLE) {
+            for (const heightfield of heightfieldList) {
+                this.drawHeightfieldWalkable(heightfield);
+            }
+        } else if (option === DebugLayerOption.COMPACT_HEIGHTFIELD_SOLID) {
+            for (const compactHeightfield of compactHeightfieldList) {
+                this.drawCompactHeightfieldSolid(compactHeightfield);
+            }
+        } else if (option === DebugLayerOption.COMPACT_HEIGHTFIELD_REGIONS) {
+            for (const compactHeightfield of compactHeightfieldList) {
+                this.drawCompactHeightfieldRegions(compactHeightfield);
+            }
+        } else if (option === DebugLayerOption.COMPACT_HEIGHTFIELD_DISTANCE) {
+            for (const compactHeightfield of compactHeightfieldList) {
+                this.drawCompactHeightfieldDistance(compactHeightfield);
+            }
+        } else if (option === DebugLayerOption.RAW_CONTOURS) {
+            for (const contourSet of contourSetList) {
+                this.drawRawContours(contourSet);
+            }
+        } else if (option === DebugLayerOption.CONTOURS) {
+            for (const contourSet of contourSetList) {
+                this.drawContours(contourSet);
+            }
+        } else if (option === DebugLayerOption.POLY_MESH) {
+            for (const polyMesh of polyMeshList) {
+                this.drawPolyMesh(polyMesh);
+            }
+        } else if (option === DebugLayerOption.POLY_MESH_DETAIL) {
+            for (const polyMeshDetail of polyMeshDetailList) {
+                this.drawPolyMeshDetail(polyMeshDetail);
+            }
+        } else if (option === DebugLayerOption.NAVMESH) {
+            this.drawNavMesh(navMesh);
+        } else if (option === DebugLayerOption.NAVMESH_BV_TREE) {
+            this.drawNavMeshBVTree(navMesh);
+        }
     }
 
     private _drawPoints(primitive: DebugDrawerPrimitive): void {
@@ -494,138 +722,5 @@ export class NavigationDebugger {
         newVertexData.indices = indices;
 
         newVertexData.applyToMesh(mesh, true);
-    }
-
-    /**
-     *  Get the intermediates from the generator
-     *  @param intermediates - The generator intermediates
-     *  @returns An object containing lists of heightfields, compact heightfields, contour sets
-     */
-    public getIntermediates = (intermediates: GeneratorIntermediates) => {
-        const heightfieldList: RecastHeightfield[] = [];
-        const compactHeightfieldList: RecastCompactHeightfield[] = [];
-        const contourSetList: RecastContourSet[] = [];
-        const polyMeshList: RecastPolyMesh[] = [];
-        const polyMeshDetailList: RecastPolyMeshDetail[] = [];
-
-        if (intermediates) {
-            if (intermediates.type === "solo") {
-                if (intermediates.heightfield) {
-                    heightfieldList.push(intermediates.heightfield);
-                }
-
-                if (intermediates.compactHeightfield) {
-                    compactHeightfieldList.push(intermediates.compactHeightfield);
-                }
-
-                if (intermediates.contourSet) {
-                    contourSetList.push(intermediates.contourSet);
-                }
-
-                if (intermediates.polyMesh) {
-                    polyMeshList.push(intermediates.polyMesh);
-                }
-
-                if (intermediates.polyMeshDetail) {
-                    polyMeshDetailList.push(intermediates.polyMeshDetail);
-                }
-            } else if (intermediates.type === "tiled") {
-                for (const tile of intermediates.tileIntermediates) {
-                    if (tile.heightfield) {
-                        heightfieldList.push(tile.heightfield);
-                    }
-
-                    if (tile.compactHeightfield) {
-                        compactHeightfieldList.push(tile.compactHeightfield);
-                    }
-
-                    if (tile.contourSet) {
-                        contourSetList.push(tile.contourSet);
-                    }
-
-                    if (tile.polyMesh) {
-                        polyMeshList.push(tile.polyMesh);
-                    }
-
-                    if (tile.polyMeshDetail) {
-                        polyMeshDetailList.push(tile.polyMeshDetail);
-                    }
-                }
-            } else if (intermediates.type === "tilecache") {
-                for (const tile of intermediates.tileIntermediates) {
-                    if (tile.heightfield) {
-                        heightfieldList.push(tile.heightfield);
-                    }
-
-                    if (tile.compactHeightfield) {
-                        compactHeightfieldList.push(tile.compactHeightfield);
-                    }
-                }
-            }
-        }
-
-        return {
-            heightfieldList,
-            compactHeightfieldList,
-            contourSetList,
-            polyMeshList,
-            polyMeshDetailList,
-        };
-    };
-
-    /**
-     *  Draw debug information based on the selected option
-     *  @param navMesh - The navigation mesh to draw
-     *  @param intermediates - The generator intermediates containing the data to draw
-     *  @param scene - The scene to draw in
-     *  @param option - The debug drawer option to use
-     *  @remarks This method will reset the debug drawer before drawing.
-     */
-    public draw(navMesh: NavMesh, intermediates: GeneratorIntermediates, scene: Scene, option: DebugLayerOptions) {
-        this.reset();
-
-        const { heightfieldList, compactHeightfieldList, contourSetList, polyMeshList, polyMeshDetailList } = this.getIntermediates(intermediates);
-
-        if (option === DebugLayerOption.HEIGHTFIELD_SOLID) {
-            for (const heightfield of heightfieldList) {
-                this.drawHeightfieldSolid(heightfield);
-            }
-        } else if (option === DebugLayerOption.HEIGHTFIELD_WALKABLE) {
-            for (const heightfield of heightfieldList) {
-                this.drawHeightfieldWalkable(heightfield);
-            }
-        } else if (option === DebugLayerOption.COMPACT_HEIGHTFIELD_SOLID) {
-            for (const compactHeightfield of compactHeightfieldList) {
-                this.drawCompactHeightfieldSolid(compactHeightfield);
-            }
-        } else if (option === DebugLayerOption.COMPACT_HEIGHTFIELD_REGIONS) {
-            for (const compactHeightfield of compactHeightfieldList) {
-                this.drawCompactHeightfieldRegions(compactHeightfield);
-            }
-        } else if (option === DebugLayerOption.COMPACT_HEIGHTFIELD_DISTANCE) {
-            for (const compactHeightfield of compactHeightfieldList) {
-                this.drawCompactHeightfieldDistance(compactHeightfield);
-            }
-        } else if (option === DebugLayerOption.RAW_CONTOURS) {
-            for (const contourSet of contourSetList) {
-                this.drawRawContours(contourSet);
-            }
-        } else if (option === DebugLayerOption.CONTOURS) {
-            for (const contourSet of contourSetList) {
-                this.drawContours(contourSet);
-            }
-        } else if (option === DebugLayerOption.POLY_MESH) {
-            for (const polyMesh of polyMeshList) {
-                this.drawPolyMesh(polyMesh);
-            }
-        } else if (option === DebugLayerOption.POLY_MESH_DETAIL) {
-            for (const polyMeshDetail of polyMeshDetailList) {
-                this.drawPolyMeshDetail(polyMeshDetail);
-            }
-        } else if (option === DebugLayerOption.NAVMESH) {
-            this.drawNavMesh(navMesh);
-        } else if (option === DebugLayerOption.NAVMESH_BV_TREE) {
-            this.drawNavMeshBVTree(navMesh);
-        }
     }
 }
