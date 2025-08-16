@@ -847,17 +847,7 @@ export class GLTFMaterialExporter {
     }
 
     public async exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
-        const extensionPromise = this._exporter._extensionsPreExportTextureAsync("exporter", babylonTexture as Texture, mimeType);
-        if (!extensionPromise) {
-            return await this._exportTextureInfoAsync(babylonTexture, mimeType);
-        }
-
-        return await extensionPromise.then(async (texture) => {
-            if (!texture) {
-                return await this._exportTextureInfoAsync(babylonTexture, mimeType);
-            }
-            return await this._exportTextureInfoAsync(texture, mimeType);
-        });
+        return await this._exportTextureInfoAsync(babylonTexture, mimeType);
     }
 
     private async _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {

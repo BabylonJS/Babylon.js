@@ -30,7 +30,6 @@ import type { Mesh } from "core/Meshes/mesh";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
 import { Material } from "core/Materials/material";
 import { Engine } from "core/Engines/engine";
 import type { Scene } from "core/scene";
@@ -306,12 +305,6 @@ export class GLTFExporter {
         }
 
         return this._ApplyExtension(node, extensions, 0, actionAsync);
-    }
-
-    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
-    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
-        return this._ApplyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
