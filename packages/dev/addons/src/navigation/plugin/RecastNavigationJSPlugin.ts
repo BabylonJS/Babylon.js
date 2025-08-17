@@ -48,7 +48,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
     public name: string = "RecastNavigationJSPlugin";
 
     /**
-     * the navesh created
+     * the navmesh created
      */
     public navMesh?: NavMesh;
 
@@ -160,7 +160,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
 
         const result = this.createNavMeshImpl(meshes, parameters);
 
-        if (!result?.navMesh) {
+        if (!result?.navMesh || !result?.navMeshQuery) {
             throw new Error("Unable to create navmesh. No navMesh returned.");
         }
 
@@ -191,8 +191,8 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
 
         const result = await this.createNavMeshAsyncImpl(meshes, parameters);
 
-        if (!result?.navMesh) {
-            throw new Error("Unable to create navmesh. No navMesh returned.");
+        if (!result?.navMesh || !result?.navMeshQuery) {
+            throw new Error("Unable to create navMesh or navMeshQuery.");
         }
 
         this.navMesh = result.navMesh;
@@ -215,7 +215,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      */
     public createDebugNavMesh(scene?: Scene): Mesh {
         if (!this.navMesh) {
-            throw new Error("There is no NavMesh generated.");
+            throw new Error("There is no navMesh generated.");
         }
 
         return CreateDebugNavMesh(this.navMesh, scene ?? this._scene);
