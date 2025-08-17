@@ -3,7 +3,7 @@ import { Crowd } from "@recast-navigation/core";
 import type { Nullable } from "core/types";
 import type { IVector3Like } from "core/Maths/math.like";
 import type { TransformNode } from "core/Meshes/transformNode";
-import type { IAgentParameters, ICrowd } from "core/Navigation/INavigationEngine";
+import type { ICrowd } from "core/Navigation/INavigationEngine";
 import { Vector3 } from "core/Maths/math.vector";
 import { Epsilon } from "core/Maths/math.constants";
 import type { Observer } from "core/Misc/observable";
@@ -12,6 +12,8 @@ import type { Scene } from "core/scene";
 
 import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { ToCrowdAgentParams } from "../common";
+import type { IAgentParametersV2 } from "../types";
 
 /**
  * Recast Detour crowd implementation
@@ -110,24 +112,10 @@ export class RecastJSCrowd implements ICrowd {
      * @param transform hooked to the agent that will be update by the scene
      * @returns agent index
      */
-    public addAgent(pos: IVector3Like, parameters: IAgentParameters, transform: TransformNode): number {
-        const agentParams: IAgentParameters = {
-            radius: parameters.radius,
-            height: parameters.height,
-            maxAcceleration: parameters.maxAcceleration,
-            maxSpeed: parameters.maxSpeed,
-            collisionQueryRange: parameters.collisionQueryRange,
-            pathOptimizationRange: parameters.pathOptimizationRange,
-            separationWeight: parameters.separationWeight,
-            reachRadius: parameters.reachRadius ? parameters.reachRadius : parameters.radius,
-            // TODO: add more parameters
-            // updateFlags : 7,
-            // obstacleAvoidanceType : 0,
-            // queryFilterType : 0,
-            // userData : 0,
-        };
+    public addAgent(pos: IVector3Like, parameters: IAgentParametersV2, transform: TransformNode): number {
+        const agentParams = ToCrowdAgentParams(parameters);
 
-        const agent = this.recastCrowd.addAgent({ x: pos.x, y: pos.y, z: pos.z }, parameters);
+        const agent = this.recastCrowd.addAgent({ x: pos.x, y: pos.y, z: pos.z }, agentParams);
 
         this.transforms.push(transform);
         this.agents.push(agent.agentIndex);
@@ -270,7 +258,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param index agent index returned by addAgent
      * @param parameters agent parameters
      */
-    public updateAgentParameters(index: number, parameters: IAgentParameters): void {
+    public updateAgentParameters(index: number, parameters: IAgentParametersV2): void {
         const agent = this.recastCrowd.getAgent(index);
         if (!agent) {
             return;

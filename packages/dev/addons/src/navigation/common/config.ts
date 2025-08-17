@@ -1,10 +1,8 @@
 import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "recast-navigation/generators";
 
-import type { INavMeshParametersV2 } from "../types";
+import type { IAgentParametersV2, INavMeshParametersV2 } from "../types";
 import type { CrowdAgentParams } from "@recast-navigation/core";
 import { TileCacheMeshProcess } from "@recast-navigation/core";
-import type { IAgentParameters } from "core/Navigation/INavigationEngine";
-// import { DefaultTileCacheMeshProcess } from "./tile-cache";
 
 /**
  * Creates a SoloNavMesh configuration based on the provided parameters.
@@ -66,6 +64,6 @@ export function ToSoloNavMeshGeneratorConfig(config: INavMeshParametersV2): Part
  * @param agentParams Agent parameters
  * @returns Recast crowd agent paramaters
  */
-export function ToCrowdAgentParams(agentParams: IAgentParameters): Partial<CrowdAgentParams> {
+export function ToCrowdAgentParams(agentParams: IAgentParametersV2): Partial<CrowdAgentParams> {
     return Object.fromEntries(Object.entries(agentParams).filter(([_, v]) => v !== undefined)) as Partial<CrowdAgentParams>;
 }

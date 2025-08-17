@@ -4,7 +4,7 @@ import type { SoloNavMeshGeneratorIntermediates, TileCacheGeneratorIntermediates
 import type { IVector3Like } from "core/Maths/math.like";
 import type { Vector3 } from "core/Maths/math.vector";
 import type { Mesh } from "core/Meshes/mesh";
-import type { INavigationEnginePlugin, INavMeshParameters } from "core/Navigation/INavigationEngine";
+import type { IAgentParameters, INavigationEnginePlugin, INavMeshParameters } from "core/Navigation/INavigationEngine";
 import type { Nullable } from "core/types";
 
 /**
@@ -67,11 +67,37 @@ export type CreateNavMeshresult = Nullable<{
 }>;
 
 /**
- *
+ * Agent parameters
+ * For actual limits and default values check the recast-navigation-js docs.
+ * @see https://docs.recast-navigation-js.isaacmason.com/types/index.CrowdAgentParams.html
+ */
+export interface IAgentParametersV2 extends IAgentParameters {
+    /**
+     * Flags that impact steering behavior.
+     */
+    updateFlags: number;
+    /**
+     * The index of the avoidance configuration to use for the agent. [Limits: 0 <= value <= #DT_CROWD_MAX_OBSTAVOIDANCE_PARAMS]
+     */
+    obstacleAvoidanceType: number;
+    /**
+     * The index of the query filter used by this agent.
+     */
+    queryFilterType: number;
+    /**
+     * User defined data attached to the agent.
+     */
+    userData: unknown;
+}
+
+/**
+ * NavMesh parameters
+ * For actual limits and default values check the recast-navigation-js docs.
+ * @see https://docs.recast-navigation-js.isaacmason.com/types/index.RecastConfig.html
  */
 export interface INavMeshParametersV2 extends INavMeshParameters {
     /**
-     *
+     * OffMeshConnections - Teleports
      */
     offMeshConnections?: IOffMeshConnection[];
     /**
