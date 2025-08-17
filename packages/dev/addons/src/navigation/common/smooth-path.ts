@@ -166,7 +166,7 @@ function ComputeSmoothPathImpl(
     const iterPos = new Vector3(start.x, start.y, start.z);
     const targetPos = new Vector3(closestEnd.x, closestEnd.y, closestEnd.z);
 
-    const polys = [...findPathResult.polys.getHeapView()];
+    const polys = Array.from(findPathResult.polys.getHeapView());
     const smoothPath: Vector3[] = [];
 
     smoothPath.push(iterPos.clone());
