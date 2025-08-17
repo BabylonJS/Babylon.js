@@ -7,7 +7,7 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { INavMeshParametersV2 } from "../types";
 import { GetPositionsAndIndices } from "../common/getters";
 import { CreateSoloNavMeshConfig, CreateTileCacheNavMeshConfig, CreateTiledNavMeshConfig } from "../common";
-import { Logger } from "core/Misc";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Builds a NavMesh and NavMeshQuery from meshes using provided parameters.

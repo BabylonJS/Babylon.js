@@ -1,12 +1,15 @@
 import { Crowd } from "@recast-navigation/core";
 
 import type { AbstractEngine } from "core/Engines";
-import type { Scene } from "core/index";
-import { Vector3, type IVector3Like, Epsilon } from "core/Maths";
-import type { TransformNode } from "core/Meshes";
-import { type Observer, Observable } from "core/Misc";
-import type { ICrowd, IAgentParameters } from "core/Navigation";
 import type { Nullable } from "core/types";
+import type { IVector3Like } from "core/Maths/math.like";
+import type { TransformNode } from "core/Meshes/transformNode";
+import type { IAgentParameters, ICrowd } from "core/Navigation/INavigationEngine";
+import { Vector3 } from "core/Maths/math.vector";
+import { Epsilon } from "core/Maths/math.constants";
+import type { Observer } from "core/Misc/observable";
+import { Observable } from "core/Misc/observable";
+import type { Scene } from "core/scene";
 
 import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
 

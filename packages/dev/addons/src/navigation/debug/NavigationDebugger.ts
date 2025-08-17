@@ -22,11 +22,11 @@ import type { GreasedLineBaseMesh, GreasedLineMeshOptions } from "core/Meshes/Gr
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Logger } from "core/Misc";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { GeneratorIntermediates } from "../types";
-import { CreateBox } from "core/Meshes";
+import { CreateBox } from "core/Meshes/Builders/boxBuilder";
+import { Logger } from "core/Misc/logger";
 
 // TODO: Enum?
 export const DebugLayerOption = {
