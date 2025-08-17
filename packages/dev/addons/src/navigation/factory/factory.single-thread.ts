@@ -13,7 +13,7 @@ import { GenerateNavMesh } from "../generator/generator.single-thread";
  * @returns A promise that resolves to the created navigation plugin.
  * @remarks This function initializes the Recast module and sets up the navigation plugin.
  */
-export async function CreateNavigationPluginsync(scene: Scene) {
+export async function CreateNavigationPluginAsync(scene: Scene) {
     await initRecast();
 
     const navigationPlugin = new RecastNavigationJSPluginV2(scene);
