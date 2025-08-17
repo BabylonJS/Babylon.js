@@ -1,6 +1,5 @@
 import { Crowd } from "@recast-navigation/core";
 
-import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Nullable } from "core/types";
 import type { IVector3Like } from "core/Maths/math.like";
 import type { TransformNode } from "core/Meshes/transformNode";
@@ -12,6 +11,7 @@ import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 
 import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Recast Detour crowd implementation
@@ -127,7 +127,7 @@ export class RecastJSCrowd implements ICrowd {
             // userData : 0,
         };
 
-        const agent = this.recastCrowd.addAgent({ x: pos.x, y: pos.y, z: pos.z }, agentParams);
+        const agent = this.recastCrowd.addAgent({ x: pos.x, y: pos.y, z: pos.z }, parameters);
 
         this.transforms.push(transform);
         this.agents.push(agent.agentIndex);

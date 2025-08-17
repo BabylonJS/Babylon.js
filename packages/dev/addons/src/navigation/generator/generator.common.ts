@@ -1,6 +1,5 @@
 import type { TileCacheMeshProcess } from "@recast-navigation/core";
 import { importNavMesh, importTileCache, NavMeshQuery } from "@recast-navigation/core";
-import { DefaultTileCacheMeshProcess } from "../common/tile-cache";
 
 /**
  *  Builds a NavMesh and NavMeshQuery from serialized data.
@@ -30,9 +29,7 @@ export function BuildFromNavmeshData(data: Uint8Array) {
  * @param tileCacheMesProcess Optional function to process the TileCache mesh.
  * @returns An object containing the TileCache, NavMesh, and NavMeshQuery.
  */
-export function BuildFromTileCacheData(data: Uint8Array, tileCacheMesProcess?: TileCacheMeshProcess) {
-    tileCacheMesProcess = tileCacheMesProcess ?? DefaultTileCacheMeshProcess;
-
+export function BuildFromTileCacheData(data: Uint8Array, tileCacheMesProcess: TileCacheMeshProcess) {
     const result = importTileCache(data, tileCacheMesProcess);
 
     if (!result.tileCache) {
