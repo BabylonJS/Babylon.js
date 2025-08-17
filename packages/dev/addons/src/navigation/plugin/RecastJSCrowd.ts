@@ -222,7 +222,7 @@ export class RecastJSCrowd implements ICrowd {
     /**
      * Gets the agent state
      * @param index agent index returned by addAgent
-     * @returns agent state
+     * @returns agent state, 0 = DT_CROWDAGENT_STATE_INVALID, 1 = DT_CROWDAGENT_STATE_WALKING, 2 = DT_CROWDAGENT_STATE_OFFMESH
      */
     public getAgentState(index: number): number {
         return this.recastCrowd.getAgent(index)?.state() ?? 0; // invalid
@@ -334,7 +334,6 @@ export class RecastJSCrowd implements ICrowd {
      * @param deltaTime in seconds
      */
     public update(deltaTime: number): void {
-        // update obstacles
         this.recastCrowd.update(deltaTime);
 
         if (deltaTime <= Epsilon) {

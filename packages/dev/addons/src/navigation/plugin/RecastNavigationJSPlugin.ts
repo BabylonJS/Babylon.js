@@ -15,7 +15,7 @@ import type { CreateNavMeshresult, GeneratorIntermediates, INavigationEnginePlug
 import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
-import { createDebugNavMesh } from "../common/common";
+import { CreateDebugNavMesh } from "../debug/simple-debug";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
@@ -91,25 +91,6 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      */
     public constructor(scene: Scene) {
         this._scene = scene;
-    }
-
-    /**
-     * Creates a navigation mesh - will be injected by the factory
-     * @param start the start position of the navmesh
-     * @param end the end position of the navmesh
-     * @param options options to configure the path computation
-     * @returns array containing world position composing the path
-     */
-    public computePathSmooth(
-        start: Vector3,
-        end: Vector3,
-        options?: { filter?: QueryFilter; halfExtents?: IVector3Like; maxPathPolys?: number; maxSmoothPathPoints?: number; stepSize?: number; slop?: number }
-    ): Vector3[] {
-        if (!this.navMesh) {
-            Logger.Error("No navmesh available. Cannot compute smooth path.");
-            return [];
-        }
-        return ComputeSmoothPath(this.navMesh, this.navMeshQuery, start, end, options);
     }
 
     /**
@@ -237,7 +218,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
             throw new Error("There is no NavMesh generated.");
         }
 
-        return createDebugNavMesh(this.navMesh, scene ?? this._scene);
+        return CreateDebugNavMesh(this.navMesh, scene ?? this._scene);
     }
 
     /**
@@ -350,6 +331,25 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
                 // halfExtents: new Vector3(3, 3, 3),
             })
         );
+    }
+
+    /**
+     * Creates a navigation mesh - will be injected by the factory
+     * @param start the start position of the navmesh
+     * @param end the end position of the navmesh
+     * @param options options to configure the path computation
+     * @returns array containing world position composing the path
+     */
+    public computePathSmooth(
+        start: Vector3,
+        end: Vector3,
+        options?: { filter?: QueryFilter; halfExtents?: IVector3Like; maxPathPolys?: number; maxSmoothPathPoints?: number; stepSize?: number; slop?: number }
+    ): Vector3[] {
+        if (!this.navMesh) {
+            Logger.Error("No navmesh available. Cannot compute smooth path.");
+            return [];
+        }
+        return ComputeSmoothPath(this.navMesh, this.navMeshQuery, start, end, options);
     }
 
     /**

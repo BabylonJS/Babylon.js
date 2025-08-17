@@ -288,6 +288,7 @@ function ComputeSmoothPathImpl(
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function getSteerTarget(navMeshQuery: NavMeshQuery, start: Vector3, end: Vector3, minTargetDist: number, pathPolys: number[]): SteerTargetResult {
     const maxSteerPoints = 3;
 
@@ -346,6 +347,7 @@ function getSteerTarget(navMeshQuery: NavMeshQuery, start: Vector3, end: Vector3
     };
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function inRange(a: Vector3, b: Vector3, r: number, h: number) {
     const dx = b.x - a.x;
     const dy = b.y - a.y;
@@ -353,6 +355,7 @@ function inRange(a: Vector3, b: Vector3, r: number, h: number) {
     return dx * dx + dz * dz < r && Math.abs(dy) < h;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function fixupCorridor(pathPolys: number[], maxPath: number, visitedPolyRefs: number[]) {
     let furthestPath = -1;
     let furthestVisited = -1;
@@ -415,6 +418,7 @@ function fixupCorridor(pathPolys: number[], maxPath: number, visitedPolyRefs: nu
  * @param pathPolys The path polygons to check for U-turns.
  * @param navMesh The navigation mesh used to check adjacency.
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function fixupShortcuts(pathPolys: number[], navMesh: NavMesh) {
     if (pathPolys.length < 3) {
         return;

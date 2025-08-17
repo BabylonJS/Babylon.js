@@ -1,4 +1,4 @@
-export * from "./common";
+export * from "../debug/simple-debug";
 export * from "./config";
 export * from "./convert";
 export * from "./getters";
