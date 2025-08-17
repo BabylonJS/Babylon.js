@@ -2,8 +2,8 @@ import type { NavMesh, NavMeshQuery } from "@recast-navigation/core";
 import { init as initRecast } from "@recast-navigation/core";
 
 import type { Scene } from "core/scene";
+import { Logger } from "core/Misc/logger";
 import type { Mesh } from "core/Meshes/mesh";
-import { Logger } from "core/Misc";
 
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
 import type { INavMeshParametersV2 } from "../types";

@@ -1,6 +1,6 @@
 import { Crowd } from "@recast-navigation/core";
 
-import type { AbstractEngine } from "core/Engines";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Nullable } from "core/types";
 import type { IVector3Like } from "core/Maths/math.like";
 import type { TransformNode } from "core/Meshes/transformNode";

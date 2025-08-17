@@ -24,9 +24,10 @@ import { VertexData } from "core/Meshes/mesh.vertexData";
 import { TransformNode } from "core/Meshes/transformNode";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import type { GeneratorIntermediates } from "../types";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Logger } from "core/Misc/logger";
+
+import type { GeneratorIntermediates } from "../types";
 
 // TODO: Enum?
 export const DebugLayerOption = {
