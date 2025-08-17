@@ -599,7 +599,8 @@ export class ObjectRenderer {
 
         this._renderingManager.reset();
 
-        const boundingBoxRenderer = scene.getBoundingBoxRenderer?.();
+        // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+        const boundingBoxRenderer = (scene as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
 
         boundingBoxRenderer && boundingBoxRenderer.reset();
 
@@ -785,3 +786,4 @@ export class ObjectRenderer {
         }
     }
 }
+
