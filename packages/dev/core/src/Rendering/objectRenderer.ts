@@ -1,4 +1,4 @@
-import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh } from "core/index";
+import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh, BoundingBoxRenderer } from "core/index";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
 import { Constants } from "../Engines/constants";
@@ -786,3 +786,4 @@ export class ObjectRenderer {
         }
     }
 }
+
