@@ -2741,6 +2741,11 @@
             "title": "Sponza Clustered Lighting",
             "playgroundId": "#CSCJO2#17",
             "referenceImage": "sponza-clustered-lighting.png"
+        },
+        {
+            "title": "Sponza Clustered Lighting (2 viewports)",
+            "playgroundId": "#CSCJO2#20",
+            "referenceImage": "sponza-clustered-lighting-viewports.png"
         }
     ]
 }
