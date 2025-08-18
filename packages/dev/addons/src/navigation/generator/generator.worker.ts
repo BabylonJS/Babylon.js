@@ -44,15 +44,15 @@ export function GenerateNavMeshWithWorker(
             if (tileCache) {
                 // if tileCache is present, the binary data contains the navmesh and the tilecache as well
                 const tileCacheArray = new Uint8Array(tileCache);
-                const navMeshData = BuildFromNavmeshData(tileCacheArray);
-                workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache ?? undefined);
+                const navMeshData = BuildFromTileCacheData(tileCacheArray, CreateDefaultTileCacheMeshProcess());
+                workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache);
                 return;
             } else {
                 if (navMesh) {
                     // deserialize the navmesh only (no tilecache present)
                     const navMeshArray = new Uint8Array(navMesh);
-                    const navMeshData = BuildFromTileCacheData(navMeshArray, CreateDefaultTileCacheMeshProcess());
-                    workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache ?? undefined);
+                    const navMeshData = BuildFromNavmeshData(navMeshArray);
+                    workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, undefined);
                     return;
                 }
             }

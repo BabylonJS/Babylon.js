@@ -3,6 +3,7 @@ import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMesh
 import type { IAgentParametersV2, INavMeshParametersV2 } from "../types";
 import type { CrowdAgentParams } from "@recast-navigation/core";
 import { CreateDefaultTileCacheMeshProcess } from "./tile-cache";
+import { Logger } from "core/Misc";
 
 /**
  * Creates a SoloNavMesh configuration based on the provided parameters.
@@ -36,9 +37,15 @@ export function CreateTileCacheNavMeshConfig(parameters: INavMeshParametersV2): 
     const cfg: Partial<TileCacheGeneratorConfig> = {
         ...CreateTiledNavMeshConfig(parameters),
         expectedLayersPerTile: parameters.expectedLayersPerTile ?? 1,
-        tileCacheMeshProcess: parameters.tileCacheMeshProcess ?? CreateDefaultTileCacheMeshProcess(),
         maxObstacles: parameters.maxObstacles ?? 10,
     };
+
+    if (parameters.tileCacheMeshProcess) {
+        cfg.tileCacheMeshProcess = parameters.tileCacheMeshProcess;
+    } else if (parameters.offMeshConnections) {
+        Logger.Warn("offMeshConnections are required but no tileCacheMeshProcess is set. Using fallback DefaultTileCacheMeshProcess.");
+        cfg.tileCacheMeshProcess = CreateDefaultTileCacheMeshProcess(parameters.offMeshConnections);
+    }
 
     return cfg;
 }
