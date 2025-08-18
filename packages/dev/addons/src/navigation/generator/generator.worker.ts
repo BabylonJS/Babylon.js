@@ -42,8 +42,9 @@ export function GenerateNavMeshWithWorker(
     workerOptions.worker.postMessage({ positions: positionsCopy, indices: indicesCopy, parameters }, [positionsCopy.buffer, indicesCopy.buffer]);
     workerOptions.worker.onmessage = (e) => {
         if ((e as any).data?.success === false) {
-            throw new Error(`Unable to navMesh: ${e}`);
+            throw new Error(`Unable to generate navMesh: ${e}`);
         } else {
+            // TODO: we can get a TileCache as well (two transferable objects)
             const navMeshData = BuildFromNavmeshData(e.data);
             workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache ?? undefined);
         }

@@ -74,6 +74,7 @@ export function GenerateNavMeshWorker() {
         // send tansferable message
         self.postMessage(message, { transfer: transferables });
 
+        // TODO: destroy other stuff here
         result.navMesh?.destroy();
     };
 }

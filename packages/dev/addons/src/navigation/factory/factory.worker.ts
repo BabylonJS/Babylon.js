@@ -1,4 +1,4 @@
-import type { NavMesh, NavMeshQuery } from "@recast-navigation/core";
+import type { NavMesh, NavMeshQuery, TileCache } from "@recast-navigation/core";
 import { init as initRecast } from "@recast-navigation/core";
 
 import type { Scene } from "core/scene";
@@ -8,7 +8,7 @@ import type { Mesh } from "core/Meshes/mesh";
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
 import type { INavMeshParametersV2 } from "../types";
 import { GenerateNavMeshWithWorker } from "../generator/generator.worker";
-import { CreateNavigationPluginsync } from "./factory.single-thread";
+import { CreateNavigationPluginAsync } from "./factory.single-thread";
 import { GenerateNavMeshWorker } from "../worker/navmesh-worker";
 
 /**
@@ -22,7 +22,7 @@ import { GenerateNavMeshWorker } from "../worker/navmesh-worker";
 export async function CreateNavigationPluginWorkerAsync(scene: Scene) {
     if (window && !window.Worker) {
         Logger.Error("Web Workers are not supported in this environment. Please ensure your environment supports Web Workers.");
-        return await CreateNavigationPluginsync(scene); // Fallback to single-threaded version
+        return await CreateNavigationPluginAsync(scene); // Fallback to single-threaded version
     }
 
     await initRecast();
@@ -42,11 +42,12 @@ export async function CreateNavigationPluginWorkerAsync(scene: Scene) {
         return await new Promise<{
             navMesh: NavMesh;
             navMeshQuery: NavMeshQuery;
+            tileCache?: TileCache;
         }>((resolve, _reject) => {
             GenerateNavMeshWithWorker(meshes, parameters, {
                 worker,
-                completion: (navMesh: NavMesh, navMeshQuery: NavMeshQuery) => {
-                    resolve({ navMesh, navMeshQuery });
+                completion: (navMesh: NavMesh, navMeshQuery: NavMeshQuery, tileCache?: TileCache) => {
+                    resolve({ navMesh, navMeshQuery, tileCache });
                 },
             });
         });

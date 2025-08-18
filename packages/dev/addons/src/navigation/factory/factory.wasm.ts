@@ -3,7 +3,7 @@ import RecastWasm from "@recast-navigation/wasm";
 
 import type { Scene } from "core/scene";
 
-import { CreateNavigationPluginsync } from "./factory.single-thread";
+import { CreateNavigationPluginAsync } from "./factory.single-thread";
 
 /**
  * Creates a navigation plugin for the given scene using Recast WASM.
@@ -14,5 +14,5 @@ import { CreateNavigationPluginsync } from "./factory.single-thread";
 export async function CreateNavigationPluginWasmAsync(scene: Scene) {
     await initRecast(RecastWasm);
 
-    return await CreateNavigationPluginsync(scene);
+    return await CreateNavigationPluginAsync(scene);
 }
