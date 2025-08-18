@@ -113,8 +113,8 @@ export class NavigationDebugger {
     }
 
     private _lineMaterialOptions: {
-        graasedLineMaterialOptions: Partial<GreasedLineMaterialOptions>;
-        graasedLineMeshOptions: Partial<GreasedLineMeshOptions>;
+        greasedLineMaterialOptions: Partial<GreasedLineMaterialOptions>;
+        greasedLineMeshOptions: Partial<GreasedLineMeshOptions>;
     };
     private _pointMesh: Mesh;
     private _debugDrawerUtils: DebugDrawerUtils;
@@ -131,8 +131,8 @@ export class NavigationDebugger {
                 triMaterial?: StandardMaterial;
                 pointMaterial?: StandardMaterial;
                 lineMaterialOptions: {
-                    graasedLineMaterialOptions: Partial<GreasedLineMaterialOptions>;
-                    graasedLineMeshOptions: Partial<GreasedLineMeshOptions>;
+                    greasedLineMaterialOptions: Partial<GreasedLineMaterialOptions>;
+                    greasedLineMeshOptions: Partial<GreasedLineMeshOptions>;
                 };
             };
         }
@@ -166,11 +166,11 @@ export class NavigationDebugger {
             this._lineMaterialOptions = materials.lineMaterialOptions;
         } else {
             this._lineMaterialOptions = {
-                graasedLineMaterialOptions: {
+                greasedLineMaterialOptions: {
                     width: 2,
                     sizeAttenuation: true,
                 },
-                graasedLineMeshOptions: {},
+                greasedLineMeshOptions: {},
             };
         }
 
@@ -608,9 +608,8 @@ export class NavigationDebugger {
             colors.push(new Color3(r2, g2, b2));
         }
 
-        // TODO: use the options specified in the constructor
-        const options = { ...this._lineMaterialOptions.graasedLineMeshOptions, points, instance: instance ?? undefined };
-        const materialOptions = { ...this._lineMaterialOptions.graasedLineMaterialOptions, colors };
+        const options = { ...this._lineMaterialOptions.greasedLineMeshOptions, points, instance: instance ?? undefined };
+        const materialOptions = { ...this._lineMaterialOptions.greasedLineMaterialOptions, colors };
 
         const lines = CreateGreasedLine(NavigationDebugger.NAV_MESH_DEBUG_NAME_LINES, options, materialOptions);
 
