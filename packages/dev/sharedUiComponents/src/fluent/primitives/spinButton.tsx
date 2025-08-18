@@ -1,4 +1,4 @@
-import { makeStyles, SpinButton as FluentSpinButton, useId } from "@fluentui/react-components";
+import { makeStyles, SpinButton as FluentSpinButton, useId, tokens } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent, KeyboardEvent, FocusEvent } from "react";
 import { useEffect, useState, useRef } from "react";
@@ -11,6 +11,7 @@ const useSpinStyles = makeStyles({
         flexDirection: "column",
         minWidth: "55px",
     },
+    invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
 });
 
 export type SpinButtonProps = PrimitiveProps<number> & {
@@ -34,7 +35,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
 
     useEffect(() => {
-        if (props.value != lastCommittedValue.current) {
+        if (props.value !== lastCommittedValue.current) {
             lastCommittedValue.current = props.value;
             setValue(props.value); // Update local state when props.value changes
         }
@@ -59,7 +60,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const handleChange = (event: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {
         event.stopPropagation(); // Prevent event propagation
         if (data.value != null && !Number.isNaN(data.value)) {
-            setValue(data.value); // Update local state. Do not notify parent
+            setValue(data.value);
             tryCommitValue(data.value);
         }
     };
@@ -68,28 +69,11 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
         event.stopPropagation(); // Prevent event propagation
 
         if (event.key !== "Enter") {
-            // Update local state and try to commit the value if valid, applying styling if not
-            const currVal = parseFloat((event.target as any).value);
+            const currVal = parseFloat((event.target as any).value); // Cannot use currentTarget.value as it won't have the most recently typed value
             setValue(currVal);
             tryCommitValue(currVal);
         }
     };
-
-    const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-        event.stopPropagation(); // Prevent event propagation
-
-        // Prevent Enter key from causing form submission or value reversion
-        if (event.key === "Enter") {
-            event.preventDefault();
-        }
-    };
-
-    const handleOnBlur = (event: FocusEvent<HTMLInputElement>) => {
-        event.stopPropagation();
-        event.preventDefault();
-    };
-
-    const invalidStyle = !validateValue(value) ? { backgroundColor: "#fdeaea" } : {};
 
     const id = useId("spin-button");
     return (
@@ -105,9 +89,9 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}
-                onKeyDown={handleKeyDown}
-                onBlur={handleOnBlur}
-                style={invalidStyle}
+                onKeyDown={HandleKeyDown}
+                onBlur={HandleOnBlur}
+                className={`${!validateValue(value) ? classes.invalid : ""}`}
             />
         </div>
     );
@@ -115,6 +99,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
 
 /**
  * Fluent's CalculatePrecision function
+ * https://github.com/microsoft/fluentui/blob/dcbf775d37938eacffa37922fc0b43a3cdd5753f/packages/utilities/src/math.ts#L91C1
  *
  * Calculates a number's precision based on the number of trailing
  * zeros if the number does not have a decimal indicated by a negative
@@ -144,6 +129,7 @@ function CalculatePrecision(value: number) {
 }
 /**
  * Fluent's PrecisionRound function
+ * https://github.com/microsoft/fluentui/blob/dcbf775d37938eacffa37922fc0b43a3cdd5753f/packages/utilities/src/math.ts#L116
  *
  * Rounds a number to a certain level of precision. Accepts negative precision.
  * @param value - The value that is being rounded.
@@ -153,4 +139,18 @@ function CalculatePrecision(value: number) {
 function PrecisionRound(value: number, precision: number) {
     const exp = Math.pow(10, precision);
     return Math.round(value * exp) / exp;
+}
+
+export function HandleOnBlur(event: FocusEvent<HTMLInputElement>) {
+    event.stopPropagation();
+    event.preventDefault();
+}
+
+export function HandleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    event.stopPropagation(); // Prevent event propagation
+
+    // Prevent Enter key from causing form submission or value reversion
+    if (event.key === "Enter") {
+        event.preventDefault();
+    }
 }
