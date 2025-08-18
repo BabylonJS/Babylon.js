@@ -114,13 +114,12 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
 };
 
 /**
- *  Fluent's CalculatePrecision function
- * 
+ * Fluent's CalculatePrecision function
+ *
  * Calculates a number's precision based on the number of trailing
  * zeros if the number does not have a decimal indicated by a negative
  * precision. Otherwise, it calculates the number of digits after
  * the decimal point indicated by a positive precision.
- * 
  *
  * @param value - the value to determine the precision of
  * @returns the calculated precision
@@ -144,6 +143,8 @@ function CalculatePrecision(value: number) {
     return 0;
 }
 /**
+ * Fluent's PrecisionRound function
+ *
  * Rounds a number to a certain level of precision. Accepts negative precision.
  * @param value - The value that is being rounded.
  * @param precision - The number of decimal places to round the number to
