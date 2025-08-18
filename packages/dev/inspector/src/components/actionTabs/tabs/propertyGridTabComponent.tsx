@@ -118,7 +118,7 @@ import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { RectAreaLight } from "core/Lights/rectAreaLight";
 import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
-import type { OpenPBRMaterial } from "core/Materials";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
