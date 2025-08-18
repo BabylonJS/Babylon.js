@@ -4,7 +4,8 @@ import type { Mesh } from "core/Meshes/mesh";
 
 import type { INavMeshParametersV2 } from "../types";
 import { GetPositionsAndIndices } from "../common/getters";
-import { BuildFromNavmeshData } from "./generator.common";
+import { BuildFromNavmeshData, BuildFromTileCacheData } from "./generator.common";
+import { CreateDefaultTileCacheMeshProcess } from "../common/tile-cache";
 
 /**
  * Builds a NavMesh and NavMeshQuery from meshes using provided parameters.
@@ -45,8 +46,27 @@ export function GenerateNavMeshWithWorker(
             throw new Error(`Unable to generate navMesh: ${e}`);
         } else {
             // TODO: we can get a TileCache as well (two transferable objects)
-            const navMeshData = BuildFromNavmeshData(e.data);
-            workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache ?? undefined);
+
+            const { navMesh, tileCache } = e.data;
+
+            // navMesh is a Uint8Array (or ArrayBuffer, depending on exportNavMesh implementation)
+            // tileCache is a Uint8Array (or ArrayBuffer) if present
+
+            if (tileCache) {
+                const tileCacheArray = new Uint8Array(tileCache);
+                const navMeshData = BuildFromNavmeshData(tileCacheArray);
+                workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache ?? undefined);
+                return;
+            } else {
+                if (navMesh) {
+                    const navMeshArray = new Uint8Array(navMesh);
+                    const navMeshData = BuildFromTileCacheData(navMeshArray, CreateDefaultTileCacheMeshProcess());
+                    workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache ?? undefined);
+                    return;
+                }
+            }
+
+            throw new Error(`Unable to generate navMesh/tileCache: ${e}`);
         }
     };
 }

@@ -56,11 +56,9 @@ export function GenerateNavMeshWorker() {
             return;
         }
 
-        const navMeshExport = exportNavMesh(result.navMesh);
-
         // prepare the transferables
-        const transferables: Transferable[] = [navMeshExport.buffer];
-        const message: any = { navMesh: navMeshExport };
+        const transferables: Transferable[] = [];
+        const message: any = { navMesh: undefined, tileCache: undefined };
 
         // If tile cache is present, serialize it and add to the message
         if ("tileCache" in result && result.tileCache) {
@@ -69,6 +67,11 @@ export function GenerateNavMeshWorker() {
                 message.tileCache = tileCacheExport;
                 transferables.push(tileCacheExport.buffer);
             }
+        } else {
+            // otherwise send the NavMesh
+            const navMeshExport = exportNavMesh(result.navMesh);
+            message.navMesh = navMeshExport;
+            transferables.push(navMeshExport.buffer);
         }
 
         // send tansferable message

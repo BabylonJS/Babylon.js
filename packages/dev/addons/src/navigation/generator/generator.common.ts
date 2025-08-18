@@ -26,11 +26,11 @@ export function BuildFromNavmeshData(data: Uint8Array) {
 /**
  * Builds a TileCache and NavMeshQuery from serialized data.
  * @param data The serialized TileCache data.
- * @param tileCacheMesProcess Optional function to process the TileCache mesh.
+ * @param tileCacheMeshProcess Optional function to process the TileCache mesh.
  * @returns An object containing the TileCache, NavMesh, and NavMeshQuery.
  */
-export function BuildFromTileCacheData(data: Uint8Array, tileCacheMesProcess: TileCacheMeshProcess) {
-    const result = importTileCache(data, tileCacheMesProcess);
+export function BuildFromTileCacheData(data: Uint8Array, tileCacheMeshProcess: TileCacheMeshProcess) {
+    const result = importTileCache(data, tileCacheMeshProcess);
 
     if (!result.tileCache) {
         throw new Error(`Unable to deserialize TileCache.`);
