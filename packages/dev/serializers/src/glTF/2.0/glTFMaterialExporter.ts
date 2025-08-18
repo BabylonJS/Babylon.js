@@ -846,9 +846,9 @@ export class GLTFMaterialExporter {
         let textureInfo = this._textureMap.get(babylonTexture);
         if (textureInfo) {
             return textureInfo;
-            }
+        }
 
-            const samplerIndex = this._exportTextureSampler(babylonTexture);
+        const samplerIndex = this._exportTextureSampler(babylonTexture);
         const imageIndex = await this._exportTextureImageAsync(babylonTexture);
 
         textureInfo = this._exportTextureInfo(imageIndex, samplerIndex, babylonTexture.coordinatesIndex);
@@ -868,27 +868,27 @@ export class GLTFMaterialExporter {
 
         if (imageIndexPromise === undefined) {
             imageIndexPromise = (async () => {
-            // Preserve texture mime type if defined
-            let mimeType = ImageMimeType.PNG;
+                // Preserve texture mime type if defined
+                let mimeType = ImageMimeType.PNG;
                 if (requestedMimeType !== "none") {
                     switch (requestedMimeType) {
                         case ImageMimeType.JPEG:
                         case ImageMimeType.PNG:
                         case ImageMimeType.WEBP:
                             mimeType = requestedMimeType;
-                        break;
-                    default:
+                            break;
+                        default:
                             Tools.Warn(`Unsupported media type: ${requestedMimeType}. Exporting texture as PNG.`);
-                        break;
+                            break;
+                    }
                 }
-            }
 
                 const size = babylonTexture.getSize();
                 const pixels = await GetTextureDataAsync(babylonTexture);
-                    const data = await this._getImageDataAsync(pixels, size.width, size.height, mimeType);
+                const data = await this._getImageDataAsync(pixels, size.width, size.height, mimeType);
 
-                    return this._exportImage(babylonTexture.name, mimeType, data);
-                })();
+                return this._exportImage(babylonTexture.name, mimeType, data);
+            })();
 
             internalTextureToImage[internalTextureUniqueId][requestedMimeType] = imageIndexPromise;
         }
