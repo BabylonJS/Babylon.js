@@ -16,6 +16,8 @@ const useSpinStyles = makeStyles({
 export type SpinButtonProps = PrimitiveProps<number> & {
     min?: number;
     max?: number;
+    /** Determines how much the spinbutton increments with the arrow keys. Note this also determines the precision value (# of decimals in display value)
+     * i.e. if step = 1, precision = 0. step = 0.0089, precision = 4. step = 300, precision = 2. step = 23.00, precision = 2. */
     step?: number;
     unit?: string;
     forceInt?: boolean;
@@ -29,7 +31,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const [value, setValue] = useState(props.value);
     const lastCommittedValue = useRef(props.value);
     // step and forceInt are not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
-    const step = props.step != undefined ? props.step : props.forceInt ? 1 : 2;
+    const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
 
     useEffect(() => {
         if (props.value != lastCommittedValue.current) {
@@ -98,7 +100,8 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 step={step}
                 id={id}
                 size="small"
-                displayValue={props.unit ? `${step !== undefined ? value.toPrecision(step) : value} ${props.unit}` : undefined}
+                precision={CalculatePrecision(step ?? 1.01)}
+                displayValue={props.unit ? `${PrecisionRound(value, CalculatePrecision(step ?? 1.01))} ${props.unit}` : undefined}
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}
@@ -109,3 +112,44 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
         </div>
     );
 };
+
+/**
+ *  Fluent's CalculatePrecision function
+ * 
+ * Calculates a number's precision based on the number of trailing
+ * zeros if the number does not have a decimal indicated by a negative
+ * precision. Otherwise, it calculates the number of digits after
+ * the decimal point indicated by a positive precision.
+ * 
+ *
+ * @param value - the value to determine the precision of
+ * @returns the calculated precision
+ */
+function CalculatePrecision(value: number) {
+    /**
+     * Group 1:
+     * [1-9]([0]+$) matches trailing zeros
+     * Group 2:
+     * \.([0-9]*) matches all digits after a decimal point.
+     */ const groups = /[1-9]([0]+$)|\.([0-9]*)/.exec(String(value));
+    if (!groups) {
+        return 0;
+    }
+    if (groups[1]) {
+        return -groups[1].length;
+    }
+    if (groups[2]) {
+        return groups[2].length;
+    }
+    return 0;
+}
+/**
+ * Rounds a number to a certain level of precision. Accepts negative precision.
+ * @param value - The value that is being rounded.
+ * @param precision - The number of decimal places to round the number to
+ * @returns The rounded number.
+ */
+function PrecisionRound(value: number, precision: number) {
+    const exp = Math.pow(10, precision);
+    return Math.round(value * exp) / exp;
+}
