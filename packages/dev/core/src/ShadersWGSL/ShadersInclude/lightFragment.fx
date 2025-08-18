@@ -6,6 +6,9 @@
         var diffuse{X}: vec4f = light{X}.vLightDiffuse;
         #define CUSTOM_LIGHT{X}_COLOR // Use to modify light color. Currently only supports diffuse.
 
+        // WARNING: If any changes are made to the lighting equation be sure to also add them to the
+        //          `computeClusteredLighting` functions to ensure consistency when clustered lighting is used.
+
         #if defined(PBR) && defined(CLUSTLIGHT{X})
             info = computeClusteredLighting(
                 lightDataTexture{X},

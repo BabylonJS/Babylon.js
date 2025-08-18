@@ -284,8 +284,8 @@ export class ClusteredLightContainer extends Light {
                 this._tileMaskBuffer?.clear();
             } else {
                 // Only clear the texture on WebGL
+                engine.clear({ r: 0, g: 0, b: 0, a: 1 }, true, false);
             }
-            engine.clear({ r: 0, g: 0, b: 0, a: 1 }, true, false);
         });
 
         if (engine.isWebGPU) {
