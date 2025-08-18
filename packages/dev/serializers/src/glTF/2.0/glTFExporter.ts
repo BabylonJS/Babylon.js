@@ -15,8 +15,9 @@ import type {
     ITextureInfo,
     ISkin,
     ICamera,
+    ImageMimeType,
 } from "babylonjs-gltf2interface";
-import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
+import { AccessorComponentType, AccessorType, CameraType } from "babylonjs-gltf2interface";
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
 import { TmpVectors, Quaternion } from "core/Maths/math.vector";
 import type { Matrix } from "core/Maths/math.vector";
@@ -1407,9 +1408,9 @@ export class GLTFExporter {
             const hasUVs = vertexBuffers && Object.keys(vertexBuffers).some((kind) => kind.startsWith("uv"));
             babylonMaterial = babylonMaterial instanceof MultiMaterial ? babylonMaterial.subMaterials[subMesh.materialIndex]! : babylonMaterial;
             if (babylonMaterial instanceof PBRBaseMaterial) {
-                materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
+                materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, hasUVs);
             } else if (babylonMaterial instanceof StandardMaterial) {
-                materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
+                materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, hasUVs);
             } else {
                 Logger.Warn(`Unsupported material '${babylonMaterial.name}' with type ${babylonMaterial.getClassName()}`);
                 return;
