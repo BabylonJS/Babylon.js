@@ -2248,4 +2248,3 @@ export class ShadowGenerator implements IShadowGenerator {
         return shadowGenerator;
     }
 }
-
