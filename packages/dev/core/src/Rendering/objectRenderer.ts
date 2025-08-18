@@ -1,4 +1,4 @@
-import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh } from "core/index";
+import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh, BoundingBoxRenderer } from "core/index";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
 import { Constants } from "../Engines/constants";
@@ -599,7 +599,8 @@ export class ObjectRenderer {
 
         this._renderingManager.reset();
 
-        const boundingBoxRenderer = scene.getBoundingBoxRenderer?.();
+        // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+        const boundingBoxRenderer = (scene as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
 
         boundingBoxRenderer && boundingBoxRenderer.reset();
 
