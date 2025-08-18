@@ -1679,4 +1679,3 @@ export class Geometry implements IGetSetVerticesData {
         return geometry;
     }
 }
-
