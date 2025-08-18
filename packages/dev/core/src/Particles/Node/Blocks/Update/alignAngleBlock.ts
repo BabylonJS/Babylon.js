@@ -93,6 +93,22 @@ export class AlignAngleBlock extends NodeParticleBlock {
             system._updateQueueStart = angleProcessing;
         }
     }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.alignment = this.alignment;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        if (serializationObject.alignment !== undefined) {
+            this.alignment = serializationObject.alignment;
+        }
+    }
 }
 
 RegisterClass("BABYLON.AlignAngleBlock", AlignAngleBlock);

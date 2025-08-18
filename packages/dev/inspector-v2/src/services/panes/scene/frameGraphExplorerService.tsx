@@ -23,7 +23,6 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Frame Graph",
             order: DefaultSectionsOrder.FrameGraphs,
-            predicate: (entity) => entity instanceof FrameGraph,
             getRootEntities: () => scene.frameGraphs,
             getEntityDisplayInfo: (frameGraph) => {
                 const onChangeObservable = new Observable<void>();

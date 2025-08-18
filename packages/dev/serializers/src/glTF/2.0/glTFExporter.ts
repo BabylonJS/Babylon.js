@@ -15,8 +15,9 @@ import type {
     ITextureInfo,
     ISkin,
     ICamera,
+    ImageMimeType,
 } from "babylonjs-gltf2interface";
-import { AccessorComponentType, AccessorType, CameraType, ImageMimeType } from "babylonjs-gltf2interface";
+import { AccessorComponentType, AccessorType, CameraType } from "babylonjs-gltf2interface";
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
 import { TmpVectors, Quaternion } from "core/Maths/math.vector";
 import type { Matrix } from "core/Maths/math.vector";
@@ -30,7 +31,6 @@ import type { Mesh } from "core/Meshes/mesh";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
 import { Material } from "core/Materials/material";
 import { Engine } from "core/Engines/engine";
 import type { Scene } from "core/scene";
@@ -306,12 +306,6 @@ export class GLTFExporter {
         }
 
         return this._ApplyExtension(node, extensions, 0, actionAsync);
-    }
-
-    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
-    public _extensionsPreExportTextureAsync(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<BaseTexture>> {
-        // eslint-disable-next-line @typescript-eslint/promise-function-async
-        return this._ApplyExtensions(babylonTexture, (extension, node) => extension.preExportTextureAsync && extension.preExportTextureAsync(context, node, mimeType));
     }
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
@@ -1414,9 +1408,9 @@ export class GLTFExporter {
             const hasUVs = vertexBuffers && Object.keys(vertexBuffers).some((kind) => kind.startsWith("uv"));
             babylonMaterial = babylonMaterial instanceof MultiMaterial ? babylonMaterial.subMaterials[subMesh.materialIndex]! : babylonMaterial;
             if (babylonMaterial instanceof PBRBaseMaterial) {
-                materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
+                materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, hasUVs);
             } else if (babylonMaterial instanceof StandardMaterial) {
-                materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, ImageMimeType.PNG, hasUVs);
+                materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, hasUVs);
             } else {
                 Logger.Warn(`Unsupported material '${babylonMaterial.name}' with type ${babylonMaterial.getClassName()}`);
                 return;

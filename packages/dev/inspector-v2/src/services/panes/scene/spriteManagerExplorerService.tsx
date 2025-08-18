@@ -1,4 +1,4 @@
-import type { ISpriteManager, Sprite } from "core/index";
+import type { ISpriteManager } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
@@ -6,6 +6,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 import { LayerDiagonalPersonRegular, PersonSquareRegular, PlayFilled, StopFilled } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc";
+import { Sprite } from "core/Sprites/sprite";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -13,14 +14,6 @@ import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Sprites/spriteSceneComponent";
 import { InterceptFunction } from "../../../instrumentation/functionInstrumentation";
-
-function IsSpriteManager(entity: unknown): entity is ISpriteManager {
-    return (entity as ISpriteManager).sprites !== undefined;
-}
-
-function IsSprite(entity: unknown): entity is Sprite {
-    return (entity as Sprite).manager !== undefined;
-}
 
 export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
     friendlyName: "Sprite Manager Explorer",
@@ -31,13 +24,11 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
             return undefined;
         }
 
-        const sectionRegistration = sceneExplorerService.addSection({
+        const sectionRegistration = sceneExplorerService.addSection<Sprite | ISpriteManager>({
             displayName: "Sprite Managers",
             order: DefaultSectionsOrder.SpriteManagers,
-            predicate: (entity) => IsSpriteManager(entity) || IsSprite(entity),
             getRootEntities: () => scene.spriteManagers ?? [],
-            getEntityChildren: (spriteEntity) => (IsSpriteManager(spriteEntity) ? spriteEntity.sprites : ([] as ISpriteManager[])),
-            getEntityParent: (spriteEntity) => (IsSprite(spriteEntity) ? spriteEntity.manager : null),
+            getEntityChildren: (spriteEntity) => (spriteEntity instanceof Sprite ? [] : spriteEntity.sprites),
             getEntityDisplayInfo: (spriteEntity) => {
                 const onChangeObservable = new Observable<void>();
 
@@ -56,13 +47,13 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
                     },
                 };
             },
-            entityIcon: ({ entity: spriteEntity }) => (IsSpriteManager(spriteEntity) ? <LayerDiagonalPersonRegular /> : <PersonSquareRegular />),
+            entityIcon: ({ entity: spriteEntity }) => (spriteEntity instanceof Sprite ? <PersonSquareRegular /> : <LayerDiagonalPersonRegular />),
             getEntityAddedObservables: () => [scene.onNewSpriteManagerAddedObservable],
             getEntityRemovedObservables: () => [scene.onSpriteManagerRemovedObservable],
         });
 
         const spritePlayStopCommandRegistration = sceneExplorerService.addCommand({
-            predicate: (entity: unknown) => IsSprite(entity),
+            predicate: (entity: unknown) => entity instanceof Sprite,
             getCommand: (sprite) => {
                 const onChangeObservable = new Observable<void>();
                 const playHook = InterceptFunction(sprite, "playAnimation", {

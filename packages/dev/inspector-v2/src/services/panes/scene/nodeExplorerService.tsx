@@ -1,4 +1,4 @@
-import type { Gizmo, IObserver, Nullable } from "core/index";
+import type { Gizmo, IObserver, Node, Nullable } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
@@ -26,7 +26,6 @@ import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Observable } from "core/Misc";
-import { Node } from "core/node";
 import { UtilityLayerRenderer } from "core/Rendering";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
@@ -47,10 +46,8 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
             order: DefaultSectionsOrder.Nodes,
-            predicate: (entity) => entity instanceof Node,
             getRootEntities: () => scene.rootNodes,
             getEntityChildren: (node) => node.getChildren(),
-            getEntityParent: (node) => node.parent,
             getEntityDisplayInfo: (node) => {
                 const onChangeObservable = new Observable<void>();
 

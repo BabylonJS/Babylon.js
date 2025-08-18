@@ -191,6 +191,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public defaultProjectionMatrix: Matrix;
 
     /**
+     * Gets or sets an object used to store user defined information for the particle system
+     */
+    public metadata: any = null;
+
+    /**
      * Creates a Point Emitter for the particle system (emits directly from the emitter position)
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
@@ -2124,6 +2129,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         serializationObject.preventAutoStart = this.preventAutoStart;
         serializationObject.worldOffset = this.worldOffset.asArray();
 
+        if (this.metadata) {
+            serializationObject.metadata = this.metadata;
+        }
+
         return serializationObject;
     }
 
@@ -2191,6 +2200,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Auto start
         if (parsedParticleSystem.preventAutoStart) {
             particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
+        }
+
+        if (parsedParticleSystem.metadata) {
+            particleSystem.metadata = parsedParticleSystem.metadata;
         }
 
         if (!doNotStart && !particleSystem.preventAutoStart) {
