@@ -1,7 +1,9 @@
 import type { ComponentType, ComponentProps } from "react";
 import { forwardRef } from "react";
 
-import { useProperty } from "../../hooks/compoundPropertyHooks";
+import { useProperty, useQuaternionProperty, useVector3Property, useColor3Property, useColor4Property } from "../../hooks/compoundPropertyHooks";
+import { Quaternion, Vector3 } from "core/Maths/math.vector";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 /**
  * Helper type to check if a type includes null or undefined
@@ -51,7 +53,22 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
 ) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
-    const value = useProperty(target, propertyKey);
+    let hook: (target: TargetT, propertyKey: PropertyKeyT) => TargetT[PropertyKeyT] = useProperty;
+
+    // Auto-detect the appropriate hook based on property type. In future can expand this to support any custom hook passed in
+    const propertyValue = target[propertyKey] as unknown;
+    if (typeof propertyValue === "object" && propertyValue !== null) {
+        if (propertyValue instanceof Vector3) {
+            hook = useVector3Property;
+        } else if (propertyValue instanceof Quaternion) {
+            hook = useQuaternionProperty;
+        } else if (propertyValue instanceof Color3) {
+            hook = useColor3Property;
+        } else if (propertyValue instanceof Color4) {
+            hook = useColor4Property;
+        }
+    }
+    const value = hook(target, propertyKey);
     const convertedValue = convertTo ? convertTo(value) : value;
 
     const propsToSend = {
