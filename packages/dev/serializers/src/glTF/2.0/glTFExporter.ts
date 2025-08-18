@@ -80,7 +80,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
 import { DataWriter } from "./dataWriter";
-import { OpenPBRMaterial } from "core/Materials";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
