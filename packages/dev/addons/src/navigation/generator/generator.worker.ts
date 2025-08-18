@@ -35,30 +35,21 @@ export function GenerateNavMeshWithWorker(
         throw new Error("At least one mesh is needed to create the nav mesh.");
     }
 
-    const [positions, indices] = GetPositionsAndIndices(meshes);
-
-    const positionsCopy = new Float32Array(positions);
-    const indicesCopy = new Uint32Array(indices);
-
-    workerOptions.worker.postMessage({ positions: positionsCopy, indices: indicesCopy, parameters }, [positionsCopy.buffer, indicesCopy.buffer]);
+    // callback function to process the message from the worker
     workerOptions.worker.onmessage = (e) => {
         if ((e as any).data?.success === false) {
             throw new Error(`Unable to generate navMesh: ${e}`);
         } else {
-            // TODO: we can get a TileCache as well (two transferable objects)
-
             const { navMesh, tileCache } = e.data;
-
-            // navMesh is a Uint8Array (or ArrayBuffer, depending on exportNavMesh implementation)
-            // tileCache is a Uint8Array (or ArrayBuffer) if present
-
             if (tileCache) {
+                // if tileCache is present, the binary data contains the navmesh and the tilecache as well
                 const tileCacheArray = new Uint8Array(tileCache);
                 const navMeshData = BuildFromNavmeshData(tileCacheArray);
                 workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache ?? undefined);
                 return;
             } else {
                 if (navMesh) {
+                    // deserialize the navmesh only (no tilecache present)
                     const navMeshArray = new Uint8Array(navMesh);
                     const navMeshData = BuildFromTileCacheData(navMeshArray, CreateDefaultTileCacheMeshProcess());
                     workerOptions.completion(navMeshData.navMesh, navMeshData.navMeshQuery, navMeshData.tileCache ?? undefined);
@@ -69,4 +60,10 @@ export function GenerateNavMeshWithWorker(
             throw new Error(`Unable to generate navMesh/tileCache: ${e}`);
         }
     };
+
+    // send message to worker
+    const [positions, indices] = GetPositionsAndIndices(meshes);
+    const positionsCopy = new Float32Array(positions);
+    const indicesCopy = new Uint32Array(indices);
+    workerOptions.worker.postMessage({ positions: positionsCopy, indices: indicesCopy, parameters }, [positionsCopy.buffer, indicesCopy.buffer]);
 }
