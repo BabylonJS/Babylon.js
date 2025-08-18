@@ -843,54 +843,57 @@ export class GLTFMaterialExporter {
     }
 
     public async exportTextureAsync(babylonTexture: BaseTexture): Promise<Nullable<ITextureInfo>> {
-        return await this._exportTextureInfoAsync(babylonTexture);
-    }
-
-    private async _exportTextureInfoAsync(babylonTexture: BaseTexture): Promise<Nullable<ITextureInfo>> {
         let textureInfo = this._textureMap.get(babylonTexture);
-        if (!textureInfo) {
-            const pixels = await GetTextureDataAsync(babylonTexture).catch(() => null);
-            if (!pixels) {
-                return null;
+        if (textureInfo) {
+            return textureInfo;
             }
 
             const samplerIndex = this._exportTextureSampler(babylonTexture);
+        const imageIndex = await this._exportTextureImageAsync(babylonTexture);
 
+        textureInfo = this._exportTextureInfo(imageIndex, samplerIndex, babylonTexture.coordinatesIndex);
+        this._textureMap.set(babylonTexture, textureInfo);
+
+        this._exporter._extensionsPostExportTextures("exporter", textureInfo, babylonTexture);
+        return textureInfo;
+    }
+
+    private async _exportTextureImageAsync(babylonTexture: BaseTexture): Promise<number> {
+        const requestedMimeType = (babylonTexture as Texture).mimeType ?? "none";
+
+        const internalTextureToImage = this._internalTextureToImage;
+        const internalTextureUniqueId = babylonTexture.getInternalTexture()!.uniqueId;
+        internalTextureToImage[internalTextureUniqueId] = internalTextureToImage[internalTextureUniqueId] || {};
+        let imageIndexPromise = internalTextureToImage[internalTextureUniqueId][requestedMimeType];
+
+        if (imageIndexPromise === undefined) {
+            imageIndexPromise = (async () => {
             // Preserve texture mime type if defined
             let mimeType = ImageMimeType.PNG;
-            const textureMimeType = (babylonTexture as Texture).mimeType;
-            if (textureMimeType) {
-                switch (textureMimeType) {
-                    case "image/jpeg":
-                    case "image/png":
-                    case "image/webp":
-                        mimeType = textureMimeType as ImageMimeType;
+                if (requestedMimeType !== "none") {
+                    switch (requestedMimeType) {
+                        case ImageMimeType.JPEG:
+                        case ImageMimeType.PNG:
+                        case ImageMimeType.WEBP:
+                            mimeType = requestedMimeType;
                         break;
                     default:
-                        Tools.Warn(`Unsupported media type: ${textureMimeType}. Exporting texture as PNG.`);
+                            Tools.Warn(`Unsupported media type: ${requestedMimeType}. Exporting texture as PNG.`);
                         break;
                 }
             }
 
-            const internalTextureToImage = this._internalTextureToImage;
-            const internalTextureUniqueId = babylonTexture.getInternalTexture()!.uniqueId;
-            internalTextureToImage[internalTextureUniqueId] ||= {};
-            let imageIndexPromise = internalTextureToImage[internalTextureUniqueId][mimeType];
-            if (imageIndexPromise === undefined) {
                 const size = babylonTexture.getSize();
-                imageIndexPromise = (async () => {
+                const pixels = await GetTextureDataAsync(babylonTexture);
                     const data = await this._getImageDataAsync(pixels, size.width, size.height, mimeType);
+
                     return this._exportImage(babylonTexture.name, mimeType, data);
                 })();
-                internalTextureToImage[internalTextureUniqueId][mimeType] = imageIndexPromise;
-            }
 
-            textureInfo = this._exportTextureInfo(await imageIndexPromise, samplerIndex, babylonTexture.coordinatesIndex);
-            this._textureMap.set(babylonTexture, textureInfo);
-            this._exporter._extensionsPostExportTextures("exporter", textureInfo, babylonTexture);
+            internalTextureToImage[internalTextureUniqueId][requestedMimeType] = imageIndexPromise;
         }
 
-        return textureInfo;
+        return await imageIndexPromise;
     }
 
     private _exportImage(name: string, mimeType: ImageMimeType, data: ArrayBuffer): number {
