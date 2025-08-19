@@ -290,10 +290,26 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * Compute the final position from a segment made of destination-position
      * @param position world position
      * @param destination world position
+     * @param startRef the reference id of the start polygon.
+     * @param options options for the function
      * @returns the resulting point along the navmesh
      */
-    public moveAlong(position: IVector3Like, destination: IVector3Like): Vector3 {
-        const ret = this.navMeshQuery.moveAlongSurface(0, position, destination);
+    public moveAlong(
+        position: IVector3Like,
+        destination: IVector3Like,
+        startRef = 0,
+        options?: {
+            /**
+             * The polygon filter to apply to the query.
+             */
+            filter?: QueryFilter;
+            /**
+             * The maximum number of polygons the output visited array can hold.
+             */
+            maxVisitedSize?: number;
+        }
+    ): Vector3 {
+        const ret = this.navMeshQuery.moveAlongSurface(startRef, position, destination, options);
         const pr = new Vector3(ret.resultPosition.x, ret.resultPosition.y, ret.resultPosition.z);
         return pr;
     }
@@ -303,9 +319,20 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @param position world position
      * @param destination world position
      * @param result output the resulting point along the navmesh
+     * @param startRef the reference id of the start polygon.
+     * @param options options for the function
      */
-    public moveAlongToRef(position: IVector3Like, destination: IVector3Like, result: Vector3): void {
-        const ret = this.navMeshQuery.moveAlongSurface(0, position, destination);
+    public moveAlongToRef(
+        position: IVector3Like,
+        destination: IVector3Like,
+        result: Vector3,
+        startRef = 0,
+        options?: {
+            filter?: QueryFilter;
+            maxVisitedSize?: number;
+        }
+    ): void {
+        const ret = this.navMeshQuery.moveAlongSurface(startRef, position, destination, options);
         result.set(ret.resultPosition.x, ret.resultPosition.y, ret.resultPosition.z);
     }
 
@@ -314,14 +341,20 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * Path is straight.
      * @param start world position
      * @param end world position
+     * @param options options for the function
      * @returns array containing world position composing the path
      */
-    public computePath(start: IVector3Like, end: IVector3Like): Vector3[] {
-        return ConvertNavPathPoints(
-            this.navMeshQuery.computePath(start, end, {
-                // halfExtents: new Vector3(3, 3, 3),
-            })
-        );
+    public computePath(
+        start: IVector3Like,
+        end: IVector3Like,
+        options?: {
+            filter?: QueryFilter;
+            halfExtents?: Vector3;
+            maxPathPolys?: number;
+            maxStraightPathPoints?: number;
+        }
+    ): Vector3[] {
+        return ConvertNavPathPoints(this.navMeshQuery.computePath(start, end, options));
     }
 
     /**
