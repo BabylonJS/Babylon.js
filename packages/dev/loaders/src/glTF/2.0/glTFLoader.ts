@@ -12,7 +12,7 @@ import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { AnimationKeyInterpolation } from "core/Animations/animationKey";
-import { AnimationGroup } from "core/Animations/animationGroup";
+import type { AnimationGroup } from "core/Animations/animationGroup";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
@@ -84,7 +84,9 @@ import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 
-import "./glTFLoaderAnimation";
+// Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
+let AnimationGroupModulePromise: Nullable<Promise<typeof import("core/Animations/animationGroup")>> = null;
+let LoaderAnimationPromise: Nullable<Promise<typeof import("./glTFLoaderAnimation")>> = null;
 
 export { GLTFFileLoader };
 
@@ -1657,32 +1659,39 @@ export class GLTFLoader implements IGLTFLoader {
             return promise;
         }
 
-        this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
-        babylonAnimationGroup._parentContainer = this._assetContainer;
-        this._babylonScene._blockEntityCollection = false;
-        animation._babylonAnimationGroup = babylonAnimationGroup;
-
-        const promises = new Array<Promise<unknown>>();
-
-        ArrayItem.Assign(animation.channels);
-        ArrayItem.Assign(animation.samplers);
-
-        for (const channel of animation.channels) {
-            promises.push(
-                this._loadAnimationChannelAsync(`${context}/channels/${channel.index}`, context, animation, channel, (babylonTarget, babylonAnimation) => {
-                    babylonTarget.animations = babylonTarget.animations || [];
-                    babylonTarget.animations.push(babylonAnimation);
-                    babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTarget);
-                })
-            );
+        if (!AnimationGroupModulePromise) {
+            AnimationGroupModulePromise = import("core/Animations/animationGroup");
         }
 
-        this._parent._endPerformanceCounter("Load animation");
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        return AnimationGroupModulePromise.then(({ AnimationGroup }) => {
+            this._babylonScene._blockEntityCollection = !!this._assetContainer;
+            const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
+            babylonAnimationGroup._parentContainer = this._assetContainer;
+            this._babylonScene._blockEntityCollection = false;
+            animation._babylonAnimationGroup = babylonAnimationGroup;
 
-        return Promise.all(promises).then(() => {
-            babylonAnimationGroup.normalize(0);
-            return babylonAnimationGroup;
+            const promises = new Array<Promise<unknown>>();
+
+            ArrayItem.Assign(animation.channels);
+            ArrayItem.Assign(animation.samplers);
+
+            for (const channel of animation.channels) {
+                promises.push(
+                    this._loadAnimationChannelAsync(`${context}/channels/${channel.index}`, context, animation, channel, (babylonTarget, babylonAnimation) => {
+                        babylonTarget.animations = babylonTarget.animations || [];
+                        babylonTarget.animations.push(babylonAnimation);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, babylonTarget);
+                    })
+                );
+            }
+
+            this._parent._endPerformanceCounter("Load animation");
+
+            return Promise.all(promises).then(() => {
+                babylonAnimationGroup.normalize(0);
+                return babylonAnimationGroup;
+            });
         });
     }
 
@@ -1726,39 +1735,46 @@ export class GLTFLoader implements IGLTFLoader {
             return Promise.resolve();
         }
 
-        let properties: IInterpolationPropertyInfo[];
-        switch (channelTargetPath) {
-            case AnimationChannelTargetPath.TRANSLATION: {
-                properties = GetMappingForKey("/nodes/{}/translation")?.interpolation!;
-                break;
-            }
-            case AnimationChannelTargetPath.ROTATION: {
-                properties = GetMappingForKey("/nodes/{}/rotation")?.interpolation!;
-                break;
-            }
-            case AnimationChannelTargetPath.SCALE: {
-                properties = GetMappingForKey("/nodes/{}/scale")?.interpolation!;
-                break;
-            }
-            case AnimationChannelTargetPath.WEIGHTS: {
-                properties = GetMappingForKey("/nodes/{}/weights")?.interpolation!;
-                break;
-            }
-            default: {
-                throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
-            }
-        }
-        // stay safe
-        if (!properties) {
-            throw new Error(`${context}/target/path: Could not find interpolation properties for target path (${channel.target.path})`);
+        if (!LoaderAnimationPromise) {
+            LoaderAnimationPromise = import("./glTFLoaderAnimation");
         }
 
-        const targetInfo: IObjectInfo<IInterpolationPropertyInfo[]> = {
-            object: targetNode,
-            info: properties,
-        };
+        // async-load the animation sampler to provide the interpolation of the channelTargetPath
+        return LoaderAnimationPromise.then(() => {
+            let properties: IInterpolationPropertyInfo[];
+            switch (channelTargetPath) {
+                case AnimationChannelTargetPath.TRANSLATION: {
+                    properties = GetMappingForKey("/nodes/{}/translation")?.interpolation!;
+                    break;
+                }
+                case AnimationChannelTargetPath.ROTATION: {
+                    properties = GetMappingForKey("/nodes/{}/rotation")?.interpolation!;
+                    break;
+                }
+                case AnimationChannelTargetPath.SCALE: {
+                    properties = GetMappingForKey("/nodes/{}/scale")?.interpolation!;
+                    break;
+                }
+                case AnimationChannelTargetPath.WEIGHTS: {
+                    properties = GetMappingForKey("/nodes/{}/weights")?.interpolation!;
+                    break;
+                }
+                default: {
+                    throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
+                }
+            }
+            // stay safe
+            if (!properties) {
+                throw new Error(`${context}/target/path: Could not find interpolation properties for target path (${channel.target.path})`);
+            }
 
-        return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+            const targetInfo: IObjectInfo<IInterpolationPropertyInfo[]> = {
+                object: targetNode,
+                info: properties,
+            };
+
+            return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+        });
     }
 
     /**
