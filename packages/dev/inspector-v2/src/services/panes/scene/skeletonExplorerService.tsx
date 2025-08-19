@@ -1,10 +1,10 @@
+import type { Bone } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { DataLineRegular, PersonWalkingRegular } from "@fluentui/react-icons";
 
-import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
@@ -26,10 +26,8 @@ export const SkeletonExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
         const sectionRegistration = sceneExplorerService.addSection<Skeleton | Bone>({
             displayName: "Skeletons",
             order: DefaultSectionsOrder.Skeletons,
-            predicate: (entity) => entity instanceof Skeleton || entity instanceof Bone,
             getRootEntities: () => scene.skeletons,
             getEntityChildren: (skeletonOrBone) => skeletonOrBone.getChildren(),
-            getEntityParent: (skeletonOrBone) => (skeletonOrBone instanceof Skeleton ? null : skeletonOrBone.getParent() || skeletonOrBone.getSkeleton()),
             getEntityDisplayInfo: (skeletonOrBone) => {
                 const onChangeObservable = new Observable<void>();
 

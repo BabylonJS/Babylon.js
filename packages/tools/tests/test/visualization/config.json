@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "NPE - Angle align",
+            "playgroundId": "#H5RP91",
+            "referenceImage": "npe-angle-align.png"
+        },
+        {
             "title": "SPZ v3 - Splat",
             "playgroundId": "#V7CV8W#3",
             "referenceImage": "gsplat-spz-v3.png"
@@ -2625,6 +2630,15 @@
             "playgroundId": "#YB006J#753",
             "excludedEngines": ["webgl1"],
             "renderCount": 40
+        },
+        {
+            "title": "FrameGraph nrge bounding boxes",
+            "playgroundId": "#IG8NRC#24",
+            "errorRatio": 14
+        },
+        {
+            "title": "FrameGraph nrge frozen meshes",
+            "playgroundId": "#9SDNZF#32"
         },
         {
             "title": "FrameGraph nrg gui bloom",
