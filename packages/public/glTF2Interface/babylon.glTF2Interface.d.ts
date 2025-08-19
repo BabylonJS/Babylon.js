@@ -1083,6 +1083,12 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @internal */
+    interface IEXTMaterialsClearcoatColor {
+        clearcoatColorFactor?: number[];
+        clearcoatColorTexture?: ITextureInfo;
+    }
+
+    /** @internal */
     interface IKHRMaterialsIridescence {
         iridescenceFactor?: number;
         iridescenceIor?: number;

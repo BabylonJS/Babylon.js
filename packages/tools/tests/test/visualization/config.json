@@ -2857,6 +2857,26 @@
             "title": "OpenPBR Analytic Lights Coat Darkening vs Coat IOR",
             "playgroundId": "#GRQHVV#49",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Coat Color vs Coat Darkening",
+            "playgroundId": "#GRQHVV#50",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR IBL Coat Color vs Coat IOR",
+            "playgroundId": "#GRQHVV#51",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Coat Color vs Coat IOR",
+            "playgroundId": "#GRQHVV#52",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Coat Color vs Coat Darkening",
+            "playgroundId": "#GRQHVV#53",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
