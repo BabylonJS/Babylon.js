@@ -198,7 +198,7 @@ export const commonDevWebpackConfiguration = (
     let plugins: WebpackPluginInstance[] | undefined = additionalPlugins;
     if (devServerConfig && enableHotReload) {
         plugins = plugins ?? [];
-        plugins.push(new ReactRefreshWebpackPlugin());
+        plugins.push(new ReactRefreshWebpackPlugin({ overlay: !process.env.DISABLE_DEV_OVERLAY }));
     }
 
     return {
