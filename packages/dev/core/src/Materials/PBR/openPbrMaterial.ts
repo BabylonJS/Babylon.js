@@ -572,7 +572,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the color of the clear coat on the surface.
      * See OpenPBR's specs for coat_color
      */
-    public coatColor: number;
+    public coatColor: Color3;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatColor")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _coatColor: Property<Color3> = new Property<Color3>("coat_color", Color3.White(), "vCoatColor", 3, 0);

@@ -100,9 +100,20 @@
         // Calculate transmission through multiple internal reflections
         // This uses the geometric series for infinite reflections:
         // T = (1-R) / (1 + R + R² + R³ + ...) = (1-R) / (1/(1-R)) = (1-R)²
-        float effectiveReflectance = averageReflectance * coat_weight;
-        float transmission = (1.0 - effectiveReflectance) / (1.0 + effectiveReflectance);
-        coatAbsorption = coat_color * mix(1.0, transmission, coat_darkening);
+        float darkened_transmission = (1.0 - averageReflectance) / (1.0 + averageReflectance);
+        darkened_transmission = mix(1.0, darkened_transmission, coat_darkening);
+
+        // View-dependent coat absorption.
+        // At normal incidence, coat absorption is simply the coat_color.
+        // At grazing angles, there is increased darkening and saturation.
+        float sin2 = 1.0 - cosTheta_view * cosTheta_view;
+        // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
+        // is just coat_ior since the incident medium is air (IOR = 1.0).
+        sin2 = sin2 / (coat_ior * coat_ior);
+        float cos_t = sqrt(1.0 - sin2);
+        float coatPathLength = 1.0 / cos_t;
+        vec3 colored_transmission = pow(coat_color, vec3(coatPathLength));
+        coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
     }
 
     slab_diffuse *= base_color.rgb;
