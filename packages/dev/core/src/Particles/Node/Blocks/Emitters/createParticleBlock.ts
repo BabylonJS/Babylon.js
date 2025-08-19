@@ -111,6 +111,7 @@ export class CreateParticleBlock extends NodeParticleBlock {
             system.colorDead.copyFrom(this.deadColor.getConnectedValue(state));
             particle.initialColor.copyFrom(particle.color);
             system.colorDead.subtractToRef(particle.initialColor, system._colorDiff);
+            system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
         };
 
         system._sizeCreation.process = (particle: Particle) => {

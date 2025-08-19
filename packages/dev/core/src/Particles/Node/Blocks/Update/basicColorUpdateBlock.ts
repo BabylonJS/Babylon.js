@@ -55,7 +55,6 @@ export class BasicColorUpdateBlock extends NodeParticleBlock {
             state.particleContext = particle;
             state.systemContext = system;
 
-            system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
             particle.colorStep.scaleToRef(system._scaledUpdateSpeed, system._scaledColorStep);
             particle.color.addInPlace(system._scaledColorStep);
 

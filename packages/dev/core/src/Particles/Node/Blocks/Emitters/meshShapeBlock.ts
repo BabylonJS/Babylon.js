@@ -240,6 +240,7 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
                 particle.initialColor.copyFrom(particle.color);
                 system.colorDead.subtractToRef(particle.initialColor, system._colorDiff);
+                system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
             }
         };
 
