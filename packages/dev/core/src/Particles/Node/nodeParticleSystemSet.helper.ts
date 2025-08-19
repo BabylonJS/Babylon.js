@@ -97,7 +97,7 @@ async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSyste
     }
 
     createParticleBlock.particle.connectTo(shapeBlock.particle);
-    createParticleBlock.colorDead.value = particleSystem.colorDead;
+    createParticleBlock.deadColor.value = particleSystem.colorDead;
 
     // Texture
     const textureBlock = new ParticleTextureSourceBlock("Texture");
