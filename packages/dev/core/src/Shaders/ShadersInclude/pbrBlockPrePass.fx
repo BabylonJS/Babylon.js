@@ -1,3 +1,5 @@
+#if SCENE_MRT_COUNT > 0
+
 float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
 
 #ifdef PREPASS_POSITION
@@ -89,4 +91,6 @@ float writeGeometryInfo = finalColor.a > ALPHATESTVALUE ? 1.0 : 0.0;
     #else
         gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4( 0.0, 0.0, 0.0, 1.0 ) * writeGeometryInfo;
     #endif
+#endif
+
 #endif

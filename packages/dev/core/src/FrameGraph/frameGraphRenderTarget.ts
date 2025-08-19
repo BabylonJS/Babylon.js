@@ -34,7 +34,7 @@ export class FrameGraphRenderTarget {
             const engine = this._textureManager.engine;
 
             // _renderTargets and _renderTargetDepth cannot both be undefined
-            const textureHandle = this._renderTargets === undefined ? this._renderTargetDepth! : this._renderTargets[0];
+            const textureHandle = this._renderTargets === undefined || this._renderTargets.length === 0 ? this._renderTargetDepth! : this._renderTargets[0];
 
             if (this._textureManager.isBackbuffer(textureHandle)) {
                 this._isBackBuffer = true;

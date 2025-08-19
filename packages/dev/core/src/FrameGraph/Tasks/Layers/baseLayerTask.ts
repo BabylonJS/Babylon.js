@@ -371,7 +371,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
                         if (
                             !this.layer.shouldRender() ||
                             info.renderingGroupId !== this.layer._options.renderingGroupId ||
-                            info.renderingManager !== this.objectRendererTask.objectRenderer._renderingManager
+                            info.renderingManager !== this.objectRendererTask.objectRenderer.renderingManager
                         ) {
                             return;
                         }

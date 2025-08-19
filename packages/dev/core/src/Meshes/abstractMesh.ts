@@ -244,6 +244,10 @@ class _InternalAbstractMeshDataInfo {
      * if this is set to true, the mesh will be visible only if its parent(s) are also visible
      */
     public _inheritVisibility = false;
+    /**
+     * Used in frame graph mode only, to know which meshes to update when in frozen mode
+     */
+    public _wasActiveLastFrame = false;
 }
 
 /**
