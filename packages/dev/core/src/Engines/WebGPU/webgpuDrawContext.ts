@@ -26,6 +26,13 @@ export class WebGPUDrawContext implements IDrawContext {
     public uniqueId: number;
 
     /**
+     * @internal
+     * By default, indirect draws are enabled in NON compatibility mode only
+     * To enable indirect draws in compatibility mode (done by the end user), enableIndirectDraw must be set to true
+     */
+    public _enableIndirectDrawInCompatMode = false;
+
+    /**
      * Buffers (uniform / storage) used for the draw call
      */
     public buffers: { [name: string]: Nullable<WebGPUDataBuffer> };
@@ -64,6 +71,8 @@ export class WebGPUDrawContext implements IDrawContext {
     }
 
     public set enableIndirectDraw(enable: boolean) {
+        this._enableIndirectDrawInCompatMode = true;
+
         if (this._enableIndirectDraw === enable) {
             return;
         }
@@ -99,7 +108,11 @@ export class WebGPUDrawContext implements IDrawContext {
         this._useInstancing = use;
         this._currentInstanceCount = -1;
 
+        const enableIndirectDrawInCompatMode = this._enableIndirectDrawInCompatMode;
+
         this.enableIndirectDraw = use;
+
+        this._enableIndirectDrawInCompatMode = enableIndirectDrawInCompatMode;
     }
 
     /**
