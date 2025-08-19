@@ -290,7 +290,7 @@ export class ObjectRenderer {
                         this._activeMeshes.data[index]._freeze();
                     }
                 }
-                this._prepareRenderingManager();
+                this._prepareRenderingManager(0, true);
                 this._isFrozen = true;
             },
             (err, isTimeout) => {
@@ -628,7 +628,7 @@ export class ObjectRenderer {
         return returnValue;
     }
 
-    private _prepareRenderingManager(passIndex = 0): Array<AbstractMesh> {
+    private _prepareRenderingManager(passIndex = 0, winterIsComing = false): Array<AbstractMesh> {
         const scene = this._scene;
 
         // Get the list of meshes to dispatch to the rendering manager
@@ -646,7 +646,7 @@ export class ObjectRenderer {
         if (!currentRenderList) {
             // No custom render list provided, we prepare the rendering for the default list, but check
             // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times
-            if (this._defaultRenderListPrepared) {
+            if (this._defaultRenderListPrepared && !winterIsComing) {
                 return defaultRenderList;
             }
             this._defaultRenderListPrepared = true;
@@ -745,7 +745,7 @@ export class ObjectRenderer {
                         meshToRender._activate(sceneRenderId, true);
                     }
 
-                    this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer._preActiveMesh(meshToRender);
+                    this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer._preActiveMesh(mesh);
 
                     if (mesh._activate(sceneRenderId, true) && mesh.subMeshes.length) {
                         if (!mesh.isAnInstance) {
@@ -761,7 +761,7 @@ export class ObjectRenderer {
 
                         for (let subIndex = 0; subIndex < meshToRender.subMeshes.length; subIndex++) {
                             const subMesh = meshToRender.subMeshes[subIndex];
-                            this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer._evaluateSubMesh(meshToRender, subMesh);
+                            this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer._evaluateSubMesh(mesh, subMesh);
                             this._renderingManager.dispatch(subMesh, meshToRender);
                         }
                     }
@@ -771,7 +771,7 @@ export class ObjectRenderer {
             }
         }
 
-        if (boundingBoxRenderer) {
+        if (boundingBoxRenderer && winterIsComing) {
             for (let i = 0; i < boundingBoxRenderer.renderList.length; i++) {
                 const boundingBox = boundingBoxRenderer.renderList.data[i];
                 this._activeBoundingBoxes.push(boundingBox);
