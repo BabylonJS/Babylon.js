@@ -184,9 +184,9 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.InitialColor;
                 return block;
             }
-            case "DeadColorBlock": {
-                const block = new ParticleInputBlock("Dead Color");
-                block.contextualValue = NodeParticleContextualSources.DeadColor;
+            case "ColorDeadBlock": {
+                const block = new ParticleInputBlock("Color Dead");
+                block.contextualValue = NodeParticleContextualSources.ColorDead;
                 return block;
             }
             case "AgeBlock": {

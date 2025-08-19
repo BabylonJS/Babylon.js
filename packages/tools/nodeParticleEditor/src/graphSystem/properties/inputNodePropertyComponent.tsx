@@ -150,7 +150,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 contextualSourcesOptions = [
                     { label: "Color", value: NodeParticleContextualSources.Color },
                     { label: "Initial Color", value: NodeParticleContextualSources.InitialColor },
-                    { label: "Dead Color", value: NodeParticleContextualSources.DeadColor },
+                    { label: "Dead Color", value: NodeParticleContextualSources.ColorDead },
                 ];
                 break;
         }

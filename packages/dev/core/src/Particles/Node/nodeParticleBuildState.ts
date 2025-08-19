@@ -121,7 +121,7 @@ export class NodeParticleBuildState {
                 return this.particleContext.color;
             case NodeParticleContextualSources.InitialColor:
                 return this.particleContext.initialColor;
-            case NodeParticleContextualSources.DeadColor:
+            case NodeParticleContextualSources.ColorDead:
                 return this.systemContext.colorDead;
             case NodeParticleContextualSources.Age:
                 return this.particleContext.age;
