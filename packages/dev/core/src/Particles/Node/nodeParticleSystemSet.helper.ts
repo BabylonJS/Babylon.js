@@ -19,6 +19,8 @@ import { CylinderShapeBlock } from "./Blocks/Emitters/cylinderShapeBlock";
 import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import type { Texture } from "../../Materials/Textures/texture";
+import { BasicPositionUpdateBlock } from "./Blocks/Update/basicPositionUpdateBlock";
+import { BasicColorUpdateBlock } from "./Blocks/Update/basicColorUpdateBlock";
 
 function _CreateAndConnectInput(connectionPoint: NodeParticleConnectionPoint, name: string, defaultValue: Vector3 | number) {
     const input = new ParticleInputBlock(name);
@@ -95,7 +97,7 @@ async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSyste
     }
 
     createParticleBlock.particle.connectTo(shapeBlock.particle);
-    shapeBlock.output.connectTo(system.particle);
+    createParticleBlock.colorDead.value = particleSystem.colorDead;
 
     // Texture
     const textureBlock = new ParticleTextureSourceBlock("Texture");
@@ -106,6 +108,15 @@ async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSyste
         textureBlock.sourceTexture = particleSystem.particleTexture;
     }
     textureBlock.texture.connectTo(system.texture);
+
+    // Default position update
+    const basicPositionUpdateBlock = new BasicPositionUpdateBlock("Position update");
+    shapeBlock.output.connectTo(basicPositionUpdateBlock.particle);
+
+    // Default color update
+    const basicColorUpdateBlock = new BasicColorUpdateBlock("Color update");
+    basicPositionUpdateBlock.output.connectTo(basicColorUpdateBlock.particle);
+    basicColorUpdateBlock.output.connectTo(system.particle);
 
     // Register
     target.systemBlocks.push(system);

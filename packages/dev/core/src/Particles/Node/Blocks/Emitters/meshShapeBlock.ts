@@ -238,7 +238,8 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
                     bu * TmpVectors.Vector4[0].w + bv * TmpVectors.Vector4[1].w + bw * TmpVectors.Vector4[2].w
                 );
 
-                particle.colorStep.copyFrom(particle.color);
+                particle.initialColor.copyFrom(particle.color);
+                system.colorDead.subtractToRef(particle.initialColor, system._colorDiff);
             }
         };
 
