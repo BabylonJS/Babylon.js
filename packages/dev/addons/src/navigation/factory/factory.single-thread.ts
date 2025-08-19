@@ -1,7 +1,6 @@
 import { init as initRecast } from "@recast-navigation/core";
 
 import type { Mesh } from "core/Meshes/mesh";
-import type { Scene } from "core/scene";
 
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
 import type { INavMeshParametersV2 } from "../types";
@@ -9,14 +8,13 @@ import { GenerateNavMesh } from "../generator/generator.single-thread";
 
 /**
  * Creates a navigation plugin for the given scene.
- * @param scene The scene to create the navigation plugin for.
  * @returns A promise that resolves to the created navigation plugin.
  * @remarks This function initializes the Recast module and sets up the navigation plugin.
  */
-export async function CreateNavigationPluginAsync(scene: Scene) {
+export async function CreateNavigationPluginAsync() {
     await initRecast();
 
-    const navigationPlugin = new RecastNavigationJSPluginV2(scene);
+    const navigationPlugin = new RecastNavigationJSPluginV2();
 
     navigationPlugin.createNavMeshImpl = (meshes: Mesh[], parameters: INavMeshParametersV2) => {
         return GenerateNavMesh(meshes, parameters);

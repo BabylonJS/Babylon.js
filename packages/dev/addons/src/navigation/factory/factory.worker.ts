@@ -1,7 +1,6 @@
 import type { NavMesh, NavMeshQuery, TileCache } from "@recast-navigation/core";
 import { init as initRecast } from "@recast-navigation/core";
 
-import type { Scene } from "core/scene";
 import { Logger } from "core/Misc/logger";
 import type { Mesh } from "core/Meshes/mesh";
 
@@ -13,21 +12,20 @@ import { GenerateNavMeshWorker } from "../worker/navmesh-worker";
 
 /**
  * Creates a navigation plugin for the given scene using a worker.
- * @param scene The scene to create the navigation plugin for.
  * @returns A promise that resolves to the created navigation plugin.
  * @remarks This function initializes the Recast module and sets up the navigation plugin to use a worker.
  * The worker is used to handle the creation of the navigation mesh asynchronously.
  * The `createNavMesh` method is not supported in worker mode, use `createNavMeshAsync` instead.
  */
-export async function CreateNavigationPluginWorkerAsync(scene: Scene) {
+export async function CreateNavigationPluginWorkerAsync() {
     if (window && !window.Worker) {
         Logger.Error("Web Workers are not supported in this environment. Please ensure your environment supports Web Workers.");
-        return await CreateNavigationPluginAsync(scene); // Fallback to single-threaded version
+        return await CreateNavigationPluginAsync(); // Fallback to single-threaded version
     }
 
     await initRecast();
 
-    const plugin = new RecastNavigationJSPluginV2(scene);
+    const plugin = new RecastNavigationJSPluginV2();
 
     // Convert the worker function to a blob
     const workerBlob = new Blob([`(${GenerateNavMeshWorker.toString()})()`], { type: "application/javascript" });

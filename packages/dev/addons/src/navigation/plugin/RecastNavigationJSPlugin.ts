@@ -80,17 +80,8 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
 
     private _crowd?: ICrowd;
 
-    /**
-     * Link to the scene is kept to unregister the crowd from the scene
-     */
-    private _scene: Scene;
-
-    /**
-     * Initializes the recastJS plugin
-     * @param scene the scene to which the plugin is attached
-     */
-    public constructor(scene: Scene) {
-        this._scene = scene;
+    public constructor() {
+        //
     }
 
     /**
@@ -213,12 +204,12 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @param scene is where the mesh will be added
      * @returns debug display mesh
      */
-    public createDebugNavMesh(scene?: Scene): Mesh {
+    public createDebugNavMesh(scene: Scene): Mesh {
         if (!this.navMesh) {
             throw new Error("There is no navMesh generated.");
         }
 
-        return CreateDebugNavMesh(this.navMesh, scene ?? this._scene);
+        return CreateDebugNavMesh(this.navMesh, scene);
     }
 
     /**
