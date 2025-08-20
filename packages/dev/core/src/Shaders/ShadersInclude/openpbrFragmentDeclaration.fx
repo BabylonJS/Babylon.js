@@ -5,9 +5,11 @@ uniform vec4 vBaseColor;
 uniform float vBaseDiffuseRoughness;
 uniform vec4 vReflectanceInfo;
 uniform vec4 vSpecularColor;
+uniform vec4 vSpecularRoughnessAnisotropy;
 uniform float vCoatWeight;
 uniform vec3 vCoatColor;
 uniform float vCoatRoughness;
+uniform float vCoatRoughnessAnisotropy;
 uniform float vCoatIor;
 uniform float vCoatDarkening;
 uniform vec3 vEmissionColor;
@@ -76,6 +78,22 @@ uniform vec2 vEmissionColorInfos;
 
 #ifdef COAT_WEIGHT
 uniform vec2 vCoatWeightInfos;
+#endif
+
+#ifdef COAT_COLOR
+uniform vec2 vCoatColorInfos;
+#endif
+
+#ifdef COAT_ROUGHNESS
+uniform vec2 vCoatRoughnessInfos;
+#endif
+
+#ifdef COAT_ROUGHNESS_ANISOTROPY
+uniform vec2 vCoatRoughnessAnisotropyInfos;
+#endif
+
+#ifdef COAT_IOR
+uniform vec2 vCoatIorInfos;
 #endif
 
 #ifdef COAT_DARKENING

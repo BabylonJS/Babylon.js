@@ -539,16 +539,34 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public specularRoughness: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughness")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _specularRoughness: Property<number> = new Property<number>("specular_roughness", 0, "vReflectanceInfo", 4, 1);
+    private _specularRoughness: Property<number> = new Property<number>("specular_roughness", 0.3, "vReflectanceInfo", 4, 1);
 
     /**
-     * Metalness and Roughness texture.
-     * See OpenPBR's specs for base_metalness and specular_roughness
+     * Roughness texture.
+     * See OpenPBR's specs for specular_roughness
      */
     public specularRoughnessTexture: BaseTexture;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughnessTexture: Sampler = new Sampler("specular_roughness", "specularRoughness", "SPECULAR_ROUGHNESS");
+
+    /**
+     * Anisotropic roughness of the specular lobe.
+     * See OpenPBR's specs for specular_roughness_anisotropy
+     */
+    public specularRoughnessAnisotropy: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessAnisotropy")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularRoughnessAnisotropy: Property<number> = new Property<number>("specular_roughness_anisotropy", 0, "vSpecularRoughnessAnisotropy", 1);
+
+    /**
+     * Anisotropic Roughness texture.
+     * See OpenPBR's specs for specular_roughness
+     */
+    public specularRoughnessAnisotropyTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessAnisotropyTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularRoughnessAnisotropyTexture: Sampler = new Sampler("specular_roughness_anisotropy", "specularRoughnessAnisotropy", "SPECULAR_ROUGHNESS_ANISOTROPY");
 
     /**
      * IOR of the specular lobe.
@@ -1359,6 +1377,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._specularRoughness;
         this._specularIor;
         this._specularRoughnessTexture;
+        this._specularRoughnessAnisotropy;
+        this._specularRoughnessAnisotropyTexture;
         this._coatWeight;
         this._coatWeightTexture;
         this._coatColor;

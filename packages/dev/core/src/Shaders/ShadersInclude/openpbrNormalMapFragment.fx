@@ -1,5 +1,5 @@
 ﻿vec2 uvOffset = vec2(0.0, 0.0);
-#if defined(GEOMETRY_NORMAL) || defined(PARALLAX) || defined(DETAIL)
+#if defined(GEOMETRY_NORMAL) || defined(GEOMETRY_COAT_NORMAL) || defined(PARALLAX) || defined(DETAIL)
 	#ifdef NORMALXYSCALE
 		float normalScale = 1.0;
 	#elif defined(GEOMETRY_NORMAL)
@@ -19,7 +19,7 @@
 		vec2 TBNUV = gl_FrontFacing ? vDetailUV : -vDetailUV;
 		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vec2(1., 1.));
 	#endif
-#elif defined(ANISOTROPIC)
+#elif defined(SPECULAR_ROUGHNESS_ANISOTROPY) || defined(COAT_ROUGHNESS_ANISOTROPY)
 	#if defined(TANGENT) && defined(NORMAL)
 		mat3 TBN = vTBN;
 	#else

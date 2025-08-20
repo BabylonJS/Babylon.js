@@ -1,6 +1,6 @@
 var uvOffset: vec2f =  vec2f(0.0, 0.0);
 
-#if defined(GEOMETRY_NORMAL) || defined(PARALLAX) || defined(DETAIL)
+#if defined(GEOMETRY_NORMAL) || defined(GEOMETRY_COAT_NORMAL) || defined(PARALLAX) || defined(DETAIL)
 	#ifdef NORMALXYSCALE
 		var normalScale: f32 = 1.0;
 	#elif defined(GEOMETRY_NORMAL)
@@ -20,9 +20,9 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 		var TBNUV: vec2f = select(-fragmentInputs.vDetailUV, fragmentInputs.vDetailUV, fragmentInputs.frontFacing);
 		var TBN: mat3x3f = cotangent_frame(normalW * normalScale, input.vPositionW, TBNUV,  vec2f(1., 1.));
 	#endif
-#elif defined(ANISOTROPIC)
+#elif defined(SPECULAR_ROUGHNESS_ANISOTROPY) || defined(COAT_ROUGHNESS_ANISOTROPY)
 	#if defined(TANGENT) && defined(NORMAL)
-		var TBN: mat3x3f = mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2);	
+		var TBN: mat3x3f = mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2);
 	#else
 		// flip the uv for the backface
 		var TBNUV: vec2f = select( -fragmentInputs.vMainUV1, fragmentInputs.vMainUV1, fragmentInputs.frontFacing);
@@ -46,6 +46,10 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
     var detailNormalRG: vec2f = detailColor.wy * 2.0 - 1.0;
     var detailNormalB: f32 = sqrt(1. - saturate(dot(detailNormalRG, detailNormalRG)));
     var detailNormal: vec3f =  vec3f(detailNormalRG, detailNormalB);
+#endif
+
+#ifdef GEOMETRY_COAT_NORMAL
+	coatNormalW = perturbNormal(TBN, textureSample(geometryCoatNormalSampler, geometryCoatNormalSamplerSampler, fragmentInputs.vGeometryCoatNormalUV + uvOffset).xyz, uniforms.vGeometryCoatNormalInfos.y);
 #endif
 
 #ifdef GEOMETRY_NORMAL
