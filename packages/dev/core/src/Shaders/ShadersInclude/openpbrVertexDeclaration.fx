@@ -56,6 +56,11 @@ uniform vec2 vSpecularRoughnessInfos;
 uniform mat4 specularRoughnessMatrix;
 #endif
 
+#ifdef SPECULAR_ROUGHNESS_ANISOTROPY
+uniform vec2 vSpecularRoughnessAnisotropyInfos;
+uniform mat4 specularRoughnessAnisotropyMatrix;
+#endif
+
 #ifdef COAT_WEIGHT
 uniform vec2 vCoatWeightInfos;
 uniform mat4 coatWeightMatrix;

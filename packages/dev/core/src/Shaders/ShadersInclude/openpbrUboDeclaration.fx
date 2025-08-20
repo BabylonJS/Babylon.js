@@ -65,9 +65,11 @@ uniform Material {
     float vBaseDiffuseRoughness;
     vec4 vReflectanceInfo;
     vec4 vSpecularColor;
+    float vSpecularRoughnessAnisotropy;
     float vCoatWeight;
     vec3 vCoatColor;
     float vCoatRoughness;
+    // float vCoatRoughnessAnisotropy;
     float vCoatIor;
     float vCoatDarkening;
     vec3 vEmissionColor;
@@ -86,6 +88,8 @@ uniform Material {
     mat4 specularColorMatrix;
     vec2 vSpecularRoughnessInfos;
     mat4 specularRoughnessMatrix;
+    vec2 vSpecularRoughnessAnisotropyInfos;
+    mat4 specularRoughnessAnisotropyMatrix;
     vec2 vCoatWeightInfos;
     mat4 coatWeightMatrix;
     vec2 vCoatColorInfos;
