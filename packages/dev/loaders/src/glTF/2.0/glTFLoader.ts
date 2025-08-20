@@ -83,10 +83,11 @@ import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions"
 import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
+import { Lazy } from "core/Misc/lazy";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
-let AnimationGroupModulePromise: Nullable<Promise<typeof import("core/Animations/animationGroup")>> = null;
-let LoaderAnimationPromise: Nullable<Promise<typeof import("./glTFLoaderAnimation")>> = null;
+const LazyAnimationGroupModulePromise = new Lazy(() => import("core/Animations/animationGroup"));
+const LazyLoaderAnimationModulePromise = new Lazy(() => import("./glTFLoaderAnimation"));
 
 export { GLTFFileLoader };
 
@@ -1659,12 +1660,8 @@ export class GLTFLoader implements IGLTFLoader {
             return promise;
         }
 
-        if (!AnimationGroupModulePromise) {
-            AnimationGroupModulePromise = import("core/Animations/animationGroup");
-        }
-
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        return AnimationGroupModulePromise.then(({ AnimationGroup }) => {
+        return LazyAnimationGroupModulePromise.value.then(({ AnimationGroup }) => {
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
             const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
             babylonAnimationGroup._parentContainer = this._assetContainer;
@@ -1735,12 +1732,8 @@ export class GLTFLoader implements IGLTFLoader {
             return Promise.resolve();
         }
 
-        if (!LoaderAnimationPromise) {
-            LoaderAnimationPromise = import("./glTFLoaderAnimation");
-        }
-
         // async-load the animation sampler to provide the interpolation of the channelTargetPath
-        return LoaderAnimationPromise.then(() => {
+        return LazyLoaderAnimationModulePromise.value.then(() => {
             let properties: IInterpolationPropertyInfo[];
             switch (channelTargetPath) {
                 case AnimationChannelTargetPath.TRANSLATION: {
