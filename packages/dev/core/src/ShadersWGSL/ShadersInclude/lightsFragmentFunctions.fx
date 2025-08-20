@@ -19,7 +19,7 @@ fn computeLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: vec4f, diff
 	{
 		var direction: vec3f = lightData.xyz - fragmentInputs.vPositionW;
 
-		var attenuation: f32 = max(0., 1.0 - length(direction) / range);
+		attenuation = max(0., 1.0 - length(direction) / range);
 		lightVectorW = normalize(direction);
 	}
 	else
@@ -178,4 +178,51 @@ fn computeAreaLighting(ltc1: texture_2d<f32>, ltc1Sampler:sampler, ltc2:texture_
 }
 
 // End Area Light
+#endif
+
+#ifdef CLUSTLIGHT_BATCH
+#include<clusteredLightingFunctions>
+
+fn computeClusteredLighting(
+	lightDataTexture: texture_2d<f32>,
+	tileMaskBuffer: ptr<storage, array<u32>>,
+	viewDirectionW: vec3f,
+	vNormal: vec3f,
+	lightData: vec4f,
+	numLights: i32,
+	glossiness: f32
+) -> lightingInfo {
+	var result: lightingInfo;
+	let tilePosition = vec2i(fragmentInputs.position.xy * lightData.xy);
+	let maskResolution = vec2i(lightData.zw);
+	var tileIndex = (tilePosition.x * maskResolution.x + tilePosition.y) * maskResolution.y;
+
+	let numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;
+	var batchOffset = 0u;
+
+	for (var i = 0; i < numBatches; i += 1) {
+		var mask = tileMaskBuffer[tileIndex];
+		tileIndex += 1;
+
+		while mask != 0 {
+			let trailing = firstTrailingBit(mask);
+			mask ^= 1u << trailing;
+			let light = getClusteredLight(lightDataTexture, batchOffset + trailing);
+
+			var info: lightingInfo;
+			if light.vLightDirection.w < 0.0 {
+				// Assume an angle greater than 180º is a point light
+				info = computeLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
+			} else {
+				info = computeSpotLighting(viewDirectionW, vNormal, light.vLightData, light.vLightDirection, light.vLightDiffuse.rgb, light.vLightSpecular.rgb, light.vLightDiffuse.a, glossiness);
+			}
+			result.diffuse += info.diffuse;
+			#ifdef SPECULARTERM
+				result.specular += info.specular;
+			#endif
+		}
+		batchOffset += CLUSTLIGHT_BATCH;
+	}
+	return result;
+}
 #endif

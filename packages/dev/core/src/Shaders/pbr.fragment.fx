@@ -73,6 +73,8 @@ precision highp float;
 #include<pbrBlockIridescence>
 #include<pbrBlockSubSurface>
 
+#include<pbrClusteredLightingFunctions>
+
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {
 
