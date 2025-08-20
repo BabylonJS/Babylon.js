@@ -1,5 +1,9 @@
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
-import type { RecastInjection } from "../types";
+import type { Mesh } from "core/Meshes/mesh";
+
+import type { INavMeshParametersV2, RecastInjection } from "../types";
+import { GenerateNavMesh } from "../generator";
+import type { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
 
 export let BjsRecast: RecastInjection;
 /**
@@ -72,4 +76,20 @@ async function importRecast(baseUrl: string, version: string) {
             `
     );
     return result;
+}
+
+/**
+ * Injects the navigation mesh generation methods into the navigation plugin.
+ * @param navigationPlugin The navigation plugin to inject the methods into.
+ */
+export function InjectGenerators(navigationPlugin: RecastNavigationJSPluginV2) {
+    navigationPlugin.createNavMeshImpl = (meshes: Mesh[], parameters: INavMeshParametersV2) => {
+        return GenerateNavMesh(meshes, parameters);
+    };
+
+    navigationPlugin.createNavMeshAsyncImpl = async (meshes: Mesh[], parameters: INavMeshParametersV2) => {
+        return await new Promise((resolve) => {
+            resolve(GenerateNavMesh(meshes, parameters));
+        });
+    };
 }

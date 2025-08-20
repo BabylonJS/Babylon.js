@@ -1,5 +1,5 @@
-// http://localhost:1338/#KVQP83#155
-// http://localhost:1338/#KVQP83#162 = obstacles
+// http://localhost:1338/#KVQP83#203
+// http://localhost:1338/#KVQP83#209 = obstacles
 import type { NavMesh, QueryFilter, TileCache, NavMeshQuery } from "@recast-navigation/core";
 
 import type { ICrowd, IObstacle } from "core/Navigation/INavigationEngine";
@@ -14,6 +14,7 @@ import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
 import { CreateDebugNavMesh } from "../debug/simple-debug";
+import { BjsRecast, InjectGenerators } from "../factory/common";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
@@ -88,8 +89,12 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * Creates a RecastNavigationJSPluginV2 instance
      * @param recastInjection The recast-navigation-js injection containing core and generators
      */
-    // TODO: make the recastInjection optional and inject it if not provided
-    public constructor(recastInjection: RecastInjection) {
+    public constructor(recastInjection?: RecastInjection) {
+        if (!recastInjection) {
+            recastInjection = BjsRecast;
+            InjectGenerators(this);
+        }
+
         this.bjsRECAST = recastInjection;
 
         if (!this.isSupported()) {
@@ -97,10 +102,6 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
             return;
         }
         this.setTimeStep();
-
-        // TODO: use this?
-        // this._tempVec1 = new this.bjsRECAST.Vec3();
-        // this._tempVec2 = new this.bjsRECAST.Vec3();
     }
 
     /**
