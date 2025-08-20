@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IKHRInteractivity } from "babylonjs-gltf2interface";
 import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
-import { AddObjectAccessorToKey, GetPathToObjectConverter } from "./objectModelMapping";
+import { AddObjectAccessor, SetTargetObject, GetPathToObjectConverter } from "./objectModelMapping";
 import { InteractivityGraphToFlowGraphParser } from "./KHR_interactivity/interactivityGraphParser";
 import { addToBlockFactory } from "core/FlowGraph/Blocks/flowGraphBlockFactory";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
-import type { Scene } from "core/scene";
-import type { IAnimation } from "../glTFLoaderInterfaces";
+import type { IAnimation, IScene, IKHRInteractivity } from "../glTFLoaderInterfaces";
+import type { Nullable } from "core/types";
 
 const NAME = "KHR_interactivity";
 
@@ -39,144 +38,165 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _pathConverter?: GLTFPathToObjectConverter<any, any, any>;
+    private readonly _pathConverter: GLTFPathToObjectConverter<any, any, any>;
+
+    private _loader?: GLTFLoader;
+    private _coordinator?: FlowGraphCoordinator;
 
     /**
      * @internal
      * @param _loader
      */
-    constructor(private _loader: GLTFLoader) {
+    constructor(_loader: GLTFLoader) {
+        this._loader = _loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
         this._pathConverter = GetPathToObjectConverter(this._loader.gltf);
         // avoid starting animations automatically.
         _loader._skipStartAnimationStep = true;
 
-        // Update object model with new pointers
-
-        const scene = _loader.babylonScene;
-        if (scene) {
-            _AddInteractivityObjectModel(scene);
+        // Give the interactivity object a reference to the scene.
+        const interactivity = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
+        if (interactivity) {
+            interactivity._babylonScene = _loader.babylonScene;
         }
     }
 
     public dispose() {
-        (this._loader as any) = null;
-        delete this._pathConverter;
+        delete this._loader;
+        delete this._coordinator;
     }
 
-    // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/no-misused-promises
-    public async onReady(): Promise<void> {
-        if (!this._loader.babylonScene || !this._pathConverter) {
-            return;
+    /** @internal */
+    public onReady(): void {
+        if (this._coordinator) {
+            this._coordinator.start();
         }
-        const scene = this._loader.babylonScene;
-        const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
-        if (!interactivityDefinition) {
-            // This can technically throw, but it's not a critical error
-            return;
+    }
+
+    /** @internal */
+    // eslint-disable-next-line no-restricted-syntax
+    public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
+        if (!this._loader) {
+            return null;
         }
 
-        const coordinator = new FlowGraphCoordinator({ scene });
-        coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
-        const graphs = interactivityDefinition.graphs.map((graph) => {
-            const parser = new InteractivityGraphToFlowGraphParser(graph, this._loader.gltf, this._loader.parent.targetFps);
-            return parser.serializeToFlowGraph();
+        return this._loader.loadSceneAsync(context, scene).then(() => {
+            if (!this._loader) {
+                return;
+            }
+
+            const scene = this._loader.babylonScene;
+            const gltf = this._loader.gltf;
+            const targetFps = this._loader.parent.targetFps;
+            const interactivityDefinition = gltf.extensions?.KHR_interactivity as IKHRInteractivity;
+            if (!interactivityDefinition) {
+                // This can technically throw, but it's not a critical error
+                return;
+            }
+
+            const coordinator = new FlowGraphCoordinator({ scene });
+            coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
+
+            const graphs = interactivityDefinition.graphs.map((graph) => {
+                const parser = new InteractivityGraphToFlowGraphParser(graph, gltf, targetFps);
+                return parser.serializeToFlowGraph();
+            });
+
+            return Promise.all(graphs.map((graph) => ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter }))).then(() => {
+                this._coordinator = coordinator;
+            });
         });
-        // parse each graph async
-        await Promise.all(graphs.map(async (graph) => await ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter })));
-
-        coordinator.start();
     }
 }
 
-/**
- * @internal
- * populates the object model with the interactivity extension
- */
-export function _AddInteractivityObjectModel(scene: Scene) {
-    // Note - all of those are read-only, as per the specs!
+// Add object accessors to object model.
+// Note - all of those are read-only, as per the specs!
 
-    // active camera rotation
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/rotation", {
-        get: () => {
-            if (!scene.activeCamera) {
-                return new Quaternion(NaN, NaN, NaN, NaN);
-            }
-            const quat = Quaternion.FromRotationMatrix(scene.activeCamera.getWorldMatrix()).normalize();
-            if (!scene.useRightHandedSystem) {
-                quat.w *= -1; // glTF uses right-handed system, while babylon uses left-handed
-                quat.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
-            }
-            return quat;
-        },
-        type: "Quaternion",
-        getTarget: () => scene.activeCamera,
-    });
-    // activeCamera position
-    AddObjectAccessorToKey("/extensions/KHR_interactivity/?/activeCamera/position", {
-        get: () => {
-            if (!scene.activeCamera) {
-                return new Vector3(NaN, NaN, NaN);
-            }
-            const pos = scene.activeCamera.getWorldMatrix().getTranslation(); // not global position
-            if (!scene.useRightHandedSystem) {
-                pos.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
-            }
-            return pos;
-        },
-        type: "Vector3",
-        getTarget: () => scene.activeCamera,
-    });
+// Add a target object for the extension for access to scene properties
+SetTargetObject("/extensions/KHR_interactivity");
 
-    // /animations/{} pointers:
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/isPlaying", {
-        get: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup?.isPlaying ?? false;
-        },
-        type: "boolean",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
-        },
-    });
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/minTime", {
-        get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.from ?? 0) / 60; // fixed factor for duration-to-frames conversion
-        },
-        type: "number",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
-        },
-    });
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/maxTime", {
-        get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.to ?? 0) / 60; // fixed factor for duration-to-frames conversion
-        },
-        type: "number",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
-        },
-    });
-    // playhead
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/playhead", {
-        get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
-        },
-        type: "number",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
-        },
-    });
-    //virtualPlayhead - TODO, do we support this property in our animations? getCurrentFrame  is the only method we have for this.
-    AddObjectAccessorToKey("/animations/{}/extensions/KHR_interactivity/virtualPlayhead", {
-        get: (animation: IAnimation) => {
-            return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
-        },
-        type: "number",
-        getTarget: (animation: IAnimation) => {
-            return animation._babylonAnimationGroup;
-        },
-    });
-}
+// active camera rotation
+AddObjectAccessor("/extensions/KHR_interactivity/activeCamera/rotation", {
+    get: (interactivity: IKHRInteractivity) => {
+        const scene = interactivity._babylonScene!;
+        if (!scene.activeCamera) {
+            return new Quaternion(NaN, NaN, NaN, NaN);
+        }
+        const quat = Quaternion.FromRotationMatrix(scene.activeCamera.getWorldMatrix()).normalize();
+        if (!scene.useRightHandedSystem) {
+            quat.w *= -1; // glTF uses right-handed system, while babylon uses left-handed
+            quat.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
+        }
+        return quat;
+    },
+    type: "Quaternion",
+    getTarget: (interactivity: IKHRInteractivity) => interactivity._babylonScene!.activeCamera,
+});
+// activeCamera position
+AddObjectAccessor("/extensions/KHR_interactivity/activeCamera/position", {
+    get: (interactivity: IKHRInteractivity) => {
+        const scene = interactivity._babylonScene!;
+        if (!scene.activeCamera) {
+            return new Vector3(NaN, NaN, NaN);
+        }
+        const pos = scene.activeCamera.getWorldMatrix().getTranslation(); // not global position
+        if (!scene.useRightHandedSystem) {
+            pos.x *= -1; // glTF uses right-handed system, while babylon uses left-handed
+        }
+        return pos;
+    },
+    type: "Vector3",
+    getTarget: (interactivity: IKHRInteractivity) => interactivity._babylonScene!.activeCamera,
+});
+
+// /animations/{} pointers:
+AddObjectAccessor("/animations/{}/extensions/KHR_interactivity/isPlaying", {
+    get: (animation: IAnimation) => {
+        return animation._babylonAnimationGroup?.isPlaying ?? false;
+    },
+    type: "boolean",
+    getTarget: (animation: IAnimation) => {
+        return animation._babylonAnimationGroup;
+    },
+});
+AddObjectAccessor("/animations/{}/extensions/KHR_interactivity/minTime", {
+    get: (animation: IAnimation) => {
+        return (animation._babylonAnimationGroup?.from ?? 0) / 60; // fixed factor for duration-to-frames conversion
+    },
+    type: "number",
+    getTarget: (animation: IAnimation) => {
+        return animation._babylonAnimationGroup;
+    },
+});
+AddObjectAccessor("/animations/{}/extensions/KHR_interactivity/maxTime", {
+    get: (animation: IAnimation) => {
+        return (animation._babylonAnimationGroup?.to ?? 0) / 60; // fixed factor for duration-to-frames conversion
+    },
+    type: "number",
+    getTarget: (animation: IAnimation) => {
+        return animation._babylonAnimationGroup;
+    },
+});
+// playhead
+AddObjectAccessor("/animations/{}/extensions/KHR_interactivity/playhead", {
+    get: (animation: IAnimation) => {
+        return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
+    },
+    type: "number",
+    getTarget: (animation: IAnimation) => {
+        return animation._babylonAnimationGroup;
+    },
+});
+// virtualPlayhead - TODO, do we support this property in our animations? getCurrentFrame is the only method we have for this.
+AddObjectAccessor("/animations/{}/extensions/KHR_interactivity/virtualPlayhead", {
+    get: (animation: IAnimation) => {
+        return (animation._babylonAnimationGroup?.getCurrentFrame() ?? 0) / 60; // fixed factor for duration-to-frames conversion
+    },
+    type: "number",
+    getTarget: (animation: IAnimation) => {
+        return animation._babylonAnimationGroup;
+    },
+});
 
 // Register flow graph blocks. Do it here so they are available when the extension is enabled.
 addToBlockFactory(NAME, "FlowGraphGLTFDataProvider", async () => {

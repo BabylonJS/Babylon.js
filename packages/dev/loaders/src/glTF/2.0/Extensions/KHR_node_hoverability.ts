@@ -4,7 +4,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import { addNewInteractivityFlowGraphMapping } from "./KHR_interactivity/declarationMapper";
 import type { INode } from "../glTFLoaderInterfaces";
-import { AddObjectAccessorToKey } from "./objectModelMapping";
+import { AddObjectAccessor } from "./objectModelMapping";
 
 const NAME = "KHR_node_hoverability";
 
@@ -156,7 +156,7 @@ addNewInteractivityFlowGraphMapping("event/onHoverOut", NAME, {
     },
 });
 
-AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_hoverability/hoverable", {
+AddObjectAccessor("/nodes/{}/extensions/KHR_node_hoverability/hoverable", {
     get: (node: INode) => {
         const tn = node._babylonTransformNode as any;
         if (tn && tn.pointerOverDisableMeshTesting !== undefined) {
@@ -191,16 +191,14 @@ export class KHR_node_hoverability implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /**
-     * @internal
-     */
+    /** @internal */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
-    public async onReady(): Promise<void> {
+    /** @internal */
+    public onReady(): void {
         this._loader.gltf.nodes?.forEach((node) => {
             // default is true, so only apply if false
             if (node.extensions?.KHR_node_hoverability && node.extensions?.KHR_node_hoverability.hoverable === false) {
