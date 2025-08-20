@@ -5,7 +5,6 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 import { LayerRegular } from "@fluentui/react-icons";
 
 import { Observable } from "core/Misc";
-import { EffectLayer } from "core/Layers/effectLayer";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -23,7 +22,6 @@ export const EffectLayerExplorerServiceDefinition: ServiceDefinition<[], [IScene
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Effect Layers",
             order: DefaultSectionsOrder.EffectLayers,
-            predicate: (entity) => entity instanceof EffectLayer,
             getRootEntities: () => scene.effectLayers,
             getEntityDisplayInfo: (effectLayer) => {
                 const onChangeObservable = new Observable<void>();

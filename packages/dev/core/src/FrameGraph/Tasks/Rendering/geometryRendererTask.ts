@@ -300,8 +300,8 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     }
 
     public record() {
-        if (this.textureDescriptions.length === 0 || this.objectList === undefined) {
-            throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list and at least one geometry texture description must be provided`);
+        if (this.objectList === undefined) {
+            throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list must be provided`);
         }
 
         // Make sure the renderList / particleSystemList are set when FrameGraphGeometryRendererTask.isReady() is called!
@@ -316,10 +316,10 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
 
         this._registerForRenderPassId(this._renderer.renderPassId);
 
-        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(outputTextureHandle[0]);
+        const outputTextureDescription = outputTextureHandle.length > 0 ? this._frameGraph.textureManager.getTextureDescription(outputTextureHandle[0]) : null;
 
-        this._textureWidth = outputTextureDescription.size.width;
-        this._textureHeight = outputTextureDescription.size.height;
+        this._textureWidth = outputTextureDescription?.size.width ?? 0;
+        this._textureHeight = outputTextureDescription?.size.height ?? 0;
 
         // Create pass
         MaterialHelperGeometryRendering.MarkAsDirty(this._renderer.renderPassId, this.objectList.meshes || this._scene.meshes);
@@ -457,7 +457,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
             }
 
             const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
-            if (depthTextureDescription.options.samples !== this.samples) {
+            if (depthTextureDescription.options.samples !== this.samples && this.textureDescriptions.length > 0) {
                 throw new Error(`FrameGraphGeometryRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
             }
 

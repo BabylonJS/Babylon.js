@@ -100,6 +100,7 @@ export class CreateParticleBlock extends NodeParticleBlock {
         system._colorCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             particle.color.copyFrom(this.color.getConnectedValue(state));
+            particle.colorStep.copyFrom(particle.color);
         };
 
         system._sizeCreation.process = (particle: Particle) => {

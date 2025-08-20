@@ -26,6 +26,7 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGrap
 import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
 import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
+import { NodeRenderGraphCullObjectsBlock } from "./Blocks/cullObjectsBlock";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -625,14 +626,19 @@ export class NodeRenderGraph {
         colorTexture.output.connectTo(clear.target);
         depthTexture.output.connectTo(clear.depth);
 
-        // Render objects
+        // Object list and culling
         const camera = new NodeRenderGraphInputBlock("Camera", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
         const objectList = new NodeRenderGraphInputBlock("Object List", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+        const cull = new NodeRenderGraphCullObjectsBlock("Cull", this._frameGraph, this._scene);
 
+        camera.output.connectTo(cull.camera);
+        objectList.output.connectTo(cull.objects);
+
+        // Render objects
         const mainRendering = new NodeRenderGraphObjectRendererBlock("Main Rendering", this._frameGraph, this._scene);
 
         camera.output.connectTo(mainRendering.camera);
-        objectList.output.connectTo(mainRendering.objects);
+        cull.output.connectTo(mainRendering.objects);
         clear.output.connectTo(mainRendering.target);
         clear.outputDepth.connectTo(mainRendering.depth);
 

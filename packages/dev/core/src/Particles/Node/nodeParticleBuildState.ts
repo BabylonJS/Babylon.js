@@ -119,6 +119,8 @@ export class NodeParticleBuildState {
                 return this.systemContext._scaledDirection;
             case NodeParticleContextualSources.Color:
                 return this.particleContext.color;
+            case NodeParticleContextualSources.InitialColor:
+                return this.particleContext.colorStep;
             case NodeParticleContextualSources.Age:
                 return this.particleContext.age;
             case NodeParticleContextualSources.Lifetime:

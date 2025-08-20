@@ -176,6 +176,11 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.Color;
                 return block;
             }
+            case "InitialColorBlock": {
+                const block = new ParticleInputBlock("Initial Color");
+                block.contextualValue = NodeParticleContextualSources.InitialColor;
+                return block;
+            }
             case "AgeBlock": {
                 const block = new ParticleInputBlock("Age");
                 block.contextualValue = NodeParticleContextualSources.Age;

@@ -1,8 +1,7 @@
-import type { ImageMimeType, IMeshPrimitive, INode, IMaterial, ITextureInfo, IAccessor } from "babylonjs-gltf2interface";
+import type { IMeshPrimitive, INode, IMaterial, ITextureInfo, IAccessor } from "babylonjs-gltf2interface";
 import type { Node } from "core/node";
 import type { Nullable } from "core/types";
 
-import type { Texture } from "core/Materials/Textures/texture";
 import type { IDisposable } from "core/scene";
 
 import type { IGLTFExporterExtension } from "../glTFFileExporter";
@@ -19,15 +18,6 @@ export var __IGLTFExporterExtensionV2 = 0; // I am here to allow dts to be creat
  * @internal
  */
 export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDisposable {
-    /**
-     * Define this method to modify the default behavior before exporting a texture
-     * @param context The context when loading the asset
-     * @param babylonTexture The Babylon.js texture
-     * @param mimeType The mime-type of the generated image
-     * @returns A promise that resolves with the exported texture
-     */
-    preExportTextureAsync?(context: string, babylonTexture: Texture, mimeType: ImageMimeType): Promise<Nullable<Texture>>;
-
     /**
      * Define this method to get notified when a texture info is created
      * @param context The context when loading the asset
