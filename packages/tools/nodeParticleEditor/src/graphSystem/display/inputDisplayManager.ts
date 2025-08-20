@@ -101,6 +101,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.InitialColor:
                     value = "Initial Color";
                     break;
+                case NodeParticleContextualSources.ColorDead:
+                    value = "Dead Color";
+                    break;
                 case NodeParticleContextualSources.SpriteCellEnd:
                     value = "Sprite Cell End";
                     break;
