@@ -53,7 +53,7 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
 
     // Get the value of the property. If it changes, it will cause a re-render, which is needed to
     // re-evaluate which specific hook will catch all the nested property changes we want to observe.
-    const value = useProperty(target, propertyKey) as unknown;
+    const value = useProperty(target, propertyKey);
 
     // Determine which specific property hook to use based on the value's type.
     const useSpecificProperty = useMemo(() => MakePropertyHook(value), [value]);
