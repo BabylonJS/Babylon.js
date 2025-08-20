@@ -25,8 +25,14 @@ float alpha = 1.0;
     vec4 baseColorFromTexture = texture2D(baseColorSampler, vBaseColorUV + uvOffset);
 #endif
 
-#ifdef METALLIC_ROUGHNESS
-    vec4 metallicRoughnessFromTexture = texture2D(baseMetalRoughSampler, vBaseMetalRoughUV + uvOffset);
+#ifdef BASE_METALNESS
+    vec4 metallicFromTexture = texture2D(baseMetalnessSampler, vBaseMetalnessUV + uvOffset);
+#endif
+
+#if defined(ROUGHNESSSTOREINMETALMAPGREEN) && defined(BASE_METALNESS)
+    float roughnessFromTexture = metallicFromTexture.g;
+#elif defined(SPECULAR_ROUGHNESS)
+    float roughnessFromTexture = texture2D(specularRoughnessSampler, vSpecularRoughnessUV + uvOffset).r;
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
@@ -43,9 +49,6 @@ float alpha = 1.0;
 
 #ifdef SPECULAR_COLOR
     vec4 specularColorFromTexture = texture2D(specularColorSampler, vSpecularColorUV + uvOffset);
-    #ifdef SPECULAR_COLOR_GAMMA
-        specularColorFromTexture.rgb = toLinearSpace(specularColorFromTexture.rgb);
-    #endif
 #endif
 
 #ifdef SPECULAR_WEIGHT
@@ -107,9 +110,12 @@ specular_ior = vReflectanceInfo.z;
     #endif
 #endif
 
-#ifdef METALLIC_ROUGHNESS
-    base_metalness *= metallicRoughnessFromTexture.b;
-    specular_roughness *= metallicRoughnessFromTexture.g;
+#ifdef BASE_METALNESS
+    #ifdef METALLNESSSTOREINMETALMAPBLUE
+        base_metalness *= metallicFromTexture.b;
+    #else
+        base_metalness *= metallicFromTexture.r;
+    #endif
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
@@ -117,7 +123,11 @@ specular_ior = vReflectanceInfo.z;
 #endif
 
 #ifdef SPECULAR_COLOR
-    specular_color *= specularColorFromTexture.rgb;
+    #ifdef SPECULAR_COLOR_GAMMA
+        specular_color *= toLinearSpace(specularColorFromTexture.rgb);
+    #else
+        specular_color *= specularColorFromTexture.rgb;
+    #endif
 #endif
 
 #ifdef SPECULAR_WEIGHT
@@ -128,6 +138,10 @@ specular_ior = vReflectanceInfo.z;
     #else
         specular_weight *= specularWeightFromTexture.r;
     #endif
+#endif
+
+#if defined(SPECULAR_ROUGHNESS) || (defined(ROUGHNESSSTOREINMETALMAPGREEN) && defined(BASE_METALNESS))
+    specular_roughness *= roughnessFromTexture;
 #endif
 
 #ifdef DETAIL

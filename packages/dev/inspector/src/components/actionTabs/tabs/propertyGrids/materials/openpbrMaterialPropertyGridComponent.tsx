@@ -70,9 +70,9 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
                 <TextureLinkLineComponent
-                    label="Metallic Roughness"
-                    texture={material.baseMetalRoughTexture}
-                    propertyName="baseMetalRoughTexture"
+                    label="Base Metalness"
+                    texture={material.baseMetalnessTexture}
+                    propertyName="baseMetalnessTexture"
                     material={material}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
@@ -97,6 +97,14 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     label="Specular Color"
                     texture={material.specularColorTexture}
                     propertyName="specularColorTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Specular Roughness"
+                    texture={material.specularRoughnessTexture}
+                    propertyName="specularRoughnessTexture"
                     material={material}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
@@ -287,9 +295,9 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextureLinkLineComponent
-                        label="Metal/Rough Texture"
-                        texture={material.baseMetalRoughTexture}
-                        propertyName="baseMetalRoughTexture"
+                        label="Metalness Texture"
+                        texture={material.baseMetalnessTexture}
+                        propertyName="baseMetalnessTexture"
                         material={material}
                         onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                         onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
@@ -359,9 +367,9 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <TextureLinkLineComponent
-                        label="Metal/Rough Texture"
-                        texture={material.baseMetalRoughTexture}
-                        propertyName="baseMetalRoughTexture"
+                        label="Roughness Texture"
+                        texture={material.specularRoughnessTexture}
+                        propertyName="specularRoughnessTexture"
                         material={material}
                         onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                         onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}

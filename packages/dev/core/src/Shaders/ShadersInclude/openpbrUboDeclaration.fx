@@ -78,12 +78,14 @@ uniform Material {
     mat4 baseColorMatrix;
     vec2 vBaseDiffuseRoughnessInfos;
     mat4 baseDiffuseRoughnessMatrix;
+    vec2 vBaseMetalnessInfos;
+    mat4 baseMetalnessMatrix;
     vec2 vSpecularWeightInfos;
     mat4 specularWeightMatrix;
     vec2 vSpecularColorInfos;
     mat4 specularColorMatrix;
-    vec2 vBaseMetalRoughInfos;
-    mat4 baseMetalRoughMatrix;
+    vec2 vSpecularRoughnessInfos;
+    mat4 specularRoughnessMatrix;
     vec2 vCoatWeightInfos;
     mat4 coatWeightMatrix;
     vec2 vCoatColorInfos;
