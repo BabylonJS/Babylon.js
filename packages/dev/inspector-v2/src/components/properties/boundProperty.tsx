@@ -1,9 +1,7 @@
 import type { ComponentProps, ComponentType } from "react";
 import { forwardRef, useMemo } from "react";
 
-import { Color3, Color4 } from "core/Maths/math.color";
-import { Quaternion, Vector3 } from "core/Maths/math.vector";
-import { useColor3Property, useColor4Property, useProperty, useQuaternionProperty, useVector3Property } from "../../hooks/compoundPropertyHooks";
+import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**
  * Helper type to check if a type includes null or undefined
@@ -58,19 +56,7 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
     const value = useProperty(target, propertyKey) as unknown;
 
     // Determine which specific property hook to use based on the value's type.
-    const useSpecificProperty = useMemo(() => {
-        if (value instanceof Vector3) {
-            return useVector3Property;
-        } else if (value instanceof Quaternion) {
-            return useQuaternionProperty;
-        } else if (value instanceof Color3) {
-            return useColor3Property;
-        } else if (value instanceof Color4) {
-            return useColor4Property;
-        } else {
-            return useProperty;
-        }
-    }, [value]);
+    const useSpecificProperty = useMemo(() => MakePropertyHook(value), [value]);
 
     // Create an inline nested component that changes when the desired specific hook type changes (since hooks can't be conditional).
     // eslint-disable-next-line @typescript-eslint/naming-convention
