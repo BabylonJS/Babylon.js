@@ -12,6 +12,7 @@ export * from "./Update/updateAngleBlock";
 export * from "./Update/updateAgeBlock";
 export * from "./Update/basicPositionUpdateBlock";
 export * from "./Update/basicSpriteUpdateBlock";
+export * from "./Update/basicColorUpdateBlock";
 export * from "./Update/updateSpriteCellIndexBlock";
 export * from "./Update/updateFlowMapBlock";
 export * from "./Update/updateAttractorBlock";

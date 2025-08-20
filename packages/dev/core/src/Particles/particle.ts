@@ -39,6 +39,11 @@ export class Particle {
     public colorStep = new Color4(0, 0, 0, 0);
 
     /**
+     * The creation color of the particle.
+     */
+    public initialColor = new Color4(0, 0, 0, 0);
+
+    /**
      * Defines how long will the life of the particle be.
      */
     public lifeTime = 1.0;
@@ -266,6 +271,7 @@ export class Particle {
         }
         other.color.copyFrom(this.color);
         other.colorStep.copyFrom(this.colorStep);
+        other.initialColor.copyFrom(this.initialColor);
         other.lifeTime = this.lifeTime;
         other.age = this.age;
         other._randomCellOffset = this._randomCellOffset;
