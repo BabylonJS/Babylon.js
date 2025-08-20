@@ -564,6 +564,7 @@ export const RequestFile = (
     onError?: (error: RequestFileError) => void,
     onOpened?: (request: WebRequest) => void
 ): IFileRequest => {
+    offlineProvider ??= EngineStore.LastCreatedScene?.offlineProvider;
     url = FileToolsOptions.CleanUrl(url);
     url = FileToolsOptions.PreprocessUrl(url);
 
@@ -795,6 +796,12 @@ export const GetMimeType = (url: string): string | undefined => {
             return "image/png";
         case "webp":
             return "image/webp";
+        case "ktx":
+            return "image/ktx";
+        case "ktx2":
+            return "image/ktx2";
+        case "avif":
+            return "image/avif";
         default:
             return undefined;
     }

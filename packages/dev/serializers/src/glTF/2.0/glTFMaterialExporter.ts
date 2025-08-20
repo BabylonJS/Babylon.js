@@ -24,6 +24,8 @@ import type { Material } from "core/Materials/material";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { GetMimeType } from "core/Misc/fileTools";
 
 const Epsilon = 1e-6;
 const DielectricSpecular = new Color3(0.04, 0.04, 0.04);
@@ -63,6 +65,50 @@ function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
         case ImageMimeType.AVIF:
             return ".avif";
     }
+}
+
+/**
+ * Gets cached image from a texture, if available.
+ * @param babylonTexture texture to check for cached image
+ * @returns image data if found and directly usable; null otherwise
+ */
+async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullable<{ data: ArrayBuffer; mimeType: string }>> {
+    const internalTexture = babylonTexture.getInternalTexture();
+    if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
+        return null;
+    }
+    if (internalTexture.invertY) {
+        return null;
+    }
+
+    const buffer = internalTexture._buffer;
+
+    let data;
+    let mimeType = (babylonTexture as Texture).mimeType;
+
+    if (!buffer) {
+        data = await Tools.LoadFileAsync(internalTexture.url);
+        mimeType = GetMimeType(internalTexture.url) || mimeType;
+    } else if (typeof buffer === "string") {
+        data = await Tools.LoadFileAsync(buffer);
+        mimeType = GetMimeType(buffer) || mimeType;
+    } else if (buffer instanceof HTMLImageElement) {
+        data = await Tools.LoadFileAsync(buffer.src);
+        mimeType = GetMimeType(buffer.src) || mimeType;
+    } else if (buffer instanceof Blob) {
+        data = await buffer.arrayBuffer();
+        mimeType = buffer.type || mimeType;
+    } else if (ArrayBuffer.isView(buffer)) {
+        data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+    } else if (buffer instanceof ArrayBuffer) {
+        data = buffer;
+    }
+
+    if (data && mimeType) {
+        return { data, mimeType };
+    }
+
+    return null;
 }
 
 /**
@@ -860,6 +906,8 @@ export class GLTFMaterialExporter {
 
     private async _exportTextureImageAsync(babylonTexture: BaseTexture): Promise<number> {
         const requestedMimeType = (babylonTexture as Texture).mimeType ?? "none";
+        // TODO: Add an official way for users to export using a different mime type
+        // than the one they loaded with (which is denoted by Texture.mimeType)
 
         const internalTextureToImage = this._internalTextureToImage;
         const internalTextureUniqueId = babylonTexture.getInternalTexture()!.uniqueId;
@@ -868,6 +916,12 @@ export class GLTFMaterialExporter {
 
         if (imageIndexPromise === undefined) {
             imageIndexPromise = (async () => {
+                // Try to get the image from memory first, if applicable
+                const cache = await GetCachedImageAsync(babylonTexture);
+                if (cache && (requestedMimeType === "none" || cache.mimeType === requestedMimeType)) {
+                    return this._exportImage(babylonTexture.name, cache.mimeType as ImageMimeType, cache.data);
+                }
+
                 // Preserve texture mime type if defined
                 let mimeType = ImageMimeType.PNG;
                 if (requestedMimeType !== "none") {
