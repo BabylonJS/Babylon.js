@@ -2191,7 +2191,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "cameraInfo",
         ];
 
-        for (const uniformName in Object.keys(this._uniformsList)) {
+        for (const uniformName in this._uniformsList) {
             uniforms.push(uniformName);
         }
 
