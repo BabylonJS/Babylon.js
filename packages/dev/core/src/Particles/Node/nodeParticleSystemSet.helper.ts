@@ -21,6 +21,7 @@ import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock"
 import type { Texture } from "../../Materials/Textures/texture";
 import { BasicPositionUpdateBlock } from "./Blocks/Update/basicPositionUpdateBlock";
 import { BasicColorUpdateBlock } from "./Blocks/Update/basicColorUpdateBlock";
+import { ParticleRandomBlock } from "./Blocks/particleRandomBlock";
 
 function _CreateAndConnectInput(connectionPoint: NodeParticleConnectionPoint, name: string, defaultValue: Vector3 | number) {
     const input = new ParticleInputBlock(name);
@@ -98,6 +99,19 @@ async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSyste
 
     createParticleBlock.particle.connectTo(shapeBlock.particle);
     createParticleBlock.colorDead.value = particleSystem.colorDead;
+
+    // Color
+    const color0Block = new ParticleInputBlock("Color0");
+    color0Block.value = particleSystem.color1;
+
+    const color1Block = new ParticleInputBlock("Color1");
+    color1Block.value = particleSystem.color2;
+
+    const randomBlock = new ParticleRandomBlock("Random");
+    color0Block.output.connectTo(randomBlock.min);
+    color1Block.output.connectTo(randomBlock.max);
+
+    randomBlock.output.connectTo(createParticleBlock.color);
 
     // Texture
     const textureBlock = new ParticleTextureSourceBlock("Texture");
