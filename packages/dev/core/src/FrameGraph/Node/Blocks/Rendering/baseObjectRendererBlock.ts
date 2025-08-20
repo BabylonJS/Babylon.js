@@ -100,6 +100,46 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.depthWrite = value;
     }
 
+    /** Indicates if particles should be rendered */
+    @editableInPropertyPage("Render particles", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get renderParticles() {
+        return this._frameGraphTask.renderParticles;
+    }
+
+    public set renderParticles(value: boolean) {
+        this._frameGraphTask.renderParticles = value;
+    }
+
+    /** Indicates if sprites should be rendered */
+    @editableInPropertyPage("Render sprites", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get renderSprites() {
+        return this._frameGraphTask.renderSprites;
+    }
+
+    public set renderSprites(value: boolean) {
+        this._frameGraphTask.renderSprites = value;
+    }
+
+    /** Indicates if layer mask check must be forced */
+    @editableInPropertyPage("Force layer mask check", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get forceLayerMaskCheck() {
+        return this._frameGraphTask.forceLayerMaskCheck;
+    }
+
+    public set forceLayerMaskCheck(value: boolean) {
+        this._frameGraphTask.forceLayerMaskCheck = value;
+    }
+
+    /** Indicates if bounding boxes should be rendered */
+    @editableInPropertyPage("Enable bounding box rendering", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get enableBoundingBoxRendering() {
+        return this._frameGraphTask.enableBoundingBoxRendering;
+    }
+
+    public set enableBoundingBoxRendering(value: boolean) {
+        this._frameGraphTask.enableBoundingBoxRendering = value;
+    }
+
     /** Indicates if shadows must be enabled or disabled */
     @editableInPropertyPage("Disable shadows", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get disableShadows() {
@@ -224,6 +264,10 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
+        codes.push(`${this._codeVariableName}.renderParticles = ${this.renderParticles};`);
+        codes.push(`${this._codeVariableName}.renderSprites = ${this.renderSprites};`);
+        codes.push(`${this._codeVariableName}.forceLayerMaskCheck = ${this.forceLayerMaskCheck};`);
+        codes.push(`${this._codeVariableName}.enableBoundingBoxRendering = ${this.enableBoundingBoxRendering};`);
         codes.push(`${this._codeVariableName}.disableShadows = ${this.disableShadows};`);
         codes.push(`${this._codeVariableName}.renderInLinearSpace = ${this.renderInLinearSpace};`);
         codes.push(`${this._codeVariableName}.isMainObjectRenderer = ${this.isMainObjectRenderer};`);
@@ -234,6 +278,10 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         const serializationObject = super.serialize();
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
+        serializationObject.renderParticles = this.renderParticles;
+        serializationObject.renderSprites = this.renderSprites;
+        serializationObject.forceLayerMaskCheck = this.forceLayerMaskCheck;
+        serializationObject.enableBoundingBoxRendering = this.enableBoundingBoxRendering;
         serializationObject.disableShadows = this.disableShadows;
         serializationObject.renderInLinearSpace = this.renderInLinearSpace;
         serializationObject.isMainObjectRenderer = this.isMainObjectRenderer;
@@ -244,6 +292,10 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         super._deserialize(serializationObject);
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
+        this.renderParticles = serializationObject.renderParticles ?? true;
+        this.renderSprites = serializationObject.renderSprites ?? true;
+        this.forceLayerMaskCheck = serializationObject.forceLayerMaskCheck ?? true;
+        this.enableBoundingBoxRendering = serializationObject.enableBoundingBoxRendering ?? true;
         this.disableShadows = serializationObject.disableShadows;
         this.renderInLinearSpace = !!serializationObject.renderInLinearSpace;
         this.isMainObjectRenderer = !!serializationObject.isMainObjectRenderer;

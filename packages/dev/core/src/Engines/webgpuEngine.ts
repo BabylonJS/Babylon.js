@@ -868,6 +868,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             maxVaryingVectors: this._deviceLimits.maxInterStageShaderVariables,
             maxFragmentUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
             maxVertexUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
+            shaderFloatPrecision: 23, // WGSL always uses IEEE-754 binary32 floats (which have 23 bits of significand)
             standardDerivatives: true,
             astc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionASTC) >= 0 ? true : undefined) as any,
             s3tc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined) as any,
@@ -880,6 +881,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
+            blendFloat: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.Float32Blendable) >= 0,
             supportFloatTexturesResolve: false, // See https://github.com/gpuweb/gpuweb/issues/3844
             rg11b10ufColorRenderable: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.RG11B10UFloatRenderable) >= 0,
             textureFloat: true,
@@ -3775,7 +3777,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         // draw
         const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
 
-        if (this._currentDrawContext.indirectDrawBuffer) {
+        if ((nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer) {
             this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
             if (drawType === 0) {
                 renderPass2.drawIndexedIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
@@ -3937,6 +3939,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
         return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE, label);
+    }
+
+    /**
+     * Clears a storage buffer to zeroes
+     * @param storageBuffer the storage buffer to clear
+     * @param byteOffset the byte offset to start clearing (optional)
+     * @param byteLength the byte length to clear (optional)
+     */
+    public clearStorageBuffer(storageBuffer: DataBuffer, byteOffset?: number, byteLength?: number): void {
+        this._renderEncoder.clearBuffer(storageBuffer.underlyingResource, byteOffset, byteLength);
     }
 
     /**

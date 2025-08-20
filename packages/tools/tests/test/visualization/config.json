@@ -1128,9 +1128,11 @@
             "referenceImage": "glTFSerializerCameraRotationAnimation.png"
         },
         {
-            "title": "GLTF Serializer compressed and uncompressed texture export",
-            "playgroundId": "#B03GUL#4",
-            "referenceImage": "glTFSerializerTextureExport.png"
+            "title": "GLTF Serializer un/compressed texture roundtrip",
+            "playgroundId": "#8NTR5X#8",
+            "replace": "//options//, roundtrip = true;",
+            "referenceImage": "glTFSerializerTextureExport.png",
+            "errorRatio": 0.1
         },
         {
             "title": "GLTF Buggy with Draco Mesh Compression",
@@ -2637,6 +2639,10 @@
             "errorRatio": 14
         },
         {
+            "title": "FrameGraph nrge frozen meshes",
+            "playgroundId": "#9SDNZF#32"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
@@ -2756,6 +2762,16 @@
         {
             "title": "Test code inlining",
             "playgroundId": "#YG3BBF#51"
+        },
+        {
+            "title": "Sponza Clustered Lighting",
+            "playgroundId": "#CSCJO2#17",
+            "referenceImage": "sponza-clustered-lighting.png"
+        },
+        {
+            "title": "Sponza Clustered Lighting (2 viewports)",
+            "playgroundId": "#CSCJO2#20",
+            "referenceImage": "sponza-clustered-lighting-viewports.png"
         }
     ]
 }

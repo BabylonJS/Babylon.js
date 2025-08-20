@@ -84,6 +84,10 @@ import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 
+// Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
+let AnimationGroupModulePromise: Nullable<Promise<typeof import("core/Animations/animationGroup")>> = null;
+let LoaderAnimationPromise: Nullable<Promise<typeof import("./glTFLoaderAnimation")>> = null;
+
 export { GLTFFileLoader };
 
 interface ILoaderProperty extends IProperty {
@@ -1615,6 +1619,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadAnimationsAsync(): Promise<void> {
+        this._parent._startPerformanceCounter("Load animations");
+
         const animations = this._gltf.animations;
         if (!animations) {
             return Promise.resolve();
@@ -1634,7 +1640,9 @@ export class GLTFLoader implements IGLTFLoader {
             );
         }
 
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => {
+            this._parent._endPerformanceCounter("Load animations");
+        });
     }
 
     /**
@@ -1644,13 +1652,19 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves with the loaded Babylon animation group when the load is complete
      */
     public loadAnimationAsync(context: string, animation: IAnimation): Promise<AnimationGroup> {
+        this._parent._startPerformanceCounter("Load animation");
+
         const promise = this._extensionsLoadAnimationAsync(context, animation);
         if (promise) {
             return promise;
         }
 
+        if (!AnimationGroupModulePromise) {
+            AnimationGroupModulePromise = import("core/Animations/animationGroup");
+        }
+
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        return import("core/Animations/animationGroup").then(({ AnimationGroup }) => {
+        return AnimationGroupModulePromise.then(({ AnimationGroup }) => {
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
             const babylonAnimationGroup = new AnimationGroup(animation.name || `animation${animation.index}`, this._babylonScene);
             babylonAnimationGroup._parentContainer = this._assetContainer;
@@ -1672,6 +1686,8 @@ export class GLTFLoader implements IGLTFLoader {
                 );
             }
 
+            this._parent._endPerformanceCounter("Load animation");
+
             return Promise.all(promises).then(() => {
                 babylonAnimationGroup.normalize(0);
                 return babylonAnimationGroup;
@@ -1689,7 +1705,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param onLoad Called for each animation loaded
      * @returns A void promise that resolves when the load is complete
      */
-    public async _loadAnimationChannelAsync(
+    public _loadAnimationChannelAsync(
         context: string,
         animationContext: string,
         animation: IAnimation,
@@ -1698,11 +1714,11 @@ export class GLTFLoader implements IGLTFLoader {
     ): Promise<void> {
         const promise = this._extensionsLoadAnimationChannelAsync(context, animationContext, animation, channel, onLoad);
         if (promise) {
-            return await promise;
+            return promise;
         }
 
         if (channel.target.node == undefined) {
-            return await Promise.resolve();
+            return Promise.resolve();
         }
 
         const targetNode = ArrayItem.Get(`${context}/target/node`, this._gltf.nodes, channel.target.node);
@@ -1711,49 +1727,54 @@ export class GLTFLoader implements IGLTFLoader {
 
         // Ignore animations that have no animation targets.
         if ((pathIsWeights && !targetNode._numMorphTargets) || (!pathIsWeights && !targetNode._babylonTransformNode)) {
-            return await Promise.resolve();
+            return Promise.resolve();
         }
 
         // Don't load node animations if disabled.
         if (!this._parent.loadNodeAnimations && !pathIsWeights && !targetNode._isJoint) {
-            return await Promise.resolve();
+            return Promise.resolve();
         }
+
+        if (!LoaderAnimationPromise) {
+            LoaderAnimationPromise = import("./glTFLoaderAnimation");
+        }
+
         // async-load the animation sampler to provide the interpolation of the channelTargetPath
-        await import("./glTFLoaderAnimation");
+        return LoaderAnimationPromise.then(() => {
+            let properties: IInterpolationPropertyInfo[];
+            switch (channelTargetPath) {
+                case AnimationChannelTargetPath.TRANSLATION: {
+                    properties = GetMappingForKey("/nodes/{}/translation")?.interpolation!;
+                    break;
+                }
+                case AnimationChannelTargetPath.ROTATION: {
+                    properties = GetMappingForKey("/nodes/{}/rotation")?.interpolation!;
+                    break;
+                }
+                case AnimationChannelTargetPath.SCALE: {
+                    properties = GetMappingForKey("/nodes/{}/scale")?.interpolation!;
+                    break;
+                }
+                case AnimationChannelTargetPath.WEIGHTS: {
+                    properties = GetMappingForKey("/nodes/{}/weights")?.interpolation!;
+                    break;
+                }
+                default: {
+                    throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
+                }
+            }
+            // stay safe
+            if (!properties) {
+                throw new Error(`${context}/target/path: Could not find interpolation properties for target path (${channel.target.path})`);
+            }
 
-        let properties: IInterpolationPropertyInfo[];
-        switch (channelTargetPath) {
-            case AnimationChannelTargetPath.TRANSLATION: {
-                properties = GetMappingForKey("/nodes/{}/translation")?.interpolation!;
-                break;
-            }
-            case AnimationChannelTargetPath.ROTATION: {
-                properties = GetMappingForKey("/nodes/{}/rotation")?.interpolation!;
-                break;
-            }
-            case AnimationChannelTargetPath.SCALE: {
-                properties = GetMappingForKey("/nodes/{}/scale")?.interpolation!;
-                break;
-            }
-            case AnimationChannelTargetPath.WEIGHTS: {
-                properties = GetMappingForKey("/nodes/{}/weights")?.interpolation!;
-                break;
-            }
-            default: {
-                throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
-            }
-        }
-        // stay safe
-        if (!properties) {
-            throw new Error(`${context}/target/path: Could not find interpolation properties for target path (${channel.target.path})`);
-        }
+            const targetInfo: IObjectInfo<IInterpolationPropertyInfo[]> = {
+                object: targetNode,
+                info: properties,
+            };
 
-        const targetInfo: IObjectInfo<IInterpolationPropertyInfo[]> = {
-            object: targetNode,
-            info: properties,
-        };
-
-        return await this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+            return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+        });
     }
 
     /**

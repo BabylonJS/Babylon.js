@@ -195,34 +195,38 @@ abstract class GLTFLoaderOptions {
     // eslint-disable-next-line babylonjs/available
     protected copyFrom(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         if (options) {
-            this.onParsed = options.onParsed;
-            this.coordinateSystemMode = options.coordinateSystemMode ?? this.coordinateSystemMode;
-            this.animationStartMode = options.animationStartMode ?? this.animationStartMode;
-            this.loadNodeAnimations = options.loadNodeAnimations ?? this.loadNodeAnimations;
-            this.loadSkins = options.loadSkins ?? this.loadSkins;
-            this.loadMorphTargets = options.loadMorphTargets ?? this.loadMorphTargets;
-            this.compileMaterials = options.compileMaterials ?? this.compileMaterials;
-            this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
-            this.compileShadowGenerators = options.compileShadowGenerators ?? this.compileShadowGenerators;
-            this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
-            this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
-            this.createInstances = options.createInstances ?? this.createInstances;
             this.alwaysComputeBoundingBox = options.alwaysComputeBoundingBox ?? this.alwaysComputeBoundingBox;
-            this.loadAllMaterials = options.loadAllMaterials ?? this.loadAllMaterials;
-            this.loadOnlyMaterials = options.loadOnlyMaterials ?? this.loadOnlyMaterials;
-            this.skipMaterials = options.skipMaterials ?? this.skipMaterials;
-            this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
-            this.targetFps = options.targetFps ?? this.targetFps;
             this.alwaysComputeSkeletonRootNode = options.alwaysComputeSkeletonRootNode ?? this.alwaysComputeSkeletonRootNode;
-            this.useGltfTextureNames = options.useGltfTextureNames ?? this.useGltfTextureNames;
-            this.preprocessUrlAsync = options.preprocessUrlAsync ?? this.preprocessUrlAsync;
+            this.animationStartMode = options.animationStartMode ?? this.animationStartMode;
+            this.capturePerformanceCounters = options.capturePerformanceCounters ?? this.capturePerformanceCounters;
+            this.compileMaterials = options.compileMaterials ?? this.compileMaterials;
+            this.compileShadowGenerators = options.compileShadowGenerators ?? this.compileShadowGenerators;
+            this.coordinateSystemMode = options.coordinateSystemMode ?? this.coordinateSystemMode;
+            this.createInstances = options.createInstances ?? this.createInstances;
             this.customRootNode = options.customRootNode;
+            this.extensionOptions = options.extensionOptions ?? this.extensionOptions;
+            this.loadAllMaterials = options.loadAllMaterials ?? this.loadAllMaterials;
+            this.loadMorphTargets = options.loadMorphTargets ?? this.loadMorphTargets;
+            this.loadNodeAnimations = options.loadNodeAnimations ?? this.loadNodeAnimations;
+            this.loadOnlyMaterials = options.loadOnlyMaterials ?? this.loadOnlyMaterials;
+            this.loadSkins = options.loadSkins ?? this.loadSkins;
+            this.loggingEnabled = options.loggingEnabled ?? this.loggingEnabled;
+            this.onCameraLoaded = options.onCameraLoaded;
+            this.onMaterialLoaded = options.onMaterialLoaded;
             this.onMeshLoaded = options.onMeshLoaded;
+            this.onParsed = options.onParsed;
             this.onSkinLoaded = options.onSkinLoaded;
             this.onTextureLoaded = options.onTextureLoaded;
-            this.onMaterialLoaded = options.onMaterialLoaded;
-            this.onCameraLoaded = options.onCameraLoaded;
-            this.extensionOptions = options.extensionOptions ?? this.extensionOptions;
+            this.onValidated = options.onValidated;
+            this.preprocessUrlAsync = options.preprocessUrlAsync ?? this.preprocessUrlAsync;
+            this.skipMaterials = options.skipMaterials ?? this.skipMaterials;
+            this.targetFps = options.targetFps ?? this.targetFps;
+            this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
+            this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
+            this.useGltfTextureNames = options.useGltfTextureNames ?? this.useGltfTextureNames;
+            this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
+            this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
+            this.validate = options.validate ?? this.validate;
         }
     }
 
@@ -240,94 +244,9 @@ abstract class GLTFLoaderOptions {
     // ----------
 
     /**
-     * The coordinate system mode. Defaults to AUTO.
-     */
-    public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
-
-    /**
-     * The animation start mode. Defaults to FIRST.
-     */
-    public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
-
-    /**
-     * Defines if the loader should load node animations. Defaults to true.
-     * NOTE: The animation of this node will still load if the node is also a joint of a skin and `loadSkins` is true.
-     */
-    public loadNodeAnimations = true;
-
-    /**
-     * Defines if the loader should load skins. Defaults to true.
-     */
-    public loadSkins = true;
-
-    /**
-     * Defines if the loader should load morph targets. Defaults to true.
-     */
-    public loadMorphTargets = true;
-
-    /**
-     * Defines if the loader should compile materials before raising the success callback. Defaults to false.
-     */
-    public compileMaterials = false;
-
-    /**
-     * Defines if the loader should also compile materials with clip planes. Defaults to false.
-     */
-    public useClipPlane = false;
-
-    /**
-     * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
-     */
-    public compileShadowGenerators = false;
-
-    /**
-     * Defines if the Alpha blended materials are only applied as coverage.
-     * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
-     * If true, no extra effects are applied to transparent pixels.
-     */
-    public transparencyAsCoverage = false;
-
-    /**
-     * Defines if the loader should use range requests when load binary glTF files from HTTP.
-     * Enabling will disable offline support and glTF validator.
-     * Defaults to false.
-     */
-    public useRangeRequests = false;
-
-    /**
-     * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
-     */
-    public createInstances = true;
-
-    /**
      * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
      */
     public alwaysComputeBoundingBox = false;
-
-    /**
-     * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
-     */
-    public loadAllMaterials = false;
-
-    /**
-     * If true, load only the materials defined in the file. Defaults to false.
-     */
-    public loadOnlyMaterials = false;
-
-    /**
-     * If true, do not load any materials defined in the file. Defaults to false.
-     */
-    public skipMaterials = false;
-
-    /**
-     * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
-     */
-    public useSRGBBuffers = true;
-
-    /**
-     * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
-     */
-    public targetFps = 60;
 
     /**
      * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
@@ -336,50 +255,40 @@ abstract class GLTFLoaderOptions {
     public alwaysComputeSkeletonRootNode = false;
 
     /**
-     * If true, the loader will derive the name for Babylon textures from the glTF texture name, image name, or image url. Defaults to false.
-     * Note that it is possible for multiple Babylon textures to share the same name when the Babylon textures load from the same glTF texture or image.
+     * The animation start mode. Defaults to FIRST.
      */
-    public useGltfTextureNames = false;
+    public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
 
     /**
-     * Function called before loading a url referenced by the asset.
-     * @param url url referenced by the asset
-     * @returns Async url to load
+     * Defines if the loader should capture performance counters.
      */
-    public preprocessUrlAsync = (url: string) => Promise.resolve(url);
+    public abstract capturePerformanceCounters: boolean;
+
+    /**
+     * Defines if the loader should compile materials before raising the success callback. Defaults to false.
+     */
+    public compileMaterials = false;
+
+    /**
+     * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
+     */
+    public compileShadowGenerators = false;
+
+    /**
+     * The coordinate system mode. Defaults to AUTO.
+     */
+    public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+
+    /**
+     * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+     */
+    public createInstances = true;
 
     /**
      * Defines the node to use as the root of the hierarchy when loading the scene (default: undefined). If not defined, a root node will be automatically created.
      * You can also pass null if you don't want a root node to be created.
      */
     public customRootNode?: Nullable<TransformNode>;
-
-    /**
-     * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
-     * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
-     */
-    public abstract onMeshLoaded?: ((mesh: AbstractMesh) => void) | undefined;
-
-    /**
-     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
-     */
-    public abstract onSkinLoaded?: ((node: TransformNode, skinnedNode: TransformNode) => void) | undefined;
-
-    /**
-     * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
-     */
-    public abstract onTextureLoaded?: ((texture: BaseTexture) => void) | undefined;
-
-    /**
-     * Callback raised when the loader creates a material after parsing the glTF properties of the material.
-     */
-    public abstract onMaterialLoaded?: ((material: Material) => void) | undefined;
-
-    /**
-     * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
-     */
-    public abstract onCameraLoaded?: ((camera: Camera) => void) | undefined;
 
     /**
      * Defines options for glTF extensions.
@@ -392,6 +301,121 @@ abstract class GLTFLoaderOptions {
             [Option in keyof DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>]: DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>[Option];
         };
     } = {};
+
+    /**
+     * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+     */
+    public loadAllMaterials = false;
+
+    /**
+     * Defines if the loader should load morph targets. Defaults to true.
+     */
+    public loadMorphTargets = true;
+
+    /**
+     * Defines if the loader should load node animations. Defaults to true.
+     * NOTE: The animation of this node will still load if the node is also a joint of a skin and `loadSkins` is true.
+     */
+    public loadNodeAnimations = true;
+
+    /**
+     * If true, load only the materials defined in the file. Defaults to false.
+     */
+    public loadOnlyMaterials = false;
+
+    /**
+     * Defines if the loader should load skins. Defaults to true.
+     */
+    public loadSkins = true;
+
+    /**
+     * If true, enable logging for the loader. Defaults to false.
+     */
+    public abstract loggingEnabled: boolean;
+
+    /**
+     * Callback raised when the loader creates a camera after parsing the glTF properties of the camera.
+     */
+    public abstract onCameraLoaded?: (camera: Camera) => void;
+
+    /**
+     * Callback raised when the loader creates a material after parsing the glTF properties of the material.
+     */
+    public abstract onMaterialLoaded?: (material: Material) => void;
+
+    /**
+     * Callback raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+     * Note that the callback is called as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
+     */
+    public abstract onMeshLoaded?: (mesh: AbstractMesh) => void;
+
+    /**
+     * Callback raised when the loader creates a skin after parsing the glTF properties of the skin node.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/glTF/glTFSkinning#ignoring-the-transform-of-the-skinned-mesh
+     */
+    public abstract onSkinLoaded?: (node: TransformNode, skinnedNode: TransformNode) => void;
+
+    /**
+     * Callback raised when the loader creates a texture after parsing the glTF properties of the texture.
+     */
+    public abstract onTextureLoaded?: (texture: BaseTexture) => void;
+
+    /**
+     * Callback raised after the asset is validated.
+     */
+    public abstract onValidated?: (results: GLTF2.IGLTFValidationResults) => void;
+
+    /**
+     * Function called before loading a url referenced by the asset.
+     * @param url url referenced by the asset
+     * @returns Async url to load
+     */
+    public preprocessUrlAsync = (url: string) => Promise.resolve(url);
+
+    /**
+     * If true, do not load any materials defined in the file. Defaults to false.
+     */
+    public skipMaterials = false;
+
+    /**
+     * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
+     */
+    public targetFps = 60;
+
+    /**
+     * Defines if the Alpha blended materials are only applied as coverage.
+     * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+     * If true, no extra effects are applied to transparent pixels.
+     */
+    public transparencyAsCoverage = false;
+
+    /**
+     * Defines if the loader should also compile materials with clip planes. Defaults to false.
+     */
+    public useClipPlane = false;
+
+    /**
+     * If true, the loader will derive the name for Babylon textures from the glTF texture name, image name, or image url. Defaults to false.
+     * Note that it is possible for multiple Babylon textures to share the same name when the Babylon textures load from the same glTF texture or image.
+     */
+    public useGltfTextureNames = false;
+
+    /**
+     * Defines if the loader should use range requests when load binary glTF files from HTTP.
+     * Enabling will disable offline support and glTF validator.
+     * Defaults to false.
+     */
+    public useRangeRequests = false;
+
+    /**
+     * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
+     */
+    public useSRGBBuffers = true;
+
+    /**
+     * Defines if the loader should validate the asset.
+     */
+    public validate = false;
 }
 
 /**
@@ -682,11 +706,6 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     }
 
     /**
-     * Defines if the loader should validate the asset.
-     */
-    public validate = false;
-
-    /**
      * Observable raised after validation when validate is set to true. The event data is the result of the validation.
      */
     public readonly onValidatedObservable = new Observable<GLTF2.IGLTFValidationResults>();
@@ -694,7 +713,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     private _onValidatedObserver: Nullable<Observer<GLTF2.IGLTFValidationResults>>;
 
     /**
-     * Callback raised after a loader extension is created.
+     * Callback raised after the asset is validated.
      */
     public set onValidated(callback: (results: GLTF2.IGLTFValidationResults) => void) {
         if (this._onValidatedObserver) {

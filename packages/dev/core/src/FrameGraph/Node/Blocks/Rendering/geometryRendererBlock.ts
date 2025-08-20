@@ -377,10 +377,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
             this.geomLinearVelocity.isConnected,
         ];
 
-        if (textureActivation.every((t) => !t)) {
-            throw new Error("NodeRenderGraphGeometryRendererBlock: At least one output geometry buffer must be connected");
-        }
-
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
         this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTexture;
         this.geomNormViewDepth.value = this._frameGraphTask.geometryNormViewDepthTexture;
