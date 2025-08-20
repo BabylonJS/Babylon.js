@@ -1,6 +1,4 @@
 import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "@recast-navigation/generators";
-import { NavMeshQuery } from "@recast-navigation/core";
-import { generateTiledNavMesh, generateSoloNavMesh, generateTileCache } from "@recast-navigation/generators";
 
 import { Logger } from "core/Misc/logger";
 import type { Mesh } from "core/Meshes/mesh";
@@ -8,6 +6,7 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { INavMeshParametersV2 } from "../types";
 import { GetPositionsAndIndices } from "../common/getters";
 import { CreateSoloNavMeshConfig, CreateTileCacheNavMeshConfig, CreateTiledNavMeshConfig } from "../common/config";
+import { BjsRecast } from "../factory/common";
 
 /**
  * Builds a NavMesh and NavMeshQuery from meshes using provided parameters.
@@ -50,10 +49,10 @@ export function GenerateNavMesh(meshes: Array<Mesh>, parameters: INavMeshParamet
     // Create the appropriate configuration based on the parameters
     const config = needsTileCache ? CreateTileCacheNavMeshConfig(parameters) : needsTiledNavMesh ? CreateTiledNavMeshConfig(parameters) : CreateSoloNavMeshConfig(parameters);
     const result = needsTileCache
-        ? generateTileCache(positions, indices, config as TileCacheGeneratorConfig, parameters.keepIntermediates)
+        ? BjsRecast.generateTileCache(positions, indices, config as TileCacheGeneratorConfig, parameters.keepIntermediates)
         : needsTiledNavMesh
-          ? generateTiledNavMesh(positions, indices, config as TiledNavMeshGeneratorConfig, parameters.keepIntermediates)
-          : generateSoloNavMesh(positions, indices, config as SoloNavMeshGeneratorConfig, parameters.keepIntermediates);
+          ? BjsRecast.generateTiledNavMesh(positions, indices, config as TiledNavMeshGeneratorConfig, parameters.keepIntermediates)
+          : BjsRecast.generateSoloNavMesh(positions, indices, config as SoloNavMeshGeneratorConfig, parameters.keepIntermediates);
 
     if (!result.success) {
         throw new Error(`Unable to generateSoloNavMesh: ${result.error}`);
@@ -62,7 +61,7 @@ export function GenerateNavMesh(meshes: Array<Mesh>, parameters: INavMeshParamet
     return {
         navMesh: result.navMesh,
         intermediates: result.intermediates,
-        navMeshQuery: new NavMeshQuery(result.navMesh),
+        navMeshQuery: new BjsRecast.NavMeshQuery(result.navMesh),
         tileCache: "tileCache" in result ? result.tileCache : undefined,
     };
 }

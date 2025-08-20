@@ -10,8 +10,8 @@ import type {
     RecastHeightfieldLayerSet,
     RecastPolyMesh,
     RecastPolyMeshDetail,
+    DebugDrawerUtils,
 } from "@recast-navigation/core";
-import { DebugDrawerUtils } from "@recast-navigation/core";
 
 import type { GreasedLineMaterialOptions } from "core/Materials/GreasedLine/greasedLineMaterialInterfaces";
 import { StandardMaterial } from "core/Materials/standardMaterial";
@@ -28,6 +28,7 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Logger } from "core/Misc/logger";
 
 import type { GeneratorIntermediates } from "../types";
+import { BjsRecast } from "../factory/common";
 
 // TODO: Enum?
 export const DebugLayerOption = {
@@ -137,7 +138,7 @@ export class NavigationDebugger {
             };
         }
     ) {
-        this._debugDrawerUtils = new DebugDrawerUtils();
+        this._debugDrawerUtils = new BjsRecast.DebugDrawerUtils();
 
         this._primitiveTypes = options?.primitiveTypes ?? ["points", "lines", "tris", "quads"];
 

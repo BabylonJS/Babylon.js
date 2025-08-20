@@ -1,5 +1,5 @@
 import type { TileCacheMeshProcess } from "@recast-navigation/core";
-import { importNavMesh, importTileCache, NavMeshQuery } from "@recast-navigation/core";
+import { BjsRecast } from "../factory/common";
 
 /**
  *  Builds a NavMesh and NavMeshQuery from serialized data.
@@ -10,7 +10,7 @@ import { importNavMesh, importTileCache, NavMeshQuery } from "@recast-navigation
  *  @throws Error if the NavMesh data is invalid or cannot be deserialized.
  */
 export function BuildFromNavmeshData(data: Uint8Array) {
-    const result = importNavMesh(data);
+    const result = BjsRecast.importNavMesh(data);
 
     if (!result.navMesh) {
         throw new Error(`Unable to deserialize NavMesh.`);
@@ -18,7 +18,7 @@ export function BuildFromNavmeshData(data: Uint8Array) {
 
     return {
         navMesh: result.navMesh,
-        navMeshQuery: new NavMeshQuery(result.navMesh),
+        navMeshQuery: new BjsRecast.NavMeshQuery(result.navMesh),
         tileCache: undefined,
     };
 }
@@ -30,7 +30,7 @@ export function BuildFromNavmeshData(data: Uint8Array) {
  * @returns An object containing the TileCache, NavMesh, and NavMeshQuery.
  */
 export function BuildFromTileCacheData(data: Uint8Array, tileCacheMeshProcess: TileCacheMeshProcess) {
-    const result = importTileCache(data, tileCacheMeshProcess);
+    const result = BjsRecast.importTileCache(data, tileCacheMeshProcess);
 
     if (!result.tileCache) {
         throw new Error(`Unable to deserialize TileCache.`);
@@ -38,7 +38,7 @@ export function BuildFromTileCacheData(data: Uint8Array, tileCacheMeshProcess: T
 
     return {
         navMesh: result.navMesh,
-        navMeshQuery: new NavMeshQuery(result.navMesh),
+        navMeshQuery: new BjsRecast.NavMeshQuery(result.navMesh),
         tileCache: result.tileCache,
     };
 }

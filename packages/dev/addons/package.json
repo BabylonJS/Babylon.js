@@ -20,10 +20,9 @@
         "watch:dev": "npm run watch"
     },
     "devDependencies": {
-        "@dev/core": "^1.0.0"
+        "@dev/core": "^1.0.0",
+        "recast-navigation": "^0.41.0"
     },
     "sideEffects": true,
-    "dependencies": {
-        "recast-navigation": "^0.41.0"
-    }
+    "dependencies": {}
 }

@@ -7,6 +7,8 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { IAgentParameters, INavigationEnginePlugin, INavMeshParameters } from "core/Navigation/INavigationEngine";
 import type { Nullable } from "core/types";
 
+export type RecastInjection = typeof import("@recast-navigation/core") & typeof import("@recast-navigation/generators");
+
 /**
  *
  */
@@ -77,7 +79,7 @@ export interface IAgentParametersV2 extends IAgentParameters {
      */
     updateFlags: number;
     /**
-     * The index of the avoidance configuration to use for the agent. [Limits: 0 <= value <= #DT_CROWD_MAX_OBSTAVOIDANCE_PARAMS]
+     * The index of the avoidance configuration to use for the agent. [Limits: 0 to #DT_CROWD_MAX_OBSTAVOIDANCE_PARAMS inclusive]
      */
     obstacleAvoidanceType: number;
     /**
@@ -106,7 +108,7 @@ export interface INavMeshParametersV2 extends INavMeshParameters {
     keepIntermediates?: boolean;
     /**
      * The maximum number of obstacles that can be added to the navigation mesh. Default is 32.
-     * If this values is > 0, the navigation mesh will be generated with a tile cache.
+     * If this value is greater then 0, the navigation mesh will be generated with a tile cache.
      */
     maxObstacles?: number;
     /**

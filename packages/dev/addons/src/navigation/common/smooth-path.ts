@@ -1,5 +1,4 @@
-import type { NavMeshQuery } from "@recast-navigation/core";
-import { Detour, type NavMesh, type QueryFilter } from "@recast-navigation/core";
+import type { NavMeshQuery, NavMesh, QueryFilter } from "@recast-navigation/core";
 
 import type { IVector3Like } from "core/Maths/math.like";
 import { Vector3 } from "core/Maths/math.vector";
@@ -7,6 +6,7 @@ import { Vector3 } from "core/Maths/math.vector";
 import { ConvertNavPathPoints } from "./convert";
 import type { SteerTargetResult } from "../types";
 import { ComputePathError, type ComputeSmoothPathResult } from "../types";
+import { BjsRecast } from "../factory/common";
 
 const _DELTA = new Vector3();
 const _MOVE_TARGET = new Vector3();
@@ -179,9 +179,9 @@ function ComputeSmoothPathImpl(
             break;
         }
 
-        const isEndOfPath = steerTarget.steerPosFlag & Detour.DT_STRAIGHTPATH_END;
+        const isEndOfPath = steerTarget.steerPosFlag & BjsRecast.Detour.DT_STRAIGHTPATH_END;
 
-        const isOffMeshConnection = steerTarget.steerPosFlag & Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION;
+        const isOffMeshConnection = steerTarget.steerPosFlag & BjsRecast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION;
 
         // Find movement delta.
         const steerPos = steerTarget.steerPos;
@@ -313,7 +313,7 @@ function getSteerTarget(navMeshQuery: NavMeshQuery, start: Vector3, end: Vector3
     let ns = 0;
     while (ns < outPoints.length) {
         // Stop at Off-Mesh link or when point is further than slop away
-        if (straightPath.straightPathFlags.get(ns) & Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION) {
+        if (straightPath.straightPathFlags.get(ns) & BjsRecast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION) {
             break;
         }
 
@@ -413,7 +413,7 @@ function fixupCorridor(pathPolys: number[], maxPath: number, visitedPolyRefs: nu
  *  +---+---+
  *  |:::|:::|
  *  +-S-+-T-+
- *  |:::|   | <-- the step can end up in here, resulting U-turn path.
+ *  |:::|   | -- the step can end up in here, resulting U-turn path.
  *  +---+---+
  * @param pathPolys The path polygons to check for U-turns.
  * @param navMesh The navigation mesh used to check adjacency.
@@ -437,7 +437,7 @@ function fixupShortcuts(pathPolys: number[], navMesh: NavMesh) {
 
     const poly = tileAndPoly.poly;
     const tile = tileAndPoly.tile;
-    for (let k = poly.firstLink(); k !== Detour.DT_NULL_LINK; k = tile.links(k).next()) {
+    for (let k = poly.firstLink(); k !== BjsRecast.Detour.DT_NULL_LINK; k = tile.links(k).next()) {
         const link = tile.links(k);
 
         if (link.ref() !== 0) {

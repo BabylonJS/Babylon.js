@@ -1,7 +1,9 @@
-import { init as initRecast } from "@recast-navigation/core";
-import RecastWasm from "@recast-navigation/wasm";
+import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
+import type { Mesh } from "core/Meshes/mesh";
 
-import { CreateNavigationPluginAsync } from "./factory.single-thread";
+import type { INavMeshParametersV2 } from "../types";
+import { GenerateNavMesh } from "../generator/generator.single-thread";
+import { BjsRecast, InitRecast } from "./common";
 
 /**
  * Creates a navigation plugin for the given scene using Recast WASM.
@@ -9,7 +11,19 @@ import { CreateNavigationPluginAsync } from "./factory.single-thread";
  * @remarks This function initializes the Recast WASM module and then calls the NavigationPlugin
  */
 export async function CreateNavigationPluginWasmAsync() {
-    await initRecast(RecastWasm);
+    await InitRecast();
 
-    return await CreateNavigationPluginAsync();
+    const navigationPlugin = new RecastNavigationJSPluginV2(BjsRecast);
+
+    navigationPlugin.createNavMeshImpl = (meshes: Mesh[], parameters: INavMeshParametersV2) => {
+        return GenerateNavMesh(meshes, parameters);
+    };
+
+    navigationPlugin.createNavMeshAsyncImpl = async (meshes: Mesh[], parameters: INavMeshParametersV2) => {
+        return await new Promise((resolve) => {
+            resolve(GenerateNavMesh(meshes, parameters));
+        });
+    };
+
+    return navigationPlugin;
 }

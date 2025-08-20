@@ -1,4 +1,4 @@
-import { Crowd } from "@recast-navigation/core";
+import type { Crowd } from "@recast-navigation/core";
 
 import type { Nullable } from "core/types";
 import type { IVector3Like } from "core/Maths/math.like";
@@ -14,6 +14,7 @@ import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ToCrowdAgentParams } from "../common";
 import type { IAgentParametersV2 } from "../types";
+import { BjsRecast } from "../factory/common";
 
 /**
  * Recast Detour crowd implementation
@@ -91,7 +92,7 @@ export class RecastJSCrowd implements ICrowd {
             throw new Error("There is no NavMesh generated.");
         }
 
-        this.recastCrowd = new Crowd(plugin.navMesh, {
+        this.recastCrowd = new BjsRecast.Crowd(plugin.navMesh, {
             maxAgents,
             maxAgentRadius,
         });

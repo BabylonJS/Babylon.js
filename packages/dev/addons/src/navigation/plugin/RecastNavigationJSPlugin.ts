@@ -1,8 +1,6 @@
-// TODO: use extents where applicable
 // http://localhost:1338/#KVQP83#155
 // http://localhost:1338/#KVQP83#162 = obstacles
-import type { NavMesh, QueryFilter, TileCache } from "@recast-navigation/core";
-import { exportNavMesh, getRandomSeed, importNavMesh, NavMeshQuery, setRandomSeed } from "@recast-navigation/core";
+import type { NavMesh, QueryFilter, TileCache, NavMeshQuery } from "@recast-navigation/core";
 
 import type { ICrowd, IObstacle } from "core/Navigation/INavigationEngine";
 import { Logger } from "core/Misc/logger";
@@ -11,7 +9,7 @@ import type { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math";
 import type { IVector3Like } from "core/Maths/math.like";
 
-import type { CreateNavMeshresult, GeneratorIntermediates, INavigationEnginePluginV2, INavMeshParametersV2 } from "../types";
+import type { CreateNavMeshresult, GeneratorIntermediates, INavigationEnginePluginV2, INavMeshParametersV2, RecastInjection } from "../types";
 import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
@@ -35,12 +33,18 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
     createNavMeshImpl: (meshes: Array<Mesh>, parameters: INavMeshParametersV2) => CreateNavMeshresult;
 
     /**
-     *  Creates a navigation mesh - will be injected by the factory
+     * Creates a navigation mesh - will be injected by the factory
      * @param meshes array of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
      * @returns the created navmesh and navmesh query
      */
     createNavMeshAsyncImpl: (meshes: Array<Mesh>, parameters: INavMeshParametersV2) => Promise<CreateNavMeshresult>;
+
+    /**
+     * recast-navigation-js injection
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public bjsRECAST: RecastInjection;
 
     /**
      * plugin name
@@ -80,8 +84,22 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
 
     private _crowd?: ICrowd;
 
-    public constructor() {
-        //
+    /**
+     * Creates a RecastNavigationJSPluginV2 instance
+     * @param recastInjection The recast-navigation-js injection containing core and generators
+     */
+    public constructor(recastInjection: RecastInjection) {
+        this.bjsRECAST = recastInjection;
+
+        if (!this.isSupported()) {
+            Logger.Error("RecastJS is not available. Please make sure you included the js file.");
+            return;
+        }
+        this.setTimeStep();
+
+        // TODO: use this?
+        // this._tempVec1 = new this.bjsRECAST.Vec3();
+        // this._tempVec2 = new this.bjsRECAST.Vec3();
     }
 
     /**
@@ -420,9 +438,9 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @param data the Uint8Array returned by getNavmeshData
      */
     public buildFromNavmeshData(data: Uint8Array): void {
-        const result = importNavMesh(data);
+        const result = this.bjsRECAST.importNavMesh(data);
         this.navMesh = result.navMesh;
-        this.navMeshQuery = new NavMeshQuery(this.navMesh);
+        this.navMeshQuery = new this.bjsRECAST.NavMeshQuery(this.navMesh);
     }
 
     /**
@@ -433,7 +451,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
         if (!this.navMesh) {
             throw new Error("There is no NavMesh generated.");
         }
-        return exportNavMesh(this.navMesh);
+        return this.bjsRECAST.exportNavMesh(this.navMesh);
     }
 
     /**
@@ -489,7 +507,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @returns seed number
      */
     public getRandomSeed(): number {
-        return getRandomSeed();
+        return this.bjsRECAST.getRandomSeed();
     }
 
     /**
@@ -497,6 +515,6 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * @param seed number used as seed for random functions
      */
     public setRandomSeed(seed: number): void {
-        setRandomSeed(seed);
+        this.bjsRECAST.setRandomSeed(seed);
     }
 }

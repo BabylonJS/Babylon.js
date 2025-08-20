@@ -5,4 +5,4 @@ export * from "./common/index";
 export * from "./generator/index";
 export * from "./debug/index";
 
-export * as Recast from "recast-navigation";
+// export * as Recast from "recast-navigation";
