@@ -2201,7 +2201,9 @@ export class GLTFLoader implements IGLTFLoader {
                     this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
                         if (this.parent.useOpenPBR) {
-                            (babylonMaterial as OpenPBRMaterial).baseMetalRoughTexture = texture;
+                            (babylonMaterial as OpenPBRMaterial).baseMetalnessTexture = texture;
+                            (babylonMaterial as OpenPBRMaterial).specularRoughnessTexture = texture;
+                            (babylonMaterial as OpenPBRMaterial)._useRoughnessFromMetallicTextureGreen = true;
                         } else {
                             (babylonMaterial as PBRMaterial).metallicTexture = texture;
                         }

@@ -577,7 +577,8 @@ export class GLTFMaterialExporter {
      * @param metallic Metallic factor of the material
      * @param roughness Roughness factor of the material
      * @param albedoTexture Albedo texture of the material
-     * @param metallicRoughnessTexture Metallic roughness texture of the material
+     * @param metallicTexture Metallic texture of the material
+     * @param roughnessTexture Roughness texture of the material
      * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
      * @param glTFPbrMetallicRoughness glTF PBR Metallic Roughness interface
      * @param hasUVs specifies if texture coordinates are present on the submesh to determine if textures should be applied
@@ -588,7 +589,8 @@ export class GLTFMaterialExporter {
         metallic: Nullable<number>,
         roughness: Nullable<number>,
         albedoTexture: Nullable<BaseTexture>,
-        metallicRoughnessTexture: Nullable<BaseTexture>,
+        metallicTexture: Nullable<BaseTexture>,
+        roughnessTexture: Nullable<BaseTexture>,
         babylonPBRMaterial: PBRBaseMaterial | OpenPBRMaterial,
         glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness,
         hasUVs: boolean
@@ -611,9 +613,11 @@ export class GLTFMaterialExporter {
                     })
                 );
             }
-            if (metallicRoughnessTexture) {
+            // OpenPBRMaterial can have separate metallic and roughness textures so something
+            // should be done here to merge them for glTF in that case.
+            if (metallicTexture) {
                 promises.push(
-                    this.exportTextureAsync(metallicRoughnessTexture).then((glTFTexture) => {
+                    this.exportTextureAsync(metallicTexture).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
                         }
@@ -804,6 +808,7 @@ export class GLTFMaterialExporter {
                   babylonPBRMaterial._roughness,
                   babylonPBRMaterial._albedoTexture,
                   babylonPBRMaterial._metallicTexture,
+                  babylonPBRMaterial._metallicTexture,
                   babylonPBRMaterial,
                   glTFPbrMetallicRoughness,
                   hasUVs
@@ -927,7 +932,8 @@ export class GLTFMaterialExporter {
             babylonOpenPBRMaterial.baseMetalness,
             babylonOpenPBRMaterial.specularRoughness,
             babylonOpenPBRMaterial.baseColorTexture,
-            babylonOpenPBRMaterial.baseMetalRoughTexture,
+            babylonOpenPBRMaterial.baseMetalnessTexture,
+            babylonOpenPBRMaterial.specularRoughnessTexture,
             babylonOpenPBRMaterial,
             glTFPbrMetallicRoughness,
             hasUVs

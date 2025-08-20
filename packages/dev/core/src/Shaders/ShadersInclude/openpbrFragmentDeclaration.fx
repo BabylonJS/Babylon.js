@@ -25,8 +25,32 @@ uniform vec2 vBaseColorInfos;
 uniform vec2 vBaseWeightInfos;
 #endif
 
+#ifdef BASE_METALNESS
+uniform vec2 vBaseMetalnessInfos;
+#endif
+
 #ifdef BASE_DIFFUSE_ROUGHNESS
 uniform vec2 vBaseDiffuseRoughnessInfos;
+#endif
+
+#ifdef SPECULAR_WEIGHT
+uniform vec2 vSpecularWeightInfos;
+#endif
+
+#ifdef SPECULAR_COLOR
+uniform vec2 vSpecularColorInfos;
+#endif
+
+#ifdef SPECULAR_ROUGHNESS
+uniform vec2 vSpecularRoughnessInfos;
+#endif
+
+#ifdef SPECULAR_ROUGHNESS_ANISOTROPY
+uniform vec2 vSpecularRoughnessAnisotropyInfos;
+#endif
+
+#ifdef SPECULAR_IOR
+uniform vec2 vSpecularIorInfos;
 #endif
 
 #ifdef AMBIENT_OCCLUSION
@@ -48,10 +72,6 @@ uniform vec2 vGeometryOpacityInfos;
 
 #ifdef EMISSION_COLOR
 uniform vec2 vEmissionColorInfos;
-#endif
-
-#ifdef METALLIC_ROUGHNESS
-uniform vec2 vBaseMetalRoughInfos;
 #endif
 
 #ifdef COAT_WEIGHT
