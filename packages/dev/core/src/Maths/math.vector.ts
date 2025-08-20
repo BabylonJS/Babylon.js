@@ -2585,8 +2585,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
         const rx = x * m[0] + y * m[4] + z * m[8] + m[12];
         const ry = x * m[1] + y * m[5] + z * m[9] + m[13];
         const rz = x * m[2] + y * m[6] + z * m[10] + m[14];
-        // const rw = 1 / (x * m[3] + y * m[7] + z * m[11] + m[15]);
-        const rw = 1;
+        const rw = 1 / (x * m[3] + y * m[7] + z * m[11] + m[15]);
 
         result._x = rx * rw;
         result._y = ry * rw;

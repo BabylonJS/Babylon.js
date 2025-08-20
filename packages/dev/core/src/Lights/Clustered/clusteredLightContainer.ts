@@ -442,6 +442,13 @@ export class ClusteredLightContainer extends Light {
                 this._sliceRanges[j * 2 + 1] = i;
             }
         }
+
+        const engine = this.getEngine();
+        if (engine.isWebGPU) {
+            // Whenever the light data changes we have to flush pending WebGPU command buffers so that
+            // previous render passes use the old data and later render passes use the new data.
+            engine.flushFramebuffer();
+        }
         this._lightDataTexture.update(this._lightDataBuffer);
     }
 
