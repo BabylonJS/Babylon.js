@@ -290,6 +290,7 @@ const packageMapping: {
     // },
     namespace: {
         core: (filePath?: string) => {
+            filePath = filePath?.replaceAll("\\", "/");
             if (
                 filePath &&
                 (filePath.includes("/Debug/axesViewer") ||
@@ -304,6 +305,7 @@ const packageMapping: {
         gui: "BABYLON.GUI",
         materials: "BABYLON",
         loaders: (filePath?: string) => {
+            filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("/glTF/1.0")) {
                     // was .endsWith
@@ -320,6 +322,7 @@ const packageMapping: {
         },
         serializers: "BABYLON",
         inspector: (filePath?: string) => {
+            filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
@@ -331,6 +334,7 @@ const packageMapping: {
             return "INSPECTOR";
         },
         "node-editor": (filePath?: string) => {
+            filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
@@ -342,6 +346,7 @@ const packageMapping: {
             return "BABYLON.NodeEditor";
         },
         "node-geometry-editor": (filePath?: string) => {
+            filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
@@ -353,6 +358,7 @@ const packageMapping: {
             return "BABYLON.NodeGeometryEditor";
         },
         "node-render-graph-editor": (filePath?: string) => {
+            filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
@@ -364,6 +370,7 @@ const packageMapping: {
             return "BABYLON.NodeRenderGraphEditor";
         },
         "node-particle-editor": (filePath?: string) => {
+            filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
@@ -375,6 +382,7 @@ const packageMapping: {
             return "BABYLON.NodeParticleEditor";
         },
         "gui-editor": (filePath?: string) => {
+            filePath = filePath?.replaceAll("\\", "/");
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {
                     // was .endsWith
