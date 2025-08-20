@@ -2204,6 +2204,7 @@ export class GLTFLoader implements IGLTFLoader {
                             (babylonMaterial as OpenPBRMaterial).baseMetalnessTexture = texture;
                             (babylonMaterial as OpenPBRMaterial).specularRoughnessTexture = texture;
                             (babylonMaterial as OpenPBRMaterial)._useRoughnessFromMetallicTextureGreen = true;
+                            (babylonMaterial as OpenPBRMaterial)._useMetallicFromMetallicTextureBlue = true;
                         } else {
                             (babylonMaterial as PBRMaterial).metallicTexture = texture;
                         }
