@@ -182,7 +182,7 @@ export class NavigationDebugger {
      * Resets the debug drawer by disposing of all child meshes in the debug drawer parent node.
      * This is useful for clearing the debug visualization before drawing new primitives.
      */
-    public reset() {
+    public clear() {
         for (const child of this.debugDrawerParentNode.getChildMeshes()) {
             child.dispose();
         }
@@ -193,7 +193,7 @@ export class NavigationDebugger {
      * This method should be called when the debug drawer is no longer needed to free up resources.
      */
     public dispose() {
-        this.reset();
+        this.clear();
         this._debugDrawerUtils.dispose();
         this._pointMesh.dispose();
         this.triMaterial.dispose();
@@ -518,7 +518,7 @@ export class NavigationDebugger {
      *  @remarks This method will reset the debug drawer before drawing.
      */
     public draw(navMesh: NavMesh, intermediates: GeneratorIntermediates, scene: Scene, option: DebugLayerOptions) {
-        this.reset();
+        this.clear();
 
         const { heightfieldList, compactHeightfieldList, contourSetList, polyMeshList, polyMeshDetailList } = this.getIntermediates(intermediates);
 

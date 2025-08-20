@@ -88,6 +88,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      * Creates a RecastNavigationJSPluginV2 instance
      * @param recastInjection The recast-navigation-js injection containing core and generators
      */
+    // TODO: make the recastInjection optional and inject it if not provided
     public constructor(recastInjection: RecastInjection) {
         this.bjsRECAST = recastInjection;
 
