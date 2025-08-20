@@ -18,38 +18,41 @@ var alpha: f32 = 1.0;
 
 // Sample Base Layer properties from textures
 #ifdef BASE_WEIGHT
-    var baseWeightFromTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
+    let baseWeightFromTexture: vec4f = textureSample(baseWeightSampler, baseWeightSamplerSampler, fragmentInputs.vBaseWeightUV + uvOffset);
 #endif
 
 #ifdef BASE_COLOR
-    var baseColorFromTexture: vec4f = textureSample(baseColorSampler, baseColorSamplerSampler, fragmentInputs.vBaseColorUV + uvOffset);
+    let baseColorFromTexture: vec4f = textureSample(baseColorSampler, baseColorSamplerSampler, fragmentInputs.vBaseColorUV + uvOffset);
 #endif
 
-#ifdef METALLIC_ROUGHNESS
-    var metallicRoughnessFromTexture: vec4f = textureSample(baseMetalRoughSampler, baseMetalRoughSamplerSampler, fragmentInputs.vBaseMetalRoughUV + uvOffset);
+#ifdef BASE_METALNESS
+    let metallicFromTexture: vec4f = textureSample(baseMetalnessSampler, baseMetalnessSamplerSampler, fragmentInputs.vBaseMetalnessUV + uvOffset);
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
-    var baseDiffuseRoughnessFromTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).r;
+    let baseDiffuseRoughnessFromTexture: f32 = textureSample(baseDiffuseRoughnessSampler, baseDiffuseRoughnessSamplerSampler, fragmentInputs.vBaseDiffuseRoughnessUV + uvOffset).r;
 #endif
 
 #ifdef GEOMETRY_OPACITY
-    var opacityFromTexture: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
+    let opacityFromTexture: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
 #endif
 
 #ifdef DECAL
-    var decalFromTexture: vec4f = textureSample(decalSampler, decalSamplerSampler, fragmentInputs.vDecalUV + uvOffset);
+    let decalFromTexture: vec4f = textureSample(decalSampler, decalSamplerSampler, fragmentInputs.vDecalUV + uvOffset);
 #endif
 
 #ifdef SPECULAR_COLOR
-    var specularColorFromTexture: vec4f = textureSample(specularColorSampler, specularColorSamplerSampler, fragmentInputs.vSpecularColorUV + uvOffset);
-    #ifdef SPECULAR_COLOR_GAMMA
-        specularColorFromTexture.rgb = toLinearSpace(specularColorFromTexture.rgb);
-    #endif
+    let specularColorFromTexture: vec4f = textureSample(specularColorSampler, specularColorSamplerSampler, fragmentInputs.vSpecularColorUV + uvOffset);
 #endif
 
 #ifdef SPECULAR_WEIGHT
-    var specularWeightFromTexture: vec4f = textureSample(specularWeightSampler, specularWeightSamplerSampler, fragmentInputs.vSpecularWeightUV + uvOffset);
+    let specularWeightFromTexture: vec4f = textureSample(specularWeightSampler, specularWeightSamplerSampler, fragmentInputs.vSpecularWeightUV + uvOffset);
+#endif
+
+#if defined(ROUGHNESSSTOREINMETALMAPGREEN) && defined(BASE_METALNESS)
+    let roughnessFromTexture: f32 = metallicFromTexture.g;
+#elif defined(SPECULAR_ROUGHNESS)
+    let roughnessFromTexture: f32 = textureSample(specularRoughnessSampler, specularRoughnessSamplerSampler, fragmentInputs.vSpecularRoughnessUV + uvOffset).r;
 #endif
 
 // Initalize base layer properties from uniforms
@@ -107,9 +110,12 @@ specular_ior = uniforms.vReflectanceInfo.z;
     #endif
 #endif
 
-#ifdef METALLIC_ROUGHNESS
-    base_metalness *= metallicRoughnessFromTexture.b;
-    specular_roughness *= metallicRoughnessFromTexture.g;
+#ifdef BASE_METALNESS
+    #ifdef METALLNESSSTOREINMETALMAPBLUE
+        base_metalness *= metallicFromTexture.b;
+    #else
+        base_metalness *= metallicFromTexture.r;
+    #endif
 #endif
 
 #ifdef BASE_DIFFUSE_ROUGHNESS
@@ -117,7 +123,11 @@ specular_ior = uniforms.vReflectanceInfo.z;
 #endif
 
 #ifdef SPECULAR_COLOR
-    specular_color *= specularColorFromTexture.rgb;
+    #ifdef SPECULAR_COLOR_GAMMA
+        specular_color *= toLinearSpace(specularColorFromTexture.rgb);
+    #else
+        specular_color *= specularColorFromTexture.rgb;
+    #endif
 #endif
 
 #ifdef SPECULAR_WEIGHT
@@ -128,6 +138,10 @@ specular_ior = uniforms.vReflectanceInfo.z;
     #else
         specular_weight *= specularWeightFromTexture.r;
     #endif
+#endif
+
+#if defined(SPECULAR_ROUGHNESS) || (defined(ROUGHNESSSTOREINMETALMAPGREEN) && defined(BASE_METALNESS))
+    specular_roughness *= roughnessFromTexture;
 #endif
 
 #ifdef DETAIL

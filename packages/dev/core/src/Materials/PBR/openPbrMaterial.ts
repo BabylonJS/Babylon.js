@@ -488,6 +488,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _baseMetalness: Property<number> = new Property<number>("base_metalness", 0, "vReflectanceInfo", 4, 0);
 
     /**
+     * Metalness texture.
+     * See OpenPBR's specs for base_metalness
+     */
+    public baseMetalnessTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseMetalnessTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _baseMetalnessTexture: Sampler = new Sampler("base_metalness", "baseMetalness", "BASE_METALNESS");
+
+    /**
      * Weight of the specular lobe.
      * See OpenPBR's specs for specular_weight
      */
@@ -533,22 +542,22 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _specularRoughness: Property<number> = new Property<number>("specular_roughness", 0, "vReflectanceInfo", 4, 1);
 
     /**
+     * Metalness and Roughness texture.
+     * See OpenPBR's specs for base_metalness and specular_roughness
+     */
+    public specularRoughnessTexture: BaseTexture;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _specularRoughnessTexture: Sampler = new Sampler("specular_roughness", "specularRoughness", "SPECULAR_ROUGHNESS");
+
+    /**
      * IOR of the specular lobe.
-     * See OpenPBR's specs for specular_roughness
+     * See OpenPBR's specs for specular_ior
      */
     public specularIor: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularIor")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularIor: Property<number> = new Property<number>("specular_ior", 1.5, "vReflectanceInfo", 4, 2);
-
-    /**
-     * Metalness and Roughness texture.
-     * See OpenPBR's specs for base_metalness and specular_roughness
-     */
-    public baseMetalRoughTexture: BaseTexture;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseMetalRoughTexture")
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _baseMetalRoughTexture: Sampler = new Sampler("base_metalness_specular_roughness", "baseMetalRough", "METALLIC_ROUGHNESS");
 
     /**
      * Defines the amount of clear coat on the surface.
@@ -1054,6 +1063,18 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useAmbientOcclusionFromMetallicTextureRed = false;
 
     /**
+     * Specifies if the metallic texture contains the roughness information in its green channel.
+     * @internal
+     */
+    public _useRoughnessFromMetallicTextureGreen = false;
+
+    /**
+     * Specifies if the metallic texture contains the metallic information in its blue channel.
+     * @internal
+     */
+    public _useMetallicFromMetallicTextureBlue = false;
+
+    /**
      * Defines the  falloff type used in this material.
      * It by default is Physical.
      * @internal
@@ -1330,13 +1351,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._baseDiffuseRoughness;
         this._baseDiffuseRoughnessTexture;
         this._baseMetalness;
+        this._baseMetalnessTexture;
         this._specularWeight;
         this._specularWeightTexture;
         this._specularColor;
         this._specularColorTexture;
         this._specularRoughness;
         this._specularIor;
-        this._baseMetalRoughTexture;
+        this._specularRoughnessTexture;
         this._coatWeight;
         this._coatWeightTexture;
         this._coatColor;
@@ -2295,11 +2317,19 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 PrepareDefinesForIBL(scene, radianceTexture, defines, this.realTimeFiltering, this.realTimeFilteringQuality, !useSHInFragment);
 
                 if (MaterialFlags.SpecularTextureEnabled) {
-                    if (this._baseMetalRoughTexture) {
+                    if (this._baseMetalnessTexture) {
                         defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
                     }
 
                     defines.SPECULAR_WEIGHT_USE_ALPHA_ONLY = this._useSpecularWeightFromTextureAlpha;
+                }
+
+                if (this._useRoughnessFromMetallicTextureGreen) {
+                    defines.ROUGHNESSSTOREINMETALMAPGREEN = true;
+                }
+
+                if (this._useMetallicFromMetallicTextureBlue) {
+                    defines.METALLNESSSTOREINMETALMAPBLUE = true;
                 }
 
                 if (this.geometryNormalTexture) {

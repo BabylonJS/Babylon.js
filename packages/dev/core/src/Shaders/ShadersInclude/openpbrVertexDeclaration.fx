@@ -36,9 +36,9 @@ uniform vec2 vLightmapInfos;
 uniform mat4 lightmapMatrix;
 #endif
 
-#ifdef METALLIC_ROUGHNESS
-uniform vec2 vBaseMetalRoughInfos;
-uniform mat4 baseMetalRoughMatrix;
+#ifdef BASE_METALNESS
+uniform vec2 vBaseMetalnessInfos;
+uniform mat4 baseMetalnessMatrix;
 #endif
 
 #ifdef SPECULAR_WEIGHT
@@ -49,6 +49,11 @@ uniform mat4 specularWeightMatrix;
 #ifdef SPECULAR_COLOR
 uniform vec2 vSpecularColorInfos;
 uniform mat4 specularColorMatrix;
+#endif
+
+#ifdef SPECULAR_ROUGHNESS
+uniform vec2 vSpecularRoughnessInfos;
+uniform mat4 specularRoughnessMatrix;
 #endif
 
 #ifdef COAT_WEIGHT
