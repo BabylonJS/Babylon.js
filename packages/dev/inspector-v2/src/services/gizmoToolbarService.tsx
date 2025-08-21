@@ -16,7 +16,7 @@ export const GizmoToolbarServiceDefinition: ServiceDefinition<[], [ISceneContext
     consumes: [SceneContextIdentity, ShellServiceIdentity, SelectionServiceIdentity, GizmoServiceIdentity],
     factory: (sceneContext, shellService, selectionService, gizmoService) => {
         shellService.addToolbarItem({
-            key: "Test",
+            key: "Gizmo Toolbar",
             verticalLocation: "top",
             horizontalLocation: "left",
             suppressTeachingMoment: true,
