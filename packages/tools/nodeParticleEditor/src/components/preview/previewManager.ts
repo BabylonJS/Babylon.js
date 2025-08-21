@@ -10,10 +10,13 @@ import { SceneLoaderFlags } from "core/Loading/sceneLoaderFlags";
 import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import { LogEntry } from "../log/logComponent";
 import { GridMaterial } from "materials/grid/gridMaterial";
-import { MeshBuilder } from "core/Meshes";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneInstrumentation } from "core/Instrumentation/sceneInstrumentation";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { ParticleSystemSet } from "core/Particles/particleSystemSet";
+import { EngineStore } from "core/Engines";
+import type { ParticleSystem } from "core/Particles";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -128,6 +131,45 @@ export class PreviewManager {
             // Ignore the error
             this._globalState.onIsLoadingChanged.notifyObservers(false);
         }
+
+        // Synchronize with main
+        for (const engine of EngineStore.Instances) {
+            for (const scene of engine.scenes) {
+                if (scene === this._scene) {
+                    continue;
+                }
+
+                void this._reconnectEmittersAsync(scene);
+            }
+        }
+    }
+
+    private async _reconnectEmittersAsync(scene: Scene) {
+        const map = new Map<number, Nullable<AbstractMesh | Vector3>>();
+
+        for (const ps of scene.particleSystems) {
+            const particleSystem = ps as ParticleSystem;
+            const source = particleSystem.source;
+            if (source === this._nodeParticleSystemSet) {
+                // Keep track of particle system reference and emitter
+                const reference = particleSystem._blockReference;
+                const emitter = particleSystem.emitter;
+
+                particleSystem.dispose();
+
+                map.set(reference, emitter);
+            }
+        }
+
+        const newSet = await this._nodeParticleSystemSet.buildAsync(scene);
+        for (const [reference, emitter] of map) {
+            const particleSystem = (newSet.systems as ParticleSystem[]).find((ps) => ps._blockReference === reference);
+            if (particleSystem) {
+                particleSystem.emitter = emitter;
+            }
+        }
+
+        newSet.start();
     }
 
     public dispose() {

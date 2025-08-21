@@ -32,6 +32,8 @@ function _CreateAndConnectInput(connectionPoint: NodeParticleConnectionPoint, na
 async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSystem, target: NodeParticleSystemSet) {
     // Main system
     const system = new SystemBlock(particleSystem.name);
+    system.capacity = particleSystem.getCapacity();
+    system.emitRate = particleSystem.emitRate;
 
     // Create particle
     const createParticleBlock = new CreateParticleBlock("Create particle");
@@ -107,11 +109,37 @@ async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSyste
     const color1Block = new ParticleInputBlock("Color1");
     color1Block.value = particleSystem.color2;
 
-    const randomBlock = new ParticleRandomBlock("Random");
-    color0Block.output.connectTo(randomBlock.min);
-    color1Block.output.connectTo(randomBlock.max);
+    const randomColorBlock = new ParticleRandomBlock("Random Color");
+    color0Block.output.connectTo(randomColorBlock.min);
+    color1Block.output.connectTo(randomColorBlock.max);
 
-    randomBlock.output.connectTo(createParticleBlock.color);
+    randomColorBlock.output.connectTo(createParticleBlock.color);
+
+    // Emit power
+    const minEmitPowerBlock = new ParticleInputBlock("Min Emit Power");
+    minEmitPowerBlock.value = particleSystem.minEmitPower;
+
+    const maxEmitPowerBlock = new ParticleInputBlock("Max Emit Power");
+    maxEmitPowerBlock.value = particleSystem.maxEmitPower;
+
+    const randomEmitPowerBlock = new ParticleRandomBlock("Random Emit Power");
+    minEmitPowerBlock.output.connectTo(randomEmitPowerBlock.min);
+    maxEmitPowerBlock.output.connectTo(randomEmitPowerBlock.max);
+
+    randomEmitPowerBlock.output.connectTo(createParticleBlock.emitPower);
+
+    // Lifetime
+    const minLifetimeBlock = new ParticleInputBlock("Min Lifetime");
+    minLifetimeBlock.value = particleSystem.minLifeTime;
+
+    const maxLifetimeBlock = new ParticleInputBlock("Max Lifetime");
+    maxLifetimeBlock.value = particleSystem.maxLifeTime;
+
+    const randomLifetimeBlock = new ParticleRandomBlock("Random Lifetime");
+    minLifetimeBlock.output.connectTo(randomLifetimeBlock.min);
+    maxLifetimeBlock.output.connectTo(randomLifetimeBlock.max);
+
+    randomLifetimeBlock.output.connectTo(createParticleBlock.lifeTime);
 
     // Texture
     const textureBlock = new ParticleTextureSourceBlock("Texture");
@@ -141,7 +169,7 @@ async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSyste
  * @param name The name of the node particle system set.
  * @param particleSystems The particle systems to convert.
  * @returns The converted node particle system set or null if conversion failed.
- * #0K3AQ2#3625
+ * #0K3AQ2#3627
  */
 export async function ConvertToNodeParticleSystemSetAsync(name: string, particleSystems: ParticleSystem[]): Promise<Nullable<NodeParticleSystemSet>> {
     if (!particleSystems || !particleSystems.length) {
