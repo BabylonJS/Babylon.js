@@ -159,33 +159,33 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
-        function addGizmoCommand<NodeT extends Node>(nodeClass: abstract new (...args: any[]) => NodeT, getGizmo: (node: NodeT) => IDisposable) {
+        function addGizmoCommand<NodeT extends Node>(nodeClass: abstract new (...args: any[]) => NodeT, getGizmoRef: (node: NodeT) => IDisposable) {
             return sceneExplorerService.addCommand({
                 predicate: (entity: unknown): entity is NodeT => entity instanceof nodeClass,
                 getCommand: (node) => {
                     const onChangeObservable = new Observable<void>();
 
-                    let gizmo: Nullable<IDisposable> = null;
+                    let gizmoRef: Nullable<IDisposable> = null;
 
                     return {
                         type: "toggle",
                         get displayName() {
-                            return `Turn ${gizmo ? "Off" : "On"} Gizmo`;
+                            return `Turn ${gizmoRef ? "Off" : "On"} Gizmo`;
                         },
-                        icon: () => (gizmo ? <Cone16Filled /> : <Cone16Regular />),
+                        icon: () => (gizmoRef ? <Cone16Filled /> : <Cone16Regular />),
                         get isEnabled() {
-                            return !!gizmo;
+                            return !!gizmoRef;
                         },
                         set isEnabled(enabled: boolean) {
                             if (enabled) {
-                                if (!gizmo) {
-                                    gizmo = getGizmo(node);
+                                if (!gizmoRef) {
+                                    gizmoRef = getGizmoRef(node);
                                     onChangeObservable.notifyObservers();
                                 }
                             } else {
-                                if (gizmo) {
-                                    gizmo.dispose();
-                                    gizmo = null;
+                                if (gizmoRef) {
+                                    gizmoRef.dispose();
+                                    gizmoRef = null;
                                     onChangeObservable.notifyObservers();
                                 }
                             }
