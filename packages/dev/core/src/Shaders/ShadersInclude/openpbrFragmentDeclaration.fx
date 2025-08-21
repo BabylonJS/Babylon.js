@@ -56,7 +56,7 @@ uniform vec2 vSpecularIorInfos;
 #endif
 
 #ifdef AMBIENT_OCCLUSION
-uniform vec4 vAmbientOcclusionInfos;
+uniform vec2 vAmbientOcclusionInfos;
 #endif
 
 #ifdef GEOMETRY_NORMAL

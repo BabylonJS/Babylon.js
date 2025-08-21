@@ -246,6 +246,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public PARALLAX_RHS = false;
     public PARALLAXOCCLUSION = false;
     public NORMALXYSCALE = true;
+    // public ANISOTROPIC = false;
 
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -2200,6 +2201,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         for (const key in this._samplersList) {
             const sampler = this._samplersList[key];
             samplers.push(sampler.samplerName);
+
+            // Push uniforms for texture infos and matrix
+            uniforms.push(sampler.samplerInfoName);
+            uniforms.push(sampler.samplerMatrixName);
         }
 
         PrepareUniformsAndSamplersForIBL(uniforms, samplers, true);
@@ -2421,6 +2426,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.RADIANCEOCCLUSION = this._useRadianceOcclusion;
 
         defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
+
+        // if (this.specularRoughnessAnisotropy > 0.0) {
+        //     defines.ANISOTROPIC = true;
+        // } else {
+        //     defines.ANISOTROPIC = false;
+        // }
 
         // Misc.
         if (defines._areMiscDirty) {
