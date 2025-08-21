@@ -145,7 +145,7 @@ declare module BABYLON.GLTF2 {
          */
         PNG = "image/png",
         /**
-         * WEBP Mime-type, available via KHR_texture_webp
+         * WEBP Mime-type, available via EXT_texture_webp
          */
         WEBP = "image/webp",
         /**
