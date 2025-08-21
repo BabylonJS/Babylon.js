@@ -99,13 +99,16 @@ export class ClusteredLightContainer extends Light {
         return this._batchSize > 0;
     }
 
-    private readonly _lights: (PointLight | SpotLight)[] = [];
+    private readonly _lights: Light[] = [];
     /**
      * Gets the current list of lights added to this clustering system.
      */
     public get lights(): readonly Light[] {
         return this._lights;
     }
+
+    // The lights sorted by depth
+    private readonly _sortedLights: (PointLight | SpotLight)[] = [];
 
     private _lightDataBuffer: Float32Array;
     private _lightDataTexture: RawTexture;
@@ -262,12 +265,12 @@ export class ClusteredLightContainer extends Light {
 
     /** @internal */
     public _updateBatches(): RenderTargetTexture {
-        this._proxyMesh.isVisible = this._lights.length > 0;
+        this._proxyMesh.isVisible = this._sortedLights.length > 0;
 
         // Ensure space for atleast 1 batch
-        const batches = Math.max(Math.ceil(this._lights.length / this._batchSize), 1);
+        const batches = Math.max(Math.ceil(this._sortedLights.length / this._batchSize), 1);
         if (this._tileMaskBatches >= batches) {
-            this._proxyMesh.thinInstanceCount = this._lights.length;
+            this._proxyMesh.thinInstanceCount = this._sortedLights.length;
             return this._tileMaskTexture;
         }
         const engine = this.getEngine();
@@ -333,7 +336,7 @@ export class ClusteredLightContainer extends Light {
 
         // We don't actually use the matrix data but we need enough capacity for the lights
         this._proxyMesh.thinInstanceSetBuffer("matrix", new Float32Array(maxLights * 16));
-        this._proxyMesh.thinInstanceCount = this._lights.length;
+        this._proxyMesh.thinInstanceCount = this._sortedLights.length;
         this._tileMaskBatches = batches;
         return this._tileMaskTexture;
     }
@@ -356,12 +359,12 @@ export class ClusteredLightContainer extends Light {
 
         // Resort lights based on distance from camera
         const view = camera.getViewMatrix();
-        for (const light of this._lights) {
+        for (const light of this._sortedLights) {
             const position = light.computeTransformedInformation() ? light.transformedPosition : light.position;
             const viewPosition = Vector3.TransformCoordinatesToRef(position, view, TmpVectors.Vector3[0]);
             light._currentViewDepth = viewPosition.z;
         }
-        this._lights.sort((a, b) => a._currentViewDepth - b._currentViewDepth);
+        this._sortedLights.sort((a, b) => a._currentViewDepth - b._currentViewDepth);
 
         // DOOM 2016 subdivision scheme, copied from: https://www.aortiz.me/2018/12/21/CG.html
         const logFarNear = Math.log(camera.maxZ / camera.minZ);
@@ -373,8 +376,8 @@ export class ClusteredLightContainer extends Light {
         let minSlice = -1;
 
         const buf = this._lightDataBuffer;
-        for (let i = 0; i < this._lights.length; i += 1) {
-            const light = this._lights[i];
+        for (let i = 0; i < this._sortedLights.length; i += 1) {
+            const light = this._sortedLights[i];
             const off = i * 20;
             const computed = light.computeTransformedInformation();
             const scaledIntensity = light.getScaledIntensity();
@@ -473,10 +476,11 @@ export class ClusteredLightContainer extends Light {
             return;
         }
         this._scene.removeLight(light);
-        this._lights.push(<PointLight | SpotLight>light);
+        this._lights.push(light);
+        this._sortedLights.push(<PointLight | SpotLight>light);
 
         this._proxyMesh.isVisible = true;
-        this._proxyMesh.thinInstanceCount = this._lights.length;
+        this._proxyMesh.thinInstanceCount = this._sortedLights.length;
     }
 
     /**
@@ -485,16 +489,23 @@ export class ClusteredLightContainer extends Light {
      * @returns the index where the light was in the light list
      */
     public removeLight(light: Light): number {
-        const index = this.lights.indexOf(light);
-        if (index === -1) {
-            return index;
-        }
-        this._lights.splice(index, 1);
-        this._scene.addLight(light);
+        // Convert to `Light` array without cast so `indexOf` has correct typing
+        const sortedLights: Light[] = this._sortedLights;
+        const sortedIndex = sortedLights.indexOf(light);
+        if (sortedIndex !== -1) {
+            sortedLights.splice(sortedIndex, 1);
 
-        this._proxyMesh.thinInstanceCount = this._lights.length;
-        if (this._lights.length === 0) {
-            this._proxyMesh.isVisible = false;
+            this._proxyMesh.thinInstanceCount = sortedLights.length;
+            if (sortedLights.length === 0) {
+                this._proxyMesh.isVisible = false;
+            }
+        }
+
+        const index = this._lights.indexOf(light);
+        if (index !== -1) {
+            this._lights.splice(index, 1);
+            // We treat the unsorted array as the "real" one so only add back to the scene if it was found in that
+            this._scene.addLight(light);
         }
         return index;
     }
