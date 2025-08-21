@@ -64,6 +64,8 @@ function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
             return ".webp";
         case ImageMimeType.AVIF:
             return ".avif";
+        case ImageMimeType.KTX2:
+            return ".ktx2";
     }
 }
 

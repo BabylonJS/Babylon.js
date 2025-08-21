@@ -831,7 +831,7 @@ export const TestBase64DataUrl = (uri: string): { match: boolean; type: string }
     if (results === null || results.length === 0) {
         return { match: false, type: "" };
     } else {
-        const type = results[0].replace("data:", "").replace("base64,", "");
+        const type = results[0].replace("data:", "").replace(";base64,", "");
         return { match: true, type };
     }
 };
