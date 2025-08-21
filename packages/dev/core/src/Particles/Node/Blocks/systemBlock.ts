@@ -12,6 +12,8 @@ import { _TriggerSubEmitter } from "./Triggers/triggerTools";
  * Block used to get a system of particles
  */
 export class SystemBlock extends NodeParticleBlock {
+    private static _IdCounter = 0;
+
     /**
      * Gets or sets the blend mode for the particle system
      */
@@ -59,7 +61,7 @@ export class SystemBlock extends NodeParticleBlock {
     public doNoStart = false;
 
     /** @internal */
-    public _internalId = 0;
+    public _internalId = SystemBlock._IdCounter++;
 
     /**
      * Create a new SystemBlock
@@ -69,7 +71,6 @@ export class SystemBlock extends NodeParticleBlock {
         super(name);
 
         this._isSystem = true;
-        this._internalId++;
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("texture", NodeParticleBlockConnectionPointTypes.Texture);
