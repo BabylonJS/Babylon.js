@@ -80,7 +80,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         handleResize: true,
         enablePopup: true,
         isExtensible: true,
-        isThemeable: false,
+        isThemeable: true,
         ...options,
     };
 
