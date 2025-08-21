@@ -717,7 +717,7 @@ describe("Babylon glTF Serializer", () => {
                 await testRoundtripImage("textures/ktx2/sample_uastc.ktx2", "image/ktx2", "KHR_texture_basisu");
             });
             it("uses EXT_texture_webp to export a WEBP image", async () => {
-                await testRoundtripImage("http://assets.babylonjs.com/meshes/webp/webp_DefaultMaterial_Normal.webp", "image/webp", "EXT_texture_webp");
+                await testRoundtripImage("https://assets.babylonjs.com/meshes/webp/webp_DefaultMaterial_Normal.webp", "image/webp", "EXT_texture_webp");
             });
         });
     });
