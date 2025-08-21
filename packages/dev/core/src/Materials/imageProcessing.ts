@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serializeAsImageProcessingConfiguration } from "../Misc/decorators";
+// import { serializeAsImageProcessingConfiguration } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import type { Observer } from "../Misc/observable";
