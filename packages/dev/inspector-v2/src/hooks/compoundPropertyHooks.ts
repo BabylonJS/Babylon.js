@@ -1,7 +1,7 @@
-import type { Vector3, Color3, Color4, Quaternion } from "core/index";
-
 import { useCallback } from "react";
 
+import { Color3, Color4 } from "core/Maths/math.color";
+import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { useInterceptObservable } from "./instrumentationHooks";
 import { useObservableState } from "./observableHooks";
 
@@ -108,4 +108,25 @@ export function useQuaternionProperty<TargetT extends object, PropertyKeyT exten
     useProperty(quaternion as Quaternion | null | undefined, "w");
 
     return quaternion;
+}
+
+/**
+ * Creates a hook for a concrete value. For example, if the value is a Vector3,
+ * it will return a hook that can intercept a change to the Vector3 property or
+ * any of its components (x, y, z).
+ * @param value The current value of a property that will be hooked.
+ * @returns A hook function that can be used to observe changes to the property.
+ */
+export function MakePropertyHook(value: unknown) {
+    if (value instanceof Vector3) {
+        return useVector3Property;
+    } else if (value instanceof Quaternion) {
+        return useQuaternionProperty;
+    } else if (value instanceof Color3) {
+        return useColor3Property;
+    } else if (value instanceof Color4) {
+        return useColor4Property;
+    } else {
+        return useProperty;
+    }
 }

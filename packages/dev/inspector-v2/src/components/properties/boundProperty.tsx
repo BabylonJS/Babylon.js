@@ -1,9 +1,7 @@
-import type { ComponentType, ComponentProps } from "react";
-import { forwardRef } from "react";
+import type { ComponentProps, ComponentType } from "react";
+import { forwardRef, useMemo } from "react";
 
-import { useProperty, useQuaternionProperty, useVector3Property, useColor3Property, useColor4Property } from "../../hooks/compoundPropertyHooks";
-import { Quaternion, Vector3 } from "core/Maths/math.vector";
-import { Color3, Color4 } from "core/Maths/math.color";
+import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**
  * Helper type to check if a type includes null or undefined
@@ -51,37 +49,41 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
     props: Omit<BoundPropertyProps<TargetT, PropertyKeyT, ComponentT>, "target"> & { target: TargetT },
     ref?: any
 ) {
+    const { target, propertyKey } = props;
+
+    // Get the value of the property. If it changes, it will cause a re-render, which is needed to
+    // re-evaluate which specific hook will catch all the nested property changes we want to observe.
+    const value = useProperty(target, propertyKey);
+
+    // Determine which specific property hook to use based on the value's type.
+    const useSpecificProperty = useMemo(() => MakePropertyHook(value), [value]);
+
+    // Create an inline nested component that changes when the desired specific hook type changes (since hooks can't be conditional).
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
-    let hook: (target: TargetT, propertyKey: PropertyKeyT) => TargetT[PropertyKeyT] = useProperty;
+    const SpecificComponent = useMemo(() => {
+        return (props: ComponentProps<ComponentT>) => {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
 
-    // Auto-detect the appropriate hook based on property type. In future can expand this to support any custom hook passed in
-    const propertyValue = target[propertyKey] as unknown;
-    if (typeof propertyValue === "object" && propertyValue !== null) {
-        if (propertyValue instanceof Vector3) {
-            hook = useVector3Property;
-        } else if (propertyValue instanceof Quaternion) {
-            hook = useQuaternionProperty;
-        } else if (propertyValue instanceof Color3) {
-            hook = useColor3Property;
-        } else if (propertyValue instanceof Color4) {
-            hook = useColor4Property;
-        }
-    }
-    const value = hook(target, propertyKey);
-    const convertedValue = convertTo ? convertTo(value) : value;
+            // Hook the property, using the specific hook that also catches changes to nested properties as well (like x/y/z on a Vector3 for example).
+            const value = useSpecificProperty(target, propertyKey);
+            const convertedValue = convertTo ? convertTo(value) : value;
 
-    const propsToSend = {
-        ...rest,
-        ref,
-        value: convertedValue as TargetT[PropertyKeyT],
-        onChange: (val: TargetT[PropertyKeyT]) => {
-            const newValue = convertFrom ? convertFrom(val) : val;
-            target[propertyKey] = newValue;
-        },
-    };
+            const propsToSend = {
+                ...rest,
+                ref,
+                value: convertedValue as TargetT[PropertyKeyT],
+                onChange: (val: TargetT[PropertyKeyT]) => {
+                    const newValue = convertFrom ? convertFrom(val) : val;
+                    target[propertyKey] = newValue;
+                },
+            };
 
-    return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
+            return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
+        };
+    }, [useSpecificProperty]);
+
+    return <SpecificComponent {...(props as ComponentProps<ComponentT>)} />;
 }
 
 const BoundPropertyCore = CreateGenericForwardRef(BoundPropertyCoreImpl);
