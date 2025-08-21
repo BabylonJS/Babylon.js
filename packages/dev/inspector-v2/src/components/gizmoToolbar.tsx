@@ -26,7 +26,7 @@ const useStyles = makeStyles({
         display: "flex",
     },
     coordinatesModeButton: {
-        margin: `0px ${tokens.spacingVerticalXS}`,
+        margin: `0 ${tokens.spacingVerticalXS}`,
     },
     coordinatesModeMenu: {
         minWidth: 0,
