@@ -696,6 +696,8 @@ describe("Babylon glTF Serializer", () => {
             const testRoundtripImage = async (imageUrl: string, mimeType: string, extensionName: string) => {
                 const assertionData = await page.evaluate(async (imageUrl) => {
                     const material = new BABYLON.PBRMaterial("mat");
+                    material.metallic = 0;
+                    material.roughness = 1;
                     material.albedoTexture = new BABYLON.Texture(imageUrl);
                     BABYLON.MeshBuilder.CreatePlane("plane").material = material;
 
