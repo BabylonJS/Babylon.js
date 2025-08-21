@@ -698,20 +698,19 @@ describe("Babylon glTF Serializer", () => {
                     const material = new BABYLON.PBRMaterial("mat");
                     material.metallic = 0;
                     material.roughness = 1;
-                    material.albedoTexture = new BABYLON.Texture(imageUrl);
+                    material.albedoTexture = new BABYLON.Texture(imageUrl, window.scene!, { invertY: false });
                     BABYLON.MeshBuilder.CreatePlane("plane").material = material;
 
                     const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
                     const jsonString = glTFData.files["test.gltf"] as string;
                     return JSON.parse(jsonString);
                 }, imageUrl);
-                const imageIndex = assertionData.textures[0].extensions[extensionName].source;
-                const image = assertionData.images[imageIndex];
-                const mime = image.mimeType || GetMimeType(image.uri);
-
                 expect(assertionData.textures).toHaveLength(1);
+                const imageIndex = assertionData.textures[0].extensions[extensionName].source;
                 expect(imageIndex).toBeDefined();
+                const image = assertionData.images[imageIndex];
                 expect(image).toBeDefined();
+                const mime = image.mimeType || GetMimeType(image.uri);
                 expect(mime).toEqual(mimeType);
             };
             it("uses KHR_texture_basisu to export a KTX2 image", async () => {
