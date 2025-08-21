@@ -1,7 +1,7 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { Constants } from "core/Engines";
-import { GetMimeType } from "core/Misc";
+import { GetMimeType } from "core/Misc/fileTools";
 
 declare const BABYLON: typeof import("core/index") &
     typeof import("serializers/index") & {
