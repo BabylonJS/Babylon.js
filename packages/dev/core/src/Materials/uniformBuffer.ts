@@ -910,10 +910,10 @@ export class UniformBuffer {
                 this._currentEffect.setFloatArray3(name + suffix, array);
                 break;
             case 4:
-                this._currentEffect.setFloatArray3(name + suffix, array);
+                this._currentEffect.setFloatArray4(name + suffix, array);
                 break;
             default:
-                this._currentEffect.setFloatArray4(name + suffix, array);
+                this._currentEffect.setFloatArray(name + suffix, array);
                 break;
         }
     }
