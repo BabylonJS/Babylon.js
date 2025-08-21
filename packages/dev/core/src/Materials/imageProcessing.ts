@@ -22,8 +22,7 @@ export function ImageProcessingMixin<Tbase extends ImageProcessingMixinConstruct
             super(...args);
             // Decorators don't work on this annonymous class
             // so I'm setting this up manually.
-            const fn = serializeAsImageProcessingConfiguration();
-            fn.call(this, this, "_imageProcessingConfiguration");
+            serializeAsImageProcessingConfiguration.call(this, this, "_imageProcessingConfiguration");
         }
         /**
          * Default configuration related to image processing available in the standard Material.
