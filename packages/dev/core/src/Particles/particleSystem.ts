@@ -109,6 +109,9 @@ export class ParticleSystem extends ThinParticleSystem {
     /** @internal */
     public _source: Nullable<NodeParticleSystemSet> = null;
 
+    /** @internal */
+    public _blockReference: number = 0;
+
     /**
      * Gets the NodeParticleSystemSet that this particle system belongs to.
      */

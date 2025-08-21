@@ -270,6 +270,7 @@ export class NodeParticleSystemSet {
 
                 const system = block.createSystem(state);
                 system._source = this;
+                system._blockReference = block._internalId;
 
                 // Errors
                 state.emitErrors();

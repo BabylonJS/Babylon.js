@@ -58,6 +58,9 @@ export class SystemBlock extends NodeParticleBlock {
     @editableInPropertyPage("Do no start", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public doNoStart = false;
 
+    /** @internal */
+    public _internalId = 0;
+
     /**
      * Create a new SystemBlock
      * @param name defines the block name
@@ -66,6 +69,7 @@ export class SystemBlock extends NodeParticleBlock {
         super(name);
 
         this._isSystem = true;
+        this._internalId++;
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
         this.registerInput("texture", NodeParticleBlockConnectionPointTypes.Texture);

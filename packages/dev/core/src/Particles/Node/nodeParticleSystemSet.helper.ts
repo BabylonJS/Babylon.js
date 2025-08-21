@@ -169,7 +169,7 @@ async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSyste
  * @param name The name of the node particle system set.
  * @param particleSystems The particle systems to convert.
  * @returns The converted node particle system set or null if conversion failed.
- * #0K3AQ2#3625
+ * #0K3AQ2#3627
  */
 export async function ConvertToNodeParticleSystemSetAsync(name: string, particleSystems: ParticleSystem[]): Promise<Nullable<NodeParticleSystemSet>> {
     if (!particleSystems || !particleSystems.length) {
