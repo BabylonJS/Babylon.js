@@ -19,8 +19,9 @@ export class AlphaState {
 
     /**
      * Initializes the state.
+     * @param _supportBlendParametersPerTarget - Whether blend parameters per target is supported
      */
-    public constructor() {
+    public constructor(private _supportBlendParametersPerTarget: boolean) {
         this.reset();
     }
 
@@ -117,7 +118,7 @@ export class AlphaState {
 
         // Alpha blend
         if (this._isAlphaBlendDirty) {
-            if (numTargets === 1) {
+            if (numTargets === 1 || !this._supportBlendParametersPerTarget) {
                 if (this._alphaBlend[0]) {
                     gl.enable(gl.BLEND);
                 } else {
@@ -140,7 +141,7 @@ export class AlphaState {
 
         // Alpha function
         if (this._isBlendFunctionParametersDirty) {
-            if (numTargets === 1) {
+            if (numTargets === 1 || !this._supportBlendParametersPerTarget) {
                 gl.blendFuncSeparate(
                     <number>this._blendFunctionParameters[0],
                     <number>this._blendFunctionParameters[1],
@@ -165,7 +166,7 @@ export class AlphaState {
 
         // Alpha equation
         if (this._isBlendEquationParametersDirty) {
-            if (numTargets === 1) {
+            if (numTargets === 1 || !this._supportBlendParametersPerTarget) {
                 gl.blendEquationSeparate(<number>this._blendEquationParameters[0], <number>this._blendEquationParameters[1]);
             } else {
                 const gl2 = gl as WebGL2RenderingContext;
