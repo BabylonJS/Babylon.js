@@ -7,10 +7,16 @@ import { TargetRegular } from "@fluentui/react-icons";
 import { useEffect, useMemo, useState } from "react";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
+import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 
-export const PickingToolbar: FunctionComponent<{ scene: Scene; selectEntity: (entity: unknown) => void; gizmoService: IGizmoService }> = (props) => {
-    const { scene, selectEntity, gizmoService } = props;
+export const PickingToolbar: FunctionComponent<{
+    scene: Scene;
+    selectEntity: (entity: unknown) => void;
+    gizmoService: IGizmoService;
+    ignoreBackfaces?: boolean;
+}> = (props) => {
+    const { scene, selectEntity, gizmoService, ignoreBackfaces } = props;
 
     const meshDataCache = useMemo(() => new WeakMap<AbstractMesh, IMeshDataCache>(), [scene]);
     // Not sure why changing the cursor on the canvas itself doesn't work, so change it on the parent.
@@ -62,7 +68,22 @@ export const PickingToolbar: FunctionComponent<{ scene: Scene; selectEntity: (en
                         (mesh) => mesh.isEnabled() && mesh.isVisible && mesh.getTotalVertices() > 0,
                         false,
                         undefined,
-                        undefined
+                        (p0, p1, p2, ray) => {
+                            if (!ignoreBackfaces) {
+                                return true;
+                            }
+
+                            const p0p1 = TmpVectors.Vector3[0];
+                            const p1p2 = TmpVectors.Vector3[1];
+                            let normal = TmpVectors.Vector3[2];
+
+                            p1.subtractToRef(p0, p0p1);
+                            p2.subtractToRef(p1, p1p2);
+
+                            normal = Vector3.Cross(p0p1, p1p2);
+
+                            return Vector3.Dot(normal, ray.direction) < 0;
+                        }
                     );
 
                     pickedEntity = pickingInfo.pickedMesh;
@@ -92,7 +113,7 @@ export const PickingToolbar: FunctionComponent<{ scene: Scene; selectEntity: (en
         return () => {
             /* No-op */
         };
-    }, [pickingEnabled, sceneElement]);
+    }, [pickingEnabled, sceneElement, ignoreBackfaces]);
 
     return (
         sceneElement && (
