@@ -18,7 +18,7 @@ type ToggleButtonProps = PrimitiveProps<boolean> & {
  * @returns
  */
 export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
-    const { value, onChange, title, appearance = "transparent" } = props;
+    const { value, onChange, title, appearance = "subtle" } = props;
     const [checked, setChecked] = useState(value);
     const toggle = useCallback(() => {
         setChecked((prev) => {

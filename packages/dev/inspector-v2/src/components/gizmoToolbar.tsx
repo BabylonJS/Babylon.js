@@ -137,16 +137,10 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
 
     return (
         <>
-            <ToggleButton appearance="subtle" title="Translate" enabledIcon={ArrowMoveRegular} value={gizmoMode === "translate"} onChange={() => updateGizmoMode("translate")} />
-            <ToggleButton appearance="subtle" title="Rotate" enabledIcon={ArrowRotateClockwiseRegular} value={gizmoMode === "rotate"} onChange={() => updateGizmoMode("rotate")} />
-            <ToggleButton appearance="subtle" title="Scale" enabledIcon={ArrowExpandRegular} value={gizmoMode === "scale"} onChange={() => updateGizmoMode("scale")} />
-            <ToggleButton
-                appearance="subtle"
-                title="Bounding Box"
-                enabledIcon={SelectObjectRegular}
-                value={gizmoMode === "boundingBox"}
-                onChange={() => updateGizmoMode("boundingBox")}
-            />
+            <ToggleButton title="Translate" enabledIcon={ArrowMoveRegular} value={gizmoMode === "translate"} onChange={() => updateGizmoMode("translate")} />
+            <ToggleButton title="Rotate" enabledIcon={ArrowRotateClockwiseRegular} value={gizmoMode === "rotate"} onChange={() => updateGizmoMode("rotate")} />
+            <ToggleButton title="Scale" enabledIcon={ArrowExpandRegular} value={gizmoMode === "scale"} onChange={() => updateGizmoMode("scale")} />
+            <ToggleButton title="Bounding Box" enabledIcon={SelectObjectRegular} value={gizmoMode === "boundingBox"} onChange={() => updateGizmoMode("boundingBox")} />
             <Collapse visible={!!gizmoMode} orientation="horizontal">
                 {/* TODO: gehalper factor this into a shared component */}
                 <Menu positioning="below-end" checkedValues={{ coordinatesMode: [coordinatesMode.toString()] }} onCheckedValueChange={onCoordinatesModeChange}>
