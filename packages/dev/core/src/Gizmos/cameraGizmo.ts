@@ -67,10 +67,10 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
             }
 
             this._isHovered = !!(pointerInfo.pickInfo && this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            if (this._isHovered && pointerInfo.event.button === 0) {
+            if (this._isHovered && pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.button === 0) {
                 this.onClickedObservable.notifyObservers(this._camera);
             }
-        }, PointerEventTypes.POINTERDOWN);
+        });
     }
     protected _camera: Nullable<Camera> = null;
 
