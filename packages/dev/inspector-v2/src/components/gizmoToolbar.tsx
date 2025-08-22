@@ -4,9 +4,8 @@ import type { FunctionComponent } from "react";
 import type { IDisposable, Nullable, Scene, TransformNode } from "core/index";
 import type { IGizmoService } from "../services/gizmoService";
 
-import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, ToggleButton, tokens, Tooltip } from "@fluentui/react-components";
+import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { ArrowExpandRegular, ArrowMoveRegular, ArrowRotateClockwiseRegular, CubeRegular, MoviesAndTvRegular, SelectObjectRegular } from "@fluentui/react-icons";
-import { Collapse } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useState } from "react";
 
 import { Bone } from "core/Bones/bone";
@@ -16,15 +15,14 @@ import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Node } from "core/node";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useProperty } from "../hooks/compoundPropertyHooks";
 import { useResource } from "../hooks/resourceHooks";
 
 type GizmoMode = "translate" | "rotate" | "scale" | "boundingBox";
 
 const useStyles = makeStyles({
-    coordinatesModeDiv: {
-        display: "flex",
-    },
     coordinatesModeButton: {
         margin: `0 ${tokens.spacingVerticalXS}`,
     },
@@ -43,6 +41,7 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
             const utilityLayerRef = gizmoService.getUtilityLayer(scene);
             const keepDepthUtilityLayerRef = gizmoService.getUtilityLayer(scene, "keepDepth");
             const gizmoManager = new GizmoManager(scene, undefined, utilityLayerRef.value, keepDepthUtilityLayerRef.value);
+            gizmoManager.usePointerToAttachGizmos = false;
 
             const disposeGizmoManager = gizmoManager.dispose.bind(gizmoManager);
             gizmoManager.dispose = () => {
@@ -138,51 +137,70 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
 
     return (
         <>
-            <Tooltip content="Translate" relationship="label">
-                <ToggleButton appearance="subtle" icon={<ArrowMoveRegular />} checked={gizmoMode === "translate"} onClick={() => updateGizmoMode("translate")} />
-            </Tooltip>
-            <Tooltip content="Rotate" relationship="label">
-                <ToggleButton appearance="subtle" icon={<ArrowRotateClockwiseRegular />} checked={gizmoMode === "rotate"} onClick={() => updateGizmoMode("rotate")} />
-            </Tooltip>
-            <Tooltip content="Scale" relationship="label">
-                <ToggleButton appearance="subtle" icon={<ArrowExpandRegular />} checked={gizmoMode === "scale"} onClick={() => updateGizmoMode("scale")} />
-            </Tooltip>
-            <Tooltip content="Bounding Box" relationship="label">
-                <ToggleButton appearance="subtle" icon={<SelectObjectRegular />} checked={gizmoMode === "boundingBox"} onClick={() => updateGizmoMode("boundingBox")} />
-            </Tooltip>
+            <ToggleButton
+                appearance="subtle"
+                title="Translate"
+                enabledIcon={ArrowMoveRegular}
+                disabledIcon={ArrowMoveRegular}
+                value={gizmoMode === "translate"}
+                onChange={() => updateGizmoMode("translate")}
+            />
+            <ToggleButton
+                appearance="subtle"
+                title="Rotate"
+                enabledIcon={ArrowRotateClockwiseRegular}
+                disabledIcon={ArrowRotateClockwiseRegular}
+                value={gizmoMode === "rotate"}
+                onChange={() => updateGizmoMode("rotate")}
+            />
+            <ToggleButton
+                appearance="subtle"
+                title="Scale"
+                enabledIcon={ArrowExpandRegular}
+                disabledIcon={ArrowExpandRegular}
+                value={gizmoMode === "scale"}
+                onChange={() => updateGizmoMode("scale")}
+            />
+            <ToggleButton
+                appearance="subtle"
+                title="Bounding Box"
+                enabledIcon={SelectObjectRegular}
+                disabledIcon={SelectObjectRegular}
+                value={gizmoMode === "boundingBox"}
+                onChange={() => updateGizmoMode("boundingBox")}
+            />
             <Collapse visible={!!gizmoMode} orientation="horizontal">
-                <div className={classes.coordinatesModeDiv}>
-                    <Menu positioning="below-end" checkedValues={{ coordinatesMode: [coordinatesMode.toString()] }} onCheckedValueChange={onCoordinatesModeChange}>
-                        <MenuTrigger disableButtonEnhancement={true}>
-                            {(triggerProps: MenuButtonProps) => (
-                                <Tooltip content="Coordinates Mode" relationship="label">
-                                    <SplitButton
-                                        className={classes.coordinatesModeButton}
-                                        menuButton={triggerProps}
-                                        primaryActionButton={{
-                                            onClick: toggleCoordinatesMode,
-                                        }}
-                                        size="small"
-                                        appearance="secondary"
-                                        shape="rounded"
-                                        icon={coordinatesMode === GizmoCoordinatesMode.Local ? <CubeRegular /> : <MoviesAndTvRegular />}
-                                    ></SplitButton>
-                                </Tooltip>
-                            )}
-                        </MenuTrigger>
+                {/* TODO: gehalper factor this into a shared component */}
+                <Menu positioning="below-end" checkedValues={{ coordinatesMode: [coordinatesMode.toString()] }} onCheckedValueChange={onCoordinatesModeChange}>
+                    <MenuTrigger disableButtonEnhancement={true}>
+                        {(triggerProps: MenuButtonProps) => (
+                            <Tooltip content="Coordinates Mode" relationship="label">
+                                <SplitButton
+                                    className={classes.coordinatesModeButton}
+                                    menuButton={triggerProps}
+                                    primaryActionButton={{
+                                        onClick: toggleCoordinatesMode,
+                                    }}
+                                    size="small"
+                                    appearance="secondary"
+                                    shape="rounded"
+                                    icon={coordinatesMode === GizmoCoordinatesMode.Local ? <CubeRegular /> : <MoviesAndTvRegular />}
+                                ></SplitButton>
+                            </Tooltip>
+                        )}
+                    </MenuTrigger>
 
-                        <MenuPopover className={classes.coordinatesModeMenu}>
-                            <MenuList>
-                                <MenuItemRadio name="coordinatesMode" value={GizmoCoordinatesMode.Local.toString()}>
-                                    Local
-                                </MenuItemRadio>
-                                <MenuItemRadio name="coordinatesMode" value={GizmoCoordinatesMode.World.toString()}>
-                                    World
-                                </MenuItemRadio>
-                            </MenuList>
-                        </MenuPopover>
-                    </Menu>
-                </div>
+                    <MenuPopover className={classes.coordinatesModeMenu}>
+                        <MenuList>
+                            <MenuItemRadio name="coordinatesMode" value={GizmoCoordinatesMode.Local.toString()}>
+                                Local
+                            </MenuItemRadio>
+                            <MenuItemRadio name="coordinatesMode" value={GizmoCoordinatesMode.World.toString()}>
+                                World
+                            </MenuItemRadio>
+                        </MenuList>
+                    </MenuPopover>
+                </Menu>
             </Collapse>
         </>
     );
