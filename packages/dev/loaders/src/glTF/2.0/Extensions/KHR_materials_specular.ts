@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
-
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
@@ -100,66 +100,56 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
         const promises = new Array<Promise<any>>();
         promises.push(Promise.resolve());
 
-        if (useOpenPBR) {
-            if (properties.specularFactor !== undefined) {
-                (babylonMaterial as OpenPBRMaterial).specularWeight = properties.specularFactor;
-            }
+        const specularWeight = properties.specularFactor ?? 1.0;
+        const specularColor = properties.specularColorFactor !== undefined ? Color3.FromArray(properties.specularColorFactor) : new Color3(1, 1, 1);
+        let specularWeightTexture: Nullable<BaseTexture> = null;
+        let specularColorTexture: Nullable<BaseTexture> = null;
 
-            if (properties.specularColorFactor !== undefined) {
-                (babylonMaterial as OpenPBRMaterial).specularColor = Color3.FromArray(properties.specularColorFactor);
-            }
+        if (properties.specularTexture) {
+            (properties.specularTexture as ITextureInfo).nonColorData = true;
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Specular)`;
+                    specularWeightTexture = texture;
+                })
+            );
+        }
 
-            if (properties.specularTexture) {
-                (properties.specularTexture as ITextureInfo).nonColorData = true;
-                promises.push(
-                    this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
-                        texture.name = `${babylonMaterial.name} (Specular)`;
-                        (babylonMaterial as OpenPBRMaterial).specularWeightTexture = texture;
-                        (babylonMaterial as OpenPBRMaterial).useSpecularWeightFromTextureAlpha = true;
-                    })
-                );
-            }
-
-            if (properties.specularColorTexture) {
-                promises.push(
-                    this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
-                        texture.name = `${babylonMaterial.name} (Specular Color)`;
-                        (babylonMaterial as OpenPBRMaterial).specularColorTexture = texture;
-                    })
-                );
-            }
-        } else {
-            if (properties.specularFactor !== undefined) {
-                (babylonMaterial as PBRMaterial).metallicF0Factor = properties.specularFactor;
-            }
-
-            if (properties.specularColorFactor !== undefined) {
-                (babylonMaterial as PBRMaterial).metallicReflectanceColor = Color3.FromArray(properties.specularColorFactor);
-            }
-
-            if (properties.specularTexture) {
-                (properties.specularTexture as ITextureInfo).nonColorData = true;
-                promises.push(
-                    this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
-                        texture.name = `${babylonMaterial.name} (Specular)`;
-                        (babylonMaterial as PBRMaterial).metallicReflectanceTexture = texture;
-                        (babylonMaterial as PBRMaterial).useOnlyMetallicFromMetallicReflectanceTexture = true;
-                    })
-                );
-            }
-
-            if (properties.specularColorTexture) {
-                promises.push(
-                    this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
-                        texture.name = `${babylonMaterial.name} (Specular Color)`;
-                        (babylonMaterial as PBRMaterial).reflectanceTexture = texture;
-                    })
-                );
-            }
+        if (properties.specularColorTexture) {
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Specular Color)`;
+                    specularColorTexture = texture;
+                })
+            );
         }
 
         // eslint-disable-next-line github/no-then
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => {
+            if (useOpenPBR) {
+                const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
+                openpbrMaterial.specularWeight = specularWeight;
+                openpbrMaterial.specularColor = specularColor;
+                openpbrMaterial.specularColorTexture = specularColorTexture;
+                if (specularColorTexture && specularColorTexture == specularWeightTexture) {
+                    openpbrMaterial._useSpecularWeightFromSpecularColorTexture = true;
+                } else {
+                    openpbrMaterial.specularWeightTexture = specularWeightTexture;
+                }
+                openpbrMaterial._useSpecularWeightFromAlpha = true;
+            } else {
+                const pbrMaterial = babylonMaterial as PBRMaterial;
+                pbrMaterial.metallicF0Factor = specularWeight;
+                pbrMaterial.metallicReflectanceColor = specularColor;
+                if (specularWeightTexture) {
+                    pbrMaterial.metallicReflectanceTexture = specularWeightTexture;
+                    pbrMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
+                }
+                if (specularColorTexture) {
+                    pbrMaterial.reflectanceTexture = specularColorTexture;
+                }
+            }
+        });
     }
 }
 

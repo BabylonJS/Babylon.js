@@ -19,7 +19,7 @@
 		vec2 TBNUV = gl_FrontFacing ? vDetailUV : -vDetailUV;
 		mat3 TBN = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vec2(1., 1.));
 	#endif
-#elif defined(SPECULAR_ROUGHNESS_ANISOTROPY) || defined(COAT_ROUGHNESS_ANISOTROPY)
+#elif defined(ANISOTROPIC)
 	#if defined(TANGENT) && defined(NORMAL)
 		mat3 TBN = vTBN;
 	#else

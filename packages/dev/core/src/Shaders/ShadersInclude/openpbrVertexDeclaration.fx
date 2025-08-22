@@ -96,6 +96,11 @@ uniform vec2 vGeometryNormalInfos;
 uniform mat4 geometryNormalMatrix;
 #endif
 
+#ifdef GEOMETRY_TANGENT
+uniform vec2 vGeometryTangentInfos;
+uniform mat4 geometryTangentMatrix;
+#endif
+
 #ifdef GEOMETRY_COAT_NORMAL
 uniform vec2 vGeometryCoatNormalInfos;
 uniform mat4 geometryCoatNormalMatrix;

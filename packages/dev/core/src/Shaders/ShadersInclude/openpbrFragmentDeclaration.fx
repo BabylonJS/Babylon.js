@@ -5,7 +5,7 @@ uniform vec4 vBaseColor;
 uniform float vBaseDiffuseRoughness;
 uniform vec4 vReflectanceInfo;
 uniform vec4 vSpecularColor;
-uniform vec4 vSpecularRoughnessAnisotropy;
+uniform vec3 vSpecularAnisotropy;
 uniform float vCoatWeight;
 uniform vec3 vCoatColor;
 uniform float vCoatRoughness;
@@ -62,6 +62,10 @@ uniform vec2 vAmbientOcclusionInfos;
 #ifdef GEOMETRY_NORMAL
 uniform vec2 vGeometryNormalInfos;
 uniform vec2 vTangentSpaceParams;
+#endif
+
+#ifdef GEOMETRY_TANGENT
+uniform vec2 vGeometryTangentInfos;
 #endif
 
 #ifdef GEOMETRY_COAT_NORMAL

@@ -110,9 +110,25 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
                 <TextureLinkLineComponent
+                    label="Specular Roughness Anisotropy"
+                    texture={material.specularRoughnessAnisotropyTexture}
+                    propertyName="specularRoughnessAnisotropyTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
                     label="Geometry Normal"
                     texture={material.geometryNormalTexture}
                     propertyName="geometryNormalTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Geometry Tangent"
+                    texture={material.geometryTangentTexture}
+                    propertyName="geometryTangentTexture"
                     material={material}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
@@ -376,6 +392,24 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
+                        label="Roughness Anisotropy"
+                        target={material}
+                        propertyName="specularRoughnessAnisotropy"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Roughness Anisotropy Texture"
+                        texture={material.specularRoughnessAnisotropyTexture}
+                        propertyName="specularRoughnessAnisotropyTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="IOR"
                         target={material}
                         propertyName="specularIor"
@@ -491,6 +525,44 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         propertyName="emissionLuminance"
                         minimum={0}
                         maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                </LineContainerComponent>
+                <LineContainerComponent title="GEOMETRY" selection={this.props.globalState}>
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Opacity"
+                        target={material}
+                        propertyName="alpha"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Opacity Texture"
+                        texture={material.geometryOpacityTexture}
+                        propertyName="geometryOpacityTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Normal"
+                        texture={material.geometryNormalTexture}
+                        propertyName="geometryNormalTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Tangent Angle"
+                        target={material}
+                        propertyName="geometryTangentAngle"
+                        minimum={0}
+                        maximum={Math.PI}
                         step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

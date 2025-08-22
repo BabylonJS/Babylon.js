@@ -879,10 +879,10 @@ export class GLTFMaterialExporter {
                             };
 
                             glTFMaterial.occlusionTexture = occlusionTexture;
-                            const ambientTextureStrength =
-                                babylonPBRMaterial instanceof PBRBaseMaterial ? babylonPBRMaterial._ambientTextureStrength : babylonPBRMaterial.ambientOcclusionTexture.level;
-                            if (ambientTextureStrength) {
-                                occlusionTexture.strength = ambientTextureStrength;
+                            if (babylonPBRMaterial instanceof PBRBaseMaterial) {
+                                occlusionTexture.strength = babylonPBRMaterial._ambientTextureStrength;
+                            } else {
+                                occlusionTexture.strength = babylonPBRMaterial.ambientOcclusionTexture!.level;
                             }
                         }
                     })
