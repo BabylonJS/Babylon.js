@@ -22,6 +22,10 @@ export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quat
          */
         max?: number;
         /**
+         * Will be displayed in the input UI to indicate the unit of measurement
+         */
+        unit?: string;
+        /**
          * If passed, the UX will use the conversion functions to display/update values
          */
         valueConverter?: {
@@ -66,10 +70,14 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
             {...props}
             expandedContent={
                 <>
-                    <SyncedSliderPropertyLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} />
-                    <SyncedSliderPropertyLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} />
-                    {HasZ(vector) && <SyncedSliderPropertyLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} />}
-                    {HasW(vector) && <SyncedSliderPropertyLine label="W" value={converted(vector.w)} min={min} max={max} onChange={(val) => onChange(val, "w")} />}
+                    <SyncedSliderPropertyLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} unit={props.unit} />
+                    <SyncedSliderPropertyLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} unit={props.unit} />
+                    {HasZ(vector) && (
+                        <SyncedSliderPropertyLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} unit={props.unit} />
+                    )}
+                    {HasW(vector) && (
+                        <SyncedSliderPropertyLine label="W" value={converted(vector.w)} min={min} max={max} onChange={(val) => onChange(val, "w")} unit={props.unit} />
+                    )}
                 </>
             }
         >
@@ -89,7 +97,7 @@ const ToDegreesConverter = { from: Tools.ToDegrees, to: Tools.ToRadians };
 export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropertyLineProps> = (props) => {
     const min = props.useDegrees ? 0 : undefined;
     const max = props.useDegrees ? 360 : undefined;
-    return <Vector3PropertyLine {...props} valueConverter={props.useDegrees ? ToDegreesConverter : undefined} min={min} max={max} />;
+    return <Vector3PropertyLine {...props} unit={props.useDegrees ? "deg" : "rad"} valueConverter={props.useDegrees ? ToDegreesConverter : undefined} min={min} max={max} />;
 };
 
 type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
@@ -118,7 +126,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
         props.onChange(quat);
     };
 
-    return props.useDegrees ? (
+    return useDegrees ? (
         <Vector3PropertyLine
             {...restProps}
             nullable={false}
@@ -128,9 +136,10 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
             min={min}
             max={max}
             onChange={onEulerChange}
+            unit="deg"
         />
     ) : (
-        <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
+        <QuaternionPropertyLineInternal {...props} unit={"rad"} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
     );
 };
 export const Vector2PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector2>>;

@@ -14,6 +14,7 @@ export * from "./heightToNormalBlock";
 export * from "./fragDepthBlock";
 export * from "./shadowMapBlock";
 export * from "./prePassOutputBlock";
+export * from "./ambientOcclusionBlock";
 
 // async-loaded shaders
 

@@ -578,9 +578,6 @@ export class InstancedMesh extends AbstractMesh {
             []
         );
 
-        // Bounding info
-        this.refreshBoundingInfo();
-
         // Parent
         if (newParent) {
             result.parent = newParent;

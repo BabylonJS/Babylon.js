@@ -2,7 +2,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { FrameRegular } from "@fluentui/react-icons";
+import { FrameRegular, PlayFilled, PlayRegular } from "@fluentui/react-icons";
 
 import { FrameGraph } from "core/FrameGraph/frameGraph";
 import { Observable } from "core/Misc";
@@ -23,7 +23,6 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Frame Graph",
             order: DefaultSectionsOrder.FrameGraphs,
-            predicate: (entity) => entity instanceof FrameGraph,
             getRootEntities: () => scene.frameGraphs,
             getEntityDisplayInfo: (frameGraph) => {
                 const onChangeObservable = new Observable<void>();
@@ -50,9 +49,39 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
             getEntityRemovedObservables: () => [scene.onFrameGraphRemovedObservable],
         });
 
+        const activeFrameGraphCommandRegistration = sceneExplorerService.addCommand({
+            predicate: (entity: unknown) => entity instanceof FrameGraph,
+            getCommand: (frameGraph) => {
+                const onChangeObservable = new Observable<void>();
+                const frameGraphHook = InterceptProperty(scene, "frameGraph", {
+                    afterSet: () => onChangeObservable.notifyObservers(),
+                });
+
+                return {
+                    type: "toggle",
+                    displayName: "Make Active",
+                    icon: () => (scene.frameGraph === frameGraph ? <PlayFilled /> : <PlayRegular />),
+                    get isEnabled() {
+                        return scene.frameGraph === frameGraph;
+                    },
+                    set isEnabled(enabled: boolean) {
+                        if (enabled && scene.frameGraph !== frameGraph) {
+                            scene.frameGraph = frameGraph;
+                        }
+                    },
+                    onChange: onChangeObservable,
+                    dispose: () => {
+                        frameGraphHook.dispose();
+                        onChangeObservable.clear();
+                    },
+                };
+            },
+        });
+
         return {
             dispose: () => {
                 sectionRegistration.dispose();
+                activeFrameGraphCommandRegistration.dispose();
             },
         };
     },

@@ -199,14 +199,14 @@ export const DebugPane: typeof ExtensibleAccordion<Scene> = (props) => {
                 <BoundProperty component={SwitchPropertyLine} key="Physics" label="Physics" target={scene} propertyKey="physicsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Collisions" label="Collisions" target={scene} propertyKey="collisionsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Fog" label="Fog" target={scene} propertyKey="fogEnabled" />
-                <BoundProperty component={SwitchPropertyLine} key="Lens flares" label="Lens flares" target={scene} propertyKey="lensFlaresEnabled" />
+                <BoundProperty component={SwitchPropertyLine} key="Lens flares" label="Lens Flares" target={scene} propertyKey="lensFlaresEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Lights" label="Lights" target={scene} propertyKey="lightsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Particles" label="Particles" target={scene} propertyKey="particlesEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Post-processes" label="Post-processes" target={scene} propertyKey="postProcessesEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Probes" label="Probes" target={scene} propertyKey="probesEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Textures" label="Textures" target={scene} propertyKey="texturesEnabled" />
-                <BoundProperty component={SwitchPropertyLine} key="Procedural textures" label="Procedural textures" target={scene} propertyKey="proceduralTexturesEnabled" />
-                <BoundProperty component={SwitchPropertyLine} key="Render targets" label="Render targets" target={scene} propertyKey="renderTargetsEnabled" />
+                <BoundProperty component={SwitchPropertyLine} key="Procedural textures" label="Procedural Textures" target={scene} propertyKey="proceduralTexturesEnabled" />
+                <BoundProperty component={SwitchPropertyLine} key="Render targets" label="Render Targets" target={scene} propertyKey="renderTargetsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Shadows" label="Shadows" target={scene} propertyKey="shadowsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Skeletons" label="Skeletons" target={scene} propertyKey="skeletonsEnabled" />
                 <BoundProperty component={SwitchPropertyLine} key="Sprites" label="Sprites" target={scene} propertyKey="spritesEnabled" />

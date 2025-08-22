@@ -22,7 +22,7 @@ export const MessageBar: FunctionComponent<MessageBarProps> = (props) => {
 
     return (
         <div className={classes.container}>
-            <FluentMessageBar intent={intent}>
+            <FluentMessageBar intent={intent} layout="multiline">
                 <MessageBarBody>
                     <MessageBarTitle>{header}</MessageBarTitle>
                     {message}

@@ -1,5 +1,4 @@
 import type { IMaterial, IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
-import { ImageMimeType } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
@@ -98,7 +97,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
 
             if (subSurface.refractionIntensityTexture) {
                 if (subSurface.useGltfStyleTextures) {
-                    const transmissionTexture = await this._exporter._materialExporter.exportTextureAsync(subSurface.refractionIntensityTexture, ImageMimeType.PNG);
+                    const transmissionTexture = await this._exporter._materialExporter.exportTextureAsync(subSurface.refractionIntensityTexture);
                     if (transmissionTexture) {
                         volumeInfo.transmissionTexture = transmissionTexture;
                     }

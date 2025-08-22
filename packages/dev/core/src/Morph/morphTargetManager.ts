@@ -320,6 +320,11 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
+     * Gets or sets an object used to store user defined information for the MorphTargetManager
+     */
+    public metadata: any = null;
+
+    /**
      * Gets the active target at specified index. An active target is a target with an influence > 0
      * @param index defines the index to check
      * @returns the requested target
@@ -425,6 +430,7 @@ export class MorphTargetManager implements IDisposable {
         copy.enableUVMorphing = this.enableUVMorphing;
         copy.enableUV2Morphing = this.enableUV2Morphing;
         copy.enableColorMorphing = this.enableColorMorphing;
+        copy.metadata = this.metadata;
 
         return copy;
     }
@@ -441,6 +447,10 @@ export class MorphTargetManager implements IDisposable {
         serializationObject.targets = [];
         for (const target of this._targets) {
             serializationObject.targets.push(target.serialize());
+        }
+
+        if (this.metadata) {
+            serializationObject.metadata = this.metadata;
         }
 
         return serializationObject;
@@ -660,6 +670,7 @@ export class MorphTargetManager implements IDisposable {
         }
 
         this._targetStoreTexture = null;
+        this.metadata = null;
 
         // Remove from scene
         if (this._scene) {
@@ -692,6 +703,10 @@ export class MorphTargetManager implements IDisposable {
 
         for (const targetData of serializationObject.targets) {
             result.addTarget(MorphTarget.Parse(targetData, scene));
+        }
+
+        if (serializationObject.metadata) {
+            result.metadata = serializationObject.metadata;
         }
 
         return result;

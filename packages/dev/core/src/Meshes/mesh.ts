@@ -1551,9 +1551,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._preActivateId = sceneRenderId;
-        if (this.hasInstances) {
-            this._getInstanceDataStorage().visibleInstances = null;
-        }
+        this._getInstanceDataStorage().visibleInstances = null;
         return this;
     }
 
@@ -1561,9 +1559,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public override _preActivateForIntermediateRendering(renderId: number): Mesh {
-        if (!this.hasInstances) {
-            return this;
-        }
         const instanceDataStorage = this._getInstanceDataStorage();
         if (instanceDataStorage.visibleInstances) {
             instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
@@ -2711,7 +2706,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
             }
             this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
-        } else if (this.hasInstances) {
+        } else {
             sideOrientation = this._internalMeshDataInfo._effectiveSideOrientation;
         }
 

@@ -425,6 +425,7 @@ color.rgb = max(color.rgb, 0.);
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
+#if SCENE_MRT_COUNT > 0
 	float writeGeometryInfo = color.a > 0.4 ? 1.0 : 0.0;
 
     #ifdef PREPASS_COLOR
@@ -495,6 +496,7 @@ color.rgb = max(color.rgb, 0.);
 			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
 		#endif
 	#endif
+#endif
 #endif
 
 #if !defined(PREPASS) || defined(WEBGL2)

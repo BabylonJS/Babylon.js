@@ -5,20 +5,17 @@ import type { ISettingsContext } from "../../../services/settingsContext";
 
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
-import { useVector3Property } from "../../../hooks/compoundPropertyHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
 import { BoundProperty } from "../boundProperty";
 
 export const SpriteTransformProperties: FunctionComponent<{ sprite: Sprite; settings: ISettingsContext }> = (props) => {
     const { sprite, settings } = props;
 
-    const position = useVector3Property(sprite, "position");
-
     const [toDisplayAngle, fromDisplayAngle, useDegrees] = useAngleConverters(settings);
 
     return (
         <>
-            <Vector3PropertyLine key="PositionTransform" label="Position" value={position} onChange={(val) => (sprite.position = val)} />
+            <BoundProperty component={Vector3PropertyLine} label="Position" target={sprite} propertyKey="position" />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
                 key="Angle"

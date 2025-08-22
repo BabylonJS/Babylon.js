@@ -24,6 +24,8 @@ import type { Material } from "core/Materials/material";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { GetMimeType } from "core/Misc/fileTools";
 
 const Epsilon = 1e-6;
 const DielectricSpecular = new Color3(0.04, 0.04, 0.04);
@@ -62,7 +64,53 @@ function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
             return ".webp";
         case ImageMimeType.AVIF:
             return ".avif";
+        case ImageMimeType.KTX2:
+            return ".ktx2";
     }
+}
+
+/**
+ * Gets cached image from a texture, if available.
+ * @param babylonTexture texture to check for cached image
+ * @returns image data if found and directly usable; null otherwise
+ */
+async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullable<{ data: ArrayBuffer; mimeType: string }>> {
+    const internalTexture = babylonTexture.getInternalTexture();
+    if (!internalTexture || internalTexture.source !== InternalTextureSource.Url) {
+        return null;
+    }
+    if (internalTexture.invertY) {
+        return null;
+    }
+
+    const buffer = internalTexture._buffer;
+
+    let data;
+    let mimeType = (babylonTexture as Texture).mimeType;
+
+    if (!buffer) {
+        data = await Tools.LoadFileAsync(internalTexture.url);
+        mimeType = GetMimeType(internalTexture.url) || mimeType;
+    } else if (typeof buffer === "string") {
+        data = await Tools.LoadFileAsync(buffer);
+        mimeType = GetMimeType(buffer) || mimeType;
+    } else if (buffer instanceof HTMLImageElement) {
+        data = await Tools.LoadFileAsync(buffer.src);
+        mimeType = GetMimeType(buffer.src) || mimeType;
+    } else if (buffer instanceof Blob) {
+        data = await buffer.arrayBuffer();
+        mimeType = buffer.type || mimeType;
+    } else if (ArrayBuffer.isView(buffer)) {
+        data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
+    } else if (buffer instanceof ArrayBuffer) {
+        data = buffer;
+    }
+
+    if (data && mimeType) {
+        return { data, mimeType };
+    }
+
+    return null;
 }
 
 /**
@@ -164,7 +212,7 @@ export class GLTFMaterialExporter {
         return babylonTexture ? (this._textureMap.get(babylonTexture) ?? null) : null;
     }
 
-    public async exportStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasUVs: boolean): Promise<number> {
+    public async exportStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, hasUVs: boolean): Promise<number> {
         const pbrMetallicRoughness = _ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
         const material: IMaterial = { name: babylonStandardMaterial.name };
@@ -181,7 +229,7 @@ export class GLTFMaterialExporter {
             const diffuseTexture = babylonStandardMaterial.diffuseTexture;
             if (diffuseTexture) {
                 promises.push(
-                    this.exportTextureAsync(diffuseTexture, mimeType).then((textureInfo) => {
+                    this.exportTextureAsync(diffuseTexture).then((textureInfo) => {
                         if (textureInfo) {
                             pbrMetallicRoughness.baseColorTexture = textureInfo;
                         }
@@ -192,7 +240,7 @@ export class GLTFMaterialExporter {
             const bumpTexture = babylonStandardMaterial.bumpTexture;
             if (bumpTexture) {
                 promises.push(
-                    this.exportTextureAsync(bumpTexture, mimeType).then((textureInfo) => {
+                    this.exportTextureAsync(bumpTexture).then((textureInfo) => {
                         if (textureInfo) {
                             material.normalTexture = textureInfo;
                             if (bumpTexture.level !== 1) {
@@ -208,7 +256,7 @@ export class GLTFMaterialExporter {
                 material.emissiveFactor = [1.0, 1.0, 1.0];
 
                 promises.push(
-                    this.exportTextureAsync(emissiveTexture, mimeType).then((textureInfo) => {
+                    this.exportTextureAsync(emissiveTexture).then((textureInfo) => {
                         if (textureInfo) {
                             material.emissiveTexture = textureInfo;
                         }
@@ -219,7 +267,7 @@ export class GLTFMaterialExporter {
             const ambientTexture = babylonStandardMaterial.ambientTexture;
             if (ambientTexture) {
                 promises.push(
-                    this.exportTextureAsync(ambientTexture, mimeType).then((textureInfo) => {
+                    this.exportTextureAsync(ambientTexture).then((textureInfo) => {
                         if (textureInfo) {
                             const occlusionTexture: IMaterialOcclusionTextureInfo = {
                                 index: textureInfo.index,
@@ -251,20 +299,20 @@ export class GLTFMaterialExporter {
         material.pbrMetallicRoughness = pbrMetallicRoughness;
         SetAlphaMode(material, babylonStandardMaterial);
 
-        await this._finishMaterialAsync(material, babylonStandardMaterial, mimeType);
+        await this._finishMaterialAsync(material, babylonStandardMaterial);
 
         const materials = this._exporter._materials;
         materials.push(material);
         return materials.length - 1;
     }
 
-    private async _finishMaterialAsync(glTFMaterial: IMaterial, babylonMaterial: Material, mimeType: ImageMimeType): Promise<void> {
+    private async _finishMaterialAsync(glTFMaterial: IMaterial, babylonMaterial: Material): Promise<void> {
         const textures = this._exporter._extensionsPostExportMaterialAdditionalTextures("exportMaterial", glTFMaterial, babylonMaterial);
 
         const promises: Array<Promise<Nullable<ITextureInfo>>> = [];
 
         for (const texture of textures) {
-            promises.push(this.exportTextureAsync(texture, mimeType));
+            promises.push(this.exportTextureAsync(texture));
         }
 
         await Promise.all(promises);
@@ -525,14 +573,12 @@ export class GLTFMaterialExporter {
     /**
      * Convert a PBRMaterial (Metallic/Roughness) to Metallic Roughness factors
      * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
-     * @param mimeType mime type to use for the textures
      * @param glTFPbrMetallicRoughness glTF PBR Metallic Roughness interface
      * @param hasUVs specifies if texture coordinates are present on the submesh to determine if textures should be applied
      * @returns glTF PBR Metallic Roughness factors
      */
     private async _convertMetalRoughFactorsToMetallicRoughnessAsync(
         babylonPBRMaterial: PBRBaseMaterial,
-        mimeType: ImageMimeType,
         glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness,
         hasUVs: boolean
     ): Promise<IPBRMetallicRoughness> {
@@ -548,7 +594,7 @@ export class GLTFMaterialExporter {
             const albedoTexture = babylonPBRMaterial._albedoTexture;
             if (albedoTexture) {
                 promises.push(
-                    this.exportTextureAsync(babylonPBRMaterial._albedoTexture!, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(albedoTexture).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                         }
@@ -558,7 +604,7 @@ export class GLTFMaterialExporter {
             const metallicTexture = babylonPBRMaterial._metallicTexture;
             if (metallicTexture) {
                 promises.push(
-                    this.exportTextureAsync(metallicTexture, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(metallicTexture).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
                         }
@@ -678,17 +724,16 @@ export class GLTFMaterialExporter {
     /**
      * Convert a PBRMaterial (Specular/Glossiness) to Metallic Roughness factors
      * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
-     * @param mimeType mime type to use for the textures
      * @param pbrMetallicRoughness glTF PBR Metallic Roughness interface
      * @param hasUVs specifies if texture coordinates are present on the submesh to determine if textures should be applied
      * @returns glTF PBR Metallic Roughness factors
      */
     private async _convertSpecGlossFactorsToMetallicRoughnessAsync(
         babylonPBRMaterial: PBRBaseMaterial,
-        mimeType: ImageMimeType,
         pbrMetallicRoughness: IMaterialPbrMetallicRoughness,
         hasUVs: boolean
     ): Promise<IPBRMetallicRoughness> {
+        const mimeType = ImageMimeType.PNG;
         const specGloss: IPBRSpecularGlossiness = {
             diffuseColor: babylonPBRMaterial._albedoColor,
             specularColor: babylonPBRMaterial._reflectivityColor,
@@ -726,7 +771,7 @@ export class GLTFMaterialExporter {
         }
     }
 
-    public async exportPBRMaterialAsync(babylonPBRMaterial: PBRBaseMaterial, mimeType: ImageMimeType, hasUVs: boolean): Promise<number> {
+    public async exportPBRMaterialAsync(babylonPBRMaterial: PBRBaseMaterial, hasUVs: boolean): Promise<number> {
         const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
 
         const glTFMaterial: IMaterial = {
@@ -744,11 +789,11 @@ export class GLTFMaterialExporter {
         }
 
         const metallicRoughness = useMetallicRoughness
-            ? await this._convertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasUVs)
-            : await this._convertSpecGlossFactorsToMetallicRoughnessAsync(babylonPBRMaterial, mimeType, glTFPbrMetallicRoughness, hasUVs);
+            ? await this._convertMetalRoughFactorsToMetallicRoughnessAsync(babylonPBRMaterial, glTFPbrMetallicRoughness, hasUVs)
+            : await this._convertSpecGlossFactorsToMetallicRoughnessAsync(babylonPBRMaterial, glTFPbrMetallicRoughness, hasUVs);
 
-        await this._setMetallicRoughnessPbrMaterialAsync(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, mimeType, hasUVs);
-        await this._finishMaterialAsync(glTFMaterial, babylonPBRMaterial, mimeType);
+        await this._setMetallicRoughnessPbrMaterialAsync(metallicRoughness, babylonPBRMaterial, glTFMaterial, glTFPbrMetallicRoughness, hasUVs);
+        await this._finishMaterialAsync(glTFMaterial, babylonPBRMaterial);
 
         const materials = this._exporter._materials;
         materials.push(glTFMaterial);
@@ -760,7 +805,6 @@ export class GLTFMaterialExporter {
         babylonPBRMaterial: PBRBaseMaterial,
         glTFMaterial: IMaterial,
         glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness,
-        mimeType: ImageMimeType,
         hasUVs: boolean
     ): Promise<void> {
         SetAlphaMode(glTFMaterial, babylonPBRMaterial);
@@ -789,7 +833,7 @@ export class GLTFMaterialExporter {
             const bumpTexture = babylonPBRMaterial._bumpTexture;
             if (bumpTexture) {
                 promises.push(
-                    this.exportTextureAsync(bumpTexture, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(bumpTexture).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFMaterial.normalTexture = glTFTexture;
                             if (bumpTexture.level !== 1) {
@@ -803,7 +847,7 @@ export class GLTFMaterialExporter {
             const ambientTexture = babylonPBRMaterial._ambientTexture;
             if (ambientTexture) {
                 promises.push(
-                    this.exportTextureAsync(ambientTexture, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(ambientTexture).then((glTFTexture) => {
                         if (glTFTexture) {
                             const occlusionTexture: IMaterialOcclusionTextureInfo = {
                                 index: glTFTexture.index,
@@ -824,7 +868,7 @@ export class GLTFMaterialExporter {
             const emissiveTexture = babylonPBRMaterial._emissiveTexture;
             if (emissiveTexture) {
                 promises.push(
-                    this.exportTextureAsync(emissiveTexture, mimeType).then((glTFTexture) => {
+                    this.exportTextureAsync(emissiveTexture).then((glTFTexture) => {
                         if (glTFTexture) {
                             glTFMaterial.emissiveTexture = glTFTexture;
                         }
@@ -846,65 +890,66 @@ export class GLTFMaterialExporter {
         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
     }
 
-    public async exportTextureAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
-        const extensionPromise = this._exporter._extensionsPreExportTextureAsync("exporter", babylonTexture as Texture, mimeType);
-        if (!extensionPromise) {
-            return await this._exportTextureInfoAsync(babylonTexture, mimeType);
+    public async exportTextureAsync(babylonTexture: BaseTexture): Promise<Nullable<ITextureInfo>> {
+        let textureInfo = this._textureMap.get(babylonTexture);
+        if (textureInfo) {
+            return textureInfo;
         }
 
-        return await extensionPromise.then(async (texture) => {
-            if (!texture) {
-                return await this._exportTextureInfoAsync(babylonTexture, mimeType);
-            }
-            return await this._exportTextureInfoAsync(texture, mimeType);
-        });
+        const samplerIndex = this._exportTextureSampler(babylonTexture);
+        const imageIndex = await this._exportTextureImageAsync(babylonTexture);
+
+        textureInfo = this._exportTextureInfo(imageIndex, samplerIndex, babylonTexture.coordinatesIndex);
+        this._textureMap.set(babylonTexture, textureInfo);
+
+        this._exporter._extensionsPostExportTextures("exporter", textureInfo, babylonTexture);
+        return textureInfo;
     }
 
-    private async _exportTextureInfoAsync(babylonTexture: BaseTexture, mimeType: ImageMimeType): Promise<Nullable<ITextureInfo>> {
-        let textureInfo = this._textureMap.get(babylonTexture);
-        if (!textureInfo) {
-            const pixels = await GetTextureDataAsync(babylonTexture).catch(() => null);
-            if (!pixels) {
-                return null;
-            }
+    private async _exportTextureImageAsync(babylonTexture: BaseTexture): Promise<number> {
+        const requestedMimeType = (babylonTexture as Texture).mimeType ?? "none";
+        // TODO: Add an official way for users to export using a different mime type
+        // than the one they loaded with (which is denoted by Texture.mimeType)
 
-            const samplerIndex = this._exportTextureSampler(babylonTexture);
+        const internalTextureToImage = this._internalTextureToImage;
+        const internalTextureUniqueId = babylonTexture.getInternalTexture()!.uniqueId;
+        internalTextureToImage[internalTextureUniqueId] = internalTextureToImage[internalTextureUniqueId] || {};
+        let imageIndexPromise = internalTextureToImage[internalTextureUniqueId][requestedMimeType];
 
-            // Preserve texture mime type if defined
-            const textureMimeType = (babylonTexture as Texture).mimeType;
-            if (textureMimeType) {
-                switch (textureMimeType) {
-                    case "image/jpeg":
-                    case "image/png":
-                    case "image/webp":
-                        mimeType = textureMimeType as ImageMimeType;
-                        break;
-                    default:
-                        Tools.Warn(`Unsupported media type: ${textureMimeType}. Exporting texture as PNG.`);
-                        // Will later fallback to default mime type, image/png, from Canvas API
-                        break;
+        if (imageIndexPromise === undefined) {
+            imageIndexPromise = (async () => {
+                // Try to get the image from memory first, if applicable
+                const cache = await GetCachedImageAsync(babylonTexture);
+                if (cache && (requestedMimeType === "none" || cache.mimeType === requestedMimeType)) {
+                    return this._exportImage(babylonTexture.name, cache.mimeType as ImageMimeType, cache.data);
                 }
-            }
 
-            const internalTextureToImage = this._internalTextureToImage;
-            const internalTextureUniqueId = babylonTexture.getInternalTexture()!.uniqueId;
-            internalTextureToImage[internalTextureUniqueId] ||= {};
-            let imageIndexPromise = internalTextureToImage[internalTextureUniqueId][mimeType];
-            if (imageIndexPromise === undefined) {
+                // Preserve texture mime type if defined
+                let mimeType = ImageMimeType.PNG;
+                if (requestedMimeType !== "none") {
+                    switch (requestedMimeType) {
+                        case ImageMimeType.JPEG:
+                        case ImageMimeType.PNG:
+                        case ImageMimeType.WEBP:
+                            mimeType = requestedMimeType;
+                            break;
+                        default:
+                            Tools.Warn(`Unsupported media type: ${requestedMimeType}. Exporting texture as PNG.`);
+                            break;
+                    }
+                }
+
                 const size = babylonTexture.getSize();
-                imageIndexPromise = (async () => {
-                    const data = await this._getImageDataAsync(pixels, size.width, size.height, mimeType);
-                    return this._exportImage(babylonTexture.name, mimeType, data);
-                })();
-                internalTextureToImage[internalTextureUniqueId][mimeType] = imageIndexPromise;
-            }
+                const pixels = await GetTextureDataAsync(babylonTexture);
+                const data = await this._getImageDataAsync(pixels, size.width, size.height, mimeType);
 
-            textureInfo = this._exportTextureInfo(await imageIndexPromise, samplerIndex, babylonTexture.coordinatesIndex);
-            this._textureMap.set(babylonTexture, textureInfo);
-            this._exporter._extensionsPostExportTextures("exporter", textureInfo, babylonTexture);
+                return this._exportImage(babylonTexture.name, mimeType, data);
+            })();
+
+            internalTextureToImage[internalTextureUniqueId][requestedMimeType] = imageIndexPromise;
         }
 
-        return textureInfo;
+        return await imageIndexPromise;
     }
 
     private _exportImage(name: string, mimeType: ImageMimeType, data: ArrayBuffer): number {

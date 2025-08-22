@@ -31,7 +31,7 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
         <>
             <BoundProperty component={SyncedSliderPropertyLine} label="Contrast" min={0} max={4} step={0.1} target={imageProcessing} propertyKey="contrast" />
             <BoundProperty component={SyncedSliderPropertyLine} label="Exposure" min={0} max={4} step={0.1} target={imageProcessing} propertyKey="exposure" />
-            <BoundProperty component={SwitchPropertyLine} label="Tone mapping" target={imageProcessing} propertyKey="toneMappingEnabled" />
+            <BoundProperty component={SwitchPropertyLine} label="Tone Mapping" target={imageProcessing} propertyKey="toneMappingEnabled" />
             <Collapse visible={imageProcessing.toneMappingEnabled}>
                 <BoundProperty
                     component={NumberDropdownPropertyLine}
@@ -42,16 +42,16 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                             { label: "Khronos PBR Neutral", value: ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL },
                         ] as const
                     }
-                    label="Tone mapping type"
+                    label="Tone Mapping Type"
                     target={imageProcessing}
                     propertyKey="toneMappingType"
                 />
             </Collapse>
             <BoundProperty component={SwitchPropertyLine} label="Vignette" target={imageProcessing} propertyKey="vignetteEnabled" />
             <BoundProperty component={SyncedSliderPropertyLine} label="Vignette FOV" min={0} max={Math.PI} step={0.1} target={imageProcessing} propertyKey="vignetteCameraFov" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette center X" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterX" />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette center Y" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterY" />
-            <BoundProperty component={Color4PropertyLine} label="Vignette color" target={imageProcessing} propertyKey="vignetteColor" />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette Center X" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterX" />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Vignette Center Y" min={0} max={1} step={0.1} target={imageProcessing} propertyKey="vignetteCenterY" />
+            <BoundProperty component={Color4PropertyLine} label="Vignette Color" target={imageProcessing} propertyKey="vignetteColor" />
             <BoundProperty
                 component={NumberDropdownPropertyLine}
                 options={
@@ -60,14 +60,14 @@ export const SceneMaterialImageProcessingProperties: FunctionComponent<{ scene: 
                         { label: "Opaque", value: ImageProcessingConfiguration.VIGNETTEMODE_OPAQUE },
                     ] as const
                 }
-                label="Vignette blend mode"
+                label="Vignette Blend Mode"
                 target={imageProcessing}
                 propertyKey="vignetteBlendMode"
             />
             <BoundProperty component={SwitchPropertyLine} label="Dithering" target={imageProcessing} propertyKey="ditheringEnabled" />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
-                label="Dithering intensity"
+                label="Dithering Intensity"
                 min={0}
                 max={1}
                 step={0.5 / 255.0}
@@ -88,7 +88,7 @@ export const ScenePhysicsProperties: FunctionComponent<{ scene: Scene }> = (prop
             {physicsEngine !== null ? (
                 <>
                     <NumberInputPropertyLine
-                        label="Time step"
+                        label="Time Step"
                         value={physicsEngine.getTimeStep()}
                         onChange={(value) => {
                             physicsEngine.setTimeStep(value);
@@ -158,7 +158,7 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
                         { label: "Solid", value: 2 },
                     ] as const
                 }
-                label="Rendering mode"
+                label="Rendering Mode"
                 value={scene.forcePointsCloud ? 0 : scene.forceWireframe ? 1 : 2}
                 onChange={(value) => {
                     switch (value) {
@@ -178,14 +178,14 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
                 }}
             />
 
-            <BoundProperty component={Color4PropertyLine} label="Clear color" target={scene} propertyKey="clearColor" />
+            <BoundProperty component={Color4PropertyLine} label="Clear Color" target={scene} propertyKey="clearColor" />
 
-            <BoundProperty component={SwitchPropertyLine} label="Clear color enabled" target={scene} propertyKey="autoClear" />
+            <BoundProperty component={SwitchPropertyLine} label="Clear Color Enabled" target={scene} propertyKey="autoClear" />
 
-            <BoundProperty component={Color3PropertyLine} label="Ambient color" target={scene} propertyKey="ambientColor" />
+            <BoundProperty component={Color3PropertyLine} label="Ambient Color" target={scene} propertyKey="ambientColor" />
 
             <SwitchPropertyLine
-                label="Environment texture (IBL)"
+                label="Environment Texture (IBL)"
                 value={envTexture ? true : false}
                 onChange={() => {
                     if (envTexture) {
@@ -203,7 +203,7 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
             )}
 
             <FileUploadLine
-                label="Update environment texture"
+                label="Update Environment Texture"
                 accept=".dds, .env"
                 onClick={(files) => {
                     if (files.length > 0) {
@@ -260,18 +260,18 @@ export const SceneRenderingProperties: FunctionComponent<{ scene: Scene; selecti
                         { label: "Exp2", value: Scene.FOGMODE_EXP2 },
                     ] as const
                 }
-                label="Fog mode"
+                label="Fog Mode"
                 target={scene}
                 propertyKey="fogMode"
             />
             <Collapse visible={fogMode !== Scene.FOGMODE_NONE}>
                 <>
-                    {fogMode !== Scene.FOGMODE_NONE && <BoundProperty component={Color3PropertyLine} label="Fog color" target={scene} propertyKey="fogColor" />}
+                    {fogMode !== Scene.FOGMODE_NONE && <BoundProperty component={Color3PropertyLine} label="Fog Color" target={scene} propertyKey="fogColor" />}
                     {(fogMode === Scene.FOGMODE_EXP || fogMode === Scene.FOGMODE_EXP2) && (
-                        <BoundProperty component={NumberInputPropertyLine} label="Fog density" target={scene} propertyKey="fogDensity" step={0.1} />
+                        <BoundProperty component={NumberInputPropertyLine} label="Fog Density" target={scene} propertyKey="fogDensity" step={0.1} />
                     )}
-                    {fogMode === Scene.FOGMODE_LINEAR && <BoundProperty component={NumberInputPropertyLine} label="Fog start" target={scene} propertyKey="fogStart" step={0.1} />}
-                    {fogMode === Scene.FOGMODE_LINEAR && <BoundProperty component={NumberInputPropertyLine} label="Fog end" target={scene} propertyKey="fogEnd" step={0.1} />}
+                    {fogMode === Scene.FOGMODE_LINEAR && <BoundProperty component={NumberInputPropertyLine} label="Fog Start" target={scene} propertyKey="fogStart" step={0.1} />}
+                    {fogMode === Scene.FOGMODE_LINEAR && <BoundProperty component={NumberInputPropertyLine} label="Fog End" target={scene} propertyKey="fogEnd" step={0.1} />}
                 </>
             </Collapse>
         </>

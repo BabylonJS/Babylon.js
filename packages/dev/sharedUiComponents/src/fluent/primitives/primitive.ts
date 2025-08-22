@@ -1,3 +1,5 @@
+import type { InfoLabelParentProps } from "./infoLabel";
+
 export type ImmutablePrimitiveProps<ValueT> = {
     /**
      * The value of the property to be displayed and modified.
@@ -17,6 +19,11 @@ export type ImmutablePrimitiveProps<ValueT> = {
      * Optional title for the component, used for tooltips or accessibility.
      */
     title?: string;
+
+    /**
+     * Optional information to display as an infoLabel popup aside the component.
+     */
+    infoLabel?: InfoLabelParentProps;
 };
 
 export type PrimitiveProps<T> = ImmutablePrimitiveProps<T> & {

@@ -19,6 +19,8 @@ import { UniformBuffer } from "../Materials/uniformBuffer";
 import { CreateBoxVertexData } from "../Meshes/Builders/boxBuilder";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Constants } from "../Engines/constants";
+import { _RetryWithInterval } from "../Misc/timingTools";
+import { Logger } from "../Misc/logger";
 
 declare module "../scene" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -238,7 +240,46 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this.scene._afterRenderingGroupDrawStage.registerStep(SceneComponentConstants.STEP_AFTERRENDERINGGROUPDRAW_BOUNDINGBOXRENDERER, this, this.render);
     }
 
-    private _evaluateSubMesh(mesh: AbstractMesh, subMesh: SubMesh): void {
+    /**
+     * Checks if the renderer is ready asynchronously.
+     * @param timeStep Time step in ms between retries (default is 16)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
+     * @returns The promise that resolves when the renderer is ready
+     */
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+        this._prepareResources();
+        return await new Promise((resolve) => {
+            _RetryWithInterval(
+                () => {
+                    return this._colorShader.isReady();
+                },
+                () => {
+                    resolve();
+                },
+                (err, isTimeout) => {
+                    if (!isTimeout) {
+                        Logger.Error("BoundingBoxRenderer: An unexpected error occurred while waiting for the renderer to be ready.");
+                        if (err) {
+                            Logger.Error(err);
+                            if (err.stack) {
+                                Logger.Error(err.stack);
+                            }
+                        }
+                    } else {
+                        Logger.Error(`BoundingBoxRenderer: Timeout while waiting for the renderer to be ready.`);
+                        if (err) {
+                            Logger.Error(err);
+                        }
+                    }
+                },
+                timeStep,
+                maxTimeout
+            );
+        });
+    }
+
+    /** @internal */
+    public _evaluateSubMesh(mesh: AbstractMesh, subMesh: SubMesh): void {
         if (mesh.showSubMeshesBoundingBox) {
             const boundingInfo = subMesh.getBoundingInfo();
             if (boundingInfo !== null && boundingInfo !== undefined) {
@@ -248,7 +289,8 @@ export class BoundingBoxRenderer implements ISceneComponent {
         }
     }
 
-    private _preActiveMesh(mesh: AbstractMesh): void {
+    /** @internal */
+    public _preActiveMesh(mesh: AbstractMesh): void {
         if (mesh.showBoundingBox || this.scene.forceShowBoundingBoxes) {
             const boundingInfo = mesh.getBoundingInfo();
             boundingInfo.boundingBox._tag = mesh.renderingGroupId;

@@ -10,7 +10,25 @@ const CreationToolsExtensionMetadata = {
     keywords: ["creation"],
 } as const;
 
-const Extensions: readonly ExtensionMetadata[] = [CreationToolsExtensionMetadata];
+const ExportToolsExtensionMetadata = {
+    name: "Export Tools",
+    description: "Adds new features to enable exporting Babylon assets such as .gltf, .glb, .babylon, and more.",
+    keywords: ["export", "gltf", "glb", "babylon", "exporter", "tools"],
+} as const;
+
+const CaptureToolsExtensionMetadata = {
+    name: "Capture Tools",
+    description: "Adds new features to enable capturing screenshots, GIFs, videos, and more.",
+    keywords: ["capture", "screenshot", "gif", "video", "tools"],
+} as const;
+
+const ImportToolsExtensionMetadata = {
+    name: "Import Tools",
+    description: "Adds new features related to importing Babylon assets.",
+    keywords: ["import", "tools"],
+} as const;
+
+const Extensions: readonly ExtensionMetadata[] = [/*CreationToolsExtensionMetadata, */ ExportToolsExtensionMetadata, CaptureToolsExtensionMetadata, ImportToolsExtensionMetadata];
 
 /**
  * @internal
@@ -31,6 +49,12 @@ export class BuiltInsExtensionFeed implements IExtensionFeed {
     public async getExtensionModuleAsync(name: string): Promise<ExtensionModule | undefined> {
         if (name === CreationToolsExtensionMetadata.name) {
             return await import("../services/creationToolsService");
+        } else if (name === ExportToolsExtensionMetadata.name) {
+            return await import("../services/panes/tools/exportService");
+        } else if (name === CaptureToolsExtensionMetadata.name) {
+            return await import("../services/panes/tools/captureService");
+        } else if (name === ImportToolsExtensionMetadata.name) {
+            return await import("../services/panes/tools/importService");
         }
         return undefined;
     }

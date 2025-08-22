@@ -564,6 +564,7 @@ export const RequestFile = (
     onError?: (error: RequestFileError) => void,
     onOpened?: (request: WebRequest) => void
 ): IFileRequest => {
+    offlineProvider ??= EngineStore.LastCreatedScene?.offlineProvider;
     url = FileToolsOptions.CleanUrl(url);
     url = FileToolsOptions.PreprocessUrl(url);
 
@@ -795,6 +796,12 @@ export const GetMimeType = (url: string): string | undefined => {
             return "image/png";
         case "webp":
             return "image/webp";
+        case "ktx":
+            return "image/ktx";
+        case "ktx2":
+            return "image/ktx2";
+        case "avif":
+            return "image/avif";
         default:
             return undefined;
     }
@@ -824,7 +831,7 @@ export const TestBase64DataUrl = (uri: string): { match: boolean; type: string }
     if (results === null || results.length === 0) {
         return { match: false, type: "" };
     } else {
-        const type = results[0].replace("data:", "").replace("base64,", "");
+        const type = results[0].replace("data:", "").replace(";base64,", "");
         return { match: true, type };
     }
 };
