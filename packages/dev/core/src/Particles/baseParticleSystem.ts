@@ -1,6 +1,7 @@
 import type { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
 import type { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
 import type { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
@@ -23,16 +24,14 @@ import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./Emi
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import { RegisterClass } from "../Misc/typeStore";
-import { ImageProcessingMixin } from "core/Materials/imageProcessing";
 
-class BaseParticleSystemBase extends ImageProcessingMixin(Object) {}
 /**
  * This represents the base class for particle system in Babylon.
  * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
  * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
  * @example https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
  */
-export class BaseParticleSystem extends BaseParticleSystemBase implements IClipPlanesHolder {
+export class BaseParticleSystem implements IClipPlanesHolder {
     /**
      * Source color is added to the destination color without alpha affecting the result. Great for additive glow effects (fire, magic, lasers)
      */
@@ -740,6 +739,44 @@ export class BaseParticleSystem extends BaseParticleSystemBase implements IClipP
      */
     protected _imageProcessingConfigurationDefines = new ImageProcessingConfigurationDefines();
 
+    /**
+     * Default configuration related to image processing available in the standard Material.
+     */
+    protected _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
+
+    /**
+     * Gets the image processing configuration used either in this material.
+     */
+    public get imageProcessingConfiguration(): Nullable<ImageProcessingConfiguration> {
+        return this._imageProcessingConfiguration;
+    }
+
+    /**
+     * Sets the Default image processing configuration used either in the this material.
+     *
+     * If sets to null, the scene one is in use.
+     */
+    public set imageProcessingConfiguration(value: Nullable<ImageProcessingConfiguration>) {
+        this._attachImageProcessingConfiguration(value);
+    }
+
+    /**
+     * Attaches a new image processing configuration to the Standard Material.
+     * @param configuration
+     */
+    protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
+        if (configuration === this._imageProcessingConfiguration) {
+            return;
+        }
+
+        // Pick the scene configuration if needed.
+        if (!configuration && this._scene) {
+            this._imageProcessingConfiguration = this._scene.imageProcessingConfiguration;
+        } else {
+            this._imageProcessingConfiguration = configuration;
+        }
+    }
+
     /** @internal */
     protected _reset() {}
 
@@ -773,7 +810,6 @@ export class BaseParticleSystem extends BaseParticleSystemBase implements IClipP
      * @param name The name of the particle system
      */
     public constructor(name: string) {
-        super(name);
         this.id = name;
         this.name = name;
     }
