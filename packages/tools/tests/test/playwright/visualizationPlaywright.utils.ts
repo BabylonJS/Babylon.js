@@ -72,7 +72,7 @@ export const evaluatePlaywrightVisTests = async (
             return window.BABYLON;
         });
         page.setDefaultTimeout(0);
-        await page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
+        page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
     });
 
     test.afterAll(async () => {
