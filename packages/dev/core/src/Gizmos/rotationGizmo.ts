@@ -16,6 +16,7 @@ import type { Node } from "../node";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { GizmoManager } from "./gizmoManager";
+import type { PointerDragBehavior } from "../Behaviors";
 
 /**
  * Interface for rotation gizmo
@@ -30,11 +31,11 @@ export interface IRotationGizmo extends IGizmo {
     /** Internal gizmo used for interactions on the z axis */
     zGizmo: IPlaneRotationGizmo;
     /** Fires an event when any of it's sub gizmos are dragged */
-    onDragStartObservable: Observable<unknown>;
+    onDragStartObservable: PointerDragBehavior["onDragStartObservable"];
     /** Fires an event when any of it's sub gizmos are being dragged */
-    onDragObservable: Observable<unknown>;
+    onDragObservable: PointerDragBehavior["onDragObservable"];
     /** Fires an event when any of it's sub gizmos are released from dragging */
-    onDragEndObservable: Observable<unknown>;
+    onDragEndObservable: PointerDragBehavior["onDragEndObservable"];
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
     snapDistance: number;
     /** Custom sensitivity value for the drag strength */
@@ -113,11 +114,11 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     public zGizmo: IPlaneRotationGizmo;
 
     /** Fires an event when any of it's sub gizmos are dragged */
-    public onDragStartObservable = new Observable();
+    public onDragStartObservable = new Observable() as PointerDragBehavior["onDragStartObservable"];
     /** Fires an event when any of it's sub gizmos are being dragged */
-    public onDragObservable = new Observable();
+    public onDragObservable = new Observable() as PointerDragBehavior["onDragObservable"];
     /** Fires an event when any of it's sub gizmos are released from dragging */
-    public onDragEndObservable = new Observable();
+    public onDragEndObservable = new Observable() as PointerDragBehavior["onDragEndObservable"];
 
     protected _meshAttached: Nullable<AbstractMesh>;
     protected _nodeAttached: Nullable<Node>;
@@ -243,15 +244,9 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
             if (options && options.updateScale != undefined) {
                 gizmo.updateScale = options.updateScale;
             }
-            gizmo.dragBehavior.onDragStartObservable.add(() => {
-                this.onDragStartObservable.notifyObservers({});
-            });
-            gizmo.dragBehavior.onDragObservable.add(() => {
-                this.onDragObservable.notifyObservers({});
-            });
-            gizmo.dragBehavior.onDragEndObservable.add(() => {
-                this.onDragEndObservable.notifyObservers({});
-            });
+            gizmo.dragBehavior.onDragStartObservable.add(this.onDragStartObservable.notifyObservers.bind(this.onDragStartObservable));
+            gizmo.dragBehavior.onDragObservable.add(this.onDragObservable.notifyObservers.bind(this.onDragObservable));
+            gizmo.dragBehavior.onDragEndObservable.add(this.onDragEndObservable.notifyObservers.bind(this.onDragEndObservable));
         }
 
         this.attachedMesh = null;
