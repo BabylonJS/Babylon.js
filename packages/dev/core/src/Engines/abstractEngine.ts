@@ -210,7 +210,7 @@ export abstract class AbstractEngine {
     /** @internal */
     public _stencilState = new StencilState();
     /** @internal */
-    public _alphaState = new AlphaState();
+    public _alphaState = new AlphaState(false);
     /** @internal */
     public _alphaMode = Array(8).fill(-1);
     /** @internal */

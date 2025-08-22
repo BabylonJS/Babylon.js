@@ -19,8 +19,9 @@ export class AlphaState {
 
     /**
      * Initializes the state.
+     * @param _supportBlendParametersPerTarget - Whether blend parameters per target is supported
      */
-    public constructor() {
+    public constructor(private _supportBlendParametersPerTarget: boolean) {
         this.reset();
     }
 
@@ -115,23 +116,51 @@ export class AlphaState {
             return;
         }
 
-        // Alpha blend
-        if (this._isAlphaBlendDirty) {
-            if (numTargets === 1) {
+        // Constants
+        if (this._isBlendConstantsDirty) {
+            gl.blendColor(<number>this._blendConstants[0], <number>this._blendConstants[1], <number>this._blendConstants[2], <number>this._blendConstants[3]);
+            this._isBlendConstantsDirty = false;
+        }
+
+        if (numTargets === 1 || !this._supportBlendParametersPerTarget) {
+            // Single target or no support for per-target parameters
+            if (this._isAlphaBlendDirty) {
                 if (this._alphaBlend[0]) {
                     gl.enable(gl.BLEND);
                 } else {
                     gl.disable(gl.BLEND);
                 }
-            } else {
-                const gl2 = gl as WebGL2RenderingContext;
-                for (let i = 0; i < numTargets; i++) {
-                    const index = i < this._numTargetEnabled ? i : 0;
-                    if (this._alphaBlend[index]) {
-                        gl2.enableIndexed(gl.BLEND, i);
-                    } else {
-                        gl2.disableIndexed(gl.BLEND, i);
-                    }
+                this._isAlphaBlendDirty = false;
+            }
+
+            if (this._isBlendFunctionParametersDirty) {
+                gl.blendFuncSeparate(
+                    <number>this._blendFunctionParameters[0],
+                    <number>this._blendFunctionParameters[1],
+                    <number>this._blendFunctionParameters[2],
+                    <number>this._blendFunctionParameters[3]
+                );
+                this._isBlendFunctionParametersDirty = false;
+            }
+
+            if (this._isBlendEquationParametersDirty) {
+                gl.blendEquationSeparate(<number>this._blendEquationParameters[0], <number>this._blendEquationParameters[1]);
+                this._isBlendEquationParametersDirty = false;
+            }
+            return;
+        }
+
+        // Multi-target
+        const gl2 = gl as WebGL2RenderingContext;
+
+        // Alpha blend
+        if (this._isAlphaBlendDirty) {
+            for (let i = 0; i < numTargets; i++) {
+                const index = i < this._numTargetEnabled ? i : 0;
+                if (this._alphaBlend[index]) {
+                    gl2.enableIndexed(gl.BLEND, i);
+                } else {
+                    gl2.disableIndexed(gl.BLEND, i);
                 }
             }
 
@@ -140,47 +169,26 @@ export class AlphaState {
 
         // Alpha function
         if (this._isBlendFunctionParametersDirty) {
-            if (numTargets === 1) {
-                gl.blendFuncSeparate(
-                    <number>this._blendFunctionParameters[0],
-                    <number>this._blendFunctionParameters[1],
-                    <number>this._blendFunctionParameters[2],
-                    <number>this._blendFunctionParameters[3]
+            for (let i = 0; i < numTargets; i++) {
+                const offset = i < this._numTargetEnabled ? i * 4 : 0;
+                gl2.blendFuncSeparateIndexed(
+                    i,
+                    <number>this._blendFunctionParameters[offset + 0],
+                    <number>this._blendFunctionParameters[offset + 1],
+                    <number>this._blendFunctionParameters[offset + 2],
+                    <number>this._blendFunctionParameters[offset + 3]
                 );
-            } else {
-                const gl2 = gl as WebGL2RenderingContext;
-                for (let i = 0; i < numTargets; i++) {
-                    const offset = i < this._numTargetEnabled ? i * 4 : 0;
-                    gl2.blendFuncSeparateIndexed(
-                        i,
-                        <number>this._blendFunctionParameters[offset + 0],
-                        <number>this._blendFunctionParameters[offset + 1],
-                        <number>this._blendFunctionParameters[offset + 2],
-                        <number>this._blendFunctionParameters[offset + 3]
-                    );
-                }
             }
             this._isBlendFunctionParametersDirty = false;
         }
 
         // Alpha equation
         if (this._isBlendEquationParametersDirty) {
-            if (numTargets === 1) {
-                gl.blendEquationSeparate(<number>this._blendEquationParameters[0], <number>this._blendEquationParameters[1]);
-            } else {
-                const gl2 = gl as WebGL2RenderingContext;
-                for (let i = 0; i < numTargets; i++) {
-                    const offset = i < this._numTargetEnabled ? i * 2 : 0;
-                    gl2.blendEquationSeparateIndexed(i, <number>this._blendEquationParameters[offset + 0], <number>this._blendEquationParameters[offset + 1]);
-                }
+            for (let i = 0; i < numTargets; i++) {
+                const offset = i < this._numTargetEnabled ? i * 2 : 0;
+                gl2.blendEquationSeparateIndexed(i, <number>this._blendEquationParameters[offset + 0], <number>this._blendEquationParameters[offset + 1]);
             }
             this._isBlendEquationParametersDirty = false;
-        }
-
-        // Constants
-        if (this._isBlendConstantsDirty) {
-            gl.blendColor(<number>this._blendConstants[0], <number>this._blendConstants[1], <number>this._blendConstants[2], <number>this._blendConstants[3]);
-            this._isBlendConstantsDirty = false;
         }
     }
 

@@ -55,6 +55,7 @@ import type { InternalTextureCreationOptions, TextureSize } from "../Materials/T
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import { AlphaState } from "../States/alphaCullingState";
 
 import "../Buffers/buffer.align";
 
@@ -947,6 +948,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: true,
             _collectUbosUpdatedInFrame: false,
         };
+
+        this._alphaState = new AlphaState(this._caps.blendParametersPerTarget);
     }
 
     private _initializeContextAndSwapChain(): void {
