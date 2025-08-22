@@ -32,8 +32,8 @@
         {
             #ifdef ANISOTROPIC
                 slab_glossy = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, 
-                    anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, 
-                    vec3(baseDielectricReflectance.F0), vec3(baseDielectricReflectance.F90), baseGeoInfo.AARoughnessFactors.x, lightColor{X}.rgb);
+                    baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
+                    baseDielectricReflectance.coloredF0, baseDielectricReflectance.coloredF90, 0.0, lightColor{X}.rgb);
             #else
                 slab_glossy = computeSpecularLighting(preInfo{X}, normalW, baseDielectricReflectance.coloredF0, baseDielectricReflectance.coloredF90, specular_roughness, lightColor{X}.rgb);
             #endif
@@ -57,9 +57,9 @@
             #endif
 
             #ifdef ANISOTROPIC
-                slab_metal = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, specularEnvironmentR0, specularEnvironmentR90, baseGeoInfo.AARoughnessFactors.x, lightColor{X}.rgb);
+                slab_metal = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, baseConductorReflectance.coloredF0, baseConductorReflectance.coloredF90, 0.0, lightColor{X}.rgb);
             #else
-                slab_metal = computeSpecularLighting(preInfo{X}, normalW, vec3(baseConductorReflectance.coloredF0), coloredFresnel, specular_roughness, lightColor{X}.rgb);
+                slab_metal = computeSpecularLighting(preInfo{X}, normalW, baseConductorReflectance.coloredF0, coloredFresnel, specular_roughness, lightColor{X}.rgb);
             #endif
         }
     #endif
@@ -71,8 +71,8 @@
         {
             #ifdef ANISOTROPIC
                 slab_coat = computeAnisotropicSpecularLighting(preInfoCoat{X}, viewDirectionW, coatNormalW, 
-                    anisotropicOut.anisotropicTangent, anisotropicOut.anisotropicBitangent, anisotropicOut.anisotropy, 
-                    vec3(coatReflectance.F0), vec3(coatReflectance.F90), baseGeoInfo.AARoughnessFactors.x, lightColor{X}.rgb);
+                    coatGeoInfo.anisotropicTangent, coatGeoInfo.anisotropicBitangent, coatGeoInfo.anisotropy, 
+                    vec3(coatReflectance.F0), vec3(coatReflectance.F90), 0.0, lightColor{X}.rgb);
             #else
                 slab_coat = computeSpecularLighting(preInfoCoat{X}, coatNormalW, vec3(coatReflectance.F0), vec3(1.0), coat_roughness, lightColor{X}.rgb);
             #endif

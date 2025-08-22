@@ -88,7 +88,7 @@ void main(void) {
 
     #include<openpbrBlockNormalFinal>
 
-    // ______________________ Read Base properties & Opacity ______________________________
+    // ______________________ Read Base and specular properties & Opacity ______________________________
     #include<openpbrBaseLayerData>
 
     // _____________________________ Read Coat Layer properties ______________________
@@ -122,6 +122,9 @@ void main(void) {
     // _____________________________ Compute Geometry info for coat layer _________________________
     geometryInfoOutParams coatGeoInfo = geometryInfo(
         coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
+        #ifdef ANISOTROPIC
+        , vec3(1.0, 0.0, specular_roughness_anisotropy), TBN
+        #endif
     );
 
     // _____________________________ Compute Geometry info for base layer _________________________
@@ -129,6 +132,9 @@ void main(void) {
     specular_roughness = mix(specular_roughness, pow(min(1.0, pow(specular_roughness, 4.0) + 2.0 * pow(coat_roughness, 4.0)), 0.25), coat_weight);
     geometryInfoOutParams baseGeoInfo = geometryInfo(
         normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+        #ifdef ANISOTROPIC
+        , vec3(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy), TBN
+        #endif
     );
 
     // _______________________ F0 and F90 Reflectance _______________________________

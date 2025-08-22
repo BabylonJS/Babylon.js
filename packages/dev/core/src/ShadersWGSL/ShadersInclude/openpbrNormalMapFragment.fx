@@ -20,7 +20,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 		var TBNUV: vec2f = select(-fragmentInputs.vDetailUV, fragmentInputs.vDetailUV, fragmentInputs.frontFacing);
 		var TBN: mat3x3f = cotangent_frame(normalW * normalScale, input.vPositionW, TBNUV,  vec2f(1., 1.));
 	#endif
-#elif defined(SPECULAR_ROUGHNESS_ANISOTROPY) || defined(COAT_ROUGHNESS_ANISOTROPY)
+#elif defined(ANISOTROPIC)
 	#if defined(TANGENT) && defined(NORMAL)
 		var TBN: mat3x3f = mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2);
 	#else

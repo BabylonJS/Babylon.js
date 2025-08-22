@@ -234,7 +234,9 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public ROUGHNESSSTOREINMETALMAPGREEN = false;
     public METALLNESSSTOREINMETALMAPBLUE = false;
     public AOSTOREINMETALMAPRED = false;
-    public SPECULAR_WEIGHT_USE_ALPHA_ONLY = false;
+    public SPECULAR_WEIGHT_IN_ALPHA = false;
+    public SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = false;
+    public SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
@@ -246,7 +248,8 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public PARALLAX_RHS = false;
     public PARALLAXOCCLUSION = false;
     public NORMALXYSCALE = true;
-    // public ANISOTROPIC = false;
+    public ANISOTROPIC = false; // Enables anisotropic logic. Still needed because it's used in pbrHelperFunctions
+    public ANISOTROPIC_OPENPBR = true; // Tells the shader to use OpenPBR's anisotropic roughness remapping
 
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -438,7 +441,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Base Weight is a multiplier on the diffuse and metal lobes.
      * See OpenPBR's specs for base_weight
      */
-    public baseWeightTexture: BaseTexture;
+    public baseWeightTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColorTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseWeightTexture: Sampler = new Sampler("base_weight", "baseWeight", "BASE_WEIGHT");
@@ -456,7 +459,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Base Color Texture property.
      * See OpenPBR's specs for base_color
      */
-    public baseColorTexture: BaseTexture;
+    public baseColorTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColorTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseColorTexture: Sampler = new Sampler("base_color", "baseColor", "BASE_COLOR");
@@ -474,7 +477,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness of the diffuse lobe.
      * See OpenPBR's specs for base_diffuse_roughness
      */
-    public baseDiffuseRoughnessTexture: BaseTexture;
+    public baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseDiffuseRoughnessTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseDiffuseRoughnessTexture: Sampler = new Sampler("base_diffuse_roughness", "baseDiffuseRoughness", "BASE_DIFFUSE_ROUGHNESS");
@@ -492,7 +495,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Metalness texture.
      * See OpenPBR's specs for base_metalness
      */
-    public baseMetalnessTexture: BaseTexture;
+    public baseMetalnessTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseMetalnessTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseMetalnessTexture: Sampler = new Sampler("base_metalness", "baseMetalness", "BASE_METALNESS");
@@ -510,7 +513,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness of the diffuse lobe.
      * See OpenPBR's specs for base_diffuse_roughness
      */
-    public specularWeightTexture: BaseTexture;
+    public specularWeightTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularWeightTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularWeightTexture: Sampler = new Sampler("specular_weight", "specularWeight", "SPECULAR_WEIGHT");
@@ -528,7 +531,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Specular Color Texture property.
      * See OpenPBR's specs for specular_color
      */
-    public specularColorTexture: BaseTexture;
+    public specularColorTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularColorTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularColorTexture: Sampler = new Sampler("specular_color", "specularColor", "SPECULAR_COLOR");
@@ -546,7 +549,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Roughness texture.
      * See OpenPBR's specs for specular_roughness
      */
-    public specularRoughnessTexture: BaseTexture;
+    public specularRoughnessTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughnessTexture: Sampler = new Sampler("specular_roughness", "specularRoughness", "SPECULAR_ROUGHNESS");
@@ -558,13 +561,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public specularRoughnessAnisotropy: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessAnisotropy")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _specularRoughnessAnisotropy: Property<number> = new Property<number>("specular_roughness_anisotropy", 0, "vSpecularRoughnessAnisotropy", 1);
+    private _specularRoughnessAnisotropy: Property<number> = new Property<number>("specular_roughness_anisotropy", 0, "vSpecularAnisotropy", 3, 2);
 
     /**
      * Anisotropic Roughness texture.
      * See OpenPBR's specs for specular_roughness
      */
-    public specularRoughnessAnisotropyTexture: BaseTexture;
+    public specularRoughnessAnisotropyTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularRoughnessAnisotropyTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _specularRoughnessAnisotropyTexture: Sampler = new Sampler("specular_roughness_anisotropy", "specularRoughnessAnisotropy", "SPECULAR_ROUGHNESS_ANISOTROPY");
@@ -673,16 +676,46 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the normal of the material's geometry.
      * See OpenPBR's specs for geometry_normal
      */
-    public geometryNormalTexture: BaseTexture;
+    public geometryNormalTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryNormalTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryNormalTexture: Sampler = new Sampler("geometry_normal", "geometryNormal", "GEOMETRY_NORMAL");
 
     /**
+     * Defines the tangent of the material's geometry. Used only for anisotropic reflections.
+     * See OpenPBR's specs for geometry_tangent
+     */
+    public geometryTangent: Vector2;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryTangent")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryTangent: Property<Vector2> = new Property<Vector2>("geometry_tangent", new Vector2(1, 0), "vSpecularAnisotropy", 3, 0);
+
+    /**
+     * Defines the angle of the tangent of the material's geometry. Used only for anisotropic reflections.
+     * See OpenPBR's specs for geometry_tangent
+     */
+    public get geometryTangentAngle(): number {
+        return Math.atan2(this.geometryTangent.y, this.geometryTangent.x);
+    }
+
+    public set geometryTangentAngle(value: number) {
+        this.geometryTangent = new Vector2(Math.cos(value), Math.sin(value));
+    }
+
+    /**
+     * Defines the tangent of the material's geometry. Used only for anisotropic reflections.
+     * See OpenPBR's specs for geometry_tangent
+     */
+    public geometryTangentTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryTangentTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryTangentTexture: Sampler = new Sampler("geometry_tangent", "geometryTangent", "GEOMETRY_TANGENT");
+
+    /**
      * Defines the normal of the material's coat layer.
      * See OpenPBR's specs for geometry_coat_normal
      */
-    public geometryCoatNormalTexture: BaseTexture;
+    public geometryCoatNormalTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryCoatNormalTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryCoatNormalTexture: Sampler = new Sampler("geometry_coat_normal", "geometryCoatNormal", "GEOMETRY_COAT_NORMAL");
@@ -700,7 +733,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the opacity of the material's geometry.
      * See OpenPBR's specs for geometry_opacity
      */
-    public geometryOpacityTexture: BaseTexture;
+    public geometryOpacityTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryOpacityTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryOpacityTexture: Sampler = new Sampler("geometry_opacity", "geometryOpacity", "GEOMETRY_OPACITY");
@@ -727,7 +760,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * Defines the color of the material's emission.
      * See OpenPBR's specs for emission_color
      */
-    public emissionColorTexture: BaseTexture;
+    public emissionColorTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionColorTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _emissionColorTexture: Sampler = new Sampler("emission_color", "emissionColor", "EMISSION_COLOR");
@@ -735,7 +768,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     /**
      * Defines the ambient occlusion texture.
      */
-    public ambientOcclusionTexture: BaseTexture;
+    public ambientOcclusionTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "ambientOcclusionTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _ambientOcclusionTexture: Sampler = new Sampler("ambient_occlusion", "ambientOcclusion", "AMBIENT_OCCLUSION");
@@ -1049,11 +1082,25 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _radianceTexture: Nullable<BaseTexture> = null;
 
     /**
-     * Specifies that only the A channel from _metallicReflectanceTexture should be used.
-     * If false, both RGB and A channels will be used
+     * Specifies that the specular weight will be read from the alpha channel.
+     * This is for compatibility with glTF's KHR_materials_specular extension.
      * @internal
      */
-    public _useSpecularWeightFromTextureAlpha = false;
+    public _useSpecularWeightFromAlpha = false;
+
+    /**
+     * Specifies that the specular weight will be read from the alpha channel of the specular color texture.
+     * This is for compatibility with glTF's KHR_materials_specular extension.
+     * @internal
+     */
+    public _useSpecularWeightFromSpecularColorTexture = false;
+
+    /**
+     * Specifies if the material uses anisotropy weight read from the geometry tangent texture's blue channel.
+     * This is for compatibility with glTF's anisotropy extension.
+     * @internal
+     */
+    public _useSpecularRoughnessAnisotropyFromTangentTexture = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
@@ -1070,25 +1117,29 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useRadianceOcclusion = true;
 
     /**
-     * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
+     * Specifies that the alpha is coming from the base color texture's alpha channel.
+     * This is for compatibility with glTF.
      * @internal
      */
     public _useAlphaFromAlbedoTexture = false;
 
     /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
+     * This is for compatibility with glTF.
      * @internal
      */
     public _useAmbientOcclusionFromMetallicTextureRed = false;
 
     /**
      * Specifies if the metallic texture contains the roughness information in its green channel.
+     * This is for compatibility with glTF.
      * @internal
      */
     public _useRoughnessFromMetallicTextureGreen = false;
 
     /**
      * Specifies if the metallic texture contains the metallic information in its blue channel.
+     * This is for compatibility with glTF.
      * @internal
      */
     public _useMetallicFromMetallicTextureBlue = false;
@@ -1390,6 +1441,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._coatDarkening;
         this._coatDarkeningTexture;
         this._geometryNormalTexture;
+        this._geometryTangent;
+        this._geometryTangentTexture;
         this._geometryCoatNormalTexture;
         this._geometryOpacity;
         this._geometryOpacityTexture;
@@ -2341,21 +2394,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     this._baseDiffuseRoughnessTexture != null;
                 PrepareDefinesForIBL(scene, radianceTexture, defines, this.realTimeFiltering, this.realTimeFilteringQuality, !useSHInFragment);
 
-                if (MaterialFlags.SpecularTextureEnabled) {
-                    if (this._baseMetalnessTexture) {
-                        defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
-                    }
-
-                    defines.SPECULAR_WEIGHT_USE_ALPHA_ONLY = this._useSpecularWeightFromTextureAlpha;
+                if (this._baseMetalnessTexture) {
+                    defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
                 }
 
-                if (this._useRoughnessFromMetallicTextureGreen) {
-                    defines.ROUGHNESSSTOREINMETALMAPGREEN = true;
-                }
-
-                if (this._useMetallicFromMetallicTextureBlue) {
-                    defines.METALLNESSSTOREINMETALMAPBLUE = true;
-                }
+                defines.SPECULAR_WEIGHT_IN_ALPHA = this._useSpecularWeightFromAlpha;
+                defines.SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = this._useSpecularWeightFromSpecularColorTexture;
+                defines.SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useSpecularRoughnessAnisotropyFromTangentTexture;
+                defines.ROUGHNESSSTOREINMETALMAPGREEN = this._useRoughnessFromMetallicTextureGreen;
+                defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallicFromMetallicTextureBlue;
 
                 if (this.geometryNormalTexture) {
                     if (this._useParallax && this.baseColorTexture && MaterialFlags.DiffuseTextureEnabled) {
@@ -2427,11 +2474,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
-        // if (this.specularRoughnessAnisotropy > 0.0) {
-        //     defines.ANISOTROPIC = true;
-        // } else {
-        //     defines.ANISOTROPIC = false;
-        // }
+        if (this.specularRoughnessAnisotropy > 0.0) {
+            defines.ANISOTROPIC = true;
+            if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                defines._needUVs = true;
+                defines.MAINUV1 = true;
+            }
+        } else {
+            defines.ANISOTROPIC = false;
+        }
 
         // Misc.
         if (defines._areMiscDirty) {

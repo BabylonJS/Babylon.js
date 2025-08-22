@@ -2,12 +2,13 @@ import type { Nullable } from "core/types";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
-
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { Vector2 } from "core/Maths";
 
 const NAME = "KHR_materials_anisotropy";
 
@@ -74,34 +75,45 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
                 const mod = await import("core/Materials/PBR/pbrMaterial");
                 PBRMaterialClass = mod.PBRMaterial;
             }
-            promises.push(this._loadIridescencePropertiesAsync(extensionContext, extension, babylonMaterial));
+            promises.push(this._loadAnisotropyPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
             await Promise.all(promises);
         });
     }
 
-    private async _loadIridescencePropertiesAsync(context: string, properties: IKHRMaterialsAnisotropy, babylonMaterial: Material): Promise<void> {
+    private async _loadAnisotropyPropertiesAsync(context: string, properties: IKHRMaterialsAnisotropy, babylonMaterial: Material, useOpenPBR: boolean): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterialClass)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
 
-        (babylonMaterial as PBRMaterial).anisotropy.isEnabled = true;
-
-        (babylonMaterial as PBRMaterial).anisotropy.intensity = properties.anisotropyStrength ?? 0;
-        (babylonMaterial as PBRMaterial).anisotropy.angle = properties.anisotropyRotation ?? 0;
-
+        const anisotropyWeight = properties.anisotropyStrength ?? 0;
+        const anisotropyAngle = properties.anisotropyRotation ?? 0;
+        let anisotropyTexture: Nullable<BaseTexture> = null;
         if (properties.anisotropyTexture) {
             (properties.anisotropyTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/anisotropyTexture`, properties.anisotropyTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Anisotropy Intensity)`;
-                    (babylonMaterial as PBRMaterial).anisotropy.texture = texture;
+                    anisotropyTexture = texture;
                 })
             );
         }
 
         await Promise.all(promises);
+        if (useOpenPBR) {
+            const openpbrMaterial: OpenPBRMaterial = babylonMaterial as OpenPBRMaterial;
+            openpbrMaterial.specularRoughnessAnisotropy = anisotropyWeight;
+            openpbrMaterial.geometryTangentTexture = anisotropyTexture;
+            openpbrMaterial.geometryTangent = new Vector2(Math.cos(anisotropyAngle), Math.sin(anisotropyAngle));
+            openpbrMaterial._useSpecularRoughnessAnisotropyFromTangentTexture = true;
+        } else {
+            const pbrMaterial = babylonMaterial as PBRMaterial;
+            pbrMaterial.anisotropy.isEnabled = true;
+            pbrMaterial.anisotropy.intensity = anisotropyWeight;
+            pbrMaterial.anisotropy.angle = anisotropyAngle;
+            pbrMaterial.anisotropy.texture = anisotropyTexture;
+        }
     }
 }
 

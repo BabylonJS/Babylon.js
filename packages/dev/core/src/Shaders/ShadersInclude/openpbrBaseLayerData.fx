@@ -15,6 +15,7 @@ vec3 specular_color = vec3(1.0);
 float specular_roughness_anisotropy = 0.0;
 float specular_ior = 1.5;
 float alpha = 1.0;
+vec2 geometry_tangent = vec2(1.0, 0.0);
 
 // Sample Base Layer properties from textures
 #ifdef BASE_WEIGHT
@@ -35,6 +36,14 @@ float alpha = 1.0;
     float roughnessFromTexture = texture2D(specularRoughnessSampler, vSpecularRoughnessUV + uvOffset).r;
 #endif
 
+#ifdef GEOMETRY_TANGENT
+    vec3 geometryTangentFromTexture = texture2D(geometryTangentSampler, vGeometryTangentUV + uvOffset).rgb;
+#endif
+
+#ifdef SPECULAR_ROUGHNESS_ANISOTROPY
+    float anisotropyFromTexture = texture2D(specularRoughnessAnisotropySampler, vSpecularRoughnessAnisotropyUV + uvOffset).r * vSpecularRoughnessAnisotropyInfos.y;
+#endif
+
 #ifdef BASE_DIFFUSE_ROUGHNESS
     float baseDiffuseRoughnessFromTexture = texture2D(baseDiffuseRoughnessSampler, vBaseDiffuseRoughnessUV + uvOffset).r;
 #endif
@@ -50,9 +59,16 @@ float alpha = 1.0;
 #ifdef SPECULAR_COLOR
     vec4 specularColorFromTexture = texture2D(specularColorSampler, vSpecularColorUV + uvOffset);
 #endif
-
+// If the specular weight is coming from the specular color texture's alpha channel, don't sample the
+// weight sampler to avoid redundant texture fetches.
 #ifdef SPECULAR_WEIGHT
-    vec4 specularWeightFromTexture = texture2D(specularWeightSampler, vSpecularWeightUV + uvOffset);
+    #ifdef SPECULAR_WEIGHT_IN_ALPHA
+        // If loaded from a glTF, the specular_weight is stored in the alpha channel.
+        // Otherwise, it's expected to just be a greyscale texture.
+        float specularWeightFromTexture = texture2D(specularWeightSampler, vSpecularWeightUV + uvOffset).a;
+    #else
+        float specularWeightFromTexture = texture2D(specularWeightSampler, vSpecularWeightUV + uvOffset).r;
+    #endif
 #endif
 
 // Initalize base layer properties from uniforms
@@ -71,6 +87,8 @@ specular_roughness = vReflectanceInfo.y;
 specular_color = vSpecularColor.rgb;
 specular_weight = vReflectanceInfo.a;
 specular_ior = vReflectanceInfo.z;
+specular_roughness_anisotropy = vSpecularAnisotropy.b;
+geometry_tangent = vSpecularAnisotropy.rg;
 
 // Apply texture values to base layer properties
 
@@ -130,18 +148,32 @@ specular_ior = vReflectanceInfo.z;
     #endif
 #endif
 
-#ifdef SPECULAR_WEIGHT
-    // If loaded from a glTF, the specular_weight is stored in the alpha channel.
-    // Otherwise, it's expected to just be a greyscale texture.
-    #ifdef SPECULAR_WEIGHT_USE_ALPHA_ONLY
-        specular_weight *= specularWeightFromTexture.a;
-    #else
-        specular_weight *= specularWeightFromTexture.r;
-    #endif
+#ifdef SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE
+    specular_weight *= specularColorFromTexture.a;
+#elif defined(SPECULAR_WEIGHT)
+    specular_weight *= specularWeightFromTexture;
 #endif
 
 #if defined(SPECULAR_ROUGHNESS) || (defined(ROUGHNESSSTOREINMETALMAPGREEN) && defined(BASE_METALNESS))
     specular_roughness *= roughnessFromTexture;
+#endif
+
+#ifdef GEOMETRY_TANGENT
+{
+    // TODO - optimize this. Currently, we're computing the tangent angle from both the texture and the uniform,
+    // then combining them. If we ignored the uniform when the texture was used, we wouldn't have to do any of this.
+    // Or, at least, we could pass the uniform in as an angle to avoid one of the atan's.
+    float tangent_angle_texture = atan(geometryTangentFromTexture.y, geometryTangentFromTexture.x);
+    float tangent_angle_uniform = atan(geometry_tangent.y, geometry_tangent.x);
+    float tangent_angle = tangent_angle_texture + tangent_angle_uniform;
+    geometry_tangent = vec2(cos(tangent_angle), sin(tangent_angle));
+}
+#endif
+
+#ifdef SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE
+        specular_roughness_anisotropy *= geometryTangentFromTexture.b;
+#elif defined(SPECULAR_ROUGHNESS_ANISOTROPY)
+    specular_roughness_anisotropy *= anisotropyFromTexture;
 #endif
 
 #ifdef DETAIL

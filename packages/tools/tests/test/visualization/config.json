@@ -2877,6 +2877,16 @@
             "title": "OpenPBR Analytic Lights Coat Color vs Coat Darkening",
             "playgroundId": "#GRQHVV#53",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Anisotropy",
+            "playgroundId": "#GRQHVV#55",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Analytic Lights Anisotropy Texture",
+            "playgroundId": "#GRQHVV#56",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
