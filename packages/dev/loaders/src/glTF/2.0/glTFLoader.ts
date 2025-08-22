@@ -2424,16 +2424,18 @@ export class GLTFLoader implements IGLTFLoader {
 
         return Promise.all(promises).then(() => {
             if (this.parent.useOpenPBR) {
-                (babylonMaterial as OpenPBRMaterial).ambientOcclusionTexture = aoTexture;
-                (babylonMaterial as OpenPBRMaterial).emissionColorTexture = emissionTexture;
+                const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
+                openpbrMaterial.ambientOcclusionTexture = aoTexture;
+                openpbrMaterial.emissionColorTexture = emissionTexture;
                 if (aoTexture) {
-                    (babylonMaterial as OpenPBRMaterial).ambientOcclusionTexture.level = aoStrength;
+                    openpbrMaterial.ambientOcclusionTexture.level = aoStrength;
                 }
             } else {
-                (babylonMaterial as PBRMaterial).ambientTexture = aoTexture;
-                (babylonMaterial as PBRMaterial).emissiveTexture = emissionTexture;
-                (babylonMaterial as PBRMaterial).useAmbientInGrayScale = true;
-                (babylonMaterial as PBRMaterial).ambientTextureStrength = aoStrength;
+                const pbrMaterial = babylonMaterial as PBRMaterial;
+                pbrMaterial.ambientTexture = aoTexture;
+                pbrMaterial.emissiveTexture = emissionTexture;
+                pbrMaterial.useAmbientInGrayScale = true;
+                pbrMaterial.ambientTextureStrength = aoStrength;
             }
         });
     }

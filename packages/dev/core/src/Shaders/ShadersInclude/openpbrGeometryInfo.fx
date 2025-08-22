@@ -4,11 +4,19 @@ struct geometryInfoOutParams
     float NdotVUnclamped;
     vec3 environmentBrdf;
     float horizonOcclusion;
+    #ifdef ANISOTROPIC
+        float anisotropy;
+        vec3 anisotropicTangent;
+        vec3 anisotropicBitangent;
+    #endif
 };
 
 #define pbr_inline
 geometryInfoOutParams geometryInfo(
     in vec3 normalW, in vec3 viewDirectionW, in float roughness, in vec3 geometricNormalW
+    #ifdef ANISOTROPIC
+    , in vec3 vAnisotropy, in mat3 TBN
+    #endif
 )
 {
     geometryInfoOutParams outParams;
@@ -33,5 +41,19 @@ geometryInfoOutParams geometryInfo(
             #endif
         #endif
     #endif
+
+    #ifdef ANISOTROPIC
+        float anisotropy = vAnisotropy.b;
+        vec3 anisotropyDirection = vec3(vAnisotropy.xy, 0.);
+        mat3 anisoTBN = mat3(normalize(TBN[0]), normalize(TBN[1]), normalize(TBN[2]));
+        vec3 anisotropicTangent = normalize(anisoTBN * anisotropyDirection);
+        vec3 anisotropicBitangent = normalize(cross(anisoTBN[2], anisotropicTangent));
+        
+        outParams.anisotropy = anisotropy;
+        outParams.anisotropicTangent = anisotropicTangent;
+        outParams.anisotropicBitangent = anisotropicBitangent;
+        
+    #endif
+
     return outParams;
 }

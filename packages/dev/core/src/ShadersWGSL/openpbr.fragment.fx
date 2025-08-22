@@ -107,6 +107,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Compute Geometry info for coat layer _________________________
     let coatGeoInfo: geometryInfoOutParams = geometryInfo(
         coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
+        #ifdef ANISOTROPIC
+        , vec3f(1.0f, 0.0f, specular_roughness_anisotropy), TBN
+        #endif
     );
 
     // _____________________________ Compute Geometry info for base layer _________________________
@@ -114,6 +117,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     specular_roughness = mix(specular_roughness, pow(min(1.0f, pow(specular_roughness, 4.0f) + 2.0f * pow(coat_roughness, 4.0f)), 0.25f), coat_weight);
     let baseGeoInfo: geometryInfoOutParams = geometryInfo(
         normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+        #ifdef ANISOTROPIC
+        , vec3f(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy), TBN
+        #endif
     );
 
     // _______________________ F0 and F90 Reflectance _______________________________
