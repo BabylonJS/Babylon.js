@@ -42,15 +42,15 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], []> = {
             return {
                 value: utilityLayerInfo.utilityLayer,
                 dispose: () => {
-if (!disposed) {
+                    if (!disposed) {
                         disposed = true;
-                    utilityLayerInfo.refCount--;
-                    if (utilityLayerInfo.refCount === 0) {
-                        utilityLayerInfo.utilityLayer.dispose();
-                        utilityLayerInfoForScene.delete(layer);
-                        if (utilityLayerInfoForScene.size === 0) {
-                            utilityLayers.delete(scene);
-}
+                        utilityLayerInfo.refCount--;
+                        if (utilityLayerInfo.refCount === 0) {
+                            utilityLayerInfo.utilityLayer.dispose();
+                            utilityLayerInfoForScene.delete(layer);
+                            if (utilityLayerInfoForScene.size === 0) {
+                                utilityLayers.delete(scene);
+                            }
                         }
                     }
                 },
