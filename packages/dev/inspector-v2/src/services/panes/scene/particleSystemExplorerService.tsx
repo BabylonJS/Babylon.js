@@ -1,4 +1,3 @@
-import type { IParticleSystem } from "core/index";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
@@ -23,7 +22,6 @@ export const ParticleSystemExplorerServiceDefinition: ServiceDefinition<[], [ISc
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Particle Systems",
             order: DefaultSectionsOrder.ParticleSystems,
-            predicate: (entity): entity is IParticleSystem => scene.particleSystems.includes(entity as IParticleSystem),
             getRootEntities: () => scene.particleSystems,
             getEntityDisplayInfo: (particleSystem) => {
                 const onChangeObservable = new Observable<void>();

@@ -53,6 +53,10 @@ export class ConnectionPointPortData implements IPortData {
         return this.data.isConnected;
     }
 
+    public get isInactive() {
+        return this.data.isInactive;
+    }
+
     public get connectedPort() {
         if (!this.isConnected) {
             return null;

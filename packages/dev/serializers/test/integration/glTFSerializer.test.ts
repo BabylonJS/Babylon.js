@@ -1,6 +1,7 @@
 import { evaluateDisposeEngine, evaluateCreateScene, evaluateInitEngine, getGlobalConfig, logPageErrors } from "@tools/test-tools";
 import type { IAnimationKey } from "core/Animations/animationKey";
 import { Constants } from "core/Engines";
+import { GetMimeType } from "core/Misc/fileTools";
 
 declare const BABYLON: typeof import("core/index") &
     typeof import("serializers/index") & {
@@ -689,6 +690,35 @@ describe("Babylon glTF Serializer", () => {
             expect(assertionData.meshes.every((mesh: any) => mesh.primitives[0].attributes.JOINTS_0 === jointAccessor)).toBe(true);
             expect(accessorData.type).toEqual("VEC4");
             expect(accessorData.componentType).toEqual(Constants.UNSIGNED_BYTE);
+        });
+
+        describe("texture image extensions", () => {
+            const testRoundtripImage = async (imageUrl: string, mimeType: string, extensionName: string) => {
+                const assertionData = await page.evaluate(async (imageUrl) => {
+                    const material = new BABYLON.PBRMaterial("mat");
+                    material.metallic = 0;
+                    material.roughness = 1;
+                    material.albedoTexture = new BABYLON.Texture(imageUrl, window.scene!, { invertY: false });
+                    BABYLON.MeshBuilder.CreatePlane("plane").material = material;
+
+                    const glTFData = await BABYLON.GLTF2Export.GLTFAsync(window.scene!, "test");
+                    const jsonString = glTFData.files["test.gltf"] as string;
+                    return JSON.parse(jsonString);
+                }, imageUrl);
+                expect(assertionData.textures).toHaveLength(1);
+                const imageIndex = assertionData.textures[0].extensions[extensionName].source;
+                expect(imageIndex).toBeDefined();
+                const image = assertionData.images[imageIndex];
+                expect(image).toBeDefined();
+                const mime = image.mimeType || GetMimeType(image.uri);
+                expect(mime).toEqual(mimeType);
+            };
+            it("uses KHR_texture_basisu to export a KTX2 image", async () => {
+                await testRoundtripImage("textures/ktx2/sample_uastc.ktx2", "image/ktx2", "KHR_texture_basisu");
+            });
+            it("uses EXT_texture_webp to export a WEBP image", async () => {
+                await testRoundtripImage("https://assets.babylonjs.com/meshes/webp/webp_DefaultMaterial_Normal.webp", "image/webp", "EXT_texture_webp");
+            });
         });
     });
 });

@@ -78,6 +78,7 @@ export * from "./decorators.serialization";
 export * from "./asyncLock";
 export * from "./bitArray";
 export * from "./urlTools";
+export * from "./lazy";
 
 // RGBDTextureTools
 export * from "../Shaders/rgbdDecode.fragment";

@@ -12,6 +12,8 @@
 			vec4 vLightFalloff;
 		#elif defined(HEMILIGHT{X})
 			vec3 vLightGround;
+		#elif defined(CLUSTLIGHT{X})
+			float vNumLights; // TODO: remove once depth clustering is added
 		#endif
 		#if defined(AREALIGHT{X})
 			vec4 vLightWidth;
@@ -26,6 +28,11 @@
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform mat4 textureProjectionMatrix{X};
 	uniform sampler2D projectionLightTexture{X};
+#endif
+#ifdef CLUSTLIGHT{X}
+	uniform sampler2D lightDataTexture{X};
+	// Ensure the mask is sampled with high precision
+	uniform highp sampler2D tileMaskTexture{X};
 #endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}

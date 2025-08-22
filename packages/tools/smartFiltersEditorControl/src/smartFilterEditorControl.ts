@@ -78,13 +78,26 @@ export type SmartFilterEditorOptions = {
      * A callback that is responsible for copying a serialized version of the Smart Filter to
      * the clipboard. If not supplied, the copy button will not appear in the editor.
      */;
-    copySmartFilter?: () => void;
+    copySmartFilterToClipboard?: () => void;
+
+    /**
+     * A callback that is responsible for copying a serialized version of the Smart Filter to
+     * a string.
+     * @returns A promise that resolves to the serialized Smart Filter string or empty string
+     */
+    copySmartFilterToStringAsync?: () => Promise<string>;
 
     /**
      * A callback that is responsible for pasting a serialized Smart Filter from the clipboard.
      * If not supplied, the paste button will not appear in the editor.
      */
-    pasteSmartFilterAsync?: () => Promise<Nullable<SmartFilter>>;
+    pasteSmartFilterFromClipboardAsync?: () => Promise<Nullable<SmartFilter>>;
+
+    /**
+     * A callback that is responsible for pasting a serialized Smart Filter from a string.
+     * If not supplied, the paste button will not appear in the editor.
+     */
+    pasteSmartFilterFromStringAsync?: (data: string) => Promise<Nullable<SmartFilter>>;
 
     /**
      * An optional callback to save the current Smart Filter to the snippet server.
@@ -181,8 +194,10 @@ export class SmartFilterEditorControl {
             options.texturePresets ?? null,
             options.downloadSmartFilter,
             options.loadSmartFilterAsync,
-            options.copySmartFilter,
-            options.pasteSmartFilterAsync,
+            options.copySmartFilterToClipboard,
+            options.copySmartFilterToStringAsync,
+            options.pasteSmartFilterFromClipboardAsync,
+            options.pasteSmartFilterFromStringAsync,
             options.saveToSnippetServer,
             options.addCustomBlock,
             options.deleteCustomBlock,

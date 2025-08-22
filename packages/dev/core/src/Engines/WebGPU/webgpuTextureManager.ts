@@ -1191,7 +1191,7 @@ export class WebGPUTextureManager {
         const blockInformation = WebGPUTextureHelper.GetBlockInformationFromFormat(format);
         const gpuOrHdwTexture = WebGPUTextureHelper.IsInternalTexture(texture) ? (texture._hardwareTexture as WebGPUHardwareTexture) : texture;
 
-        const textureCopyView: GPUImageCopyTextureTagged = {
+        const textureCopyView: GPUCopyExternalImageDestInfo = {
             texture: gpuTexture,
             origin: {
                 x: offsetX,

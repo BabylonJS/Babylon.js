@@ -1923,9 +1923,9 @@ export class Control implements IAnimatable, IFocusableControl {
                 this._rebuildLayout = false;
                 this._processMeasures(parentMeasure, context);
                 rebuildCount++;
-            } while (this._rebuildLayout && rebuildCount < 3);
+            } while (this._rebuildLayout && rebuildCount < 4);
 
-            if (rebuildCount >= 3) {
+            if (rebuildCount >= 4) {
                 Logger.Error(`Layout cycle detected in GUI (Control name=${this.name}, uniqueId=${this.uniqueId})`);
             }
 
