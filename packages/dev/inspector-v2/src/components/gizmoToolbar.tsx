@@ -5,7 +5,7 @@ import type { IDisposable, Nullable, Scene, TransformNode } from "core/index";
 import type { IGizmoService } from "../services/gizmoService";
 
 import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
-import { ArrowExpandRegular, ArrowMoveRegular, ArrowRotateClockwiseRegular, CubeRegular, MoviesAndTvRegular, SelectObjectRegular } from "@fluentui/react-icons";
+import { ArrowExpandRegular, ArrowMoveRegular, ArrowRotateClockwiseRegular, CubeRegular, GlobeRegular, SelectObjectRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useState } from "react";
 
 import { Bone } from "core/Bones/bone";
@@ -137,35 +137,13 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
 
     return (
         <>
-            <ToggleButton
-                appearance="subtle"
-                title="Translate"
-                enabledIcon={ArrowMoveRegular}
-                disabledIcon={ArrowMoveRegular}
-                value={gizmoMode === "translate"}
-                onChange={() => updateGizmoMode("translate")}
-            />
-            <ToggleButton
-                appearance="subtle"
-                title="Rotate"
-                enabledIcon={ArrowRotateClockwiseRegular}
-                disabledIcon={ArrowRotateClockwiseRegular}
-                value={gizmoMode === "rotate"}
-                onChange={() => updateGizmoMode("rotate")}
-            />
-            <ToggleButton
-                appearance="subtle"
-                title="Scale"
-                enabledIcon={ArrowExpandRegular}
-                disabledIcon={ArrowExpandRegular}
-                value={gizmoMode === "scale"}
-                onChange={() => updateGizmoMode("scale")}
-            />
+            <ToggleButton appearance="subtle" title="Translate" enabledIcon={ArrowMoveRegular} value={gizmoMode === "translate"} onChange={() => updateGizmoMode("translate")} />
+            <ToggleButton appearance="subtle" title="Rotate" enabledIcon={ArrowRotateClockwiseRegular} value={gizmoMode === "rotate"} onChange={() => updateGizmoMode("rotate")} />
+            <ToggleButton appearance="subtle" title="Scale" enabledIcon={ArrowExpandRegular} value={gizmoMode === "scale"} onChange={() => updateGizmoMode("scale")} />
             <ToggleButton
                 appearance="subtle"
                 title="Bounding Box"
                 enabledIcon={SelectObjectRegular}
-                disabledIcon={SelectObjectRegular}
                 value={gizmoMode === "boundingBox"}
                 onChange={() => updateGizmoMode("boundingBox")}
             />
@@ -184,7 +162,7 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
                                     size="small"
                                     appearance="secondary"
                                     shape="rounded"
-                                    icon={coordinatesMode === GizmoCoordinatesMode.Local ? <CubeRegular /> : <MoviesAndTvRegular />}
+                                    icon={coordinatesMode === GizmoCoordinatesMode.Local ? <CubeRegular /> : <GlobeRegular />}
                                 ></SplitButton>
                             </Tooltip>
                         )}

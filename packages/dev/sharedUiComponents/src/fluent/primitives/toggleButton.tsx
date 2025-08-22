@@ -35,7 +35,7 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     return (
         <FluentToggleButton
             title={title}
-            icon={checked ? <props.enabledIcon /> : props.disabledIcon ? <props.disabledIcon /> : <props.enabledIcon opacity={0.5} />}
+            icon={checked ? <props.enabledIcon /> : props.disabledIcon ? <props.disabledIcon /> : <props.enabledIcon />}
             appearance={appearance}
             checked={checked}
             onClick={toggle}

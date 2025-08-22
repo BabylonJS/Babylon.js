@@ -95,6 +95,7 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
         <div className={classes.container}>
             <SyncedSliderInput value={attractor.strength} onChange={(value) => (attractor.strength = value)} min={-10} max={10} step={0.1} />
             <ToggleButton
+                appearance="subtle"
                 title="Show / hide particle attractor."
                 enabledIcon={EyeFilled}
                 disabledIcon={EyeOffFilled}
@@ -105,6 +106,7 @@ export const AttractorComponent: FunctionComponent<AttractorProps> = (props) => 
                 }}
             />
             <ToggleButton
+                appearance="subtle"
                 title="Add / remove position gizmo from particle attractor"
                 enabledIcon={ArrowMoveFilled}
                 value={isControlled(impostor)}
