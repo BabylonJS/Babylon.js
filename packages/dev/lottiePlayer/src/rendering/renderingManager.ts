@@ -9,7 +9,7 @@ import { SpriteRenderer } from "core/Sprites/spriteRenderer";
 
 import type { ThinMatrix } from "../maths/matrix";
 
-import type { AnimationConfiguration } from "../player";
+import type { AnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Represents all the sprites from the animation and manages their rendering.

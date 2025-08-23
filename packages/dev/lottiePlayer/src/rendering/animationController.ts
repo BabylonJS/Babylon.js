@@ -5,17 +5,18 @@ import "core/Shaders/sprites.fragment";
 import { ThinEngine } from "core/Engines/thinEngine";
 import { Viewport } from "core/Maths/math.viewport";
 
-import type { Node } from "./rendering/node";
-import { RenderingManager } from "./rendering/renderingManager";
+import { RenderingManager } from "./renderingManager";
 
-import type { AnimationInfo } from "./parsing/parsedTypes";
-import { AnimationParser } from "./parsing/animationParser";
+import type { RawLottieAnimation } from "../parsing/rawTypes";
+import type { AnimationInfo } from "../parsing/parsedTypes";
+import { Parser } from "../parsing/parser";
+import { SpritePacker } from "../parsing/spritePacker";
 
-import { ThinMatrix } from "./maths/matrix";
+import { ThinMatrix } from "../maths/matrix";
 
-import { SpritePacker } from "./sprites/spritePacker";
+import type { Node } from "../nodes/node";
 
-import type { AnimationConfiguration } from "./player";
+import type { AnimationConfiguration } from "../animationConfiguration";
 
 /**
  * Defines the babylon combine alpha value to prevent a large import.
@@ -23,12 +24,32 @@ import type { AnimationConfiguration } from "./player";
 const AlphaCombine = 2;
 
 /**
+ * Calculates the scale factor between a container and the animation it is playing
+ * @param animationWidth Width of the animaiton
+ * @param animationHeight Height of the animation
+ * @param container The container where the animation is getting played
+ * @returns The scale factor that will modify the size of the animation rendering to adjust to the container
+ */
+export function CalculateScaleFactor(animationWidth: number | undefined, animationHeight: number | undefined, container: HTMLElement): number {
+    if (animationWidth === undefined || animationHeight === undefined) {
+        return 1;
+    }
+
+    // The size of the canvas is the relation between the size of the container div and the size of the animation
+    const horizontalScale = container.clientWidth / animationWidth;
+    const verticalScale = container.clientHeight / animationHeight;
+    return Math.min(verticalScale, horizontalScale);
+}
+
+/**
  * Class that controls the playing of lottie animations using Babylon.js
  */
 export class AnimationController {
     private _isReady: boolean;
 
-    private readonly _canvas: HTMLCanvasElement;
+    private readonly _canvas: HTMLCanvasElement | OffscreenCanvas;
+    private _scaleFactor: number;
+    private readonly _variables: Map<string, string>;
     private readonly _configuration: AnimationConfiguration;
     private readonly _engine: ThinEngine;
     private readonly _spritePacker: SpritePacker;
@@ -39,6 +60,7 @@ export class AnimationController {
     private readonly _projectionMatrix: ThinMatrix;
     private readonly _worldMatrix: ThinMatrix;
 
+    private _firstRun: boolean;
     private _frameDuration: number;
     private _currentFrame: number;
     private _isPlaying: boolean;
@@ -79,12 +101,22 @@ export class AnimationController {
     /**
      * Creates a new instance of the Player.
      * @param canvas The canvas element to render the animation on.
-     * @param animationJson The JSON string of the Lottie animation to be played.
+     * @param animationData The raw lottie animation as a JSON object.
+     * @param scaleFactor The scale factor between the animation and the container, it will modify the sprites size in the atlas
+     * @param variables Map of variables to replace in the animation file.
      * @param configuration The configuration for the animation player.
      */
-    public constructor(canvas: HTMLCanvasElement, animationJson: string, configuration: AnimationConfiguration) {
+    public constructor(
+        canvas: HTMLCanvasElement | OffscreenCanvas,
+        animationData: RawLottieAnimation,
+        scaleFactor: number,
+        variables: Map<string, string>,
+        configuration: AnimationConfiguration
+    ) {
         this._isReady = false;
         this._canvas = canvas;
+        this._scaleFactor = scaleFactor;
+        this._variables = variables;
         this._configuration = configuration;
         this._currentFrame = 0;
         this._isPlaying = false;
@@ -93,8 +125,9 @@ export class AnimationController {
         this._deltaTime = 0;
         this._accumulatedTime = 0;
         this._framesToAdvance = 0;
-        this._loop = false;
+        this._loop = this._configuration.loopAnimation;
         this._frameDuration = 1000 / 30; // Default to 30 FPS
+        this._firstRun = true;
 
         this._engine = new ThinEngine(
             this._canvas,
@@ -122,7 +155,7 @@ export class AnimationController {
         this._engine.stencilState.stencilTest = false;
         this._engine.setAlphaMode(AlphaCombine);
 
-        this._spritePacker = new SpritePacker(this._engine, this._configuration);
+        this._spritePacker = new SpritePacker(this._engine, this._isHtmlCanvas(canvas), this._scaleFactor, this._variables, this._configuration);
         this._renderingManager = new RenderingManager(this._engine, this._spritePacker.texture, this._configuration);
 
         this._projectionMatrix = new ThinMatrix();
@@ -132,21 +165,21 @@ export class AnimationController {
         this._viewport = new Viewport(0, 0, 1, 1);
 
         // Parse the animation
-        const parser = new AnimationParser(this._spritePacker, animationJson, this._configuration, this._renderingManager);
+        const parser = new Parser(this._spritePacker, animationData, this._configuration, this._renderingManager);
+
         this._animation = parser.animationInfo;
         this._frameDuration = 1000 / this._animation.frameRate;
 
-        this.setSize(this._animation.widthPx, this._animation.heightPx);
         this._cleanTree(this._animation.nodes);
+        this._setSize(animationData.w, animationData.h, this._scaleFactor);
 
         this._isReady = true;
     }
 
     /**
      * Plays the animation.
-     * @param loop If true, the animation will loop when it reaches the end.
      */
-    public playAnimation(loop: boolean = false): void {
+    public playAnimation(): void {
         if (this._animation === undefined || !this._isReady) {
             return;
         }
@@ -155,7 +188,6 @@ export class AnimationController {
         this._accumulatedTime = 0;
         this._framesToAdvance = 0;
         this._isPlaying = true;
-        this._loop = loop;
         this._lastFrameTime = 0;
 
         // Start the render loop
@@ -176,24 +208,16 @@ export class AnimationController {
     }
 
     /**
-     * Sets the rendering size for the engine
-     * @param width Width of the rendering canvas
-     * @param height Height of the rendering canvas
+     * Sets a new scale factor for the animation and updates the rendering size.
+     * @param scale The new scale factor to apply to the animation.
      */
-    public setSize(width: number, height: number): void {
-        const { _engine, _projectionMatrix, _worldMatrix } = this;
-        const devicePixelRatio = this._configuration.devicePixelRatio;
+    public setScale(scale: number): void {
+        if (scale <= 0 || this._animation === undefined) {
+            return;
+        }
 
-        _engine.setSize(width * devicePixelRatio, height * devicePixelRatio);
-        this._canvas.width = width * devicePixelRatio;
-        this._canvas.height = height * devicePixelRatio;
-        // _engine.getRenderingCanvas()!.style.width = `${width}px`;
-        // _engine.getRenderingCanvas()!.style.height = `${height}px`;
-
-        const world = _worldMatrix.asArray();
-        world[5] = -1; // we are upside down with Lottie
-
-        _projectionMatrix.orthoOffCenterLeftHanded(0, _engine.getRenderWidth() / devicePixelRatio, _engine.getRenderHeight() / devicePixelRatio, 0, -100, 100);
+        this._scaleFactor = scale;
+        this._setSize(this._animation.widthPx, this._animation.heightPx, this._scaleFactor);
     }
 
     /**
@@ -205,6 +229,28 @@ export class AnimationController {
         this._engine.dispose();
         this._renderingManager.dispose();
         this._spritePacker.texture.dispose();
+    }
+
+    /**
+     * Sets the rendering size for the engine
+     * @param width Width of the rendering canvas
+     * @param height Height of the rendering canvas
+     * @param scale Scale ratio between the container and the animation
+     */
+    private _setSize(width: number, height: number, scale: number): void {
+        const { _engine, _projectionMatrix, _worldMatrix } = this;
+        const devicePixelRatio = this._configuration.devicePixelRatio;
+
+        _engine.setSize(width * scale * devicePixelRatio, height * scale * devicePixelRatio);
+
+        const world = _worldMatrix.asArray();
+        world[5] = -1; // we are upside down with Lottie
+
+        _projectionMatrix.orthoOffCenterLeftHanded(0, _engine.getRenderWidth() / (devicePixelRatio * scale), _engine.getRenderHeight() / (devicePixelRatio * scale), 0, -100, 100);
+    }
+
+    private _isHtmlCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): boolean {
+        return typeof HTMLCanvasElement !== "undefined" && canvas instanceof HTMLCanvasElement;
     }
 
     private _cleanTree(nodes: Node[]): void {
@@ -227,6 +273,13 @@ export class AnimationController {
         }
 
         this._animationFrameId = requestAnimationFrame((currentTime) => {
+            // The first time we render, we set the last frame time
+            // to the current time to sync with the page startup time
+            if (this._firstRun) {
+                this._lastFrameTime = currentTime;
+                this._firstRun = false;
+            }
+
             this._deltaTime = currentTime - this._lastFrameTime;
             this._lastFrameTime = currentTime;
 

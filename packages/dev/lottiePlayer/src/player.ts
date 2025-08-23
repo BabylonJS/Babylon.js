@@ -1,90 +1,50 @@
 import type { Nullable } from "core/types";
+import type { AnimationConfiguration } from "./animationConfiguration";
+import type { AnimationSizeMessagePayload, AnimationUrlMessage, ContainerResizeMessage, Message, StartAnimationMessage } from "./messageTypes";
+import { CalculateScaleFactor } from "./rendering/animationController";
 
 /**
- * Configuration options for the Lottie animation player.
- */
-export type AnimationConfiguration = {
-    /**
-     * Whether the animation should play on a loop or not
-     */
-    loopAnimation: boolean;
-    /**
-     * Size of the sprite atlas texture.
-     * Default is 2048.
-     */
-    spriteAtlasSize: number;
-    /**
-     * Gap size around sprites in the atlas.
-     * Default is 5.
-     */
-    gapSize: number;
-    /**
-     * Maximum number of sprites the renderer can handle at once.
-     * Default is 64.
-     */
-    spritesCapacity: number;
-    /**
-     * Background color for the animation canvas.
-     * Default is white with full opacity.
-     */
-    backgroundColor: { r: number; g: number; b: number; a: number };
-    /**
-     * Minimum scale factor to prevent too small sprites.
-     * Default is 5.
-     */
-    scaleMultiplier: number;
-    /**
-     * Scale factor for the rendering.
-     * Default is 1.
-     */
-    devicePixelRatio: number;
-    /**
-     * Number of steps to sample cubic bezier easing functions for animations.
-     * Default is 4.
-     */
-    easingSteps: number;
-    /**
-     * Whether to ignore opacity animations for performance.
-     * Default is true.
-     */
-    ignoreOpacityAnimations: boolean;
-    /**
-     * Whether to support device lost events for WebGL contexts.
-     * Default is false.
-     */
-    supportDeviceLost: boolean;
-};
-
-/**
- * Player is a class that allows you to play Lottie animations using Babylon.js.
+ * Allows you to play Lottie animations using Babylon.js.
  * It plays the animations in a worker thread using OffscreenCanvas.
  * Once instance of this class can only be used to play a single animation. If you want to play multiple animations, create a new instance for each animation.
  */
 export class Player {
+    private readonly _container: HTMLDivElement;
+    private readonly _animationFile: string;
+    private readonly _variables: Nullable<Map<string, string>>;
+    private readonly _configuration: Nullable<Partial<AnimationConfiguration>>;
+
     private _playing: boolean = false;
     private _disposed: boolean = false;
     private _worker: Nullable<Worker> = null;
     private _canvas: Nullable<HTMLCanvasElement> = null;
+    private _animationWidth: number = 0;
+    private _animationHeight: number = 0;
+    private _scaleFactor: number = 1;
     private _resizeObserver: Nullable<ResizeObserver> = null;
-
-    private readonly _container: HTMLDivElement;
-    private readonly _animationFile: string;
-    private readonly _configuration: Partial<AnimationConfiguration>;
 
     /**
      * Creates a new instance of the LottiePlayer.
      * @param container The HTMLDivElement to create the canvas in and render the animation on.
      * @param animationFile The URL of the Lottie animation file to be played.
+     * @param variables Optional map of variables to replace in the animation file.
      * @param configuration Optional configuration object to customize the animation playback.
      */
-    public constructor(container: HTMLDivElement, animationFile: string, configuration?: Partial<AnimationConfiguration>) {
+    public constructor(
+        container: HTMLDivElement,
+        animationFile: string,
+        variables: Nullable<Map<string, string>> = null,
+        configuration: Nullable<Partial<AnimationConfiguration>> = null
+    ) {
         this._container = container;
         this._animationFile = animationFile;
-        this._configuration = configuration ?? {};
+        this._variables = variables;
+        this._configuration = configuration;
     }
 
     /**
-     * Loads and plays a lottie animation.
+     * Loads and plays a lottie animation using a webworker and offscreen canvas.
+     * If OffscreenCanvas is not supported by the browser, the animation will not play. Try using LocalLottiePlayer instead.
      * @returns True if the animation is successfully set up to play, false if the animation couldn't play.
      */
     public playAnimation(): boolean {
@@ -93,31 +53,65 @@ export class Player {
         }
 
         if ("OffscreenCanvas" in window) {
-            // Create the canvas element
-            this._canvas = document.createElement("canvas");
-            this._canvas.width = this._container.clientWidth;
-            this._canvas.height = this._container.clientHeight;
-
-            // Style the canvas to fill the container
-            this._canvas.style.width = "100%";
-            this._canvas.style.height = "100%";
-            this._canvas.style.display = "block";
-
-            // Append the canvas to the container
-            this._container.appendChild(this._canvas);
-
-            const offscreen = this._canvas.transferControlToOffscreen();
-
-            this._worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+            // Use an extensionless path so Webpack resolves to .ts in dev and .js in published output
+            this._worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
             this._worker.onmessage = (evt: MessageEvent) => {
-                if (evt.data.animationWidth && evt.data.animationHeight && this._canvas) {
-                    this._canvas.style.width = `${evt.data.animationWidth}px`;
-                    this._canvas.style.height = `${evt.data.animationHeight}px`;
+                const message = evt.data as Message;
+                if (message === undefined) {
+                    return;
+                }
+
+                switch (message.type) {
+                    case "animationSize": {
+                        if (this._worker === null) {
+                            return;
+                        }
+
+                        const payload = message.payload as AnimationSizeMessagePayload;
+                        this._animationWidth = payload.width;
+                        this._animationHeight = payload.height;
+
+                        // Create the canvas element
+                        this._canvas = document.createElement("canvas");
+
+                        // Center the canvas in the container
+                        this._canvas.style.position = "absolute";
+                        this._canvas.style.left = "50%";
+                        this._canvas.style.top = "50%";
+                        this._canvas.style.transform = "translate(-50%, -50%)";
+                        this._canvas.style.display = "block";
+
+                        // The size of the canvas is the relation between the size of the container div and the size of the animation
+                        this._scaleFactor = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._container);
+                        this._canvas.style.width = `${this._animationWidth * this._scaleFactor}px`;
+                        this._canvas.style.height = `${this._animationHeight * this._scaleFactor}px`;
+
+                        // Append the canvas to the container
+                        this._container.appendChild(this._canvas);
+                        const offscreen = this._canvas.transferControlToOffscreen();
+
+                        const startAnimationMessage: StartAnimationMessage = {
+                            type: "startAnimation",
+                            payload: {
+                                canvas: offscreen,
+                                scaleFactor: this._scaleFactor,
+                                variables: this._variables,
+                                configuration: this._configuration,
+                            },
+                        };
+                        this._worker.postMessage(startAnimationMessage, [offscreen]);
+                        break;
+                    }
                 }
             };
 
-            this._worker.postMessage({ canvas: offscreen, file: this._animationFile, config: this._configuration }, [offscreen]);
-            this._playing = true;
+            const animationUrlMessage: AnimationUrlMessage = {
+                type: "animationUrl",
+                payload: {
+                    url: this._animationFile,
+                },
+            };
+            this._worker.postMessage(animationUrlMessage);
 
             window.addEventListener("resize", this._onWindowResize);
             window.addEventListener("beforeunload", this._onBeforeUnload);
@@ -128,10 +122,18 @@ export class Player {
                         return;
                     }
 
-                    const w = this._canvas.clientWidth;
-                    const h = this._canvas.clientHeight;
+                    // The size of the canvas is the relation between the size of the container div and the size of the animation
+                    this._scaleFactor = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._container);
+                    this._canvas.style.width = `${this._animationWidth * this._scaleFactor}px`;
+                    this._canvas.style.height = `${this._animationHeight * this._scaleFactor}px`;
 
-                    this._worker.postMessage({ width: w, height: h });
+                    const containerResizeMessage: ContainerResizeMessage = {
+                        type: "containerResize",
+                        payload: {
+                            scaleFactor: this._scaleFactor,
+                        },
+                    };
+                    this._worker.postMessage(containerResizeMessage);
                 });
 
                 this._resizeObserver.observe(this._container);

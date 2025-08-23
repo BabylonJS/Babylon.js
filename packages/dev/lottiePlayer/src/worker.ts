@@ -1,46 +1,70 @@
 import type { Nullable } from "core/types";
 
-import type { AnimationConfiguration } from "./player";
-import { AnimationController } from "./animationController";
+import type { AnimationConfiguration } from "./animationConfiguration";
+import { DefaultConfiguration } from "./animationConfiguration";
+import { AnimationController } from "./rendering/animationController";
+import { GetRawAnimationDataAsync } from "./parsing/parser";
+import type { RawLottieAnimation } from "./parsing/rawTypes";
+import type { StartAnimationMessagePayload, AnimationSizeMessage, AnimationUrlMessagePayload, Message, ContainerResizeMessagePayload } from "./messageTypes";
 
-let AnimationPlayer: Nullable<AnimationController> = null;
-
-/**
- * Default configuration for lottie animations playback.
- */
-const DefaultConfiguration = {
-    loopAnimation: false, // By default do not loop animations
-    spriteAtlasSize: 2048, // Size of the texture atlas
-    gapSize: 5, // Gap around the sprites in the atlas
-    spritesCapacity: 64, // Maximum number of sprites the renderer can handle at once
-    backgroundColor: { r: 1, g: 1, b: 1, a: 1 }, // Background color for the animation canvas
-    scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,
-    devicePixelRatio: 1, // Scale factor,
-    easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
-    ignoreOpacityAnimations: true, // Whether to ignore opacity animations for performance
-    supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
-} as const satisfies AnimationConfiguration;
+let RawAnimation: Nullable<RawLottieAnimation> = null;
+let Controller: Nullable<AnimationController> = null;
 
 onmessage = async function (evt) {
-    if (evt.data.canvas && evt.data.file) {
-        const canvas = evt.data.canvas as HTMLCanvasElement;
-        const file = evt.data.file as string;
-        const originalConfig = evt.data.config as AnimationConfiguration;
-        const finalConfig: AnimationConfiguration = {
-            ...DefaultConfiguration,
-            ...originalConfig,
-        };
+    const message = evt.data as Message;
+    if (message === undefined) {
+        return;
+    }
 
-        const animationData = await (await fetch(file)).text();
-        AnimationPlayer = new AnimationController(canvas, animationData, finalConfig);
+    switch (message.type) {
+        case "animationUrl": {
+            const payload = message.payload as AnimationUrlMessagePayload;
+            RawAnimation = await GetRawAnimationDataAsync(payload.url);
 
-        postMessage({
-            animationWidth: AnimationPlayer.animationWidth,
-            animationHeight: AnimationPlayer.animationHeight,
-        });
+            // Send this information back to the main thread so it can size the canvas correctly
+            const sizeMessage: AnimationSizeMessage = {
+                type: "animationSize",
+                payload: {
+                    width: RawAnimation.w,
+                    height: RawAnimation.h,
+                },
+            };
 
-        AnimationPlayer.playAnimation(finalConfig.loopAnimation);
-    } else if (evt.data.width && evt.data.height) {
-        AnimationPlayer && AnimationPlayer.setSize(evt.data.width, evt.data.height);
+            postMessage(sizeMessage);
+            break;
+        }
+        case "startAnimation": {
+            if (RawAnimation === null) {
+                return;
+            }
+
+            const payload = message.payload as StartAnimationMessagePayload;
+
+            const canvas = payload.canvas;
+            const scaleFactor = payload.scaleFactor;
+            const variables = payload.variables ?? new Map<string, string>();
+            const originalConfig = payload.configuration ?? {};
+            const finalConfig: AnimationConfiguration = {
+                ...DefaultConfiguration,
+                ...originalConfig,
+            };
+
+            Controller = new AnimationController(canvas, RawAnimation, scaleFactor, variables, finalConfig);
+            Controller.playAnimation();
+            break;
+        }
+        case "containerResize": {
+            if (Controller === null) {
+                return;
+            }
+
+            const payload = message.payload as ContainerResizeMessagePayload;
+            const scaleFactor = payload.scaleFactor;
+
+            Controller.setScale(scaleFactor);
+            break;
+        }
+        default:
+            return;
     }
 };
