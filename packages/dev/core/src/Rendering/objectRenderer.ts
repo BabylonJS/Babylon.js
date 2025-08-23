@@ -259,6 +259,14 @@ export class ObjectRenderer {
     }
 
     /**
+     * Gets the array of active meshes
+     * @returns an array of AbstractMesh
+     */
+    public getActiveMeshes(): SmartArray<AbstractMesh> {
+        return this._activeMeshes;
+    }
+
+    /**
      * Sets a specific material to be used to render a mesh/a list of meshes with this object renderer
      * @param mesh mesh or array of meshes
      * @param material material or array of materials to use for this render pass. If undefined is passed, no specific material will be used but the regular material instead (mesh.material). It's possible to provide an array of materials to use a different material for each rendering pass.
