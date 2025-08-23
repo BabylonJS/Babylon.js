@@ -10,7 +10,13 @@ export const CountStats: FunctionComponent<{ context: Scene }> = ({ context: sce
     const pollingObservable = usePollingObservable(1000);
 
     const totalMeshes = useObservableState(() => scene.meshes.length, scene.onNewMeshAddedObservable, scene.onMeshRemovedObservable);
-    const activeMeshes = useObservableState(() => scene.getActiveMeshes().length, pollingObservable);
+    const activeMeshes = useObservableState(() => {
+        let activeMeshesCount = scene.getActiveMeshes().length;
+        for (const objectRenderer of scene.objectRenderers) {
+            activeMeshesCount += objectRenderer.getActiveMeshes().length;
+        }
+        return activeMeshesCount;
+    }, pollingObservable);
     const activeIndices = useObservableState(() => scene.getActiveIndices(), pollingObservable);
     const activeBones = useObservableState(() => scene.getActiveBones(), pollingObservable);
     const activeParticles = useObservableState(() => scene.getActiveParticles(), pollingObservable);
