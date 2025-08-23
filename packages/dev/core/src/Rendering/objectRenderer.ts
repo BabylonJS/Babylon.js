@@ -565,9 +565,7 @@ export class ObjectRenderer {
 
             this.onBeforeRenderingManagerRenderObservable.notifyObservers(passIndex);
 
-            this._scene.onBeforeDrawPhaseObservable.notifyObservers(this._scene);
             this._renderingManager.render(this.customRenderFunction, currentRenderList, this.renderParticles, this.renderSprites);
-            this._scene.onAfterDrawPhaseObservable.notifyObservers(this._scene);
 
             this.onAfterRenderingManagerRenderObservable.notifyObservers(passIndex);
         } else {

@@ -48,8 +48,8 @@ export class SceneInstrumentation implements IDisposable {
 
     private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
 
-    private _onBeforeDrawPhaseObserver: Nullable<Observer<Scene>> = null;
-    private _onAfterDrawPhaseObserver: Nullable<Observer<Scene>> = null;
+    private _onBeforeDrawPhaseObserver: Nullable<Observer<Scene> | Observer<number>>[] = [];
+    private _onAfterDrawPhaseObserver: Nullable<Observer<Scene> | Observer<number>>[] = [];
 
     private _onBeforeAnimationsObserver: Nullable<Observer<Scene>> = null;
 
@@ -401,20 +401,42 @@ export class SceneInstrumentation implements IDisposable {
         this._captureRenderTime = value;
 
         if (value) {
-            this._onBeforeDrawPhaseObserver = this.scene.onBeforeDrawPhaseObservable.add(() => {
-                this._renderTime.beginMonitoring();
-                Tools.StartPerformanceCounter("Main render");
-            });
-
-            this._onAfterDrawPhaseObserver = this.scene.onAfterDrawPhaseObservable.add(() => {
-                this._renderTime.endMonitoring(false);
-                Tools.EndPerformanceCounter("Main render");
-            });
+            this._onBeforeDrawPhaseObserver.push(
+                this.scene.onBeforeDrawPhaseObservable.add(() => {
+                    this._renderTime.beginMonitoring();
+                    Tools.StartPerformanceCounter("Main render");
+                })
+            );
+            this._onAfterDrawPhaseObserver.push(
+                this.scene.onAfterDrawPhaseObservable.add(() => {
+                    this._renderTime.endMonitoring(false);
+                    Tools.EndPerformanceCounter("Main render");
+                })
+            );
+            for (const objectRenderer of this.scene.objectRenderers) {
+                this._onBeforeDrawPhaseObserver.push(
+                    objectRenderer.onBeforeRenderingManagerRenderObservable.add(() => {
+                        this._renderTime.beginMonitoring();
+                        Tools.StartPerformanceCounter("Main render");
+                    })
+                );
+                this._onAfterDrawPhaseObserver.push(
+                    objectRenderer.onAfterRenderingManagerRenderObservable.add(() => {
+                        this._renderTime.endMonitoring(false);
+                        Tools.EndPerformanceCounter("Main render");
+                    })
+                );
+            }
         } else {
-            this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver);
-            this._onBeforeDrawPhaseObserver = null;
-            this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver);
-            this._onAfterDrawPhaseObserver = null;
+            this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver[0] as Observer<Scene>);
+            this._onBeforeDrawPhaseObserver.length = 0;
+            this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver[0] as Observer<Scene>);
+            this._onAfterDrawPhaseObserver.length = 0;
+            for (let i = 1; i < this._onBeforeDrawPhaseObserver.length; i++) {
+                const objectRenderer = this.scene.objectRenderers[i - 1];
+                objectRenderer.onBeforeRenderingManagerRenderObservable.remove(this._onBeforeDrawPhaseObserver[i] as Observer<number>);
+                objectRenderer.onAfterRenderingManagerRenderObservable.remove(this._onAfterDrawPhaseObserver[i] as Observer<number>);
+            }
         }
     }
 
@@ -601,11 +623,15 @@ export class SceneInstrumentation implements IDisposable {
             this._onAfterSpritesRenderingObserver = null;
         }
 
-        this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver);
-        this._onBeforeDrawPhaseObserver = null;
-
-        this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver);
-        this._onAfterDrawPhaseObserver = null;
+        this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver[0] as Observer<Scene>);
+        this._onBeforeDrawPhaseObserver.length = 0;
+        this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver[0] as Observer<Scene>);
+        this._onAfterDrawPhaseObserver.length = 0;
+        for (let i = 1; i < this._onBeforeDrawPhaseObserver.length; i++) {
+            const objectRenderer = this.scene.objectRenderers[i - 1];
+            objectRenderer.onBeforeRenderingManagerRenderObservable.remove(this._onBeforeDrawPhaseObserver[i] as Observer<number>);
+            objectRenderer.onAfterRenderingManagerRenderObservable.remove(this._onAfterDrawPhaseObserver[i] as Observer<number>);
+        }
 
         if (this._onBeforePhysicsObserver) {
             this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
