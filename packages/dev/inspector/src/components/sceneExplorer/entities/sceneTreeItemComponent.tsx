@@ -23,7 +23,7 @@ import type { Bone } from "core/Bones/bone";
 
 import { setDebugNode } from "../treeNodeDebugger";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
-import type { PointerDragBehavior } from "core/Behaviors";
+import type { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;

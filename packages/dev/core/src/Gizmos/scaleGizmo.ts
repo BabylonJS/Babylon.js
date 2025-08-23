@@ -18,7 +18,7 @@ import type { PointerInfo } from "../Events/pointerEvents";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { GizmoManager } from "./gizmoManager";
 import type { TransformNode } from "../Meshes/transformNode";
-import type { PointerDragBehavior } from "../Behaviors";
+import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 
 /**
  * Interface for scale gizmo
