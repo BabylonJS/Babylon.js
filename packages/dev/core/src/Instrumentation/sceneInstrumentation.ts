@@ -428,15 +428,7 @@ export class SceneInstrumentation implements IDisposable {
                 );
             }
         } else {
-            this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver[0] as Observer<Scene>);
-            this._onBeforeDrawPhaseObserver.length = 0;
-            this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver[0] as Observer<Scene>);
-            this._onAfterDrawPhaseObserver.length = 0;
-            for (let i = 1; i < this._onBeforeDrawPhaseObserver.length; i++) {
-                const objectRenderer = this.scene.objectRenderers[i - 1];
-                objectRenderer.onBeforeRenderingManagerRenderObservable.remove(this._onBeforeDrawPhaseObserver[i] as Observer<number>);
-                objectRenderer.onAfterRenderingManagerRenderObservable.remove(this._onAfterDrawPhaseObserver[i] as Observer<number>);
-            }
+            this._removeRenderTimeObservers();
         }
     }
 
@@ -579,6 +571,28 @@ export class SceneInstrumentation implements IDisposable {
         });
     }
 
+    private _removeRenderTargetsObservers() {
+        for (let i = 0; i < this.scene.objectRenderers.length; ++i) {
+            const objectRenderer = this.scene.objectRenderers[i];
+            objectRenderer.onInitRenderingObservable.remove(this._onBeforeRenderTargetsRenderObserver[i]);
+            objectRenderer.onFinishRenderingObservable.remove(this._onAfterRenderTargetsRenderObserver[i]);
+        }
+        this._onBeforeRenderTargetsRenderObserver.length = 0;
+        this._onAfterRenderTargetsRenderObserver.length = 0;
+    }
+
+    private _removeRenderTimeObservers() {
+        this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver[0] as Observer<Scene>);
+        this._onBeforeDrawPhaseObserver.length = 0;
+        this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver[0] as Observer<Scene>);
+        this._onAfterDrawPhaseObserver.length = 0;
+        for (let i = 1; i < this._onBeforeDrawPhaseObserver.length; i++) {
+            const objectRenderer = this.scene.objectRenderers[i - 1];
+            objectRenderer.onBeforeRenderingManagerRenderObservable.remove(this._onBeforeDrawPhaseObserver[i] as Observer<number>);
+            objectRenderer.onAfterRenderingManagerRenderObservable.remove(this._onAfterDrawPhaseObserver[i] as Observer<number>);
+        }
+    }
+
     /**
      * Dispose and release associated resources.
      */
@@ -596,13 +610,7 @@ export class SceneInstrumentation implements IDisposable {
         this.scene.onAfterActiveMeshesEvaluationObservable.remove(this._onAfterActiveMeshesEvaluationObserver);
         this._onAfterActiveMeshesEvaluationObserver = null;
 
-        for (let i = 0; i < this.scene.objectRenderers.length; ++i) {
-            const objectRenderer = this.scene.objectRenderers[i];
-            objectRenderer.onInitRenderingObservable.remove(this._onBeforeRenderTargetsRenderObserver[i]);
-            objectRenderer.onFinishRenderingObservable.remove(this._onAfterRenderTargetsRenderObserver[i]);
-        }
-        this._onBeforeRenderTargetsRenderObserver.length = 0;
-        this._onAfterRenderTargetsRenderObserver.length = 0;
+        this._removeRenderTargetsObservers();
 
         this.scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
         this._onBeforeAnimationsObserver = null;
@@ -623,15 +631,7 @@ export class SceneInstrumentation implements IDisposable {
             this._onAfterSpritesRenderingObserver = null;
         }
 
-        this.scene.onBeforeDrawPhaseObservable.remove(this._onBeforeDrawPhaseObserver[0] as Observer<Scene>);
-        this._onBeforeDrawPhaseObserver.length = 0;
-        this.scene.onAfterDrawPhaseObservable.remove(this._onAfterDrawPhaseObserver[0] as Observer<Scene>);
-        this._onAfterDrawPhaseObserver.length = 0;
-        for (let i = 1; i < this._onBeforeDrawPhaseObserver.length; i++) {
-            const objectRenderer = this.scene.objectRenderers[i - 1];
-            objectRenderer.onBeforeRenderingManagerRenderObservable.remove(this._onBeforeDrawPhaseObserver[i] as Observer<number>);
-            objectRenderer.onAfterRenderingManagerRenderObservable.remove(this._onAfterDrawPhaseObserver[i] as Observer<number>);
-        }
+        this._removeRenderTimeObservers();
 
         if (this._onBeforePhysicsObserver) {
             this.scene.onBeforePhysicsObservable.remove(this._onBeforePhysicsObserver);
