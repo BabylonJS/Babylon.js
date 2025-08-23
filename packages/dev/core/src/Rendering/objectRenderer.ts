@@ -359,6 +359,8 @@ export class ObjectRenderer {
         // Rendering groups
         this._renderingManager = new RenderingManager(scene);
         this._renderingManager._useSceneAutoClearSetup = true;
+
+        this._scene.addObjectRenderer(this);
     }
 
     private _releaseRenderPassId(): void {
@@ -882,6 +884,8 @@ export class ObjectRenderer {
         this._releaseRenderPassId();
 
         this.renderList = null;
+
+        this._scene.removeObjectRenderer(this);
     }
 
     /** @internal */
