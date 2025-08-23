@@ -53,7 +53,7 @@ export function CreateScreenshot(
     }
 
     const scene = camera.getScene();
-    if (scene.activeCamera !== camera) {
+    if (scene.activeCamera !== camera && !scene.frameGraph) {
         CreateScreenshotUsingRenderTarget(
             engine,
             camera,
