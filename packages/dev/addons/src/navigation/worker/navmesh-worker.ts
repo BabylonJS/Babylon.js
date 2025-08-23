@@ -6,7 +6,7 @@ import { CreateSoloNavMeshConfig, CreateTileCacheNavMeshConfig } from "../common
 import type { INavMeshParametersV2 } from "../types";
 
 /**
- *
+ * Generates a navigation mesh in a web worker.
  */
 export function GenerateNavMeshWorker() {
     self.onmessage = async (event: {
@@ -58,7 +58,10 @@ export function GenerateNavMeshWorker() {
 
         // prepare the transferables
         const transferables: Transferable[] = [];
-        const message: any = { navMesh: undefined, tileCache: undefined };
+        const message: {
+            navMesh?: Uint8Array<ArrayBufferLike>;
+            tileCache?: Uint8Array<ArrayBufferLike>;
+        } = { navMesh: undefined, tileCache: undefined };
 
         // If tile cache is present, serialize it and add to the message
         if ("tileCache" in result && result.tileCache) {
@@ -77,7 +80,11 @@ export function GenerateNavMeshWorker() {
         // send tansferable message
         self.postMessage(message, { transfer: transferables });
 
-        // TODO: destroy other stuff here
+        // clean up
         result.navMesh?.destroy();
+
+        if ("tileCache" in result && result.tileCache) {
+            result.tileCache.destroy();
+        }
     };
 }

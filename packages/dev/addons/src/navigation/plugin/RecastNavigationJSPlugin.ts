@@ -1,20 +1,19 @@
-// http://localhost:1338/#KVQP83#203
-// http://localhost:1338/#KVQP83#209 = obstacles
 import type { NavMesh, QueryFilter, TileCache, NavMeshQuery } from "@recast-navigation/core";
 
-import type { ICrowd, IObstacle } from "core/Navigation/INavigationEngine";
+import type { ICrowd, INavigationEnginePlugin, IObstacle } from "core/Navigation/INavigationEngine";
 import { Logger } from "core/Misc/logger";
 import type { Mesh } from "core/Meshes/mesh";
 import type { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math";
 import type { IVector3Like } from "core/Maths/math.like";
 
-import type { CreateNavMeshresult, GeneratorIntermediates, INavigationEnginePluginV2, INavMeshParametersV2, RecastInjection } from "../types";
+import type { CreateNavMeshresult, GeneratorIntermediates, INavMeshParametersV2, RecastInjection } from "../types";
 import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
 import { CreateDebugNavMesh } from "../debug/simple-debug";
 import { BjsRecast, InjectGenerators } from "../factory/common";
+import type { Nullable } from "core/types";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
@@ -24,7 +23,7 @@ import { BjsRecast, InjectGenerators } from "../factory/common";
  * @remarks It also provides methods for creating obstacles and querying the navigation mesh.
  * @see https://github.com/isaac-mason/recast-navigation-js
  */
-export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
+export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     /**
      *  Creates a navigation mesh - will be injected by the factory
      * @param meshes array of all the geometry used to compute the navigation mesh
@@ -170,26 +169,11 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
         }
 
         const result = this.createNavMeshImpl(meshes, parameters);
-
-        if (!result?.navMesh || !result?.navMeshQuery) {
-            throw new Error("Unable to create navmesh. No navMesh returned.");
-        }
-
-        this.navMesh = result.navMesh;
-        this.navMeshQuery = result.navMeshQuery;
-        this.intermediates = result.intermediates;
-        this.tileCache = result.tileCache;
-
-        return {
-            navMesh: result.navMesh,
-            navMeshQuery: result.navMeshQuery,
-            intermediates: result.intermediates,
-            tileCache: result.tileCache, // tileCache is optional
-        };
+        return this._processNavMeshResult(result);
     }
 
     /**
-     * Creates a navigation mesh - will be injected by the factory
+     * Creates a navigation mesh asynchronously - will be injected by the factory
      * @param meshes array of all the geometry used to compute the navigation mesh
      * @param parameters bunch of parameters used to filter geometry
      * @returns the created navmesh and navmesh query
@@ -201,22 +185,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
         }
 
         const result = await this.createNavMeshAsyncImpl(meshes, parameters);
-
-        if (!result?.navMesh || !result?.navMeshQuery) {
-            throw new Error("Unable to create navMesh or navMeshQuery.");
-        }
-
-        this.navMesh = result.navMesh;
-        this.navMeshQuery = result.navMeshQuery;
-        this.intermediates = result.intermediates;
-        this.tileCache = result.tileCache;
-
-        return {
-            navMesh: result.navMesh,
-            navMeshQuery: result.navMeshQuery,
-            intermediates: result.intermediates,
-            tileCache: result.tileCache, // tileCache is optional
-        };
+        return this._processNavMeshResult(result);
     }
 
     /**
@@ -518,5 +487,28 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePluginV2 {
      */
     public setRandomSeed(seed: number): void {
         this.bjsRECAST.setRandomSeed(seed);
+    }
+
+    /**
+     * Handles common post-processing and validation of navmesh creation results
+     * @param result The partial result from navmesh creation
+     * @returns The validated and complete CreateNavMeshresult
+     */
+    private _processNavMeshResult(result: Nullable<Partial<CreateNavMeshresult>>): CreateNavMeshresult {
+        if (!result?.navMesh || !result?.navMeshQuery) {
+            throw new Error("Unable to create navmesh. No navMesh or navMeshQuery returned.");
+        }
+
+        this.navMesh = result.navMesh;
+        this.navMeshQuery = result.navMeshQuery;
+        this.intermediates = result.intermediates;
+        this.tileCache = result.tileCache;
+
+        return {
+            navMesh: result.navMesh,
+            navMeshQuery: result.navMeshQuery,
+            intermediates: result.intermediates,
+            tileCache: result.tileCache, // tileCache is optional
+        };
     }
 }

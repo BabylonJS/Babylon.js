@@ -1,10 +1,9 @@
-import type { NavMesh, NavMeshQuery, QueryFilter, TileCache, TileCacheMeshProcess } from "@recast-navigation/core";
+import type { NavMesh, NavMeshQuery, TileCache, TileCacheMeshProcess } from "@recast-navigation/core";
 import type { SoloNavMeshGeneratorIntermediates, TileCacheGeneratorIntermediates, TiledNavMeshGeneratorIntermediates } from "recast-navigation/generators";
 
 import type { IVector3Like } from "core/Maths/math.like";
 import type { Vector3 } from "core/Maths/math.vector";
-import type { Mesh } from "core/Meshes/mesh";
-import type { IAgentParameters, INavigationEnginePlugin, INavMeshParameters } from "core/Navigation/INavigationEngine";
+import type { IAgentParameters, INavMeshParameters } from "core/Navigation/INavigationEngine";
 import type { Nullable } from "core/types";
 
 export type RecastInjection = typeof import("@recast-navigation/core") & typeof import("@recast-navigation/generators");
@@ -121,89 +120,6 @@ export interface INavMeshParametersV2 extends INavMeshParameters {
     tileCacheMeshProcess?: TileCacheMeshProcess;
 }
 
-/**
- *
- */
-export interface INavigationEnginePluginV2 extends INavigationEnginePlugin {
-    /**
-     * The navigation mesh used by the plugin.
-     */
-    navMesh?: NavMesh;
-    /**
-     * The navigation mesh query used by the plugin.
-     */
-    navMeshQuery: NavMeshQuery;
-    getClosestPoint(
-        position: IVector3Like,
-        options?: {
-            filter?: QueryFilter;
-            halfExtents?: IVector3Like;
-        }
-    ): Vector3;
-    getClosestPointToRef(
-        position: IVector3Like,
-        result: Vector3,
-        options?: {
-            filter?: QueryFilter;
-            halfExtents?: IVector3Like;
-        }
-    ): void;
-    getRandomPointAround(
-        position: IVector3Like,
-        maxRadius: number,
-        options?: {
-            /**
-             *
-             */
-            startRef?: number;
-            filter?: QueryFilter;
-            halfExtents?: IVector3Like;
-        }
-    ): Vector3;
-    getRandomPointAroundToRef(
-        position: IVector3Like,
-        maxRadius: number,
-        result: Vector3,
-        options?: {
-            startRef?: number;
-            filter?: QueryFilter;
-            halfExtents?: IVector3Like;
-        }
-    ): void;
-
-    createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParametersV2): CreateNavMeshresult;
-    createNavMeshAsync(meshes: Array<Mesh>, parameters: INavMeshParametersV2, completion?: (navmeshData: Uint8Array) => void): Promise<CreateNavMeshresult>;
-
-    computePathSmooth(
-        start: Vector3,
-        end: Vector3,
-        options?: {
-            filter?: QueryFilter;
-            halfExtents?: IVector3Like;
-
-            /**
-             * @default 256
-             */
-            maxPathPolys?: number;
-
-            /**
-             * @default 2048
-             */
-            maxSmoothPathPoints?: number;
-
-            /**
-             * @default 0.5
-             */
-            stepSize?: number;
-
-            /**
-             * @default 0.01
-             */
-            slop?: number;
-        }
-    ): Vector3[];
-}
-
 export type SteerTargetResult =
     | {
           /**
@@ -242,9 +158,9 @@ export const ComputePathError = {
     NO_CLOSEST_POINT_ON_LAST_POLYGON_FOUND: "NO_CLOSEST_POINT_ON_LAST_POLYGON_FOUND",
 };
 
-export type ComputeSmoothPathErrorType = (typeof ComputePathError)[keyof typeof ComputePathError];
+export type ComputePathErrorType = (typeof ComputePathError)[keyof typeof ComputePathError];
 
-export type ComputeSmoothPathResult = {
+export type ComputePathResult = {
     /**
      * Indicates whether the path computation was successful.
      */
@@ -254,10 +170,14 @@ export type ComputeSmoothPathResult = {
      */
     error?: {
         /**
-         * The type of error that occurred during path computation.
-         * @remarks This will be one of the values from `ComputePathError`.
+         * A descriptive error message.
          */
-        type: ComputeSmoothPathErrorType;
+        name?: string;
+        /**
+         * The type of error that occurred during path computation.
+         * @remarks This will be one of the values from `ComputePathError`
+         */
+        type?: ComputePathErrorType;
         /**
          * Statusring describing the error.
          */
@@ -266,8 +186,7 @@ export type ComputeSmoothPathResult = {
     /**
      * The computed path as an array of Vector3 points.
      */
-    // TODO: IVector3Like instead of Vector3?
-    path: Vector3[];
+    path: IVector3Like[];
 };
 
 export type GeneratorIntermediates = SoloNavMeshGeneratorIntermediates | TiledNavMeshGeneratorIntermediates | TileCacheGeneratorIntermediates | null;

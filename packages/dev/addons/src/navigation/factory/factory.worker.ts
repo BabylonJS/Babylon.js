@@ -1,55 +1,55 @@
-// import type { NavMesh, NavMeshQuery, TileCache } from "@recast-navigation/core";
-// import { init as initRecast } from "@recast-navigation/core";
+import type { NavMesh, NavMeshQuery, TileCache } from "@recast-navigation/core";
+import { init as initRecast } from "@recast-navigation/core";
 
-// import { Logger } from "core/Misc/logger";
-// import type { Mesh } from "core/Meshes/mesh";
+import { Logger } from "core/Misc/logger";
+import type { Mesh } from "core/Meshes/mesh";
 
-// import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
-// import type { INavMeshParametersV2 } from "../types";
-// import { GenerateNavMeshWithWorker } from "../generator/generator.worker";
-// import { CreateNavigationPluginAsync } from "./factory.single-thread";
-// import { GenerateNavMeshWorker } from "../worker/navmesh-worker";
+import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
+import type { INavMeshParametersV2 } from "../types";
+import { GenerateNavMeshWithWorker } from "../generator/generator.worker";
+import { CreateNavigationPluginAsync } from "./factory.single-thread";
+import { GenerateNavMeshWorker } from "../worker/navmesh-worker";
 
-// /**
-//  * Creates a navigation plugin for the given scene using a worker.
-//  * @returns A promise that resolves to the created navigation plugin.
-//  * @remarks This function initializes the Recast module and sets up the navigation plugin to use a worker.
-//  * The worker is used to handle the creation of the navigation mesh asynchronously.
-//  * The `createNavMesh` method is not supported in worker mode, use `createNavMeshAsync` instead.
-//  */
-// export async function CreateNavigationPluginWorkerAsync() {
-//     if (window && !window.Worker) {
-//         Logger.Error("Web Workers are not supported in this environment. Please ensure your environment supports Web Workers.");
-//         return await CreateNavigationPluginAsync(); // Fallback to single-threaded version
-//     }
+/**
+ * Creates a navigation plugin for the given scene using a worker.
+ * @returns A promise that resolves to the created navigation plugin.
+ * @remarks This function initializes the Recast module and sets up the navigation plugin to use a worker.
+ * The worker is used to handle the creation of the navigation mesh asynchronously.
+ * The `createNavMesh` method is not supported in worker mode, use `createNavMeshAsync` instead.
+ */
+export async function CreateNavigationPluginWorkerAsync() {
+    if (window && !window.Worker) {
+        Logger.Error("Web Workers are not supported in this environment. Please ensure your environment supports Web Workers.");
+        return await CreateNavigationPluginAsync(); // Fallback to single-threaded version
+    }
 
-//     await initRecast();
+    await initRecast();
 
-//     const plugin = new RecastNavigationJSPluginV2();
+    const plugin = new RecastNavigationJSPluginV2();
 
-//     // Convert the worker function to a blob
-//     const workerBlob = new Blob([`(${GenerateNavMeshWorker.toString()})()`], { type: "application/javascript" });
-//     const worker = new Worker(URL.createObjectURL(workerBlob));
+    // Convert the worker function to a blob
+    const workerBlob = new Blob([`(${GenerateNavMeshWorker.toString()})()`], { type: "application/javascript" });
+    const worker = new Worker(URL.createObjectURL(workerBlob));
 
-//     plugin.createNavMesh = () => {
-//         Logger.Warn("createNavMesh is not supported in worker mode, use createNavMeshAsync instead.");
-//         return null;
-//     };
+    plugin.createNavMesh = () => {
+        Logger.Warn("createNavMesh is not supported in worker mode, use createNavMeshAsync instead.");
+        return null;
+    };
 
-//     plugin.createNavMeshAsync = async (meshes: Mesh[], parameters: INavMeshParametersV2) => {
-//         return await new Promise<{
-//             navMesh: NavMesh;
-//             navMeshQuery: NavMeshQuery;
-//             tileCache?: TileCache;
-//         }>((resolve, _reject) => {
-//             GenerateNavMeshWithWorker(meshes, parameters, {
-//                 worker,
-//                 completion: (navMesh: NavMesh, navMeshQuery: NavMeshQuery, tileCache?: TileCache) => {
-//                     resolve({ navMesh, navMeshQuery, tileCache });
-//                 },
-//             });
-//         });
-//     };
+    plugin.createNavMeshAsync = async (meshes: Mesh[], parameters: INavMeshParametersV2) => {
+        return await new Promise<{
+            navMesh: NavMesh;
+            navMeshQuery: NavMeshQuery;
+            tileCache?: TileCache;
+        }>((resolve, _reject) => {
+            GenerateNavMeshWithWorker(meshes, parameters, {
+                worker,
+                completion: (navMesh: NavMesh, navMeshQuery: NavMeshQuery, tileCache?: TileCache) => {
+                    resolve({ navMesh, navMeshQuery, tileCache });
+                },
+            });
+        });
+    };
 
-//     return plugin;
-// }
+    return plugin;
+}

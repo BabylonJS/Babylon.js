@@ -65,5 +65,5 @@ export function ToSoloNavMeshGeneratorConfig(config: INavMeshParametersV2): Part
  * @returns Recast crowd agent paramaters
  */
 export function ToCrowdAgentParams(agentParams: IAgentParametersV2): Partial<CrowdAgentParams> {
-    return Object.fromEntries(Object.entries(agentParams).filter(([_, v]) => v !== undefined)) as Partial<CrowdAgentParams>;
+    return Object.fromEntries(Object.entries(agentParams).filter(([_, v]) => v !== undefined));
 }

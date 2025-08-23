@@ -1,5 +1,6 @@
 import { _LoadScriptModuleAsync } from "core/Misc/tools.internals";
 import type { Mesh } from "core/Meshes/mesh";
+import type { Nullable } from "core/types";
 
 import type { INavMeshParametersV2, RecastInjection } from "../types";
 import { GenerateNavMesh } from "../generator";
@@ -10,7 +11,7 @@ export let BjsRecast: RecastInjection;
  * Promise to wait for the recast-navigation-js library to be ready
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-let InitPromise: Promise<{ core: any; generators: any }>;
+let InitPromise: Nullable<Promise<{ core: any; generators: any }>> = null;
 
 /**
  * Initialize the Manifold library

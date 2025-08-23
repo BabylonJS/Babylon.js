@@ -5,7 +5,7 @@ import { Vector3 } from "core/Maths/math.vector";
 
 import { ConvertNavPathPoints } from "./convert";
 import type { SteerTargetResult } from "../types";
-import { ComputePathError, type ComputeSmoothPathResult } from "../types";
+import { ComputePathError, type ComputePathResult } from "../types";
 import { BjsRecast } from "../factory/common";
 
 const _DELTA = new Vector3();
@@ -50,7 +50,6 @@ export function ComputeSmoothPath(
         slop?: number;
     }
 ): Vector3[] {
-    // TODO: should we return IVector3Like[] instead of Vector3[]?
     return ConvertNavPathPoints(ComputeSmoothPathImpl(navMesh, navmeshQuery, start, end, options));
 }
 
@@ -67,7 +66,7 @@ function ComputeSmoothPathImpl(
         stepSize?: number;
         slop?: number;
     }
-): ComputeSmoothPathResult {
+): ComputePathResult {
     const filter = options?.filter ?? navMeshQuery.defaultFilter;
     const halfExtents = options?.halfExtents ?? navMeshQuery.defaultQueryHalfExtents;
 

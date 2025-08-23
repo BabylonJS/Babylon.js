@@ -1,4 +1,5 @@
 import type { TileCacheMeshProcess } from "@recast-navigation/core";
+
 import { BjsRecast } from "../factory/common";
 
 /**
