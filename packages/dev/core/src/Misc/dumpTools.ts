@@ -198,24 +198,32 @@ export async function DumpDataAsync(
             ctx.transferFromImageBitmap(imageBitmap);
         }
 
-        // Download the result
-        if (toArrayBuffer) {
-            Tools.ToBlob(
-                resources.canvas,
-                (blob) => {
-                    const fileReader = new FileReader();
-                    fileReader.onload = (event: any) => {
-                        const arrayBuffer = event.target!.result as ArrayBuffer;
-                        resolve(arrayBuffer);
-                    };
-                    fileReader.readAsArrayBuffer(blob!);
-                },
-                mimeType,
-                quality
-            );
-        } else {
-            Tools.EncodeScreenshotCanvasData(resources.canvas, resolve, mimeType, fileName, quality);
-        }
+        Tools.ToBlob(
+            resources.canvas,
+            (blob) => {
+                if (!blob) {
+                    throw new Error("DumpData: Failed to convert canvas to blob.");
+                }
+
+                if (fileName !== undefined) {
+                    Tools.DownloadBlob(blob, fileName);
+                }
+
+                const fileReader = new FileReader();
+                fileReader.onload = (event: any) => {
+                    const result = event.target!.result as string | ArrayBuffer;
+                    resolve(result);
+                };
+
+                if (toArrayBuffer) {
+                    fileReader.readAsArrayBuffer(blob);
+                } else {
+                    fileReader.readAsDataURL(blob);
+                }
+            },
+            mimeType,
+            quality
+        );
     });
 }
 
@@ -226,7 +234,7 @@ export async function DumpDataAsync(
  * @param data the data array
  * @param successCallback defines the callback triggered once the data are available
  * @param mimeType defines the mime type of the result
- * @param fileName defines the filename to download. If present, the result will automatically be downloaded
+ * @param fileName The name of the file to download. If present, the result will automatically be downloaded. If not defined, and `successCallback` is also not defined, the result will automatically be downloaded with an auto-generated file name.
  * @param invertY true to invert the picture in the Y dimension
  * @param toArrayBuffer true to convert the data to an ArrayBuffer (encoded as `mimeType`) instead of a base64 string
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
@@ -242,6 +250,11 @@ export function DumpData(
     toArrayBuffer = false,
     quality?: number
 ): void {
+    // For back-compat: if no fileName and no callback, force download the result
+    if (fileName === undefined && !successCallback) {
+        fileName = "";
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     DumpDataAsync(width, height, data, mimeType, fileName, invertY, toArrayBuffer, quality)
         // eslint-disable-next-line github/no-then

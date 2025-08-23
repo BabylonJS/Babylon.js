@@ -43,6 +43,12 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
     public useMeshColorForColor = false;
 
     /**
+     * Gets or sets a boolean indicating if the coordinates should be in world space (local space by default)
+     */
+    @editableInPropertyPage("World space", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public worldSpace = false;
+
+    /**
      * Gets or sets the mesh to use to get vertex data
      */
     public get mesh() {
@@ -143,6 +149,10 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
         this._normals = this._cachedVertexData.normals;
         this._colors = this._cachedVertexData.colors;
 
+        if (this.useMeshColorForColor && this._colors) {
+            system._colorCreation.process = () => {};
+        }
+
         system._directionCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
@@ -196,6 +206,10 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
             randomVertex.y = bu * vertexA.y + bv * vertexB.y + bw * vertexC.y;
             randomVertex.z = bu * vertexA.z + bv * vertexB.z + bw * vertexC.z;
 
+            if (this.worldSpace && this.mesh) {
+                Vector3.TransformCoordinatesFromFloatsToRef(randomVertex.x, randomVertex.y, randomVertex.z, this.mesh.getWorldMatrix(), randomVertex);
+            }
+
             if (state.isEmitterTransformNode) {
                 Vector3.TransformCoordinatesFromFloatsToRef(randomVertex.x, randomVertex.y, randomVertex.z, state.emitterWorldMatrix!, particle.position);
             } else {
@@ -223,6 +237,10 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
                     bu * TmpVectors.Vector4[0].z + bv * TmpVectors.Vector4[1].z + bw * TmpVectors.Vector4[2].z,
                     bu * TmpVectors.Vector4[0].w + bv * TmpVectors.Vector4[1].w + bw * TmpVectors.Vector4[2].w
                 );
+
+                particle.initialColor.copyFrom(particle.color);
+                system.colorDead.subtractToRef(particle.initialColor, system._colorDiff);
+                system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
             }
         };
 
@@ -247,6 +265,7 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
         serializationObject.useMeshNormalsForDirection = this.useMeshNormalsForDirection;
         serializationObject.useMeshColorForColor = this.useMeshColorForColor;
+        serializationObject.worldSpace = this.worldSpace;
 
         return serializationObject;
     }
@@ -261,6 +280,7 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
         this.serializedCachedData = !!serializationObject.serializedCachedData;
         this.useMeshNormalsForDirection = !!serializationObject.useMeshNormalsForDirection;
         this.useMeshColorForColor = !!serializationObject.useMeshColorForColor;
+        this.worldSpace = !!serializationObject.worldSpace;
     }
 }
 

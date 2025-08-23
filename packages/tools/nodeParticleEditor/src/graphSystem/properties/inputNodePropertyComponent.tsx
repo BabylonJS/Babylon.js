@@ -147,23 +147,27 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 systemSourcesOptions = [{ label: "Emitter", value: NodeParticleSystemSources.Emitter }];
                 break;
             case NodeParticleBlockConnectionPointTypes.Color4:
-                contextualSourcesOptions = [{ label: "Color", value: NodeParticleContextualSources.Color }];
+                contextualSourcesOptions = [
+                    { label: "Color", value: NodeParticleContextualSources.Color },
+                    { label: "Initial Color", value: NodeParticleContextualSources.InitialColor },
+                    { label: "Dead Color", value: NodeParticleContextualSources.ColorDead },
+                ];
                 break;
         }
 
         const modeOptions = [{ label: "User-defined", value: 0 }];
 
         if (contextualSourcesOptions.length > 0) {
-            modeOptions.push({ label: "Contextual value (Float)", value: 1 });
-            modeOptions.push({ label: "Contextual value (int)", value: 2 });
-            modeOptions.push({ label: "Contextual value (Vector2)", value: 3 });
-            modeOptions.push({ label: "Contextual value (Vector3)", value: 4 });
-            modeOptions.push({ label: "Contextual value (Color4)", value: 5 });
+            modeOptions.push({ label: "Contextual value (Float)", value: 2 });
+            modeOptions.push({ label: "Contextual value (int)", value: 1 });
+            modeOptions.push({ label: "Contextual value (Vector2)", value: 4 });
+            modeOptions.push({ label: "Contextual value (Vector3)", value: 8 });
+            modeOptions.push({ label: "Contextual value (Color4)", value: 128 });
         }
 
         if (systemSourcesOptions.length > 0) {
-            modeOptions.push({ label: "System value (Float)", value: 6 });
-            modeOptions.push({ label: "System value (Vector3)", value: 7 });
+            modeOptions.push({ label: "System value (Float)", value: 2 });
+            modeOptions.push({ label: "System value (Vector3)", value: 8 });
         }
 
         return (

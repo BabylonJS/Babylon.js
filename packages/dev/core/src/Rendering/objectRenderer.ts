@@ -1,8 +1,11 @@
-import type { SmartArray, Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh } from "core/index";
+import type { Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh, BoundingBox, BoundingBoxRenderer } from "core/index";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
 import { Constants } from "../Engines/constants";
 import { _ObserveArray } from "../Misc/arrayTools";
+import { _RetryWithInterval } from "../Misc/timingTools";
+import { Logger } from "../Misc/logger";
+import { SmartArray } from "../Misc/smartArray";
 
 /**
  * Defines the options of the object renderer
@@ -185,13 +188,14 @@ export class ObjectRenderer {
     public readonly onFastPathRenderObservable = new Observable<number>();
 
     protected _scene: Scene;
-    /** @internal */
-    public _renderingManager: RenderingManager;
+    protected _renderingManager: RenderingManager;
     /** @internal */
     public _waitingRenderList?: string[];
     protected _currentRefreshId = -1;
     protected _refreshRate = 1;
     protected _currentApplyByPostProcessSetting = false;
+    protected _activeMeshes = new SmartArray<AbstractMesh>(256);
+    protected _activeBoundingBoxes = new SmartArray<BoundingBox>(32);
 
     /**
      * The options used by the object renderer
@@ -265,6 +269,58 @@ export class ObjectRenderer {
                 mesh.setMaterialForRenderPass(this._renderPassIds[i], material !== undefined ? (Array.isArray(material) ? material[i] : material) : undefined);
             }
         }
+    }
+
+    /** @internal */
+    public _isFrozen = false;
+
+    /** @internal */
+    public _freezeActiveMeshesCancel: Nullable<() => void> = null;
+
+    /** @internal */
+    public _freezeActiveMeshes(freezeMeshes: boolean) {
+        this._freezeActiveMeshesCancel = _RetryWithInterval(
+            () => {
+                return this._checkReadiness();
+            },
+            () => {
+                this._freezeActiveMeshesCancel = null;
+                if (freezeMeshes) {
+                    for (let index = 0; index < this._activeMeshes.length; index++) {
+                        this._activeMeshes.data[index]._freeze();
+                    }
+                }
+                this._prepareRenderingManager(0, true);
+                this._isFrozen = true;
+            },
+            (err, isTimeout) => {
+                this._freezeActiveMeshesCancel = null;
+                if (!isTimeout) {
+                    Logger.Error("ObjectRenderer: An unexpected error occurred while waiting for the renderer to be ready.");
+                    if (err) {
+                        Logger.Error(err);
+                        if (err.stack) {
+                            Logger.Error(err.stack);
+                        }
+                    }
+                } else {
+                    Logger.Error(`ObjectRenderer: Timeout while waiting for the renderer to be ready.`);
+                    if (err) {
+                        Logger.Error(err);
+                    }
+                }
+            }
+        );
+    }
+
+    /** @internal */
+    public _unfreezeActiveMeshes() {
+        this._freezeActiveMeshesCancel?.();
+        this._freezeActiveMeshesCancel = null;
+        for (let index = 0; index < this._activeMeshes.length; index++) {
+            this._activeMeshes.data[index]._unFreeze();
+        }
+        this._isFrozen = false;
     }
 
     /**
@@ -481,27 +537,7 @@ export class ObjectRenderer {
         const fastPath = engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
 
         if (!fastPath) {
-            // Get the list of meshes to render
-            let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-            const defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
-
-            if (this.getCustomRenderList) {
-                currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
-            }
-
-            if (!currentRenderList) {
-                // No custom render list provided, we prepare the rendering for the default list, but check
-                // first if we did not already performed the preparation before so as to avoid re-doing it several times
-                if (!this._defaultRenderListPrepared) {
-                    this._prepareRenderingManager(defaultRenderList, defaultRenderListLength, !this.renderList || this.forceLayerMaskCheck);
-                    this._defaultRenderListPrepared = true;
-                }
-                currentRenderList = defaultRenderList;
-            } else {
-                // Prepare the rendering for the custom render list provided
-                this._prepareRenderingManager(currentRenderList, currentRenderList.length, this.forceLayerMaskCheck);
-            }
+            const currentRenderList = this._prepareRenderingManager(passIndex);
 
             this.onBeforeRenderingManagerRenderObservable.notifyObservers(passIndex);
 
@@ -535,8 +571,8 @@ export class ObjectRenderer {
         const numPasses = this.options.numPasses;
         for (let passIndex = 0; passIndex < numPasses && returnValue; passIndex++) {
             let currentRenderList: Nullable<Array<AbstractMesh>> = null;
-            const defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
-            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
+            const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
+            const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
 
             engine.currentRenderPassId = this._renderPassIds[passIndex];
 
@@ -592,14 +628,60 @@ export class ObjectRenderer {
         return returnValue;
     }
 
-    private _prepareRenderingManager(currentRenderList: Array<AbstractMesh>, currentRenderListLength: number, checkLayerMask: boolean): void {
+    private _prepareRenderingManager(passIndex = 0, winterIsComing = false): Array<AbstractMesh> {
         const scene = this._scene;
+
+        // Get the list of meshes to dispatch to the rendering manager
+        let currentRenderList: Nullable<Array<AbstractMesh>> = null;
+        let currentRenderListLength = 0;
+        let checkLayerMask = false;
+
+        const defaultRenderList = this.renderList ? this.renderList : scene.frameGraph ? scene.meshes : scene.getActiveMeshes().data;
+        const defaultRenderListLength = this.renderList ? this.renderList.length : scene.frameGraph ? scene.meshes.length : scene.getActiveMeshes().length;
+
+        if (this.getCustomRenderList) {
+            currentRenderList = this.getCustomRenderList(passIndex, defaultRenderList, defaultRenderListLength);
+        }
+
+        if (!currentRenderList) {
+            // No custom render list provided, we prepare the rendering for the default list, but check
+            // first if we did not already performed the preparation (in this frame) before so as to avoid re-doing it several times
+            if (this._defaultRenderListPrepared && !winterIsComing) {
+                return defaultRenderList;
+            }
+            this._defaultRenderListPrepared = true;
+            currentRenderList = defaultRenderList;
+            currentRenderListLength = defaultRenderListLength;
+            checkLayerMask = !this.renderList || this.forceLayerMaskCheck;
+        } else {
+            // Prepare the rendering for the custom render list provided
+            currentRenderListLength = currentRenderList.length;
+            checkLayerMask = this.forceLayerMaskCheck;
+        }
+
         const camera = scene.activeCamera; // note that at this point, scene.activeCamera == this.activeCamera if defined, because initRender() has been called before
         const cameraForLOD = this.cameraForLOD ?? camera;
 
-        this._renderingManager.reset();
+        // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+        const boundingBoxRenderer = (scene as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
 
-        const boundingBoxRenderer = scene.getBoundingBoxRenderer();
+        if (scene._activeMeshesFrozen && this._isFrozen) {
+            this._renderingManager.resetSprites();
+
+            if (boundingBoxRenderer) {
+                boundingBoxRenderer.reset();
+                for (let i = 0; i < this._activeBoundingBoxes.length; i++) {
+                    const boundingBox = this._activeBoundingBoxes.data[i];
+                    boundingBoxRenderer.renderList.push(boundingBox);
+                }
+            }
+
+            return currentRenderList;
+        }
+
+        this._renderingManager.reset();
+        this._activeMeshes.reset();
+        this._activeBoundingBoxes.reset();
 
         boundingBoxRenderer && boundingBoxRenderer.reset();
 
@@ -656,11 +738,14 @@ export class ObjectRenderer {
                 }
 
                 if (mesh.isEnabled() && mesh.isVisible && mesh.subMeshes && !isMasked) {
+                    this._activeMeshes.push(mesh);
+                    meshToRender._internalAbstractMeshDataInfo._wasActiveLastFrame = true;
+
                     if (meshToRender !== mesh) {
                         meshToRender._activate(sceneRenderId, true);
                     }
 
-                    this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer._preActiveMesh(meshToRender);
+                    this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer._preActiveMesh(mesh);
 
                     if (mesh._activate(sceneRenderId, true) && mesh.subMeshes.length) {
                         if (!mesh.isAnInstance) {
@@ -676,13 +761,20 @@ export class ObjectRenderer {
 
                         for (let subIndex = 0; subIndex < meshToRender.subMeshes.length; subIndex++) {
                             const subMesh = meshToRender.subMeshes[subIndex];
-                            this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer._evaluateSubMesh(meshToRender, subMesh);
+                            this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer._evaluateSubMesh(mesh, subMesh);
                             this._renderingManager.dispatch(subMesh, meshToRender);
                         }
                     }
 
                     mesh._postActivate();
                 }
+            }
+        }
+
+        if (boundingBoxRenderer && winterIsComing) {
+            for (let i = 0; i < boundingBoxRenderer.renderList.length; i++) {
+                const boundingBox = boundingBoxRenderer.renderList.data[i];
+                this._activeBoundingBoxes.push(boundingBox);
             }
         }
 
@@ -698,6 +790,15 @@ export class ObjectRenderer {
 
             this._renderingManager.dispatchParticles(particleSystem);
         }
+
+        return currentRenderList;
+    }
+
+    /**
+     * Gets the rendering manager
+     */
+    public get renderingManager(): RenderingManager {
+        return this._renderingManager;
     }
 
     /**

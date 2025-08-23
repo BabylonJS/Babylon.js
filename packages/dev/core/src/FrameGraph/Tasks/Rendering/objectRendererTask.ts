@@ -70,11 +70,23 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      */
     public disableShadows = false;
 
+    private _disableImageProcessing = false;
     /**
      * If image processing should be disabled (default is false).
      * false means that the default image processing configuration will be applied (the one from the scene)
      */
-    public disableImageProcessing = false;
+    public get disableImageProcessing() {
+        return this._disableImageProcessing;
+    }
+
+    public set disableImageProcessing(value: boolean) {
+        if (value === this._disableImageProcessing) {
+            return;
+        }
+
+        this._disableImageProcessing = value;
+        this._renderer.disableImageProcessing = value;
+    }
 
     /**
      * Sets this property to true if this task is the main object renderer of the frame graph.
@@ -83,6 +95,74 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
      * It is also used to determine the main camera used by the frame graph: this is the camera used by the main object renderer.
      */
     public isMainObjectRenderer = false;
+
+    private _renderParticles = true;
+    /**
+     * Define if particles should be rendered (default is true).
+     */
+    public get renderParticles() {
+        return this._renderParticles;
+    }
+
+    public set renderParticles(value: boolean) {
+        if (value === this._renderParticles) {
+            return;
+        }
+
+        this._renderParticles = value;
+        this._renderer.renderParticles = value;
+    }
+
+    private _renderSprites = true;
+    /**
+     * Define if sprites should be rendered (default is true).
+     */
+    public get renderSprites() {
+        return this._renderSprites;
+    }
+
+    public set renderSprites(value: boolean) {
+        if (value === this._renderSprites) {
+            return;
+        }
+
+        this._renderSprites = value;
+        this._renderer.renderSprites = value;
+    }
+
+    private _forceLayerMaskCheck = true;
+    /**
+     * Force checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined). Default is true.
+     */
+    public get forceLayerMaskCheck() {
+        return this._forceLayerMaskCheck;
+    }
+
+    public set forceLayerMaskCheck(value: boolean) {
+        if (value === this._forceLayerMaskCheck) {
+            return;
+        }
+
+        this._forceLayerMaskCheck = value;
+        this._renderer.forceLayerMaskCheck = value;
+    }
+
+    private _enableBoundingBoxRendering = true;
+    /**
+     * Enables the rendering of bounding boxes for meshes (still subject to Mesh.showBoundingBox or scene.forceShowBoundingBoxes). Default is true.
+     */
+    public get enableBoundingBoxRendering() {
+        return this._enableBoundingBoxRendering;
+    }
+
+    public set enableBoundingBoxRendering(value: boolean) {
+        if (value === this._enableBoundingBoxRendering) {
+            return;
+        }
+
+        this._enableBoundingBoxRendering = value;
+        this._renderer.enableBoundingBoxRendering = value;
+    }
 
     /**
      * The output texture.
@@ -140,6 +220,12 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._renderer = existingObjectRenderer ?? new ObjectRenderer(name, scene, options);
         this.name = name;
 
+        this._renderer.disableImageProcessing = this._disableImageProcessing;
+        this._renderer.renderParticles = this._renderParticles;
+        this._renderer.renderSprites = this._renderSprites;
+        this._renderer.enableBoundingBoxRendering = this._enableBoundingBoxRendering;
+        this._renderer.forceLayerMaskCheck = this._forceLayerMaskCheck;
+
         if (!this._externalObjectRenderer) {
             this._renderer.onBeforeRenderingManagerRenderObservable.add(() => {
                 if (!this._renderer.options.doNotChangeAspectRatio) {
@@ -164,8 +250,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         // Make sure the renderList / particleSystemList are set when FrameGraphObjectRendererTask.isReady() is called!
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
-        this._renderer.disableImageProcessing = this.disableImageProcessing;
-        this._renderer.enableBoundingBoxRendering = this.isMainObjectRenderer;
 
         const targetTextures = Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
 
@@ -210,7 +294,6 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
-            this._renderer.disableImageProcessing = this.disableImageProcessing;
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
             context.render(this._renderer, this._textureWidth, this._textureHeight);

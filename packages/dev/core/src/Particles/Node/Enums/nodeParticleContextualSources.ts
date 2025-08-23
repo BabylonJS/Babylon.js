@@ -29,4 +29,8 @@ export enum NodeParticleContextualSources {
     SpriteCellStart = 0x0011,
     /** SpriteCellEnd */
     SpriteCellEnd = 0x0012,
+    /** Initial Color */
+    InitialColor = 0x0013,
+    /** Color Dead*/
+    ColorDead = 0x0014,
 }

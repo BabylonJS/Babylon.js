@@ -6,6 +6,7 @@ import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnection
 import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import type { Nullable } from "core/types";
 import { TextureTools } from "core/Misc/textureTools";
+import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
 
 /**
  * Block used to provide a texture for particles in a particle system
@@ -13,7 +14,7 @@ import { TextureTools } from "core/Misc/textureTools";
 export class ParticleTextureSourceBlock extends NodeParticleBlock {
     private _url: string = "";
     private _textureDataUrl: string = "";
-    private _sourceTexture: Nullable<Texture> = null;
+    private _sourceTexture: Nullable<BaseTexture> = null;
     private _cachedData: Nullable<{
         width: number;
         height: number;
@@ -65,13 +66,13 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      * Directly sets the texture to be used by this block.
      * This value will not be serialized.
      */
-    public set sourceTexture(value: Nullable<Texture>) {
+    public set sourceTexture(value: Nullable<BaseTexture>) {
         if (this._sourceTexture === value) {
             return;
         }
         this._cachedData = null;
         this._sourceTexture = value;
-        this._url = "";
+        this._url = (value as Texture).url || "";
         this._textureDataUrl = "";
     }
 
@@ -105,7 +106,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
      * @returns a promise that resolves to the texture content, including width, height, and pixel data
      */
     async extractTextureContentAsync() {
-        if (!this.texture._storedValue) {
+        if (!this.texture._storedValue && !this._sourceTexture) {
             return null;
         }
 
@@ -113,7 +114,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
             return this._cachedData;
         }
 
-        const texture = this.texture._storedValue;
+        const texture = this.texture._storedValue || this._sourceTexture;
         return await new Promise<
             Nullable<{
                 width: number;

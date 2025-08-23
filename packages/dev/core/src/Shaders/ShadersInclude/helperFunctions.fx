@@ -235,3 +235,11 @@ float sqrtClamped(float value) {
 float avg(vec3 value) {
     return dot(value, vec3(0.333333333));
 }
+
+#ifdef WEBGL2
+// Returns the position of the only set bit in the value, only works if theres exactly 1 bit set
+int onlyBitPosition(uint value) {
+    // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightFloatCast
+    return (floatBitsToInt(float(value)) >> 23) - 0x7f;
+}
+#endif
