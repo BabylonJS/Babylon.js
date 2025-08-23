@@ -4,6 +4,7 @@ import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Scene, IDisposable } from "../scene";
 import { PerfCounter } from "../Misc/perfCounter";
+import type { ObjectRenderer } from "../Rendering/objectRenderer";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#sceneinstrumentation
@@ -42,8 +43,8 @@ export class SceneInstrumentation implements IDisposable {
     // Observers
     private _onBeforeActiveMeshesEvaluationObserver: Nullable<Observer<Scene>> = null;
     private _onAfterActiveMeshesEvaluationObserver: Nullable<Observer<Scene>> = null;
-    private _onBeforeRenderTargetsRenderObserver: Nullable<Observer<Scene>> = null;
-    private _onAfterRenderTargetsRenderObserver: Nullable<Observer<Scene>> = null;
+    private _onBeforeRenderTargetsRenderObserver: Nullable<Observer<ObjectRenderer>>[] = [];
+    private _onAfterRenderTargetsRenderObserver: Nullable<Observer<ObjectRenderer>>[] = [];
 
     private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
 
@@ -137,21 +138,28 @@ export class SceneInstrumentation implements IDisposable {
         this._captureRenderTargetsRenderTime = value;
 
         if (value) {
-            this._onBeforeRenderTargetsRenderObserver = this.scene.onBeforeRenderTargetsRenderObservable.add(() => {
-                Tools.StartPerformanceCounter("Render targets rendering");
-                this._renderTargetsRenderTime.beginMonitoring();
-            });
-
-            this._onAfterRenderTargetsRenderObserver = this.scene.onAfterRenderTargetsRenderObservable.add(() => {
-                Tools.EndPerformanceCounter("Render targets rendering");
-                this._renderTargetsRenderTime.endMonitoring(false);
-            });
+            for (const objectRenderer of this.scene.objectRenderers) {
+                this._onBeforeRenderTargetsRenderObserver.push(
+                    objectRenderer.onInitRenderingObservable.add(() => {
+                        Tools.StartPerformanceCounter("Render targets rendering");
+                        this._renderTargetsRenderTime.beginMonitoring();
+                    })
+                );
+                this._onAfterRenderTargetsRenderObserver.push(
+                    objectRenderer.onFinishRenderingObservable.add(() => {
+                        Tools.EndPerformanceCounter("Render targets rendering");
+                        this._renderTargetsRenderTime.endMonitoring(false);
+                    })
+                );
+            }
         } else {
-            this.scene.onBeforeRenderTargetsRenderObservable.remove(this._onBeforeRenderTargetsRenderObserver);
-            this._onBeforeRenderTargetsRenderObserver = null;
-
-            this.scene.onAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
-            this._onAfterRenderTargetsRenderObserver = null;
+            for (let i = 0; i < this.scene.objectRenderers.length; ++i) {
+                const objectRenderer = this.scene.objectRenderers[i];
+                objectRenderer.onInitRenderingObservable.remove(this._onBeforeRenderTargetsRenderObserver[i]);
+                objectRenderer.onFinishRenderingObservable.remove(this._onAfterRenderTargetsRenderObserver[i]);
+            }
+            this._onBeforeRenderTargetsRenderObserver.length = 0;
+            this._onAfterRenderTargetsRenderObserver.length = 0;
         }
     }
 
@@ -566,11 +574,13 @@ export class SceneInstrumentation implements IDisposable {
         this.scene.onAfterActiveMeshesEvaluationObservable.remove(this._onAfterActiveMeshesEvaluationObserver);
         this._onAfterActiveMeshesEvaluationObserver = null;
 
-        this.scene.onBeforeRenderTargetsRenderObservable.remove(this._onBeforeRenderTargetsRenderObserver);
-        this._onBeforeRenderTargetsRenderObserver = null;
-
-        this.scene.onAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
-        this._onAfterRenderTargetsRenderObserver = null;
+        for (let i = 0; i < this.scene.objectRenderers.length; ++i) {
+            const objectRenderer = this.scene.objectRenderers[i];
+            objectRenderer.onInitRenderingObservable.remove(this._onBeforeRenderTargetsRenderObserver[i]);
+            objectRenderer.onFinishRenderingObservable.remove(this._onAfterRenderTargetsRenderObserver[i]);
+        }
+        this._onBeforeRenderTargetsRenderObserver.length = 0;
+        this._onAfterRenderTargetsRenderObserver.length = 0;
 
         this.scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
         this._onBeforeAnimationsObserver = null;
