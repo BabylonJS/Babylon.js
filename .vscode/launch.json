@@ -47,16 +47,6 @@
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "msedge",
-            "request": "launch",
-            "name": "Dev Host lottie development (Edge)",
-            "url": "http://localhost:1338",
-            "preLaunchTask": "Run Dev host lottie (Dev)"
-        },
-        {
-            /*
-            Launch the playground to be use to test changes in dev packages
-            */
             "type": "chrome",
             "request": "launch",
             "name": "Dev Host development (Chrome)",
