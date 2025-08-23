@@ -804,17 +804,21 @@ export class ObjectRenderer {
             }
         }
 
-        const particleSystems = this.particleSystemList || scene.particleSystems;
-        for (let particleIndex = 0; particleIndex < particleSystems.length; particleIndex++) {
-            const particleSystem = particleSystems[particleIndex];
+        if (this._scene.particlesEnabled) {
+            this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
+            const particleSystems = this.particleSystemList || scene.particleSystems;
+            for (let particleIndex = 0; particleIndex < particleSystems.length; particleIndex++) {
+                const particleSystem = particleSystems[particleIndex];
 
-            const emitter: any = particleSystem.emitter;
+                const emitter: any = particleSystem.emitter;
 
-            if (!particleSystem.isStarted() || !emitter || (emitter.position && !emitter.isEnabled())) {
-                continue;
+                if (!particleSystem.isStarted() || !emitter || (emitter.position && !emitter.isEnabled())) {
+                    continue;
+                }
+
+                this._renderingManager.dispatchParticles(particleSystem);
             }
-
-            this._renderingManager.dispatchParticles(particleSystem);
+            this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
         }
 
         return currentRenderList;
