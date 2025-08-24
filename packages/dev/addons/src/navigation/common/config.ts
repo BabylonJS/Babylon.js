@@ -1,9 +1,10 @@
 import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "recast-navigation/generators";
+import type { CrowdAgentParams } from "@recast-navigation/core";
+
+import { Logger } from "core/Misc";
 
 import type { IAgentParametersV2, INavMeshParametersV2 } from "../types";
-import type { CrowdAgentParams } from "@recast-navigation/core";
 import { CreateDefaultTileCacheMeshProcess } from "./tile-cache";
-import { Logger } from "core/Misc";
 
 /**
  * Creates a SoloNavMesh configuration based on the provided parameters.

@@ -42,7 +42,7 @@ export async function InitRecast(
     if (localOptions.instance) {
         BjsRecast = localOptions.instance;
     } else {
-        InitPromise = importRecast(localOptions.url, localOptions.version);
+        InitPromise = ImportRecast(localOptions.url, localOptions.version);
 
         const result = await InitPromise;
         // eslint-disable-next-line require-atomic-updates
@@ -52,7 +52,7 @@ export async function InitRecast(
     }
 }
 
-async function importRecast(baseUrl: string, version: string) {
+async function ImportRecast(baseUrl: string, version: string) {
     const importMap = {
         imports: {
             // eslint-disable-next-line @typescript-eslint/naming-convention

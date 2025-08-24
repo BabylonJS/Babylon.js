@@ -9,7 +9,7 @@ import type { Nullable } from "core/types";
 export type RecastInjection = typeof import("@recast-navigation/core") & typeof import("@recast-navigation/generators");
 
 /**
- *
+ * Off-mesh connection data
  */
 export interface IOffMeshConnection {
     /**

@@ -69,11 +69,8 @@ function ComputeSmoothPathImpl(
 ): ComputePathResult {
     const filter = options?.filter ?? navMeshQuery.defaultFilter;
     const halfExtents = options?.halfExtents ?? navMeshQuery.defaultQueryHalfExtents;
-
     const maxSmoothPathPoints = options?.maxSmoothPathPoints ?? 2048;
-
     const maxPathPolys = options?.maxPathPolys ?? 256;
-
     const stepSize = options?.stepSize ?? 0.5;
     const slop = options?.slop ?? 0.01;
 
@@ -179,14 +176,11 @@ function ComputeSmoothPathImpl(
         }
 
         const isEndOfPath = steerTarget.steerPosFlag & BjsRecast.Detour.DT_STRAIGHTPATH_END;
-
         const isOffMeshConnection = steerTarget.steerPosFlag & BjsRecast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION;
 
         // Find movement delta.
         const steerPos = steerTarget.steerPos;
-
         const delta = _DELTA.copyFrom(steerPos).subtract(iterPos);
-
         let len = Math.sqrt(delta.dot(delta));
 
         // If the steer target is the end of the path or an off-mesh connection, do not move past the location.
@@ -237,9 +231,7 @@ function ComputeSmoothPathImpl(
             // Advance the path up to and over the off-mesh connection.
             let prevPolyRef = 0;
             let polyRef = polys[0];
-
             let npos = 0;
-
             while (npos < polys.length && polyRef !== offMeshConRef) {
                 prevPolyRef = polyRef;
                 polyRef = polys[npos];
@@ -290,7 +282,6 @@ function ComputeSmoothPathImpl(
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function getSteerTarget(navMeshQuery: NavMeshQuery, start: Vector3, end: Vector3, minTargetDist: number, pathPolys: number[]): SteerTargetResult {
     const maxSteerPoints = 3;
-
     const straightPath = navMeshQuery.findStraightPath(start, end, pathPolys, {
         maxStraightPathPoints: maxSteerPoints,
     });
