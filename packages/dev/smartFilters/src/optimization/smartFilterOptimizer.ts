@@ -592,10 +592,6 @@ export class SmartFilterOptimizer {
             }
         }
 
-        // eslint-disable-next-line no-console
-        console.log("Processing block:", block.name);
-        // eslint-disable-next-line no-console
-        console.log("renameWork:", renameWork);
         this._processAllFunctions(block, shaderProgram, renameWork, newShaderFuncName);
 
         return newShaderFuncName;
@@ -637,22 +633,22 @@ export class SmartFilterOptimizer {
 
     /**
      * Processes all the functions, both main and helper functions, applying the renames and changes which have been collected
-     * @param block
-     * @param shaderProgram
-     * @param renameWork
-     * @param newMainFunctionName
+     * @param block - The original block we are optimizing
+     * @param shaderProgram - The shader of the block we are optimizing
+     * @param renameWork - The rename work to apply
+     * @param newMainFunctionName - The new name for the main function
      */
     private _processAllFunctions(block: ShaderBlock, shaderProgram: ShaderProgram, renameWork: RenameWork, newMainFunctionName: string) {
         // Get the main function and process it
         let declarationsAndMainFunction = GetShaderFragmentCode(shaderProgram, true);
         declarationsAndMainFunction = this._processMainFunction(declarationsAndMainFunction, shaderProgram, newMainFunctionName);
-        declarationsAndMainFunction = this._processFunction(declarationsAndMainFunction, renameWork);
+        declarationsAndMainFunction = this._processFunction(block, declarationsAndMainFunction, renameWork);
         this._mainFunctionNameToCode.set(newMainFunctionName, declarationsAndMainFunction);
 
         // Now process all the helper functions
         this._remappedSymbols.forEach((remappedSymbol) => {
             if (remappedSymbol.type === "function" && remappedSymbol.owners[0] && remappedSymbol.owners[0] === block) {
-                remappedSymbol.declaration = this._processFunction(remappedSymbol.declaration, renameWork);
+                remappedSymbol.declaration = this._processFunction(block, remappedSymbol.declaration, renameWork);
             }
         });
     }
@@ -676,13 +672,14 @@ export class SmartFilterOptimizer {
 
     /**
      * Applies all required changes to a function (main or helper)
+     * @param block - The original block we are optimizing
      * @param code - The code of the function
      * @param renameWork - The rename work to apply
      * @returns The updated function code
      */
-    private _processFunction(code: string, renameWork: RenameWork): string {
+    private _processFunction(block: ShaderBlock, code: string, renameWork: RenameWork): string {
         // Replaces the texture2D calls by __sampleTexture for easier processing
-        code = code.replace(/(?<!\w)texture2D\s*\(/g, " __sampleTexture(");
+        code = code.replace(/(?<!\w)texture2D\s*\(/g, "__sampleTexture(");
 
         for (const sampler of renameWork.samplersToApplyAutoTo) {
             code = this._applyAutoSampleStrategy(code, sampler);
@@ -698,6 +695,11 @@ export class SmartFilterOptimizer {
 
         for (const rename of renameWork.samplerRenames) {
             code = this._replaceSampleTextureWithTexture2DCall(code, rename.from, rename.to);
+        }
+
+        // Ensure all __sampleTexture( instances were replaced, and error out if not
+        if (code.indexOf("__sampleTexture(") > -1) {
+            throw new Error(`Could not optimize blockType ${block.blockType} because a texture2D() sampled something other than a uniform, which is unsupported`);
         }
 
         return code;
