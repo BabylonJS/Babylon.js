@@ -83,20 +83,14 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     private _moving = false;
     /**
      *  Fires each time the attached mesh is dragged with the pointer
-     *
-     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
     public onDragObservable = new Observable<DragEvent>();
     /**
      *  Fires each time a drag begins (eg. mouse down on mesh)
-     *
-     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
     public onDragStartObservable = new Observable<DragStartEndEvent>();
     /**
      *  Fires each time a drag ends (eg. mouse release after drag)
-     *
-     *  (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
     public onDragEndObservable = new Observable<DragStartEndEvent>();
     /**

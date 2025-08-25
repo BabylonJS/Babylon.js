@@ -12,6 +12,8 @@ export type DragEvent = {
     delta: Vector3;
     /**
      * Point in world space where the drag intersects the drag plane
+     *
+     * (if validatedDrag is used, the position of the attached mesh might not equal dragPlanePoint)
      */
     dragPlanePoint: Vector3;
     /**
