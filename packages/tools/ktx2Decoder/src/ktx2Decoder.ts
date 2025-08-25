@@ -43,7 +43,7 @@ export class KTX2Decoder {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public async decode(data: Uint8Array, caps: KTX2.ICompressedFormatCapabilities, options?: KTX2.IKTX2DecoderOptions): Promise<KTX2.IDecodedData> {
-        const finalOptions = { ...options, ...KTX2Decoder.DefaultDecoderOptions };
+        const finalOptions = { ...KTX2Decoder.DefaultDecoderOptions, ...options };
 
         const kfr = new KTX2FileReader(data);
 
