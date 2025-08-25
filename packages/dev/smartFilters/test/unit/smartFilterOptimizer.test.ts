@@ -8,137 +8,24 @@ import {
     SmartFilter,
     SmartFilterOptimizer,
 } from "../../src/index.js";
-
-const testBlockWithOverloadsAnnotatedGlsl = `
-/*
-{
-    "smartFilterBlockType": "TestBlockWithOverloads",
-    "namespace": "Babylon.UnitTests",
-    "blockDisableStrategy": "AutoSample"
-}
-*/
-
-uniform sampler2D input; // main
-uniform float amount;
-#define ONEDEF 1.0
-
-vec4 greenScreen(vec2 vUV) { // main
-    vec4 color = texture2D(input, vUV);
-    vec4 otherColor = mix(getColor(0.0), getColor(vec3(0.0, ONEDEF, 0.0)), amount);
-
-    return mix(color, otherColor, amount);
-}
-
-vec4 getColor(float f) {
-    return vec4(f);
-}
-
-vec4 getColor(vec3 v) {
-    return vec4(v, ONEDEF);
-}
-`;
-
-const blackAndWhiteAnnotatedGlsl = `
-/*
-{
-    "smartFilterBlockType": "BlackAndWhiteBlock",
-    "namespace": "Babylon.UnitTests",
-    "blockDisableStrategy": "AutoSample"
-}
-*/
-
-uniform sampler2D input; // main
-
-vec4 blackAndWhite(vec2 vUV) { // main
-    vec4 color = texture2D(input, vUV);
-
-    float luminance = dot(color.rgb, vec3(0.3, 0.59, 0.11));
-    vec3 bg = vec3(luminance, luminance, luminance);
-
-    return vec4(bg, color.a);
-}
-`;
-
-const testBlockWithTexture2DSymbolAnnotatedGlsl = `
-/*
-{
-    "smartFilterBlockType": "TestBlockWithTexture2DSymbol",
-    "namespace": "Babylon.UnitTests"
-}
-*/
-uniform float amount;
-uniform sampler2D input; // main
-
-vec4 mainFunc(vec2 vUV) { // main
-    float footexture2D = 1.0;
-    float temp = doStuff(texture2D(input, vUV));
-    float temp2 = texture2D(input, vUV).r;
-    return texture2DStuff(amount);
-}
-vec4 texture2DStuff(float f) {
-    return vec4(f);
-}
-`;
-
-// TODO: add test case to confirm that helper references to helpers get updated:
-
-// const FirstBlockGlsl = `
-// /*
-// {
-//     "smartFilterBlockType": "FirstBlock",
-//     "namespace": "Babylon.Test"
-// }
-// */
-
-// uniform sampler2D input; // main
-
-// vec4 helper1(vec2 vUV) {
-//     // In FirstBlock
-//     return helper2(input, vUV);
-// }
-
-// vec4 helper2(vec2 vUV) {
-//     // In FirstBlock
-//     return texture2D(input, vUV);
-// }
-
-// vec4 firstBlockMain(vec2 vUV) { // main
-//     // In FirstBlock
-//     vec4 color = helper1(vUV);
-//     return color;
-// }
-// `;
-
-// const SecondBlockGlsl = `
-// /*
-// {
-//     "smartFilterBlockType": "SecondBlock",
-//     "namespace": "Babylon.Test"
-// }
-// */
-
-// uniform sampler2D input; // main
-
-// vec4 helper1(vec2 vUV) {
-//     // In SecondBlock
-//     return helper2(input, vUV);
-// }
-
-// vec4 helper2(vec2 vUV) {
-//     // In SecondBlock
-//     return texture2D(input, vUV);
-// }
-
-// vec4 secondBlockMain(vec2 vUV) { // main
-//     vec4 color = helper1(vUV);
-//     return color;
-// }
-// `;
+import {
+    testBlockWithOverloadsAnnotatedGlsl,
+    blackAndWhiteAnnotatedGlsl,
+    testBlockWithTexture2DSymbolAnnotatedGlsl,
+    TwoHelpersFirstBlockGlsl,
+    TwoHelpersSecondBlockGlsl,
+    _helper1_,
+    _helper2_,
+    _helper1_2_,
+    _helper2_2_,
+} from "./smartFilterOptimizer.testData.js";
 
 describe("smartFilterOptimizer", () => {
     const testBlockWithOverloadsDefinition = importCustomBlockDefinition(testBlockWithOverloadsAnnotatedGlsl) as SerializedShaderBlockDefinition;
     const testBlackAndWhiteBlockDefinition = importCustomBlockDefinition(blackAndWhiteAnnotatedGlsl) as SerializedShaderBlockDefinition;
     const testBlockWithTexture2DSymbolDefinition = importCustomBlockDefinition(testBlockWithTexture2DSymbolAnnotatedGlsl) as SerializedShaderBlockDefinition;
+    const testBlockWithTwoHelpers1Definition = importCustomBlockDefinition(TwoHelpersFirstBlockGlsl) as SerializedShaderBlockDefinition;
+    const testBlockWithTwoHelpers2Definition = importCustomBlockDefinition(TwoHelpersSecondBlockGlsl) as SerializedShaderBlockDefinition;
 
     describe("when a block has multiple overloads of a helper function", () => {
         it("should emit all of them in the optimized shader block", () => {
@@ -299,4 +186,43 @@ describe("smartFilterOptimizer", () => {
             expect(fragmentShaderCode?.indexOf("return _texture2DStuff_(_amount_);")).toBeGreaterThan(-1);
         });
     });
+
+    describe("when a helper calls a helper", () => {
+        it("should respect the rename during the call from one to the other", () => {
+            // Arrange
+            const smartFilter = new SmartFilter("Test");
+
+            const firstBlock = CustomShaderBlock.Create(smartFilter, "FirstBlock", testBlockWithTwoHelpers1Definition);
+            const secondBlock = CustomShaderBlock.Create(smartFilter, "SecondBlock", testBlockWithTwoHelpers2Definition);
+            const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
+
+            textureInputBlock.output.connectTo(firstBlock.findInput("input")!);
+            firstBlock.output.connectTo(secondBlock.findInput("input")!);
+            secondBlock.output.connectTo(smartFilter.output);
+
+            const optimizer = new SmartFilterOptimizer(smartFilter, {
+                maxSamplersInFragmentShader: 16,
+                removeDisabledBlocks: false,
+            });
+
+            // Act
+            const optimizedSmartFilter = optimizer.optimize();
+
+            // Assert
+            expect(optimizedSmartFilter).not.toBeNull();
+            const optimizedBlock = optimizedSmartFilter!.attachedBlocks.find((b) => b.name === "optimized");
+            const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
+            const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
+            expect(containsSubstringIgnoringWhitespace(fragmentShaderCode!, _helper1_)).toBe(true);
+            expect(containsSubstringIgnoringWhitespace(fragmentShaderCode!, _helper2_)).toBe(true);
+            expect(containsSubstringIgnoringWhitespace(fragmentShaderCode!, _helper1_2_)).toBe(true);
+            expect(containsSubstringIgnoringWhitespace(fragmentShaderCode!, _helper2_2_)).toBe(true);
+        });
+    });
 });
+
+function containsSubstringIgnoringWhitespace(str: string, substring: string): boolean {
+    const normalizedStr = str.replace(/\s+/g, " ");
+    const normalizedSubstring = substring.replace(/\s+/g, " ");
+    return normalizedStr.includes(normalizedSubstring);
+}

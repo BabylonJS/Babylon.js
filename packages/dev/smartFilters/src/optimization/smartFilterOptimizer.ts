@@ -537,17 +537,6 @@ export class SmartFilterOptimizer {
             if (IsTextureInputBlock(parentBlock)) {
                 // input is connected to an InputBlock of type "Texture": we must directly sample a texture
                 this._processSampleTexture(block, renameWork, samplerName, samplers, parentBlock);
-
-                // TODO: figure out how we will prevent optimization failures for blocks that read pass sampler uniforms around before reading them
-                // TODO: we could force them to be marked as unoptimized and error out if we detect that case
-                // TODO: then we'd need to be able to detect that case, and also figure out what we mean by non-optimizable,
-                // TODO: because today that means that it's output can't be replaced with a call to its main function,
-                // TODO: but in this new sense, it means you can't fold the previous block into your block
-                // TODO: so should non-optimizable mean in both directions, or do we need a new notion of direction for
-                // TODO: non-optimizable?
-                // TODO: Alternatively, we could just say the optimizer doesn't support such blocks at all, and they need
-                // TODO: to be refactored so they only access samplers from the main function - but would existing users
-                // TODO: be OK with that?
             } else if (this._forceUnoptimized || !this._canBeOptimized(parentBlock)) {
                 // the block connected to this input cannot be optimized: we must directly sample its output texture
                 this._processSampleTexture(block, renameWork, samplerName, samplers);
