@@ -1,6 +1,6 @@
 import type { IVector2Like } from "core/Maths/math.like";
 
-import type { ScalarProperty, Vector2Property } from "../lottie/parsedTypes";
+import type { ScalarProperty, Vector2Property } from "../parsing/parsedTypes";
 
 import { ThinMatrix } from "../maths/matrix";
 
@@ -19,7 +19,7 @@ export class Node {
 
     private readonly _opacity: ScalarProperty;
 
-    private readonly _parent: Node | undefined;
+    private _parent: Node | undefined;
     private readonly _children: Node[];
 
     private _isVisible = false;
@@ -74,6 +74,7 @@ export class Node {
     /**
      * Gets the opacity of this node.
      * If the node is not visible, the opacity will be 0.
+     * The opacity is multiplied by the parent opacity, except if the parent is a layer, in that case it is ignored
      * @returns The opacity of the node, from 0 to 1.
      */
     public get opacity(): number {
@@ -81,7 +82,11 @@ export class Node {
             return 0;
         }
 
-        return this._opacity.currentValue / 100.0;
+        if (this._opacity.currentValue === 0) {
+            return 0;
+        }
+
+        return this._opacity.currentValue * (this._parent?.opacity ?? 1);
     }
 
     /**
@@ -90,6 +95,48 @@ export class Node {
      */
     public get startScale(): IVector2Like {
         return this._scale.startValue;
+    }
+
+    /**
+     * Gets the local position start value.
+     */
+    public get positionStart(): IVector2Like {
+        return this._position.startValue;
+    }
+
+    /**
+     * Gets the local position current value.
+     */
+    public get positionCurrent(): IVector2Like {
+        return this._position.currentValue;
+    }
+
+    /**
+     * Gets the local rotation start value (in degrees).
+     */
+    public get rotationStart(): number {
+        return this._rotation.startValue;
+    }
+
+    /**
+     * Gets the local rotation current value (in degrees).
+     */
+    public get rotationCurrent(): number {
+        return this._rotation.currentValue;
+    }
+
+    /**
+     * Gets the local scale start value.
+     */
+    public get scaleStart(): IVector2Like {
+        return this._scale.startValue;
+    }
+
+    /**
+     * Gets the local scale current value.
+     */
+    public get scaleCurrent(): IVector2Like {
+        return this._scale.currentValue;
     }
 
     /**
@@ -148,7 +195,7 @@ export class Node {
         // Store the matrix at least once
         this._localMatrix.compose(this._scale.currentValue, this._rotation.currentValue, this._position.currentValue);
 
-        this._opacity = opacity || { startValue: 100, currentValue: 100, currentKeyframeIndex: 0 };
+        this._opacity = opacity || { startValue: 1, currentValue: 1, currentKeyframeIndex: 0 };
 
         // Animated ?
         if (this._position.keyframes !== undefined && this._position.keyframes.length > 0) {
@@ -177,24 +224,23 @@ export class Node {
         if (parent) {
             this._worldMatrix = this._globalMatrix;
 
-            if (parent.isAnimated || !parent.parent || this.isAnimated || parent._isControl) {
-                this._parent = parent;
-                parent._children.push(this);
-                this._localMatrix.multiplyToRef(parent._worldMatrix, this._globalMatrix);
-            } else {
-                // We can merge them
-                this._localMatrix.multiplyToRef(parent._localMatrix, this._localMatrix);
+            // if (parent.isAnimated || !parent.parent || this.isAnimated || parent._isControl) {
+            this._parent = parent;
+            parent._children.push(this);
+            this._localMatrix.multiplyToRef(parent._worldMatrix, this._globalMatrix);
+            // } else {
+            //     // We can merge them
+            //     this._localMatrix.multiplyToRef(parent._localMatrix, this._localMatrix);
 
-                // New parent
-                this._parent = parent.parent;
-                this._localMatrix.multiplyToRef(this._parent._worldMatrix, this._globalMatrix);
-                parent.parent._children.push(this);
-            }
+            //     // New parent
+            //     this._parent = parent.parent;
+            //     this._localMatrix.multiplyToRef(this._parent._worldMatrix, this._globalMatrix);
+            //     parent.parent._children.push(this);
+            // }
         } else {
             this._worldMatrix = this._localMatrix;
         }
     }
-
     /**
      * Resets the node's properties to their initial values.
      */
@@ -423,7 +469,7 @@ export class Node {
         // Animate the opacity
         const gradient = (frame - currentScalarKeyframe.time) / (nextScalarKeyframe.time - currentScalarKeyframe.time);
 
-        const easeGradientFactor = currentScalarKeyframe.easeFunction.interpolate(gradient);
+        const easeGradientFactor = currentScalarKeyframe.easeFunction?.interpolate(gradient) ?? 0;
         this._opacity.currentValue = currentScalarKeyframe.value + easeGradientFactor * (nextScalarKeyframe.value - currentScalarKeyframe.value);
 
         return true;
