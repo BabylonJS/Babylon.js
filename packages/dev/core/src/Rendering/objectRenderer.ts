@@ -604,10 +604,6 @@ export class ObjectRenderer {
 
             this.onAfterRenderingManagerRenderObservable.notifyObservers(passIndex);
         } else {
-            if (scene.frameGraph) {
-                // Note that in non frame graph mode (when scene.frameGraph is null), this is done by Scene._renderForCamera
-                scene.finalizeSceneUbo();
-            }
             this.onFastPathRenderObservable.notifyObservers(passIndex);
         }
 
