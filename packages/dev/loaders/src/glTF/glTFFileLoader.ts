@@ -224,6 +224,7 @@ abstract class GLTFLoaderOptions {
             this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
             this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
             this.useGltfTextureNames = options.useGltfTextureNames ?? this.useGltfTextureNames;
+            this.useOpenPBR = options.useOpenPBR ?? this.useOpenPBR;
             this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
             this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
             this.validate = options.validate ?? this.validate;
@@ -399,6 +400,11 @@ abstract class GLTFLoaderOptions {
      * Note that it is possible for multiple Babylon textures to share the same name when the Babylon textures load from the same glTF texture or image.
      */
     public useGltfTextureNames = false;
+
+    /**
+     * Load the glTF files using the OpenPBR material.
+     */
+    public useOpenPBR = false;
 
     /**
      * Defines if the loader should use range requests when load binary glTF files from HTTP.

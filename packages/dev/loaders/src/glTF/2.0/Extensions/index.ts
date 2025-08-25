@@ -11,6 +11,8 @@ export * from "./KHR_lights_punctual";
 export * from "./KHR_materials_pbrSpecularGlossiness";
 export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_clearcoat";
+export * from "./EXT_materials_clearcoat_darkening";
+export * from "./EXT_materials_clearcoat_color";
 export * from "./KHR_materials_iridescence";
 export * from "./KHR_materials_anisotropy";
 export * from "./KHR_materials_emissive_strength";

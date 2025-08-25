@@ -10,9 +10,6 @@ uniform emissiveRightColor: vec4f;
 uniform vDiffuseInfos: vec2f;
 uniform vAmbientInfos: vec2f;
 uniform vOpacityInfos: vec2f;
-uniform vReflectionInfos: vec2f;
-uniform vReflectionPosition: vec3f;
-uniform vReflectionSize: vec3f;
 uniform vEmissiveInfos: vec2f;
 uniform vLightmapInfos: vec2f;
 uniform vSpecularInfos: vec2f;
@@ -20,7 +17,6 @@ uniform vBumpInfos: vec3f;
 uniform diffuseMatrix: mat4x4f;
 uniform ambientMatrix: mat4x4f;
 uniform opacityMatrix: mat4x4f;
-uniform reflectionMatrix: mat4x4f;
 uniform emissiveMatrix: mat4x4f;
 uniform lightmapMatrix: mat4x4f;
 uniform specularMatrix: mat4x4f;
@@ -37,6 +33,10 @@ uniform vEmissiveColor: vec3f;
 uniform vDiffuseColor: vec4f;
 uniform vAmbientColor: vec3f;
 uniform cameraInfo: vec4f;
+uniform vReflectionInfos: vec2f;
+uniform reflectionMatrix: mat4x4f;
+uniform vReflectionPosition: vec3f;
+uniform vReflectionSize: vec3f;
 
 #define ADDITIONAL_UBO_DECLARATION
 

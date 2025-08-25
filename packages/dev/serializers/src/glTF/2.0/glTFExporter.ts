@@ -80,6 +80,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
 import { DataWriter } from "./dataWriter";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -1411,6 +1412,8 @@ export class GLTFExporter {
                 materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, hasUVs);
             } else if (babylonMaterial instanceof StandardMaterial) {
                 materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, hasUVs);
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                materialIndex = await this._materialExporter.exportOpenPBRMaterialAsync(babylonMaterial, hasUVs);
             } else {
                 Logger.Warn(`Unsupported material '${babylonMaterial.name}' with type ${babylonMaterial.getClassName()}`);
                 return;
