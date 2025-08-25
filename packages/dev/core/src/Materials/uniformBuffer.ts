@@ -94,7 +94,7 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateFloatArray: (name: string, array: Float32Array) => void;
+    public updateFloatArray: (name: string, array: Float32Array, suffix?: string) => void;
 
     /**
      * Lambda to Update an array of number in a uniform buffer.
@@ -396,6 +396,10 @@ export class UniformBuffer {
      * @param arraySize The number of elements in the array, 0 if not an array.
      */
     public addUniform(name: string, size: number | number[], arraySize = 0) {
+        if (arraySize > 0 && typeof size === "number") {
+            // Keep track of stride for `updateFloatArray`
+            this._uniformArraySizes[name] = { strideSize: size, arraySize };
+        }
         if (this._noUBO) {
             return;
         }
@@ -417,7 +421,6 @@ export class UniformBuffer {
 
             this._fillAlignment(4);
 
-            this._uniformArraySizes[name] = { strideSize: size, arraySize };
             if (size == 16) {
                 size = size * arraySize;
             } else {
@@ -898,8 +901,21 @@ export class UniformBuffer {
         this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
-    private _updateFloatArrayForEffect(name: string, array: Float32Array) {
-        this._currentEffect.setFloatArray(name, array);
+    private _updateFloatArrayForEffect(name: string, array: Float32Array, suffix = "") {
+        switch (this._uniformArraySizes[name]?.strideSize) {
+            case 2:
+                this._currentEffect.setFloatArray2(name + suffix, array);
+                break;
+            case 3:
+                this._currentEffect.setFloatArray3(name + suffix, array);
+                break;
+            case 4:
+                this._currentEffect.setFloatArray4(name + suffix, array);
+                break;
+            default:
+                this._currentEffect.setFloatArray(name + suffix, array);
+                break;
+        }
     }
 
     private _updateFloatArrayForUniform(name: string, array: Float32Array) {
