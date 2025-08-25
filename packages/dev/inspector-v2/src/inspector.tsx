@@ -51,6 +51,7 @@ import { TextureExplorerServiceDefinition } from "./services/panes/scene/texture
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
+import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
@@ -249,6 +250,9 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
             // Gizmos for manipulating objects in the scene.
             GizmoToolbarServiceDefinition,
+
+            // Allows picking objects from the scene to select them.
+            PickingServiceDefinition,
 
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),

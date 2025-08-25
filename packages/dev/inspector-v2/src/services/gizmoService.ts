@@ -16,6 +16,8 @@ export interface IGizmoService extends IService<typeof GizmoServiceIdentity> {
     getUtilityLayer(scene: Scene, layer?: string): Reference<UtilityLayerRenderer>;
     getCameraGizmo(camera: Camera): Reference<CameraGizmo>;
     getLightGizmo(light: Light): Reference<LightGizmo>;
+    getCameraGizmos(scene: Scene): readonly CameraGizmo[];
+    getLightGizmos(scene: Scene): readonly LightGizmo[];
 }
 
 export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], []> = {
@@ -110,6 +112,8 @@ export const GizmoServiceDefinition: ServiceDefinition<[IGizmoService], []> = {
             getUtilityLayer,
             getCameraGizmo,
             getLightGizmo,
+            getCameraGizmos: (scene) => scene.cameras.map((camera) => cameraGizmos.get(camera)?.gizmo).filter(Boolean) as readonly CameraGizmo[],
+            getLightGizmos: (scene) => scene.lights.map((light) => lightGizmos.get(light)?.gizmo).filter(Boolean) as readonly LightGizmo[],
         };
     },
 };
