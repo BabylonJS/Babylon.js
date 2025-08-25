@@ -1,4 +1,4 @@
-import type { ScalarProperty, Vector2Property } from "../lottie/parsedTypes";
+import type { ScalarProperty, Vector2Property } from "../parsing/parsedTypes";
 import { Node } from "./node";
 
 /**
@@ -49,7 +49,7 @@ export class ControlNode extends Node {
      */
     public override update(frame: number, isParentUpdated = false, isReset = false): boolean {
         // Only update if the frame is within the in and out range
-        this.isVisible = frame >= this._inFrame && frame <= this._outFrame - 1;
+        this.isVisible = frame >= this._inFrame && frame <= this._outFrame;
         return super.update(frame, isParentUpdated, isReset);
     }
 }

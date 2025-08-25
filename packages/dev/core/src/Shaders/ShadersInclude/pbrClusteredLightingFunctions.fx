@@ -5,7 +5,7 @@
         sampler2D lightDataTexture,
         sampler2D tileMaskTexture,
         vec4 lightData,
-        int numLights,
+        ivec2 sliceRange,
         vec3 V,
         vec3 N,
         vec3 posW,
@@ -41,19 +41,24 @@
         int maskHeight = int(lightData.z);
         tilePosition.y = min(tilePosition.y, maskHeight - 1);
 
-        int numBatches = (numLights + CLUSTLIGHT_BATCH - 1) / CLUSTLIGHT_BATCH;
-        int batchOffset = 0;
+        ivec2 batchRange = sliceRange / CLUSTLIGHT_BATCH;
+        int batchOffset = batchRange.x * CLUSTLIGHT_BATCH;
+        tilePosition.y += maskHeight * batchRange.x;
 
-        for (int i = 0; i < numBatches; i += 1) {
+        for (int i = batchRange.x; i <= batchRange.y; i += 1) {
             uint mask = uint(texelFetch(tileMaskTexture, tilePosition, 0).r);
             tilePosition.y += maskHeight;
+            // Mask out the bits outside the range
+            int maskOffset = max(sliceRange.x - batchOffset, 0);
+            int maskWidth = min(sliceRange.y - batchOffset + 1, CLUSTLIGHT_BATCH);
+            mask = extractBits(mask, maskOffset, maskWidth);
 
             while (mask != 0u) {
                 // This gets the lowest set bit
                 uint bit = mask & -mask;
                 mask ^= bit;
                 int position = onlyBitPosition(bit);
-                ClusteredLight light = getClusteredLight(lightDataTexture, batchOffset + position);
+                ClusteredLight light = getClusteredLight(lightDataTexture, batchOffset + maskOffset + position);
 
                 preLightingInfo preInfo = computePointAndSpotPreLightingInfo(light.vLightData, V, N, posW);
                 preInfo.NdotV = NdotV;

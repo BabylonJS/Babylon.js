@@ -10,11 +10,13 @@
         //          `computeClusteredLighting` functions to ensure consistency when clustered lighting is used.
 
         #if defined(PBR) && defined(CLUSTLIGHT{X}) && CLUSTLIGHT_BATCH > 0
+        {
+            int sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, vViewDepth), CLUSTLIGHT_SLICES - 1);
             info = computeClusteredLighting(
                 lightDataTexture{X},
                 tileMaskTexture{X},
                 light{X}.vLightData,
-                int(light{X}.vNumLights),
+                ivec2(light{X}.vSliceRanges[sliceIndex]),
                 viewDirectionW,
                 normalW,
                 vPositionW,
@@ -39,6 +41,7 @@
                     , clearcoatOut
                 #endif
             );
+        }
         #elif defined(PBR)
 
             // Compute Pre Lighting infos
@@ -240,7 +243,10 @@
                 #endif
                 );
             #elif defined(CLUSTLIGHT{X}) && CLUSTLIGHT_BATCH > 0
-                info = computeClusteredLighting(lightDataTexture{X}, tileMaskTexture{X}, viewDirectionW, normalW, light{X}.vLightData, int(light{X}.vNumLights), glossiness);
+            {
+                int sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, vViewDepth), CLUSTLIGHT_SLICES - 1);
+                info = computeClusteredLighting(lightDataTexture{X}, tileMaskTexture{X}, viewDirectionW, normalW, light{X}.vLightData, ivec2(light{X}.vSliceRanges[sliceIndex]), glossiness);
+            }
             #endif
         #endif
 

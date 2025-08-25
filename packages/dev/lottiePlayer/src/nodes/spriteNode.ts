@@ -1,8 +1,8 @@
 import type { ThinSprite } from "core/Sprites/thinSprite";
 
-import type { ScalarProperty, Vector2Property } from "../lottie/parsedTypes";
+import type { ScalarProperty, Vector2Property } from "../parsing/parsedTypes";
 
-import { Node } from "../rendering/node";
+import { Node } from "./node";
 
 /**
  * Temporary scale vector used during sprite updates for matrix decomposition.

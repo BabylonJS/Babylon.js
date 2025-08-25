@@ -1879,7 +1879,8 @@ export class StandardMaterial extends PushMaterial {
                 this._reflectionTexture ||
                 this._refractionTexture ||
                 mesh.receiveShadows ||
-                defines.PREPASS
+                defines.PREPASS ||
+                defines["CLUSTLIGHT_BATCH"]
             ) {
                 this.bindView(effect);
             }

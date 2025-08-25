@@ -369,6 +369,12 @@ export abstract class Light extends Node implements ISortableLight {
     private _lastUseSpecular: boolean;
 
     /**
+     * Used internally by ClusteredLight to sort lights
+     * @internal
+     */
+    public _currentViewDepth = 0;
+
+    /**
      * Creates a Light object in the scene.
      * Documentation : https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      * @param name The friendly name of the light

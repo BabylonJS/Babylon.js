@@ -1,25 +1,27 @@
-import type { RawBezier, RawGroupShape, RawPathShape, RawRectangleShape } from "../lottie/rawTypes";
+import type { RawBezier, RawElement, RawFont, RawPathShape, RawRectangleShape, RawStrokeShape, RawTextData, RawTextDocument } from "../parsing/rawTypes";
 
 /**
  * Represents a bounding box for a shape in the animation.
  */
 export type BoundingBox = {
-    /**
-     * Height of the bounding box
-     */
+    /** Height of the bounding box */
     height: number;
-    /**
-     * Width of the bounding box
-     */
+    /** Width of the bounding box */
     width: number;
-    /**
-     * X coordinate of the center of the bounding box
-     */
+    /** X coordinate of the center of the bounding box */
     centerX: number;
-    /**
-     * Y coordinate of the center of the bounding box
-     */
+    /** Y coordinate of the center of the bounding box */
     centerY: number;
+    /** Inset for the stroke, if applicable. */
+    strokeInset: number;
+    /**
+     * Optional: Canvas2D text metrics for precise vertical alignment
+     */
+    actualBoundingBoxAscent?: number;
+    /**
+     * Optional: Canvas2D text metrics for precise vertical alignment
+     */
+    actualBoundingBoxDescent?: number;
 };
 
 // Corners of the bounding box
@@ -31,11 +33,11 @@ type Corners = {
 };
 
 /**
- * Calculates the bounding box for a group shape in a Lottie animation.
- * @param rawGroup The raw group shape to calculate the bounding box for
- * @returns The bounding box for the group shape
+ * Calculates the bounding box for a group of graphic elements in a Lottie animation.
+ * @param rawElements The elements to calculate the bounding box for
+ * @returns The bounding box for the elements
  */
-export function GetBoundingBox(rawGroup: RawGroupShape): BoundingBox {
+export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
     const boxCorners: Corners = {
         minX: Infinity,
         minY: Infinity,
@@ -43,21 +45,78 @@ export function GetBoundingBox(rawGroup: RawGroupShape): BoundingBox {
         maxY: -Infinity,
     };
 
-    if (rawGroup.it !== undefined) {
-        for (let i = 0; i < rawGroup.it.length; i++) {
-            if (rawGroup.it[i].ty === "rc") {
-                GetRectangleVertices(boxCorners, rawGroup.it[i] as RawRectangleShape);
-            } else if (rawGroup.it[i].ty === "sh") {
-                GetPathVertices(boxCorners, rawGroup.it[i] as RawPathShape);
-            }
+    let extraPadding = 0;
+    for (let i = 0; i < rawElements.length; i++) {
+        if (rawElements[i].ty === "rc") {
+            GetRectangleVertices(boxCorners, rawElements[i] as RawRectangleShape);
+        } else if (rawElements[i].ty === "sh") {
+            GetPathVertices(boxCorners, rawElements[i] as RawPathShape);
+        } else if (rawElements[i].ty === "st") {
+            extraPadding = Math.max(extraPadding, GetStrokeInset(rawElements[i] as RawStrokeShape));
         }
     }
 
     return {
-        width: Math.ceil(boxCorners.maxX - boxCorners.minX),
-        height: Math.ceil(boxCorners.maxY - boxCorners.minY),
+        width: Math.ceil(boxCorners.maxX - boxCorners.minX) + extraPadding,
+        height: Math.ceil(boxCorners.maxY - boxCorners.minY) + extraPadding,
         centerX: Math.ceil((boxCorners.maxX + boxCorners.minX) / 2),
         centerY: Math.ceil((boxCorners.maxY + boxCorners.minY) / 2),
+        strokeInset: 0,
+    };
+}
+
+/**
+ * Calculates the bounding box for a group of graphic elements in a Lottie animation.
+ * @param spritesCanvasContext The OffscreenCanvasRenderingContext2D or CanvasRenderingContext2D to use for text measurement
+ * @param textData The text to calculate the bounding box for
+ * @param rawFonts A map of font names to their raw font data
+ * @returns The bounding box for the text
+ */
+export function GetTextBoundingBox(
+    spritesCanvasContext: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D,
+    textData: RawTextData,
+    rawFonts: Map<string, RawFont>
+): BoundingBox | undefined {
+    spritesCanvasContext.save();
+    let textInfo: RawTextDocument | undefined = undefined;
+    if (textData.d && textData.d.k && textData.d.k.length > 0) {
+        textInfo = textData.d.k[0].s as RawTextDocument;
+    }
+
+    if (!textInfo) {
+        spritesCanvasContext.restore();
+        return undefined;
+    }
+
+    const fontSize = textInfo.s;
+    const fontFamily = textInfo.f;
+    const finalFont = rawFonts.get(fontFamily);
+    if (!finalFont) {
+        spritesCanvasContext.restore();
+        return undefined;
+    }
+
+    const weight = finalFont.fWeight || "400"; // Default to normal weight if not specified
+    spritesCanvasContext.font = `${weight} ${fontSize}px ${finalFont.fFamily}`;
+
+    if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
+        spritesCanvasContext.lineWidth = textInfo.sw;
+    }
+
+    const text = textInfo.t;
+    const metrics = spritesCanvasContext.measureText(text);
+
+    const widthPx = Math.ceil(metrics.width);
+    const heightPx = Math.ceil(metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
+
+    return {
+        width: widthPx,
+        height: heightPx,
+        centerX: Math.ceil(widthPx / 2),
+        centerY: Math.ceil(heightPx / 2),
+        strokeInset: 0, // Text bounding box ignores stroke padding here
+        actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
+        actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,
     };
 }
 
@@ -107,6 +166,10 @@ function GetPathVertices(boxCorners: Corners, path: RawPathShape): void {
             end[1] + inTangent[1]
         );
     }
+}
+
+function GetStrokeInset(stroke: RawStrokeShape): number {
+    return Math.ceil(stroke.w?.k as number) ?? 1;
 }
 
 function CalculatePointsWithTangentZero(
