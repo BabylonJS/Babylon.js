@@ -100,6 +100,7 @@ import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
 import { FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask";
 import { _RetryWithInterval } from "./Misc/timingTools";
+import type { ObjectRenderer } from "./Rendering/objectRenderer";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -499,6 +500,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * ActionManagers available on the scene.
      */
     public actionManagers: AbstractActionManager[] = [];
+
+    /**
+     * Object renderers available on the scene.
+     */
+    public objectRenderers: ObjectRenderer[] = [];
 
     /**
      * Textures to keep.
@@ -907,6 +913,16 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * An event triggered when a frame graph is removed
      */
     public onFrameGraphRemovedObservable = new Observable<FrameGraph>();
+
+    /**
+     * An event triggered when an object renderer is created
+     */
+    public onNewObjectRendererAddedObservable = new Observable<ObjectRenderer>();
+
+    /**
+     * An event triggered when an object renderer is removed
+     */
+    public onObjectRendererRemovedObservable = new Observable<ObjectRenderer>();
 
     /**
      * An event triggered when a post process is created
@@ -3085,6 +3101,21 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * Removes the given object renderer from this scene.
+     * @param toRemove The object renderer to remove
+     * @returns The index of the removed object renderer
+     */
+    public removeObjectRenderer(toRemove: ObjectRenderer): number {
+        const index = this.objectRenderers.indexOf(toRemove);
+        if (index !== -1) {
+            this.objectRenderers.splice(index, 1);
+        }
+        this.onObjectRendererRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
      * Removes the given post-process from this scene.
      * @param toRemove The post-process to remove
      * @returns The index of the removed post-process
@@ -3317,6 +3348,17 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.frameGraphs.push(newFrameGraph);
         Tools.SetImmediate(() => {
             this.onNewFrameGraphAddedObservable.notifyObservers(newFrameGraph);
+        });
+    }
+
+    /**
+     * Adds the given object renderer to this scene.
+     * @param objectRenderer The object renderer to add
+     */
+    public addObjectRenderer(objectRenderer: ObjectRenderer): void {
+        this.objectRenderers.push(objectRenderer);
+        Tools.SetImmediate(() => {
+            this.onNewObjectRendererAddedObservable.notifyObservers(objectRenderer);
         });
     }
 
@@ -5106,6 +5148,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _renderWithFrameGraph(updateCameras = true, _ignoreAnimations = false, forceUpdateWorldMatrix = false): void {
         this.activeCamera = null;
+        this.activeCameras = null;
 
         // Update Cameras
         if (updateCameras) {
@@ -5633,6 +5676,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onMultiMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
         this.onTextureRemovedObservable.clear();
+        this.onNewFrameGraphAddedObservable.clear();
+        this.onFrameGraphRemovedObservable.clear();
+        this.onNewObjectRendererAddedObservable.clear();
+        this.onObjectRendererRemovedObservable.clear();
         this.onPrePointerObservable.clear();
         this.onPointerObservable.clear();
         this.onPreKeyboardObservable.clear();

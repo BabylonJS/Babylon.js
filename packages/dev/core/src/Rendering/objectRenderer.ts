@@ -183,6 +183,16 @@ export class ObjectRenderer {
     public readonly onAfterRenderingManagerRenderObservable = new Observable<number>();
 
     /**
+     * An event triggered when initRender is called
+     */
+    public readonly onInitRenderingObservable = new Observable<ObjectRenderer>();
+
+    /**
+     * An event triggered when finishRender is called
+     */
+    public readonly onFinishRenderingObservable = new Observable<ObjectRenderer>();
+
+    /**
      * An event triggered when fast path rendering is used
      */
     public readonly onFastPathRenderObservable = new Observable<number>();
@@ -246,6 +256,14 @@ export class ObjectRenderer {
      */
     public get currentRefreshId() {
         return this._currentRefreshId;
+    }
+
+    /**
+     * Gets the array of active meshes
+     * @returns an array of AbstractMesh
+     */
+    public getActiveMeshes(): SmartArray<AbstractMesh> {
+        return this._activeMeshes;
     }
 
     /**
@@ -349,6 +367,8 @@ export class ObjectRenderer {
         // Rendering groups
         this._renderingManager = new RenderingManager(scene);
         this._renderingManager._useSceneAutoClearSetup = true;
+
+        this._scene.addObjectRenderer(this);
     }
 
     private _releaseRenderPassId(): void {
@@ -485,6 +505,8 @@ export class ObjectRenderer {
         const engine = this._scene.getEngine();
         const camera: Nullable<Camera> = this.activeCamera ?? this._scene.activeCamera;
 
+        this.onInitRenderingObservable.notifyObservers(this);
+
         this._currentSceneCamera = this._scene.activeCamera;
 
         if (camera) {
@@ -517,6 +539,8 @@ export class ObjectRenderer {
         }
 
         scene.resetCachedMaterial();
+
+        this.onFinishRenderingObservable.notifyObservers(this);
     }
 
     /**
@@ -778,17 +802,21 @@ export class ObjectRenderer {
             }
         }
 
-        const particleSystems = this.particleSystemList || scene.particleSystems;
-        for (let particleIndex = 0; particleIndex < particleSystems.length; particleIndex++) {
-            const particleSystem = particleSystems[particleIndex];
+        if (this._scene.particlesEnabled) {
+            this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
+            const particleSystems = this.particleSystemList || scene.particleSystems;
+            for (let particleIndex = 0; particleIndex < particleSystems.length; particleIndex++) {
+                const particleSystem = particleSystems[particleIndex];
 
-            const emitter: any = particleSystem.emitter;
+                const emitter: any = particleSystem.emitter;
 
-            if (!particleSystem.isStarted() || !emitter || (emitter.position && !emitter.isEnabled())) {
-                continue;
+                if (!particleSystem.isStarted() || !emitter || (emitter.position && !emitter.isEnabled())) {
+                    continue;
+                }
+
+                this._renderingManager.dispatchParticles(particleSystem);
             }
-
-            this._renderingManager.dispatchParticles(particleSystem);
+            this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
         }
 
         return currentRenderList;
@@ -868,6 +896,8 @@ export class ObjectRenderer {
         this._releaseRenderPassId();
 
         this.renderList = null;
+
+        this._scene.removeObjectRenderer(this);
     }
 
     /** @internal */
