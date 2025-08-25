@@ -4,8 +4,9 @@ import type { ICrowd, INavigationEnginePlugin, IObstacle } from "core/Navigation
 import { Logger } from "core/Misc/logger";
 import type { Mesh } from "core/Meshes/mesh";
 import type { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math";
+import { TmpVectors, Vector3 } from "core/Maths/math";
 import type { IVector3Like } from "core/Maths/math.like";
+import type { Nullable } from "core/types";
 
 import type { CreateNavMeshresult, GeneratorIntermediates, INavMeshParametersV2, RecastInjection } from "../types";
 import { RecastJSCrowd } from "./RecastJSCrowd";
@@ -13,7 +14,6 @@ import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
 import { CreateDebugNavMesh } from "../debug/simple-debug";
 import { BjsRecast, InjectGenerators } from "../factory/common";
-import type { Nullable } from "core/types";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
@@ -277,9 +277,9 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
 
     /**
      * Compute the final position from a segment made of destination-position
-     * @param position world position
-     * @param destination world position
-     * @param startRef the reference id of the start polygon.
+     * @param position position to start from
+     * @param destination position to go to
+     * @param startRef the reference id of the start polygon
      * @param options options for the function
      * @returns the resulting point along the navmesh
      */
@@ -487,6 +487,92 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      */
     public setRandomSeed(seed: number): void {
         this.bjsRECAST.setRandomSeed(seed);
+    }
+
+    // New funccntions beyond the INavigationEnginePlugin interface
+
+    /**
+     * Perform a raycast on the navmesh
+     * @param start start position
+     * @param end end position
+     * @returns if a direct path exists between start and end, and the hit point if any
+     */
+    public raycast(start: IVector3Like, end: IVector3Like) {
+        const nearestStartPoly = this.navMeshQuery.findNearestPoly(start);
+        const raycastResult = this.navMeshQuery.raycast(nearestStartPoly.nearestRef, start, end);
+
+        const hit = 0 < raycastResult.t && raycastResult.t < 1.0;
+        if (!hit) {
+            return {
+                hit: false,
+            };
+        } else {
+            TmpVectors.Vector3[0].set(start.x, start.y, start.z);
+            TmpVectors.Vector3[1].set(end.x, end.y, end.z);
+
+            const distanceToHitBorder = Vector3.Distance(TmpVectors.Vector3[0], TmpVectors.Vector3[1]) * (raycastResult?.t ?? 0);
+            const direction = TmpVectors.Vector3[1].subtract(TmpVectors.Vector3[0]).normalize();
+            const hitPoint = TmpVectors.Vector3[0].add(direction.multiplyByFloats(distanceToHitBorder, distanceToHitBorder, distanceToHitBorder));
+
+            return {
+                hit: true,
+                hitPoint,
+            };
+        }
+    }
+
+    /**
+     * Compute the final position from a segment made of destination-position, and return the height of the polygon
+     * This is a more sophisiticated version of moveAlong that will use the height of the polygon at the end position
+     * @param position world position to start from
+     * @param velocity wvelocity of the movement
+     * @param options options for the function
+     * @returns the resulting point along the navmesh, the polygon reference id and the height of the polygon
+     */
+    public moveAlongWithVelocity(
+        position: IVector3Like,
+        velocity: IVector3Like,
+        options?: {
+            /**
+             * The polygon filter to apply to the query.
+             */
+            filter?: QueryFilter;
+            /**
+             * half extents for the search box
+             */
+            halfExtents?: Vector3;
+            /**
+             * The maximum number of polygons the output visited array can hold.
+             */
+            maxVisitedSize?: number;
+        }
+    ) {
+        const { point, polyRef } = this.navMeshQuery.findClosestPoint(
+            {
+                x: position.x,
+                y: position.y,
+                z: position.z,
+            },
+            options
+        );
+
+        const { resultPosition } = this.navMeshQuery.moveAlongSurface(
+            polyRef,
+            point,
+            {
+                x: point.x + velocity.x,
+                y: point.y + velocity.y,
+                z: point.z + velocity.z,
+            },
+            options
+        );
+        const polyHeightResult = this.navMeshQuery.getPolyHeight(polyRef, resultPosition);
+
+        return {
+            position: { x: resultPosition.x, y: polyHeightResult.success ? polyHeightResult.height : resultPosition.y, z: resultPosition.z },
+            polyRef: polyRef,
+            height: polyHeightResult.height,
+        };
     }
 
     /**
