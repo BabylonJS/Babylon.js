@@ -23,7 +23,7 @@ import type { Bone } from "core/Bones/bone";
 
 import { setDebugNode } from "../treeNodeDebugger";
 import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
-import type { PointerDragBehavior } from "core/Behaviors/Meshes/pointerDragBehavior";
+import type { DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -44,9 +44,9 @@ export class SceneTreeItemComponent extends React.Component<
     private _onSelectionChangeObserver: Nullable<Observer<any>>;
     private _selectedEntity: any;
 
-    private _posDragEnd: Nullable<ReturnType<PointerDragBehavior["onDragEndObservable"]["add"]>> = null;
-    private _scaleDragEnd: Nullable<ReturnType<PointerDragBehavior["onDragEndObservable"]["add"]>> = null;
-    private _rotateDragEnd: Nullable<ReturnType<PointerDragBehavior["onDragEndObservable"]["add"]>> = null;
+    private _posDragEnd: Nullable<Observer<DragStartEndEvent>> = null;
+    private _scaleDragEnd: Nullable<Observer<DragStartEndEvent>> = null;
+    private _rotateDragEnd: Nullable<Observer<DragStartEndEvent>> = null;
 
     constructor(props: ISceneTreeItemComponentProps) {
         super(props);

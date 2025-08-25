@@ -16,7 +16,7 @@ import type { Node } from "../node";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { GizmoManager } from "./gizmoManager";
-import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import type { DragEvent, DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
 
 /**
  * Interface for rotation gizmo
@@ -31,11 +31,11 @@ export interface IRotationGizmo extends IGizmo {
     /** Internal gizmo used for interactions on the z axis */
     zGizmo: IPlaneRotationGizmo;
     /** Fires an event when any of it's sub gizmos are dragged */
-    onDragStartObservable: PointerDragBehavior["onDragStartObservable"];
+    onDragStartObservable: Observable<DragStartEndEvent>;
     /** Fires an event when any of it's sub gizmos are being dragged */
-    onDragObservable: PointerDragBehavior["onDragObservable"];
+    onDragObservable: Observable<DragEvent>;
     /** Fires an event when any of it's sub gizmos are released from dragging */
-    onDragEndObservable: PointerDragBehavior["onDragEndObservable"];
+    onDragEndObservable: Observable<DragStartEndEvent>;
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
     snapDistance: number;
     /** Custom sensitivity value for the drag strength */
@@ -114,11 +114,11 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     public zGizmo: IPlaneRotationGizmo;
 
     /** Fires an event when any of it's sub gizmos are dragged */
-    public onDragStartObservable = new Observable() as PointerDragBehavior["onDragStartObservable"];
+    public onDragStartObservable = new Observable<DragStartEndEvent>();
     /** Fires an event when any of it's sub gizmos are being dragged */
-    public onDragObservable = new Observable() as PointerDragBehavior["onDragObservable"];
+    public onDragObservable = new Observable<DragEvent>();
     /** Fires an event when any of it's sub gizmos are released from dragging */
-    public onDragEndObservable = new Observable() as PointerDragBehavior["onDragEndObservable"];
+    public onDragEndObservable = new Observable<DragStartEndEvent>();
 
     protected _meshAttached: Nullable<AbstractMesh>;
     protected _nodeAttached: Nullable<Node>;

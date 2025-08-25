@@ -18,7 +18,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { GizmoManager } from "./gizmoManager";
 import type { TransformNode } from "../Meshes/transformNode";
-import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import type { DragEvent, DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
 
 /**
  * Interface for position gizmo
@@ -39,11 +39,11 @@ export interface IPositionGizmo extends IGizmo {
     /** True when the mouse pointer is dragging a gizmo mesh */
     readonly isDragging: boolean;
     /** Fires an event when any of it's sub gizmos are dragged */
-    onDragStartObservable: PointerDragBehavior["onDragStartObservable"];
+    onDragStartObservable: Observable<DragStartEndEvent>;
     /** Fires an event when any of it's sub gizmos are being dragged */
-    onDragObservable: PointerDragBehavior["onDragObservable"];
+    onDragObservable: Observable<DragEvent>;
     /** Fires an event when any of it's sub gizmos are released from dragging */
-    onDragEndObservable: PointerDragBehavior["onDragEndObservable"];
+    onDragEndObservable: Observable<DragStartEndEvent>;
     /**
      * If the planar drag gizmo is enabled
      * setting this will enable/disable XY, XZ and YZ planes regardless of individual gizmo settings.
@@ -116,11 +116,11 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     protected _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
     /** Fires an event when any of it's sub gizmos are dragged */
-    public onDragStartObservable = new Observable() as PointerDragBehavior["onDragStartObservable"];
+    public onDragStartObservable = new Observable<DragStartEndEvent>();
     /** Fires an event when any of it's sub gizmos are being dragged */
-    public onDragObservable = new Observable() as PointerDragBehavior["onDragObservable"];
+    public onDragObservable = new Observable<DragEvent>();
     /** Fires an event when any of it's sub gizmos are released from dragging */
-    public onDragEndObservable = new Observable() as PointerDragBehavior["onDragEndObservable"];
+    public onDragEndObservable = new Observable<DragStartEndEvent>();
 
     /**
      * If set to true, planar drag is enabled

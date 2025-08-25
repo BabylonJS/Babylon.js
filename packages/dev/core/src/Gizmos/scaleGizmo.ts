@@ -18,7 +18,7 @@ import type { PointerInfo } from "../Events/pointerEvents";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { GizmoManager } from "./gizmoManager";
 import type { TransformNode } from "../Meshes/transformNode";
-import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
+import type { DragEvent, DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
 
 /**
  * Interface for scale gizmo
@@ -35,11 +35,11 @@ export interface IScaleGizmo extends IGizmo {
     /** Internal gizmo used to scale all axis equally*/
     uniformScaleGizmo: IAxisScaleGizmo;
     /** Fires an event when any of it's sub gizmos are dragged */
-    onDragStartObservable: PointerDragBehavior["onDragStartObservable"];
+    onDragStartObservable: Observable<DragStartEndEvent>;
     /** Fires an event when any of it's sub gizmos are being dragged */
-    onDragObservable: PointerDragBehavior["onDragObservable"];
+    onDragObservable: Observable<DragEvent>;
     /** Fires an event when any of it's sub gizmos are released from dragging */
-    onDragEndObservable: PointerDragBehavior["onDragEndObservable"];
+    onDragEndObservable: Observable<DragStartEndEvent>;
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
     snapDistance: number;
     /** Incremental snap scaling. When true, with a snapDistance of 0.1, scaling will be 1.1,1.2,1.3 instead of, when false: 1.1,1.21,1.33,... */
@@ -129,11 +129,11 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         return this._disableMaterial;
     }
     /** Fires an event when any of it's sub gizmos are dragged */
-    public onDragStartObservable = new Observable() as PointerDragBehavior["onDragStartObservable"];
+    public onDragStartObservable = new Observable<DragStartEndEvent>();
     /** Fires an event when any of it's sub gizmos are being dragged */
-    public onDragObservable = new Observable() as PointerDragBehavior["onDragObservable"];
+    public onDragObservable = new Observable<DragEvent>();
     /** Fires an event when any of it's sub gizmos are released from dragging */
-    public onDragEndObservable = new Observable() as PointerDragBehavior["onDragEndObservable"];
+    public onDragEndObservable = new Observable<DragStartEndEvent>();
 
     public override get attachedMesh() {
         return this._meshAttached;
