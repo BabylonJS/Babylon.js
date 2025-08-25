@@ -16,7 +16,7 @@ import type { Node } from "../node";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { GizmoManager } from "./gizmoManager";
-import type { PointerDragBehavior } from "../Behaviors";
+import type { PointerDragBehavior } from "../Behaviors/Meshes/pointerDragBehavior";
 
 /**
  * Interface for rotation gizmo
