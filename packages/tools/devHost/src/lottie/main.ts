@@ -1,5 +1,5 @@
 import type { AnimationConfiguration } from "lottie-player/animationConfiguration";
-import { LocalPlayer } from "lottie-player/LocalPlayer";
+import { Player } from "lottie-player/player";
 
 /** Main entry point for the default scene for lottie-player */
 export async function Main(): Promise<void> {
@@ -8,7 +8,7 @@ export async function Main(): Promise<void> {
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
     const searchParams = new URLSearchParams(window.location.search);
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
-    const fileUrl = `https://assets.babylonjs.com/lottie/'${filename}'`;
+    const fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
 
     // These are variables that will be replaced in the lottie file if it contains them. You can replace with them text strings and text fill colors
     const variables = new Map<string, string>();
@@ -29,6 +29,10 @@ export async function Main(): Promise<void> {
     };
 
     // Create the player and play the animation
-    const player = new LocalPlayer(div, fileUrl, variables, configuration);
-    await player.playAnimationAsync();
+    const player = new Player(div, fileUrl, variables, configuration);
+    player.playAnimation();
+
+    // If you want to use the LocalPlayer instead of Player (so no OffscreenCanvas and no worker thread), use this code:
+    // const player = new LocalPlayer(div, fileUrl, variables, configuration);
+    // await player.playAnimationAsync();
 }

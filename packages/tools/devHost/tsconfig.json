@@ -4,11 +4,6 @@
     "compilerOptions": {
         "allowJs": true,
         "esModuleInterop": true,
-        "noImplicitAny": false,
-        "baseUrl": ".",
-        "paths": {
-            "lottie-player": ["../../dev/addons/src/lottie/index.ts"],
-            "lottie-player/*": ["../../dev/addons/src/lottie/*"]
-        }
+        "noImplicitAny": false
     }
 }
