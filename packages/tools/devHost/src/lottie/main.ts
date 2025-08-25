@@ -3,9 +3,10 @@ import { LocalPlayer } from "lottie-player/LocalPlayer";
 
 /** Main entry point for the default scene for lottie-player */
 export async function Main(): Promise<void> {
-    const searchParams = new URLSearchParams(window.location.search);
+    const div = document.getElementById("main-div") as HTMLDivElement; // The player will be inside this div
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
+    const searchParams = new URLSearchParams(window.location.search);
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
     const fileUrl = `https://assets.babylonjs.com/lottie/'${filename}'`;
 
@@ -27,7 +28,7 @@ export async function Main(): Promise<void> {
         supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
     };
 
-    const div = document.getElementById("main-div") as HTMLDivElement; // Get the canvas element
+    // Create the player and play the animation
     const player = new LocalPlayer(div, fileUrl, variables, configuration);
     await player.playAnimationAsync();
 }
