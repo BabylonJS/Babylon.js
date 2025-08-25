@@ -37,6 +37,7 @@ import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinder
 import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
 import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
 import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlock";
+import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicColorUpdateBlock";
 
 /**
  * Static class for BlockTools
@@ -103,6 +104,8 @@ export class BlockTools {
                 return new ParticleTriggerBlock("Trigger");
             case "BasicPositionUpdateBlock":
                 return new BasicPositionUpdateBlock("Basic position update");
+            case "BasicColorUpdateBlock":
+                return new BasicColorUpdateBlock("Basic color update");
             case "TeleportInBlock":
                 return new ParticleTeleportInBlock("Teleport In");
             case "TeleportOutBlock":
@@ -179,6 +182,11 @@ export class BlockTools {
             case "InitialColorBlock": {
                 const block = new ParticleInputBlock("Initial Color");
                 block.contextualValue = NodeParticleContextualSources.InitialColor;
+                return block;
+            }
+            case "ColorDeadBlock": {
+                const block = new ParticleInputBlock("Color Dead");
+                block.contextualValue = NodeParticleContextualSources.ColorDead;
                 return block;
             }
             case "AgeBlock": {

@@ -62,6 +62,7 @@ export const evaluatePlaywrightVisTests = async (
 
     test.beforeAll(async ({ browser }) => {
         page = await browser.newPage();
+        await page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
             // waitUntil: "load", // for chrome should be "networkidle0"
             timeout: 0,
@@ -72,7 +73,6 @@ export const evaluatePlaywrightVisTests = async (
             return window.BABYLON;
         });
         page.setDefaultTimeout(0);
-        page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
     });
 
     test.afterAll(async () => {

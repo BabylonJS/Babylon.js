@@ -1230,8 +1230,8 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        // Check if Area Lights have LTC texture.
-        if (defines["AREALIGHTUSED"]) {
+        // Check if lights are ready
+        if (defines["AREALIGHTUSED"] || defines["CLUSTLIGHT_BATCH"]) {
             for (let index = 0; index < mesh.lightSources.length; index++) {
                 if (!mesh.lightSources[index]._isReady()) {
                     return false;
@@ -1879,7 +1879,8 @@ export class StandardMaterial extends PushMaterial {
                 this._reflectionTexture ||
                 this._refractionTexture ||
                 mesh.receiveShadows ||
-                defines.PREPASS
+                defines.PREPASS ||
+                defines["CLUSTLIGHT_BATCH"]
             ) {
                 this.bindView(effect);
             }

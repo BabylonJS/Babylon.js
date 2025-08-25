@@ -7,6 +7,7 @@ import type { FluentIcon } from "@fluentui/react-icons";
 type ToggleButtonProps = PrimitiveProps<boolean> & {
     enabledIcon: FluentIcon; // Intentionally using FluentIcon so that we can control the visual toggle look/feel
     disabledIcon?: FluentIcon;
+    appearance?: "subtle" | "transparent";
 };
 
 /**
@@ -17,7 +18,7 @@ type ToggleButtonProps = PrimitiveProps<boolean> & {
  * @returns
  */
 export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
-    const { value, onChange, title } = props;
+    const { value, onChange, title, appearance = "subtle" } = props;
     const [checked, setChecked] = useState(value);
     const toggle = useCallback(() => {
         setChecked((prev) => {
@@ -34,8 +35,8 @@ export const ToggleButton: FunctionComponent<ToggleButtonProps> = (props) => {
     return (
         <FluentToggleButton
             title={title}
-            icon={checked ? <props.enabledIcon /> : props.disabledIcon ? <props.disabledIcon opacity={0.5} /> : <props.enabledIcon opacity={0.5} />}
-            appearance="transparent"
+            icon={checked ? <props.enabledIcon /> : props.disabledIcon ? <props.disabledIcon /> : <props.enabledIcon />}
+            appearance={appearance}
             checked={checked}
             onClick={toggle}
         />

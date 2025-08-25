@@ -6,7 +6,44 @@
         var diffuse{X}: vec4f = light{X}.vLightDiffuse;
         #define CUSTOM_LIGHT{X}_COLOR // Use to modify light color. Currently only supports diffuse.
 
-        #ifdef PBR
+        // WARNING: If any changes are made to the lighting equation be sure to also add them to the
+        //          `computeClusteredLighting` functions to ensure consistency when clustered lighting is used.
+
+        #if defined(PBR) && defined(CLUSTLIGHT{X})
+        {
+            let sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, fragmentInputs.vViewDepth), CLUSTLIGHT_SLICES - 1);
+            info = computeClusteredLighting(
+                lightDataTexture{X},
+                &tileMaskBuffer{X},
+                light{X}.vLightData,
+                vec2u(light{X}.vSliceRanges[sliceIndex].xy),
+                viewDirectionW,
+                normalW,
+                fragmentInputs.vPositionW,
+                surfaceAlbedo,
+                reflectivityOut,
+                #ifdef IRIDESCENCE
+                    iridescenceIntensity,
+                #endif
+                #ifdef SS_TRANSLUCENCY
+                    subSurfaceOut,
+                #endif
+                #ifdef SPECULARTERM
+                    AARoughnessFactors.x,
+                #endif
+                #ifdef ANISOTROPIC
+                    anisotropicOut,
+                #endif
+                #ifdef SHEEN
+                    sheenOut,
+                #endif
+                #ifdef CLEARCOAT
+                    clearcoatOut,
+                #endif
+            );
+        }
+        #elif defined(PBR)
+
             // Compute Pre Lighting infos
             #ifdef SPOTLIGHT{X}
                 preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, fragmentInputs.vPositionW);
@@ -206,6 +243,11 @@
                     uniforms.vReflectionInfos.y
                 #endif
                     );
+            #elif defined(CLUSTLIGHT{X})
+            {
+                let sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, fragmentInputs.vViewDepth), CLUSTLIGHT_SLICES - 1);
+                info = computeClusteredLighting(lightDataTexture{X}, &tileMaskBuffer{X}, viewDirectionW, normalW, light{X}.vLightData, vec2u(light{X}.vSliceRanges[sliceIndex].xy), glossiness);
+            }
             #endif
         #endif
 

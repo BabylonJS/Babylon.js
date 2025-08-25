@@ -16,6 +16,7 @@ import { Constants } from "core/Engines/constants";
 import { BindMorphTargetParameters } from "core/Materials/materialHelper.functions";
 import { ScenePerformancePriority } from "core/scene";
 import { Logger } from "core/Misc/logger";
+import { FrameGraphBaseLayerTask } from "../FrameGraph/Tasks/Layers/baseLayerTask";
 
 /**
  * Options for the snapshot rendering helper
@@ -314,15 +315,15 @@ export class SnapshotRenderingHelper {
 
     /**
      * Update the meshes used in an effect layer to ensure that snapshot rendering works correctly for these meshes in this layer.
-     * @param effectLayer The effect layer
-     * @param autoUpdate If true, the helper will automatically update the effect layer meshes with each frame. If false, you'll need to call this method manually when the camera or layer meshes move or rotate.
+     * @param layer The effect layer or frame graph layer
+     * @param autoUpdate If true, the helper will automatically update the meshes of the layer with each frame. If false, you'll need to call this method manually when the camera or layer meshes move or rotate.
      */
-    public updateMeshesForEffectLayer(effectLayer: EffectLayer, autoUpdate = true) {
+    public updateMeshesForEffectLayer(layer: EffectLayer | FrameGraphBaseLayerTask, autoUpdate = true) {
         if (!this._engine.isWebGPU) {
             return;
         }
 
-        const renderPassId = effectLayer.mainTexture.renderPassId;
+        const renderPassId = layer instanceof FrameGraphBaseLayerTask ? layer.objectRendererForLayer.objectRenderer.renderPassId : layer.mainTexture.renderPassId;
 
         if (autoUpdate) {
             this._onBeforeRenderObserverUpdateLayer = this._scene.onBeforeRenderObservable.add(() => {
@@ -355,7 +356,8 @@ export class SnapshotRenderingHelper {
             return;
         }
 
-        const sceneTransformationMatrix = this._scene.getTransformMatrix();
+        const sceneTransformationMatrix =
+            this._scene.objectRenderers.find((renderer) => renderer.renderPassId === renderPassId)?.activeCamera?.getTransformationMatrix() ?? this._scene.getTransformMatrix();
 
         for (let i = 0; i < this._scene.meshes.length; ++i) {
             const mesh = this._scene.meshes[i];

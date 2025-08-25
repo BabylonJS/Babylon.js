@@ -12,6 +12,8 @@ import { _TriggerSubEmitter } from "./Triggers/triggerTools";
  * Block used to get a system of particles
  */
 export class SystemBlock extends NodeParticleBlock {
+    private static _IdCounter = 0;
+
     /**
      * Gets or sets the blend mode for the particle system
      */
@@ -57,6 +59,9 @@ export class SystemBlock extends NodeParticleBlock {
      */
     @editableInPropertyPage("Do no start", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public doNoStart = false;
+
+    /** @internal */
+    public _internalId = SystemBlock._IdCounter++;
 
     /**
      * Create a new SystemBlock
