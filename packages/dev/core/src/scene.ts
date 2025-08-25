@@ -2729,10 +2729,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /**
      * Creates a scene UBO
      * @param name name of the uniform buffer (optional, for debugging purpose only)
+     * @param trackUBOsInFrame define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame)
      * @returns a new ubo
      */
-    public createSceneUniformBuffer(name?: string): UniformBuffer {
-        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene");
+    public createSceneUniformBuffer(name?: string, trackUBOsInFrame?: boolean): UniformBuffer {
+        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene", undefined, trackUBOsInFrame);
         sceneUbo.addUniform("viewProjection", 16);
         sceneUbo.addUniform("view", 16);
         sceneUbo.addUniform("projection", 16);
