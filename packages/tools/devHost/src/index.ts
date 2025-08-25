@@ -1,7 +1,7 @@
 /* eslint-disable github/no-then */
 /* eslint-disable no-console */
 const SearchParams = new URLSearchParams(window.location.search);
-const Experience = SearchParams.get("exp") || "es6";
+const Experience = SearchParams.get("exp") || "testScene";
 import(`./${Experience}/main`)
     .then(async (module) => {
         console.log("Loading experience:", Experience);
