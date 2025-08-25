@@ -200,8 +200,8 @@ describe("smartFilterOptimizer", () => {
             const optimizedBlock = optimizedSmartFilter!.attachedBlocks.find((b) => b.name === "optimized");
             const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
             const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
-            expect((fragmentShaderCode!.match(/vec4 _getColor_\(float f\)/g) || []).length).toBe(1);
-            expect((fragmentShaderCode!.match(/vec4 _getColor_\(vec3 v\)/g) || []).length).toBe(1);
+            expect((fragmentShaderCode!.match(/vec4 _getColor_\(float f\)\s*{/g) || []).length).toBe(1);
+            expect((fragmentShaderCode!.match(/vec4 _getColor_\(vec3 v\)\s*{/g) || []).length).toBe(1);
         });
     });
 
@@ -294,8 +294,8 @@ describe("smartFilterOptimizer", () => {
             const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
             const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
             expect(fragmentShaderCode?.indexOf("float footexture2D = 1.0;")).toBeGreaterThan(-1);
-            expect(fragmentShaderCode?.indexOf("float temp = doStuff( _blackAndWhite_(vUV));")).toBeGreaterThan(-1);
-            expect(fragmentShaderCode?.indexOf("float temp2 =  _blackAndWhite_(vUV).r;")).toBeGreaterThan(-1);
+            expect(fragmentShaderCode?.indexOf("float temp = doStuff(_blackAndWhite_(vUV));")).toBeGreaterThan(-1);
+            expect(fragmentShaderCode?.indexOf("float temp2 = _blackAndWhite_(vUV).r;")).toBeGreaterThan(-1);
             expect(fragmentShaderCode?.indexOf("return _texture2DStuff_(_amount_);")).toBeGreaterThan(-1);
         });
     });

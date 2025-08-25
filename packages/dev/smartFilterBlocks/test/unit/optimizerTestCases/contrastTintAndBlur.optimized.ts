@@ -199,15 +199,9 @@ uniform sampler2D _input_;
                     params: ``,
                     code: `
 
-                    float _remap_(float i, float smin, float smax, float dmin, float dmax) {
-                        return dmin + (i - smin) * (dmax - dmin) / (smax - smin);
-                    }
+                    float _remap_(float i, float smin, float smax, float dmin, float dmax) ;
 
-
-                    vec3 _remap_(vec3 i, float smin, float smax, float dmin, float dmax) {
-                        return dmin + (i - smin) * (dmax - dmin) / (smax - smin);
-                    }
-
+                    vec3 _remap_(vec3 i, float smin, float smax, float dmin, float dmax) ;
 
                     vec4 _contrast_(vec2 vUV) {
     vec4 _autoMainInputColor_ = texture2D(_input_, vUV);
@@ -237,6 +231,16 @@ uniform sampler2D _input_;
                             vec3 tinted = mix(color.rgb, _tint_, _amount_);
                             return vec4(tinted, color.a);
                         }
+
+
+                    float _remap_(float i, float smin, float smax, float dmin, float dmax) {
+                        return dmin + (i - smin) * (dmax - dmin) / (smax - smin);
+                    }
+
+
+                    vec3 _remap_(vec3 i, float smin, float smax, float dmin, float dmax) {
+                        return dmin + (i - smin) * (dmax - dmin) / (smax - smin);
+                    }
 
 
 `,
