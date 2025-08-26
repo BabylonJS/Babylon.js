@@ -4,28 +4,23 @@ const SearchParams = new URLSearchParams(window.location.search);
 const ExpQsp = SearchParams.get("exp");
 
 // Sanitize the input to only allow certain strings
-let SanitizedExp: string = "";
+let ImportPromise: Promise<any> | undefined = undefined;
 switch (ExpQsp) {
     case "lottie": {
-        SanitizedExp = "lottie";
+        ImportPromise = import("./lottie/main");
         break;
     }
-    case "testScene": {
-        SanitizedExp = "testScene";
-        break;
-    }
+    case "testScene":
     default: {
-        SanitizedExp = "testScene";
+        ImportPromise = import("./testScene/main");
         break;
     }
 }
 
-import(`./${SanitizedExp}/main`)
-    .then(async (module) => {
-        console.log("Loading experience:", ExpQsp);
-        await module.Main();
-        console.log("Loading experience completed");
-    })
-    .catch((err) => {
-        console.log("Error loading experience:", err);
-    });
+ImportPromise.then(async (module) => {
+    console.log("Loading experience:", ExpQsp);
+    await module.Main();
+    console.log("Loading experience completed");
+}).catch((err) => {
+    console.log("Error loading experience:", err);
+});
