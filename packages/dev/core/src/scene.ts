@@ -4898,24 +4898,24 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                 const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
 
                 let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
-                if (boundingBoxRenderer) {
-                    currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
-                    currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
-                }
 
                 for (let renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     const renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         const hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
+                        if (renderTarget.enableBoundingBoxRendering && boundingBoxRenderer && !currentBoundingBoxMeshList) {
+                            currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+                            currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+                        }
                         renderTarget.render(<boolean>hasSpecialRenderTargetCamera, this.dumpNextRenderTargets);
                         needRebind = true;
                     }
                 }
 
-                if (boundingBoxRenderer) {
-                    boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList!;
-                    boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList!.length;
+                if (boundingBoxRenderer && currentBoundingBoxMeshList) {
+                    boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
+                    boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList.length;
                 }
 
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
