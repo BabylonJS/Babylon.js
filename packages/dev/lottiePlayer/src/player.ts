@@ -53,7 +53,6 @@ export class Player {
         }
 
         if ("OffscreenCanvas" in window) {
-            // Use an extensionless path so Webpack resolves to .ts in dev and .js in published output
             this._worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
             this._worker.onmessage = (evt: MessageEvent) => {
                 const message = evt.data as Message;
@@ -111,6 +110,7 @@ export class Player {
                     url: this._animationFile,
                 },
             };
+
             this._worker.postMessage(animationUrlMessage);
 
             window.addEventListener("resize", this._onWindowResize);

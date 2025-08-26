@@ -1,5 +1,6 @@
 import type { AnimationConfiguration } from "lottie-player/animationConfiguration";
 import { Player } from "lottie-player/player";
+//import { LocalPlayer } from "lottie-player/localPlayer";
 
 /** Main entry point for the default scene for lottie-player */
 export async function Main(): Promise<void> {
@@ -32,7 +33,8 @@ export async function Main(): Promise<void> {
     const player = new Player(div, fileUrl, variables, configuration);
     player.playAnimation();
 
-    // If you want to use the LocalPlayer instead of Player (so no OffscreenCanvas and no worker thread), use this code:
+    // If you want to use the LocalPlayer instead of Player (so no OffscreenCanvas and no worker thread), use this code
+    // and uncomment the import at the top of the file
     // const player = new LocalPlayer(div, fileUrl, variables, configuration);
     // await player.playAnimationAsync();
 }
