@@ -569,7 +569,9 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
     defines["SHADOWS"] = state.shadowEnabled;
 
     // Resetting all other lights if any
-    for (let index = lightIndex; index < maxSimultaneousLights; index++) {
+    const maxLightCount = Math.max(maxSimultaneousLights, defines["MAXLIGHTCOUNT"] || 0);
+
+    for (let index = lightIndex; index < maxLightCount; index++) {
         if (defines["LIGHT" + index] !== undefined) {
             defines["LIGHT" + index] = false;
             defines["HEMILIGHT" + index] = false;
@@ -595,6 +597,8 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["SHADOWMEDIUMQUALITY" + index] = false;
         }
     }
+
+    defines["MAXLIGHTCOUNT"] = maxSimultaneousLights;
 
     const caps = scene.getEngine().getCaps();
 
