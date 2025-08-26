@@ -285,7 +285,17 @@ export class SmartFilterOptimizer {
         }
     }
 
-    private _processHelperFunctions(block: ShaderBlock, renameWork: RenameWork): void {
+    /**
+     * Processes each helper function (any function that's not the main function), adding those to emit in the final
+     * block to _remappedSymbols and noting any necessary renames in renameWork. If a helper does not access any
+     * uniforms, it only needs to be emitted once regardless of how many instances of the block that define it are
+     * folded into the final optimized block.
+     * NOTE: so this function can know about the uniforms to test for them, it must be called after _processVariables.
+     * @param block - The block we are processing
+     * @param renameWork - The rename work object
+     * @param samplerList - The list of sampler names
+     */
+    private _processHelperFunctions(block: ShaderBlock, renameWork: RenameWork, samplerList: string[]): void {
         const functions = block.getShaderProgram().fragment.functions;
 
         if (functions.length === 1) {
@@ -302,36 +312,55 @@ export class SmartFilterOptimizer {
 
             funcName = UndecorateSymbol(funcName);
 
+            // Test to see if this function accesses any uniforms
+            let accessesUniforms = false;
+            for (const sampler of samplerList) {
+                if (func.code.includes(sampler)) {
+                    accessesUniforms = true;
+                    break;
+                }
+            }
+            if (!accessesUniforms) {
+                for (const remappedSymbol of this._remappedSymbols) {
+                    if (remappedSymbol.type === "uniform" && func.code.includes(remappedSymbol.name)) {
+                        accessesUniforms = true;
+                        break;
+                    }
+                }
+            }
+
+            // Look to see if we have an exact match including parameters of this function in the list of remapped symbols
             const existingFunctionExactOverload = this._remappedSymbols.find(
                 (s) => s.type === "function" && s.name === funcName && s.params === func.params && s.owners[0] && s.owners[0].blockType === block.blockType
             );
 
-            // TODO: if this accesses any uniforms, it must get a new copy in _remappedSymbols
-
+            // Look to see if we already have this function in the list of remapped symbols
             const existingFunction = this._remappedSymbols.find((s) => s.type === "function" && s.name === funcName && s.owners[0] && s.owners[0].blockType === block.blockType);
 
             // Get or create the remapped name, ignoring the parameter list
-            const newVarName = existingFunction?.remappedName ?? DecorateSymbol(this._makeSymbolUnique(funcName));
+            let remappedName = existingFunction?.remappedName;
+            let createdNewName = false;
+            if (remappedName === undefined || accessesUniforms) {
+                remappedName = DecorateSymbol(this._makeSymbolUnique(funcName));
+                createdNewName = true;
+                // Since we've created a new name add it to the list of symbol renames
+                renameWork.symbolRenames.push({
+                    from: DecorateSymbol(funcName),
+                    to: remappedName,
+                });
+            }
 
-            // If this exact overload wasn't found, add it to the list of remapped symbols so it'll be emitted in
-            // the final shader.
-            if (!existingFunctionExactOverload) {
+            // If we created a new name, or if we didn't but this exact overload wasn't found,
+            // add it to the list of remapped symbols so it'll be emitted in the final shader.
+            if (createdNewName || !existingFunctionExactOverload) {
                 this._remappedSymbols.push({
                     type: "function",
                     name: funcName,
-                    remappedName: newVarName,
+                    remappedName,
                     params: func.params,
                     declaration: func.code,
                     owners: [block],
                     inputBlock: undefined,
-                });
-            }
-
-            // If this is the first time we've seen this function, add it to the list of symbol renames
-            if (!existingFunction) {
-                renameWork.symbolRenames.push({
-                    from: DecorateSymbol(funcName),
-                    to: newVarName,
                 });
             }
         }
@@ -496,9 +525,6 @@ export class SmartFilterOptimizer {
         // Processes the defines to make them unique
         this._processDefines(block, renameWork);
 
-        // Processes the functions other than the main function
-        this._processHelperFunctions(block, renameWork);
-
         // Processes the constants to make them unique
         this._processVariables(block, renameWork, "const", shaderProgram.fragment.const, true);
 
@@ -510,6 +536,9 @@ export class SmartFilterOptimizer {
         additionalSamplers = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniformSingle, false, true);
 
         samplerList.push(...additionalSamplers);
+
+        // Processes the functions other than the main function - must be done after _processVariables()
+        this._processHelperFunctions(block, renameWork, samplerList);
 
         // Processes the texture inputs
         for (const sampler of samplerList) {

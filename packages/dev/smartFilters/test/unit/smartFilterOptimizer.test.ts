@@ -18,6 +18,7 @@ import {
     _helper2_,
     _helper1_2_,
     _helper2_2_,
+    TestHelperConsolidationBlockGlsl,
 } from "./smartFilterOptimizer.testData.js";
 
 describe("smartFilterOptimizer", () => {
@@ -26,6 +27,7 @@ describe("smartFilterOptimizer", () => {
     const testBlockWithTexture2DSymbolDefinition = importCustomBlockDefinition(testBlockWithTexture2DSymbolAnnotatedGlsl) as SerializedShaderBlockDefinition;
     const testBlockWithTwoHelpers1Definition = importCustomBlockDefinition(TwoHelpersFirstBlockGlsl) as SerializedShaderBlockDefinition;
     const testBlockWithTwoHelpers2Definition = importCustomBlockDefinition(TwoHelpersSecondBlockGlsl) as SerializedShaderBlockDefinition;
+    const testHelperConsolidationDefinition = importCustomBlockDefinition(TestHelperConsolidationBlockGlsl) as SerializedShaderBlockDefinition;
 
     describe("when a block has multiple overloads of a helper function", () => {
         it("should emit all of them in the optimized shader block", () => {
@@ -219,10 +221,48 @@ describe("smartFilterOptimizer", () => {
             expect(containsSubstringIgnoringWhitespace(fragmentShaderCode!, _helper2_2_)).toBe(true);
         });
     });
+
+    describe("when a block is reused", () => {
+        it("should reuse helpers that don't access uniforms", () => {
+            // Arrange
+            const smartFilter = new SmartFilter("Test");
+
+            const firstBlock = CustomShaderBlock.Create(smartFilter, "FirstBlock", testHelperConsolidationDefinition);
+            const secondBlock = CustomShaderBlock.Create(smartFilter, "SecondBlock", testHelperConsolidationDefinition);
+            const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
+
+            textureInputBlock.output.connectTo(firstBlock.findInput("input")!);
+            firstBlock.output.connectTo(secondBlock.findInput("input")!);
+            secondBlock.output.connectTo(smartFilter.output);
+
+            const optimizer = new SmartFilterOptimizer(smartFilter, {
+                maxSamplersInFragmentShader: 16,
+                removeDisabledBlocks: false,
+            });
+
+            // Act
+            const optimizedSmartFilter = optimizer.optimize();
+
+            // Assert
+            expect(optimizedSmartFilter).not.toBeNull();
+            const optimizedBlock = optimizedSmartFilter!.attachedBlocks.find((b) => b.name === "optimized");
+            const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
+            const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
+
+            // Allow optional numeric decoration like _helperNoUniformAccess_2_ before the '('
+            expect(countOfRegexMatches(fragmentShaderCode!, /vec2 _helperNoUniformAccess_(?:\d+_)?\(vec2 uv\) {/g)).toBe(1);
+            expect(countOfRegexMatches(fragmentShaderCode!, /vec4 _helperAccessesUniform_(?:\d+_)?\(vec2 vUV\) {/g)).toBe(2);
+        });
+    });
 });
 
 function containsSubstringIgnoringWhitespace(str: string, substring: string): boolean {
     const normalizedStr = str.replace(/\s+/g, " ");
     const normalizedSubstring = substring.replace(/\s+/g, " ");
     return normalizedStr.includes(normalizedSubstring);
+}
+
+function countOfRegexMatches(str: string, regex: RegExp): number {
+    const matches = str.match(regex);
+    return matches ? matches.length : 0;
 }

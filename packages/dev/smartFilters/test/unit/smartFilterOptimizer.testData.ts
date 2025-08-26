@@ -146,3 +146,28 @@ vec4 _helper2_2_(vec2 vUV) {
     // In FirstBlock
     return texture2D(_input_, vUV);
 }`;
+
+export const TestHelperConsolidationBlockGlsl = `
+/*
+{
+    "smartFilterBlockType": "TestHelperConsolidationBlock",
+    "namespace": "Babylon.Test"
+}
+*/
+
+uniform sampler2D input; // main
+
+vec2 helperNoUniformAccess(vec2 uv) {
+    return vec2(uv.x, 0.);
+}
+
+vec4 helperAccessesUniform(vec2 vUV) {
+    return texture2D(input, vUV);
+}
+
+vec4 blockMain(vec2 vUV) { // main
+    vec2 uv = helperNoUniformAccess(vUV);
+    vec4 color = helperAccessesUniform(uv);
+    return color;
+}
+`;
