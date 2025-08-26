@@ -94,7 +94,7 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
     } else if (typeof buffer === "string") {
         data = await Tools.LoadFileAsync(buffer);
         mimeType = GetMimeType(buffer) || mimeType;
-    } else if (buffer instanceof HTMLImageElement) {
+    } else if (typeof HTMLImageElement !== "undefined" && buffer instanceof HTMLImageElement) {
         data = await Tools.LoadFileAsync(buffer.src);
         mimeType = GetMimeType(buffer.src) || mimeType;
     } else if (buffer instanceof Blob) {
