@@ -20,21 +20,11 @@ module.exports = (env) => {
             outputModule: true,
         },
         target: "es2020",
-        // externals: {
-        //     "/^addons\/.*$/": "addons/[request]",
-        //     "/^core\/.*$/": "core/[request]",
-        //     "/^gui\/.*$/": "gui/[request]",
-        //     "/^loaders\/.*$/": "loaders/[request]",
-        //     "/^materials\/.*$/": "materials/[request]",
-        //     "/^serializers\/.*$/": "serializers/[request]",
-        //     "/^@fluentui\/.*$/": "@fluentui/[request]",
-        //     react: "react",
-        //     "react-dom": "react-dom",
-        //     "usehooks-ts": "usehooks-ts",
-        // },
-        externals: [
-            webpackTools.externalsFunction(["inspector-v2"], "es6"),
+                externals: [
+            // TODO: It doesn't quite seem like externalsFunction was designed for this es6/esm scenario. Need to follow up with Raanan.
+            // webpackTools.externalsFunction(["inspector-v2"], "es6"),
             function ({ context, request }, callback) {
+                // TODO: Related to the todo above, this is used in place of webpackTools.externalsFunction
                 // Check for @babylonjs packages (transformed by TypeScript) - these should be external
                 if (/^@babylonjs\//.test(request)) {
                     return callback(null, request);
