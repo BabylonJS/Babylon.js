@@ -23,6 +23,10 @@
                 "buildType": "es6",
                 "basePackage": "@babylonjs/inspector-v2",
                 "appendJS": true
+            },
+            {
+                "transform": "./sharedUIComponentsPathTransform.cjs",
+                "afterDeclarations": true
             }
         ]
     },
