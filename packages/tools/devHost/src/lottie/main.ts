@@ -1,6 +1,6 @@
 import type { AnimationConfiguration } from "lottie-player/animationConfiguration";
 import { Player } from "lottie-player/player";
-//import { LocalPlayer } from "lottie-player/localPlayer";
+import { LocalPlayer } from "lottie-player/localPlayer";
 
 /** Main entry point for the default scene for lottie-player */
 export async function Main(): Promise<void> {
@@ -10,6 +10,10 @@ export async function Main(): Promise<void> {
     const searchParams = new URLSearchParams(window.location.search);
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
     const fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
+
+    // Whether to use a web worker for rendering or not, defaults to true
+    const useWorkerParam = searchParams.get("useWorker");
+    const useWorker = useWorkerParam !== "false"; // Default to true if not specified
 
     // These are variables that will be replaced in the lottie file if it contains them. You can replace with them text strings and text fill colors
     const variables = new Map<string, string>();
@@ -30,11 +34,11 @@ export async function Main(): Promise<void> {
     };
 
     // Create the player and play the animation
-    const player = new Player(div, fileUrl, variables, configuration);
-    player.playAnimation();
-
-    // If you want to use the LocalPlayer instead of Player (so no OffscreenCanvas and no worker thread), use this code
-    // and uncomment the import at the top of the file
-    // const player = new LocalPlayer(div, fileUrl, variables, configuration);
-    // await player.playAnimationAsync();
+    if (useWorker) {
+        const player = new Player(div, fileUrl, variables, configuration);
+        player.playAnimation();
+    } else {
+        const player = new LocalPlayer(div, fileUrl, variables, configuration);
+        await player.playAnimationAsync();
+    }
 }

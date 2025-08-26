@@ -6,15 +6,19 @@ The recommended case of using the devhost is for ES6 experiences that contain th
 
 # Scenarios
 
-Currently this dev host supports two scenarios that you can access by adding a QSP to the URL:
-
-exp=testScene -> Default scenario if you don't pass anything, renders a scene that is the equivalent of the default playground scene. **Prefer using the playground over this.**
-exp=lottie -> Uses dev/lottie-player to play a lottie animation.
+Currently this dev host supports two scenarios that you can access by adding the exp QSP to the URL.
 
 ## exp=lottie
 
-This experience allows you to test the Babylon lottie-player. You can run this experience with a lottie file in the Babylon Assets repo by using the QSP: file=fileName.json, for example: ?exp=lottie&file=triangles_noParents_noCross.json
+This experience allows you to test the Babylon lottie-player. It supports the following params:
 
-This will run the lottie-player experience with the file `https://assets.babylonjs.com/lottie/triangles_noParents_noCross.json`;
+- file=string Renders this file from the Babylon assets repo. For example, file=triangles.json uses `https://assets.babylonjs.com/lottie/triangles.json`;
+- useWorker=boolean Whether to use the webworker for rendering or not. Defaults to true if not used.
 
-If you need more control, you can edit directly the file /src/lottie/main.ts where you can change the configuration and variables of the animation.
+To change lottie variables or more detailed configuration options, edit the file /src/lottie/main.ts directly.
+
+## exp=testScene
+
+Renders a test scene, similar to the playground, but this code uses ES6 by default, so no sidefects are loaded like in the playground. This is used just for backwards compatibility, **prefer the playground for this type of testing unless you are trying to test an ES6 scenario.**. It supports the following params:
+
+- useTS=boolean Whether to use the createScene.ts or createSceneJS.js files. Defaults to true (createScene.ts) if not used.
