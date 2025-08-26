@@ -22,7 +22,6 @@ export class SpriteNode extends Node {
     /**
      * Creates a new SpriteNode instance.
      * @param id Unique identifier for the sprite node.
-     * @param ignoreOpacityAnimations If there are no animations on opacity, mark this as true to ignore and optimize CPU usage.
      * @param sprite The sprite associated with this node.
      * @param position The position of the sprite in the scene.
      * @param rotation The rotation of the sprite in degrees.
@@ -30,17 +29,8 @@ export class SpriteNode extends Node {
      * @param opacity The opacity of the sprite.
      * @param parent The parent node in the scene graph.
      */
-    public constructor(
-        id: string,
-        ignoreOpacityAnimations: boolean,
-        sprite: ThinSprite,
-        position?: Vector2Property,
-        rotation?: ScalarProperty,
-        scale?: Vector2Property,
-        opacity?: ScalarProperty,
-        parent?: Node
-    ) {
-        super(id, ignoreOpacityAnimations, position, rotation, scale, opacity, parent);
+    public constructor(id: string, sprite: ThinSprite, position?: Vector2Property, rotation?: ScalarProperty, scale?: Vector2Property, opacity?: ScalarProperty, parent?: Node) {
+        super(id, position, rotation, scale, opacity, parent);
 
         this._sprite = sprite;
         this._originalWidth = sprite.width;
