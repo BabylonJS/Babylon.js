@@ -62,6 +62,7 @@ module.exports = (env) => {
                 serializers: path.resolve(basePathForSources, "serializers", outputDirectoryForAliases),
                 loaders: path.resolve(basePathForSources, "loaders", outputDirectoryForAliases),
                 materials: path.resolve(basePathForSources, "materials", outputDirectoryForAliases),
+                "lottie-player": path.resolve(basePathForSources, "lottiePlayer", outputDirectoryForAliases),
                 inspector: path.resolve(__dirname, "../../", "dev", "inspector", outputDirectoryForAliases),
                 "shared-ui-components": path.resolve(__dirname, "../../", "dev", "sharedUiComponents", outputDirectoryForAliases),
                 "post-processes": path.resolve(basePathForSources, "postProcesses", outputDirectoryForAliases),
