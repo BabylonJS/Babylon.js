@@ -5666,7 +5666,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns result input
      */
     public static RotationYawPitchRollToRef<T extends Quaternion>(yaw: number, pitch: number, roll: number, result: T): T {
-        // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
+        // Produces a quaternion from Euler angles in the y-x-z orientation
         const halfRoll = roll * 0.5;
         const halfPitch = pitch * 0.5;
         const halfYaw = yaw * 0.5;
