@@ -81,7 +81,7 @@
                 "background": {
                     "activeOnStart": true,
                     "beginsPattern": ".*",
-                    "endsPattern": "Watching for changes"
+                    "endsPattern": "Watching for changes in ./packages/dev/smartFilterBlocks/src/blocks..."
                 }
             }
         },
