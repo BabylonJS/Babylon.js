@@ -433,7 +433,13 @@ export class SmartFilterOptimizer {
         return samplerList;
     }
 
-    private _processSampleTexture(block: ShaderBlock, renameWork: RenameWork, sampler: string, samplers: string[], inputTextureBlock?: InputBlock<ConnectionPointType.Texture>) {
+    private _processSampleTexture(
+        block: ShaderBlock,
+        renameWork: RenameWork,
+        sampler: string,
+        samplers: string[],
+        inputTextureBlock?: InputBlock<ConnectionPointType.Texture>
+    ): string {
         let newSamplerName = sampler;
 
         const existingRemapped = this._remappedSymbols.find((s) => s.type === "sampler" && s.inputBlock && s.inputBlock === inputTextureBlock);
@@ -461,6 +467,8 @@ export class SmartFilterOptimizer {
             from: sampler,
             to: newSamplerName,
         });
+
+        return UndecorateSymbol(newSamplerName);
     }
 
     private _canBeOptimized(block: BaseBlock): boolean {
@@ -568,7 +576,7 @@ export class SmartFilterOptimizer {
                 this._processSampleTexture(block, renameWork, samplerName, samplers, parentBlock);
             } else if (this._forceUnoptimized || !this._canBeOptimized(parentBlock)) {
                 // the block connected to this input cannot be optimized: we must directly sample its output texture
-                this._processSampleTexture(block, renameWork, samplerName, samplers);
+                const uniqueSamplerName = this._processSampleTexture(block, renameWork, samplerName, samplers);
                 let stackItem = this._blockToStackItem.get(parentBlock);
                 if (!stackItem) {
                     stackItem = {
@@ -579,7 +587,7 @@ export class SmartFilterOptimizer {
                     this._blockToStackItem.set(parentBlock, stackItem);
                 }
                 // creates a new input connection point for the texture in the optimized block
-                const connectionPoint = optimizedBlock._registerInput(samplerName, ConnectionPointType.Texture);
+                const connectionPoint = optimizedBlock._registerInput(uniqueSamplerName, ConnectionPointType.Texture);
                 stackItem.inputsToConnectTo.push(connectionPoint);
             } else {
                 let parentFuncName: string;

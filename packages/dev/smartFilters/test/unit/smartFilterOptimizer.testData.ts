@@ -171,3 +171,44 @@ vec4 blockMain(vec2 vUV) { // main
     return color;
 }
 `;
+
+export const NonOptimizableSimpleBlockGlsl = `
+/*
+{
+    "smartFilterBlockType": "NonOptimizableSimpleBlock",
+    "namespace": "Babylon.Test",
+    "disableOptimization": true
+}
+*/
+
+uniform sampler2D input; // main
+
+vec4 blockMain(vec2 vUV) { // main
+    return texture2D(input, vUV);
+}
+`;
+
+export const BlendBlockGlsl = `
+/*
+{
+    "smartFilterBlockType": "BlendBlock",
+    "namespace": "Babylon.Test"
+}
+*/
+
+uniform sampler2D input1; // main
+uniform sampler2D input2;
+
+vec4 blockMain(vec2 vUV) { // main
+    vec4 color1 = texture2D(input1, vUV);
+    vec4 color2 = texture2D(input2, vUV);
+    return mix(color1, color2, vUV.x);
+}
+`;
+
+export const ExpectedBlendBlockComboMain2 = `
+    vec4 _blockMain_2_(vec2 vUV) {
+        vec4 color1 = texture2D(_input1_2_, vUV);
+        vec4 color2 = texture2D(_input2_, vUV);
+        return mix(color1, color2, vUV.x);
+    }`;

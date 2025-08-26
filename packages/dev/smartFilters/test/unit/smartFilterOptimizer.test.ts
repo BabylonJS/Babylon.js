@@ -19,6 +19,9 @@ import {
     _helper1_2_,
     _helper2_2_,
     TestHelperConsolidationBlockGlsl,
+    BlendBlockGlsl,
+    NonOptimizableSimpleBlockGlsl,
+    ExpectedBlendBlockComboMain2,
 } from "./smartFilterOptimizer.testData.js";
 
 describe("smartFilterOptimizer", () => {
@@ -28,6 +31,8 @@ describe("smartFilterOptimizer", () => {
     const testBlockWithTwoHelpers1Definition = importCustomBlockDefinition(TwoHelpersFirstBlockGlsl) as SerializedShaderBlockDefinition;
     const testBlockWithTwoHelpers2Definition = importCustomBlockDefinition(TwoHelpersSecondBlockGlsl) as SerializedShaderBlockDefinition;
     const testHelperConsolidationDefinition = importCustomBlockDefinition(TestHelperConsolidationBlockGlsl) as SerializedShaderBlockDefinition;
+    const testBlockNonOptimizableDefinition = importCustomBlockDefinition(NonOptimizableSimpleBlockGlsl) as SerializedShaderBlockDefinition;
+    const testBlockBlendDefinition = importCustomBlockDefinition(BlendBlockGlsl) as SerializedShaderBlockDefinition;
 
     describe("when a block has multiple overloads of a helper function", () => {
         it("should emit all of them in the optimized shader block", () => {
@@ -254,11 +259,53 @@ describe("smartFilterOptimizer", () => {
             expect(countOfRegexMatches(fragmentShaderCode!, /vec4 _helperAccessesUniform_(?:\d+_)?\(vec2 vUV\) {/g)).toBe(2);
         });
     });
+
+    describe("when there are two instances of the same block optimized together, and one is connected to a non-optimizable block", () => {
+        it("should connect the non-optimizable block's output to the correct instance of the block", () => {
+            // Arrange
+            const smartFilter = new SmartFilter("Test");
+
+            const nonOptimizableBlock = CustomShaderBlock.Create(smartFilter, "NonOptimizable", testBlockNonOptimizableDefinition);
+            const leftBlock = CustomShaderBlock.Create(smartFilter, "LeftBlock", testBlockBlendDefinition);
+            const rightBlock = CustomShaderBlock.Create(smartFilter, "RightBlock", testBlockBlendDefinition);
+            const input1 = new InputBlock(smartFilter, "input1", ConnectionPointType.Texture, null);
+            const input2 = new InputBlock(smartFilter, "input2", ConnectionPointType.Texture, null);
+            const input3 = new InputBlock(smartFilter, "input3", ConnectionPointType.Texture, null);
+
+            input1.output.connectTo(nonOptimizableBlock.findInput("input")!);
+            nonOptimizableBlock.output.connectTo(leftBlock.findInput("input1")!);
+            input2.output.connectTo(leftBlock.findInput("input2")!);
+            leftBlock.output.connectTo(rightBlock.findInput("input2")!);
+            input3.output.connectTo(rightBlock.findInput("input1")!);
+            rightBlock.output.connectTo(smartFilter.output);
+
+            const optimizer = new SmartFilterOptimizer(smartFilter, {
+                maxSamplersInFragmentShader: 16,
+                removeDisabledBlocks: false,
+            });
+
+            // Act
+            const optimizedSmartFilter = optimizer.optimize();
+
+            // Assert
+            expect(optimizedSmartFilter).not.toBeNull();
+            const optimizedBlock = optimizedSmartFilter!.attachedBlocks.find((b) => b.name === "optimized");
+            const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
+            const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
+            expect(containsSubstringIgnoringWhitespace(fragmentShaderCode!, ExpectedBlendBlockComboMain2)).toBe(true);
+
+            // This is the key test - it should create an input connection point for input1_2 not input1 since
+            // input1 is the uniform used by the rightmost instance of the blend block, and input1_2 is the one
+            // used by the leftmost instance which is the one that connects to the non-optimizable block (via
+            // this connection point).
+            expect(optimizedBlock!.findInput("input1_2")).not.toBeNull();
+        });
+    });
 });
 
 function containsSubstringIgnoringWhitespace(str: string, substring: string): boolean {
-    const normalizedStr = str.replace(/\s+/g, " ");
-    const normalizedSubstring = substring.replace(/\s+/g, " ");
+    const normalizedStr = str.replace(/\s+/g, " ").trim();
+    const normalizedSubstring = substring.replace(/\s+/g, " ").trim();
     return normalizedStr.includes(normalizedSubstring);
 }
 
