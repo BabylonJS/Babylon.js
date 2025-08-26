@@ -4,7 +4,9 @@
     "compilerOptions": {
         "outDir": "./lib",
         "rootDir": "../../../",
-        "declaration": false,
+        "declaration": true,
+        "declarationMap": false,
+        "sourceMap": true,
         "target": "ES2020",
         "importHelpers": true,
         "plugins": [

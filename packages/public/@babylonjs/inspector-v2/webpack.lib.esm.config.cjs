@@ -16,11 +16,12 @@ module.exports = (env) => {
             },
             clean: true,
         },
+        devtool: "source-map",
         experiments: {
             outputModule: true,
         },
         target: "es2020",
-                externals: [
+        externals: [
             // TODO: It doesn't quite seem like externalsFunction was designed for this es6/esm scenario. Need to follow up with Raanan.
             // webpackTools.externalsFunction(["inspector-v2"], "es6"),
             function ({ context, request }, callback) {
