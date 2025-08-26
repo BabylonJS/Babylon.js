@@ -292,7 +292,7 @@ export class SmartFilterOptimizer {
      * folded into the final optimized block.
      * NOTE: so this function can know about the uniforms to test for them, it must be called after _processVariables.
      * @param block - The block we are processing
-     * @param renameWork - The rename work object
+     * @param renameWork - The list of rename work to add to as needed
      * @param samplerList - The list of sampler names
      */
     private _processHelperFunctions(block: ShaderBlock, renameWork: RenameWork, samplerList: string[]): void {
@@ -322,7 +322,7 @@ export class SmartFilterOptimizer {
             }
             if (!accessesUniforms) {
                 for (const remappedSymbol of this._remappedSymbols) {
-                    if (remappedSymbol.type === "uniform" && func.code.includes(remappedSymbol.name)) {
+                    if (remappedSymbol.type === "uniform" && remappedSymbol.owners.indexOf(block) !== -1 && func.code.includes(remappedSymbol.name)) {
                         accessesUniforms = true;
                         break;
                     }
@@ -334,13 +334,13 @@ export class SmartFilterOptimizer {
                 (s) => s.type === "function" && s.name === funcName && s.params === func.params && s.owners[0] && s.owners[0].blockType === block.blockType
             );
 
-            // Look to see if we already have this function in the list of remapped symbols
+            // Look to see if we already have this function in the list of remapped symbols, regardless of parameters
             const existingFunction = this._remappedSymbols.find((s) => s.type === "function" && s.name === funcName && s.owners[0] && s.owners[0].blockType === block.blockType);
 
             // Get or create the remapped name, ignoring the parameter list
             let remappedName = existingFunction?.remappedName;
             let createdNewName = false;
-            if (remappedName === undefined || accessesUniforms) {
+            if (!remappedName || accessesUniforms) {
                 remappedName = DecorateSymbol(this._makeSymbolUnique(funcName));
                 createdNewName = true;
                 // Since we've created a new name add it to the list of symbol renames
