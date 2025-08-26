@@ -2916,12 +2916,12 @@
         },
         {
             "title": "OpenPBR Analytic Lights Anisotropy",
-            "playgroundId": "#GRQHVV#55",
+            "playgroundId": "#GRQHVV#61",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "OpenPBR Analytic Lights Anisotropy Texture",
-            "playgroundId": "#GRQHVV#56",
+            "playgroundId": "#GRQHVV#60",
             "excludedEngines": ["webgl1"]
         }
     ]
