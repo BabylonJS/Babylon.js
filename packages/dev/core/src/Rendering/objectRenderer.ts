@@ -222,7 +222,6 @@ export class ObjectRenderer {
     protected _useUBO: boolean;
     protected _sceneUBO: UniformBuffer;
     protected _currentSceneUBO: UniformBuffer;
-    protected _currentBoundingBoxMeshList: Array<BoundingBox>;
 
     /**
      * The options used by the object renderer
@@ -550,14 +549,6 @@ export class ObjectRenderer {
         }
 
         this._defaultRenderListPrepared = false;
-
-        // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
-        const boundingBoxRenderer = (this._scene as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
-
-        if (this.enableBoundingBoxRendering && boundingBoxRenderer) {
-            this._currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
-            this._currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
-        }
     }
 
     /**
@@ -565,14 +556,6 @@ export class ObjectRenderer {
      */
     public finishRender() {
         const scene = this._scene;
-
-        // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
-        const boundingBoxRenderer = (this._scene as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
-
-        if (this.enableBoundingBoxRendering && boundingBoxRenderer) {
-            boundingBoxRenderer.renderList.data = this._currentBoundingBoxMeshList;
-            boundingBoxRenderer.renderList.length = this._currentBoundingBoxMeshList.length;
-        }
 
         if (this._useUBO) {
             this._scene.setSceneUniformBuffer(this._currentSceneUBO);

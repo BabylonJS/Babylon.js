@@ -101,6 +101,8 @@ import type { ProceduralTexture } from "./Materials/Textures/Procedurals/procedu
 import { FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask";
 import { _RetryWithInterval } from "./Misc/timingTools";
 import type { ObjectRenderer } from "./Rendering/objectRenderer";
+import type { BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
+import type { BoundingBox } from "./Culling/boundingBox";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -4890,6 +4892,17 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
+
+                // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which could be reset/updated when processing custom render targets
+                // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+                const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
+
+                let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
+                if (boundingBoxRenderer) {
+                    currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+                    currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+                }
+
                 for (let renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     const renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
@@ -4899,6 +4912,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                         needRebind = true;
                     }
                 }
+
+                if (boundingBoxRenderer) {
+                    boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList!;
+                    boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList!.length;
+                }
+
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
                 this._renderId++;
