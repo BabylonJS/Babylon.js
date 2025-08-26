@@ -29,7 +29,6 @@ export async function Main(): Promise<void> {
         scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,
         devicePixelRatio: 1, // Scale factor,
         easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
-        ignoreOpacityAnimations: true, // Whether to ignore opacity animations for performance
         supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
     };
 

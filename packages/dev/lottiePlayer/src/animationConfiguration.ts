@@ -47,11 +47,6 @@ export type AnimationConfiguration = {
      */
     easingSteps: number;
     /**
-     * Whether to ignore opacity animations for performance.
-     * Default is true.
-     */
-    ignoreOpacityAnimations: boolean;
-    /**
      * Whether to support device lost events for WebGL contexts.
      * Default is false.
      */
@@ -71,6 +66,5 @@ export const DefaultConfiguration = {
     scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,
     devicePixelRatio: 1, // Scale factor,
     easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
-    ignoreOpacityAnimations: true, // Whether to ignore opacity animations for performance
     supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
 } as const satisfies AnimationConfiguration;
