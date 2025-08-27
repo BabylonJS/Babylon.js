@@ -12,7 +12,6 @@ export class ControlNode extends Node {
     /**
      * Constructs a new control node.
      * @param id Unique identifier for the node.
-     * @param ignoreOpacityAnimations If there are no animations on opacity, mark this as true to ignore and optimize CPU usage.
      * @param inFrame Frame at which the node becomes active.
      * @param outFrame Frame at which the node becomes inactive.
      * @param position Position of the node in the scene.
@@ -23,7 +22,6 @@ export class ControlNode extends Node {
      */
     public constructor(
         id: string,
-        ignoreOpacityAnimations: boolean,
         inFrame: number,
         outFrame: number,
         position?: Vector2Property,
@@ -32,7 +30,7 @@ export class ControlNode extends Node {
         opacity?: ScalarProperty,
         parent?: Node
     ) {
-        super(id, ignoreOpacityAnimations, position, rotation, scale, opacity, parent);
+        super(id, position, rotation, scale, opacity, parent);
         this._inFrame = inFrame;
         this._outFrame = outFrame;
 

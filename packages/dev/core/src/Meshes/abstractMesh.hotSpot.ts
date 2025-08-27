@@ -2,6 +2,7 @@ import type { AbstractMesh, PickingInfo } from "core/index";
 import { Vector3, TmpVectors, Matrix } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Constants } from "core/Engines/constants";
+import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 
 /**
  * Data for mesh hotspot computation
@@ -33,6 +34,33 @@ export function CreateHotSpotQueryForPickingInfo(pickingInfo: PickingInfo): HotS
     };
 }
 
+function GetVertexElementData(mesh: AbstractMesh, index: number, kind: string) {
+    const vertexBuffer = mesh.getVertexBuffer(kind);
+    if (!vertexBuffer) {
+        return null;
+    }
+
+    const bufferData = vertexBuffer.getData();
+    if (!bufferData) {
+        return null;
+    }
+
+    // EnumerateFloatValues synchronously calls the callback, hence the non-null assertion.
+    let values!: number[];
+    EnumerateFloatValues(
+        bufferData,
+        vertexBuffer.byteStride * index,
+        vertexBuffer.byteStride,
+        vertexBuffer.getSize(),
+        vertexBuffer.type,
+        1, // Request only a single element.
+        vertexBuffer.normalized,
+        (v) => (values = v)
+    );
+
+    return values;
+}
+
 /**
  * Return a transformed local position from a mesh and vertex index
  * @param mesh mesh used to get vertex array from
@@ -41,68 +69,67 @@ export function CreateHotSpotQueryForPickingInfo(pickingInfo: PickingInfo): HotS
  * @returns false if it was not possible to compute the position for that vertex
  */
 export function GetTransformedPosition(mesh: AbstractMesh, index: number, res: Vector3): boolean {
-    const data = mesh.getVerticesData(VertexBuffer.PositionKind);
-    if (!data) {
+    const positions = GetVertexElementData(mesh, index, VertexBuffer.PositionKind);
+    if (!positions) {
         return false;
     }
-    const base = index * 3;
-    const values = [data[base + 0], data[base + 1], data[base + 2]];
-    if (values.some((value) => isNaN(value ?? Number.NaN))) {
+
+    if (positions.some((value) => isNaN(value ?? Number.NaN))) {
         return false;
     }
 
     if (mesh.morphTargetManager) {
-        for (let component = 0; component < 3; component++) {
-            let value = values[component];
+        const base = index * 3;
+        for (let i = 0; i < positions.length; i++) {
+            let value = positions[i];
             for (let targetCount = 0; targetCount < mesh.morphTargetManager.numTargets; targetCount++) {
                 const target = mesh.morphTargetManager.getTarget(targetCount);
                 const influence = target.influence;
                 if (influence !== 0) {
                     const targetData = target.getPositions();
                     if (targetData) {
-                        value += (targetData[base + component] - data[base + component]) * influence;
+                        value += (targetData[base + i] - positions[i]) * influence;
                     }
                 }
             }
-            values[component] = value;
+            positions[i] = value;
         }
     }
-    res.fromArray(values);
+
+    res.fromArray(positions);
+
     if (mesh.skeleton) {
-        const matricesIndicesData = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
-        const matricesWeightsData = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
-        if (matricesWeightsData && matricesIndicesData) {
+        const matricesIndicesData = GetVertexElementData(mesh, index, VertexBuffer.MatricesIndicesKind);
+        const matricesWeightsData = GetVertexElementData(mesh, index, VertexBuffer.MatricesWeightsKind);
+        if (matricesIndicesData && matricesWeightsData) {
             const needExtras = mesh.numBoneInfluencers > 4;
-            const matricesIndicesExtraData = needExtras ? mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
-            const matricesWeightsExtraData = needExtras ? mesh.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
+            const matricesIndicesExtraData = needExtras ? GetVertexElementData(mesh, index, VertexBuffer.MatricesIndicesExtraKind) : null;
+            const matricesWeightsExtraData = needExtras ? GetVertexElementData(mesh, index, VertexBuffer.MatricesWeightsExtraKind) : null;
             const skeletonMatrices = mesh.skeleton.getTransformMatrices(mesh);
 
             const finalMatrix = TmpVectors.Matrix[0];
             const tempMatrix = TmpVectors.Matrix[1];
 
             finalMatrix.reset();
-            const matWeightIdx = index * 4;
 
-            let inf: number;
-            let weight: number;
-            for (inf = 0; inf < 4; inf++) {
-                weight = matricesWeightsData[matWeightIdx + inf];
+            for (let i = 0; i < matricesWeightsData.length; i++) {
+                const weight = matricesWeightsData[i];
                 if (weight > 0) {
-                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
+                    Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[i] * 16), weight, tempMatrix);
                     finalMatrix.addToSelf(tempMatrix);
                 }
             }
             if (matricesIndicesExtraData && matricesWeightsExtraData) {
-                for (inf = 0; inf < 4; inf++) {
-                    weight = matricesWeightsExtraData[matWeightIdx + inf];
+                for (let i = 0; i < matricesWeightsExtraData.length; i++) {
+                    const weight = matricesWeightsExtraData[i];
                     if (weight > 0) {
-                        Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData[matWeightIdx + inf] * 16), weight, tempMatrix);
+                        Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData[i] * 16), weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
                     }
                 }
             }
 
-            Vector3.TransformCoordinatesFromFloatsToRef(values[0], values[1], values[2], finalMatrix, res);
+            Vector3.TransformCoordinatesFromFloatsToRef(positions[0], positions[1], positions[2], finalMatrix, res);
         }
     }
 

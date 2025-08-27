@@ -727,7 +727,7 @@ export class ObjectRenderer {
         if (scene._activeMeshesFrozen && this._isFrozen) {
             this._renderingManager.resetSprites();
 
-            if (boundingBoxRenderer) {
+            if (this.enableBoundingBoxRendering && boundingBoxRenderer) {
                 boundingBoxRenderer.reset();
                 for (let i = 0; i < this._activeBoundingBoxes.length; i++) {
                     const boundingBox = this._activeBoundingBoxes.data[i];
@@ -742,7 +742,7 @@ export class ObjectRenderer {
         this._activeMeshes.reset();
         this._activeBoundingBoxes.reset();
 
-        boundingBoxRenderer && boundingBoxRenderer.reset();
+        this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer.reset();
 
         const sceneRenderId = scene.getRenderId();
         const currentFrameId = scene.getFrameId();
@@ -830,7 +830,7 @@ export class ObjectRenderer {
             }
         }
 
-        if (boundingBoxRenderer && winterIsComing) {
+        if (this.enableBoundingBoxRendering && boundingBoxRenderer && winterIsComing) {
             for (let i = 0; i < boundingBoxRenderer.renderList.length; i++) {
                 const boundingBox = boundingBoxRenderer.renderList.data[i];
                 this._activeBoundingBoxes.push(boundingBox);
