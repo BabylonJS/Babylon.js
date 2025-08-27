@@ -4,7 +4,7 @@ import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { OpenPBRMaterial } from "core/Materials";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 const NAME = "KHR_materials_anisotropy";
 
