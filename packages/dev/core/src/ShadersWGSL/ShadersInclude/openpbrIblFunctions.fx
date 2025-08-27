@@ -145,9 +145,7 @@
         alphaG: f32
         , reflectionMicrosurfaceInfos: vec3f
         , reflectionInfos: vec2f
-    #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-        , NdotVUnclamped: f32
-    #endif
+        , geoInfo: geometryInfoOutParams
     #ifdef REFLECTIONMAP_3D
         , reflectionSampler: texture_cube<f32>
         , reflectionSamplerSampler: sampler
@@ -164,7 +162,7 @@
         var environmentRadiance: vec4f = vec4f(0.f, 0.f, 0.f, 0.f);
         // _____________________________ 2D vs 3D Maps ________________________________
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-            var reflectionLOD: f32 = getLodFromAlphaG(reflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
+            var reflectionLOD: f32 = getLodFromAlphaG(reflectionMicrosurfaceInfos.x, alphaG, geoInfo.NdotVUnclamped);
         #elif defined(LINEARSPECULARREFLECTION)
             var reflectionLOD: f32 = getLinearLodFromRoughness(reflectionMicrosurfaceInfos.x, roughness);
         #else
@@ -192,6 +190,135 @@
         // environmentRadiance.rgb *= reflectionInfos.xxx;
         return environmentRadiance.rgb;
     }
+
+#if defined(ANISOTROPIC)
+    fn sampleRadianceAnisotropic(
+        alphaG: f32
+        , reflectionMicrosurfaceInfos: vec3f
+        , reflectionInfos: vec2f
+        , geoInfo: geometryInfoOutParams
+        , normalW: vec3f
+        , viewDirectionW: vec3f
+        , positionW: vec3f
+        , noise: vec3f
+    #ifdef REFLECTIONMAP_3D
+        , reflectionSampler: texture_cube<f32>
+        , reflectionSamplerSampler: sampler
+    #else
+        , reflectionSampler: texture_2d<f32>
+        , reflectionSamplerSampler: sampler
+    #endif
+    #ifdef REALTIME_FILTERING
+        , reflectionFilteringInfo: vec2f
+    #endif
+    ) -> vec3f {
+        var environmentRadiance: vec4f = vec4f(0.f, 0.f, 0.f, 0.f);
+
+        // Calculate alpha along tangent and bitangent according to equation 21 in the OpenPBR spec.
+        let alphaT = alphaG * sqrt(2.0f / (1.0f + (1.0f - geoInfo.anisotropy) * (1.0f - geoInfo.anisotropy)));
+        let alphaB = (1.0f - geoInfo.anisotropy) * alphaT;
+        let modifiedAlphaG = mix(alphaG, alphaB, 0.95);
+        // _____________________________ 2D vs 3D Maps ________________________________
+        #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+            var reflectionLOD: f32 = getLodFromAlphaG(reflectionMicrosurfaceInfos.x, modifiedAlphaG, geoInfo.NdotVUnclamped);
+        #elif defined(LINEARSPECULARREFLECTION)
+            var reflectionLOD: f32 = getLinearLodFromRoughness(reflectionMicrosurfaceInfos.x, roughness);
+        #else
+            var reflectionLOD: f32 = getLodFromAlphaG(reflectionMicrosurfaceInfos.x, modifiedAlphaG);
+        #endif
+
+        // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
+        reflectionLOD = reflectionLOD * reflectionMicrosurfaceInfos.y + reflectionMicrosurfaceInfos.z;
+
+        #ifdef REALTIME_FILTERING
+            environmentRadiance = vec4f(radiance(modifiedAlphaG, reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionFilteringInfo), 1.0f);
+        #else
+            // We will sample multiple reflections using interpolated surface normals along
+            // the tangent direction from -tangent to +tangent.
+            // We don't want to waste samples where the view direction is back-facing so
+            // we'll compress samples into the valid range.
+            const samples: i32 = 16;
+            // Find the maximum safe interpolation range
+            let normalDot = dot(viewDirectionW, normalW);
+            let tangentDot = dot(viewDirectionW, geoInfo.anisotropicTangent);
+            let negTangentDot = dot(viewDirectionW, -geoInfo.anisotropicTangent);
+
+            // Find the valid interpolation range on each side of the normal
+            var maxPositiveT = 1.0f;  // Default: sample all the way to +tangent
+            var maxNegativeT = -1.0f; // Default: sample all the way to -tangent
+
+            // If +tangent is back-facing, find where the interpolation becomes back-facing
+            if (tangentDot <= 0.0f) {
+                // Find t where mix(normalW, tangentW, t) becomes perpendicular to view
+                if (abs(tangentDot - normalDot) > 0.001f) {
+                    maxPositiveT = clamp(-normalDot / (tangentDot - normalDot), 0.0, 1.0);
+                } else {
+                    maxPositiveT = 0.0f; // Can't sample towards tangent
+                }
+            }
+        
+            // If -tangent is back-facing, find where the interpolation becomes back-facing  
+            if (negTangentDot <= 0.0f) {
+                // Find t where mix(-tangentW, normalW, blend) becomes perpendicular to view
+                // This is equivalent to mix(normalW, -tangentW, -t) for t < 0
+                if (abs(negTangentDot - normalDot) > 0.001f) {
+                    let negT = -normalDot / (negTangentDot - normalDot);
+                    maxNegativeT = clamp(-negT, -1.0f, 0.0f);
+                } else {
+                    maxNegativeT = 0.0f; // Can't sample towards -tangent
+                }
+            }
+
+            // Further compress the sampling range based on the level of anisotropic roughness
+            let tangentRange: f32 = clamp(sqrt(sqrt(alphaT)) * geoInfo.anisotropy, 0.0f, 1.0f) * (0.25f * noise.x + 0.75f);
+            maxPositiveT *= maxPositiveT * tangentRange;
+            maxNegativeT = -(maxNegativeT * maxNegativeT) * tangentRange;
+        
+            var radianceSample = vec4f(0.0);
+            var accumulatedRadiance = vec3f(0.0);
+            var reflectionCoords = vec3f(0.0);
+            var sample_weight = 0.0f;
+            var total_weight = 0.0f;
+            for (var i: i32 = 0; i < samples; i++) {
+                // Find interpolation parameter in our valid range
+                let t: f32 = mix(maxNegativeT, maxPositiveT, f32(i) / f32(max(samples - 1, 1)));
+                
+                // Generate sample direction
+                var sampleDirection: vec3f;
+                if (t < 0.0) {
+                    // Interpolate from -tangent towards normal
+                    let blend: f32 = t + 1.0;
+                    sampleDirection = normalize(mix(-geoInfo.anisotropicTangent, normalW, blend));
+                } else if (t > 0.0) {
+                    // Interpolate from normal towards +tangent
+                    let blend: f32 = t;
+                    sampleDirection = normalize(mix(normalW, geoInfo.anisotropicTangent, blend));
+                } else {
+                    // t = 0, sample the normal
+                    sampleDirection = normalW;
+                }
+                
+                // Empirical approximation of geometry masking.
+                sample_weight = pow(clamp(dot(normalW, sampleDirection), 0.0f, 1.0f), 16.0f);
+                reflectionCoords = createReflectionCoords(positionW, sampleDirection);
+                radianceSample = textureSampleLevel(reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionLOD);
+                #ifdef RGBDREFLECTION
+                    accumulatedRadiance += vec3f(sample_weight) * fromRGBD(radianceSample);
+                #elif defined(GAMMAREFLECTION)
+                    accumulatedRadiance += vec3f(sample_weight) * toLinearSpace(radianceSample.rgb);
+                #else
+                    accumulatedRadiance += vec3f(sample_weight) * radianceSample.rgb;
+                #endif
+                total_weight += sample_weight;
+            }
+            environmentRadiance = vec4f(accumulatedRadiance / vec3f(total_weight), 1.0f);
+        #endif
+
+        // _____________________________ Levels _____________________________________
+        environmentRadiance = vec4f(environmentRadiance.rgb * reflectionInfos.xxx, environmentRadiance.a);
+        return environmentRadiance.rgb;
+    }
+#endif
 
     fn conductorIblFresnel(reflectance: ReflectanceParams, NdotV: f32, roughness: f32, environmentBrdf: vec3f) -> vec3f
     {

@@ -66,6 +66,10 @@ var geometry_tangent: vec2f = vec2f(1.0, 0.0);
     #endif
 #endif
 
+#ifdef ANISOTROPIC
+    let noise = textureSample(blueNoiseSampler, blueNoiseSamplerSampler, fragmentInputs.position.xy / 256.0).xyz;
+#endif
+
 #if defined(ROUGHNESSSTOREINMETALMAPGREEN) && defined(BASE_METALNESS)
     let roughnessFromTexture: f32 = metallicFromTexture.g;
 #elif defined(SPECULAR_ROUGHNESS)

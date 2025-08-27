@@ -66,6 +66,10 @@
     uniform sampler2D environmentBrdfSampler;
 #endif
 
+#ifdef ANISOTROPIC
+    uniform sampler2D blueNoiseSampler;
+#endif
+
 #ifdef IBL_CDF_FILTERING
     uniform sampler2D icdfSampler;
 #endif

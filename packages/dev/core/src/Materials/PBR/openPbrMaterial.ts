@@ -63,6 +63,7 @@ import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
 import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
 import type { IAnimatable } from "../../Animations/animatable.interface";
+import { Texture } from "../Textures";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -778,6 +779,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _samplersList: { [name: string]: Sampler } = {};
     private _samplerDefines: { [name: string]: { type: string; default: any } } = {};
 
+    private static _noiseTexture: Nullable<BaseTexture> = null;
+
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
      * This impacts both the direct diffuse and specular highlights.
@@ -1352,6 +1355,16 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             Logger.Error("OpenPBRMaterial: WebGL 2.0 or above is required for this material.");
         }
 
+        if (OpenPBRMaterial._noiseTexture === null || OpenPBRMaterial._noiseTexture.getScene()?.getEngine() !== scene?.getEngine()) {
+            OpenPBRMaterial._noiseTexture = new Texture(
+                "https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png",
+                scene,
+                false,
+                true,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE
+            );
+        }
+
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
@@ -1370,7 +1383,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
-        this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
 
         // Build the internal property list that can be used to generate and update the uniform buffer
         this._propertyList = {};
@@ -1697,6 +1709,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         return false;
                     }
                 }
+
+                if (OpenPBRMaterial._noiseTexture) {
+                    if (!OpenPBRMaterial._noiseTexture.isReady()) {
+                        return false;
+                    }
+                }
             }
         }
 
@@ -1932,6 +1950,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
                 if (defines.ENVIRONMENTBRDF) {
                     ubo.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
+                }
+
+                if (defines.ANISOTROPIC) {
+                    ubo.setTexture("blueNoiseSampler", OpenPBRMaterial._noiseTexture);
                 }
             }
 
@@ -2249,7 +2271,16 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             uniforms.push(uniformName);
         }
 
-        const samplers = ["environmentBrdfSampler", "boneSampler", "morphTargets", "oitDepthSampler", "oitFrontColorSampler", "areaLightsLTC1Sampler", "areaLightsLTC2Sampler"];
+        const samplers = [
+            "environmentBrdfSampler",
+            "blueNoiseSampler",
+            "boneSampler",
+            "morphTargets",
+            "oitDepthSampler",
+            "oitFrontColorSampler",
+            "areaLightsLTC1Sampler",
+            "areaLightsLTC2Sampler",
+        ];
 
         for (const key in this._samplersList) {
             const sampler = this._samplersList[key];
@@ -2474,7 +2505,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
-        if (this.specularRoughnessAnisotropy > 0.0) {
+        if (this.specularRoughnessAnisotropy > 0.0 && OpenPBRMaterial._noiseTexture) {
             defines.ANISOTROPIC = true;
             if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
                 defines._needUVs = true;

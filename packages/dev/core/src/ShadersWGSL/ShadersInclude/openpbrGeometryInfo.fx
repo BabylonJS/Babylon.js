@@ -8,6 +8,7 @@ struct geometryInfoOutParams
         anisotropy: f32,
         anisotropicTangent: vec3f,
         anisotropicBitangent: vec3f,
+        TBN: mat3x3<f32>
     #endif
 };
 
@@ -52,7 +53,7 @@ fn geometryInfo(
         outParams.anisotropy = anisotropy;
         outParams.anisotropicTangent = anisotropicTangent;
         outParams.anisotropicBitangent = anisotropicBitangent;
-        
+        outParams.TBN = TBN;
     #endif
 
     return outParams;

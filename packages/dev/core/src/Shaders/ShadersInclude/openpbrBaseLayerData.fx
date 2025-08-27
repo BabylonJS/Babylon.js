@@ -71,6 +71,10 @@ vec2 geometry_tangent = vec2(1.0, 0.0);
     #endif
 #endif
 
+#ifdef ANISOTROPIC
+    vec3 noise = texture2D(blueNoiseSampler, gl_FragCoord.xy / 256.0).xyz;
+#endif
+
 // Initalize base layer properties from uniforms
 base_color = vBaseColor.rgb;
 #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)

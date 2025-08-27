@@ -64,8 +64,8 @@ precision highp float;
 #include<openpbrConductorReflectance>
 
 #include<openpbrBlockAmbientOcclusion>
-#include<openpbrIblFunctions>
 #include<openpbrGeometryInfo>
+#include<openpbrIblFunctions>
 
 // Do a mix between layers with additional multipliers for each layer.
 vec3 layer(vec3 slab_bottom, vec3 slab_top, float lerp_factor, vec3 bottom_multiplier, vec3 top_multiplier) {
