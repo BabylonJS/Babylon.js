@@ -1,7 +1,7 @@
 import type { AnimationConfiguration } from "lottie-player/animationConfiguration";
+import type { RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 import { Player } from "lottie-player/player";
 import { LocalPlayer } from "lottie-player/localPlayer";
-import type { RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 
 /** Main entry point for the default scene for lottie-player */
 export async function Main(): Promise<void> {
