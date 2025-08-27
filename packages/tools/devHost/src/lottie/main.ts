@@ -8,16 +8,16 @@ export async function Main(): Promise<void> {
     const div = document.getElementById("main-div") as HTMLDivElement; // The player will be inside this div
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
-    const searchParams = new URLSearchParams(window.location.search);
+    const searchParams = new URLSearchParams(window.location.search.toLowerCase());
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
     const fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
 
     // Whether to use a web worker for rendering or not, defaults to true
-    const useWorkerParam = searchParams.get("useWorker");
+    const useWorkerParam = searchParams.get("useworker");
     const useWorker = useWorkerParam !== "false"; // Default to true if not specified
 
     // Whether to use the file URL for the data or to parse the data in the devhost, defaults to true (use the file URL)
-    const useUrlParam = searchParams.get("useUrl");
+    const useUrlParam = searchParams.get("useurl");
     const useUrl = useUrlParam !== "false"; // Default to true if not specified
 
     let animationData: RawLottieAnimation | undefined = undefined;

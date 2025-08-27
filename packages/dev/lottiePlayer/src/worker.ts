@@ -2,14 +2,12 @@
 import type { Nullable } from "core/types";
 import type { AnimationConfiguration } from "./animationConfiguration";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
+import type { AnimationController } from "./rendering/animationController";
 import type { Message, AnimationSizeMessage, AnimationUrlMessagePayload, StartAnimationMessagePayload, ContainerResizeMessagePayload } from "./messageTypes";
 
 let RawAnimation: Nullable<RawLottieAnimation> = null;
-// Use any type to avoid importing the class at module scope
-// eslint-disable @typescript-eslint/no-explicit-any
-let Controller: Nullable<any> = null;
+let Controller: Nullable<AnimationController> = null;
 let AnimationPromises: any = null;
-// eslint-enable @typescript-eslint/no-explicit-any
 
 onmessage = async function (evt) {
     const message = evt.data as Message;
@@ -62,8 +60,9 @@ onmessage = async function (evt) {
                 return;
             }
 
-            Controller = new AnimationController(canvas, RawAnimation, scaleFactor, variables, finalConfig);
-            Controller.playAnimation();
+            const controller = new AnimationController(canvas, RawAnimation, scaleFactor, variables, finalConfig);
+            controller.playAnimation();
+            Controller = controller;
             break;
         }
         case "containerResize": {
