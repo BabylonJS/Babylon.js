@@ -69,6 +69,11 @@
     var environmentBrdfSampler: texture_2d<f32>;
 #endif
 
+#ifdef ANISOTROPIC
+    var blueNoiseSamplerSampler: sampler;
+    var blueNoiseSampler: texture_2d<f32>;
+#endif
+
 #ifdef IBL_CDF_FILTERING
     var icdfSamplerSampler: sampler;
     var icdfSampler: texture_2d<f32>;

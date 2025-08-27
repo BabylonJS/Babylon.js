@@ -120,16 +120,9 @@
     #endif
         in vec3 vPositionW
         , in vec3 normalW
-    #ifdef ANISOTROPIC
-        , in anisotropicOutParams anisotropicOut
-    #endif
     )
     {
-        #ifdef ANISOTROPIC
-            vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), anisotropicOut.anisotropicNormal);
-        #else
-            vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
-        #endif
+        vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
@@ -154,9 +147,7 @@
         in float alphaG
         , in vec3 vReflectionMicrosurfaceInfos
         , in vec2 vReflectionInfos
-    #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-        , in float NdotVUnclamped
-    #endif
+        , in geometryInfoOutParams geoInfo
     #ifdef REFLECTIONMAP_3D
         , in samplerCube reflectionSampler
         , const vec3 reflectionCoords
@@ -172,7 +163,7 @@
         vec4 environmentRadiance = vec4(0., 0., 0., 0.);
         // _____________________________ 2D vs 3D Maps ________________________________
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-            float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
+            float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, geoInfo.NdotVUnclamped);
         #elif defined(LINEARSPECULARREFLECTION)
             float reflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, roughness);
         #else
@@ -184,6 +175,19 @@
 
         #ifdef REALTIME_FILTERING
             environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+        // #elif defined(ANISOTROPIC)
+        //     vec4 radianceSample = vec4(0.0);
+        //     const int samples = 16;
+        //     for (int i = 0; i < samples; ++i) {
+        //         float t = (float(i) * (1.0f / float(max(samples - 1, 1))) - 0.5f) * 3.14159 * alphaT;
+        //         vec3 perturbed_N = geoInfo.anisotropicTangent * t;
+        //         // Add noise (mostly in the tangent direction) to smooth out sampling
+        //         // perturbed_N.xy += new_noise.xy;
+                
+        //         vec3 newCoords = normalize(reflectionCoords + perturbed_N);
+        //         radianceSample += sampleReflectionLod(reflectionSampler, newCoords, reflectionLOD);
+        //     }
+        //     environmentRadiance = vec4(radianceSample.xyz / float(samples), 1.0);
         #else
             environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
         #endif
@@ -200,6 +204,136 @@
         environmentRadiance.rgb *= vec3(vReflectionInfos.x);
         return environmentRadiance.rgb;
     }
+
+#if defined(ANISOTROPIC)
+    #define pbr_inline
+    #define inline
+    vec3 sampleRadianceAnisotropic(
+        in float alphaG
+        , in vec3 vReflectionMicrosurfaceInfos
+        , in vec2 vReflectionInfos
+        , in geometryInfoOutParams geoInfo
+        , const vec3 normalW
+        , const vec3 viewDirectionW
+        , const vec3 positionW
+        , const vec3 noise
+    #ifdef REFLECTIONMAP_3D
+        , in samplerCube reflectionSampler
+    #else
+        , in sampler2D reflectionSampler
+    #endif
+    #ifdef REALTIME_FILTERING
+        , in vec2 vReflectionFilteringInfo
+    #endif
+    )
+    {
+        vec4 environmentRadiance = vec4(0., 0., 0., 0.);
+
+        // Calculate alpha along tangent and bitangent according to equation 21 in the OpenPBR spec.
+        float alphaT = alphaG * sqrt(2.0 / (1.0 + (1.0 - geoInfo.anisotropy) * (1.0 - geoInfo.anisotropy)));
+        float alphaB = (1.0 - geoInfo.anisotropy) * alphaT;
+        alphaG = mix(alphaG, alphaB, 0.95);
+
+        // _____________________________ 2D vs 3D Maps ________________________________
+        #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
+            float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, geoInfo.NdotVUnclamped);
+        #elif defined(LINEARSPECULARREFLECTION)
+            float reflectionLOD = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, roughness);
+        #else
+            float reflectionLOD = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG);
+        #endif
+
+        // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
+        reflectionLOD = reflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
+
+        #ifdef REALTIME_FILTERING
+            environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+        #else
+            // We will sample multiple reflections using interpolated surface normals along
+            // the tangent direction from -tangent to +tangent.
+            // We don't want to waste samples where the view direction is back-facing so
+            // we'll compress samples into the valid range.
+            const int samples = 16;
+            // Find the maximum safe interpolation range
+            float normalDot = dot(viewDirectionW, normalW);
+            float tangentDot = dot(viewDirectionW, geoInfo.anisotropicTangent);
+            float negTangentDot = dot(viewDirectionW, -geoInfo.anisotropicTangent);
+        
+            // Find the valid interpolation range on each side of the normal
+            float maxPositiveT = 1.0;  // Default: sample all the way to +tangent
+            float maxNegativeT = -1.0; // Default: sample all the way to -tangent
+        
+            // If +tangent is back-facing, find where the interpolation becomes back-facing
+            if (tangentDot <= 0.0) {
+                // Find t where mix(normalW, tangentW, t) becomes perpendicular to view
+                if (abs(tangentDot - normalDot) > 0.001) {
+                    maxPositiveT = clamp(-normalDot / (tangentDot - normalDot), 0.0, 1.0);
+                } else {
+                    maxPositiveT = 0.0; // Can't sample towards tangent
+                }
+            }
+        
+            // If -tangent is back-facing, find where the interpolation becomes back-facing  
+            if (negTangentDot <= 0.0) {
+                // Find t where mix(-tangentW, normalW, blend) becomes perpendicular to view
+                // This is equivalent to mix(normalW, -tangentW, -t) for t < 0
+                if (abs(negTangentDot - normalDot) > 0.001) {
+                    float negT = -normalDot / (negTangentDot - normalDot);
+                    maxNegativeT = clamp(-negT, -1.0, 0.0);
+                } else {
+                    maxNegativeT = 0.0; // Can't sample towards -tangent
+                }
+            }
+
+            // Further compress the sampling range based on the level of anisotropic roughness
+            float tangentRange = clamp(sqrt(sqrt(alphaT)) * geoInfo.anisotropy, 0.0, 1.0) * (0.25 * noise.x + 0.75);
+            maxPositiveT *= maxPositiveT * tangentRange;
+            maxNegativeT = -(maxNegativeT * maxNegativeT) * tangentRange;
+        
+            vec4 radianceSample = vec4(0.0);
+            vec3 reflectionCoords = vec3(0.0);
+            float sample_weight = 0.0;
+            float total_weight = 0.0;
+            for (int i = 0; i < samples; ++i) {
+                // Find interpolation parameter in our valid range
+                float t = mix(maxNegativeT, maxPositiveT, float(i) / float(max(samples - 1, 1)));
+                
+                // Generate sample direction
+                vec3 sampleDirection;
+                if (t < 0.0) {
+                    // Interpolate from -tangent towards normal
+                    float blend = t + 1.0;
+                    sampleDirection = normalize(mix(-geoInfo.anisotropicTangent, normalW, blend));
+                } else if (t > 0.0) {
+                    // Interpolate from normal towards +tangent
+                    float blend = t;
+                    sampleDirection = normalize(mix(normalW, geoInfo.anisotropicTangent, blend));
+                } else {
+                    // t = 0, sample the normal
+                    sampleDirection = normalW;
+                }
+                
+                // Empirical approximation of geometry masking.
+                sample_weight = pow(clamp(dot(normalW, sampleDirection), 0.0, 1.0), 16.0);
+                reflectionCoords = createReflectionCoords(positionW, sampleDirection);
+                radianceSample = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+                #ifdef RGBDREFLECTION
+                    environmentRadiance.rgb += sample_weight * fromRGBD(radianceSample);
+                #elif defined(GAMMAREFLECTION)
+                    environmentRadiance.rgb += sample_weight * toLinearSpace(radianceSample.rgb);
+                #else
+                    environmentRadiance.rgb += sample_weight * radianceSample.rgb;
+                #endif
+                total_weight += sample_weight;
+            }
+            environmentRadiance = vec4(environmentRadiance.xyz / float(total_weight), 1.0);
+        #endif
+
+        // _____________________________ Levels _____________________________________
+        environmentRadiance.rgb *= vec3(vReflectionInfos.x);
+        return environmentRadiance.rgb;
+    }
+#endif
 
     #define pbr_inline
     vec3 conductorIblFresnel(in ReflectanceParams reflectance, in float NdotV, in float roughness, in vec3 environmentBrdf)

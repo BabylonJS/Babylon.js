@@ -34,20 +34,38 @@
     #else
         vec2 reflectionCoords = vec2(0., 0.);
     #endif
-    reflectionCoords = createReflectionCoords(vPositionW, normalW);
-    float specularAlphaG = specular_roughness * specular_roughness;
-    vec3 baseSpecularEnvironmentLight = sampleRadiance(specularAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
-        #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-            , baseGeoInfo.NdotVUnclamped
-        #endif
-        , reflectionSampler
-        , reflectionCoords
-        #ifdef REALTIME_FILTERING
-            , vReflectionFilteringInfo
-        #endif
-    );
 
-    baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
+    float specularAlphaG = specular_roughness * specular_roughness;
+    #ifdef ANISOTROPIC
+        vec3 baseSpecularEnvironmentLight = sampleRadianceAnisotropic(specularAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+            , baseGeoInfo
+            , normalW
+            , viewDirectionW
+            , vPositionW
+            , noise
+            , reflectionSampler
+            #ifdef REALTIME_FILTERING
+                , vReflectionFilteringInfo
+            #endif
+        );
+    #else
+        reflectionCoords = createReflectionCoords(vPositionW, normalW);
+        vec3 baseSpecularEnvironmentLight = sampleRadiance(specularAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+            , baseGeoInfo
+            , reflectionSampler
+            , reflectionCoords
+            #ifdef REALTIME_FILTERING
+                , vReflectionFilteringInfo
+            #endif
+        );
+    #endif
+
+    // Purely empirical blend between diffuse and specular lobes when roughness gets very high.
+    #ifdef ANISOTROPIC
+        baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, min(specularAlphaG * specularAlphaG, 0.5));
+    #else
+        baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
+    #endif
 
     vec3 coatEnvironmentLight = vec3(0., 0., 0.);
     if (coat_weight > 0.0) {
@@ -59,9 +77,7 @@
         reflectionCoords = createReflectionCoords(vPositionW, coatNormalW);
         float coatAlphaG = coat_roughness * coat_roughness;
         coatEnvironmentLight = sampleRadiance(coatAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
-            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                , coatGeoInfo.NdotVUnclamped
-            #endif
+            , coatGeoInfo
             , reflectionSampler
             , reflectionCoords
             #ifdef REALTIME_FILTERING

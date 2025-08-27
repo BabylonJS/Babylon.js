@@ -36,21 +36,41 @@
     #else
         var reflectionCoords: vec2f = vec2f(0.f, 0.f);
     #endif
-    reflectionCoords = createReflectionCoords(fragmentInputs.vPositionW, normalW);
+    
     let specularAlphaG: f32 = specular_roughness * specular_roughness;
-    var baseSpecularEnvironmentLight: vec3f = sampleRadiance(specularAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
-        #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-            , baseGeoInfo.NdotVUnclamped
-        #endif
-        , reflectionSampler
-        , reflectionSamplerSampler
-        , reflectionCoords
-        #ifdef REALTIME_FILTERING
-            , uniforms.vReflectionFilteringInfo
-        #endif
-    );
 
-    baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
+    #ifdef ANISOTROPIC
+        var baseSpecularEnvironmentLight: vec3f = sampleRadianceAnisotropic(specularAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+            , baseGeoInfo
+            , normalW
+            , viewDirectionW
+            , fragmentInputs.vPositionW
+            , noise
+            , reflectionSampler
+            , reflectionSamplerSampler
+            #ifdef REALTIME_FILTERING
+                , uniforms.vReflectionFilteringInfo
+            #endif
+        );
+    #else
+        reflectionCoords = createReflectionCoords(fragmentInputs.vPositionW, normalW);
+        var baseSpecularEnvironmentLight: vec3f = sampleRadiance(specularAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+            , baseGeoInfo
+            , reflectionSampler
+            , reflectionSamplerSampler
+            , reflectionCoords
+            #ifdef REALTIME_FILTERING
+                , uniforms.vReflectionFilteringInfo
+            #endif
+        );
+    #endif
+
+    // Purely empirical blend between diffuse and specular lobes when roughness gets very high.
+    #ifdef ANISOTROPIC
+        baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, min(specularAlphaG * specularAlphaG, 0.5));
+    #else
+        baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
+    #endif
 
     var coatEnvironmentLight: vec3f = vec3f(0.f, 0.f, 0.f);
     if (coat_weight > 0.0) {
@@ -62,9 +82,7 @@
         reflectionCoords = createReflectionCoords(fragmentInputs.vPositionW, coatNormalW);
         var coatAlphaG: f32 = coat_roughness * coat_roughness;
         coatEnvironmentLight = sampleRadiance(coatAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
-            #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                , coatGeoInfo.NdotVUnclamped
-            #endif
+            , baseGeoInfo
             , reflectionSampler
             , reflectionSamplerSampler
             , reflectionCoords

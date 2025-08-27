@@ -48,8 +48,8 @@
 #include<openpbrConductorReflectance>
 
 #include<openpbrBlockAmbientOcclusion>
-#include<openpbrIblFunctions>
 #include<openpbrGeometryInfo>
+#include<openpbrIblFunctions>
 
 // Do a mix between layers with additional multipliers for each layer.
 fn layer(slab_bottom: vec3f, slab_top: vec3f, lerp_factor: f32, bottom_multiplier: vec3f, top_multiplier: vec3f) -> vec3f {
