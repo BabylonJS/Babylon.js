@@ -6,6 +6,7 @@ import { Scene } from "../../scene";
 import { Color3, Color4 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { Texture } from "../../Materials/Textures/texture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
@@ -63,7 +64,6 @@ import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
 import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
 import type { IAnimatable } from "../../Animations/animatable.interface";
-import { Texture } from "../Textures";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
