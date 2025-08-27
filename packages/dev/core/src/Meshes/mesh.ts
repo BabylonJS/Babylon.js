@@ -1260,26 +1260,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /**
-     * Returns the mesh VertexBuffer object from the requested `kind`
-     * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
-     * - VertexBuffer.PositionKind
-     * - VertexBuffer.NormalKind
-     * - VertexBuffer.UVKind
-     * - VertexBuffer.UV2Kind
-     * - VertexBuffer.UV3Kind
-     * - VertexBuffer.UV4Kind
-     * - VertexBuffer.UV5Kind
-     * - VertexBuffer.UV6Kind
-     * - VertexBuffer.ColorKind
-     * - VertexBuffer.MatricesIndicesKind
-     * - VertexBuffer.MatricesIndicesExtraKind
-     * - VertexBuffer.MatricesWeightsKind
-     * - VertexBuffer.MatricesWeightsExtraKind
-     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
-     * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
-     */
-    public getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
+    public override getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
         if (!this._geometry) {
             return null;
         }
