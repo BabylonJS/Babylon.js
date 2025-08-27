@@ -176,10 +176,12 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         url = url.replace(/\?nocache=\d+/, "");
 
+        const globalState = this.props.stateManager.data as GlobalState;
         const isInReflectionMode =
             this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock;
         const isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock || this.textureBlock instanceof ParticleTextureBlock;
         const showIsInGammaSpace = this.textureBlock instanceof ReflectionBlock;
+        const showSamplingMode = texture && texture.updateSamplingMode !== undefined && globalState.mode !== NodeMaterialModes.SFE;
 
         const reflectionModeOptions: { label: string; value: number }[] = [
             {
@@ -292,7 +294,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             }}
                         />
                     }
-                    {texture && texture.updateSamplingMode && (
+                    {showSamplingMode && (
                         <OptionsLine
                             label="Sampling"
                             options={samplingMode}
