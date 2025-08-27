@@ -182,6 +182,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         const isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock || this.textureBlock instanceof ParticleTextureBlock;
         const showIsInGammaSpace = this.textureBlock instanceof ReflectionBlock;
         const showSamplingMode = texture && texture.updateSamplingMode !== undefined && globalState.mode !== NodeMaterialModes.SFE;
+        const showDisableLevelMultiplication = (this.textureBlock as TextureBlock).disableLevelMultiplication !== undefined;
 
         const reflectionModeOptions: { label: string; value: number }[] = [
             {
@@ -283,7 +284,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             }}
                         />
                     )}
-                    {
+                    {showDisableLevelMultiplication && (
                         <CheckBoxLineComponent
                             label="Disable multiplying by level"
                             propertyName="disableLevelMultiplication"
@@ -293,7 +294,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}
                         />
-                    }
+                    )}
                     {showSamplingMode && (
                         <OptionsLine
                             label="Sampling"
