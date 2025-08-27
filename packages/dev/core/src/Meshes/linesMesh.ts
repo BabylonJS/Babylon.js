@@ -168,16 +168,18 @@ export class LinesMesh extends Mesh {
      * @internal
      */
     public override set material(value: Nullable<Material>) {
-        if (this.material === value) {
+        const currentMaterial = this.material;
+        if (currentMaterial === value) {
             return;
         }
 
-        if (this._ownsMaterial) {
-            this.material?.dispose();
-        }
-
+        const shouldDispose = currentMaterial && this._ownsMaterial;
         this._ownsMaterial = false;
         this._setInternalMaterial(value);
+
+        if (shouldDispose) {
+            currentMaterial?.dispose();
+        }
     }
 
     private _setInternalMaterial(material: Nullable<Material>) {
