@@ -1,12 +1,16 @@
-const path = require("path");
-const webpackTools = require("@dev/build-tools").webpackTools;
+import path from "path";
+import { webpackTools } from "@dev/build-tools";
+import { fileURLToPath } from "url";
 
-module.exports = (env) => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default (env) => {
     return {
         mode: "production",
         entry: "../../../dev/inspector-v2/src/index.ts",
         output: {
-            path: path.resolve(__dirname, "dist"),
+            path: path.resolve(__dirname, "lib"),
             filename: "index.js",
             library: {
                 type: "module",
