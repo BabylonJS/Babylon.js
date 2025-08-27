@@ -951,6 +951,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _createTargetRenderTexture(): void {
         const engine = this._scene.getEngine();
+        this._shadowMap?.dispose();
         if (engine._features.supportDepthStencilTexture) {
             this._shadowMap = new RenderTargetTexture(
                 this._light.name + "_shadowMap",

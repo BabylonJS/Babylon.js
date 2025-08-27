@@ -2521,7 +2521,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 reflectionTexture ||
                 this.subSurface.refractionTexture ||
                 mesh.receiveShadows ||
-                defines.PREPASS
+                defines.PREPASS ||
+                defines["CLUSTLIGHT_BATCH"]
             ) {
                 this.bindView(effect);
             }

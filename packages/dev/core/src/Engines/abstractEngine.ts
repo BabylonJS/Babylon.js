@@ -210,7 +210,7 @@ export abstract class AbstractEngine {
     /** @internal */
     public _stencilState = new StencilState();
     /** @internal */
-    public _alphaState = new AlphaState();
+    public _alphaState = new AlphaState(false);
     /** @internal */
     public _alphaMode = Array(8).fill(-1);
     /** @internal */
@@ -1907,14 +1907,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.23.1";
+        return "babylonjs@8.24.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.23.1";
+        return "8.24.1";
     }
 
     /**

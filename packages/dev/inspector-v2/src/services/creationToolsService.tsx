@@ -31,7 +31,6 @@ export const CreationToolsServiceDefinition: ServiceDefinition<[], [IShellServic
             content: () => {
                 const classes = useStyles();
 
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 // eslint-disable-next-line no-console
                 console.log(scene);

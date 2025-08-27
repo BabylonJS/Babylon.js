@@ -109,6 +109,13 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         }
     }
 
+    /**
+     * Gets the object renderer used to render the layer.
+     */
+    public get objectRendererForLayer() {
+        return this._objectRendererForLayer;
+    }
+
     protected readonly _scene: Scene;
     protected readonly _engine: AbstractEngine;
     protected readonly _clearLayerTextures: FrameGraphClearTextureTask;

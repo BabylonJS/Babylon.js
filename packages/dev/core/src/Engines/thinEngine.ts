@@ -53,6 +53,7 @@ import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _GetGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
 import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
+import { AlphaState } from "../States/alphaCullingState";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -627,6 +628,8 @@ export class ThinEngine extends AbstractEngine {
 
         const oesDrawBuffersIndexed = this._gl.getExtension("OES_draw_buffers_indexed");
         this._caps.blendParametersPerTarget = oesDrawBuffersIndexed ? true : false;
+
+        this._alphaState = new AlphaState(this._caps.blendParametersPerTarget);
 
         if (oesDrawBuffersIndexed) {
             this._gl.blendEquationSeparateIndexed = oesDrawBuffersIndexed.blendEquationSeparateiOES.bind(oesDrawBuffersIndexed);
