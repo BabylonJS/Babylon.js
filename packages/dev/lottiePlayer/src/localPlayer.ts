@@ -1,6 +1,6 @@
 import type { AnimationConfiguration } from "./animationConfiguration";
-import { DefaultConfiguration } from "./animationConfiguration";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
+import { DefaultConfiguration } from "./animationConfiguration";
 import { GetRawAnimationDataAsync } from "./parsing/parser";
 import { AnimationController, CalculateScaleFactor } from "./rendering/animationController";
 
@@ -11,7 +11,7 @@ import { AnimationController, CalculateScaleFactor } from "./rendering/animation
  */
 export class LocalPlayer {
     private readonly _container: HTMLDivElement;
-    private readonly _animationFile: string;
+    private readonly _animationSource: string | RawLottieAnimation;
     private readonly _variables: Map<string, string>;
     private readonly _configuration: Partial<AnimationConfiguration>;
 
@@ -26,13 +26,13 @@ export class LocalPlayer {
     /**
      * Creates a new instance of the LottiePlayer.
      * @param container The HTMLDivElement to create the canvas in and render the animation on.
-     * @param animationFile The URL of the Lottie animation file to be played.
+     * @param animationSource The URL of the Lottie animation file to be played, or a parsed Lottie JSON object.
      * @param variables Optional map of variables to replace in the animation file.
      * @param configuration Optional configuration object to customize the animation playback.
      */
-    public constructor(container: HTMLDivElement, animationFile: string, variables?: Map<string, string>, configuration?: Partial<AnimationConfiguration>) {
+    public constructor(container: HTMLDivElement, animationSource: string | RawLottieAnimation, variables?: Map<string, string>, configuration?: Partial<AnimationConfiguration>) {
         this._container = container;
-        this._animationFile = animationFile;
+        this._animationSource = animationSource;
         this._variables = variables ?? new Map<string, string>();
         this._configuration = configuration ?? {};
     }
@@ -46,7 +46,12 @@ export class LocalPlayer {
             return false;
         }
 
-        this._rawAnimation = await GetRawAnimationDataAsync(this._animationFile);
+        // Load the animation from URL or use the provided parsed JSON
+        if (typeof this._animationSource === "string") {
+            this._rawAnimation = await GetRawAnimationDataAsync(this._animationSource);
+        } else {
+            this._rawAnimation = this._animationSource;
+        }
 
         // Create the canvas element
         this._canvas = document.createElement("canvas");

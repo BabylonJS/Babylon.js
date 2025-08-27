@@ -1,6 +1,7 @@
 import type { Nullable } from "core/types";
 import type { AnimationConfiguration } from "./animationConfiguration";
 import type { AnimationSizeMessagePayload, AnimationUrlMessage, ContainerResizeMessage, Message, StartAnimationMessage } from "./messageTypes";
+import type { RawLottieAnimation } from "./parsing/rawTypes";
 import { CalculateScaleFactor } from "./rendering/animationController";
 
 /**
@@ -10,7 +11,7 @@ import { CalculateScaleFactor } from "./rendering/animationController";
  */
 export class Player {
     private readonly _container: HTMLDivElement;
-    private readonly _animationFile: string;
+    private readonly _animationSource: string | RawLottieAnimation;
     private readonly _variables: Nullable<Map<string, string>>;
     private readonly _configuration: Nullable<Partial<AnimationConfiguration>>;
 
@@ -26,18 +27,18 @@ export class Player {
     /**
      * Creates a new instance of the LottiePlayer.
      * @param container The HTMLDivElement to create the canvas in and render the animation on.
-     * @param animationFile The URL of the Lottie animation file to be played.
+     * @param animationSource The URL of the Lottie animation file to be played, or a parsed Lottie JSON object.
      * @param variables Optional map of variables to replace in the animation file.
      * @param configuration Optional configuration object to customize the animation playback.
      */
     public constructor(
         container: HTMLDivElement,
-        animationFile: string,
+        animationSource: string | RawLottieAnimation,
         variables: Nullable<Map<string, string>> = null,
         configuration: Nullable<Partial<AnimationConfiguration>> = null
     ) {
         this._container = container;
-        this._animationFile = animationFile;
+        this._animationSource = animationSource;
         this._variables = variables;
         this._configuration = configuration;
     }
@@ -66,52 +67,25 @@ export class Player {
                             return;
                         }
 
-                        const payload = message.payload as AnimationSizeMessagePayload;
-                        this._animationWidth = payload.width;
-                        this._animationHeight = payload.height;
-
-                        // Create the canvas element
-                        this._canvas = document.createElement("canvas");
-
-                        // Center the canvas in the container
-                        this._canvas.style.position = "absolute";
-                        this._canvas.style.left = "50%";
-                        this._canvas.style.top = "50%";
-                        this._canvas.style.transform = "translate(-50%, -50%)";
-                        this._canvas.style.display = "block";
-
-                        // The size of the canvas is the relation between the size of the container div and the size of the animation
-                        this._scaleFactor = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._container);
-                        this._canvas.style.width = `${this._animationWidth * this._scaleFactor}px`;
-                        this._canvas.style.height = `${this._animationHeight * this._scaleFactor}px`;
-
-                        // Append the canvas to the container
-                        this._container.appendChild(this._canvas);
-                        const offscreen = this._canvas.transferControlToOffscreen();
-
-                        const startAnimationMessage: StartAnimationMessage = {
-                            type: "startAnimation",
-                            payload: {
-                                canvas: offscreen,
-                                scaleFactor: this._scaleFactor,
-                                variables: this._variables,
-                                configuration: this._configuration,
-                            },
-                        };
-                        this._worker.postMessage(startAnimationMessage, [offscreen]);
+                        this._createPlayerAndStartAnimation(message.payload as AnimationSizeMessagePayload);
                         break;
                     }
                 }
             };
 
-            const animationUrlMessage: AnimationUrlMessage = {
-                type: "animationUrl",
-                payload: {
-                    url: this._animationFile,
-                },
-            };
-
-            this._worker.postMessage(animationUrlMessage);
+            if (typeof this._animationSource === "string") {
+                // We need to load the animation from a URL in the worker
+                const animationUrlMessage: AnimationUrlMessage = {
+                    type: "animationUrl",
+                    payload: {
+                        url: this._animationSource,
+                    },
+                };
+                this._worker.postMessage(animationUrlMessage);
+            } else {
+                // We have the raw animation data already on this thread
+                this._createPlayerAndStartAnimation(this._animationSource);
+            }
 
             window.addEventListener("resize", this._onWindowResize);
             window.addEventListener("beforeunload", this._onBeforeUnload);
@@ -167,6 +141,52 @@ export class Player {
         this._disposed = true;
     }
 
+    private _createPlayerAndStartAnimation(animationData: RawLottieAnimation | AnimationSizeMessagePayload): void {
+        if (this._worker === null) {
+            return;
+        }
+
+        if (IsRawLottieAnimation(animationData)) {
+            this._animationWidth = animationData.w;
+            this._animationHeight = animationData.h;
+        } else {
+            this._animationWidth = animationData.width;
+            this._animationHeight = animationData.height;
+        }
+
+        // Create the canvas element
+        this._canvas = document.createElement("canvas");
+
+        // Center the canvas in the container
+        this._canvas.style.position = "absolute";
+        this._canvas.style.left = "50%";
+        this._canvas.style.top = "50%";
+        this._canvas.style.transform = "translate(-50%, -50%)";
+        this._canvas.style.display = "block";
+
+        // The size of the canvas is the relation between the size of the container div and the size of the animation
+        this._scaleFactor = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._container);
+        this._canvas.style.width = `${this._animationWidth * this._scaleFactor}px`;
+        this._canvas.style.height = `${this._animationHeight * this._scaleFactor}px`;
+
+        // Append the canvas to the container
+        this._container.appendChild(this._canvas);
+        const offscreen = this._canvas.transferControlToOffscreen();
+
+        const startAnimationMessage: StartAnimationMessage = {
+            type: "startAnimation",
+            payload: {
+                canvas: offscreen,
+                scaleFactor: this._scaleFactor,
+                variables: this._variables,
+                configuration: this._configuration,
+                animationData: IsRawLottieAnimation(animationData) ? animationData : undefined,
+            },
+        };
+
+        this._worker.postMessage(startAnimationMessage, [offscreen]);
+    }
+
     private _onWindowResize = () => {
         if (this._disposed || !this._canvas || !this._worker) {
             return;
@@ -182,4 +202,9 @@ export class Player {
         this._worker?.terminate();
         this._worker = null;
     };
+}
+
+function IsRawLottieAnimation(x: unknown): x is RawLottieAnimation {
+    const o = x as any;
+    return !!o && typeof o === "object" && typeof o.w === "number" && typeof o.h === "number" && Array.isArray(o.layers);
 }

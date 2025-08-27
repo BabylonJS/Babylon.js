@@ -38,13 +38,13 @@ onmessage = async function (evt) {
             break;
         }
         case "startAnimation": {
-            if (RawAnimation === null) {
-                return;
+            if (AnimationPromises === null) {
+                AnimationPromises = Promise.all([import("./animationConfiguration"), import("./rendering/animationController")]);
             }
 
-            const payload = message.payload as StartAnimationMessagePayload;
             const [{ DefaultConfiguration }, { AnimationController }] = await AnimationPromises;
 
+            const payload = message.payload as StartAnimationMessagePayload;
             const canvas = payload.canvas;
             const scaleFactor = payload.scaleFactor;
             const variables = payload.variables ?? new Map<string, string>();
@@ -53,6 +53,14 @@ onmessage = async function (evt) {
                 ...DefaultConfiguration,
                 ...originalConfig,
             };
+
+            if (RawAnimation === null && payload.animationData) {
+                RawAnimation = payload.animationData;
+            }
+
+            if (RawAnimation === null) {
+                return;
+            }
 
             Controller = new AnimationController(canvas, RawAnimation, scaleFactor, variables, finalConfig);
             Controller.playAnimation();
