@@ -22,7 +22,6 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
      * A boolean indicating whether this block should be the main input for the SFE pipeline.
      * If true, it can be used in SFE for auto-disabling.
      */
-    @editableInPropertyPage("Is Main Input", PropertyTypeForEdition.Boolean, undefined, { notifiers: { rebuild: true } })
     public isMainInput: boolean = false;
 
     /**

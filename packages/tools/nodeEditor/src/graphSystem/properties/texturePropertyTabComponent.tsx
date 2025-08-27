@@ -24,6 +24,7 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import type { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
+import { SmartFilterTextureBlock } from "core/Materials";
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
@@ -176,12 +177,12 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
 
         url = url.replace(/\?nocache=\d+/, "");
 
-        const globalState = this.props.stateManager.data as GlobalState;
         const isInReflectionMode =
             this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock;
         const isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock || this.textureBlock instanceof ParticleTextureBlock;
         const showIsInGammaSpace = this.textureBlock instanceof ReflectionBlock;
-        const showSamplingMode = texture && texture.updateSamplingMode !== undefined && globalState.mode !== NodeMaterialModes.SFE;
+        const showIsMainInput = this.textureBlock instanceof SmartFilterTextureBlock;
+        const showSamplingMode = texture && texture.updateSamplingMode !== undefined && !(this.textureBlock instanceof SmartFilterTextureBlock);
         const showDisableLevelMultiplication = (this.textureBlock as TextureBlock).disableLevelMultiplication !== undefined;
 
         const reflectionModeOptions: { label: string; value: number }[] = [
@@ -292,6 +293,16 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             onValueChanged={() => {
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                            }}
+                        />
+                    )}
+                    {showIsMainInput && (
+                        <CheckBoxLineComponent
+                            label="Is Main Input"
+                            propertyName="isMainInput"
+                            target={block}
+                            onValueChanged={() => {
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             }}
                         />
                     )}
