@@ -246,6 +246,10 @@ export class InstancedMesh extends AbstractMesh {
         this._sourceMesh.copyVerticesData(kind, vertexData);
     }
 
+    public override getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
+        return this._sourceMesh.getVertexBuffer(kind, bypassInstanceData);
+    }
+
     /**
      * Sets the vertex data of the mesh geometry for the requested `kind`.
      * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
