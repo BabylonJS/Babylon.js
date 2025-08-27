@@ -27,7 +27,7 @@ import { createElement, Suspense, useCallback, useEffect, useState } from "react
 import { createRoot } from "react-dom/client";
 import { useTernaryDarkMode } from "usehooks-ts";
 
-import { Logger } from "core/Misc";
+import { Logger } from "core/Misc/logger";
 import { Deferred } from "core/Misc/deferred";
 
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";

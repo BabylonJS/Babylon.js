@@ -1,6 +1,6 @@
 import type { IReadonlyObservable } from "core/index";
 
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { useEffect, useMemo } from "react";
 
 /**

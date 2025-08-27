@@ -28,7 +28,7 @@ import {
 import { AppsAddInRegular, DismissRegular } from "@fluentui/react-icons";
 import { memo, useCallback, useEffect, useState } from "react";
 
-import { Logger } from "core/Misc";
+import { Logger } from "core/Misc/logger";
 
 import { TeachingMoment } from "../components/teachingMoment";
 import { useExtensionManager } from "../contexts/extensionManagerContext";
