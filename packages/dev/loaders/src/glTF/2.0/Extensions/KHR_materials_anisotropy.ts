@@ -8,7 +8,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Vector2 } from "core/Maths";
+import { Vector2 } from "core/Maths/math.vector";
 
 const NAME = "KHR_materials_anisotropy";
 
