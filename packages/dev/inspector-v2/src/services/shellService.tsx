@@ -689,9 +689,14 @@ export function MakeShellServiceDefinition({
                     </div>
                 );
             };
+            rootComponent.displayName = "Shell Service Root";
 
             return {
                 addToolbarItem: (entry) => {
+                    if (!entry.component.displayName) {
+                        entry.component.displayName = `${entry.key} | ${entry.verticalLocation} ${entry.horizontalLocation} bar item`;
+                    }
+
                     if (entry.verticalLocation === "top") {
                         return topBarComponentCollection.add(entry);
                     } else {
@@ -699,6 +704,10 @@ export function MakeShellServiceDefinition({
                     }
                 },
                 addSidePane: (entry) => {
+                    if (!entry.content.displayName) {
+                        entry.content.displayName = `${entry.key} | ${entry.horizontalLocation} pane`;
+                    }
+
                     if (entry.horizontalLocation === "left") {
                         return leftPaneComponentCollection.add(entry);
                     } else {
