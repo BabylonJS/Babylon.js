@@ -5,7 +5,6 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterial } from "../../nodeMaterial";
-import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
 import { SfeModeDefine } from "../Fragment/smartFilterFragmentOutputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
