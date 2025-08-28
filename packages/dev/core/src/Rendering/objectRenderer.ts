@@ -1,4 +1,17 @@
-import type { Nullable, Immutable, Camera, Scene, AbstractMesh, SubMesh, Material, IParticleSystem, InstancedMesh, BoundingBox, BoundingBoxRenderer } from "core/index";
+import type {
+    Nullable,
+    Immutable,
+    Camera,
+    Scene,
+    AbstractMesh,
+    SubMesh,
+    Material,
+    IParticleSystem,
+    InstancedMesh,
+    BoundingBox,
+    BoundingBoxRenderer,
+    UniformBuffer,
+} from "core/index";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
 import { Constants } from "../Engines/constants";
@@ -206,6 +219,9 @@ export class ObjectRenderer {
     protected _currentApplyByPostProcessSetting = false;
     protected _activeMeshes = new SmartArray<AbstractMesh>(256);
     protected _activeBoundingBoxes = new SmartArray<BoundingBox>(32);
+    protected _useUBO: boolean;
+    protected _sceneUBO: UniformBuffer;
+    protected _currentSceneUBO: UniformBuffer;
 
     /**
      * The options used by the object renderer
@@ -226,6 +242,9 @@ export class ObjectRenderer {
         }
 
         this._name = value;
+        if (this._sceneUBO) {
+            this._sceneUBO.name = `Scene ubo for ${this.name}`;
+        }
 
         if (!this._scene) {
             return;
@@ -350,6 +369,10 @@ export class ObjectRenderer {
     constructor(name: string, scene: Scene, options?: ObjectRendererOptions) {
         this.name = name;
         this._scene = scene;
+        this._useUBO = this._scene.getEngine().supportsUniformBuffers;
+        if (this._useUBO) {
+            this._sceneUBO = this._scene.createSceneUniformBuffer(`Scene ubo for ${this.name}`, false);
+        }
 
         this.renderList = [] as AbstractMesh[];
         this._renderPassIds = [];
@@ -509,12 +532,20 @@ export class ObjectRenderer {
 
         this._currentSceneCamera = this._scene.activeCamera;
 
+        if (this._useUBO) {
+            this._currentSceneUBO = this._scene.getSceneUniformBuffer();
+            this._currentSceneUBO.unbindEffect();
+            this._scene.setSceneUniformBuffer(this._sceneUBO);
+        }
+
         if (camera) {
-            if (camera !== this._scene.activeCamera) {
-                this._scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
-                this._scene.activeCamera = camera;
-            }
+            this._scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
+            this._scene.activeCamera = camera;
             engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, viewportWidth, viewportHeight);
+        }
+
+        if (this._useUBO) {
+            this._scene.finalizeSceneUbo();
         }
 
         this._defaultRenderListPrepared = false;
@@ -525,6 +556,10 @@ export class ObjectRenderer {
      */
     public finishRender() {
         const scene = this._scene;
+
+        if (this._useUBO) {
+            this._scene.setSceneUniformBuffer(this._currentSceneUBO);
+        }
 
         if (this._disableImageProcessing) {
             scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;
@@ -692,7 +727,7 @@ export class ObjectRenderer {
         if (scene._activeMeshesFrozen && this._isFrozen) {
             this._renderingManager.resetSprites();
 
-            if (boundingBoxRenderer) {
+            if (this.enableBoundingBoxRendering && boundingBoxRenderer) {
                 boundingBoxRenderer.reset();
                 for (let i = 0; i < this._activeBoundingBoxes.length; i++) {
                     const boundingBox = this._activeBoundingBoxes.data[i];
@@ -707,7 +742,7 @@ export class ObjectRenderer {
         this._activeMeshes.reset();
         this._activeBoundingBoxes.reset();
 
-        boundingBoxRenderer && boundingBoxRenderer.reset();
+        this.enableBoundingBoxRendering && boundingBoxRenderer && boundingBoxRenderer.reset();
 
         const sceneRenderId = scene.getRenderId();
         const currentFrameId = scene.getFrameId();
@@ -795,7 +830,7 @@ export class ObjectRenderer {
             }
         }
 
-        if (boundingBoxRenderer && winterIsComing) {
+        if (this.enableBoundingBoxRendering && boundingBoxRenderer && winterIsComing) {
             for (let i = 0; i < boundingBoxRenderer.renderList.length; i++) {
                 const boundingBox = boundingBoxRenderer.renderList.data[i];
                 this._activeBoundingBoxes.push(boundingBox);
@@ -896,6 +931,8 @@ export class ObjectRenderer {
         this._releaseRenderPassId();
 
         this.renderList = null;
+        this._sceneUBO?.dispose();
+        this._sceneUBO = undefined as any;
 
         this._scene.removeObjectRenderer(this);
     }

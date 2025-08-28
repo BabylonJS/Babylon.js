@@ -9,7 +9,6 @@ import { ThinMatrix } from "../maths/matrix";
  */
 export class Node {
     private readonly _id: string;
-    private readonly _ignoreOpacityAnimations: boolean;
     private readonly _position: Vector2Property;
     private readonly _rotation: ScalarProperty;
     private readonly _scale: Vector2Property;
@@ -165,26 +164,16 @@ export class Node {
     /**
      * Constructs a new node.
      * @param id Unique identifier for the node.
-     * @param ignoreOpacityAnimations If there are no animations on opacity, mark this as true to ignore and optimize CPU usage.
      * @param position Position of the node in the scene.
      * @param rotation Rotation of the node in degrees.
      * @param scale Scale of the node in the scene.
      * @param opacity Opacity of the node, from 0 to 1.
      * @param parent Parent node in the scenegraph.
      */
-    public constructor(
-        id: string,
-        ignoreOpacityAnimations: boolean,
-        position?: Vector2Property,
-        rotation?: ScalarProperty,
-        scale?: Vector2Property,
-        opacity?: ScalarProperty,
-        parent?: Node
-    ) {
+    public constructor(id: string, position?: Vector2Property, rotation?: ScalarProperty, scale?: Vector2Property, opacity?: ScalarProperty, parent?: Node) {
         this._isVisible = false;
 
         this._id = id;
-        this._ignoreOpacityAnimations = ignoreOpacityAnimations;
 
         this._position = position || { startValue: { x: 0, y: 0 }, currentValue: { x: 0, y: 0 }, currentKeyframeIndex: 0 };
         this._rotation = rotation || { startValue: 0, currentValue: 0, currentKeyframeIndex: 0 };
@@ -224,19 +213,9 @@ export class Node {
         if (parent) {
             this._worldMatrix = this._globalMatrix;
 
-            // if (parent.isAnimated || !parent.parent || this.isAnimated || parent._isControl) {
             this._parent = parent;
             parent._children.push(this);
             this._localMatrix.multiplyToRef(parent._worldMatrix, this._globalMatrix);
-            // } else {
-            //     // We can merge them
-            //     this._localMatrix.multiplyToRef(parent._localMatrix, this._localMatrix);
-
-            //     // New parent
-            //     this._parent = parent.parent;
-            //     this._localMatrix.multiplyToRef(this._parent._worldMatrix, this._globalMatrix);
-            //     parent.parent._children.push(this);
-            // }
         } else {
             this._worldMatrix = this._localMatrix;
         }
@@ -304,9 +283,7 @@ export class Node {
             }
         }
 
-        if (!this._ignoreOpacityAnimations) {
-            this._updateOpacity(frame);
-        }
+        this._updateOpacity(frame);
 
         for (let i = 0; i < this._children.length; i++) {
             this._children[i].update(frame, isUpdated || isParentUpdated);

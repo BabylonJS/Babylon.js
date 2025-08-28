@@ -101,6 +101,8 @@ import type { ProceduralTexture } from "./Materials/Textures/Procedurals/procedu
 import { FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask";
 import { _RetryWithInterval } from "./Misc/timingTools";
 import type { ObjectRenderer } from "./Rendering/objectRenderer";
+import type { BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
+import type { BoundingBox } from "./Culling/boundingBox";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -2729,10 +2731,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /**
      * Creates a scene UBO
      * @param name name of the uniform buffer (optional, for debugging purpose only)
+     * @param trackUBOsInFrame define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame)
      * @returns a new ubo
      */
-    public createSceneUniformBuffer(name?: string): UniformBuffer {
-        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene");
+    public createSceneUniformBuffer(name?: string, trackUBOsInFrame?: boolean): UniformBuffer {
+        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene", undefined, trackUBOsInFrame);
         sceneUbo.addUniform("viewProjection", 16);
         sceneUbo.addUniform("view", 16);
         sceneUbo.addUniform("projection", 16);
@@ -4889,15 +4892,32 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
+
+                // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+                const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
+
+                let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
+
                 for (let renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     const renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         const hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
+                        if (renderTarget.enableBoundingBoxRendering && boundingBoxRenderer && !currentBoundingBoxMeshList) {
+                            // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which will be reset/updated when processing this target
+                            currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+                            currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+                        }
                         renderTarget.render(<boolean>hasSpecialRenderTargetCamera, this.dumpNextRenderTargets);
                         needRebind = true;
                     }
                 }
+
+                if (boundingBoxRenderer && currentBoundingBoxMeshList) {
+                    boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
+                    boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList.length;
+                }
+
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
                 this._renderId++;
@@ -4933,10 +4953,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
-        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+        const fastSnapshotMode = engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+        if (fastSnapshotMode) {
             this.finalizeSceneUbo();
         }
-        this._renderingManager.render(null, null, true, true);
+        this._renderingManager.render(null, null, true, !fastSnapshotMode);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
 
         // After Camera Draw

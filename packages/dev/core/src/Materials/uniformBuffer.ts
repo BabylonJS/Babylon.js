@@ -40,6 +40,7 @@ export class UniformBuffer {
     private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
+    private _trackUBOsInFrame: boolean;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -236,8 +237,9 @@ export class UniformBuffer {
      * @param dynamic Define if the buffer is updatable
      * @param name to assign to the buffer (debugging purpose)
      * @param forceNoUniformBuffer define that this object must not rely on UBO objects
+     * @param trackUBOsInFrame define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame)
      */
-    constructor(engine: AbstractEngine, data?: number[], dynamic = false, name?: string, forceNoUniformBuffer = false) {
+    constructor(engine: AbstractEngine, data?: number[], dynamic = false, name?: string, forceNoUniformBuffer = false, trackUBOsInFrame?: boolean) {
         this._engine = engine;
         this._noUBO = !engine.supportsUniformBuffers || forceNoUniformBuffer;
         this._dynamic = dynamic;
@@ -250,12 +252,14 @@ export class UniformBuffer {
         this._uniformArraySizes = {};
         this._uniformLocationPointer = 0;
         this._needSync = false;
+        this._trackUBOsInFrame = false;
 
-        if (this._engine._features.trackUbosInFrame) {
+        if ((trackUBOsInFrame === undefined && this._engine._features.trackUbosInFrame) || trackUBOsInFrame === true) {
             this._buffers = [];
             this._bufferIndex = -1;
             this._createBufferOnWrite = false;
             this._currentFrameId = 0;
+            this._trackUBOsInFrame = true;
         }
 
         if (this._noUBO) {
@@ -587,7 +591,7 @@ export class UniformBuffer {
             this._buffer = this._engine.createUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
         }
 
-        if (this._engine._features.trackUbosInFrame) {
+        if (this._trackUBOsInFrame) {
             this._buffers.push([this._buffer, this._engine._features.checkUbosContentBeforeUpload ? this._bufferData.slice() : undefined]);
             this._bufferIndex = this._buffers.length - 1;
             this._createBufferOnWrite = false;
@@ -596,7 +600,7 @@ export class UniformBuffer {
 
     /** @internal */
     public _rebuildAfterContextLost(): void {
-        if (this._engine._features.trackUbosInFrame) {
+        if (this._trackUBOsInFrame) {
             this._buffers = [];
             this._currentFrameId = 0;
         }
@@ -613,9 +617,13 @@ export class UniformBuffer {
         return this._bufferIndex;
     }
 
-    /** Gets the name of this buffer */
+    /** Gets or sets the name of this buffer */
     public get name(): string {
         return this._name;
+    }
+
+    public set name(value: string) {
+        this._name = value;
     }
 
     /** Gets the current effect */
@@ -656,14 +664,14 @@ export class UniformBuffer {
         }
 
         if (!this._dynamic && !this._needSync) {
-            this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
+            this._createBufferOnWrite = this._trackUBOsInFrame;
             return;
         }
 
         if (this._buffers && this._buffers.length > 1 && this._buffers[this._bufferIndex][1]) {
             if (this._buffersEqual(this._bufferData, this._buffers[this._bufferIndex][1]!)) {
                 this._needSync = false;
-                this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
+                this._createBufferOnWrite = this._trackUBOsInFrame;
                 return;
             } else {
                 this._copyBuffer(this._bufferData, this._buffers[this._bufferIndex][1]!);
@@ -680,7 +688,7 @@ export class UniformBuffer {
         }
 
         this._needSync = false;
-        this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
+        this._createBufferOnWrite = this._trackUBOsInFrame;
     }
 
     private _createNewBuffer() {
@@ -695,7 +703,7 @@ export class UniformBuffer {
     }
 
     private _checkNewFrame(): void {
-        if (this._engine._features.trackUbosInFrame && this._currentFrameId !== this._engine.frameId) {
+        if (this._trackUBOsInFrame && this._currentFrameId !== this._engine.frameId) {
             this._currentFrameId = this._engine.frameId;
             this._createBufferOnWrite = false;
             if (this._buffers && this._buffers.length > 0) {
@@ -1230,7 +1238,7 @@ export class UniformBuffer {
             uniformBuffers.pop();
         }
 
-        if (this._engine._features.trackUbosInFrame && this._buffers) {
+        if (this._trackUBOsInFrame && this._buffers) {
             for (let i = 0; i < this._buffers.length; ++i) {
                 const buffer = this._buffers[i][0];
                 this._engine._releaseBuffer(buffer);

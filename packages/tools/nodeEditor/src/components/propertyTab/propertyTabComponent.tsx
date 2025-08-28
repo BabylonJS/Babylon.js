@@ -614,21 +614,23 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         />
                     </LineContainerComponent>
                 )}
-                <LineContainerComponent title="TRANSPARENCY">
-                    <CheckBoxLineComponent
-                        label="Force alpha blending"
-                        target={this.props.globalState.nodeMaterial}
-                        propertyName="forceAlphaBlending"
-                        onValueChanged={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
-                    />
-                    <OptionsLine
-                        label="Alpha mode"
-                        options={AlphaModeOptions}
-                        target={this.props.globalState.nodeMaterial}
-                        propertyName="alphaMode"
-                        onSelect={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
-                    />
-                </LineContainerComponent>
+                {this.props.globalState.mode !== NodeMaterialModes.SFE && (
+                    <LineContainerComponent title="TRANSPARENCY">
+                        <CheckBoxLineComponent
+                            label="Force alpha blending"
+                            target={this.props.globalState.nodeMaterial}
+                            propertyName="forceAlphaBlending"
+                            onValueChanged={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
+                        />
+                        <OptionsLine
+                            label="Alpha mode"
+                            options={AlphaModeOptions}
+                            target={this.props.globalState.nodeMaterial}
+                            propertyName="alphaMode"
+                            onSelect={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
+                        />
+                    </LineContainerComponent>
+                )}
                 {GetInputProperties({ lockObject: this.props.lockObject, globalState: this.props.globalState, inputs: this.props.globalState.nodeMaterial.getInputBlocks() })}
             </PropertyTabComponentBase>
         );
