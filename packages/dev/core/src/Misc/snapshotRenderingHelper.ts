@@ -10,6 +10,9 @@ import type {
     WebGPUShaderProcessor,
     WebGPUPipelineContext,
     GaussianSplattingMesh,
+    DrawWrapper,
+    Camera,
+    SpriteManager,
 } from "core/index";
 
 import { Constants } from "core/Engines/constants";
@@ -17,6 +20,7 @@ import { BindMorphTargetParameters } from "core/Materials/materialHelper.functio
 import { ScenePerformancePriority } from "core/scene";
 import { Logger } from "core/Misc/logger";
 import { FrameGraphBaseLayerTask } from "../FrameGraph/Tasks/Layers/baseLayerTask";
+import { FrameGraphUtils } from "../FrameGraph/frameGraphUtils";
 
 /**
  * Options for the snapshot rendering helper
@@ -96,11 +100,12 @@ export class SnapshotRenderingHelper {
                 return;
             }
 
-            // Animate skeletons
+            // Animates skeletons
             for (const skeleton of scene.skeletons) {
                 skeleton.prepare(true);
             }
 
+            // Handles meshes
             for (const mesh of scene.meshes) {
                 if (mesh.infiniteDistance) {
                     mesh.transferToEffect(mesh.computeWorldMatrix(true));
@@ -129,6 +134,20 @@ export class SnapshotRenderingHelper {
                             }
                         }
                     }
+                }
+            }
+
+            // Handles sprite renderers
+            let camera = scene.activeCamera;
+            if (scene.frameGraph) {
+                camera = FrameGraphUtils.FindMainCamera(scene.frameGraph) || camera;
+            }
+            if (scene.spriteManagers && camera) {
+                for (const imanager of scene.spriteManagers) {
+                    const manager = imanager as SpriteManager;
+                    const renderer = manager.spriteRenderer;
+
+                    this._spriteRendererUpdateEffects(renderer._drawWrapperBase, renderer._drawWrapperDepth, camera);
                 }
             }
         });
@@ -379,6 +398,24 @@ export class SnapshotRenderingHelper {
                 }
             }
         }
+    }
+
+    private _spriteRendererDirectMatrixUpdate(dw: DrawWrapper, camera: Camera) {
+        const effect = dw?.effect;
+        if (effect) {
+            const dataBuffer = (dw.drawContext as WebGPUDrawContext).buffers["LeftOver" satisfies (typeof WebGPUShaderProcessor)["LeftOvertUBOName"]];
+            const ubLeftOver = (effect._pipelineContext as WebGPUPipelineContext)?.uniformBuffer;
+            if (dataBuffer && ubLeftOver && ubLeftOver.setDataBuffer(dataBuffer)) {
+                effect.setMatrix("view", camera.getViewMatrix());
+                effect.setMatrix("projection", camera.getProjectionMatrix());
+                ubLeftOver.update();
+            }
+        }
+    }
+
+    private _spriteRendererUpdateEffects(drawWrapperBase: DrawWrapper, drawWrapperDepth: DrawWrapper, camera: Camera) {
+        this._spriteRendererDirectMatrixUpdate(drawWrapperBase, camera);
+        this._spriteRendererDirectMatrixUpdate(drawWrapperDepth, camera);
     }
 
     private _executeAtFrame(frameId: number, func: () => void, mode: "whenEnabled" | "whenDisabled" = "whenEnabled") {

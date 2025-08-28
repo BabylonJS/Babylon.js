@@ -1,5 +1,5 @@
 import { Logger } from "../Misc/logger";
-import type { Observer } from "../Misc/observable";
+import type { EventState, Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
@@ -210,9 +210,15 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         // Relay drag events
         const gizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
         for (const gizmo of gizmos) {
-            gizmo.dragBehavior.onDragStartObservable.add(this.onDragStartObservable.notifyObservers.bind(this.onDragStartObservable));
-            gizmo.dragBehavior.onDragObservable.add(this.onDragObservable.notifyObservers.bind(this.onDragObservable));
-            gizmo.dragBehavior.onDragEndObservable.add(this.onDragEndObservable.notifyObservers.bind(this.onDragEndObservable));
+            gizmo.dragBehavior.onDragStartObservable.add((eventData: DragStartEndEvent, eventState: EventState) =>
+                this.onDragStartObservable.notifyObservers(eventData, eventState.mask, eventState.target, eventState.currentTarget, eventState.userInfo)
+            );
+            gizmo.dragBehavior.onDragObservable.add((eventData: DragEvent, eventState: EventState) =>
+                this.onDragObservable.notifyObservers(eventData, eventState.mask, eventState.target, eventState.currentTarget, eventState.userInfo)
+            );
+            gizmo.dragBehavior.onDragEndObservable.add((eventData: DragStartEndEvent, eventState: EventState) =>
+                this.onDragEndObservable.notifyObservers(eventData, eventState.mask, eventState.target, eventState.currentTarget, eventState.userInfo)
+            );
         }
 
         this.attachedMesh = null;

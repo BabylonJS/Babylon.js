@@ -1,5 +1,6 @@
 import type { Nullable } from "core/types";
 import type { AnimationConfiguration } from "./animationConfiguration";
+import type { RawLottieAnimation } from "./parsing/rawTypes";
 
 /**
  * Generic type representing a message sent between the main thread and the worker.
@@ -79,6 +80,8 @@ export type StartAnimationMessagePayload = {
     variables: Nullable<Map<string, string>>;
     /** Optional configuration object to customize the animation playback. */
     configuration: Nullable<Partial<AnimationConfiguration>>;
+    /** The parsed lottie animation if it is available */
+    animationData?: RawLottieAnimation;
 };
 
 /** Payload for the "containerResize" message type */

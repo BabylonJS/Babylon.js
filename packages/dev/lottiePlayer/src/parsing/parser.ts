@@ -271,7 +271,6 @@ export class Parser {
 
         const trsNode = new ControlNode(
             `ControlNode (TRS) - ${layer.nm}`,
-            this._configuration.ignoreOpacityAnimations,
             layer.ip,
             layer.op,
             transform.position,
@@ -314,7 +313,6 @@ export class Parser {
     private _parseNullLayer(layer: RawLottieLayer, transform: Transform, parent: Node): Node {
         return new Node(
             `Node (Anchor) - ${layer.nm}`,
-            this._configuration.ignoreOpacityAnimations,
             transform.anchorPoint,
             undefined, // Rotation is not used for anchor point
             undefined, // Scale is not used for anchor point
@@ -364,20 +362,14 @@ export class Parser {
         };
 
         positionProperty.startValue.x += spriteInfo.centerX;
-        positionProperty.startValue.y -= spriteInfo.centerY; // Invert Y
         positionProperty.currentValue.x += spriteInfo.centerX;
-        positionProperty.currentValue.y -= spriteInfo.centerY; // Invert Y
 
-        // if (this._rawFonts) {
-        //     // If we have raw fonts, we can set the font information on the sprite
-        //     const font = this._rawFonts.get(layer.t.d.k[0].s.f);
-        //     positionProperty.startValue.y += font!.ascent! / 2;
-        //     positionProperty.currentValue.y += font!.ascent! / 2;
-        // }
+        // For text, its Y position is at the baseline, so we need to offset it by half the height of the text upwards
+        positionProperty.startValue.y += spriteInfo.centerY;
+        positionProperty.currentValue.y += spriteInfo.centerY;
 
         return new SpriteNode(
             "Sprite",
-            this._configuration.ignoreOpacityAnimations,
             sprite,
             positionProperty,
             undefined, // Rotation is not used for sprites final transform
@@ -427,19 +419,10 @@ export class Parser {
         }
 
         // Create the nodes on the scenegraph for this group
-        const trsNode = new Node(
-            `Node (TRS)- ${group.nm}`,
-            this._configuration.ignoreOpacityAnimations,
-            transform.position,
-            transform.rotation,
-            transform.scale,
-            transform.opacity,
-            parent
-        );
+        const trsNode = new Node(`Node (TRS)- ${group.nm}`, transform.position, transform.rotation, transform.scale, transform.opacity, parent);
 
         const anchorNode = new Node(
             `Node (Anchor) - ${group.nm}`,
-            this._configuration.ignoreOpacityAnimations,
             transform.anchorPoint,
             undefined, // Rotation is not used for anchor point
             undefined, // Scale is not used for anchor point
@@ -482,7 +465,6 @@ export class Parser {
 
         new SpriteNode(
             "Sprite",
-            this._configuration.ignoreOpacityAnimations,
             sprite,
             positionProperty,
             undefined, // Rotation is not used for sprites final transform

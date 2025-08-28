@@ -17,6 +17,7 @@
             "serializers/*": ["dev/serializers/src/*"],
             "inspector/*": ["dev/inspector/src/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
+            "lottie-player/*": ["dev/lottiePlayer/src/*"],
             "node-editor/*": ["tools/nodeEditor/src/*"],
             "node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"],
             "node-render-graph-editor/*": ["tools/nodeRenderGraphEditor/src/*"],
