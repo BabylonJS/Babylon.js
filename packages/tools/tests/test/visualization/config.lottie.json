@@ -1,0 +1,11 @@
+{
+    "root": "https://cdn.babylonjs.com",
+    "usesDevHost": true,
+    "tests": [
+        {
+            "title": "Lottie - Basic Unparented Triangles (Web Worker)",
+            "devHostQsps": "?exp=lottie&file=triangles_noParents.json",
+            "referenceImage": "triangles_noParents.png"
+        }
+    ]
+}
