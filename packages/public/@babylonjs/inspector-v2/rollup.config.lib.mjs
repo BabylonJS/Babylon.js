@@ -34,7 +34,7 @@ const commonConfig = {
 const jsConfig = {
     ...commonConfig,
     output: {
-        dir: "lib2",
+        dir: "lib",
         sourcemap: true,
         format: "es",
         exports: "named",
@@ -43,7 +43,7 @@ const jsConfig = {
         alias({
             entries: [{ find: "shared-ui-components", replacement: path.resolve("../../../dev/sharedUiComponents/src") }],
         }),
-        typescript({ tsconfig: "tsconfig.build.lib2.json" }),
+        typescript({ tsconfig: "tsconfig.build.lib.json" }),
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
     ],
     onwarn(warning, warn) {
@@ -55,10 +55,10 @@ const jsConfig = {
 const dtsConfig = {
     ...commonConfig,
     output: {
-        file: "lib2/index.d.ts",
+        file: "lib/index.d.ts",
         format: "es",
     },
-    plugins: [dts({ tsconfig: "tsconfig.build.lib2.json" })],
+    plugins: [dts({ tsconfig: "tsconfig.build.lib.json" })],
 };
 
 export default [jsConfig, dtsConfig];

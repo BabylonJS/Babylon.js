@@ -4,9 +4,7 @@
     "compilerOptions": {
         "outDir": "./lib",
         "rootDir": "../../../",
-        "declaration": true,
-        "declarationMap": false,
-        "sourceMap": true,
+        "declaration": false,
         "target": "ES2020",
         "importHelpers": true,
         "plugins": [
@@ -31,5 +29,5 @@
         ]
     },
 
-    "include": ["../../../dev/inspector-v2/src/**/*"]
+    "include": ["../../../dev/inspector-v2/src/**/*", "../../../dev/sharedUiComponents/src/**/*"]
 }

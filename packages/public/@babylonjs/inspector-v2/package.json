@@ -3,23 +3,22 @@
     "version": "1.0.0",
     "private": true,
     "type": "module",
-    "main": "lib2/index.js",
-    "module": "lib2/index.js",
-    "esnext": "lib2/index.js",
-    "types": "lib2/index.d.ts",
+    "main": "lib/index.js",
+    "module": "lib/index.js",
+    "esnext": "lib/index.js",
+    "types": "lib/index.d.ts",
     "files": [
-        "lib2/**/*.js",
-        "lib2/**/*.d.ts",
-        "lib2/**/*.map",
+        "lib/**/*.js",
+        "lib/**/*.d.ts",
+        "lib/**/*.map",
         "readme.md",
         "license.md"
     ],
     "scripts": {
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo -g",
-        "bundle": "npm run bundle:lib2",
-        "bundle:lib": "webpack -c webpack.config.lib.esm.mjs && node -e \"require('fs').cpSync('./index.d.ts', './lib/index.d.ts')\"",
-        "bundle:lib2": "rollup -c rollup.config.lib.mjs",
+        "bundle": "npm run bundle:lib",
+        "bundle:lib": "rollup -c rollup.config.lib.mjs",
         "pack": "npm run build && npm pack"
     },
     "peerDependencies": {
