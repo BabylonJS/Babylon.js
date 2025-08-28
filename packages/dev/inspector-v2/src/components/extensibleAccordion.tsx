@@ -3,7 +3,7 @@ import type { ComponentType, PropsWithChildren } from "react";
 import type { AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";
 
 import { makeStyles } from "@fluentui/react-components";
-import { Children, isValidElement, useMemo, useState } from "react";
+import { Children, isValidElement, useMemo } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
@@ -141,12 +141,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
         );
     }, [defaultSections, sections, mergedSectionContent]);
 
-    const [version, setVersion] = useState(0);
-
     const visibleSections = useMemo(() => {
-        // When any of this state changes, we should re-render the Accordion so the defaultOpenItems are re-evaluated.
-        setVersion((prev) => prev + 1);
-
         if (!context) {
             return [];
         }
@@ -179,7 +174,7 @@ export function ExtensibleAccordion<ContextT = unknown>(
     return (
         <div className={classes.rootDiv}>
             {visibleSections.length > -1 && (
-                <Accordion key={version}>
+                <Accordion>
                     {...visibleSections.map((section) => {
                         return (
                             <AccordionSection key={section.identity} title={section.identity} collapseByDefault={section.collapseByDefault}>
