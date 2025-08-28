@@ -110,7 +110,7 @@
         "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
-        "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""
+        "start": "concurrently --kill-others -m 3 -n dev-watch,cdn-server,dev-host \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\" \"npm run serve -w @tools/dev-host\""
     },
     "engines": {
         "node": ">=20.11.0 <23.0.0",

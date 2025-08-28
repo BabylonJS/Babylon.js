@@ -61,17 +61,26 @@ export const evaluatePlaywrightVisTests = async (
     // test.describe.configure({ mode: "serial" });
 
     test.beforeAll(async ({ browser }) => {
+        console.log(getGlobalConfig({ root: config.root, usesDevHost: config.usesDevHost }));
+        const usesDevHost = config.usesDevHost ?? false;
+
         page = await browser.newPage();
         await page.setViewportSize({ width: dimensions?.width || 600, height: dimensions?.height || 400 });
-        await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
+        await page.goto(getGlobalConfig({ root: config.root, usesDevHost }).baseUrl + `/empty.html`, {
             // waitUntil: "load", // for chrome should be "networkidle0"
             timeout: 0,
         });
-        await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
 
-        await page.waitForFunction(() => {
-            return window.BABYLON;
-        });
+        if (usesDevHost) {
+            await page.waitForSelector("#main-div", { timeout: 20000 });
+        } else {
+            await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+
+            await page.waitForFunction(() => {
+                return window.BABYLON;
+            });
+        }
+
         page.setDefaultTimeout(0);
     });
 
@@ -94,7 +103,7 @@ export const evaluatePlaywrightVisTests = async (
             engineName: engineType,
             useReverseDepthBuffer: "false",
             useNonCompatibilityMode: " false",
-            baseUrl: getGlobalConfig({ root: config.root }).baseUrl,
+            baseUrl: getGlobalConfig({ root: config.root, usesDevHost: config.usesDevHost ?? false }).baseUrl,
         });
 
         log(rendererData.renderer);
@@ -121,14 +130,14 @@ export const evaluatePlaywrightVisTests = async (
                 log(msg, testCase.title);
             };
             page.on("console", logCallback);
-            console.log("Running test: " + testCase.title, ". Meta: ", testCase.playgroundId || testCase.scriptToRun || testCase.sceneFilename);
+            console.log("Running test: " + testCase.title, ". Meta: ", testCase.playgroundId || testCase.scriptToRun || testCase.sceneFilename || testCase.devHostQsps);
             test.setTimeout(timeout);
             if (optionalStateChanges?.beforeScene) {
                 await optionalStateChanges.beforeScene(page);
             }
             await page.evaluate(evaluatePrepareScene, {
                 sceneMetadata: testCase,
-                globalConfig: getGlobalConfig({ root: config.root }),
+                globalConfig: getGlobalConfig({ root: config.root, usesDevHost: config.usesDevHost ?? false }),
             });
             if (optionalStateChanges?.beforeRender) {
                 await optionalStateChanges.beforeRender(page);
@@ -211,7 +220,14 @@ export const evaluateInitEngineForVisualization = async ({
     window.forceUseNonCompatibilityMode = useNonCompatibilityMode === 1 || useNonCompatibilityMode === "true";
 
     window.canvas = document.getElementById("babylon-canvas") as HTMLCanvasElement;
-    if (engineName === "webgpu") {
+    if (engineName === "lottie") {
+        return {
+            forceUseReverseDepthBuffer: false,
+            forceUseNonCompatibilityMode: false,
+            engineName,
+            renderer: null,
+        };
+    } else if (engineName === "webgpu") {
         const glslangOptions = {
             jsPath: baseUrl + "/glslang/glslang.js",
             wasmPath: baseUrl + "/glslang/glslang.wasm",
@@ -271,6 +287,7 @@ export const evaluatePrepareScene = async ({
         functionToCall?: string;
         replace?: string;
         playgroundId?: string;
+        devHostQsps?: string;
     };
     globalConfig: { root: string; snippetUrl: any; pgRoot: string };
 }) => {
@@ -282,7 +299,9 @@ export const evaluatePrepareScene = async ({
     BABYLON.SceneLoader.OnPluginActivatedObservable.clear();
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
-    if (sceneMetadata.sceneFolder) {
+    if (sceneMetadata.devHostQsps) {
+        // This is handled in the dev host, so we don't need to do anything here for the visualization tests.
+    } else if (sceneMetadata.sceneFolder) {
         window.scene = await BABYLON.SceneLoader.LoadAsync(globalConfig.root + sceneMetadata.sceneFolder, sceneMetadata.sceneFilename, window.engine);
     } else if (sceneMetadata.playgroundId) {
         if (sceneMetadata.playgroundId[0] !== "#" || sceneMetadata.playgroundId.indexOf("#", 1) === -1) {

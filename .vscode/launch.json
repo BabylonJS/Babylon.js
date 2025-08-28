@@ -526,6 +526,42 @@
             "preLaunchTask": "CDN Serve Prod (Dev)"
         },
         {
+            /*
+            Launchs visualization tests
+            */
+            "type": "node",
+            "request": "launch",
+            "name": "Run and Debug visualization tests (Dev)",
+            "runtimeArgs": ["--inspect-brk"],
+            "program": "${workspaceRoot}/node_modules/@playwright/test/cli.js",
+            "args": ["test", "-c", "${workspaceRoot}/playwright.config.ts"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "HEADLESS": "false",
+                "PWDEBUG": "1"
+            },
+            "preLaunchTask": "CDN Serve and watch (Dev)"
+        },
+        {
+            /*
+            Launch visualization tests only for the 'lottie' Playwright project
+            */
+            "type": "node",
+            "request": "launch",
+            "name": "Run and Debug visualization tests (Lottie) (Dev)",
+            "runtimeArgs": ["--inspect-brk"],
+            "program": "${workspaceRoot}/node_modules/@playwright/test/cli.js",
+            "args": ["test", "-c", "${workspaceRoot}/playwright.config.ts", "--project", "lottie"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "HEADLESS": "false",
+                "PWDEBUG": "1"
+            },
+            "preLaunchTask": "CDN Serve and watch (Dev)"
+        },
+        {
             "type": "msedge",
             "request": "launch",
             "name": "Viewer Test App (Web) (Edge)",

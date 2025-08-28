@@ -110,6 +110,11 @@ export default defineConfig({
             testMatch: "**/audioV2/*.test.ts",
             use: getUseDefinition("AudioV2"),
         },
+        {
+            name: "lottie",
+            testMatch: "**/*lottie.test.ts",
+            use: getUseDefinition("Lottie"),
+        },
     ],
 
     snapshotPathTemplate: "packages/tools/tests/test/visualization/ReferenceImages/{arg}{ext}",
