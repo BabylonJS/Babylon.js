@@ -279,6 +279,13 @@ export class SpriteManager implements ISpriteManager {
         }
     }
 
+    /**
+     * Gets the sprite renderer associated with this manager
+     */
+    public get spriteRenderer() {
+        return this._spriteRenderer;
+    }
+
     private _spriteRenderer: SpriteRenderer;
     /** Associative array from JSON sprite data file */
     private _cellData: any;
