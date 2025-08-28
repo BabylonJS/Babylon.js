@@ -3,7 +3,7 @@ import type { ComponentType, PropsWithChildren } from "react";
 import type { AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";
 
 import { makeStyles } from "@fluentui/react-components";
-import { Children, isValidElement, useMemo, useState } from "react";
+import { Children, isValidElement, useMemo } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 
