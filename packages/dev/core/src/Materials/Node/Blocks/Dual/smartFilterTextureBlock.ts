@@ -5,7 +5,6 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterial } from "../../nodeMaterial";
-import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
 import { SfeModeDefine } from "../Fragment/smartFilterFragmentOutputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
@@ -22,7 +21,6 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
      * A boolean indicating whether this block should be the main input for the SFE pipeline.
      * If true, it can be used in SFE for auto-disabling.
      */
-    @editableInPropertyPage("Is Main Input", PropertyTypeForEdition.Boolean, undefined, { notifiers: { rebuild: true } })
     public isMainInput: boolean = false;
 
     /**
