@@ -163,9 +163,8 @@ export class CSG2 implements IDisposable {
      */
     public printDebug() {
         Logger.Log("Genus:" + this._manifold.genus());
-        const properties = this._manifold.getProperties();
-        Logger.Log("Volume:" + properties.volume);
-        Logger.Log("surface area:" + properties.surfaceArea);
+        Logger.Log("Volume:" + this._manifold.volume());
+        Logger.Log("surface area:" + this._manifold.surfaceArea());
     }
 
     /**
@@ -232,6 +231,10 @@ export class CSG2 implements IDisposable {
         // Rebuild mesh from vertex data
         const output = new Mesh(name, scene);
         vertexData.applyToMesh(output);
+
+        if (!vertexCount) {
+            throw new Error("Unable to build a mesh. Manifold has 0 vertex");
+        }
 
         // Center mesh
         if (localOptions.centerMesh) {
