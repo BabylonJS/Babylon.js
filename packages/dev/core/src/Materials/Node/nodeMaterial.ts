@@ -2755,4 +2755,3 @@ export class NodeMaterial extends PushMaterial {
 }
 
 RegisterClass("BABYLON.NodeMaterial", NodeMaterial);
-
