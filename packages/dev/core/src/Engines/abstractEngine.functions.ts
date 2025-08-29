@@ -24,7 +24,7 @@ export const EngineFunctionContext: {
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
         onProgress?: (ev: ProgressEvent) => void,
-        offlineProvider?: IOfflineProvider,
+        offlineProvider?: Nullable<IOfflineProvider>,
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ) => IFileRequest;
@@ -44,14 +44,14 @@ export function _LoadFile(
     url: string,
     onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
     onProgress?: (data: any) => void,
-    offlineProvider?: IOfflineProvider,
+    offlineProvider?: Nullable<IOfflineProvider>,
     useArrayBuffer?: boolean,
     onError?: (request?: IWebRequest, exception?: any) => void,
     injectedLoadFile?: (
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
         onProgress?: (ev: ProgressEvent<EventTarget>) => void,
-        offlineProvider?: IOfflineProvider,
+        offlineProvider?: Nullable<IOfflineProvider>,
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ) => IFileRequest
