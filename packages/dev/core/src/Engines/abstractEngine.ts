@@ -2602,7 +2602,7 @@ export abstract class AbstractEngine {
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
         onProgress?: (data: any) => void,
-        offlineProvider?: IOfflineProvider,
+        offlineProvider?: Nullable<IOfflineProvider>,
         useArrayBuffer?: boolean,
         onError?: (request?: IWebRequest, exception?: any) => void
     ): IFileRequest {
