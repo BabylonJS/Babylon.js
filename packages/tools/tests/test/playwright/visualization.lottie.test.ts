@@ -1,3 +1,3 @@
-import { evaluatePlaywrightVisTests } from "./visualizationPlaywright.utils";
+import { evaluateDevHostVisTests } from "./visualizationPlaywright.devhost.utils";
 
-evaluatePlaywrightVisTests("lottie", "config.lottie", false, false, true, false);
+evaluateDevHostVisTests("config.lottie", true, false);
