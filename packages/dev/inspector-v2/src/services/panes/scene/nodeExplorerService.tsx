@@ -23,7 +23,7 @@ import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { GizmoServiceIdentity } from "../../gizmoService";
 import { SceneContextIdentity } from "../../sceneContext";

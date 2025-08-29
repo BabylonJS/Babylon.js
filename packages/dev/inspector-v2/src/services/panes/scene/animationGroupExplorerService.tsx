@@ -6,7 +6,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 import { FilmstripRegular, PauseFilled, PlayFilled, StackRegular } from "@fluentui/react-icons";
 
 import { AnimationGroup } from "core/Animations/animationGroup";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
