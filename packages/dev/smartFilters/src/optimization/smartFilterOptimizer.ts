@@ -313,20 +313,33 @@ export class SmartFilterOptimizer {
             funcName = UndecorateSymbol(funcName);
 
             // Test to see if this function accesses any uniforms
-            let accessesUniforms = false;
+            let uniformsAccessed: string[] = [];
             for (const sampler of samplerList) {
                 if (func.code.includes(sampler)) {
-                    accessesUniforms = true;
-                    break;
+                    uniformsAccessed.push(sampler);
                 }
             }
-            if (!accessesUniforms) {
-                for (const remappedSymbol of this._remappedSymbols) {
-                    if (remappedSymbol.type === "uniform" && remappedSymbol.owners.indexOf(block) !== -1 && func.code.includes(remappedSymbol.name)) {
-                        accessesUniforms = true;
-                        break;
-                    }
+            for (const remappedSymbol of this._remappedSymbols) {
+                if (
+                    remappedSymbol.type === "uniform" &&
+                    remappedSymbol.owners[0] &&
+                    remappedSymbol.owners[0].blockType === block.blockType &&
+                    func.code.includes(remappedSymbol.remappedName)
+                ) {
+                    uniformsAccessed.push(remappedSymbol.remappedName);
                 }
+            }
+
+            // Strip out any matches which are actually function params
+            const functionParams = func.params ? func.params.split(",").map((p) => p.trim().split(" ")[1]) : [];
+            uniformsAccessed = uniformsAccessed.filter((u) => !functionParams.includes(u));
+
+            // If it accessed any uniforms, throw an error
+            if (uniformsAccessed.length > 0) {
+                uniformsAccessed = uniformsAccessed.map((u) => (u[0] === DecorateChar ? UndecorateSymbol(u) : u));
+                throw new Error(
+                    `Helper function ${funcName} in blockType ${block.blockType} accesses uniform(s) ${uniformsAccessed.join(", ")} which is not supported. Pass them in instead.`
+                );
             }
 
             // Look to see if we have an exact match including parameters of this function in the list of remapped symbols
@@ -340,7 +353,7 @@ export class SmartFilterOptimizer {
             // Get or create the remapped name, ignoring the parameter list
             let remappedName = existingFunction?.remappedName;
             let createdNewName = false;
-            if (!remappedName || accessesUniforms) {
+            if (!remappedName) {
                 remappedName = DecorateSymbol(this._makeSymbolUnique(funcName));
                 createdNewName = true;
                 // Since we've created a new name add it to the list of symbol renames
