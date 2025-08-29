@@ -54,6 +54,13 @@ fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
 
             // should we also do http://advances.realtimerendering.com/s2018/Siggraph%202018%20HDRP%20talk_with%20notes.pdf page 80 ?
         }
+    #elif ANISOTROPIC_OPENPBR
+        // Aniso parameter remapping OpenPBR
+        fn getAnisotropicRoughness(alphaG: f32, anisotropy: f32) -> vec2f {
+            var alphaT: f32 = alphaG * sqrt(2.0 / (1.0 + (1.0 - anisotropy) * (1.0 - anisotropy)));
+            var alphaB: f32 = max(alphaT * (1.0 - anisotropy), MINIMUMVARIANCE);
+            return vec2f(alphaT, alphaB);
+        }
     #else
         // Aniso parameter remapping GLTF
         // https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy

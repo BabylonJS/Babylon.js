@@ -17,8 +17,12 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import type { MorphTargetManager } from "core/Morph/morphTargetManager";
+import type { MorphTargetManager } from "../Morph/morphTargetManager";
 import type { IColor3Like } from "core/Maths";
+import { MaterialFlags } from "./materialFlags";
+import { Texture } from "./Textures/texture";
+import type { CubeTexture } from "./Textures/cubeTexture";
+import { Color3 } from "core/Maths/math.color";
 
 // Temps
 const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };
@@ -264,6 +268,123 @@ export function BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Ef
  */
 export function BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
     sceneUbo.bindToEffect(effect, "Scene");
+}
+
+/**
+ * Update parameters for IBL
+ * @param scene The scene
+ * @param defines The list of shader defines for the material
+ * @param ubo The uniform buffer to update
+ * @param reflectionTexture The IBL texture
+ * @param realTimeFiltering Whether realtime filtering of IBL texture is being used
+ * @param supportTextureInfo Whether the texture info is supported
+ * @param supportLocalProjection Whether local projection is supported
+ * @param usePBR Whether PBR is being used
+ * @param supportSH Whether spherical harmonics are supported
+ * @param useColor Whether to use the reflection color
+ * @param reflectionColor The color to use for the reflection
+ */
+export function BindIBLParameters(
+    scene: Scene,
+    defines: any,
+    ubo: UniformBuffer,
+    reflectionTexture: Nullable<BaseTexture> = null,
+    realTimeFiltering: boolean = false,
+    supportTextureInfo: boolean = false,
+    supportLocalProjection: boolean = false,
+    usePBR: boolean = false,
+    supportSH: boolean = false,
+    useColor: boolean = false,
+    reflectionColor: Color3 = Color3.White()
+): void {
+    if (scene.texturesEnabled) {
+        if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
+            ubo.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
+            ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, 0);
+
+            if (supportLocalProjection && (<any>reflectionTexture).boundingBoxSize) {
+                const cubeTexture = <CubeTexture>reflectionTexture;
+
+                ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
+                ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
+            }
+
+            if (realTimeFiltering) {
+                const width = reflectionTexture.getSize().width;
+                ubo.updateFloat2("vReflectionFilteringInfo", width, Math.log2(width));
+            }
+
+            if (supportSH && !defines.USEIRRADIANCEMAP) {
+                const polynomials = reflectionTexture.sphericalPolynomial;
+                if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
+                    if (defines.SPHERICAL_HARMONICS) {
+                        const preScaledHarmonics = polynomials.preScaledHarmonics;
+                        ubo.updateVector3("vSphericalL00", preScaledHarmonics.l00);
+                        ubo.updateVector3("vSphericalL1_1", preScaledHarmonics.l1_1);
+                        ubo.updateVector3("vSphericalL10", preScaledHarmonics.l10);
+                        ubo.updateVector3("vSphericalL11", preScaledHarmonics.l11);
+                        ubo.updateVector3("vSphericalL2_2", preScaledHarmonics.l2_2);
+                        ubo.updateVector3("vSphericalL2_1", preScaledHarmonics.l2_1);
+                        ubo.updateVector3("vSphericalL20", preScaledHarmonics.l20);
+                        ubo.updateVector3("vSphericalL21", preScaledHarmonics.l21);
+                        ubo.updateVector3("vSphericalL22", preScaledHarmonics.l22);
+                    } else {
+                        ubo.updateFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                        ubo.updateFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                        ubo.updateFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                        ubo.updateFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x, polynomials.xx.y - polynomials.zz.y, polynomials.xx.z - polynomials.zz.z);
+                        ubo.updateFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x, polynomials.yy.y - polynomials.zz.y, polynomials.yy.z - polynomials.zz.z);
+                        ubo.updateFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                        ubo.updateFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                        ubo.updateFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                        ubo.updateFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                    }
+                }
+            } else if (usePBR) {
+                // If we're using an irradiance map with a dominant direction assigned, set it.
+                if (defines.USEIRRADIANCEMAP && defines.USE_IRRADIANCE_DOMINANT_DIRECTION) {
+                    ubo.updateVector3("vReflectionDominantDirection", reflectionTexture.irradianceTexture!._dominantDirection!);
+                }
+            }
+
+            if (supportTextureInfo) {
+                ubo.updateFloat3("vReflectionMicrosurfaceInfos", reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+            }
+        }
+    }
+    if (useColor) {
+        ubo.updateColor3("vReflectionColor", reflectionColor);
+    }
+}
+
+/**
+ * Update parameters for IBL
+ * @param scene The scene
+ * @param defines The list of shader defines for the material
+ * @param ubo The uniform buffer to update
+ * @param reflectionTexture The IBL texture
+ * @param realTimeFiltering Whether realtime filtering of IBL texture is being used
+ */
+export function BindIBLSamplers(scene: Scene, defines: any, ubo: UniformBuffer, reflectionTexture: Nullable<BaseTexture> = null, realTimeFiltering: boolean = false): void {
+    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
+        if (defines.LODBASEDMICROSFURACE) {
+            ubo.setTexture("reflectionSampler", reflectionTexture);
+        } else {
+            ubo.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
+            ubo.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
+            ubo.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
+        }
+
+        if (defines.USEIRRADIANCEMAP) {
+            ubo.setTexture("irradianceSampler", reflectionTexture.irradianceTexture);
+        }
+
+        //if realtime filtering and using CDF maps, set them.
+        const cdfGenerator = scene.iblCdfGenerator;
+        if (realTimeFiltering && cdfGenerator) {
+            ubo.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
+        }
+    }
 }
 
 /**
@@ -615,6 +736,141 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
     }
 
     return state.needNormals;
+}
+
+/**
+ * Prepare defines relating to IBL logic.
+ * @param scene The scene
+ * @param reflectionTexture The texture to use for IBL
+ * @param defines The defines to update
+ * @param realTimeFiltering Whether realtime filting of IBL texture is being used
+ * @param realTimeFilteringQuality The quality of realtime filtering
+ * @param forceSHInVertex Whether the SH are handled in the vertex shader
+ * @returns true if the defines were updated
+ */
+export function PrepareDefinesForIBL(
+    scene: Scene,
+    reflectionTexture: Nullable<BaseTexture>,
+    defines: any,
+    realTimeFiltering: boolean = false,
+    realTimeFilteringQuality: number = Constants.TEXTURE_FILTERING_QUALITY_LOW,
+    forceSHInVertex: boolean = false
+): boolean {
+    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
+        if (!reflectionTexture.isReadyOrNotBlocking()) {
+            return false;
+        }
+        defines.REFLECTION = true;
+        defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
+        defines.RGBDREFLECTION = reflectionTexture.isRGBD;
+        defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
+        defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
+        defines.USEIRRADIANCEMAP = false;
+
+        const engine = scene.getEngine();
+        if (realTimeFiltering && realTimeFilteringQuality > 0) {
+            defines.NUM_SAMPLES = "" + realTimeFilteringQuality;
+            if (engine._features.needTypeSuffixInShaderConstants) {
+                defines.NUM_SAMPLES = defines.NUM_SAMPLES + "u";
+            }
+
+            defines.REALTIME_FILTERING = true;
+            if (scene.iblCdfGenerator) {
+                defines.IBL_CDF_FILTERING = true;
+            }
+        } else {
+            defines.REALTIME_FILTERING = false;
+        }
+
+        defines.INVERTCUBICMAP = reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
+        defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+        defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && scene.useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
+
+        defines.REFLECTIONMAP_CUBIC = false;
+        defines.REFLECTIONMAP_EXPLICIT = false;
+        defines.REFLECTIONMAP_PLANAR = false;
+        defines.REFLECTIONMAP_PROJECTION = false;
+        defines.REFLECTIONMAP_SKYBOX = false;
+        defines.REFLECTIONMAP_SPHERICAL = false;
+        defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
+        defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+
+        switch (reflectionTexture.coordinatesMode) {
+            case Texture.EXPLICIT_MODE:
+                defines.REFLECTIONMAP_EXPLICIT = true;
+                break;
+            case Texture.PLANAR_MODE:
+                defines.REFLECTIONMAP_PLANAR = true;
+                break;
+            case Texture.PROJECTION_MODE:
+                defines.REFLECTIONMAP_PROJECTION = true;
+                break;
+            case Texture.SKYBOX_MODE:
+                defines.REFLECTIONMAP_SKYBOX = true;
+                break;
+            case Texture.SPHERICAL_MODE:
+                defines.REFLECTIONMAP_SPHERICAL = true;
+                break;
+            case Texture.EQUIRECTANGULAR_MODE:
+                defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
+                break;
+            case Texture.FIXED_EQUIRECTANGULAR_MODE:
+                defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
+                break;
+            case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
+                defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
+                break;
+            case Texture.CUBIC_MODE:
+            case Texture.INVCUBIC_MODE:
+            default:
+                defines.REFLECTIONMAP_CUBIC = true;
+                defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
+                break;
+        }
+
+        if (reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
+            if (reflectionTexture.irradianceTexture) {
+                defines.USEIRRADIANCEMAP = true;
+                defines.USESPHERICALFROMREFLECTIONMAP = false;
+                defines.USESPHERICALINVERTEX = false;
+                if (reflectionTexture.irradianceTexture._dominantDirection) {
+                    defines.USE_IRRADIANCE_DOMINANT_DIRECTION = true;
+                }
+            }
+            // Assume using spherical polynomial if the reflection texture is a cube map
+            else if (reflectionTexture.isCube) {
+                defines.USESPHERICALFROMREFLECTIONMAP = true;
+                defines.USEIRRADIANCEMAP = false;
+                defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
+                defines.USESPHERICALINVERTEX = forceSHInVertex;
+            }
+        }
+    } else {
+        defines.REFLECTION = false;
+        defines.REFLECTIONMAP_3D = false;
+        defines.REFLECTIONMAP_SPHERICAL = false;
+        defines.REFLECTIONMAP_PLANAR = false;
+        defines.REFLECTIONMAP_CUBIC = false;
+        defines.USE_LOCAL_REFLECTIONMAP_CUBIC = false;
+        defines.REFLECTIONMAP_PROJECTION = false;
+        defines.REFLECTIONMAP_SKYBOX = false;
+        defines.REFLECTIONMAP_EXPLICIT = false;
+        defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
+        defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+        defines.INVERTCUBICMAP = false;
+        defines.USESPHERICALFROMREFLECTIONMAP = false;
+        defines.USEIRRADIANCEMAP = false;
+        defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
+        defines.USESPHERICALINVERTEX = false;
+        defines.REFLECTIONMAP_OPPOSITEZ = false;
+        defines.LODINREFLECTIONALPHA = false;
+        defines.GAMMAREFLECTION = false;
+        defines.RGBDREFLECTION = false;
+        defines.LINEARSPECULARREFLECTION = false;
+    }
+    return true;
 }
 
 /**
@@ -1150,6 +1406,51 @@ export function PrepareUniformsAndSamplersForLight(
 }
 
 /**
+ * Append uniforms and samplers related to IBL to the provided lists
+ * @param uniformsList The list of uniforms to append to
+ * @param samplersList The list of samplers to append to
+ * @param useSH Whether to include spherical harmonics uniforms
+ */
+export function PrepareUniformsAndSamplersForIBL(uniformsList: string[], samplersList: string[], useSH: boolean): void {
+    const iblUniforms = [
+        "vReflectionMicrosurfaceInfos",
+        "vReflectionDominantDirection",
+        "reflectionMatrix",
+        "vReflectionInfos",
+        "vReflectionPosition",
+        "vReflectionSize",
+        "vReflectionColor",
+        "vReflectionFilteringInfo",
+    ];
+    if (useSH) {
+        iblUniforms.push(
+            "vSphericalX",
+            "vSphericalY",
+            "vSphericalZ",
+            "vSphericalXX_ZZ",
+            "vSphericalYY_ZZ",
+            "vSphericalZZ",
+            "vSphericalXY",
+            "vSphericalYZ",
+            "vSphericalZX",
+            "vSphericalL00",
+            "vSphericalL1_1",
+            "vSphericalL10",
+            "vSphericalL11",
+            "vSphericalL2_2",
+            "vSphericalL2_1",
+            "vSphericalL20",
+            "vSphericalL21",
+            "vSphericalL22"
+        );
+    }
+    uniformsList.push(...iblUniforms);
+
+    const iblSamplers = ["reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh", "irradianceSampler", "icdfSampler"];
+    samplersList.push(...iblSamplers);
+}
+
+/**
  * Prepares the uniforms and samplers list to be used in the effect
  * @param uniformsListOrOptions The uniform names to prepare or an EffectCreationOptions containing the list and extra information
  * @param samplersList The sampler list
@@ -1200,5 +1501,65 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
         uniformsList.push("bakedVertexAnimationTextureSizeInverted");
         uniformsList.push("bakedVertexAnimationTime");
         samplersList.push("bakedVertexAnimationTexture");
+    }
+}
+
+/**
+ *
+ * @param ubo Add uniforms to UBO
+ * @param supportTextureInfo Add uniforms for texture info if true
+ * @param supportLocalProjection Add uniforms for local projection if true
+ * @param usePBR Add uniforms for IBL if true
+ * @param supportSH Add uniforms for spherical harmonics if true
+ * @param useColor Add uniforms for reflection color if true
+ */
+export function PrepareUniformLayoutForIBL(
+    ubo: UniformBuffer,
+    supportTextureInfo: boolean = false,
+    supportLocalProjection: boolean = false,
+    usePBR: boolean = false,
+    supportSH: boolean = false,
+    useColor: boolean = false
+): void {
+    ubo.addUniform("vReflectionInfos", 2);
+    ubo.addUniform("reflectionMatrix", 16);
+    if (supportTextureInfo) {
+        ubo.addUniform("vReflectionMicrosurfaceInfos", 3);
+    }
+
+    if (supportLocalProjection) {
+        ubo.addUniform("vReflectionPosition", 3);
+        ubo.addUniform("vReflectionSize", 3);
+    }
+
+    if (usePBR) {
+        ubo.addUniform("vReflectionFilteringInfo", 2);
+        ubo.addUniform("vReflectionDominantDirection", 3);
+    }
+
+    if (useColor) {
+        ubo.addUniform("vReflectionColor", 3);
+    }
+
+    if (supportSH) {
+        ubo.addUniform("vSphericalL00", 3);
+        ubo.addUniform("vSphericalL1_1", 3);
+        ubo.addUniform("vSphericalL10", 3);
+        ubo.addUniform("vSphericalL11", 3);
+        ubo.addUniform("vSphericalL2_2", 3);
+        ubo.addUniform("vSphericalL2_1", 3);
+        ubo.addUniform("vSphericalL20", 3);
+        ubo.addUniform("vSphericalL21", 3);
+        ubo.addUniform("vSphericalL22", 3);
+
+        ubo.addUniform("vSphericalX", 3);
+        ubo.addUniform("vSphericalY", 3);
+        ubo.addUniform("vSphericalZ", 3);
+        ubo.addUniform("vSphericalXX_ZZ", 3);
+        ubo.addUniform("vSphericalYY_ZZ", 3);
+        ubo.addUniform("vSphericalZZ", 3);
+        ubo.addUniform("vSphericalXY", 3);
+        ubo.addUniform("vSphericalYZ", 3);
+        ubo.addUniform("vSphericalZX", 3);
     }
 }

@@ -4,6 +4,7 @@ import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 const NAME = "KHR_materials_anisotropy";
 
@@ -45,6 +46,16 @@ export class KHR_materials_anisotropy implements IGLTFExporterExtensionV2 {
                 }
                 return additionalTextures;
             }
+        } else if (babylonMaterial instanceof OpenPBRMaterial) {
+            if (babylonMaterial.specularRoughnessAnisotropy > 0) {
+                if (babylonMaterial.geometryTangentTexture) {
+                    additionalTextures.push(babylonMaterial.geometryTangentTexture);
+                }
+                if (babylonMaterial.specularRoughnessAnisotropyTexture && !babylonMaterial._useSpecularRoughnessAnisotropyFromTangentTexture) {
+                    additionalTextures.push(babylonMaterial.specularRoughnessAnisotropyTexture);
+                }
+                return additionalTextures;
+            }
         }
 
         return [];
@@ -76,6 +87,30 @@ export class KHR_materials_anisotropy implements IGLTFExporterExtensionV2 {
                 }
 
                 node.extensions[NAME] = anisotropyInfo;
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                if (babylonMaterial.specularRoughnessAnisotropy > 0) {
+                    this._wasUsed = true;
+
+                    node.extensions = node.extensions || {};
+
+                    const geometryTangentTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.geometryTangentTexture);
+
+                    // TODO - if _useSpecularRoughnessAnisotropyFromTangentTexture isn't true, the anisotropy strength is in a separate
+                    // texture and needs to be merged into the blue channel of the aniosotropy texture for glTF. Is there a good way of
+                    // doing this in Babylon?
+
+                    const specularRoughnessAnisotropyInfo: IKHRMaterialsAnisotropy = {
+                        anisotropyStrength: babylonMaterial.specularRoughnessAnisotropy,
+                        anisotropyRotation: babylonMaterial.geometryTangentAngle,
+                        anisotropyTexture: geometryTangentTextureInfo ?? undefined,
+                    };
+
+                    if (specularRoughnessAnisotropyInfo.anisotropyTexture !== null) {
+                        this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                    }
+
+                    node.extensions[NAME] = specularRoughnessAnisotropyInfo;
+                }
             }
             resolve(node);
         });

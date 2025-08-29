@@ -1,5 +1,6 @@
 import type { Nullable } from "core/types";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -74,13 +75,15 @@ export class EXT_materials_diffuse_roughness implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadDiffuseRoughnessPropertiesAsync(context: string, properties: IEXTMaterialsDiffuseRoughness, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.brdf.baseDiffuseModel = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
+        if (babylonMaterial instanceof PBRMaterial) {
+            babylonMaterial.brdf.baseDiffuseModel = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
+        }
 
         if (properties.diffuseRoughnessFactor != undefined) {
             babylonMaterial.baseDiffuseRoughness = properties.diffuseRoughnessFactor;
