@@ -40,11 +40,27 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
 
     public set doNotChangeAspectRatio(value: boolean) {
         const disabled = this._frameGraphTask.disabled;
+        const depthTest = this.depthTest;
+        const depthWrite = this.depthWrite;
+        const disableShadows = this.disableShadows;
+        const renderInLinearSpace = this.renderInLinearSpace;
+        const renderParticles = this.renderParticles;
+        const renderSprites = this.renderSprites;
+        const forceLayerMaskCheck = this.forceLayerMaskCheck;
+        const enableBoundingBoxRendering = this.enableBoundingBoxRendering;
 
         this._frameGraphTask.dispose();
         this._frameGraphTask = new FrameGraphTAAObjectRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
         this._additionalConstructionParameters = [value];
 
+        this.depthTest = depthTest;
+        this.depthWrite = depthWrite;
+        this.disableShadows = disableShadows;
+        this.renderInLinearSpace = renderInLinearSpace;
+        this.renderParticles = renderParticles;
+        this.renderSprites = renderSprites;
+        this.forceLayerMaskCheck = forceLayerMaskCheck;
+        this.enableBoundingBoxRendering = enableBoundingBoxRendering;
         this._frameGraphTask.disabled = disabled;
     }
 

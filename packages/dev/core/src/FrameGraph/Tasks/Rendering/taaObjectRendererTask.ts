@@ -1,4 +1,14 @@
-import type { FrameGraph, Scene, DrawWrapper, FrameGraphTextureCreationOptions, ObjectRendererOptions, FrameGraphRenderTarget, FrameGraphRenderPass } from "core/index";
+import type {
+    FrameGraph,
+    Scene,
+    DrawWrapper,
+    FrameGraphTextureCreationOptions,
+    ObjectRendererOptions,
+    FrameGraphRenderTarget,
+    FrameGraphRenderPass,
+    Observer,
+    ObjectRenderer,
+} from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
@@ -14,6 +24,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
     public readonly postProcess: ThinTAAPostProcess;
 
     protected readonly _postProcessDrawWrapper: DrawWrapper;
+    protected _initRenderingObserver: Observer<ObjectRenderer>;
 
     /**
      * Constructs a new TAA object renderer task.
@@ -27,6 +38,7 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
 
         this.postProcess = new ThinTAAPostProcess(`${name} post-process`, scene.getEngine());
         this._postProcessDrawWrapper = this.postProcess.drawWrapper;
+        this._renderer.dontSetTransformationMatrix = true;
     }
 
     public override record(): FrameGraphRenderPass {
@@ -90,6 +102,13 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
 
         this._setLightsForShadow();
 
+        this._renderer.onInitRenderingObservable.remove(this._initRenderingObserver);
+
+        this._initRenderingObserver = this._renderer.onInitRenderingObservable.add(() => {
+            // We pass false to this.camera.getProjectionMatrix() when TAA is enabled to avoid overwriting the projection matrix calculated by the call to this.postProcess.updateProjectionMatrix()
+            this._scene.setTransformMatrix(this.camera.getViewMatrix(), this.camera.getProjectionMatrix(this.postProcess.disabled));
+        });
+
         const pass = this._frameGraph.addRenderPass(this.name);
 
         pass.setRenderTarget(this.targetTexture);
@@ -97,18 +116,10 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
-            this._renderer.disableImageProcessing = this.disableImageProcessing;
 
             this.postProcess.updateProjectionMatrix();
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
-
-            // We define the active camera and transformation matrices ourselves, otherwise this will be done by calling context.render, in which case
-            // getProjectionMatrix will be called with a "true" parameter, forcing recalculation of the projection matrix and losing our changes.
-            if (!this.postProcess.disabled) {
-                this._scene.activeCamera = this.camera;
-                this._scene.setTransformMatrix(this.camera.getViewMatrix(), this.camera.getProjectionMatrix());
-            }
 
             context.render(this._renderer, this._textureWidth, this._textureHeight);
 
@@ -138,5 +149,10 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         });
 
         return pass;
+    }
+
+    public override dispose() {
+        this._renderer.onInitRenderingObservable.remove(this._initRenderingObserver);
+        super.dispose();
     }
 }

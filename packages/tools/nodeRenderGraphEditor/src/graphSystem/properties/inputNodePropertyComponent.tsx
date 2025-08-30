@@ -135,6 +135,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     }}
                                     extractValue={() => creationOptions.options.useSRGBBuffers![0]}
                                 />
+                                <CheckBoxLineComponent
+                                    label="History texture"
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: boolean) => {
+                                        creationOptions.isHistoryTexture = value;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    extractValue={() => creationOptions.isHistoryTexture!}
+                                />
                             </>
                         )}
                     </>

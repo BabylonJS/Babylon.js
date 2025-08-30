@@ -462,6 +462,7 @@ export class FrameGraphTextureManager {
                     const refEntry = this._textures.get(entry.refHandle)!;
 
                     entry.texture = refEntry.texture;
+                    entry.texture?.incrementReferences();
 
                     if (refEntry.refHandle === backbufferColorTextureHandle) {
                         entry.refHandle = backbufferColorTextureHandle;
@@ -544,6 +545,9 @@ export class FrameGraphTextureManager {
                 return;
             }
 
+            // We dispose of "Graph" and "Task" textures:
+            // - "Graph" textures will be recreated by _allocateTextures because the entry still exists in this._textures, but entry.texture is null
+            // - "Task" textures will be re-added to this._textures when the task is recorded (by a call to FrameGraph.build): that's why we delete the entry from this._textures below
             entry.texture?.dispose();
             entry.texture = null;
 
