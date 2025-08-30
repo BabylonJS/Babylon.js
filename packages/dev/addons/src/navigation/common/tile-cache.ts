@@ -1,4 +1,5 @@
 import type { NavMesh, OffMeshConnectionParams, TileCache } from "@recast-navigation/core";
+
 import { BjsRecast } from "../factory/common";
 
 /**

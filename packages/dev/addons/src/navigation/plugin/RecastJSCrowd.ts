@@ -12,7 +12,7 @@ import type { Scene } from "core/scene";
 
 import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { ToCrowdAgentParams } from "../common";
+import { ToCrowdAgentParams } from "../common/config";
 import type { IAgentParametersV2 } from "../types";
 import { BjsRecast } from "../factory/common";
 
