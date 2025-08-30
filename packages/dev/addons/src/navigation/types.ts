@@ -6,6 +6,9 @@ import type { Vector3 } from "core/Maths/math.vector";
 import type { IAgentParameters, INavMeshParameters } from "core/Navigation/INavigationEngine";
 import type { Nullable } from "core/types";
 
+/**
+ * Recast injection type
+ */
 export type RecastInjection = typeof import("@recast-navigation/core") & typeof import("@recast-navigation/generators");
 
 /**
@@ -43,6 +46,9 @@ export interface IOffMeshConnection {
     userId?: number;
 }
 
+/**
+ * Result of a navigation mesh creation.
+ */
 export type CreateNavMeshresult = Nullable<{
     /**
      * Navigation mesh
@@ -120,6 +126,9 @@ export interface INavMeshParametersV2 extends INavMeshParameters {
     tileCacheMeshProcess?: TileCacheMeshProcess;
 }
 
+/**
+ * Result of a steer target computation.
+ */
 export type SteerTargetResult =
     | {
           /**
@@ -150,6 +159,9 @@ export type SteerTargetResult =
           points: Vector3[];
       };
 
+/**
+ * Error types for path computation.
+ */
 export const ComputePathError = {
     START_NEAREST_POLY_FAILED: "START_NEAREST_POLY_FAILED",
     END_NEAREST_POLY_FAILED: "END_NEAREST_POLY_FAILED",
@@ -160,6 +172,9 @@ export const ComputePathError = {
 
 export type ComputePathErrorType = (typeof ComputePathError)[keyof typeof ComputePathError];
 
+/**
+ * Result of a path computation.
+ */
 export type ComputePathResult = {
     /**
      * Indicates whether the path computation was successful.
@@ -189,4 +204,9 @@ export type ComputePathResult = {
     path: IVector3Like[];
 };
 
+/**
+ * Intermediates generated during the NavMesh creation process.
+ * @remarks This is only available if the `keepIntermediates` parameter is set to true in the `INavMeshParametersV2`.
+ * It can be used for debugging or visualization purposes.
+ */
 export type GeneratorIntermediates = SoloNavMeshGeneratorIntermediates | TiledNavMeshGeneratorIntermediates | TileCacheGeneratorIntermediates | null;
