@@ -26,23 +26,44 @@ export class RecastJSCrowd implements ICrowd {
     /**
      * Recast plugin
      */
-    public navigationPlugin: RecastNavigationJSPluginV2;
+    public get navigationPlugin(): RecastNavigationJSPluginV2 {
+        return this._navigationPlugin;
+    }
+
     /**
      * Link to the detour crowd
      */
-    public recastCrowd: Crowd;
+    public get recastCrowd(): Crowd {
+        return this._recastCrowd;
+    }
+
     /**
      * One transform per agent
      */
-    public transforms: TransformNode[] = new Array<TransformNode>();
+    public get transforms(): TransformNode[] {
+        return this._transforms;
+    }
+
     /**
      * All agents created
      */
-    public agents: number[] = new Array<number>();
+    public get agents(): readonly number[] {
+        return Object.freeze(this._agents);
+    }
+
     /**
-     * agents reach radius
+     * Agents reach radius
      */
-    public reachRadii: number[] = new Array<number>();
+    public get reachRadii(): readonly number[] {
+        return Object.freeze(this._reachRadii);
+    }
+
+    private _navigationPlugin: RecastNavigationJSPluginV2;
+    private _recastCrowd: Crowd;
+    private _transforms: TransformNode[] = [];
+    private _agents: number[] = [];
+    private _reachRadii: number[] = [];
+
     /**
      * true when a destination is active for an agent and notifier hasn't been notified of reach
      */
@@ -86,13 +107,13 @@ export class RecastJSCrowd implements ICrowd {
      * @returns the crowd you can add agents to
      */
     public constructor(plugin: RecastNavigationJSPluginV2, maxAgents: number, maxAgentRadius: number, scene: Scene) {
-        this.navigationPlugin = plugin;
+        this._navigationPlugin = plugin;
 
         if (!plugin.navMesh) {
             throw new Error("There is no NavMesh generated.");
         }
 
-        this.recastCrowd = new BjsRecast.Crowd(plugin.navMesh, {
+        this._recastCrowd = new BjsRecast.Crowd(plugin.navMesh, {
             maxAgents,
             maxAgentRadius,
         });
@@ -116,11 +137,11 @@ export class RecastJSCrowd implements ICrowd {
     public addAgent(pos: IVector3Like, parameters: IAgentParametersV2, transform: TransformNode): number {
         const agentParams = ToCrowdAgentParams(parameters);
 
-        const agent = this.recastCrowd.addAgent({ x: pos.x, y: pos.y, z: pos.z }, agentParams);
+        const agent = this._recastCrowd.addAgent({ x: pos.x, y: pos.y, z: pos.z }, agentParams);
 
-        this.transforms.push(transform);
-        this.agents.push(agent.agentIndex);
-        this.reachRadii.push(parameters.reachRadius ? parameters.reachRadius : parameters.radius);
+        this._transforms.push(transform);
+        this._agents.push(agent.agentIndex);
+        this._reachRadii.push(parameters.reachRadius ? parameters.reachRadius : parameters.radius);
         this._agentDestinationArmed.push(false);
         this._agentDestination.push(new Vector3(0, 0, 0));
 
@@ -133,7 +154,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space position
      */
     public getAgentPosition(index: number): Vector3 {
-        const agentPos = this.recastCrowd.getAgent(index)?.position() ?? Vector3.ZeroReadOnly;
+        const agentPos = this._recastCrowd.getAgent(index)?.position() ?? Vector3.ZeroReadOnly;
         return new Vector3(agentPos.x, agentPos.y, agentPos.z);
     }
 
@@ -143,7 +164,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space position
      */
     public getAgentPositionToRef(index: number, result: Vector3): void {
-        const agentPos = this.recastCrowd.getAgent(index)?.position() ?? Vector3.ZeroReadOnly;
+        const agentPos = this._recastCrowd.getAgent(index)?.position() ?? Vector3.ZeroReadOnly;
         result.set(agentPos.x, agentPos.y, agentPos.z);
     }
 
@@ -153,7 +174,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space velocity
      */
     public getAgentVelocity(index: number): Vector3 {
-        const agentVel = this.recastCrowd.getAgent(index)?.velocity() ?? Vector3.ZeroReadOnly;
+        const agentVel = this._recastCrowd.getAgent(index)?.velocity() ?? Vector3.ZeroReadOnly;
         return new Vector3(agentVel.x, agentVel.y, agentVel.z);
     }
 
@@ -163,7 +184,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space velocity
      */
     public getAgentVelocityToRef(index: number, result: Vector3): void {
-        const agentVel = this.recastCrowd.getAgent(index)?.velocity() ?? Vector3.ZeroReadOnly;
+        const agentVel = this._recastCrowd.getAgent(index)?.velocity() ?? Vector3.ZeroReadOnly;
         result.set(agentVel.x, agentVel.y, agentVel.z);
     }
 
@@ -173,7 +194,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space position
      */
     public getAgentNextTargetPath(index: number): Vector3 {
-        const pathTargetPos = this.recastCrowd.getAgent(index)?.nextTargetInPath() ?? Vector3.ZeroReadOnly;
+        const pathTargetPos = this._recastCrowd.getAgent(index)?.nextTargetInPath() ?? Vector3.ZeroReadOnly;
         return new Vector3(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
     }
 
@@ -183,7 +204,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space position
      */
     public getAgentNextTargetPathToRef(index: number, result: Vector3): void {
-        const pathTargetPos = this.recastCrowd.getAgent(index)?.nextTargetInPath() ?? Vector3.ZeroReadOnly;
+        const pathTargetPos = this._recastCrowd.getAgent(index)?.nextTargetInPath() ?? Vector3.ZeroReadOnly;
         result.set(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
     }
 
@@ -193,7 +214,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns agent state, 0 = DT_CROWDAGENT_STATE_INVALID, 1 = DT_CROWDAGENT_STATE_WALKING, 2 = DT_CROWDAGENT_STATE_OFFMESH
      */
     public getAgentState(index: number): number {
-        return this.recastCrowd.getAgent(index)?.state() ?? 0; // invalid
+        return this._recastCrowd.getAgent(index)?.state() ?? 0; // invalid
     }
 
     /**
@@ -202,7 +223,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns true if over an off mesh link connection
      */
     public overOffmeshConnection(index: number): boolean {
-        return this.recastCrowd.getAgent(index)?.overOffMeshConnection() ?? false;
+        return this._recastCrowd.getAgent(index)?.overOffMeshConnection() ?? false;
     }
 
     /**
@@ -211,10 +232,10 @@ export class RecastJSCrowd implements ICrowd {
      * @param destination targeted world position
      */
     public agentGoto(index: number, destination: IVector3Like): void {
-        this.recastCrowd.getAgent(index)?.requestMoveTarget(destination);
+        this._recastCrowd.getAgent(index)?.requestMoveTarget(destination);
 
         // arm observer
-        const item = this.agents.indexOf(index);
+        const item = this._agents.indexOf(index);
         if (item > -1) {
             this._agentDestinationArmed[item] = true;
             this._agentDestination[item].set(destination.x, destination.y, destination.z);
@@ -227,7 +248,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param destination targeted world position
      */
     public agentTeleport(index: number, destination: IVector3Like): void {
-        this.recastCrowd.getAgent(index)?.teleport(destination);
+        this._recastCrowd.getAgent(index)?.teleport(destination);
     }
 
     /**
@@ -236,7 +257,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param parameters agent parameters
      */
     public updateAgentParameters(index: number, parameters: IAgentParametersV2): void {
-        const agent = this.recastCrowd.getAgent(index);
+        const agent = this._recastCrowd.getAgent(index);
         if (!agent) {
             return;
         }
@@ -277,13 +298,13 @@ export class RecastJSCrowd implements ICrowd {
      * @param index agent index returned by addAgent
      */
     public removeAgent(index: number): void {
-        this.recastCrowd.removeAgent(index);
+        this._recastCrowd.removeAgent(index);
 
-        const item = this.agents.indexOf(index);
+        const item = this._agents.indexOf(index);
         if (item > -1) {
-            this.agents.splice(item, 1);
-            this.transforms.splice(item, 1);
-            this.reachRadii.splice(item, 1);
+            this._agents.splice(item, 1);
+            this._transforms.splice(item, 1);
+            this._reachRadii.splice(item, 1);
             this._agentDestinationArmed.splice(item, 1);
             this._agentDestination.splice(item, 1);
         }
@@ -294,7 +315,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns list of agent indices
      */
     public getAgents(): number[] {
-        return this.agents;
+        return this._agents;
     }
 
     /**
@@ -302,17 +323,17 @@ export class RecastJSCrowd implements ICrowd {
      * @param deltaTime in seconds
      */
     public update(deltaTime: number): void {
-        this.recastCrowd.update(deltaTime);
+        this._recastCrowd.update(deltaTime);
 
         if (deltaTime <= Epsilon) {
             return;
         }
 
         // update crowd
-        const timeStep = this.navigationPlugin.getTimeStep();
-        const maxStepCount = this.navigationPlugin.getMaximumSubStepCount();
+        const timeStep = this._navigationPlugin.getTimeStep();
+        const maxStepCount = this._navigationPlugin.getMaximumSubStepCount();
         if (timeStep <= Epsilon) {
-            this.recastCrowd.update(deltaTime);
+            this._recastCrowd.update(deltaTime);
         } else {
             let iterationCount = Math.floor(deltaTime / timeStep);
             if (maxStepCount && iterationCount > maxStepCount) {
@@ -324,23 +345,23 @@ export class RecastJSCrowd implements ICrowd {
 
             const step = deltaTime / iterationCount;
             for (let i = 0; i < iterationCount; i++) {
-                this.recastCrowd.update(step);
+                this._recastCrowd.update(step);
             }
         }
 
         // update transforms
-        for (let index = 0; index < this.agents.length; index++) {
+        for (let index = 0; index < this._agents.length; index++) {
             // update transform position
-            const agentIndex = this.agents[index];
+            const agentIndex = this._agents[index];
             const agentPosition = this.getAgentPosition(agentIndex);
-            this.transforms[index].position = agentPosition;
+            this._transforms[index].position = agentPosition;
             // check agent reach destination
             if (this._agentDestinationArmed[index]) {
                 const dx = agentPosition.x - this._agentDestination[index].x;
                 const dz = agentPosition.z - this._agentDestination[index].z;
-                const radius = this.reachRadii[index];
-                const groundY = this._agentDestination[index].y - this.reachRadii[index];
-                const ceilingY = this._agentDestination[index].y + this.reachRadii[index];
+                const radius = this._reachRadii[index];
+                const groundY = this._agentDestination[index].y - this._reachRadii[index];
+                const ceilingY = this._agentDestination[index].y + this._reachRadii[index];
                 const distanceXZSquared = dx * dx + dz * dz;
                 if (agentPosition.y > groundY && agentPosition.y < ceilingY && distanceXZSquared < radius * radius) {
                     this._agentDestinationArmed[index] = false;
@@ -360,7 +381,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param extent x,y,z value that define the extent around the queries point of reference
      */
     setDefaultQueryExtent(extent: IVector3Like): void {
-        this.navigationPlugin.setDefaultQueryExtent(extent);
+        this._navigationPlugin.setDefaultQueryExtent(extent);
     }
 
     /**
@@ -368,7 +389,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns the box extent values
      */
     getDefaultQueryExtent(): Vector3 {
-        const p = this.navigationPlugin.getDefaultQueryExtent();
+        const p = this._navigationPlugin.getDefaultQueryExtent();
         return new Vector3(p.x, p.y, p.z);
     }
 
@@ -377,7 +398,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output the box extent values
      */
     getDefaultQueryExtentToRef(result: Vector3): void {
-        const p = this.navigationPlugin.getDefaultQueryExtent();
+        const p = this._navigationPlugin.getDefaultQueryExtent();
         result.set(p.x, p.y, p.z);
     }
 
@@ -387,7 +408,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns array containing world position composing the path
      */
     public getCorners(index: number): Vector3[] {
-        const corners = this.recastCrowd.getAgent(index)?.corners();
+        const corners = this._recastCrowd.getAgent(index)?.corners();
         if (!corners) {
             return [];
         }
@@ -403,7 +424,7 @@ export class RecastJSCrowd implements ICrowd {
      * Release all resources
      */
     public dispose(): void {
-        this.recastCrowd.destroy();
+        this._recastCrowd.destroy();
 
         if (this._onBeforeAnimationsObserver) {
             this._scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
