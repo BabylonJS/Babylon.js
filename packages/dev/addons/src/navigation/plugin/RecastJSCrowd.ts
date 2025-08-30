@@ -133,11 +133,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space position
      */
     public getAgentPosition(index: number): Vector3 {
-        const agentPos = this.recastCrowd.getAgent(index)?.position() ?? {
-            x: 0,
-            y: 0,
-            z: 0,
-        };
+        const agentPos = this.recastCrowd.getAgent(index)?.position() ?? Vector3.ZeroReadOnly;
         return new Vector3(agentPos.x, agentPos.y, agentPos.z);
     }
 
@@ -147,11 +143,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space position
      */
     public getAgentPositionToRef(index: number, result: Vector3): void {
-        const agentPos = this.recastCrowd.getAgent(index)?.position() ?? {
-            x: 0,
-            y: 0,
-            z: 0,
-        };
+        const agentPos = this.recastCrowd.getAgent(index)?.position() ?? Vector3.ZeroReadOnly;
         result.set(agentPos.x, agentPos.y, agentPos.z);
     }
 
@@ -161,11 +153,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space velocity
      */
     public getAgentVelocity(index: number): Vector3 {
-        const agentVel = this.recastCrowd.getAgent(index)?.velocity() ?? {
-            x: 0,
-            y: 0,
-            z: 0,
-        };
+        const agentVel = this.recastCrowd.getAgent(index)?.velocity() ?? Vector3.ZeroReadOnly;
         return new Vector3(agentVel.x, agentVel.y, agentVel.z);
     }
 
@@ -175,11 +163,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space velocity
      */
     public getAgentVelocityToRef(index: number, result: Vector3): void {
-        const agentVel = this.recastCrowd.getAgent(index)?.velocity() ?? {
-            x: 0,
-            y: 0,
-            z: 0,
-        };
+        const agentVel = this.recastCrowd.getAgent(index)?.velocity() ?? Vector3.ZeroReadOnly;
         result.set(agentVel.x, agentVel.y, agentVel.z);
     }
 
@@ -189,11 +173,7 @@ export class RecastJSCrowd implements ICrowd {
      * @returns world space position
      */
     public getAgentNextTargetPath(index: number): Vector3 {
-        const pathTargetPos = this.recastCrowd.getAgent(index)?.nextTargetInPath() ?? {
-            x: 0,
-            y: 0,
-            z: 0,
-        };
+        const pathTargetPos = this.recastCrowd.getAgent(index)?.nextTargetInPath() ?? Vector3.ZeroReadOnly;
         return new Vector3(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
     }
 
@@ -203,11 +183,7 @@ export class RecastJSCrowd implements ICrowd {
      * @param result output world space position
      */
     public getAgentNextTargetPathToRef(index: number, result: Vector3): void {
-        const pathTargetPos = this.recastCrowd.getAgent(index)?.nextTargetInPath() ?? {
-            x: 0,
-            y: 0,
-            z: 0,
-        };
+        const pathTargetPos = this.recastCrowd.getAgent(index)?.nextTargetInPath() ?? Vector3.ZeroReadOnly;
         result.set(pathTargetPos.x, pathTargetPos.y, pathTargetPos.z);
     }
 

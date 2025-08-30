@@ -1,5 +1,6 @@
+import { InjectGenerators } from "../generator/injection";
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
-import { BjsRecast, InitRecast, InjectGenerators } from "./common";
+import { BjsRecast, InitRecast } from "./common";
 
 /**
  * Creates a navigation plugin for the given scene using Recast WASM.

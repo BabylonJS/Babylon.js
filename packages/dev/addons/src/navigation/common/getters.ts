@@ -12,8 +12,8 @@ export function GetPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array
     let index: number;
     let tri: number;
     let pt: number;
-    const positions = [];
-    const indices = [];
+    const positions: number[] = [];
+    const indices: number[] = [];
 
     for (index = 0; index < meshes.length; index++) {
         if (meshes[index]) {
@@ -29,7 +29,7 @@ export function GetPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array
                 continue;
             }
 
-            const worldMatrices = [];
+            const worldMatrices: Matrix[] = [];
             const worldMatrix = mesh.computeWorldMatrix(true);
 
             if (mesh.hasThinInstances) {

@@ -57,7 +57,7 @@ export function CreateTileCacheNavMeshConfig(parameters: INavMeshParametersV2): 
  * @returns Recast crowd agent paramaters
  */
 export function ToSoloNavMeshGeneratorConfig(config: INavMeshParametersV2): Partial<SoloNavMeshGeneratorConfig> {
-    return Object.fromEntries(Object.entries(config).filter(([_, v]) => v !== undefined)) as Partial<SoloNavMeshGeneratorConfig>;
+    return Object.fromEntries(Object.entries(config).filter(([_, v]) => v !== undefined));
 }
 
 /**

@@ -13,7 +13,8 @@ import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
 import { CreateDebugNavMesh } from "../debug/simple-debug";
-import { BjsRecast, InjectGenerators } from "../factory/common";
+import { BjsRecast } from "../factory/common";
+import { InjectGenerators } from "../generator/injection";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
@@ -209,8 +210,14 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     public getClosestPoint(
         position: IVector3Like,
         options?: {
+            /**
+             * The polygon filter to apply to the query.
+             */
             filter?: QueryFilter;
-            halfExtents?: Vector3;
+            /**
+             * Half extents for the search box
+             */
+            halfExtents?: IVector3Like;
         }
     ): Vector3 {
         const ret = this.navMeshQuery.findClosestPoint(position, options);
@@ -227,8 +234,14 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         position: IVector3Like,
         result: Vector3,
         options?: {
+            /**
+             * The polygon filter to apply to the query.
+             */
             filter?: QueryFilter;
-            halfExtents?: Vector3;
+            /**
+             * Half extents for the search box
+             */
+            halfExtents?: IVector3Like;
         }
     ): void {
         const ret = this.navMeshQuery.findClosestPoint(position, options);
@@ -246,8 +259,14 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         maxRadius: number,
         options?: {
             startRef?: number;
+            /**
+             * The polygon filter to apply to the query.
+             */
             filter?: QueryFilter;
-            halfExtents?: Vector3;
+            /**
+             * Half extents for the search box
+             */
+            halfExtents?: IVector3Like;
         }
     ): Vector3 {
         const ret = this.navMeshQuery.findRandomPointAroundCircle(position, maxRadius, options);
@@ -267,8 +286,14 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         result: Vector3,
         options?: {
             startRef?: number;
+            /**
+             * The polygon filter to apply to the query.
+             */
             filter?: QueryFilter;
-            halfExtents?: Vector3;
+            /**
+             * Half extents for the search box
+             */
+            halfExtents?: IVector3Like;
         }
     ): void {
         const ret = this.navMeshQuery.findRandomPointAroundCircle(position, maxRadius, options);
@@ -317,6 +342,9 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         result: Vector3,
         startRef = 0,
         options?: {
+            /**
+             * The polygon filter to apply to the query.
+             */
             filter?: QueryFilter;
             maxVisitedSize?: number;
         }
@@ -337,8 +365,14 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         start: IVector3Like,
         end: IVector3Like,
         options?: {
+            /**
+             * The polygon filter to apply to the query.
+             */
             filter?: QueryFilter;
-            halfExtents?: Vector3;
+            /**
+             * Half extents for the search box
+             */
+            halfExtents?: IVector3Like;
             maxPathPolys?: number;
             maxStraightPathPoints?: number;
         }
@@ -356,7 +390,20 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     public computePathSmooth(
         start: Vector3,
         end: Vector3,
-        options?: { filter?: QueryFilter; halfExtents?: IVector3Like; maxPathPolys?: number; maxSmoothPathPoints?: number; stepSize?: number; slop?: number }
+        options?: {
+            /**
+             * The polygon filter to apply to the query.
+             */
+            filter?: QueryFilter;
+            /**
+             * Half extents for the search box
+             */
+            halfExtents?: IVector3Like;
+            maxPathPolys?: number;
+            maxSmoothPathPoints?: number;
+            stepSize?: number;
+            slop?: number;
+        }
     ): Vector3[] {
         if (!this.navMesh) {
             Logger.Error("No navmesh available. Cannot compute smooth path.");
@@ -538,9 +585,9 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
              */
             filter?: QueryFilter;
             /**
-             * half extents for the search box
+             * Half extents for the search box
              */
-            halfExtents?: Vector3;
+            halfExtents?: IVector3Like;
             /**
              * The maximum number of polygons the output visited array can hold.
              */
