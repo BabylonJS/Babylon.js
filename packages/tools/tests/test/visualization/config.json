@@ -2643,6 +2643,11 @@
             "playgroundId": "#9SDNZF#32"
         },
         {
+            "title": "FrameGraph nrge TAA",
+            "playgroundId": "#IG8NRC#33",
+            "renderCount": 15
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
