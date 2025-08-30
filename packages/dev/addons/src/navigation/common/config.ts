@@ -1,4 +1,4 @@
-import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "recast-navigation/generators";
+import type { SoloNavMeshGeneratorConfig, TileCacheGeneratorConfig, TiledNavMeshGeneratorConfig } from "@recast-navigation/generators";
 import type { CrowdAgentParams } from "@recast-navigation/core";
 
 import { Logger } from "core/Misc/logger";

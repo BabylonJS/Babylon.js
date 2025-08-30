@@ -1,5 +1,5 @@
 import type { NavMesh, NavMeshQuery, TileCache, TileCacheMeshProcess } from "@recast-navigation/core";
-import type { SoloNavMeshGeneratorIntermediates, TileCacheGeneratorIntermediates, TiledNavMeshGeneratorIntermediates } from "recast-navigation/generators";
+import type { SoloNavMeshGeneratorIntermediates, TileCacheGeneratorIntermediates, TiledNavMeshGeneratorIntermediates } from "@recast-navigation/generators";
 
 import type { IVector3Like } from "core/Maths/math.like";
 import type { Vector3 } from "core/Maths/math.vector";
