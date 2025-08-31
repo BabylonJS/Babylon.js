@@ -1,28 +1,24 @@
-import type { Nullable } from "core/types";
-import type { FunctionComponent } from "react";
+import { Body1, Button, makeStyles, tokens, Tooltip } from "@fluentui/react-components";
+import { ArrowUndoRegular, ClearFormattingRegular, SaveRegular } from "@fluentui/react-icons";
+import { useMemo, useState, type FunctionComponent } from "react";
 
-import { Observable } from "core/Misc/observable";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { Textarea } from "shared-ui-components/fluent/primitives/textarea";
-import { useObservableState } from "../../hooks/observableHooks";
-import { BoundProperty } from "./boundProperty";
+import { useProperty } from "../../hooks/compoundPropertyHooks";
 
-enum MetadataTypes {
-    NULL = "null",
-    STRING = "string",
-    OBJECT = "Object",
-    JSON = "JSON",
-}
+type MetadataTypes = "null" | "string" | "object" | "JSON";
 
 const PrettyJSONIndent = 2;
 
-function IsParsable(input: any): boolean {
+function IsParsable(metadata: unknown): metadata is string {
     try {
-        const parsed = JSON.parse(input);
+        const parsed = JSON.parse(metadata as string);
         return !!parsed && !IsString(parsed);
-    } catch (error) {
+    } catch {
         return false;
     }
 }
@@ -32,7 +28,7 @@ function IsParsable(input: any): boolean {
  * @param input - any input to check
  * @returns boolean - true if the input is a string, false otherwise
  */
-function IsString(input: any): boolean {
+function IsString(input: unknown): input is string {
     return typeof input === "string" || input instanceof String;
 }
 
@@ -41,7 +37,7 @@ function IsString(input: any): boolean {
  * @param o any object, string or number
  * @returns boolean
  */
-function ObjectCanSafelyStringify(o: object | string | number | boolean): boolean {
+function ObjectCanSafelyStringify(o: unknown): boolean {
     if (typeof o === "function") {
         return false;
     }
@@ -53,7 +49,7 @@ function ObjectCanSafelyStringify(o: object | string | number | boolean): boolea
         if (Object.values(o).length === 0) {
             return true;
         }
-        return Object.values(o as Record<string, any>).every((value) => ObjectCanSafelyStringify(value));
+        return Object.values(o as Record<string, unknown>).every((value) => ObjectCanSafelyStringify(value));
     }
 
     if (Array.isArray(o)) {
@@ -63,199 +59,94 @@ function ObjectCanSafelyStringify(o: object | string | number | boolean): boolea
     return false;
 }
 
-export interface IMetadataContainer {
-    metadata: any;
+function GetMetadataEntityType(metadata: unknown): MetadataTypes {
+    if (metadata == null) {
+        return "null";
+    } else if (IsString(metadata)) {
+        return "string";
+    } else if (!ObjectCanSafelyStringify(metadata)) {
+        return "object";
+    } else {
+        return "JSON";
+    }
 }
 
-class MetadataUtils {
-    private _editedMetadata: Nullable<string> = null;
+function HasGltfExtras(metadata: string) {
+    return IsParsable(metadata) && !!JSON.parse(metadata).gltf;
+}
 
-    public readonly settingsChangedObservable = new Observable<MetadataUtils>();
-
-    constructor(public readonly entity: IMetadataContainer) {}
-
-    get editedMetadata(): string {
-        if (this._editedMetadata === null || this._editedMetadata === undefined) {
-            this._editedMetadata = this.parsedMetadata;
-        }
-
-        if (this._editedMetadata && this.prettyJSON && this.isParsable) {
-            return JSON.stringify(JSON.parse(this._editedMetadata), undefined, PrettyJSONIndent);
-        }
-
-        return this._editedMetadata ?? "";
+function StringifyMetadata(metadata: unknown, format: boolean) {
+    if (IsString(metadata)) {
+        return metadata;
     }
 
-    set editedMetadata(value: string) {
-        if (this._editedMetadata !== value) {
-            this._editedMetadata = value;
-            this.settingsChangedObservable.notifyObservers(this);
+    if (metadata) {
+        if (ObjectCanSafelyStringify(metadata)) {
+            return JSON.stringify(metadata, undefined, format ? PrettyJSONIndent : undefined);
+        } else {
+            return String(metadata);
         }
     }
 
-    get entityType(): MetadataTypes {
-        if (Object.prototype.hasOwnProperty.call(this.entity, "metadata")) {
-            const meta = this.entity.metadata;
-            if (IsString(meta)) {
-                return MetadataTypes.STRING;
-            }
-            if (meta === null) {
-                return MetadataTypes.NULL;
-            }
-            if (!ObjectCanSafelyStringify(meta)) {
-                return MetadataTypes.OBJECT;
-            }
-            return MetadataTypes.JSON;
-        }
+    return null;
+}
 
-        return MetadataTypes.NULL;
+function Restringify(value: string, format: boolean) {
+    return IsParsable(value) ? JSON.stringify(JSON.parse(value), undefined, format ? PrettyJSONIndent : undefined) : value;
+}
+
+function PopulateGLTFExtras(metadata: string) {
+    if (!metadata) {
+        metadata = "{}";
     }
 
-    get hasGLTFExtras(): boolean {
-        return this._editedMetadata && this.isParsable && JSON.parse(this._editedMetadata).gltf;
+    if (!IsParsable(metadata)) {
+        return metadata;
     }
 
-    get isChanged(): boolean {
-        const changed = this._editedMetadata !== this.parsedMetadata;
-        return changed;
-    }
-
-    /**
-     * @returns whether the entity's metadata can be parsed as JSON.
-     */
-    get isParsable(): boolean {
-        return IsParsable(this._editedMetadata);
-    }
-
-    get isReadonly(): boolean {
-        return this.entityType === MetadataTypes.OBJECT && MetadataUtils._PreventObjectCorruption;
-    }
-
-    get parsedMetadata(): Nullable<string> {
-        const metadata = this.entity.metadata;
-
-        if (IsString(metadata)) {
-            return metadata;
-        }
-
-        if (metadata) {
-            if (ObjectCanSafelyStringify(metadata)) {
-                return JSON.stringify(metadata, undefined, this.prettyJSON ? PrettyJSONIndent : undefined);
+    try {
+        const parsedJson = JSON.parse(metadata);
+        if (parsedJson) {
+            if (Reflect.has(parsedJson, "gltf")) {
+                if (!Reflect.has(parsedJson.gltf, "extras")) {
+                    parsedJson.gltf.extras = {};
+                }
             } else {
-                return String(metadata);
+                parsedJson.gltf = { extras: {} };
             }
         }
 
-        return null;
-    }
-
-    get prettyJSON(): boolean {
-        return MetadataUtils._PrettyJSON;
-    }
-
-    set prettyJSON(value: boolean) {
-        if (MetadataUtils._PrettyJSON !== value) {
-            MetadataUtils._PrettyJSON = value;
-            this.settingsChangedObservable.notifyObservers(this);
-        }
-    }
-
-    get preventObjectCorruption(): boolean {
-        return MetadataUtils._PreventObjectCorruption;
-    }
-
-    set preventObjectCorruption(value: boolean) {
-        if (MetadataUtils._PreventObjectCorruption !== value) {
-            MetadataUtils._PreventObjectCorruption = value;
-            this.settingsChangedObservable.notifyObservers(this);
-        }
-    }
-
-    /** Safely checks if valid JSON then appends necessary props without overwriting existing */
-    populateGLTFExtras() {
-        if (this._editedMetadata && !this.isParsable) {
-            return;
-        }
-
-        try {
-            let changed = false;
-
-            if (!this._editedMetadata) {
-                this._editedMetadata = "{}";
-            }
-
-            const parsedJson = JSON.parse(this._editedMetadata);
-            if (parsedJson) {
-                if (Object.prototype.hasOwnProperty.call(parsedJson, "gltf")) {
-                    if (!Object.prototype.hasOwnProperty.call(parsedJson.gltf, "extras")) {
-                        parsedJson.gltf.extras = {};
-                        changed = true;
-                    }
-                } else {
-                    parsedJson.gltf = { extras: {} };
-                    changed = true;
-                }
-            }
-
-            if (changed) {
-                this._editedMetadata = JSON.stringify(parsedJson, undefined, this.prettyJSON ? PrettyJSONIndent : undefined);
-                this.settingsChangedObservable.notifyObservers(this);
-            }
-        } catch (error) {}
-    }
-
-    save() {
-        if (this._editedMetadata) {
-            if (this.isParsable) {
-                const parsed = JSON.parse(this._editedMetadata);
-                if (!IsString(parsed)) {
-                    this._setMetadata(parsed);
-                    return;
-                }
-            }
-
-            if (this.entityType === MetadataTypes.STRING) {
-                if (this._editedMetadata !== "") {
-                    this._setMetadata(this._editedMetadata);
-                    return;
-                }
-            }
-
-            // Object type or unparseable JSON. Leave as string.
-            this._setMetadata(this._editedMetadata);
-            return;
-        }
-
-        this._setMetadata(null);
-    }
-
-    private _setMetadata(value: any) {
-        if (this.entity.metadata !== value) {
-            this.entity.metadata = value;
-
-            this._editedMetadata = this.parsedMetadata;
-
-            this.settingsChangedObservable.notifyObservers(this);
-        }
-    }
-
-    private static _Instance: Nullable<MetadataUtils> = null;
-    private static _PrettyJSON = false;
-    private static _PreventObjectCorruption = true;
-
-    public static get Instance(): MetadataUtils {
-        if (!MetadataUtils._Instance) {
-            throw new Error("MetadataUtils not initialized.");
-        }
-        return MetadataUtils._Instance;
-    }
-
-    public static set Entity(entity: IMetadataContainer) {
-        if (!MetadataUtils._Instance || MetadataUtils._Instance.entity !== entity) {
-            MetadataUtils._Instance = new MetadataUtils(entity);
-        }
+        return JSON.stringify(parsedJson);
+    } catch {
+        return metadata;
     }
 }
+
+function SaveMetadata(entity: IMetadataContainer, metadata: string) {
+    if (IsParsable(metadata)) {
+        entity.metadata = JSON.parse(metadata);
+    } else {
+        entity.metadata = metadata;
+    }
+}
+
+export interface IMetadataContainer {
+    metadata: unknown;
+}
+
+const useStyles = makeStyles({
+    buttonDiv: {
+        display: "flex",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalXS,
+    },
+    saveButton: {
+        flex: "1",
+    },
+    secondaryButton: {
+        flex: "0 0 auto",
+    },
+});
 
 /**
  * Component to display metadata properties of an entity.
@@ -265,21 +156,81 @@ class MetadataUtils {
 export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer }> = (props) => {
     const { entity } = props;
 
-    MetadataUtils.Entity = entity;
-    const metadataUtils = MetadataUtils.Instance;
+    const classes = useStyles();
 
-    const isChanged = useObservableState(() => metadataUtils.isChanged, metadataUtils.settingsChangedObservable);
-    const isReadonly = useObservableState(() => metadataUtils.isReadonly, metadataUtils.settingsChangedObservable);
-    const editedMetadata = useObservableState(() => metadataUtils.editedMetadata, metadataUtils.settingsChangedObservable);
+    const metadata = useProperty(entity, "metadata");
+    const stringifiedMetadata = useMemo(() => StringifyMetadata(metadata, false) ?? "", [metadata]);
+    const metadataType = useMemo(() => GetMetadataEntityType(metadata), [metadata]);
+    const canPreventObjectCorruption = metadataType === "object";
+
+    const [preventObjectCorruption, setPreventObjectCorruption] = useState(false);
+    const isReadonly = canPreventObjectCorruption && preventObjectCorruption;
+
+    const [editedMetadata, setEditedMetadata] = useState(stringifiedMetadata);
+    const isEditedMetadataJSON = useMemo(() => IsParsable(editedMetadata), [editedMetadata]);
+    const unformattedEditedMetadata = useMemo(() => Restringify(editedMetadata, false), [editedMetadata]);
 
     return (
         <>
-            <BoundProperty component={TextPropertyLine} label={"Property type"} target={metadataUtils} propertyKey={"entityType"} />
-            <BoundProperty component={SwitchPropertyLine} label={"Prevent Object corruption"} target={metadataUtils} propertyKey={"preventObjectCorruption"} />
-            <BoundProperty component={SwitchPropertyLine} label={"Pretty JSON"} target={metadataUtils} propertyKey={"prettyJSON"} />
-            <Textarea disabled={isReadonly} value={editedMetadata} onChange={(val) => (metadataUtils.editedMetadata = val)} />
-            <ButtonLine label={"Populate glTF extras"} disabled={metadataUtils.hasGLTFExtras} onClick={() => metadataUtils.populateGLTFExtras()} />
-            <ButtonLine label={"Save"} disabled={!isChanged} onClick={() => metadataUtils.save()} />
+            <TextPropertyLine label="Property Type" value={metadataType} />
+            <Collapse visible={canPreventObjectCorruption}>
+                <SwitchPropertyLine label="Prevent Object Corruption" value={isReadonly} onChange={setPreventObjectCorruption} />
+            </Collapse>
+            <Textarea disabled={isReadonly} value={editedMetadata} onChange={setEditedMetadata} />
+            <ButtonLine
+                label="Populate glTF extras"
+                disabled={!IsParsable(editedMetadata) || HasGltfExtras(editedMetadata)}
+                onClick={() => {
+                    const isFormatted = Restringify(editedMetadata, true) === editedMetadata;
+                    let withGLTFExtras = PopulateGLTFExtras(editedMetadata);
+                    if (isFormatted) {
+                        withGLTFExtras = Restringify(withGLTFExtras, true);
+                    }
+                    setEditedMetadata(withGLTFExtras);
+                }}
+            />
+            <LineContainer>
+                <div className={classes.buttonDiv}>
+                    <Button
+                        className={classes.saveButton}
+                        icon={<SaveRegular />}
+                        disabled={stringifiedMetadata === unformattedEditedMetadata}
+                        onClick={() => SaveMetadata(entity, editedMetadata)}
+                    >
+                        <Body1>Save</Body1>
+                    </Button>
+                    <Tooltip content="Undo Changes" relationship="label">
+                        <Button
+                            className={classes.secondaryButton}
+                            icon={<ArrowUndoRegular />}
+                            disabled={stringifiedMetadata === unformattedEditedMetadata}
+                            onClick={() => setEditedMetadata(stringifiedMetadata)}
+                        />
+                    </Tooltip>
+                    <Tooltip content="Format (Pretty Print)" relationship="label">
+                        <Button
+                            className={classes.secondaryButton}
+                            icon={
+                                <svg {...props} viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                                    <text x="3" y="14" fontSize="14" fill="currentColor">
+                                        {"{ }"}
+                                    </text>
+                                </svg>
+                            }
+                            disabled={!isEditedMetadataJSON}
+                            onClick={() => setEditedMetadata(Restringify(editedMetadata, true))}
+                        ></Button>
+                    </Tooltip>
+                    <Tooltip content="Clear Formatting" relationship="label">
+                        <Button
+                            className={classes.secondaryButton}
+                            icon={<ClearFormattingRegular />}
+                            disabled={!isEditedMetadataJSON}
+                            onClick={() => setEditedMetadata(Restringify(editedMetadata, false))}
+                        />
+                    </Tooltip>
+                </div>
+            </LineContainer>
         </>
     );
 };

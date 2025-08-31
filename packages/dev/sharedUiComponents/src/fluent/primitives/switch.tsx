@@ -36,5 +36,5 @@ export const Switch: FunctionComponent<SwitchProps> = (props) => {
         setChecked(event.target.checked);
     };
 
-    return <FluentSwitch className={classes.switch} indicator={{ className: classes.indicator }} checked={checked} onChange={onChange} />;
+    return <FluentSwitch className={classes.switch} indicator={{ className: classes.indicator }} checked={checked} disabled={props.disabled} onChange={onChange} />;
 };
