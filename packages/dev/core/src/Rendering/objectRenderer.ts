@@ -160,6 +160,14 @@ export class ObjectRenderer {
     }
 
     /**
+     * If true, the object renderer will not set the view/projection/transformation matrices for the active camera (default: false).
+     * By default, the view/projection/transformation matrices are set from the active camera (either ObjectRenderer.activeCamera or scene.activeCamera).
+     * Sets this property to true if you want to define your own transformation matrices (use the onInitRenderingObservable observable
+     * to set your own matrices, to be sure they will be correctly taken into account)
+     */
+    public dontSetTransformationMatrix = false;
+
+    /**
      * Override the mesh isReady function with your own one.
      */
     public customIsReadyFunction: (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => boolean;
@@ -528,8 +536,6 @@ export class ObjectRenderer {
         const engine = this._scene.getEngine();
         const camera: Nullable<Camera> = this.activeCamera ?? this._scene.activeCamera;
 
-        this.onInitRenderingObservable.notifyObservers(this);
-
         this._currentSceneCamera = this._scene.activeCamera;
 
         if (this._useUBO) {
@@ -538,8 +544,12 @@ export class ObjectRenderer {
             this._scene.setSceneUniformBuffer(this._sceneUBO);
         }
 
+        this.onInitRenderingObservable.notifyObservers(this);
+
         if (camera) {
-            this._scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
+            if (!this.dontSetTransformationMatrix) {
+                this._scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
+            }
             this._scene.activeCamera = camera;
             engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, viewportWidth, viewportHeight);
         }
