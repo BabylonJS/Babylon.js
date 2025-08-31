@@ -2648,6 +2648,10 @@
             "renderCount": 15
         },
         {
+            "title": "FrameGraph nrge rig camera",
+            "playgroundId": "#ATL1CS#16"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
