@@ -57,7 +57,7 @@ import { TrigonometryBlock, TrigonometryBlockOperations } from "./Blocks/trigono
 import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
 import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import { EngineStore } from "../../Engines/engineStore";
-import type { Material } from "../material";
+import { Material } from "../material";
 import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
 import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
@@ -2356,8 +2356,6 @@ export class NodeMaterial extends PushMaterial {
     public override serialize(selectedBlocks?: NodeMaterialBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
-        serializationObject.alphaMode = Array.isArray(this._alphaMode) ? this._alphaMode[0] : this._alphaMode;
-        serializationObject._alphaMode = this._alphaMode;
 
         let blocks: NodeMaterialBlock[] = [];
 
@@ -2525,21 +2523,7 @@ export class NodeMaterial extends PushMaterial {
             this.editorData.map = blockMap;
         }
 
-        this.comment = source.comment;
-
-        if (source.forceAlphaBlending !== undefined) {
-            this.forceAlphaBlending = source.forceAlphaBlending;
-        }
-
-        if (source.alphaMode !== undefined) {
-            this.alphaMode = source.alphaMode;
-        }
-
-        if (!Array.isArray(source.alphaMode)) {
-            this._alphaMode = [source.alphaMode ?? Constants.ALPHA_COMBINE];
-        } else {
-            this._alphaMode = source.alphaMode;
-        }
+        Material.ParseAlphaMode(source, this);
 
         if (!merge) {
             this._mode = source.mode ?? NodeMaterialModes.Material;
@@ -2554,6 +2538,7 @@ export class NodeMaterial extends PushMaterial {
      * @deprecated Please use the parseSerializedObject method instead
      */
     public loadFromSerialization(source: any, rootUrl: string = "", merge = false) {
+        SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
         this.parseSerializedObject(source, rootUrl, merge);
     }
 
