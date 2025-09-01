@@ -37,6 +37,7 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
     constructor(material: Material) {
         super(material, TAAJitterMaterialPlugin.Name, 300, new TAAJitterMaterialDefines());
         this.registerForExtraEvents = true;
+        this.doNotSerialize = true;
     }
 
     /** @internal */

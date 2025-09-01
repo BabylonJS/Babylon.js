@@ -145,6 +145,7 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     constructor(material: Material) {
         super(material, "DepthSensing", 222, new DepthSensingMaterialDefines());
         this._varColorName = material instanceof PBRBaseMaterial ? "finalColor" : "color";
+        this.doNotSerialize = true;
         ManagedMaterialPlugins.push(this);
     }
 
