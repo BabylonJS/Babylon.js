@@ -40,14 +40,14 @@ export class BVHExporter {
         }
 
         // Build bone hierarchy and collect animation data
-        const boneHierarchy = this.buildBoneHierarchy(skeleton, animationsToExport);
+        const boneHierarchy = this._buildBoneHierarchy(skeleton, animationsToExport);
         const frameCount = animationRange.to - animationRange.from + 1;
 
         let exportString = "";
         exportString += `HIERARCHY\n`;
 
         // Export hierarchy recursively
-        exportString += this.exportHierarchy(boneHierarchy, 0);
+        exportString += this._exportHierarchy(boneHierarchy, 0);
 
         // Export motion data
         exportString += `MOTION\n`;
@@ -56,12 +56,12 @@ export class BVHExporter {
         exportString += `\n`;
 
         // Export frame data
-        exportString += this.exportMotionData(boneHierarchy, frameCount, animationRange.from, animationsToExport);
+        exportString += this._exportMotionData(boneHierarchy, frameCount, animationRange.from, animationsToExport);
 
         return exportString;
     }
 
-    private static buildBoneHierarchy(skeleton: Skeleton, animationNames: string[]): IBVHBoneData[] {
+    private static _buildBoneHierarchy(skeleton: Skeleton, animationNames: string[]): IBVHBoneData[] {
         const boneMap = new Map<Bone, IBVHBoneData>();
         const rootBones: IBVHBoneData[] = [];
 
@@ -112,7 +112,7 @@ export class BVHExporter {
         return rootBones;
     }
 
-    private static exportHierarchy(boneData: IBVHBoneData[], indentLevel: number): string {
+    private static _exportHierarchy(boneData: IBVHBoneData[], indentLevel: number): string {
         let result = "";
         // 4 spaces identation for each level
         const indent = "    ".repeat(indentLevel);
@@ -124,13 +124,13 @@ export class BVHExporter {
             if (data.children.length === 0 && !data.hasPositionChannels && !data.hasRotationChannels) {
                 result += `${indent}End Site\n`;
                 result += `${indent}{\n`;
-                const offset = this.getBoneOffset(bone);
+                const offset = this._getBoneOffset(bone);
                 result += `${indent}    OFFSET ${offset.x.toFixed(6)} ${offset.y.toFixed(6)} ${offset.z.toFixed(6)}\n`;
                 result += `${indent}}\n`;
             } else {
                 result += `${indent}JOINT ${bone.name}\n`;
                 result += `${indent}{\n`;
-                const offset = this.getBoneOffset(bone);
+                const offset = this._getBoneOffset(bone);
                 result += `${indent}    OFFSET ${offset.x.toFixed(6)} ${offset.y.toFixed(6)} ${offset.z.toFixed(6)}\n`;
 
                 // Determine channels
@@ -152,14 +152,14 @@ export class BVHExporter {
 
             // Export children recursively
             if (data.children.length > 0) {
-                result += this.exportHierarchy(data.children, indentLevel + 1);
+                result += this._exportHierarchy(data.children, indentLevel + 1);
             }
         }
 
         return result;
     }
 
-    private static getBoneOffset(bone: Bone): Vector3 {
+    private static _getBoneOffset(bone: Bone): Vector3 {
         // Get the local offset of the bone from its parent
         const parent = bone.getParent();
         if (!parent) {
@@ -180,14 +180,14 @@ export class BVHExporter {
         return relativeOffset;
     }
 
-    private static exportMotionData(boneData: IBVHBoneData[], frameCount: number, startFrame: number, animationNames: string[]): string {
+    private static _exportMotionData(boneData: IBVHBoneData[], frameCount: number, startFrame: number, animationNames: string[]): string {
         let result = "";
 
         for (let frame = 0; frame < frameCount; frame++) {
             const frameValues: number[] = [];
 
             // Collect values for all bones in hierarchy order
-            this.collectFrameValues(boneData, frame + startFrame, frameValues, animationNames);
+            this._collectFrameValues(boneData, frame + startFrame, frameValues, animationNames);
 
             result += frameValues.map((v) => v.toFixed(6)).join(" ") + "\n";
         }
@@ -195,7 +195,7 @@ export class BVHExporter {
         return result;
     }
 
-    private static collectFrameValues(boneData: IBVHBoneData[], frame: number, values: number[], animationNames: string[]): void {
+    private static _collectFrameValues(boneData: IBVHBoneData[], frame: number, values: number[], animationNames: string[]): void {
         for (const data of boneData) {
             // Skip end sites
             if (data.children.length === 0 && !data.hasPositionChannels && !data.hasRotationChannels) {
@@ -218,7 +218,7 @@ export class BVHExporter {
 
             // Process children recursively
             if (data.children.length > 0) {
-                this.collectFrameValues(data.children, frame, values, animationNames);
+                this._collectFrameValues(data.children, frame, values, animationNames);
             }
         }
     }
