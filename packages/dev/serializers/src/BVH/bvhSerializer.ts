@@ -204,15 +204,15 @@ export class BVHExporter {
 
             // Add position values if available
             if (data.hasPositionChannels) {
-                const position = this.getPositionAtFrame(data.positionKeys, frame);
+                const position = this._GetPositionAtFrame(data.positionKeys, frame);
                 values.push(position.x, position.y, position.z);
             }
 
             // Add rotation values if available
             if (data.hasRotationChannels) {
-                const rotation = this.getRotationAtFrame(data.rotationKeys, frame);
+                const rotation = this._GetRotationAtFrame(data.rotationKeys, frame);
                 // Convert to Euler angles in ZYX order
-                const euler = this.quaternionToEulerZYX(rotation);
+                const euler = this._QuaternionToEulerZYX(rotation);
                 values.push(euler.z, euler.x, euler.y);
             }
 
@@ -223,7 +223,7 @@ export class BVHExporter {
         }
     }
 
-    private static getPositionAtFrame(keys: IAnimationKey[], frame: number): Vector3 {
+    private static _GetPositionAtFrame(keys: IAnimationKey[], frame: number): Vector3 {
         if (keys.length === 0) {
             return Vector3.Zero();
         }
@@ -248,7 +248,7 @@ export class BVHExporter {
         return Vector3.Lerp(key1.value, key2.value, t);
     }
 
-    private static getRotationAtFrame(keys: IAnimationKey[], frame: number): Quaternion {
+    private static _GetRotationAtFrame(keys: IAnimationKey[], frame: number): Quaternion {
         if (keys.length === 0) {
             return Quaternion.Identity();
         }
@@ -273,7 +273,7 @@ export class BVHExporter {
         return Quaternion.Slerp(key1.value, key2.value, t);
     }
 
-    private static quaternionToEulerZYX(quaternion: Quaternion): Vector3 {
+    private static _QuaternionToEulerZYX(quaternion: Quaternion): Vector3 {
         // Convert quaternion to Euler angles in ZYX order
         const matrix = quaternion.toRotationMatrix(new Matrix());
 
