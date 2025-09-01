@@ -403,6 +403,14 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     (window as any).handleException(e);
                 }
 
+                // Return early if there is a parameter to prevent auto-running
+                if (this.props.globalState.doNotRun) {
+                    this.props.globalState.doNotRun = false;
+                    this._preventReentrancy = false;
+                    this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+                    return;
+                }
+
                 await globalObject.initFunction();
 
                 this._engine = globalObject.engine;

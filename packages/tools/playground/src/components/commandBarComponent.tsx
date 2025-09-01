@@ -186,6 +186,13 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 defaultValue: false,
                 onCheck: () => {},
             },
+            {
+                label: "Auto-run",
+                tooltip: "Playground code runs automatically when loading",
+                storeKey: "auto-run",
+                defaultValue: true,
+                onCheck: () => {},
+            },
         ];
 
         // Procedural Code Generator Options (build from procedural.json)

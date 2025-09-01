@@ -65,6 +65,8 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
             this.setState({ mode: value ? EditionMode.Desktop : EditionMode.RenderingOnly });
         });
 
+        this._globalState.doNotRun = location.search.indexOf("norun") !== -1 || !Utilities.ReadBoolFromStore("auto-run", true);
+
         // Managers
         this.saveManager = new SaveManager(this._globalState);
         this.loadManager = new LoadManager(this._globalState);
