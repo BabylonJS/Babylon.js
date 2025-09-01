@@ -400,19 +400,12 @@ export class GaussianSplattingMesh extends Mesh {
 
         const vertexData = new VertexData();
 
-        // Use an intanced quad or triangle. Triangle might be a bit faster because of less shader invocation but I didn't see any difference.
-        // Keeping both and use triangle for now.
-        // for quad, use following lines
-        //vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
-        //vertexData.indices = [0, 1, 2, 0, 2, 3];
-        vertexData.positions = [-3, -2, 0, 3, -2, 0, 0, 4, 0];
-        vertexData.indices = [0, 1, 2];
+        vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
+        vertexData.indices = [0, 1, 2, 0, 2, 3];
         vertexData.applyToMesh(this);
 
         this.subMeshes = [];
-        // for quad, use following line
-        //new SubMesh(0, 0, 4, 0, 6, this);
-        new SubMesh(0, 0, 3, 0, 3, this);
+        new SubMesh(0, 0, 4, 0, 6, this);
 
         this.setEnabled(false);
         // webGL2 and webGPU support for RG texture with float16 is fine. not webGL1
