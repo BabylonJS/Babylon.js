@@ -36,8 +36,12 @@ varying vec2 vUV;
 
 	uniform float totalStrength;
 	uniform float base;
+#ifdef ORTHOGRAPHIC_CAMERA
+	uniform vec4 viewport;
+#else
 	uniform float xViewport;
 	uniform float yViewport;
+#endif
 	uniform mat3 depthProjection;
 	uniform float maxZ;
 	uniform float minZAspect;
@@ -55,7 +59,11 @@ varying vec2 vUV;
 		float occlusion = 0.0;
 		float correctedRadius = min(radius, minZAspect * depth / near);
 
+	#ifdef ORTHOGRAPHIC_CAMERA
+		vec3 vViewRay = vec3(mix(viewport.x, viewport.y, vUV.x), mix(viewport.z, viewport.w, vUV.y), depthSign);
+	#else
 		vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, depthSign);
+	#endif
 		vec3 vDepthFactor = depthProjection * vec3(1.0, 1.0, depth);
 		vec3 origin = vViewRay * vDepthFactor;
 		vec3 rvec = random * 2.0 - 1.0;

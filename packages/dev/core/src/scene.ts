@@ -4953,10 +4953,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
-        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+        const fastSnapshotMode = engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+        if (fastSnapshotMode) {
             this.finalizeSceneUbo();
         }
-        this._renderingManager.render(null, null, true, true);
+        this._renderingManager.render(null, null, true, !fastSnapshotMode);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
 
         // After Camera Draw
@@ -5614,6 +5615,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         // Release morph targets
         this._disposeList(this.morphTargetManagers);
+
+        // Release frame graphs
+        this._disposeList(this.frameGraphs);
 
         // Release UBO
         this._sceneUbo.dispose();

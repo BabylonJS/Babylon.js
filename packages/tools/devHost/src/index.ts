@@ -1,6 +1,6 @@
 /* eslint-disable github/no-then */
 /* eslint-disable no-console */
-const SearchParams = new URLSearchParams(window.location.search);
+const SearchParams = new URLSearchParams(window.location.search.toLowerCase());
 const ExpQsp = SearchParams.get("exp");
 
 // Sanitize the input to only allow certain strings
@@ -10,7 +10,7 @@ switch (ExpQsp) {
         ImportPromise = import("./lottie/main");
         break;
     }
-    case "testScene":
+    case "testscene":
     default: {
         ImportPromise = import("./testScene/main");
         break;

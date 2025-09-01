@@ -12,8 +12,8 @@ export async function Main(): Promise<void> {
     mainDiv.appendChild(canvas);
 
     // Whether to use the TS or JS scene files, default to TS
-    const searchParams = new URLSearchParams(window.location.search);
-    const useTsParam = searchParams.get("useTS");
+    const searchParams = new URLSearchParams(window.location.search.toLowerCase());
+    const useTsParam = searchParams.get("usets");
     const useTs = useTsParam !== "false"; // Default to true if not specified
 
     // Setup the engine and create the scene

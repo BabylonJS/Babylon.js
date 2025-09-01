@@ -1,9 +1,9 @@
-import { GizmoManager } from "core/Gizmos";
-import { StandardMaterial } from "core/Materials";
-import { Color3 } from "core/Maths";
-import type { AbstractMesh } from "core/Meshes";
-import { Attractor } from "core/Particles";
-import type { ParticleSystem } from "core/Particles";
+import { GizmoManager } from "core/Gizmos/gizmoManager";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Color3 } from "core/Maths/math.color";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { Attractor } from "core/Particles/attractor";
+import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import { useCallback, useEffect, useState, type FunctionComponent } from "react";

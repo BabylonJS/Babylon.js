@@ -1,5 +1,22 @@
 # Changelog
 
+## 8.25.0
+
+## 8.24.2
+
+### Core
+
+- Viewer: Fix perf issue with hotspots - by [ryantrem](https://github.com/ryantrem) ([#17076](https://github.com/BabylonJS/Babylon.js/pull/17076))
+- add enginefactory option type - by [ThalerMatthias](https://github.com/ThalerMatthias) ([#17074](https://github.com/BabylonJS/Babylon.js/pull/17074))
+- Pass through eventState with eventData - by [amirt-ms](https://github.com/amirt-ms) ([#17073](https://github.com/BabylonJS/Babylon.js/pull/17073))
+
+### Loaders
+
+- Viewer: Fix perf issue with hotspots - by [ryantrem](https://github.com/ryantrem) ([#17076](https://github.com/BabylonJS/Babylon.js/pull/17076))
+
+### Serializers
+
+
 ## 8.24.1
 
 ### Core
