@@ -2,7 +2,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
 import type { ISelectionService } from "../../selectionService";
 
-import { Sprite } from "core/Sprites";
+import { Sprite } from "core/Sprites/sprite";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";

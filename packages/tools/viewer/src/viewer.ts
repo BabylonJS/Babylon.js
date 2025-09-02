@@ -2756,7 +2756,7 @@ export class Viewer implements IDisposable {
         updateSkybox(this._skybox, this._camera);
     }
 
-    private _updateLight() {
+    protected _updateLight() {
         let shouldHaveDefaultLight: boolean;
         if (this._loadedModels.length === 0) {
             shouldHaveDefaultLight = false;

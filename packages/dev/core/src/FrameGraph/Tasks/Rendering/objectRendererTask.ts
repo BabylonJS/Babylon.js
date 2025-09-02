@@ -11,11 +11,13 @@ import type {
     Observer,
     FrameGraphShadowGeneratorTask,
     FrameGraphRenderPass,
+    AbstractEngine,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask";
+import { Constants } from "../../../Engines/constants";
 
 /**
  * Task used to render objects to a texture.
@@ -196,6 +198,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         }
     }
 
+    protected readonly _engine: AbstractEngine;
     protected readonly _scene: Scene;
     protected readonly _renderer: ObjectRenderer;
     protected _textureWidth: number;
@@ -216,6 +219,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         super(name, frameGraph);
 
         this._scene = scene;
+        this._engine = scene.getEngine();
         this._externalObjectRenderer = !!existingObjectRenderer;
         this._renderer = existingObjectRenderer ?? new ObjectRenderer(name, scene, options);
         this.name = name;
@@ -296,7 +300,24 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.particleSystemList = this.objectList.particleSystems;
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
-            context.render(this._renderer, this._textureWidth, this._textureHeight);
+
+            const camera = this._renderer.activeCamera;
+            if (camera && camera.cameraRigMode !== Constants.RIG_MODE_NONE && !camera._renderingMultiview) {
+                for (let index = 0; index < camera._rigCameras.length; index++) {
+                    const rigCamera = camera._rigCameras[index];
+
+                    rigCamera.rigParent = undefined; // for some reasons, ObjectRenderer uses the rigParent viewport if rigParent is defined (we want to use rigCamera.viewport instead)
+
+                    this._renderer.activeCamera = rigCamera;
+
+                    context.render(this._renderer, this._textureWidth, this._textureHeight);
+
+                    rigCamera.rigParent = camera;
+                }
+                this._renderer.activeCamera = camera;
+            } else {
+                context.render(this._renderer, this._textureWidth, this._textureHeight);
+            }
 
             additionalExecute?.(context);
         });

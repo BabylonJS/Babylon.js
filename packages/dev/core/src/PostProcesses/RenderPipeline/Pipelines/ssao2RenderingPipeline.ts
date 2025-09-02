@@ -536,7 +536,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _getDefinesForSSAO() {
-        const defines = `#define SSAO\n#define SAMPLES ${this.samples}\n#define EPSILON ${this.epsilon.toFixed(4)}`;
+        let defines = `#define SSAO\n#define SAMPLES ${this.samples}\n#define EPSILON ${this.epsilon.toFixed(4)}`;
+
+        if (this._scene.activeCamera?.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+            defines += `\n#define ORTHOGRAPHIC_CAMERA`;
+        }
 
         return defines;
     }
@@ -567,6 +571,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 "texelSize",
                 "xViewport",
                 "yViewport",
+                "viewport",
                 "maxZ",
                 "minZAspect",
                 "depthProjection",
@@ -621,8 +626,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 const orthoBottom = this._scene.activeCamera.orthoBottom ?? -halfHeight;
                 const orthoTop = this._scene.activeCamera.orthoTop ?? halfHeight;
                 effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.ORTHO_DEPTH_PROJECTION);
-                effect.setFloat("xViewport", (orthoRight - orthoLeft) * 0.5);
-                effect.setFloat("yViewport", (orthoTop - orthoBottom) * 0.5);
+                effect.setFloat4("viewport", orthoLeft, orthoRight, orthoBottom, orthoTop);
             }
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 

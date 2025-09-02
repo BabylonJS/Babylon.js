@@ -92,6 +92,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                         useSRGBBuffers: [false],
                     },
                     sizeIsPercentage: true,
+                    isHistoryTexture: false,
                 };
                 this.creationOptions = options;
                 break;
@@ -108,6 +109,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                         samples: 1,
                     },
                     sizeIsPercentage: true,
+                    isHistoryTexture: false,
                 };
                 this.creationOptions = options;
                 break;
