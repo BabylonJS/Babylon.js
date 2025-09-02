@@ -501,6 +501,7 @@ export function GetFogState(mesh: AbstractMesh, scene: Scene) {
  * @param applyDecalAfterDetail Defines if the decal is applied after or before the detail
  * @param useVertexPulling Defines if vertex pulling is used
  * @param renderingMesh The mesh used for rendering
+ * @param setVertexOutputInvariant Defines if the vertex output should be invariant
  */
 export function PrepareDefinesForMisc(
     mesh: AbstractMesh,
@@ -512,7 +513,8 @@ export function PrepareDefinesForMisc(
     defines: any,
     applyDecalAfterDetail: boolean = false,
     useVertexPulling: boolean = false,
-    renderingMesh?: AbstractMesh
+    renderingMesh?: AbstractMesh,
+    setVertexOutputInvariant?: boolean
 ): void {
     if (defines._areMiscDirty) {
         defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
@@ -527,6 +529,8 @@ export function PrepareDefinesForMisc(
 
         defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer;
         defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer ? indexBuffer.is32Bits : false;
+
+        defines["VERTEXOUTPUT_INVARIANT"] = !!setVertexOutputInvariant;
     }
 }
 
