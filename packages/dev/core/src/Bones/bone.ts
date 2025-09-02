@@ -347,6 +347,7 @@ export class Bone extends Node {
      * @returns the bone matrix, in world space
      */
     public getAbsoluteMatrix(): Matrix {
+        this._skeleton.computeAbsoluteMatrices();
         return this._absoluteMatrix;
     }
 
@@ -356,7 +357,7 @@ export class Bone extends Node {
      * @deprecated Please use getAbsoluteMatrix instead
      */
     public getAbsoluteTransform(): Matrix {
-        return this._absoluteMatrix;
+        return this.getAbsoluteMatrix();
     }
 
     /**
@@ -545,12 +546,10 @@ export class Bone extends Node {
         } else {
             let wm: Nullable<Matrix> = null;
 
-            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
+            // tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()... WHY???
             if (tNode) {
                 wm = tNode.getWorldMatrix();
             }
-
-            this._skeleton.computeAbsoluteMatrices();
 
             const tmat = Bone._TmpMats[0];
             const tvec = Bone._TmpVecs[0];
@@ -850,7 +849,6 @@ export class Bone extends Node {
 
         lmat.setTranslationFromFloats(lx, ly, lz);
 
-        this.computeAbsoluteMatrices();
         this._markAsDirtyAndDecompose();
     }
 
@@ -908,12 +906,10 @@ export class Bone extends Node {
         } else {
             let wm: Nullable<Matrix> = null;
 
-            //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
+            // tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()... WHY???
             if (tNode) {
                 wm = tNode.getWorldMatrix();
             }
-
-            this._skeleton.computeAbsoluteMatrices();
 
             let tmat = Bone._TmpMats[0];
 
@@ -1009,12 +1005,10 @@ export class Bone extends Node {
     public getDirectionToRef(localAxis: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         let wm: Nullable<Matrix> = null;
 
-        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
+        // tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()... WHY??
         if (tNode) {
             wm = tNode.getWorldMatrix();
         }
-
-        this._skeleton.computeAbsoluteMatrices();
 
         const mat = Bone._TmpMats[0];
 
@@ -1163,12 +1157,10 @@ export class Bone extends Node {
     public getAbsolutePositionFromLocalToRef(position: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         let wm: Nullable<Matrix> = null;
 
-        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
+        // tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()... WHY???
         if (tNode) {
             wm = tNode.getWorldMatrix();
         }
-
-        this._skeleton.computeAbsoluteMatrices();
 
         const tmat = Bone._TmpMats[0];
 
@@ -1204,12 +1196,10 @@ export class Bone extends Node {
     public getLocalPositionFromAbsoluteToRef(position: Vector3, tNode: Nullable<TransformNode> = null, result: Vector3): void {
         let wm: Nullable<Matrix> = null;
 
-        //tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()
+        // tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()... WHY???
         if (tNode) {
             wm = tNode.getWorldMatrix();
         }
-
-        this._skeleton.computeAbsoluteMatrices();
 
         const tmat = Bone._TmpMats[0];
 
