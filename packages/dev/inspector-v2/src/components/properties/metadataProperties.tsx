@@ -136,15 +136,10 @@ export interface IMetadataContainer {
 
 const useStyles = makeStyles({
     buttonDiv: {
-        display: "flex",
-        alignItems: "center",
+        display: "grid",
+        gridAutoFlow: "column",
+        gridTemplateColumns: "1fr auto auto auto",
         gap: tokens.spacingHorizontalXS,
-    },
-    saveButton: {
-        flex: "1",
-    },
-    secondaryButton: {
-        flex: "0 0 auto",
     },
 });
 
@@ -191,25 +186,14 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
             />
             <LineContainer>
                 <div className={classes.buttonDiv}>
-                    <Button
-                        className={classes.saveButton}
-                        icon={<SaveRegular />}
-                        disabled={stringifiedMetadata === unformattedEditedMetadata}
-                        onClick={() => SaveMetadata(entity, editedMetadata)}
-                    >
+                    <Button icon={<SaveRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => SaveMetadata(entity, editedMetadata)}>
                         <Body1>Save</Body1>
                     </Button>
                     <Tooltip content="Undo Changes" relationship="label">
-                        <Button
-                            className={classes.secondaryButton}
-                            icon={<ArrowUndoRegular />}
-                            disabled={stringifiedMetadata === unformattedEditedMetadata}
-                            onClick={() => setEditedMetadata(stringifiedMetadata)}
-                        />
+                        <Button icon={<ArrowUndoRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => setEditedMetadata(stringifiedMetadata)} />
                     </Tooltip>
                     <Tooltip content="Format (Pretty Print)" relationship="label">
                         <Button
-                            className={classes.secondaryButton}
                             icon={
                                 <svg {...props} viewBox="0 0 20 20" fill="none" stroke="currentColor">
                                     <text x="3" y="14" fontSize="14" fill="currentColor">
@@ -222,12 +206,7 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
                         ></Button>
                     </Tooltip>
                     <Tooltip content="Clear Formatting" relationship="label">
-                        <Button
-                            className={classes.secondaryButton}
-                            icon={<ClearFormattingRegular />}
-                            disabled={!isEditedMetadataJSON}
-                            onClick={() => setEditedMetadata(Restringify(editedMetadata, false))}
-                        />
+                        <Button icon={<ClearFormattingRegular />} disabled={!isEditedMetadataJSON} onClick={() => setEditedMetadata(Restringify(editedMetadata, false))} />
                     </Tooltip>
                 </div>
             </LineContainer>
