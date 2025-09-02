@@ -232,7 +232,6 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public CAMERA_PERSPECTIVE = false;
     public AREALIGHTSUPPORTED = true;
     public USE_VERTEX_PULLING = false;
-    public VERTEXOUTPUT_INVARIANT = false;
 
     /**
      * If the reflection texture on this material is in linear color space

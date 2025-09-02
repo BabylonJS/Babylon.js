@@ -303,7 +303,6 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
 
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
-    public VERTEXOUTPUT_INVARIANT = false;
 
     /**
      * Initializes the PBR Material defines.
