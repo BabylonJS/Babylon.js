@@ -3,6 +3,7 @@ import type { Bone } from "core/Bones/bone";
 import type { IAnimationKey } from "core/Animations";
 import { Vector3, Quaternion, Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
+import { Epsilon } from "core/Maths/math.constants";
 
 interface IBVHBoneData {
     bone: Bone;
@@ -212,7 +213,7 @@ export class BVHExporter {
             if (data.hasRotationChannels) {
                 const rotation = this._GetRotationAtFrame(data.rotationKeys, frame);
                 // Convert to Euler angles in ZYX order
-                const euler = this._QuaternionToEulerZYX(rotation);
+                const euler = this._QuaternionToEuler(rotation);
                 values.push(euler.z, euler.x, euler.y);
             }
 
@@ -273,13 +274,13 @@ export class BVHExporter {
         return Quaternion.Slerp(key1.value, key2.value, t);
     }
 
-    private static _QuaternionToEulerZYX(quaternion: Quaternion): Vector3 {
+    private static _QuaternionToEuler(quaternion: Quaternion): Vector3 {
         // Convert quaternion to Euler angles in ZYX order
         const matrix = quaternion.toRotationMatrix(new Matrix());
 
         let x, y, z;
 
-        if (Math.abs(matrix.m[6]) < 0.999999) {
+        if (Math.abs(matrix.m[6]) < 1 - Epsilon) {
             x = Math.atan2(-matrix.m[7], matrix.m[8]);
             y = Math.asin(matrix.m[6]);
             z = Math.atan2(-matrix.m[3], matrix.m[0]);
