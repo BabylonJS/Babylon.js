@@ -32,7 +32,7 @@ class AtmospherePBRMaterialDefines extends MaterialDefines {
 /**
  * Adds shading logic to a PBRMaterial that provides radiance, diffuse sky irradiance, and aerial perspective from the atmosphere.
  */
-export default class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
+export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
     private readonly _atmosphere: Atmosphere;
     private readonly _isAerialPerspectiveEnabled: boolean;
 
@@ -243,8 +243,8 @@ export default class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                             true,
                             distanceFromCamera,
                             NumAerialPerspectiveLutLayers,
-                            AerialPerspectiveLutKMPerSlice,
-                            AerialPerspectiveLutRangeKM,
+                            AerialPerspectiveLutKmPerSlice,
+                            AerialPerspectiveLutRangeKm,
                             aerialPerspective)) {
                         finalColor = aerialPerspective + (1. - aerialPerspective.a) * finalColor;
                     }

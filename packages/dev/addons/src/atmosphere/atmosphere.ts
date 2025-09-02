@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // MIT License
 
-import AtmospherePBRMaterialPlugin from "./atmospherePBRMaterialPlugin";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { AtmospherePBRMaterialPlugin } from "./atmospherePBRMaterialPlugin";
 import { AtmospherePerCameraVariables } from "./atmospherePerCameraVariables";
 import { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
