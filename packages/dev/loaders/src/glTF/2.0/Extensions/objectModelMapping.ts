@@ -18,23 +18,33 @@ import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { AnimationGroup } from "core/Animations/animationGroup";
 import type { Mesh } from "core/Meshes/mesh";
 
+/** @internal */
 export interface IGLTFObjectModelTree {
+    /** @internal */
     cameras: IGLTFObjectModelTreeCamerasObject;
+    /** @internal */
     nodes: IGLTFObjectModelTreeNodesObject;
+    /** @internal */
     materials: IGLTFObjectModelTreeMaterialsObject;
+    /** @internal */
     extensions: IGLTFObjectModelTreeExtensionsObject;
+    /** @internal */
     animations: {
         length: IObjectAccessor<IAnimation[], AnimationGroup[], number>;
         "{}": {};
     };
+    /** @internal */
     meshes: {
         length: IObjectAccessor<IMesh[], (Mesh | undefined)[], number>;
         "{}": {};
     };
 }
 
+/** @internal */
 export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, BabylonTargetType = TransformNode> {
+    /** @internal */
     length: IObjectAccessor<GLTFTargetType[], BabylonTargetType[], number>;
+    /** @internal */
     "{}": {
         __target__: boolean;
         translation: IObjectAccessor<GLTFTargetType, BabylonTargetType, Vector3>;
@@ -55,7 +65,9 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
     };
 }
 
+/** @internal */
 export interface IGLTFObjectModelTreeCamerasObject {
+    /** @internal */
     "{}": {
         __target__: boolean;
         orthographic: {
@@ -73,7 +85,9 @@ export interface IGLTFObjectModelTreeCamerasObject {
     };
 }
 
+/** @internal */
 export interface IGLTFObjectModelTreeMaterialsObject {
+    /** @internal */
     "{}": {
         __target__: boolean;
         pbrMetallicRoughness: {
@@ -234,9 +248,12 @@ interface ITextureDefinition {
     scale: IObjectAccessor<IMaterial, PBRMaterial, Vector2>;
 }
 
+/** @internal */
 export interface IGLTFObjectModelTreeMeshesObject {}
 
+/** @internal */
 export interface IGLTFObjectModelTreeExtensionsObject {
+    /** @internal */
     KHR_lights_punctual: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
@@ -252,11 +269,13 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
+    /** @internal */
     EXT_lights_ies: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
         };
     };
+    /** @internal */
     EXT_lights_image_based: {
         lights: {
             "{}": {
