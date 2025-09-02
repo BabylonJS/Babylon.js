@@ -467,7 +467,7 @@ export const LoadFile = (
     fileOrUrl: File | string,
     onSuccess: (data: string | ArrayBuffer, responseURL?: string, contentType?: Nullable<string>) => void,
     onProgress?: (ev: ProgressEvent) => void,
-    offlineProvider?: IOfflineProvider,
+    offlineProvider?: Nullable<IOfflineProvider>,
     useArrayBuffer?: boolean,
     onError?: (request?: WebRequest, exception?: LoadFileError) => void,
     onOpened?: (request: WebRequest) => void
