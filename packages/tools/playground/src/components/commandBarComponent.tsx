@@ -188,7 +188,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             },
             {
                 label: "Auto-run",
-                tooltip: "Playground code runs automatically when loading",
+                tooltip: "Playground code runs automatically after loading",
                 storeKey: "auto-run",
                 defaultValue: true,
                 onCheck: () => {},
