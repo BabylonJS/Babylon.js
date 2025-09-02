@@ -303,6 +303,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
 
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
+    public VERTEXOUTPUT_INVARIANT = false;
 
     /**
      * Initializes the PBR Material defines.
@@ -2010,7 +2011,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 defines,
                 this._applyDecalMapAfterDetailMap,
                 this._useVertexPulling,
-                renderingMesh
+                renderingMesh,
+                this._setVertexOutputInvariant
             );
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;

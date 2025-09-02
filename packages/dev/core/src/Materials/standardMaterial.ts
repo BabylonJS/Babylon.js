@@ -232,6 +232,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public CAMERA_PERSPECTIVE = false;
     public AREALIGHTSUPPORTED = true;
     public USE_VERTEX_PULLING = false;
+    public VERTEXOUTPUT_INVARIANT = false;
 
     /**
      * If the reflection texture on this material is in linear color space
@@ -1250,7 +1251,8 @@ export class StandardMaterial extends PushMaterial {
             defines,
             this._applyDecalMapAfterDetailMap,
             this._useVertexPulling,
-            subMesh.getRenderingMesh()
+            subMesh.getRenderingMesh(),
+            this._setVertexOutputInvariant
         );
 
         // Values that need to be evaluated on every frame

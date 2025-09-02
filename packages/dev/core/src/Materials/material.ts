@@ -869,6 +869,28 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._markAllSubMeshesAsMiscDirty();
     }
 
+    @serialize()
+    protected _setVertexOutputInvariant = false;
+    /**
+     * Gets or sets the vertex output invariant state
+     * Setting this property to true will force the shader compiler to disable some optimization to make sure the vertex output is always calculated
+     * the same way across different compilation units.
+     * You may need to enable this option if you are seeing some depth artifacts when using a depth pre-pass, for e.g.
+     * Note that this may have an impact on performance, so leave this option disabled if not needed.
+     */
+    public get setVertexOutputInvariant(): boolean {
+        return this._setVertexOutputInvariant;
+    }
+
+    public set setVertexOutputInvariant(value: boolean) {
+        if (this._setVertexOutputInvariant === value) {
+            return;
+        }
+
+        this._setVertexOutputInvariant = value;
+        this._markAllSubMeshesAsMiscDirty();
+    }
+
     /**
      * @internal
      * Stores the effects for the material
