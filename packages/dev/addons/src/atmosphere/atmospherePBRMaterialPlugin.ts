@@ -234,10 +234,6 @@ export default class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             CUSTOM_FRAGMENT_BEFORE_FOG: `
             #if USE_AERIAL_PERSPECTIVE_LUT
             {
-                    const float NumAerialPerspectiveLutLayers = 32.;
-                    const float AerialPerspectiveLutKMPerSlice = 4.;
-                    const float AerialPerspectiveLutRange = AerialPerspectiveLutKMPerSlice * NumAerialPerspectiveLutLayers;
-
                     vec3 positionGlobal = 0.001 * vPositionW + vec3(0., planetRadius, 0.);
                     float distanceFromCamera = distance(positionGlobal, cameraPositionGlobal);
 
@@ -248,7 +244,7 @@ export default class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                             distanceFromCamera,
                             NumAerialPerspectiveLutLayers,
                             AerialPerspectiveLutKMPerSlice,
-                            AerialPerspectiveLutRange,
+                            AerialPerspectiveLutRangeKM,
                             aerialPerspective)) {
                         finalColor = aerialPerspective + (1. - aerialPerspective.a) * finalColor;
                     }
