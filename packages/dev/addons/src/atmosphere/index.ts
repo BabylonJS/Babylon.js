@@ -5,5 +5,5 @@ export * from "./atmosphere";
 export * from "./atmosphereOptions";
 export * from "./atmospherePhysicalProperties";
 export * from "./atmospherePhysicalPropertiesOptions";
-export { default as TransmittanceLut } from "./transmittanceLut";
-export { default as DiffuseSkyIrradianceLut } from "./diffuseSkyIrradianceLut";
+export * from "./diffuseSkyIrradianceLut";
+export * from "./transmittanceLut";

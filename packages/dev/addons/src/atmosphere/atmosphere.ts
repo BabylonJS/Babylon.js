@@ -2,8 +2,6 @@
 // MIT License
 
 import AtmospherePBRMaterialPlugin from "./atmospherePBRMaterialPlugin";
-import DiffuseSkyIrradianceLut from "./diffuseSkyIrradianceLut";
-import TransmittanceLut from "./transmittanceLut";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { AtmospherePerCameraVariables } from "./atmospherePerCameraVariables";
 import { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
@@ -12,6 +10,7 @@ import type { Camera } from "core/Cameras/camera";
 import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
 import type { DeepImmutable, Nullable } from "core/types";
+import { DiffuseSkyIrradianceLut } from "./diffuseSkyIrradianceLut";
 import type { DirectionalLight } from "core/Lights/directionalLight";
 import type { Effect } from "core/Materials/effect";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
@@ -24,6 +23,7 @@ import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Mater
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { Scene } from "core/scene";
 import { TransformNode } from "core/Meshes/transformNode";
+import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
 import "./shaders/compositeAerialPerspective.fragment";

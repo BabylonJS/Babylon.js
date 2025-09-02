@@ -32,7 +32,7 @@ const ComputeLutUVToRef = (properties: AtmospherePhysicalProperties, radius: num
 /**
  * The diffuse sky irradiance LUT is used to query the diffuse irradiance at a specified position.
  */
-export default class DiffuseSkyIrradianceLut {
+export class DiffuseSkyIrradianceLut {
     private readonly _atmosphere: Atmosphere;
     private _renderTarget: Nullable<RenderTargetTexture> = null;
     private _effectWrapper: Nullable<EffectWrapper> = null;

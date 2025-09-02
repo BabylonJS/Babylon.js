@@ -75,7 +75,7 @@ const SampleLutToRef = (
 /**
  * The transmittance LUT can be used to get the radiance from an external light source arriving a given point, accounting for atmospheric scattering.
  */
-export default class TransmittanceLut {
+export class TransmittanceLut {
     /**
      * Listen to this observer to know when the LUT data has been updated.
      * This is typically infrequent (once at startup), but also happens whenever the atmosphere's properties change.
