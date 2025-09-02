@@ -61,6 +61,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         }
     }
 
+    /** @override */
     public dispose() {
         delete this._loader;
         delete this._coordinator;
@@ -80,21 +81,15 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             return null;
         }
 
-        return this._loader.loadSceneAsync(context, scene).then(() => {
-            if (!this._loader) {
-                return;
-            }
+        const promises = new Array<Promise<any>>();
 
-            const scene = this._loader.babylonScene;
-            const gltf = this._loader.gltf;
-            const targetFps = this._loader.parent.targetFps;
-            const interactivityDefinition = gltf.extensions?.KHR_interactivity as IKHRInteractivity;
-            if (!interactivityDefinition) {
-                // This can technically throw, but it's not a critical error
-                return;
-            }
+        promises.push(this._loader.loadSceneAsync(context, scene));
 
-            const coordinator = new FlowGraphCoordinator({ scene });
+        const gltf = this._loader.gltf;
+        const targetFps = this._loader.parent.targetFps;
+        const interactivityDefinition = gltf.extensions?.KHR_interactivity as IKHRInteractivity;
+        if (interactivityDefinition) {
+            const coordinator = new FlowGraphCoordinator({ scene: this._loader.babylonScene });
             coordinator.dispatchEventsSynchronously = false; // glTF interactivity dispatches events asynchronously
 
             const graphs = interactivityDefinition.graphs.map((graph) => {
@@ -102,10 +97,16 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                 return parser.serializeToFlowGraph();
             });
 
-            return Promise.all(graphs.map((graph) => ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter }))).then(() => {
-                this._coordinator = coordinator;
-            });
-        });
+            promises.push(
+                // eslint-disable-next-line @typescript-eslint/promise-function-async, github/no-then
+                Promise.all(graphs.map((graph) => ParseFlowGraphAsync(graph, { coordinator, pathConverter: this._pathConverter }))).then(() => {
+                    this._coordinator = coordinator;
+                })
+            );
+        }
+
+        // eslint-disable-next-line github/no-then
+        return Promise.all(promises).then(() => {});
     }
 }
 
