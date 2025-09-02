@@ -186,6 +186,7 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
             />
             <LineContainer>
                 <div className={classes.buttonDiv}>
+                    {/* TODO: gehalper - need to update our Button primitive to accommodate these scenarios. */}
                     <Button icon={<SaveRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => SaveMetadata(entity, editedMetadata)}>
                         <Body1>Save</Body1>
                     </Button>
