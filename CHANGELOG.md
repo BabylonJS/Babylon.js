@@ -1,5 +1,47 @@
 # Changelog
 
+## 8.25.1
+
+### Core
+
+- Material: Add support for invariant vertex shader output - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17103](https://github.com/BabylonJS/Babylon.js/pull/17103))
+- CameraGizmo: merge lines to 1 mesh - by [kzhsw](https://github.com/kzhsw) ([#17100](https://github.com/BabylonJS/Babylon.js/pull/17100))
+- Material: Fix alphaMode serialization and parsing - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17098](https://github.com/BabylonJS/Babylon.js/pull/17098))
+- SSAO2: Fix artifacts when using an off-center frustum with an orthographic camera - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17096](https://github.com/BabylonJS/Babylon.js/pull/17096))
+- FrameGraph: Disposes of frame graphs when the scene is disposed - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17095](https://github.com/BabylonJS/Babylon.js/pull/17095))
+- Materials: don't serialize plugins that shouldn't be serialized + don't inject WebXR depth sensing plugin if not necessary - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17094](https://github.com/BabylonJS/Babylon.js/pull/17094))
+- FrameGraph: Adds support for rig cameras - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17092](https://github.com/BabylonJS/Babylon.js/pull/17092))
+- WebGPU: fix fast snapshot rendering mode + add support for it to frame graphs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17064](https://github.com/BabylonJS/Babylon.js/pull/17064))
+- WebGPU: fix fast snapshot rendering mode + add support for it to frame graphs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17091](https://github.com/BabylonJS/Babylon.js/pull/17091))
+- NodeMaterial: Fix alphaMode being wrong in cloned materials - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17090](https://github.com/BabylonJS/Babylon.js/pull/17090))
+- Better error handling for side case for csg2 - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17083](https://github.com/BabylonJS/Babylon.js/pull/17083))
+- Fix line mesh material dispose - by [sebavan](https://github.com/sebavan) ([#17075](https://github.com/BabylonJS/Babylon.js/pull/17075))
+- NME in SFE mode: Hide blending & texture properties - by [alexchuber](https://github.com/alexchuber) ([#17079](https://github.com/BabylonJS/Babylon.js/pull/17079))
+- KTX2Decoder: Use user options over undefined defaults - by [alexchuber](https://github.com/alexchuber) ([#17082](https://github.com/BabylonJS/Babylon.js/pull/17082))
+- WebGPU: Adds support for sprite rendering in fast snapshot rendering mode - by [Popov72](https://github.com/Popov72) ([#17081](https://github.com/BabylonJS/Babylon.js/pull/17081))
+- Update tangents doc of VertexData - by [kzhsw](https://github.com/kzhsw) ([#17080](https://github.com/BabylonJS/Babylon.js/pull/17080))
+
+### Materials
+
+- Workaround water material issue at grazing angle - by [sebavan](https://github.com/sebavan) ([#17104](https://github.com/BabylonJS/Babylon.js/pull/17104))
+- Material: Add support for invariant vertex shader output - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17103](https://github.com/BabylonJS/Babylon.js/pull/17103))
+
+### Node Editor
+
+- NME in SFE mode: Hide blending & texture properties - by [alexchuber](https://github.com/alexchuber) ([#17079](https://github.com/BabylonJS/Babylon.js/pull/17079))
+
+### Playground
+
+- Add Playground parameter to prevent auto-run - by [sebavan](https://github.com/sebavan) ([#17099](https://github.com/BabylonJS/Babylon.js/pull/17099))
+
+### Serializers
+
+- Add BVH exporter - by [yuripourre](https://github.com/yuripourre) ([#17093](https://github.com/BabylonJS/Babylon.js/pull/17093))
+
+### Viewer
+
+- make updateLight coherent with other protected update method - by [alexandremottet](https://github.com/alexandremottet) ([#17102](https://github.com/BabylonJS/Babylon.js/pull/17102))
+
 ## 8.25.0
 
 ## 8.24.2
