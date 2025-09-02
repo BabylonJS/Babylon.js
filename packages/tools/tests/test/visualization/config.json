@@ -2772,6 +2772,33 @@
             "title": "Sponza Clustered Lighting (2 viewports)",
             "playgroundId": "#CSCJO2#20",
             "referenceImage": "sponza-clustered-lighting-viewports.png"
+        },
+        {
+            "title": "Atmosphere Day",
+            "playgroundId": "#VO1Z0C",
+            "referenceImage": "atmosphere-day.png",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Sunset",
+            "playgroundId": "#VO1Z0C#1",
+            "referenceImage": "atmosphere-sunset.png",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Night",
+            "playgroundId": "#VO1Z0C#2",
+            "referenceImage": "atmosphere-night.png",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Space View",
+            "playgroundId": "#VO1Z0C#4",
+            "referenceImage": "atmosphere-space-view.png",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
