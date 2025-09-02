@@ -73,7 +73,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         this.registerOutput("dimensions", NodeMaterialBlockConnectionPointTypes.Vector2);
     }
 
-    public override bind(effect: Effect) {
+    public override bind(effect: Effect, _nodeMaterial: NodeMaterial) {
         if (!this.texture) {
             return;
         }
@@ -134,15 +134,19 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             state.compilationString += `${state._declareOutput(this.dimensions)} = ${affect};\n`;
         }
 
-        state._emit2DSampler(this._samplerName);
+        if (this._texture?._texture?.is2DArray) {
+            state._emit2DArraySampler(this._samplerName);
+        } else {
+            state._emit2DSampler(this._samplerName);
+        }
 
         return this;
     }
 
-    protected override _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode(ignoreTexture = false) {
         let codeString = super._dumpPropertiesCode();
 
-        if (!this.texture) {
+        if (!this.texture || ignoreTexture) {
             return codeString;
         }
 
@@ -161,10 +165,15 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public override serialize(): any {
+    public override serialize(ignoreTexture = false): any {
         const serializationObject = super.serialize();
 
-        if (this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
+        if (
+            !ignoreTexture &&
+            this.texture &&
+            (NodeMaterial.AllowSerializationOfRenderTargetTextures || !this.texture.isRenderTarget) &&
+            this.texture.getClassName() !== "VideoTexture"
+        ) {
             serializationObject.texture = this.texture.serialize();
         }
 
@@ -174,14 +183,18 @@ export class ImageSourceBlock extends NodeMaterialBlock {
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
         super._deserialize(serializationObject, scene, rootUrl, urlRewriter);
 
-        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
-            if (serializationObject.texture.url.indexOf("data:") === 0) {
-                rootUrl = "";
-            } else if (urlRewriter) {
-                serializationObject.texture.url = urlRewriter(serializationObject.texture.url);
-                serializationObject.texture.name = serializationObject.texture.url;
+        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {
+            if (serializationObject.texture.url !== undefined) {
+                if (serializationObject.texture.url.indexOf("data:") === 0) {
+                    rootUrl = "";
+                } else if (urlRewriter) {
+                    serializationObject.texture.url = urlRewriter(serializationObject.texture.url);
+                    serializationObject.texture.name = serializationObject.texture.url;
+                }
             }
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
+            if (serializationObject.texture.base64String || serializationObject.texture.url !== undefined) {
+                this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
+            }
         }
     }
 }

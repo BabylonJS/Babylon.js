@@ -1,13 +1,13 @@
 {
     "name": "babylonjs-serializers",
-    "version": "8.13.0",
-    "main": "babylonjs.serializers.js",
+    "version": "8.25.1",
+    "main": "babylonjs.serializers.min.js",
     "types": "babylonjs.serializers.module.d.ts",
     "files": [
         "*"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:dev && npm run build:prod && npm run build:declaration",
+        "build": "npm run clean && npm run build:prod && npm run build:declaration",
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
@@ -15,8 +15,8 @@
         "test:escheck": "es-check es6 ./babylonjs.serializers.js"
     },
     "dependencies": {
-        "babylonjs": "^8.13.0",
-        "babylonjs-gltf2interface": "^8.13.0"
+        "babylonjs": "^8.25.1",
+        "babylonjs-gltf2interface": "^8.25.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

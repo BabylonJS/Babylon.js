@@ -1,5 +1,6 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
+import type { IInspectorOptions } from "core/Debug/debugLayer";
+import type { IDisposable, Scene } from "core/scene";
+import type { Nullable } from "core/types";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
@@ -11,18 +12,46 @@ import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
 import { MakeModularTool } from "./modularTool";
+import { GizmoServiceDefinition } from "./services/gizmoService";
+import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
-import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
-import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
-import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
-import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
+import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
+import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
+import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
-import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
+import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
+import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
+import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
+import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
+import { MetadataPropertiesServiceDefinition } from "./services/panes/properties/metadataPropertiesService";
+import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
+import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
+import { PostProcessPropertiesServiceDefinition } from "./services/panes/properties/postProcessPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
+import { RenderingPipelinePropertiesServiceDefinition } from "./services/panes/properties/renderingPipelinePropertiesService";
+import { ScenePropertiesServiceDefinition } from "./services/panes/properties/scenePropertiesService";
+import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
+import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
+import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
+import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
+import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
+import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
+import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
+import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
+import { NodeExplorerServiceDefinition } from "./services/panes/scene/nodeExplorerService";
+import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
+import { PostProcessExplorerServiceDefinition } from "./services/panes/scene/postProcessExplorerService";
+import { RenderingPipelineExplorerServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
+import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
+import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
+import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
+import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
@@ -52,7 +81,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         handleResize: true,
         enablePopup: true,
         isExtensible: true,
-        isThemeable: false,
+        isThemeable: true,
         ...options,
     };
 
@@ -164,17 +193,45 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Provides access to the scene in a generic way (other tools might provide a scene in a different way).
             sceneContextServiceDefinition,
 
+            // Helps with managing gizmos and a shared utility layer.
+            GizmoServiceDefinition,
+
             // Scene explorer tab and related services.
             SceneExplorerServiceDefinition,
-            NodeHierarchyServiceDefinition,
+            NodeExplorerServiceDefinition,
+            SkeletonExplorerServiceDefinition,
             MaterialExplorerServiceDefinition,
-            TextureHierarchyServiceDefinition,
+            TextureExplorerServiceDefinition,
+            PostProcessExplorerServiceDefinition,
+            RenderingPipelineExplorerServiceDefinition,
+            EffectLayerExplorerServiceDefinition,
+            ParticleSystemExplorerServiceDefinition,
+            SpriteManagerExplorerServiceDefinition,
+            AnimationGroupExplorerServiceDefinition,
+            GuiExplorerServiceDefinition,
+            FrameGraphExplorerServiceDefinition,
 
             // Properties pane tab and related services.
+            ScenePropertiesServiceDefinition,
             PropertiesServiceDefinition,
+            TexturePropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
-            MeshPropertiesServiceDefinition,
-            TransformNodePropertiesServiceDefinition,
+            TransformPropertiesServiceDefinition,
+            AnimationPropertiesServiceDefinition,
+            NodePropertiesServiceDefinition,
+            PhysicsPropertiesServiceDefinition,
+            SkeletonPropertiesServiceDefinition,
+            MaterialPropertiesServiceDefinition,
+            LightPropertiesServiceDefinition,
+            SpritePropertiesServiceDefinition,
+            ParticleSystemPropertiesServiceDefinition,
+            CameraPropertiesServiceDefinition,
+            PostProcessPropertiesServiceDefinition,
+            RenderingPipelinePropertiesServiceDefinition,
+            EffectLayerPropertiesServiceDefinition,
+            FrameGraphPropertiesServiceDefinition,
+            AnimationGroupPropertiesServiceDefinition,
+            MetadataPropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
@@ -190,6 +247,12 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
 
             // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
             SelectionServiceDefinition,
+
+            // Gizmos for manipulating objects in the scene.
+            GizmoToolbarServiceDefinition,
+
+            // Allows picking objects from the scene to select them.
+            PickingServiceDefinition,
 
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),

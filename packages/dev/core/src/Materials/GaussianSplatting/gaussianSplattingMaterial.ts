@@ -162,7 +162,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const gsMesh = mesh as GaussianSplattingMesh;
 
         // Misc.
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            false,
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._setVertexOutputInvariant
+        );
 
         // Values that need to be evaluated on every frame
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, true);
@@ -201,6 +213,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 "focal",
                 "eyePosition",
                 "kernelSize",
+                "viewDirectionFactor",
             ];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
             const uniformBuffers = ["Scene", "Mesh"];
@@ -292,6 +305,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         effect.setFloat2("focal", focal, focal);
+        effect.setVector3("viewDirectionFactor", gsMesh.viewDirectionFactor);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
         scene.bindEyePosition(effect, "eyePosition", true);
 

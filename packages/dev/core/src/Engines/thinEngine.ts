@@ -53,6 +53,7 @@ import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _GetGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
 import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
+import { AlphaState } from "../States/alphaCullingState";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -210,8 +211,6 @@ export class ThinEngine extends AbstractEngine {
 
     // Cache
 
-    /** @internal */
-    public _currentMaterialContext: IMaterialContext;
     /** @internal */
     protected _currentProgram: Nullable<WebGLProgram>;
     private _vertexAttribArraysEnabled: boolean[] = [];
@@ -506,6 +505,7 @@ export class ThinEngine extends AbstractEngine {
             maxVaryingVectors: this._gl.getParameter(this._gl.MAX_VARYING_VECTORS),
             maxFragmentUniformVectors: this._gl.getParameter(this._gl.MAX_FRAGMENT_UNIFORM_VECTORS),
             maxVertexUniformVectors: this._gl.getParameter(this._gl.MAX_VERTEX_UNIFORM_VECTORS),
+            shaderFloatPrecision: 0,
             parallelShaderCompile: this._gl.getExtension("KHR_parallel_shader_compile") || undefined,
             standardDerivatives: this._webGLVersion > 1 || this._gl.getExtension("OES_standard_derivatives") !== null,
             maxAnisotropy: 1,
@@ -533,6 +533,7 @@ export class ThinEngine extends AbstractEngine {
             drawBuffersExtension: false,
             maxMSAASamples: 1,
             colorBufferFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_float")),
+            blendFloat: this._gl.getExtension("EXT_float_blend") !== null,
             supportFloatTexturesResolve: false,
             rg11b10ufColorRenderable: false,
             colorBufferHalfFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_half_float")),
@@ -559,6 +560,8 @@ export class ThinEngine extends AbstractEngine {
             texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
             disableMorphTargetTexture: false,
             textureNorm16: this._gl.getExtension("EXT_texture_norm16") ? true : false,
+            blendParametersPerTarget: false,
+            dualSourceBlending: false,
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
@@ -622,6 +625,23 @@ export class ThinEngine extends AbstractEngine {
             this._gl.RGB16_SNORM_EXT = 0x8f9a;
             this._gl.RGBA16_SNORM_EXT = 0x8f9b;
         }
+
+        const oesDrawBuffersIndexed = this._gl.getExtension("OES_draw_buffers_indexed");
+        this._caps.blendParametersPerTarget = oesDrawBuffersIndexed ? true : false;
+
+        this._alphaState = new AlphaState(this._caps.blendParametersPerTarget);
+
+        if (oesDrawBuffersIndexed) {
+            this._gl.blendEquationSeparateIndexed = oesDrawBuffersIndexed.blendEquationSeparateiOES.bind(oesDrawBuffersIndexed);
+            this._gl.blendEquationIndexed = oesDrawBuffersIndexed.blendEquationiOES.bind(oesDrawBuffersIndexed);
+            this._gl.blendFuncSeparateIndexed = oesDrawBuffersIndexed.blendFuncSeparateiOES.bind(oesDrawBuffersIndexed);
+            this._gl.blendFuncIndexed = oesDrawBuffersIndexed.blendFunciOES.bind(oesDrawBuffersIndexed);
+            this._gl.colorMaskIndexed = oesDrawBuffersIndexed.colorMaskiOES.bind(oesDrawBuffersIndexed);
+            this._gl.disableIndexed = oesDrawBuffersIndexed.disableiOES.bind(oesDrawBuffersIndexed);
+            this._gl.enableIndexed = oesDrawBuffersIndexed.enableiOES.bind(oesDrawBuffersIndexed);
+        }
+
+        this._caps.dualSourceBlending = this._gl.getExtension("WEBGL_blend_func_extended") ? true : false;
 
         // Compressed formats
         if (this._caps.astc) {
@@ -717,6 +737,19 @@ export class ThinEngine extends AbstractEngine {
 
             if (vertexhighp && fragmenthighp) {
                 this._caps.highPrecisionShaderSupported = vertexhighp.precision !== 0 && fragmenthighp.precision !== 0;
+                this._caps.shaderFloatPrecision = Math.min(vertexhighp.precision, fragmenthighp.precision);
+            }
+            // This will check both the capability and the `useHighPrecisionFloats` option
+            if (!this._shouldUseHighPrecisionShader) {
+                const vertexmedp = this._gl.getShaderPrecisionFormat(this._gl.VERTEX_SHADER, this._gl.MEDIUM_FLOAT);
+                const fragmentmedp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.MEDIUM_FLOAT);
+                if (vertexmedp && fragmentmedp) {
+                    this._caps.shaderFloatPrecision = Math.min(vertexmedp.precision, fragmentmedp.precision);
+                }
+            }
+            if (this._caps.shaderFloatPrecision < 10) {
+                // WebGL spec requires mediump precision to atleast be 10
+                this._caps.shaderFloatPrecision = 10;
             }
         }
 
@@ -903,8 +936,9 @@ export class ThinEngine extends AbstractEngine {
      * @param backBuffer defines if the back buffer must be cleared
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
+     * @param stencilClearValue defines the value to use to clear the stencil buffer (default is 0)
      */
-    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, stencilClearValue = 0): void {
         const useStencilGlobalOnly = this.stencilStateComposer.useStencilGlobalOnly;
         this.stencilStateComposer.useStencilGlobalOnly = true; // make sure the stencil mask is coming from the global stencil and not from a material (effect) which would currently be in effect
 
@@ -958,7 +992,7 @@ export class ThinEngine extends AbstractEngine {
             mode |= this._gl.DEPTH_BUFFER_BIT;
         }
         if (stencil) {
-            this._gl.clearStencil(0);
+            this._gl.clearStencil(stencilClearValue);
             mode |= this._gl.STENCIL_BUFFER_BIT;
         }
         this._gl.clear(mode);
@@ -2715,7 +2749,7 @@ export class ThinEngine extends AbstractEngine {
     public applyStates() {
         this._depthCullingState.apply(this._gl);
         this._stencilStateComposer.apply(this._gl);
-        this._alphaState.apply(this._gl);
+        this._alphaState.apply(this._gl, this._currentRenderTarget && this._currentRenderTarget.textures ? this._currentRenderTarget.textures!.length : 1);
 
         if (this._colorWriteChanged) {
             this._colorWriteChanged = false;
@@ -2754,8 +2788,7 @@ export class ThinEngine extends AbstractEngine {
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
 
             this._alphaState.reset();
-            this._alphaMode = Constants.ALPHA_ADD;
-            this._alphaEquation = Constants.ALPHA_DISABLE;
+            this._resetAlphaMode();
 
             this._colorWrite = true;
             this._colorWriteChanged = true;

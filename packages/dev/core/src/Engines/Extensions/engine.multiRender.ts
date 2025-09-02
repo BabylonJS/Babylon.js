@@ -63,9 +63,10 @@ declare module "../../Engines/abstractEngine" {
         /**
          * Creates a layout object to draw/clear on specific textures in a MRT
          * @param textureStatus textureStatus[i] indicates if the i-th is active
+         * @param backBufferLayout if true, the layout will be built to account for the back buffer only, and textureStatus won't be used
          * @returns A layout to be fed to the engine, calling `bindAttachments`.
          */
-        buildTextureLayout(textureStatus: boolean[]): number[];
+        buildTextureLayout(textureStatus: boolean[], backBufferLayout?: boolean): number[];
 
         /**
          * Restores the webgl state to only draw on the main color attachment
@@ -93,16 +94,20 @@ ThinEngine.prototype.restoreSingleAttachmentForRenderTarget = function (): void 
     this.bindAttachments([gl.COLOR_ATTACHMENT0]);
 };
 
-ThinEngine.prototype.buildTextureLayout = function (textureStatus: boolean[]): number[] {
+ThinEngine.prototype.buildTextureLayout = function (textureStatus: boolean[], backBufferLayout = false): number[] {
     const gl = this._gl;
 
     const result = [];
 
-    for (let i = 0; i < textureStatus.length; i++) {
-        if (textureStatus[i]) {
-            result.push((<any>gl)["COLOR_ATTACHMENT" + i]);
-        } else {
-            result.push(gl.NONE);
+    if (backBufferLayout) {
+        result.push(gl.BACK);
+    } else {
+        for (let i = 0; i < textureStatus.length; i++) {
+            if (textureStatus[i]) {
+                result.push((<any>gl)["COLOR_ATTACHMENT" + i]);
+            } else {
+                result.push(gl.NONE);
+            }
         }
     }
 

@@ -98,6 +98,11 @@ import type { Sound } from "./Audio/sound";
 import type { Layer } from "./Layers/layer";
 import type { LensFlareSystem } from "./LensFlares/lensFlareSystem";
 import type { ProceduralTexture } from "./Materials/Textures/Procedurals/proceduralTexture";
+import { FrameGraphObjectRendererTask } from "./FrameGraph/Tasks/Rendering/objectRendererTask";
+import { _RetryWithInterval } from "./Misc/timingTools";
+import type { ObjectRenderer } from "./Rendering/objectRenderer";
+import type { BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
+import type { BoundingBox } from "./Culling/boundingBox";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -499,6 +504,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public actionManagers: AbstractActionManager[] = [];
 
     /**
+     * Object renderers available on the scene.
+     */
+    public objectRenderers: ObjectRenderer[] = [];
+
+    /**
      * Textures to keep.
      */
     public textures: BaseTexture[] = [];
@@ -847,6 +857,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onSkeletonRemovedObservable = new Observable<Skeleton>();
 
     /**
+     * An event triggered when a particle system is created
+     */
+    public onNewParticleSystemAddedObservable = new Observable<IParticleSystem>();
+
+    /**
+     * An event triggered when a particle system is removed
+     */
+    public onParticleSystemRemovedObservable = new Observable<IParticleSystem>();
+
+    /**
+     * An event triggered when an animation group is created
+     */
+    public onNewAnimationGroupAddedObservable = new Observable<AnimationGroup>();
+
+    /**
+     * An event triggered when an animation group is removed
+     */
+    public onAnimationGroupRemovedObservable = new Observable<AnimationGroup>();
+
+    /**
      * An event triggered when a material is created
      */
     public onNewMaterialAddedObservable = new Observable<Material>();
@@ -875,6 +905,46 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * An event triggered when a texture is removed
      */
     public onTextureRemovedObservable = new Observable<BaseTexture>();
+
+    /**
+     * An event triggered when a frame graph is created
+     */
+    public onNewFrameGraphAddedObservable = new Observable<FrameGraph>();
+
+    /**
+     * An event triggered when a frame graph is removed
+     */
+    public onFrameGraphRemovedObservable = new Observable<FrameGraph>();
+
+    /**
+     * An event triggered when an object renderer is created
+     */
+    public onNewObjectRendererAddedObservable = new Observable<ObjectRenderer>();
+
+    /**
+     * An event triggered when an object renderer is removed
+     */
+    public onObjectRendererRemovedObservable = new Observable<ObjectRenderer>();
+
+    /**
+     * An event triggered when a post process is created
+     */
+    public onNewPostProcessAddedObservable = new Observable<PostProcess>();
+
+    /**
+     * An event triggered when a post process is removed
+     */
+    public onPostProcessRemovedObservable = new Observable<PostProcess>();
+
+    /**
+     * An event triggered when an effect layer is created
+     */
+    public onNewEffectLayerAddedObservable = new Observable<EffectLayer>();
+
+    /**
+     * An event triggered when an effect layer is removed
+     */
+    public onEffectLayerRemovedObservable = new Observable<EffectLayer>();
 
     /**
      * An event triggered when render targets are about to be rendered
@@ -1631,7 +1701,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     private _renderId = 0;
     private _frameId = 0;
     private _executeWhenReadyTimeoutId: Nullable<ReturnType<typeof setTimeout>> = null;
-    private _intermediateRendering = false;
+    /** @internal */
+    public _intermediateRendering = false;
     private _defaultFrameBufferCleared = false;
 
     private _viewUpdateFlag = -1;
@@ -2660,10 +2731,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /**
      * Creates a scene UBO
      * @param name name of the uniform buffer (optional, for debugging purpose only)
+     * @param trackUBOsInFrame define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame)
      * @returns a new ubo
      */
-    public createSceneUniformBuffer(name?: string): UniformBuffer {
-        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene");
+    public createSceneUniformBuffer(name?: string, trackUBOsInFrame?: boolean): UniformBuffer {
+        const sceneUbo = new UniformBuffer(this._engine, undefined, false, name ?? "scene", undefined, trackUBOsInFrame);
         sceneUbo.addUniform("viewProjection", 16);
         sceneUbo.addUniform("view", 16);
         sceneUbo.addUniform("projection", 16);
@@ -2907,6 +2979,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             // Clean active container
             this._executeActiveContainerCleanup(this._activeParticleSystems);
         }
+        this.onParticleSystemRemovedObservable.notifyObservers(toRemove);
         return index;
     }
 
@@ -2943,6 +3016,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (index !== -1) {
             this.animationGroups.splice(index, 1);
         }
+        this.onAnimationGroupRemovedObservable.notifyObservers(toRemove);
         return index;
     }
 
@@ -3010,6 +3084,66 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this.textures.splice(index, 1);
         }
         this.onTextureRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
+     * Removes the given frame graph from this scene.
+     * @param toRemove The frame graph to remove
+     * @returns The index of the removed frame graph
+     */
+    public removeFrameGraph(toRemove: FrameGraph): number {
+        const index = this.frameGraphs.indexOf(toRemove);
+        if (index !== -1) {
+            this.frameGraphs.splice(index, 1);
+        }
+        this.onFrameGraphRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
+     * Removes the given object renderer from this scene.
+     * @param toRemove The object renderer to remove
+     * @returns The index of the removed object renderer
+     */
+    public removeObjectRenderer(toRemove: ObjectRenderer): number {
+        const index = this.objectRenderers.indexOf(toRemove);
+        if (index !== -1) {
+            this.objectRenderers.splice(index, 1);
+        }
+        this.onObjectRendererRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
+     * Removes the given post-process from this scene.
+     * @param toRemove The post-process to remove
+     * @returns The index of the removed post-process
+     */
+    public removePostProcess(toRemove: PostProcess): number {
+        const index = this.postProcesses.indexOf(toRemove);
+        if (index !== -1) {
+            this.postProcesses.splice(index, 1);
+        }
+        this.onPostProcessRemovedObservable.notifyObservers(toRemove);
+
+        return index;
+    }
+
+    /**
+     * Removes the given layer from this scene.
+     * @param toRemove The layer to remove
+     * @returns The index of the removed layer
+     */
+    public removeEffectLayer(toRemove: EffectLayer): number {
+        const index = this.effectLayers.indexOf(toRemove);
+        if (index !== -1) {
+            this.effectLayers.splice(index, 1);
+        }
+        this.onEffectLayerRemovedObservable.notifyObservers(toRemove);
 
         return index;
     }
@@ -3094,6 +3228,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.particleSystems.push(newParticleSystem);
+
+        Tools.SetImmediate(() => {
+            this.onNewParticleSystemAddedObservable.notifyObservers(newParticleSystem);
+        });
     }
 
     /**
@@ -3116,6 +3254,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
         this.animationGroups.push(newAnimationGroup);
+
+        Tools.SetImmediate(() => {
+            this.onNewAnimationGroupAddedObservable.notifyObservers(newAnimationGroup);
+        });
     }
 
     /**
@@ -3199,6 +3341,56 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
         this.textures.push(newTexture);
         this.onNewTextureAddedObservable.notifyObservers(newTexture);
+    }
+
+    /**
+     * Adds the given frame graph to this scene.
+     * @param newFrameGraph The frame graph to add
+     */
+    public addFrameGraph(newFrameGraph: FrameGraph): void {
+        this.frameGraphs.push(newFrameGraph);
+        Tools.SetImmediate(() => {
+            this.onNewFrameGraphAddedObservable.notifyObservers(newFrameGraph);
+        });
+    }
+
+    /**
+     * Adds the given object renderer to this scene.
+     * @param objectRenderer The object renderer to add
+     */
+    public addObjectRenderer(objectRenderer: ObjectRenderer): void {
+        this.objectRenderers.push(objectRenderer);
+        Tools.SetImmediate(() => {
+            this.onNewObjectRendererAddedObservable.notifyObservers(objectRenderer);
+        });
+    }
+
+    /**
+     * Adds the given post process to this scene.
+     * @param newPostProcess The post process to add
+     */
+    public addPostProcess(newPostProcess: PostProcess): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+        this.postProcesses.push(newPostProcess);
+        Tools.SetImmediate(() => {
+            this.onNewPostProcessAddedObservable.notifyObservers(newPostProcess);
+        });
+    }
+
+    /**
+     * Adds the given effect layer to this scene.
+     * @param newEffectLayer The effect layer to add
+     */
+    public addEffectLayer(newEffectLayer: EffectLayer): void {
+        if (this._blockEntityCollection) {
+            return;
+        }
+        this.effectLayers.push(newEffectLayer);
+        Tools.SetImmediate(() => {
+            this.onNewEffectLayerAddedObservable.notifyObservers(newEffectLayer);
+        });
     }
 
     /**
@@ -4203,6 +4395,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     /** @internal */
     public _activeMeshesFrozenButKeepClipping = false;
     private _skipEvaluateActiveMeshesCompletely = false;
+    private _freezeActiveMeshesCancel: Nullable<() => void> = null;
 
     /**
      * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
@@ -4220,6 +4413,79 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         freezeMeshes = true,
         keepFrustumCulling = false
     ): Scene {
+        if (this.frameGraph) {
+            // Executes the frame graph once to be sure the culling tasks (if any) are executed and generate the right culled lists
+            // (it's possible freezeActiveMeshes is called before the frame graph has been executed for the first time)
+            this._renderWithFrameGraph(true, false, true);
+
+            // Freeze all active meshes of all object renderers in the graph
+            const objectRendererTasks = this.frameGraph.getTasksByType(FrameGraphObjectRendererTask);
+            for (const task of objectRendererTasks) {
+                task.objectRenderer._freezeActiveMeshes(freezeMeshes);
+            }
+
+            // Wait for all object renderers to finish freezing
+            this._freezeActiveMeshesCancel = _RetryWithInterval(
+                () => {
+                    let ok = true;
+                    let notCancelled = true;
+                    for (const task of objectRendererTasks) {
+                        ok &&= task.objectRenderer._isFrozen;
+                        notCancelled &&= task.objectRenderer._freezeActiveMeshesCancel !== null;
+                    }
+                    if (ok) {
+                        return true;
+                    } else if (!notCancelled) {
+                        // At least one object renderer cancelled freezing meshes because of an error
+                        // Throws an error that will be caught by _RetryWithInterval.onError
+                        throw new Error("Freezing active meshes was cancelled");
+                    }
+                    return false;
+                },
+                () => {
+                    // All meshes of all object renderers could be frozen correctly
+                    this._freezeActiveMeshesCancel = null;
+                    this._activeMeshesFrozen = true;
+                    this._activeMeshesFrozenButKeepClipping = keepFrustumCulling;
+                    this._skipEvaluateActiveMeshesCompletely = skipEvaluateActiveMeshes;
+
+                    onSuccess?.();
+                },
+                (err, isTimeout) => {
+                    // An error occurred => not all meshes could be frozen
+                    // Unfreezes all meshes so that we remain in a valid state
+                    this._freezeActiveMeshesCancel = null;
+                    this.unfreezeActiveMeshes();
+                    if (!isTimeout) {
+                        const errMsg = "Scene: An unexpected error occurred while trying to freeze active meshes.";
+                        if (onError) {
+                            onError(errMsg);
+                        } else {
+                            Logger.Error(errMsg);
+                            if (err) {
+                                Logger.Error(err);
+                                if (err.stack) {
+                                    Logger.Error(err.stack);
+                                }
+                            }
+                        }
+                    } else {
+                        const errMsg = "Scene: Timeout while waiting for meshes to be frozen.";
+                        if (onError) {
+                            onError(errMsg);
+                        } else {
+                            Logger.Error(errMsg);
+                            if (err) {
+                                Logger.Error(err);
+                            }
+                        }
+                    }
+                }
+            );
+
+            return this;
+        }
+
         this.executeWhenReady(() => {
             if (!this.activeCamera) {
                 if (onError) {
@@ -4261,8 +4527,18 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             }
         }
 
-        for (let index = 0; index < this._activeMeshes.length; index++) {
-            this._activeMeshes.data[index]._unFreeze();
+        this._freezeActiveMeshesCancel?.();
+        this._freezeActiveMeshesCancel = null;
+
+        if (this.frameGraph) {
+            const objectRendererTasks = this.frameGraph.getTasksByType(FrameGraphObjectRendererTask);
+            for (const task of objectRendererTasks) {
+                task.objectRenderer._unfreezeActiveMeshes();
+            }
+        } else {
+            for (let index = 0; index < this._activeMeshes.length; index++) {
+                this._activeMeshes.data[index]._unFreeze();
+            }
         }
 
         this._activeMeshesFrozen = false;
@@ -4616,15 +4892,32 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
             if (this._renderTargets.length > 0) {
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
+
+                // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+                const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
+
+                let currentBoundingBoxMeshList: Array<BoundingBox> | undefined;
+
                 for (let renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
                     const renderTarget = this._renderTargets.data[renderIndex];
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         const hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
+                        if (renderTarget.enableBoundingBoxRendering && boundingBoxRenderer && !currentBoundingBoxMeshList) {
+                            // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which will be reset/updated when processing this target
+                            currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+                            currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+                        }
                         renderTarget.render(<boolean>hasSpecialRenderTargetCamera, this.dumpNextRenderTargets);
                         needRebind = true;
                     }
                 }
+
+                if (boundingBoxRenderer && currentBoundingBoxMeshList) {
+                    boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
+                    boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList.length;
+                }
+
                 Tools.EndPerformanceCounter("Render targets", this._renderTargets.length > 0);
 
                 this._renderId++;
@@ -4660,10 +4953,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Render
         this.onBeforeDrawPhaseObservable.notifyObservers(this);
 
-        if (engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+        const fastSnapshotMode = engine.snapshotRendering && engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST;
+        if (fastSnapshotMode) {
             this.finalizeSceneUbo();
         }
-        this._renderingManager.render(null, null, true, true);
+        this._renderingManager.render(null, null, true, !fastSnapshotMode);
         this.onAfterDrawPhaseObservable.notifyObservers(this);
 
         // After Camera Draw
@@ -4873,11 +5167,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     public customRenderFunction?: (updateCameras: boolean, ignoreAnimations: boolean) => void;
 
-    private _renderWithFrameGraph(updateCameras = true, ignoreAnimations = false): void {
+    private _renderWithFrameGraph(updateCameras = true, _ignoreAnimations = false, forceUpdateWorldMatrix = false): void {
         this.activeCamera = null;
-
-        this._activeParticleSystems.reset();
-        this._activeSkeletons.reset();
+        this.activeCameras = null;
 
         // Update Cameras
         if (updateCameras) {
@@ -4901,42 +5193,75 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         }
 
         // Process meshes
-        const meshes = this.getActiveMeshCandidates();
-        const len = meshes.length;
+        if (this._engine.snapshotRendering && this._engine.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
+            this._activeParticleSystems.reset();
+            this._activeSkeletons.reset();
+            this._softwareSkinnedMeshes.reset();
+        } else {
+            const meshes = this.getActiveMeshCandidates();
+            const len = meshes.length;
 
-        for (let i = 0; i < len; i++) {
-            const mesh = meshes.data[i];
+            if (!this._activeMeshesFrozen) {
+                // Meshes are not frozen
+                this._activeParticleSystems.reset();
+                this._activeSkeletons.reset();
+                this._softwareSkinnedMeshes.reset();
 
-            if (mesh.isBlocked) {
-                continue;
-            }
+                for (let i = 0; i < len; i++) {
+                    const mesh = meshes.data[i];
 
-            this._totalVertices.addCount(mesh.getTotalVertices(), false);
+                    mesh._internalAbstractMeshDataInfo._wasActiveLastFrame = false;
 
-            if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
-                continue;
-            }
+                    if (mesh.isBlocked) {
+                        continue;
+                    }
 
-            mesh.computeWorldMatrix();
+                    this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-            if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(Constants.ACTION_OnIntersectionEnterTrigger, Constants.ACTION_OnIntersectionExitTrigger)) {
-                this._meshesForIntersections.pushNoDuplicate(mesh);
-            }
-        }
+                    if (!mesh.isReady() || !mesh.isEnabled() || mesh.scaling.hasAZeroComponent) {
+                        continue;
+                    }
 
-        // Animate Particle systems
-        if (this.particlesEnabled) {
-            for (let particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
-                const particleSystem = this.particleSystems[particleIndex];
+                    mesh.computeWorldMatrix(forceUpdateWorldMatrix);
 
-                if (!particleSystem.isStarted() || !particleSystem.emitter) {
-                    continue;
+                    if (mesh.actionManager && mesh.actionManager.hasSpecificTriggers2(Constants.ACTION_OnIntersectionEnterTrigger, Constants.ACTION_OnIntersectionExitTrigger)) {
+                        this._meshesForIntersections.pushNoDuplicate(mesh);
+                    }
                 }
 
-                const emitter = <any>particleSystem.emitter;
-                if (!emitter.position || emitter.isEnabled()) {
-                    this._activeParticleSystems.push(particleSystem);
-                    particleSystem.animate();
+                // Animate Particle systems
+                if (this.particlesEnabled) {
+                    for (let particleIndex = 0; particleIndex < this.particleSystems.length; particleIndex++) {
+                        const particleSystem = this.particleSystems[particleIndex];
+
+                        if (!particleSystem.isStarted() || !particleSystem.emitter) {
+                            continue;
+                        }
+
+                        const emitter = <any>particleSystem.emitter;
+                        if (!emitter.position || emitter.isEnabled()) {
+                            this._activeParticleSystems.push(particleSystem);
+                            particleSystem.animate();
+                        }
+                    }
+                }
+            } else {
+                // Meshes are frozen
+                if (!this._skipEvaluateActiveMeshesCompletely) {
+                    for (let i = 0; i < len; i++) {
+                        const mesh = meshes.data[i];
+
+                        if (mesh._internalAbstractMeshDataInfo._wasActiveLastFrame) {
+                            mesh.computeWorldMatrix();
+                        }
+                    }
+                }
+
+                if (this.particlesEnabled) {
+                    const psLength = this._activeParticleSystems.length;
+                    for (let i = 0; i < psLength; i++) {
+                        this._activeParticleSystems.data[i].animate();
+                    }
                 }
             }
         }
@@ -5291,6 +5616,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Release morph targets
         this._disposeList(this.morphTargetManagers);
 
+        // Release frame graphs
+        this._disposeList(this.frameGraphs);
+
         // Release UBO
         this._sceneUbo.dispose();
 
@@ -5372,6 +5700,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onMultiMaterialRemovedObservable.clear();
         this.onNewTextureAddedObservable.clear();
         this.onTextureRemovedObservable.clear();
+        this.onNewFrameGraphAddedObservable.clear();
+        this.onFrameGraphRemovedObservable.clear();
+        this.onNewObjectRendererAddedObservable.clear();
+        this.onObjectRendererRemovedObservable.clear();
         this.onPrePointerObservable.clear();
         this.onPointerObservable.clear();
         this.onPreKeyboardObservable.clear();

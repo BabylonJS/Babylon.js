@@ -133,6 +133,7 @@ export class NullEngine extends Engine {
             maxVaryingVectors: 16,
             maxFragmentUniformVectors: 16,
             maxVertexUniformVectors: 16,
+            shaderFloatPrecision: 10, // Minimum precision for mediump floats WebGL 1
             standardDerivatives: false,
             astc: null,
             pvrtc: null,
@@ -144,6 +145,7 @@ export class NullEngine extends Engine {
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
+            blendFloat: false,
             supportFloatTexturesResolve: false,
             rg11b10ufColorRenderable: false,
             textureFloat: false,
@@ -171,6 +173,8 @@ export class NullEngine extends Engine {
             texture2DArrayMaxLayerCount: 128,
             disableMorphTargetTexture: false,
             textureNorm16: false,
+            blendParametersPerTarget: false,
+            dualSourceBlending: false,
         };
 
         this._features = {
@@ -582,19 +586,20 @@ export class NullEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+     * @param targetIndex defines the index of the target to set the alpha mode for (default is 0)
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
      */
-    public override setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
-        if (this._alphaMode === mode) {
+    public override setAlphaMode(mode: number, noDepthWriteChange: boolean = false, targetIndex = 0): void {
+        if (this._alphaMode[targetIndex] === mode) {
             return;
         }
 
-        this.alphaState.alphaBlend = mode !== Constants.ALPHA_DISABLE;
+        this.alphaState.setAlphaBlend(mode !== Constants.ALPHA_DISABLE, 0);
 
         if (!noDepthWriteChange) {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
         }
-        this._alphaMode = mode;
+        this._alphaMode[targetIndex] = mode;
     }
 
     /**

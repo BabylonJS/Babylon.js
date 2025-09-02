@@ -47,6 +47,8 @@ interface IParsedPLY {
     hasVertexColors?: boolean;
     sh?: Uint8Array[];
     trainedWithAntialiasing?: boolean;
+    compressed?: boolean;
+    rawSplat?: boolean;
 }
 
 /**
@@ -198,9 +200,10 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         const fractionalBits = ubuf[13];
         const flags = ubuf[14];
         const reserved = ubuf[15];
+        const version = ubufu32[1];
 
         // check magic and version
-        if (reserved || ubufu32[0] != 0x5053474e || ubufu32[1] != 2) {
+        if (reserved || ubufu32[0] != 0x5053474e || (version != 2 && version != 3)) {
             // reserved must be 0
             return new Promise((resolve) => {
                 resolve({ mode: Mode.Reject, data: buffer, hasVertexColors: false });
@@ -269,20 +272,74 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         }
 
         // convert quaternion
-        for (let i = 0; i < splatCount; i++) {
-            const x = ubuf[byteOffset + 0];
-            const y = ubuf[byteOffset + 1] * coordinateSign + quaternionOffset;
-            const z = ubuf[byteOffset + 2] * coordinateSign + quaternionOffset;
-            const nx = x / 127.5 - 1;
-            const ny = y / 127.5 - 1;
-            const nz = z / 127.5 - 1;
-            rot[i * 32 + 28 + 1] = x;
-            rot[i * 32 + 28 + 2] = y;
-            rot[i * 32 + 28 + 3] = z;
-            const v = 1 - (nx * nx + ny * ny + nz * nz);
-            rot[i * 32 + 28 + 0] = 127.5 + Math.sqrt(v < 0 ? 0 : v) * 127.5;
+        if (version >= 3) {
+            /*
+                In version 3, rotations are represented as the smallest three components of the normalized rotation quaternion, for optimal rotation accuracy.
+                The largest component can be derived from the others and is not stored. Its index is stored on 2 bits
+                and each of the smallest three components is encoded as a 10-bit signed integer.
+            */
+            const sqrt12 = Math.SQRT1_2;
+            for (let i = 0; i < splatCount; i++) {
+                const r = [ubuf[byteOffset + 0], ubuf[byteOffset + 1], ubuf[byteOffset + 2], ubuf[byteOffset + 3]];
 
-            byteOffset += 3;
+                const comp = r[0] + (r[1] << 8) + (r[2] << 16) + (r[3] << 24);
+
+                const cmask = (1 << 9) - 1;
+                const rotation = [];
+                const iLargest = comp >>> 30;
+                let remaining = comp;
+                let sumSquares = 0;
+
+                for (let i = 3; i >= 0; --i) {
+                    if (i !== iLargest) {
+                        const mag = remaining & cmask;
+                        const negbit = (remaining >>> 9) & 0x1;
+                        remaining = remaining >>> 10;
+
+                        rotation[i] = sqrt12 * (mag / cmask);
+                        if (negbit === 1) {
+                            rotation[i] = -rotation[i];
+                        }
+
+                        // accumulate the sum of squares
+                        sumSquares += rotation[i] * rotation[i];
+                    }
+                }
+
+                const square = 1 - sumSquares;
+                rotation[iLargest] = Math.sqrt(Math.max(square, 0));
+
+                rotation[1] *= coordinateSign;
+                rotation[2] *= coordinateSign;
+
+                const shuffle = [3, 0, 1, 2]; // shuffle to match the order of the quaternion components in the splat file
+                for (let j = 0; j < 4; j++) {
+                    rot[i * 32 + 28 + j] = Math.round(127.5 + rotation[shuffle[j]] * 127.5);
+                }
+
+                byteOffset += 4;
+            }
+        } else {
+            /*
+                In version 2, rotations are represented as the `(x, y, z)` components of the normalized rotation quaternion. The
+                `w` component can be derived from the others and is not stored. Each component is encoded as an
+                8-bit signed integer.
+            */
+            for (let i = 0; i < splatCount; i++) {
+                const x = ubuf[byteOffset + 0];
+                const y = ubuf[byteOffset + 1] * coordinateSign + quaternionOffset;
+                const z = ubuf[byteOffset + 2] * coordinateSign + quaternionOffset;
+                const nx = x / 127.5 - 1;
+                const ny = y / 127.5 - 1;
+                const nz = z / 127.5 - 1;
+                rot[i * 32 + 28 + 1] = x;
+                rot[i * 32 + 28 + 2] = y;
+                rot[i * 32 + 28 + 3] = z;
+                const v = 1 - (nx * nx + ny * ny + nz * nz);
+                rot[i * 32 + 28 + 0] = 127.5 + Math.sqrt(v < 0 ? 0 : v) * 127.5;
+
+                byteOffset += 3;
+            }
         }
 
         //SH
@@ -380,6 +437,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     gaussianSplatting._parentContainer = this._assetContainer;
                                     babylonMeshesArray.push(gaussianSplatting);
                                     gaussianSplatting.updateData(parsedPLY.data, parsedPLY.sh);
+                                    if (parsedPLY.compressed || !parsedPLY.rawSplat) {
+                                        gaussianSplatting.viewDirectionFactor.set(-1, -1, 1);
+                                    }
                                 }
                                 break;
                             case Mode.PointCloud:
@@ -476,7 +536,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         if (headerEndIndex < 0 || !header) {
             // standard splat
             return new Promise((resolve) => {
-                resolve({ mode: Mode.Splat, data: data });
+                resolve({ mode: Mode.Splat, data: data, rawSplat: true });
             });
         }
 
@@ -577,7 +637,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             // early exit for chunked/quantized ply
             if (chunkCount) {
                 return await new Promise((resolve) => {
-                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false });
+                    resolve({ mode: Mode.Splat, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: false, compressed: true, rawSplat: false });
                 });
             }
             // count available properties. if all necessary are present then it's a splat. Otherwise, it's a point cloud
@@ -599,7 +659,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
             // parsed ready ready to be used as a splat
             return await new Promise((resolve) => {
-                resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount });
+                resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount, compressed: false, rawSplat: false });
             });
         });
     }

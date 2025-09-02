@@ -338,7 +338,12 @@ export class NodeMaterialBuildState {
      */
     public _emit2DArraySampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
-            this._samplerDeclaration += `uniform sampler2DArray ${name};\n`;
+            if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
+                this._samplerDeclaration += `var ${name}: texture_2d_array<f32>;\n`;
+            } else {
+                this._samplerDeclaration += `uniform sampler2DArray ${name};\n`;
+            }
             this.samplers.push(name);
         }
     }

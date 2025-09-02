@@ -1,0 +1,183 @@
+{
+    "format": "smartFilter",
+    "formatVersion": 1,
+    "name": "Default",
+    "namespace": null,
+    "comments": null,
+    "editorData": {
+        "locations": [
+            {
+                "blockId": 2,
+                "x": 1200,
+                "y": 200,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 4,
+                "x": -120,
+                "y": 20,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 11,
+                "x": -120,
+                "y": 340,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 6,
+                "x": 380,
+                "y": 220,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 18,
+                "x": 760,
+                "y": 280,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 25,
+                "x": 120,
+                "y": 120,
+                "isCollapsed": false
+            },
+            {
+                "blockId": 26,
+                "x": -140,
+                "y": 180,
+                "isCollapsed": false
+            }
+        ],
+        "x": 235,
+        "y": 138,
+        "zoom": 1
+    },
+    "blocks": [
+        {
+            "name": "output",
+            "uniqueId": 2,
+            "blockType": "OutputBlock",
+            "namespace": null,
+            "comments": null
+        },
+        {
+            "name": "Texture",
+            "uniqueId": 4,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 2,
+                "url": "/assets/logo.png",
+                "urlTypeHint": "image",
+                "flipY": true,
+                "anisotropicFilteringLevel": 4,
+                "forcedExtension": null
+            }
+        },
+        {
+            "name": "tint",
+            "uniqueId": 11,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 3,
+                "value": {
+                    "r": 0,
+                    "g": 0.8588235294117647,
+                    "b": 0.9607843137254902
+                }
+            }
+        },
+        {
+            "name": "Tint",
+            "uniqueId": 6,
+            "blockType": "TintBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        },
+        {
+            "name": "Blur",
+            "uniqueId": 18,
+            "blockType": "BlurBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "data": {
+                "blurTextureRatioPerPass": 0.5,
+                "blurSize": 2
+            }
+        },
+        {
+            "name": "Contrast",
+            "uniqueId": 25,
+            "blockType": "ContrastBlock",
+            "namespace": "Babylon.Demo.Effects",
+            "comments": null,
+            "outputTextureOptions": {
+                "ratio": 1,
+                "format": 5,
+                "type": 0
+            }
+        },
+        {
+            "name": "Intensity",
+            "uniqueId": 26,
+            "blockType": "InputBlock",
+            "namespace": null,
+            "comments": null,
+            "data": {
+                "inputType": 1,
+                "value": 0.68,
+                "animationType": null,
+                "valueDeltaPerMs": null,
+                "min": 0,
+                "max": 1
+            }
+        }
+    ],
+    "connections": [
+        {
+            "inputBlock": 2,
+            "inputConnectionPoint": "input",
+            "outputBlock": 18,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 25,
+            "inputConnectionPoint": "input",
+            "outputBlock": 4,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 6,
+            "inputConnectionPoint": "tint",
+            "outputBlock": 11,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 6,
+            "inputConnectionPoint": "input",
+            "outputBlock": 25,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 18,
+            "inputConnectionPoint": "input",
+            "outputBlock": 6,
+            "outputConnectionPoint": "output"
+        },
+        {
+            "inputBlock": 25,
+            "inputConnectionPoint": "intensity",
+            "outputBlock": 26,
+            "outputConnectionPoint": "output"
+        }
+    ]
+}

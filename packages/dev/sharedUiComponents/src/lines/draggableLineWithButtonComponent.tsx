@@ -1,6 +1,8 @@
-import * as React from "react";
+import { useContext } from "react";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
+import { DraggableLine } from "../fluent/primitives/draggable";
 
-export interface IDraggableLineWithButtonComponent {
+export type DraggableLineWithButtonProps = {
     format: string;
     data: string;
     tooltip: string;
@@ -8,34 +10,33 @@ export interface IDraggableLineWithButtonComponent {
     onIconClick: (value: string) => void;
     iconTitle: string;
     lenSuffixToRemove?: number;
-}
+};
 
-export class DraggableLineWithButtonComponent extends React.Component<IDraggableLineWithButtonComponent> {
-    constructor(props: IDraggableLineWithButtonComponent) {
-        super(props);
+export const DraggableLineWithButtonComponent: React.FunctionComponent<DraggableLineWithButtonProps> = (props) => {
+    const { useFluent } = useContext(ToolContext);
+    if (useFluent) {
+        // When updating the callsites to use fluent directly this label will be clearer since the string replace occurs where the data string lives
+        return <DraggableLine {...props} label={props.data.substring(0, props.data.length - (props.lenSuffixToRemove ?? 6))} onDelete={() => props.onIconClick(props.data)} />;
     }
-
-    override render() {
-        return (
+    return (
+        <div
+            className="draggableLine withButton"
+            title={props.tooltip}
+            draggable={true}
+            onDragStart={(event) => {
+                event.dataTransfer.setData(props.format, props.data);
+            }}
+        >
+            {props.data.substring(0, props.data.length - (props.lenSuffixToRemove ?? 6))}
             <div
-                className="draggableLine withButton"
-                title={this.props.tooltip}
-                draggable={true}
-                onDragStart={(event) => {
-                    event.dataTransfer.setData(this.props.format, this.props.data);
+                className="icon"
+                onClick={() => {
+                    props.onIconClick(props.data);
                 }}
+                title={props.iconTitle}
             >
-                {this.props.data.substring(0, this.props.data.length - (this.props.lenSuffixToRemove ?? 6))}
-                <div
-                    className="icon"
-                    onClick={() => {
-                        this.props.onIconClick(this.props.data);
-                    }}
-                    title={this.props.iconTitle}
-                >
-                    <img className="img" title={this.props.iconTitle} src={this.props.iconImage} />
-                </div>
+                <img className="img" title={props.iconTitle} src={props.iconImage} />
             </div>
-        );
-    }
-}
+        </div>
+    );
+};

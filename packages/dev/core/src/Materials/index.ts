@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./Background/index";
 export * from "./colorCurves";
 export * from "./iEffectFallbacks";
@@ -39,6 +39,7 @@ export * from "./meshDebugPluginMaterial";
 export * from "./GaussianSplatting/gaussianSplattingMaterial";
 export * from "./materialHelper.functions";
 export * from "./materialHelper.geometryrendering";
+export * from "./materialStencilState";
 import "./material.decalMap";
 
 // async-loaded shaders

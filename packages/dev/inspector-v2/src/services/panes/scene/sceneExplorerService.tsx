@@ -1,7 +1,6 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable } from "core/index";
 
-import type { EntityBase, SceneExplorerEntityCommand, SceneExplorerSection } from "../../../components/scene/sceneExplorer";
+import type { EntityBase, SceneExplorerCommandProvider, SceneExplorerSection } from "../../../components/scene/sceneExplorer";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISelectionService } from "../../selectionService";
@@ -32,7 +31,7 @@ export interface ISceneExplorerService extends IService<typeof SceneExplorerServ
      * Adds a new command (e.g. "Delete", "Rename", etc.) that can be executed on entities in the scene explorer.
      * @param command A description of the command to add.
      */
-    addCommand<T extends EntityBase>(command: SceneExplorerEntityCommand<T>): IDisposable;
+    addCommand<T extends EntityBase>(command: SceneExplorerCommandProvider<T>): IDisposable;
 }
 
 /**
@@ -44,7 +43,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
     consumes: [SceneContextIdentity, ShellServiceIdentity, SelectionServiceIdentity],
     factory: (sceneContext, shellService, selectionService) => {
         const sectionsCollection = new ObservableCollection<SceneExplorerSection<EntityBase>>();
-        const commandsCollection = new ObservableCollection<SceneExplorerEntityCommand<EntityBase>>();
+        const commandsCollection = new ObservableCollection<SceneExplorerCommandProvider<EntityBase>>();
 
         const registration = shellService.addSidePane({
             key: "Scene Explorer",
@@ -63,7 +62,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                         {scene && (
                             <SceneExplorer
                                 sections={sections}
-                                commands={commands}
+                                commandProviders={commands}
                                 scene={scene}
                                 selectedEntity={entity}
                                 setSelectedEntity={(entity) => (selectionService.selectedEntity = entity)}
@@ -76,7 +75,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
 
         return {
             addSection: (section) => sectionsCollection.add(section as SceneExplorerSection<EntityBase>),
-            addCommand: (command) => commandsCollection.add(command as SceneExplorerEntityCommand<EntityBase>),
+            addCommand: (command) => commandsCollection.add(command as SceneExplorerCommandProvider<EntityBase>),
             dispose: () => registration.dispose(),
         };
     },

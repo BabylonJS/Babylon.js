@@ -145,13 +145,17 @@ declare module BABYLON.GLTF2 {
          */
         PNG = "image/png",
         /**
-         * WEBP Mime-type
+         * WEBP Mime-type, available via EXT_texture_webp
          */
         WEBP = "image/webp",
         /**
-         * AVIF Mime-type
+         * AVIF Mime-type, available via EXT_texture_avif
          */
         AVIF = "image/avif",
+        /**
+         * KTX2 Mime-type, available via KHR_texture_basisu
+         */
+        KTX2 = "image/ktx2",
     }
 
     /**
@@ -813,9 +817,9 @@ declare module BABYLON.GLTF2 {
          */
         sampler?: number;
         /**
-         * The index of the image used by this texture
+         * The index of the image used by this texture. When undefined, an extension or other mechanism should supply an alternate texture source, otherwise behavior is undefined.
          */
-        source: number;
+        source?: number;
     }
 
     /**

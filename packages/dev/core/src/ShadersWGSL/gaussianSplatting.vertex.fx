@@ -16,6 +16,7 @@ uniform dataTextureSize: vec2f;
 uniform focal: vec2f;
 uniform kernelSize: f32;
 uniform eyePosition: vec3f;
+uniform viewDirectionFactor: vec3f;
 
 // textures
 var covariancesATexture: texture_2d<f32>;
@@ -53,7 +54,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     let normWorldRot: mat3x3f = inverseMat3(worldRot);
 
     var dir: vec3f = normalize(normWorldRot * (worldPos.xyz - uniforms.eyePosition.xyz));
-    dir *= vec3f(1.,1.,-1.); // convert to Babylon Space
+    dir *= uniforms.viewDirectionFactor;
     vertexOutputs.vColor = vec4f(splat.color.xyz + computeSH(splat, dir), splat.color.w);
 #else
     vertexOutputs.vColor = splat.color;

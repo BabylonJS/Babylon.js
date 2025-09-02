@@ -5,7 +5,9 @@ import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping
 import { getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName, umdPackageMapping } from "./packageMapping.js";
 import * as path from "path";
 import { camelize, copyFile } from "./utils.js";
-import type { RuleSetRule, Configuration, Compiler } from "webpack";
+import type { RuleSetRule, Configuration, Compiler, WebpackPluginInstance } from "webpack";
+import * as ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
+import ReactRefreshTypeScript from "react-refresh-typescript";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const externalsFunction = (excludePackages: string[] = [], type: BuildType = "umd") => {
@@ -65,12 +67,22 @@ export const getRules = (
         resourceType?: "asset/inline" | "asset/resource";
         extraRules?: RuleSetRule[];
         mode?: "development" | "production";
+        enableFastRefresh?: boolean; // for react fast refresh
     } = {
         includeAssets: true,
         includeCSS: true,
         sideEffects: true,
     }
 ) => {
+    const getCustomTransformers = options.enableFastRefresh
+        ? (program: ts.Program) => {
+              const transformers: ts.CustomTransformers = options?.tsOptions?.getCustomTransformers?.(program) ?? {};
+              transformers.before = transformers.before ?? [];
+              transformers.before.push(ReactRefreshTypeScript());
+              return transformers;
+          }
+        : options?.tsOptions?.getCustomTransformers;
+
     const rules: RuleSetRule[] = [
         {
             test: /\.tsx?$/,
@@ -79,7 +91,7 @@ export const getRules = (
             sideEffects: options.sideEffects,
             options: {
                 configFile: "tsconfig.build.json",
-                ...options.tsOptions,
+                ...{ ...options.tsOptions, getCustomTransformers },
             },
         },
         {
@@ -177,9 +189,18 @@ export const commonDevWebpackConfiguration = (
         port: number;
         static?: string[];
         showBuildProgress?: boolean;
-    }
+    },
+    additionalPlugins?: WebpackPluginInstance[]
 ) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
+    const enableHotReload = (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false;
+
+    let plugins: WebpackPluginInstance[] | undefined = additionalPlugins;
+    if (devServerConfig && enableHotReload) {
+        plugins = plugins ?? [];
+        plugins.push(new ReactRefreshWebpackPlugin({ overlay: !process.env.DISABLE_DEV_OVERLAY }));
+    }
+
     return {
         mode: production ? "production" : "development",
         devtool: production ? "source-map" : "inline-cheap-module-source-map",
@@ -190,7 +211,7 @@ export const commonDevWebpackConfiguration = (
                   webSocketServer: production ? false : "ws",
                   compress: production,
                   server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
-                  hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
+                  hot: enableHotReload,
                   liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
                   headers: {
                       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -217,6 +238,7 @@ export const commonDevWebpackConfiguration = (
                   devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
               }
             : undefined,
+        plugins,
     };
 };
 
@@ -224,24 +246,31 @@ export const commonDevWebpackConfiguration = (
  * Originally our build commands for our tools were running both dev and prod, outputted an unminified max.js file during CI. This impacted memory usage during
  * build and is not necessary for debugging since we offer source maps. We have since removed the dev step from our builds, but in order to preserve
  * backwards compatibility for users who may have been referencing the .max.js file directly, we now copy the minified file to a .max.js file
- * after the build is complete. This plugin will only run if the `copyMinToMax` option is set to true in the webpack configuration.
+ * after the build is complete. This plugin will only run if the `minToMax` option is set to true in the webpack configuration.
  */
 class CopyMinToMaxWebpackPlugin {
     apply(compiler: Compiler) {
         compiler.hooks.done.tap("CopyToMax", (stats) => {
+            if (stats.hasErrors()) {
+                console.error("Build had errors, skipping CopyMinToMax plugin");
+                return;
+            }
             const outputPath = stats.compilation.outputOptions.path;
-            const file = stats.compilation.outputOptions.filename?.toString();
-            if (outputPath && file) {
-                const from = path.join(outputPath, file);
-                let to;
-                if (file.includes(".min.js")) {
-                    // if maxMode is false, the minified file will have .min.js suffix and the max file will have no suffix
-                    to = path.join(outputPath, file.replace(/\.min\.js$/, ".js"));
-                } else {
-                    // if maxMode is true, the minified file will have no suffix and the max file will have max.js suffix
-                    to = path.join(outputPath, file.replace(/\.js$/, ".max.js"));
+            if (outputPath) {
+                for (const chunk of stats.compilation.chunks) {
+                    for (const file of chunk.files) {
+                        const from = path.join(outputPath, file);
+                        let to;
+                        if (file.includes(".min.js")) {
+                            // if maxMode is false, the minified file will have .min.js suffix and the max file will have no suffix
+                            to = path.join(outputPath, file.replace(/\.min\.js$/, ".js"));
+                        } else {
+                            // if maxMode is true, the minified file will have no suffix and the max file will have max.js suffix
+                            to = path.join(outputPath, file.replace(/\.js$/, ".max.js"));
+                        }
+                        copyFile(from, to);
+                    }
                 }
-                copyFile(from, to);
             }
         });
     }

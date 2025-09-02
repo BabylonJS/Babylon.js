@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable github/no-then */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as React from "react";
@@ -134,6 +135,40 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
     private _preventReentrancy = false;
 
+    private _sanitizeCode(code: string): string {
+        let result = code.normalize("NFKC");
+
+        const hiddenCharsRegex = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
+        // eslint-disable-next-line no-control-regex
+        const controlCharsRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
+
+        // Visualizer markers for hidden characters
+        const markers: Record<string, string> = {
+            "\u200B": "⟦ZWSP⟧",
+            "\u200C": "⟦ZWNJ⟧",
+            "\u200D": "⟦ZWJ⟧",
+            "\u200E": "⟦LRM⟧",
+            "\u200F": "⟦RLM⟧",
+            "\u202A": "⟦LRE⟧",
+            "\u202B": "⟦RLE⟧",
+            "\u202C": "⟦PDF⟧",
+            "\u202D": "⟦LRO⟧",
+            "\u202E": "⟦RLO⟧",
+            "\u2060": "⟦WJ⟧",
+            "\u2066": "⟦LRI⟧",
+            "\u2067": "⟦RLI⟧",
+            "\u2068": "⟦FSI⟧",
+            "\u2069": "⟦PDI⟧",
+            "\uFEFF": "⟦BOM⟧",
+        };
+
+        result = result.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, (ch) => markers[ch] || `⟦U+${ch.charCodeAt(0).toString(16).toUpperCase()}⟧`);
+
+        result = result.replace(hiddenCharsRegex, "").replace(controlCharsRegex, "");
+
+        return result;
+    }
+
     private async _compileAndRunAsync() {
         if (this._preventReentrancy) {
             return;
@@ -230,6 +265,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this._preventReentrancy = false;
                 return;
             }
+
+            code = this._sanitizeCode(code);
 
             // Check for Ammo.js
             let ammoInit = "";
@@ -366,6 +403,14 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     (window as any).handleException(e);
                 }
 
+                // Return early if there is a parameter to prevent auto-running
+                if (this.props.globalState.doNotRun) {
+                    this.props.globalState.doNotRun = false;
+                    this._preventReentrancy = false;
+                    this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+                    return;
+                }
+
                 await globalObject.initFunction();
 
                 this._engine = globalObject.engine;
@@ -408,7 +453,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 return this._notifyError("You must at least create a scene.");
             }
 
-            if (this._engine.scenes[0] && displayInspector) {
+            if (this._engine.scenes[0] && displayInspector && !globalObject.scene.then) {
                 this.props.globalState.onInspectorRequiredObservable.notifyObservers();
             }
 

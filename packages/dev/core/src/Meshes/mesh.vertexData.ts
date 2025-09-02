@@ -109,7 +109,7 @@ export interface IVertexDataLike {
     normals?: Nullable<FloatArray>;
 
     /**
-     * An array of the x, y, z tangent vector of each vertex  [...., x, y, z, .....]
+     * An array of the x, y, z, w tangent vector of each vertex  [...., x, y, z, w, .....]
      */
     tangents?: Nullable<FloatArray>;
 
@@ -208,7 +208,7 @@ export class VertexData implements IVertexDataLike {
     public normals: Nullable<FloatArray>;
 
     /**
-     * An array of the x, y, z tangent vector of each vertex  [...., x, y, z, .....]
+     * An array of the x, y, z, w tangent vector of each vertex  [...., x, y, z, w, .....]
      */
     public tangents: Nullable<FloatArray>;
 

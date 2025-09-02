@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
@@ -36,6 +35,10 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjec
         const depthWrite = this.depthWrite;
         const disableShadows = this.disableShadows;
         const renderInLinearSpace = this.renderInLinearSpace;
+        const renderParticles = this.renderParticles;
+        const renderSprites = this.renderSprites;
+        const forceLayerMaskCheck = this.forceLayerMaskCheck;
+        const enableBoundingBoxRendering = this.enableBoundingBoxRendering;
 
         this._frameGraphTask.dispose();
         this._frameGraphTask = new FrameGraphObjectRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
@@ -45,6 +48,10 @@ export class NodeRenderGraphObjectRendererBlock extends NodeRenderGraphBaseObjec
         this.depthWrite = depthWrite;
         this.disableShadows = disableShadows;
         this.renderInLinearSpace = renderInLinearSpace;
+        this.renderParticles = renderParticles;
+        this.renderSprites = renderSprites;
+        this.forceLayerMaskCheck = forceLayerMaskCheck;
+        this.enableBoundingBoxRendering = enableBoundingBoxRendering;
         this._frameGraphTask.disabled = disabled;
     }
 

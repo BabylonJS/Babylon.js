@@ -6,6 +6,8 @@ export enum SourceTextureFormat {
 
 export enum TranscodeTarget {
     ASTC_4X4_RGBA,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    ASTC_4x4_RGBA = ASTC_4X4_RGBA,
     BC7_RGBA,
     BC3_RGBA,
     BC1_RGB,

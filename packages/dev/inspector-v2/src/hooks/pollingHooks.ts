@@ -1,7 +1,6 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IReadonlyObservable } from "core/index";
 
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { useEffect, useMemo } from "react";
 
 /**
@@ -9,7 +8,6 @@ import { useEffect, useMemo } from "react";
  * @param delay The polling interval in milliseconds.
  * @returns A readonly observable that can be used to subscribe to polling notifications.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function usePollingObservable(delay: number): IReadonlyObservable<void> {
     const observable = useMemo(() => new Observable<void>(), []);
 

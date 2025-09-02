@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraph, FrameGraphTextureHandle, FrameGraphObjectList, Camera } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -377,10 +376,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
             this.geomVelocity.isConnected,
             this.geomLinearVelocity.isConnected,
         ];
-
-        if (textureActivation.every((t) => !t)) {
-            throw new Error("NodeRenderGraphGeometryRendererBlock: At least one output geometry buffer must be connected");
-        }
 
         this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
         this.geomViewDepth.value = this._frameGraphTask.geometryViewDepthTexture;

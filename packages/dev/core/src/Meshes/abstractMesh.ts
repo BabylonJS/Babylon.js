@@ -244,6 +244,10 @@ class _InternalAbstractMeshDataInfo {
      * if this is set to true, the mesh will be visible only if its parent(s) are also visible
      */
     public _inheritVisibility = false;
+    /**
+     * Used in frame graph mode only, to know which meshes to update when in frozen mode
+     */
+    public _wasActiveLastFrame = false;
 }
 
 /**
@@ -1351,6 +1355,27 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public abstract copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void;
 
     /**
+     * Returns the mesh VertexBuffer object from the requested `kind`
+     * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
+     * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
+     */
+    public abstract getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer>;
+
+    /**
      * Sets the vertex data of the mesh geometry for the requested `kind`.
      * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
      * Note that a new underlying VertexBuffer object is created each call.
@@ -2157,7 +2182,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             if (currentIntersectInfo) {
                 if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                     intersectInfo = currentIntersectInfo;
-                    intersectInfo.subMeshId = index;
+                    intersectInfo.subMeshId = subMesh._id;
+                    intersectInfo._internalSubMeshId = index;
 
                     if (fastCheck) {
                         break;
@@ -2184,7 +2210,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             pickingInfo.bu = intersectInfo.bu || 0;
             pickingInfo.bv = intersectInfo.bv || 0;
             pickingInfo.subMeshFaceId = intersectInfo.faceId;
-            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo.subMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
+            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo._internalSubMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
             pickingInfo.subMeshId = intersectInfo.subMeshId;
             return pickingInfo;
         }
@@ -2774,7 +2800,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             return this;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { OptimizeIndices } = await import("./mesh.vertexData.functions");
 
         OptimizeIndices(indices);

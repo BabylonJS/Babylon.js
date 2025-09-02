@@ -246,6 +246,10 @@ export class InstancedMesh extends AbstractMesh {
         this._sourceMesh.copyVerticesData(kind, vertexData);
     }
 
+    public override getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
+        return this._sourceMesh.getVertexBuffer(kind, bypassInstanceData);
+    }
+
     /**
      * Sets the vertex data of the mesh geometry for the requested `kind`.
      * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
@@ -578,9 +582,6 @@ export class InstancedMesh extends AbstractMesh {
             []
         );
 
-        // Bounding info
-        this.refreshBoundingInfo();
-
         // Parent
         if (newParent) {
             result.parent = newParent;
@@ -684,6 +685,9 @@ declare module "./mesh" {
             vertexBuffers: { [key: string]: Nullable<VertexBuffer> };
             strides: { [key: string]: number };
             vertexArrayObjects?: { [key: string]: WebGLVertexArrayObject };
+            renderPasses?: {
+                [renderPassId: number]: { [kind: string]: Nullable<VertexBuffer> };
+            };
         };
     }
 }
@@ -827,10 +831,10 @@ Mesh.prototype._invalidateInstanceVertexArrayObject = function () {
 };
 
 Mesh.prototype._disposeInstanceSpecificData = function () {
-    if (this._instanceDataStorage.instancesBuffer) {
-        this._instanceDataStorage.instancesBuffer.dispose();
-        this._instanceDataStorage.instancesBuffer = null;
+    for (const renderPassId in this._instanceDataStorage.renderPasses) {
+        this._instanceDataStorage.renderPasses[renderPassId].instancesBuffer?.dispose();
     }
+    this._instanceDataStorage.renderPasses = {};
 
     while (this.instances.length) {
         this.instances[0].dispose();

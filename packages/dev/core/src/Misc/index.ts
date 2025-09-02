@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./andOrNotEvaluator";
 export * from "./assetsManager";
 export * from "./basis";
@@ -78,6 +78,7 @@ export * from "./decorators.serialization";
 export * from "./asyncLock";
 export * from "./bitArray";
 export * from "./urlTools";
+export * from "./lazy";
 
 // RGBDTextureTools
 export * from "../Shaders/rgbdDecode.fragment";

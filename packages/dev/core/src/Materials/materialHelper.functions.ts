@@ -4,7 +4,6 @@ import type { Scene } from "../scene";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
-import { Color3 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 import type { Mesh } from "../Meshes/mesh";
 import type { UniformBuffer } from "./uniformBuffer";
@@ -19,9 +18,10 @@ import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
+import type { IColor3Like } from "core/Maths";
 
 // Temps
-const TempFogColor = Color3.Black();
+const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };
 const TmpMorphInfluencers = {
     NUM_MORPH_INFLUENCERS: 0,
     NORMAL: false,
@@ -499,6 +499,9 @@ export function GetFogState(mesh: AbstractMesh, scene: Scene) {
  * @param alphaTest defines if alpha testing has to be turned on
  * @param defines defines the current list of defines
  * @param applyDecalAfterDetail Defines if the decal is applied after or before the detail
+ * @param useVertexPulling Defines if vertex pulling is used
+ * @param renderingMesh The mesh used for rendering
+ * @param setVertexOutputInvariant Defines if the vertex output should be invariant
  */
 export function PrepareDefinesForMisc(
     mesh: AbstractMesh,
@@ -508,7 +511,10 @@ export function PrepareDefinesForMisc(
     fogEnabled: boolean,
     alphaTest: boolean,
     defines: any,
-    applyDecalAfterDetail: boolean = false
+    applyDecalAfterDetail: boolean = false,
+    useVertexPulling: boolean = false,
+    renderingMesh?: AbstractMesh,
+    setVertexOutputInvariant?: boolean
 ): void {
     if (defines._areMiscDirty) {
         defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
@@ -517,6 +523,14 @@ export function PrepareDefinesForMisc(
         defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
         defines["ALPHATEST"] = alphaTest;
         defines["DECAL_AFTER_DETAIL"] = applyDecalAfterDetail;
+        defines["USE_VERTEX_PULLING"] = useVertexPulling;
+
+        const indexBuffer = renderingMesh?.geometry?.getIndexBuffer();
+
+        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer;
+        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer ? indexBuffer.is32Bits : false;
+
+        defines["VERTEXOUTPUT_INVARIANT"] = !!setVertexOutputInvariant;
     }
 }
 
@@ -559,7 +573,9 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
     defines["SHADOWS"] = state.shadowEnabled;
 
     // Resetting all other lights if any
-    for (let index = lightIndex; index < maxSimultaneousLights; index++) {
+    const maxLightCount = Math.max(maxSimultaneousLights, defines["MAXLIGHTCOUNT"] || 0);
+
+    for (let index = lightIndex; index < maxLightCount; index++) {
         if (defines["LIGHT" + index] !== undefined) {
             defines["LIGHT" + index] = false;
             defines["HEMILIGHT" + index] = false;
@@ -567,6 +583,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["DIRLIGHT" + index] = false;
             defines["SPOTLIGHT" + index] = false;
             defines["AREALIGHT" + index] = false;
+            defines["CLUSTLIGHT" + index] = false;
             defines["SHADOW" + index] = false;
             defines["SHADOWCSM" + index] = false;
             defines["SHADOWCSMDEBUG" + index] = false;
@@ -584,6 +601,8 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["SHADOWMEDIUMQUALITY" + index] = false;
         }
     }
+
+    defines["MAXLIGHTCOUNT"] = maxSimultaneousLights;
 
     const caps = scene.getEngine().getCaps();
 
@@ -1073,6 +1092,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
  * @param iesLightTexture defines if IES texture must be used
+ * @param clusteredLightTextures defines if the clustered light textures must be used
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -1081,7 +1101,8 @@ export function PrepareUniformsAndSamplersForLight(
     projectedLightTexture?: any,
     uniformBuffersList: Nullable<string[]> = null,
     updateOnlyBuffersList = false,
-    iesLightTexture = false
+    iesLightTexture = false,
+    clusteredLightTextures = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -1100,6 +1121,8 @@ export function PrepareUniformsAndSamplersForLight(
         "vLightHeight" + lightIndex,
         "vLightFalloff" + lightIndex,
         "vLightGround" + lightIndex,
+        "vSliceData" + lightIndex,
+        "vSliceRanges" + lightIndex,
         "lightMatrix" + lightIndex,
         "shadowsInfo" + lightIndex,
         "depthValues" + lightIndex
@@ -1123,6 +1146,10 @@ export function PrepareUniformsAndSamplersForLight(
     }
     if (iesLightTexture) {
         samplersList.push("iesLightTexture" + lightIndex);
+    }
+    if (clusteredLightTextures) {
+        samplersList.push("lightDataTexture" + lightIndex);
+        samplersList.push("tileMaskTexture" + lightIndex);
     }
 }
 
@@ -1162,7 +1189,8 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
             uniformBuffersList,
             false,
-            defines["IESLIGHTTEXTURE" + lightIndex]
+            defines["IESLIGHTTEXTURE" + lightIndex],
+            defines["CLUSTLIGHT" + lightIndex]
         );
     }
 

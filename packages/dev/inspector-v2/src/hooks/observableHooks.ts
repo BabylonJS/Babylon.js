@@ -1,9 +1,8 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IReadonlyObservable } from "core/index";
 
 import type { ObservableCollection } from "../misc/observableCollection";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Returns the current value of the accessor and updates it when the specified event is fired on the specified element.
@@ -11,8 +10,9 @@ import { useEffect, useMemo, useState } from "react";
  * @param element The element to listen for the event on.
  * @param eventNames The names of the events to listen for.
  * @returns The current value of the accessor.
+ *  * @remarks If the accessor function is not idempotent (e.g. it returns a different array or object instance each time it is called),
+ * then there is a good chance it should be wrapped in a `useCallback` to prevent unnecessary re-renders or re-render infinite loops.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useEventfulState<T>(accessor: () => T, element: HTMLElement | null | undefined, ...eventNames: string[]): T {
     const [current, setCurrent] = useState(accessor);
 
@@ -37,7 +37,7 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
         }
 
         return undefined;
-    }, [element]);
+    }, [accessor, element, ...eventNames]);
 
     return current;
 }
@@ -47,8 +47,9 @@ export function useEventfulState<T>(accessor: () => T, element: HTMLElement | nu
  * @param accessor A function that returns the current value.
  * @param observables The observables to listen for changes on.
  * @returns The current value of the accessor.
+ * @remarks If the accessor function is not idempotent (e.g. it returns a different array or object instance each time it is called),
+ * then there is a good chance it should be wrapped in a `useCallback` to prevent unnecessary re-renders or re-render infinite loops.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useObservableState<T>(accessor: () => T, ...observables: Array<IReadonlyObservable | null | undefined>): T {
     const [current, setCurrent] = useState(accessor);
 
@@ -68,7 +69,7 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
         return () => {
             observers.forEach((observer) => observer?.remove());
         };
-    }, [...observables]);
+    }, [accessor, ...observables]);
 
     return current;
 }
@@ -78,9 +79,17 @@ export function useObservableState<T>(accessor: () => T, ...observables: Array<I
  * @param collection The collection to observe.
  * @returns A copy of the items in the collection.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useObservableCollection<T>(collection: ObservableCollection<T>) {
-    return useObservableState(() => [...collection.items], collection.observable);
+    const itemsRef = useRef([...collection.items]);
+    return useObservableState(
+        useCallback(() => {
+            if (itemsRef.current.length !== collection.items.length || !itemsRef.current.every((item, index) => item === collection.items[index])) {
+                itemsRef.current = [...collection.items];
+            }
+            return itemsRef.current;
+        }, [collection]),
+        collection.observable
+    );
 }
 
 /**
@@ -88,7 +97,6 @@ export function useObservableCollection<T>(collection: ObservableCollection<T>) 
  * @param collection The collection to observe.
  * @returns A copy of the items in the collection sorted by the order property.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function useOrderedObservableCollection<T extends Readonly<{ order?: number }>>(collection: ObservableCollection<T>) {
     const items = useObservableCollection(collection);
     const sortedItems = useMemo(() => items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)), [items]);

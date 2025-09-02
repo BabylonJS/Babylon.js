@@ -14,6 +14,9 @@ import deleteButton from "../../imgs/delete.svg";
 import { NodeLedger } from "shared-ui-components/nodeGraphSystem/nodeLedger";
 
 import "./nodeList.scss";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import { Accordion } from "shared-ui-components/fluent/primitives/accordion";
+import { SearchBar } from "shared-ui-components/fluent/primitives/searchBar";
 
 interface INodeListComponentProps {
     globalState: GlobalState;
@@ -64,6 +67,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         StepBlock: "Outputs 1 for any input value above the edge input, outputs 0 for any input value below the edge input",
         Matrix: "A 4x4 table of related values",
         ProjectionMatrixBlock: "A matrix to remap points in 3D space to 2D plane relative to the screen",
+        ProjectionInverseMatrixBlock: "A matrix to remap points in 2D screen space to 3D space",
         ViewMatrixBlock: "A matrix to remap points in 3D space to 2D plane relative to the view of the scene camera",
         ViewProjectionMatrixBlock: "A matrix to remap points in 3D space to 2D view space before remapping to 2D screen space",
         WorldMatrixBlock: "A matrix to remap points in 3D local space to 3D world space",
@@ -176,6 +180,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         OrBlock: "Return a value if (a or b) > 0",
         AndBlock: "Return a value if (a and b) > 0",
         ImageSourceBlock: "Centralize texture access for TextureBlocks",
+        DepthSourceBlock: "Centralize depth texture access for TextureBlocks",
         CloudBlock: "Generate Fractal Brownian Motion Clouds",
         VoronoiNoiseBlock: "Generate Voronoi Noise",
         ScreenSpaceBlock: "Convert a Vector3 or a Vector4 into screen space",
@@ -200,6 +205,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         MatrixSplitterBlock: "Block used to split a matrix into Vector4",
         DebugBlock: "Block used to render intermediate debug values",
         SmartFilterTextureBlock: "Block used to add a Smart Filter Effect (SFE) shader interface",
+        AmbientOcclusionBlock: "Block used to compute screen space ambient occlusion",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -327,6 +333,38 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
     }
 
+    renderFluent(blockMenu: JSX.Element[]) {
+        return (
+            <div>
+                <SearchBar placeholder="Filter" onChange={(val) => this.filterContent(val.toString())} />
+                <Accordion>{blockMenu}</Accordion>
+            </div>
+        );
+    }
+
+    renderOriginal(blockMenu: JSX.Element[]) {
+        return (
+            <div id="nmeNodeList">
+                <div className="panes">
+                    <div className="pane">
+                        <div className="filter">
+                            <input
+                                type="text"
+                                placeholder="Filter"
+                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
+                                onBlur={() => {
+                                    this.props.globalState.lockObject.lock = false;
+                                }}
+                                onChange={(evt) => this.filterContent(evt.target.value)}
+                            />
+                        </div>
+                        <div className="list-container">{blockMenu}</div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     override render() {
         const customFrameNames: string[] = [];
         for (const frame in this._customFrameList) {
@@ -363,6 +401,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FragCoordBlock",
                 "ScreenSizeBlock",
                 "ImageSourceBlock",
+                "DepthSourceBlock",
                 "TriPlanarBlock",
                 "BiPlanarBlock",
             ],
@@ -427,12 +466,13 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ViewMatrixBlock",
                 "ViewProjectionMatrixBlock",
                 "ProjectionMatrixBlock",
+                "ProjectionInverseMatrixBlock",
                 "MatrixBuilderBlock",
                 "MatrixDeterminantBlock",
                 "MatrixTransposeBlock",
                 "MatrixSplitterBlock",
             ],
-            Misc: ["ElbowBlock", "ShadowMapBlock", "TeleportInBlock", "TeleportOutBlock", "DebugBlock"],
+            Misc: ["ElbowBlock", "ShadowMapBlock", "TeleportInBlock", "TeleportOutBlock", "DebugBlock", "AmbientOcclusionBlock"],
             Mesh: [
                 "InstancesBlock",
                 "PositionBlock",
@@ -514,6 +554,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         "ViewMatrixBlock",
                         "ViewProjectionMatrixBlock",
                         "ProjectionMatrixBlock",
+                        "ProjectionInverseMatrixBlock",
                     ],
                     Misc: ["ShadowMapBlock"],
                     Math__Vector: ["ScreenSpaceBlock"],
@@ -556,7 +597,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         // Create node menu
-        const blockMenu = [];
+        const blockMenu: JSX.Element[] = [];
         for (const key in allBlocks) {
             const blockList = allBlocks[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
@@ -661,25 +702,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             };
         }
 
-        return (
-            <div id="nmeNodeList">
-                <div className="panes">
-                    <div className="pane">
-                        <div className="filter">
-                            <input
-                                type="text"
-                                placeholder="Filter"
-                                onFocus={() => (this.props.globalState.lockObject.lock = true)}
-                                onBlur={() => {
-                                    this.props.globalState.lockObject.lock = false;
-                                }}
-                                onChange={(evt) => this.filterContent(evt.target.value)}
-                            />
-                        </div>
-                        <div className="list-container">{blockMenu}</div>
-                    </div>
-                </div>
-            </div>
-        );
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent(blockMenu) : this.renderOriginal(blockMenu))}</ToolContext.Consumer>;
     }
 }

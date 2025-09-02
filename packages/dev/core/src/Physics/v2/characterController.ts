@@ -232,7 +232,7 @@ export class PhysicsCharacterController {
      */
     public dynamicFriction = 1;
     /**
-     * cosine value of slop angle that can be climbed
+     * cosine value of slope angle that can be climbed
      * computed as `Math.cos(Math.PI * (angleInDegree / 180.0));`
      * default 0.5 (value for a 60deg angle)
      */

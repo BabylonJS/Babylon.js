@@ -3,7 +3,7 @@ import type { ViewerConfiguration } from "../configuration";
 import { babylonFont, defaultTemplate, fillContainer, loadingScreen, defaultViewer, navbar, overlay, help, share, error } from "babylonjs-viewer-assets";
 import * as images from "babylonjs-viewer-assets";
 import { renderOnlyDefaultConfiguration } from "./renderOnlyDefault";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { deepmerge } from "../../helper/index";
 
 /**

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, FrameGraphRenderContext, AbstractEngine, IFrameGraphPass, FrameGraphTextureHandle, FrameGraphTask, FrameGraphRenderTarget } from "core/index";
 import { FrameGraphPass } from "./pass";
 
@@ -34,6 +33,16 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     public get renderTargetDepth(): FrameGraphTextureHandle | undefined {
         return this._renderTargetDepth;
     }
+
+    /**
+     * If true, the depth attachment will be read-only (may allow some optimizations in WebGPU)
+     */
+    public depthReadOnly = false;
+
+    /**
+     * If true, the stencil attachment will be read-only (may allow some optimizations in WebGPU)
+     */
+    public stencilReadOnly = false;
 
     /** @internal */
     constructor(name: string, parentTask: FrameGraphTask, context: FrameGraphRenderContext, engine: AbstractEngine) {
@@ -104,7 +113,8 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
 
     /** @internal */
     public override _execute() {
-        this._frameGraphRenderTarget = this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth);
+        this._frameGraphRenderTarget =
+            this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
 
         this._context.bindRenderTarget(this._frameGraphRenderTarget, `frame graph render pass - ${this.name}`);
 

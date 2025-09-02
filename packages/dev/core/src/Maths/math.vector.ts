@@ -3008,19 +3008,6 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
     }
 
     /**
-     * @internal
-     */
-    public static _UnprojectFromInvertedMatrixToRef<T extends Vector3>(source: DeepImmutable<Vector3>, matrix: DeepImmutable<Matrix>, result: T): T {
-        Vector3.TransformCoordinatesToRef(source, matrix, result);
-        const m = matrix.m;
-        const num = source._x * m[3] + source._y * m[7] + source._z * m[11] + m[15];
-        if (WithinEpsilon(num, 1.0)) {
-            result.scaleInPlace(1.0 / num);
-        }
-        return result;
-    }
-
-    /**
      * Unproject from screen space to object space
      * Example Playground https://playground.babylonjs.com/#R1F8YU#121
      * @param source defines the screen space Vector3 to use
@@ -3130,7 +3117,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
             screenSource.z = 2 * sourceZ - 1.0;
         }
 
-        Vector3._UnprojectFromInvertedMatrixToRef(screenSource, matrix, result);
+        Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
         return result;
     }
 
@@ -5671,7 +5658,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
 
     /**
      * Creates a new rotation from the given Euler float angles (y, x, z) and stores it in the target quaternion
-     * Example Playground https://playground.babylonjs.com/#L49EJ7#78
+     * Example Playground https://playground.babylonjs.com/#L49EJ7#561
      * @param yaw defines the rotation around Y axis
      * @param pitch defines the rotation around X axis
      * @param roll defines the rotation around Z axis
@@ -5679,7 +5666,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns result input
      */
     public static RotationYawPitchRollToRef<T extends Quaternion>(yaw: number, pitch: number, roll: number, result: T): T {
-        // Produces a quaternion from Euler angles in the z-y-x orientation (Tait-Bryan angles)
+        // Produces a quaternion from Euler angles in the y-x-z orientation
         const halfRoll = roll * 0.5;
         const halfPitch = pitch * 0.5;
         const halfYaw = yaw * 0.5;

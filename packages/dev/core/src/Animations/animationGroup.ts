@@ -7,11 +7,13 @@ import type { Scene, IDisposable } from "../scene";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
+import type { Node } from "../node";
 
 import { Tags } from "../Misc/tags";
 import type { AnimationGroupMask } from "./animationGroupMask";
 import "./animatable";
 import type { IAssetContainer } from "core/IAssetContainer";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -21,10 +23,16 @@ export class TargetedAnimation {
      * Animation to perform
      */
     public animation: Animation;
+
     /**
      * Target to animate
      */
     public target: any;
+
+    /**
+     * Gets or sets the unique id of the targeted animation
+     */
+    public readonly uniqueId = UniqueIdGenerator.UniqueId;
 
     /**
      * Returns the string "TargetedAnimation"
@@ -33,6 +41,12 @@ export class TargetedAnimation {
     public getClassName(): string {
         return "TargetedAnimation";
     }
+
+    /**
+     * Creates a new targeted animation
+     * @param parent The animation group to which the animation belongs
+     */
+    constructor(public readonly parent: AnimationGroup) {}
 
     /**
      * Serialize the object
@@ -493,6 +507,14 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets the scene the animation group belongs to
+     * @returns The scene the animation group belongs to
+     */
+    public getScene(): Scene {
+        return this._scene;
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
@@ -523,7 +545,7 @@ export class AnimationGroup implements IDisposable {
      * @returns the TargetedAnimation object
      */
     public addTargetedAnimation(animation: Animation, target: any): TargetedAnimation {
-        const targetedAnimation = new TargetedAnimation();
+        const targetedAnimation = new TargetedAnimation(this);
         targetedAnimation.animation = animation;
         targetedAnimation.target = target;
 
@@ -995,9 +1017,10 @@ export class AnimationGroup implements IDisposable {
      * Returns a new AnimationGroup object parsed from the source provided.
      * @param parsedAnimationGroup defines the source
      * @param scene defines the scene that will receive the animationGroup
+     * @param nodeMap a map of node.id to node in this scene, to accelerate node lookup
      * @returns a new AnimationGroup
      */
-    public static Parse(parsedAnimationGroup: any, scene: Scene): AnimationGroup {
+    public static Parse(parsedAnimationGroup: any, scene: Scene, nodeMap?: Map<Node["id"], Node>): AnimationGroup {
         const animationGroup = new AnimationGroup(parsedAnimationGroup.name, scene, parsedAnimationGroup.weight, parsedAnimationGroup.playOrder);
         for (let i = 0; i < parsedAnimationGroup.targetedAnimations.length; i++) {
             const targetedAnimation = parsedAnimationGroup.targetedAnimations[i];
@@ -1010,7 +1033,7 @@ export class AnimationGroup implements IDisposable {
                     animationGroup.addTargetedAnimation(animation, morphTarget);
                 }
             } else {
-                const targetNode = scene.getNodeById(id);
+                const targetNode = nodeMap ? nodeMap.get(id) : scene.getNodeById(id);
 
                 if (targetNode != null) {
                     animationGroup.addTargetedAnimation(animation, targetNode);

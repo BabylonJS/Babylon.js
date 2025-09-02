@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Nullable } from "core/index";
-
 /**
  * Performs a topological sort on a graph.
  * @param graph The set of nodes that make up the graph.
@@ -25,7 +22,7 @@ export function SortGraph<NodeT>(graph: Iterable<NodeT>, getAdjacentNodes: (node
  */
 export function TraverseGraph<NodeT>(
     graph: Iterable<NodeT>,
-    getAdjacentNodes: (node: NodeT) => Nullable<Iterable<NodeT>>,
+    getAdjacentNodes: (node: NodeT) => Iterable<NodeT> | null | undefined,
     onBeforeTraverse?: (node: NodeT) => void,
     onAfterTraverse?: (node: NodeT) => void
 ) {
@@ -65,7 +62,7 @@ export class GraphUtils<DefaultNodeT = unknown> {
      */
     public traverse<NodeT extends DefaultNodeT>(
         graph: Iterable<NodeT>,
-        getAdjacentNodes: (node: NodeT) => Nullable<Iterable<NodeT>>,
+        getAdjacentNodes: (node: NodeT) => Iterable<NodeT> | null | undefined,
         onBeforeTraverse?: (node: NodeT) => void,
         onAfterTraverse?: (node: NodeT) => void
     ) {
@@ -88,7 +85,7 @@ export class GraphUtils<DefaultNodeT = unknown> {
 
     private _traverseCore<NodeT extends DefaultNodeT>(
         node: NodeT,
-        getAdjacentNodes: (node: NodeT) => Nullable<Iterable<NodeT>>,
+        getAdjacentNodes: (node: NodeT) => Iterable<NodeT> | null | undefined,
         onBeforeTraverse?: (node: NodeT) => void,
         onAfterTraverse?: (node: NodeT) => void
     ) {

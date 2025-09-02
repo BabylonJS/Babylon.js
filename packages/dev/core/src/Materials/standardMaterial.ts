@@ -231,6 +231,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public CAMERA_ORTHOGRAPHIC = false;
     public CAMERA_PERSPECTIVE = false;
     public AREALIGHTSUPPORTED = true;
+    public USE_VERTEX_PULLING = false;
 
     /**
      * If the reflection texture on this material is in linear color space
@@ -1229,8 +1230,8 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        // Check if Area Lights have LTC texture.
-        if (defines["AREALIGHTUSED"]) {
+        // Check if lights are ready
+        if (defines["AREALIGHTUSED"] || defines["CLUSTLIGHT_BATCH"]) {
             for (let index = 0; index < mesh.lightSources.length; index++) {
                 if (!mesh.lightSources[index]._isReady()) {
                     return false;
@@ -1247,7 +1248,10 @@ export class StandardMaterial extends PushMaterial {
             this.fogEnabled,
             this.needAlphaTestingForMesh(mesh),
             defines,
-            this._applyDecalMapAfterDetailMap
+            this._applyDecalMapAfterDetailMap,
+            this._useVertexPulling,
+            subMesh.getRenderingMesh(),
+            this._setVertexOutputInvariant
         );
 
         // Values that need to be evaluated on every frame
@@ -1876,7 +1880,8 @@ export class StandardMaterial extends PushMaterial {
                 this._reflectionTexture ||
                 this._refractionTexture ||
                 mesh.receiveShadows ||
-                defines.PREPASS
+                defines.PREPASS ||
+                defines["CLUSTLIGHT_BATCH"]
             ) {
                 this.bindView(effect);
             }

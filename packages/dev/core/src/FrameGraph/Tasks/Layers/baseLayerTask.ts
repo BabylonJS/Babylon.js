@@ -12,7 +12,6 @@ import type {
     ThinEffectLayer,
     FrameGraphRenderPass,
     FrameGraphRenderContext,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { FrameGraphObjectRendererTask } from "../Rendering/objectRendererTask";
@@ -108,6 +107,13 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         if (this._objectRendererForLayer) {
             this._objectRendererForLayer.name = name + " Render to Layer";
         }
+    }
+
+    /**
+     * Gets the object renderer used to render the layer.
+     */
+    public get objectRendererForLayer() {
+        return this._objectRendererForLayer;
     }
 
     protected readonly _scene: Scene;
@@ -372,7 +378,7 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
                         if (
                             !this.layer.shouldRender() ||
                             info.renderingGroupId !== this.layer._options.renderingGroupId ||
-                            info.renderingManager !== this.objectRendererTask.objectRenderer._renderingManager
+                            info.renderingManager !== this.objectRendererTask.objectRenderer.renderingManager
                         ) {
                             return;
                         }

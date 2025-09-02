@@ -20,12 +20,29 @@ import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTelepor
 import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
+import type { Color4 } from "core/Maths/math.color";
+import type { Nullable } from "../../types";
+
+// declare NODEPARTICLEEDITOR namespace for compilation issue
+declare let NODEPARTICLEEDITOR: any;
+declare let BABYLON: any;
+
+/**
+ * Interface used to configure the node particle editor
+ */
+export interface INodeParticleEditorOptions {
+    /** Define the URL to load node editor script from */
+    editorURL?: string;
+    /** Additional configuration for the NPE */
+    nodeEditorConfig?: {
+        backgroundColor?: Color4;
+    };
+}
 
 /**
  * Defines a set of particle systems defined as a node graph.
- * @experimental This API is experimental and may change in future releases.
- * NPE: #K6F1ZB
- * PG: #ZT509U
+ * NPE: #K6F1ZB#1
+ * PG: #ZT509U#1
  */
 export class NodeParticleSystemSet {
     private _systemBlocks: SystemBlock[] = [];
@@ -93,6 +110,56 @@ export class NodeParticleSystemSet {
     }
 
     /**
+     * Get a block by its name
+     * @param name defines the name of the block to retrieve
+     * @returns the required block or null if not found
+     */
+    public getBlockByName(name: string) {
+        let result = null;
+        for (const block of this.attachedBlocks) {
+            if (block.name === name) {
+                if (!result) {
+                    result = block;
+                } else {
+                    Tools.Warn("More than one block was found with the name `" + name + "`");
+                    return result;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get a block using a predicate
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required block or null if not found
+     */
+    public getBlockByPredicate(predicate: (block: NodeParticleBlock) => boolean) {
+        for (const block of this.attachedBlocks) {
+            if (predicate(block)) {
+                return block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get an input block using a predicate
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required input block or null if not found
+     */
+    public getInputBlockByPredicate(predicate: (block: ParticleInputBlock) => boolean): Nullable<ParticleInputBlock> {
+        for (const block of this.attachedBlocks) {
+            if (block.isInput && predicate(block as ParticleInputBlock)) {
+                return block as ParticleInputBlock;
+            }
+        }
+
+        return null;
+    }
+    /**
      * Creates a new set
      * @param name defines the name of the set
      */
@@ -124,6 +191,61 @@ export class NodeParticleSystemSet {
         }
     }
 
+    private BJSNODEPARTICLEEDITOR = this._getGlobalNodeParticleEditor();
+
+    /** Get the editor from bundle or global
+     * @returns the global NPE
+     */
+    private _getGlobalNodeParticleEditor(): any {
+        // UMD Global name detection from Webpack Bundle UMD Name.
+        if (typeof NODEPARTICLEEDITOR !== "undefined") {
+            return NODEPARTICLEEDITOR;
+        }
+
+        // In case of module let's check the global emitted from the editor entry point.
+        if (typeof BABYLON !== "undefined" && typeof BABYLON.NodeParticleEditor !== "undefined") {
+            return BABYLON;
+        }
+
+        return undefined;
+    }
+
+    /** Creates the node editor window.
+     * @param additionalConfig Define the configuration of the editor
+     */
+    private _createNodeParticleEditor(additionalConfig?: any) {
+        const nodeEditorConfig: any = {
+            nodeParticleSet: this,
+            ...additionalConfig,
+        };
+        this.BJSNODEPARTICLEEDITOR.NodeParticleEditor.Show(nodeEditorConfig);
+    }
+
+    /**
+     * Launch the node particle editor
+     * @param config Define the configuration of the editor
+     * @returns a promise fulfilled when the node editor is visible
+     */
+    public async editAsync(config?: INodeParticleEditorOptions): Promise<void> {
+        return await new Promise((resolve) => {
+            this.BJSNODEPARTICLEEDITOR = this.BJSNODEPARTICLEEDITOR || this._getGlobalNodeParticleEditor();
+            if (typeof this.BJSNODEPARTICLEEDITOR == "undefined") {
+                const editorUrl = config && config.editorURL ? config.editorURL : NodeParticleSystemSet.EditorURL;
+
+                // Load editor and add it to the DOM
+                Tools.LoadBabylonScript(editorUrl, () => {
+                    this.BJSNODEPARTICLEEDITOR = this.BJSNODEPARTICLEEDITOR || this._getGlobalNodeParticleEditor();
+                    this._createNodeParticleEditor(config?.nodeEditorConfig);
+                    resolve();
+                });
+            } else {
+                // Otherwise creates the editor
+                this._createNodeParticleEditor(config?.nodeEditorConfig);
+                resolve();
+            }
+        });
+    }
+
     /**
      * Builds the particle system set from the defined blocks.
      * @param scene defines the hosting scene
@@ -147,6 +269,8 @@ export class NodeParticleSystemSet {
                 state.verbose = verbose;
 
                 const system = block.createSystem(state);
+                system._source = this;
+                system._blockReference = block._internalId;
 
                 // Errors
                 state.emitErrors();
@@ -355,7 +479,7 @@ export class NodeParticleSystemSet {
     /**
      * Serializes this geometry in a JSON representation
      * @param selectedBlocks defines the list of blocks to save (if null the whole geometry will be saved)
-     * @returns the serialized geometry object
+     * @returns the serialized particle system set object
      */
     public serialize(selectedBlocks?: NodeParticleBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
@@ -386,6 +510,24 @@ export class NodeParticleSystemSet {
         }
 
         return serializationObject;
+    }
+
+    /**
+     * Makes a duplicate of the current particle system set.
+     * @param name defines the name to use for the new particle system set
+     * @returns the cloned particle system set
+     */
+    public clone(name: string): NodeParticleSystemSet {
+        const serializationObject = this.serialize();
+
+        const clone = SerializationHelper.Clone(() => new NodeParticleSystemSet(name), this);
+        clone.name = name;
+        clone.snippetId = this.snippetId;
+
+        clone.parseSerializedObject(serializationObject);
+        clone._buildId = this._buildId;
+
+        return clone;
     }
 
     /**

@@ -973,7 +973,8 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._buffersForInstances["world3"] = (this._source as Mesh).getVertexBuffer("world3");
 
             if (hasInstances) {
-                const instanceStorage = (this._source as Mesh)._instanceDataStorage;
+                const instanceStorage = (this._source as Mesh)._getInstanceDataStorage();
+                const isFrozen = (this._source as Mesh)._instanceDataStorage.isFrozen;
 
                 instanceCount = this.customInstances.length;
 
@@ -984,7 +985,7 @@ export class EdgesRenderer implements IEdgesRenderer {
                     return;
                 }
 
-                if (!instanceStorage.isFrozen) {
+                if (!isFrozen) {
                     let offset = 0;
 
                     for (let i = 0; i < instanceCount; ++i) {

@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./Node/nodeRenderGraph";
 export * from "./Node/nodeRenderGraphBlock";
 export * from "./Node/nodeRenderGraphBlockConnectionPoint";
@@ -52,3 +52,4 @@ export * from "./frameGraphRenderTarget";
 export * from "./frameGraphTask";
 export * from "./frameGraphTextureManager";
 export * from "./frameGraphTypes";
+export * from "./frameGraphUtils";

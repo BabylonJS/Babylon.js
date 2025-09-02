@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import type { IPaneComponentProps } from "../paneComponent";
 import { PaneComponent } from "../paneComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
@@ -42,6 +42,7 @@ import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { Logger } from "core/Misc/logger";
+import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 
 const EnvExportImageTypes = [
     { label: "PNG", value: 0, imageType: "image/png" },
@@ -113,17 +114,23 @@ export class ToolsTabComponent extends PaneComponent {
 
     captureScreenshot() {
         const scene = this.props.scene;
-        if (scene.activeCamera) {
-            Tools.CreateScreenshot(scene.getEngine(), scene.activeCamera, this._screenShotSize);
+        const camera = scene.frameGraph ? FrameGraphUtils.FindMainCamera(scene.frameGraph) : scene.activeCamera;
+        if (camera) {
+            Tools.CreateScreenshot(scene.getEngine(), camera, this._screenShotSize);
         }
     }
 
     captureEquirectangular() {
         const scene = this.props.scene;
+        const currentActiveCamera = scene.activeCamera;
+        if (!currentActiveCamera && scene.frameGraph) {
+            scene.activeCamera = FrameGraphUtils.FindMainCamera(scene.frameGraph);
+        }
         if (scene.activeCamera) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             captureEquirectangularFromScene(scene, { size: 1024, filename: "equirectangular_capture.png" });
         }
+        scene.activeCamera = currentActiveCamera;
     }
 
     captureRender() {
@@ -139,6 +146,8 @@ export class ToolsTabComponent extends PaneComponent {
         }
         if (scene.activeCamera) {
             Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize, undefined, undefined, 4);
+        } else if (scene.frameGraph) {
+            alert("Capture with RTT is not yet implemented for frame graphs");
         }
         this._screenShotSize = oldScreenshotSize;
     }

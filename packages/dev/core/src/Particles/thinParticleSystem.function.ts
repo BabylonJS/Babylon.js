@@ -13,7 +13,10 @@ export function _CreateColorData(particle: Particle, system: ThinParticleSystem)
     const step = RandomRange(0, 1.0);
 
     Color4.LerpToRef(system.color1, system.color2, step, particle.color);
+}
 
+/** @internal */
+export function _CreateColorDeadData(particle: Particle, system: ThinParticleSystem) {
     system.colorDead.subtractToRef(particle.color, system._colorDiff);
     system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
 }

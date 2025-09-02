@@ -1,7 +1,7 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
 import { Camera } from "../Cameras/camera";
 import { Halton2DSequence } from "core/Maths/halton2DSequence";
+import { Vector2 } from "core/Maths/math.vector";
 import { Engine } from "core/Engines/engine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 
@@ -115,6 +115,40 @@ export class ThinTAAPostProcess extends EffectWrapper {
      */
     public disableOnCameraMove = true;
 
+    private _reprojectHistory = false;
+    /**
+     * Enables reprojecting the history texture with a per-pixel velocity.
+     * If set the "velocitySampler" has to be provided.
+     */
+    public get reprojectHistory(): boolean {
+        return this._reprojectHistory;
+    }
+
+    public set reprojectHistory(reproject: boolean) {
+        if (this._reprojectHistory === reproject) {
+            return;
+        }
+        this._reprojectHistory = reproject;
+        this._updateEffect();
+    }
+
+    private _clampHistory = false;
+    /**
+     * Clamps the history pixel to the min and max of the 3x3 pixels surrounding the target pixel.
+     * This can help further reduce ghosting and artifacts.
+     */
+    public get clampHistory(): boolean {
+        return this._clampHistory;
+    }
+
+    public set clampHistory(clamp: boolean) {
+        if (this._clampHistory === clamp) {
+            return;
+        }
+        this._clampHistory = clamp;
+        this._updateEffect();
+    }
+
     private _hs: Halton2DSequence;
     private _firstUpdate = true;
 
@@ -144,6 +178,14 @@ export class ThinTAAPostProcess extends EffectWrapper {
         this._hs.setDimensions(this._textureWidth / 2, this._textureHeight / 2);
         this._hs.next();
         this._firstUpdate = true;
+    }
+
+    public nextJitterOffset(output = new Vector2()): Vector2 {
+        if (!this.camera || !this.camera.hasMoved) {
+            this._hs.next();
+        }
+        output.set(this._hs.x, this._hs.y);
+        return output;
     }
 
     public updateProjectionMatrix(): void {
@@ -177,5 +219,19 @@ export class ThinTAAPostProcess extends EffectWrapper {
         effect.setFloat("factor", (this.camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate ? 1 : this.factor);
 
         this._firstUpdate = false;
+    }
+
+    private _updateEffect(): void {
+        const defines: string[] = [];
+        // There seems to be an issue where `updateEffect` sometimes doesn't include the initial samplers
+        const samplers = ["textureSampler", "historySampler"];
+        if (this._reprojectHistory) {
+            defines.push("#define TAA_REPROJECT_HISTORY");
+            samplers.push("velocitySampler");
+        }
+        if (this._clampHistory) {
+            defines.push("#define TAA_CLAMP_HISTORY");
+        }
+        this.updateEffect(defines.join("\n"), null, samplers);
     }
 }

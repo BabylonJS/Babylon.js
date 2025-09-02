@@ -165,8 +165,10 @@ export class SpriteRenderer {
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: DataBuffer;
-    private _drawWrapperBase: DrawWrapper;
-    private _drawWrapperDepth: DrawWrapper;
+    /** @internal */
+    public _drawWrapperBase: DrawWrapper;
+    /** @internal */
+    public _drawWrapperDepth: DrawWrapper;
     private _vertexArrayObject: WebGLVertexArrayObject;
     private _isDisposed = false;
 

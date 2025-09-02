@@ -95,8 +95,8 @@ export class TrailMesh extends Mesh {
             this._length = diameterOrOptions.length || 60;
             this._segments = diameterOrOptions.segments ? (diameterOrOptions.segments > this._length ? this._length : diameterOrOptions.segments) : this._length;
             this._sectionPolygonPointsCount = diameterOrOptions.sections || 4;
-            this._doNotTaper = diameterOrOptions.doNotTaper || false;
-            this._autoStart = diameterOrOptions.autoStart || true;
+            this._doNotTaper = diameterOrOptions.doNotTaper ?? false;
+            this._autoStart = diameterOrOptions.autoStart ?? true;
         } else {
             this.diameter = diameterOrOptions || 1;
             this._length = length;

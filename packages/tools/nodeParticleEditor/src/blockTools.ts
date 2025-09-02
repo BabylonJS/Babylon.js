@@ -1,6 +1,5 @@
 import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
-import { RandomRangeBlock } from "core/Particles/Node/Blocks/randomRangeBlock";
 import { UpdateDirectionBlock } from "core/Particles/Node/Blocks/Update/updateDirectionBlock";
 import { UpdatePositionBlock } from "core/Particles/Node/Blocks/Update/updatePositionBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
@@ -20,6 +19,7 @@ import { ParticleElbowBlock } from "core/Particles/Node/Blocks/particleElbowBloc
 import { ParticleTeleportInBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportInBlock";
 import { ParticleTeleportOutBlock } from "core/Particles/Node/Blocks/Teleport/particleTeleportOutBlock";
 import { UpdateAngleBlock } from "core/Particles/Node/Blocks/Update/updateAngleBlock";
+import { UpdateAgeBlock } from "core/Particles/Node/Blocks/Update/updateAgeBlock";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 import { BasicPositionUpdateBlock } from "core/Particles/Node/Blocks/Update/basicPositionUpdateBlock";
 import { ParticleTriggerBlock } from "core/Particles/Node/Blocks/Triggers/particleTriggerBlock";
@@ -34,6 +34,10 @@ import { SphereShapeBlock } from "core/Particles/Node/Blocks/Emitters/sphereShap
 import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeBlock";
 import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
 import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinderShapeBlock";
+import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
+import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
+import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlock";
+import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicColorUpdateBlock";
 
 /**
  * Static class for BlockTools
@@ -41,6 +45,8 @@ import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinder
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "AlignAngleBlock":
+                return new AlignAngleBlock("Align angle");
             case "CreateParticleBlock":
                 return new CreateParticleBlock("Create particle");
             case "EqualBlock": {
@@ -98,6 +104,8 @@ export class BlockTools {
                 return new ParticleTriggerBlock("Trigger");
             case "BasicPositionUpdateBlock":
                 return new BasicPositionUpdateBlock("Basic position update");
+            case "BasicColorUpdateBlock":
+                return new BasicColorUpdateBlock("Basic color update");
             case "TeleportInBlock":
                 return new ParticleTeleportInBlock("Teleport In");
             case "TeleportOutBlock":
@@ -124,8 +132,12 @@ export class BlockTools {
                 return new UpdateScaleBlock("Update scale");
             case "UpdateAngleBlock":
                 return new UpdateAngleBlock("Update angle");
+            case "UpdateAgeBlock":
+                return new UpdateAgeBlock("Update age");
             case "UpdateFlowMapBlock":
                 return new UpdateFlowMapBlock("Update flow map");
+            case "UpdateAttractorBlock":
+                return new UpdateAttractorBlock("Update attractor");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
@@ -140,8 +152,8 @@ export class BlockTools {
                 return new CustomShapeBlock("Custom shape");
             case "CylinderShapeBlock":
                 return new CylinderShapeBlock("Cylinder shape");
-            case "RandomRangeBlock":
-                return new RandomRangeBlock("Random range");
+            case "MeshShapeBlock":
+                return new MeshShapeBlock("Mesh shape");
             case "PositionBlock": {
                 const block = new ParticleInputBlock("Position");
                 block.contextualValue = NodeParticleContextualSources.Position;
@@ -165,6 +177,16 @@ export class BlockTools {
             case "ColorBlock": {
                 const block = new ParticleInputBlock("Color");
                 block.contextualValue = NodeParticleContextualSources.Color;
+                return block;
+            }
+            case "InitialColorBlock": {
+                const block = new ParticleInputBlock("Initial Color");
+                block.contextualValue = NodeParticleContextualSources.InitialColor;
+                return block;
+            }
+            case "ColorDeadBlock": {
+                const block = new ParticleInputBlock("Color Dead");
+                block.contextualValue = NodeParticleContextualSources.ColorDead;
                 return block;
             }
             case "AgeBlock": {

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Camera, FrameGraph, FrameGraphTextureHandle, Scene } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";

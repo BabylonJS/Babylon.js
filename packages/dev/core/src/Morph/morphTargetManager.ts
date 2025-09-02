@@ -320,6 +320,11 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
+     * Gets or sets an object used to store user defined information for the MorphTargetManager
+     */
+    public metadata: any = null;
+
+    /**
      * Gets the active target at specified index. An active target is a target with an influence > 0
      * @param index defines the index to check
      * @returns the requested target
@@ -403,7 +408,7 @@ export class MorphTargetManager implements IDisposable {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
         effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
         effect.setTexture("morphTargets", this._targetStoreTexture);
-        effect.setInt("morphTargetCount", this.numInfluencers);
+        effect.setFloat("morphTargetCount", this.numInfluencers);
     }
 
     /**
@@ -412,10 +417,12 @@ export class MorphTargetManager implements IDisposable {
      */
     public clone(): MorphTargetManager {
         const copy = new MorphTargetManager(this._scene);
+        copy.areUpdatesFrozen = true;
 
         for (const target of this._targets) {
             copy.addTarget(target.clone());
         }
+        copy.areUpdatesFrozen = false;
 
         copy.enablePositionMorphing = this.enablePositionMorphing;
         copy.enableNormalMorphing = this.enableNormalMorphing;
@@ -423,6 +430,7 @@ export class MorphTargetManager implements IDisposable {
         copy.enableUVMorphing = this.enableUVMorphing;
         copy.enableUV2Morphing = this.enableUV2Morphing;
         copy.enableColorMorphing = this.enableColorMorphing;
+        copy.metadata = this.metadata;
 
         return copy;
     }
@@ -439,6 +447,10 @@ export class MorphTargetManager implements IDisposable {
         serializationObject.targets = [];
         for (const target of this._targets) {
             serializationObject.targets.push(target.serialize());
+        }
+
+        if (this.metadata) {
+            serializationObject.metadata = this.metadata;
         }
 
         return serializationObject;
@@ -658,6 +670,7 @@ export class MorphTargetManager implements IDisposable {
         }
 
         this._targetStoreTexture = null;
+        this.metadata = null;
 
         // Remove from scene
         if (this._scene) {
@@ -690,6 +703,10 @@ export class MorphTargetManager implements IDisposable {
 
         for (const targetData of serializationObject.targets) {
             result.addTarget(MorphTarget.Parse(targetData, scene));
+        }
+
+        if (serializationObject.metadata) {
+            result.metadata = serializationObject.metadata;
         }
 
         return result;

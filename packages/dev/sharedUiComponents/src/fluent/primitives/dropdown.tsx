@@ -1,5 +1,7 @@
 import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-components";
+import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
+import type { PrimitiveProps } from "./primitive";
 
 const useDropdownStyles = makeStyles({
     dropdownOption: {
@@ -9,36 +11,53 @@ const useDropdownStyles = makeStyles({
     optionsLine: {},
 });
 
-export type DropdownOption = {
+export type AcceptedDropdownValue = string | number;
+export type DropdownOption<T extends AcceptedDropdownValue> = {
     /**
      * Defines the visible part of the option
      */
     label: string;
     /**
-     * Defines the value part of the option (returned through the callback)
+     * Defines the value part of the option
      */
-    value: string | number;
+    value: T;
 };
 
-type DropdownProps = { options: readonly DropdownOption[]; onSelect: (o: string) => void; defaultValue?: DropdownOption };
+export type DropdownProps<V extends AcceptedDropdownValue> = PrimitiveProps<V> & {
+    options: readonly DropdownOption<V>[];
+};
 
 /**
- * Renders a fluent UI dropdown with a calback for selection and a required default value
+ * Renders a fluent UI dropdown component for the options passed in, and an additional 'Not Defined' option if null is set to true
+ * This component can handle both null and undefined values
  * @param props
  * @returns dropdown component
  */
-export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
+export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> = (props) => {
     const classes = useDropdownStyles();
+    const { options, value } = props;
+    const [defaultVal, setDefaultVal] = useState(props.value);
+
+    useEffect(() => {
+        setDefaultVal(value);
+    }, [props.value]);
+
     return (
         <FluentDropdown
+            disabled={props.disabled}
+            size="small"
             className={classes.dropdownOption}
             onOptionSelect={(evt, data) => {
-                data.optionValue != undefined && props.onSelect(data.optionValue);
+                const value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
+                if (value !== undefined) {
+                    setDefaultVal(value);
+                    props.onChange(value);
+                }
             }}
-            defaultValue={props.defaultValue?.label}
-            defaultSelectedOptions={props.defaultValue && [props.defaultValue.value.toString()]}
+            selectedOptions={[defaultVal.toString()]}
+            value={options.find((o) => o.value === defaultVal)?.label}
         >
-            {props.options.map((option: DropdownOption) => (
+            {options.map((option: DropdownOption<AcceptedDropdownValue>) => (
                 <Option className={classes.optionsLine} key={option.label} value={option.value.toString()} disabled={false}>
                     {option.label}
                 </Option>
@@ -46,3 +65,6 @@ export const Dropdown: FunctionComponent<DropdownProps> = (props) => {
         </FluentDropdown>
     );
 };
+
+export const NumberDropdown = Dropdown as FunctionComponent<DropdownProps<number>>;
+export const StringDropdown = Dropdown as FunctionComponent<DropdownProps<string>>;

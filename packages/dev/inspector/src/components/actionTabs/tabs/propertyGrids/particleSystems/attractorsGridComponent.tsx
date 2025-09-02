@@ -267,7 +267,7 @@ export class AttractorsGridComponent extends React.Component<IAttractorsGridComp
                             />
                         );
                     })}
-                    <LineContainerComponent title="  IMPOSTORS" selection={this.props.globalState}>
+                    <LineContainerComponent title="IMPOSTORS" selection={this.props.globalState}>
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
                             label="Size"
