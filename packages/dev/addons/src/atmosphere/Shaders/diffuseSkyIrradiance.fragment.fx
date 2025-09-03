@@ -6,7 +6,7 @@ precision highp float;
 const float DiffuseSkyIrradianceLutSampleCount = 32.0;
 
 #include<atmosphereUbo>
-#include<helperFunctions>
+#include<core/helperFunctions>
 #include<depthFunctions>
 #include<atmosphereFunctions>
 
@@ -34,9 +34,9 @@ vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOr
     return radiance;
 }
 
-#include<importanceSampling>
-#include<pbrBRDFFunctions>
-#include<hdrFilteringFunctions>
+#include<core/importanceSampling>
+#include<core/pbrBRDFFunctions>
+#include<core/hdrFilteringFunctions>
 
 varying vec2 uv;
 

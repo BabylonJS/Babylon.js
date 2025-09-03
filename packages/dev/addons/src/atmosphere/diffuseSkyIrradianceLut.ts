@@ -11,8 +11,8 @@ import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/
 import type { Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
-import "./shaders/diffuseSkyIrradiance.fragment";
-import "./shaders/fullscreenTriangle.vertex";
+import "./Shaders/diffuseSkyIrradiance.fragment";
+import "./Shaders/fullscreenTriangle.vertex";
 
 const RaySamples = 128;
 const LutWidthPx = 64;

@@ -5,7 +5,7 @@ precision highp float;
 precision highp sampler2D;
 
 #include<atmosphereUbo>
-#include<helperFunctions>
+#include<core/helperFunctions>
 #include<depthFunctions>
 #include<atmosphereFunctions>
 

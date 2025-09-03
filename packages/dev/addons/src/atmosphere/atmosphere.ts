@@ -26,16 +26,16 @@ import { TransformNode } from "core/Meshes/transformNode";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
-import "./shaders/compositeAerialPerspective.fragment";
-import "./shaders/compositeDistantSky.fragment";
-import "./shaders/compositeGlobeAtmosphere.fragment";
-import "./shaders/fullscreenTriangle.vertex";
-import "./shaders/multiScattering.fragment";
-import "./shaders/skyView.fragment";
-import "./shaders/aerialPerspective.fragment";
-import "./shaders/ShadersInclude/atmosphereFunctions";
-import "./shaders/ShadersInclude/atmosphereUbo";
-import "./shaders/ShadersInclude/depthFunctions";
+import "./Shaders/compositeAerialPerspective.fragment";
+import "./Shaders/compositeDistantSky.fragment";
+import "./Shaders/compositeGlobeAtmosphere.fragment";
+import "./Shaders/fullscreenTriangle.vertex";
+import "./Shaders/multiScattering.fragment";
+import "./Shaders/skyView.fragment";
+import "./Shaders/aerialPerspective.fragment";
+import "./Shaders/ShadersInclude/atmosphereFunctions";
+import "./Shaders/ShadersInclude/atmosphereUbo";
+import "./Shaders/ShadersInclude/depthFunctions";
 
 const MaterialPlugin = "atmo-pbr";
 

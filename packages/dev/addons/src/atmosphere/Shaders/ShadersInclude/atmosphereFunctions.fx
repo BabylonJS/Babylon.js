@@ -24,7 +24,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include<intersectionFunctions>
+#include<core/intersectionFunctions>
 
 // Common helpers for atmosphere rendering.
 // TODO: Move LUT sizes and ray march related parameters to UBO.

@@ -13,8 +13,8 @@ import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
-import "./shaders/fullscreenTriangle.vertex";
-import "./shaders/transmittance.fragment";
+import "./Shaders/fullscreenTriangle.vertex";
+import "./Shaders/transmittance.fragment";
 
 const LutWidthPx = 256;
 const LutHeightPx = 64;

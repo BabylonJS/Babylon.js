@@ -1,22 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // MIT License
 
-#define RENDER_SKY_VIEW 1
+#define RENDER_MULTI_SCATTERING 1
 
 precision highp float;
-precision highp sampler2D;
+
+#define COMPUTE_MULTI_SCATTERING 1
 
 #include<atmosphereUbo>
-#include<helperFunctions>
+#include<core/helperFunctions>
 #include<atmosphereFunctions>
 
 varying vec2 uv;
 
 uniform sampler2D transmittanceLut;
-uniform sampler2D multiScatteringLut;
 
 void main() {
 
-    gl_FragColor = renderSkyView(uv, transmittanceLut, multiScatteringLut);
+    gl_FragColor = renderMultiScattering(uv, transmittanceLut);
 
 }

@@ -6,7 +6,7 @@
 precision highp float;
 
 #include<atmosphereUbo>
-#include<helperFunctions>
+#include<core/helperFunctions>
 #include<atmosphereFunctions>
 
 varying vec3 positionOnNearPlane;

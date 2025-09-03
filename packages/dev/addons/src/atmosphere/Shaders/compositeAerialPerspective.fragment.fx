@@ -13,7 +13,7 @@ precision highp sampler2DArray;
 uniform sampler2DArray aerialPerspectiveLut;
 #endif
 
-#include<helperFunctions>
+#include<core/helperFunctions>
 #include<depthFunctions>
 #include<atmosphereFunctions>
 
