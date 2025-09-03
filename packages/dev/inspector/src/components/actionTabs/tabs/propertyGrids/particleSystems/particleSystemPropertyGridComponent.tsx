@@ -44,7 +44,7 @@ import { Constants } from "core/Engines/constants";
 import { Texture } from "core/Materials/Textures/texture";
 import { BlendModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { AttractorsGridComponent } from "./attractorsGridComponent";
-import { ConvertToNodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet.helper";
+import { ConvertToNodeParticleSystemSetAsync } from "core/Particles/Node/nodeParticleSystemSet.helper";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -329,8 +329,8 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         );
     }
 
-    view() {
-        const systemSet = ConvertToNodeParticleSystemSet("source", [this.props.system as ParticleSystem]);
+    async viewAsync() {
+        const systemSet = await ConvertToNodeParticleSystemSetAsync("source", [this.props.system as ParticleSystem]);
 
         if (!systemSet) {
             return;
@@ -457,7 +457,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                 </LineContainerComponent>
                 <LineContainerComponent title="NODE PARTICLE EDITOR" selection={this.props.globalState}>
                     {isFromNode && <ButtonLineComponent label="Edit" onClick={() => this.edit()} />}
-                    {!isFromNode && <ButtonLineComponent label="View in NPE" onClick={() => this.view()} />}
+                    {!isFromNode && <ButtonLineComponent label="View in NPE" onClick={() => void this.viewAsync()} />}
                 </LineContainerComponent>
                 {!isFromNode && (
                     <>

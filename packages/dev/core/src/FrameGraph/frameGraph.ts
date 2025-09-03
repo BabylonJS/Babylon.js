@@ -1,4 +1,4 @@
-import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph } from "core/index";
+import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph, IDisposable } from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphCullPass } from "./Passes/cullPass";
@@ -9,7 +9,6 @@ import { Observable } from "core/Misc/observable";
 import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
-import { FindMainObjectRenderer } from "./frameGraphUtils";
 
 import "core/Engines/Extensions/engine.multiRender";
 import "core/Engines/WebGPU/Extensions/engine.multiRender";
@@ -24,7 +23,7 @@ enum FrameGraphPassType {
  * Class used to implement a frame graph
  * @experimental
  */
-export class FrameGraph {
+export class FrameGraph implements IDisposable {
     /**
      * Gets the texture manager used by the frame graph
      */
@@ -217,13 +216,6 @@ export class FrameGraph {
 
                 this.textureManager._isRecordingTask = false;
                 this._currentProcessedTask = null;
-            }
-
-            // The user expects bouding boxes to render for the main object renderer
-            // It also lets the "show bounding box" option in the inspector work
-            const mainObjectRenderer = FindMainObjectRenderer(this);
-            if (mainObjectRenderer) {
-                mainObjectRenderer.objectRenderer.enableBoundingBoxRendering = true;
             }
 
             this.textureManager._allocateTextures(this.optimizeTextureAllocation ? this._tasks : undefined);

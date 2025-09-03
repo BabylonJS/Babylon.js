@@ -7,7 +7,7 @@ import {
     ParticleSystemAttractorProperties,
     ParticleSystemEmissionProperties,
 } from "../../../components/properties/particles/particleSystemProperties";
-import { ParticleSystem } from "core/Particles";
+import { ParticleSystem } from "core/Particles/particleSystem";
 
 export const ParticleSystemPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Particle System Properties",

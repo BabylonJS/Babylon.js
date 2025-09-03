@@ -1261,7 +1261,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // Check if Area Lights have LTC texture.
-        if (defines["AREALIGHTUSED"]) {
+        if (defines["AREALIGHTUSED"] || defines["CLUSTLIGHT_BATCH"]) {
             for (let index = 0; index < mesh.lightSources.length; index++) {
                 if (!mesh.lightSources[index]._isReady()) {
                     return false;
@@ -2010,7 +2010,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 defines,
                 this._applyDecalMapAfterDetailMap,
                 this._useVertexPulling,
-                renderingMesh
+                renderingMesh,
+                this._setVertexOutputInvariant
             );
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;
@@ -2521,7 +2522,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 reflectionTexture ||
                 this.subSurface.refractionTexture ||
                 mesh.receiveShadows ||
-                defines.PREPASS
+                defines.PREPASS ||
+                defines["CLUSTLIGHT_BATCH"]
             ) {
                 this.bindView(effect);
             }

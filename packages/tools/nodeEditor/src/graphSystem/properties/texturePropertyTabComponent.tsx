@@ -24,6 +24,7 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import type { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
+import { SmartFilterTextureBlock } from "core/Materials";
 
 type ReflectionTexture = ReflectionTextureBlock | ReflectionBlock | RefractionBlock;
 
@@ -180,6 +181,9 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
             this.textureBlock instanceof ReflectionTextureBlock || this.textureBlock instanceof ReflectionBlock || this.textureBlock instanceof RefractionBlock;
         const isFrozenTexture = this.textureBlock instanceof CurrentScreenBlock || this.textureBlock instanceof ParticleTextureBlock;
         const showIsInGammaSpace = this.textureBlock instanceof ReflectionBlock;
+        const showIsMainInput = this.textureBlock instanceof SmartFilterTextureBlock;
+        const showSamplingMode = texture && texture.updateSamplingMode !== undefined && !(this.textureBlock instanceof SmartFilterTextureBlock);
+        const showDisableLevelMultiplication = (this.textureBlock as TextureBlock).disableLevelMultiplication !== undefined;
 
         const reflectionModeOptions: { label: string; value: number }[] = [
             {
@@ -281,7 +285,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                             }}
                         />
                     )}
-                    {
+                    {showDisableLevelMultiplication && (
                         <CheckBoxLineComponent
                             label="Disable multiplying by level"
                             propertyName="disableLevelMultiplication"
@@ -291,8 +295,18 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                                 this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}
                         />
-                    }
-                    {texture && texture.updateSamplingMode && (
+                    )}
+                    {showIsMainInput && (
+                        <CheckBoxLineComponent
+                            label="Is Main Input"
+                            propertyName="isMainInput"
+                            target={block}
+                            onValueChanged={() => {
+                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                            }}
+                        />
+                    )}
+                    {showSamplingMode && (
                         <OptionsLine
                             label="Sampling"
                             options={samplingMode}

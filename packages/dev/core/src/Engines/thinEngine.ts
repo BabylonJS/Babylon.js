@@ -53,6 +53,7 @@ import { Effect } from "../Materials/effect";
 import { _ConcatenateShader, _GetGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
 import { HasStencilAspect, IsDepthTexture } from "core/Materials/Textures/textureHelper.functions";
+import { AlphaState } from "../States/alphaCullingState";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -504,6 +505,7 @@ export class ThinEngine extends AbstractEngine {
             maxVaryingVectors: this._gl.getParameter(this._gl.MAX_VARYING_VECTORS),
             maxFragmentUniformVectors: this._gl.getParameter(this._gl.MAX_FRAGMENT_UNIFORM_VECTORS),
             maxVertexUniformVectors: this._gl.getParameter(this._gl.MAX_VERTEX_UNIFORM_VECTORS),
+            shaderFloatPrecision: 0,
             parallelShaderCompile: this._gl.getExtension("KHR_parallel_shader_compile") || undefined,
             standardDerivatives: this._webGLVersion > 1 || this._gl.getExtension("OES_standard_derivatives") !== null,
             maxAnisotropy: 1,
@@ -531,6 +533,7 @@ export class ThinEngine extends AbstractEngine {
             drawBuffersExtension: false,
             maxMSAASamples: 1,
             colorBufferFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_float")),
+            blendFloat: this._gl.getExtension("EXT_float_blend") !== null,
             supportFloatTexturesResolve: false,
             rg11b10ufColorRenderable: false,
             colorBufferHalfFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_half_float")),
@@ -625,6 +628,8 @@ export class ThinEngine extends AbstractEngine {
 
         const oesDrawBuffersIndexed = this._gl.getExtension("OES_draw_buffers_indexed");
         this._caps.blendParametersPerTarget = oesDrawBuffersIndexed ? true : false;
+
+        this._alphaState = new AlphaState(this._caps.blendParametersPerTarget);
 
         if (oesDrawBuffersIndexed) {
             this._gl.blendEquationSeparateIndexed = oesDrawBuffersIndexed.blendEquationSeparateiOES.bind(oesDrawBuffersIndexed);
@@ -732,6 +737,19 @@ export class ThinEngine extends AbstractEngine {
 
             if (vertexhighp && fragmenthighp) {
                 this._caps.highPrecisionShaderSupported = vertexhighp.precision !== 0 && fragmenthighp.precision !== 0;
+                this._caps.shaderFloatPrecision = Math.min(vertexhighp.precision, fragmenthighp.precision);
+            }
+            // This will check both the capability and the `useHighPrecisionFloats` option
+            if (!this._shouldUseHighPrecisionShader) {
+                const vertexmedp = this._gl.getShaderPrecisionFormat(this._gl.VERTEX_SHADER, this._gl.MEDIUM_FLOAT);
+                const fragmentmedp = this._gl.getShaderPrecisionFormat(this._gl.FRAGMENT_SHADER, this._gl.MEDIUM_FLOAT);
+                if (vertexmedp && fragmentmedp) {
+                    this._caps.shaderFloatPrecision = Math.min(vertexmedp.precision, fragmentmedp.precision);
+                }
+            }
+            if (this._caps.shaderFloatPrecision < 10) {
+                // WebGL spec requires mediump precision to atleast be 10
+                this._caps.shaderFloatPrecision = 10;
             }
         }
 

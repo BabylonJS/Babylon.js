@@ -1,7 +1,7 @@
-import type { ComponentType, ComponentProps } from "react";
-import { forwardRef } from "react";
+import type { ComponentProps, ComponentType } from "react";
+import { forwardRef, useMemo } from "react";
 
-import { useProperty } from "../../hooks/compoundPropertyHooks";
+import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**
  * Helper type to check if a type includes null or undefined
@@ -49,22 +49,41 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
     props: Omit<BoundPropertyProps<TargetT, PropertyKeyT, ComponentT>, "target"> & { target: TargetT },
     ref?: any
 ) {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
+    const { target, propertyKey } = props;
+
+    // Get the value of the property. If it changes, it will cause a re-render, which is needed to
+    // re-evaluate which specific hook will catch all the nested property changes we want to observe.
     const value = useProperty(target, propertyKey);
-    const convertedValue = convertTo ? convertTo(value) : value;
 
-    const propsToSend = {
-        ...rest,
-        ref,
-        value: convertedValue as TargetT[PropertyKeyT],
-        onChange: (val: TargetT[PropertyKeyT]) => {
-            const newValue = convertFrom ? convertFrom(val) : val;
-            target[propertyKey] = newValue;
-        },
-    };
+    // Determine which specific property hook to use based on the value's type.
+    const useSpecificProperty = useMemo(() => MakePropertyHook(value), [value]);
 
-    return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
+    // Create an inline nested component that changes when the desired specific hook type changes (since hooks can't be conditional).
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const SpecificComponent = useMemo(() => {
+        return (props: ComponentProps<ComponentT>) => {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            const { target, propertyKey, convertTo, convertFrom, component: Component, ...rest } = props;
+
+            // Hook the property, using the specific hook that also catches changes to nested properties as well (like x/y/z on a Vector3 for example).
+            const value = useSpecificProperty(target, propertyKey);
+            const convertedValue = convertTo ? convertTo(value) : value;
+
+            const propsToSend = {
+                ...rest,
+                ref,
+                value: convertedValue as TargetT[PropertyKeyT],
+                onChange: (val: TargetT[PropertyKeyT]) => {
+                    const newValue = convertFrom ? convertFrom(val) : val;
+                    target[propertyKey] = newValue;
+                },
+            };
+
+            return <Component {...(propsToSend as ComponentProps<ComponentT>)} />;
+        };
+    }, [useSpecificProperty]);
+
+    return <SpecificComponent {...(props as ComponentProps<ComponentT>)} />;
 }
 
 const BoundPropertyCore = CreateGenericForwardRef(BoundPropertyCoreImpl);

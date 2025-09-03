@@ -78,8 +78,7 @@ export const AnimationGroupControlProperties: FunctionComponent<{ animationGroup
                     />
                     <BoundProperty component={SwitchPropertyLine} label="Is Additive" target={animationGroup} propertyKey="isAdditive" />
                     <BoundProperty component={NumberInputPropertyLine} label="Weight" target={animationGroup} propertyKey="weight" step={0.1} />
-                    <BoundProperty component={NumberInputPropertyLine} label="Play Order" target={animationGroup} propertyKey="playOrder" step={0} />
-                    {/* TODO: Hey georgie :<Play order> should be integer (even when typing)*/}
+                    <BoundProperty component={NumberInputPropertyLine} label="Play order" target={animationGroup} propertyKey="playOrder" forceInt />
                 </>
             </Collapse>
         </>

@@ -85,7 +85,7 @@ export const ScenePhysicsProperties: FunctionComponent<{ scene: Scene }> = (prop
 
     return (
         <>
-            {physicsEngine !== null ? (
+            {physicsEngine ? (
                 <>
                     <NumberInputPropertyLine
                         label="Time Step"
