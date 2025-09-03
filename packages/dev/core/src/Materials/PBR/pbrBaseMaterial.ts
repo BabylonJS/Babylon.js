@@ -2061,9 +2061,9 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                         }
                     }
-                }
 
-                BindIBLParameters(scene, defines, ubo, reflectionTexture, this.realTimeFiltering, true, true, true, true, true, this._reflectionColor);
+                    BindIBLParameters(scene, defines, ubo, reflectionTexture, this.realTimeFiltering, true, true, true, true, true, this._reflectionColor);
+                }
 
                 // Point size
                 if (this.pointsCloud) {

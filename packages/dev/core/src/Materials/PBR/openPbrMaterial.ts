@@ -1825,9 +1825,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                         }
                     }
-                }
 
-                BindIBLParameters(scene, defines, ubo, radianceTexture, this.realTimeFiltering, true, true, true, true, true, Color3.White());
+                    BindIBLParameters(scene, defines, ubo, radianceTexture, this.realTimeFiltering, true, true, true, true, true, Color3.White());
+                }
 
                 // Point size
                 if (this.pointsCloud) {
