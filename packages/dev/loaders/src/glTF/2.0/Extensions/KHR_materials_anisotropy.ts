@@ -107,6 +107,11 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
             openpbrMaterial.geometryTangentTexture = anisotropyTexture;
             openpbrMaterial.geometryTangent = new Vector2(Math.cos(anisotropyAngle), Math.sin(anisotropyAngle));
             openpbrMaterial._useSpecularRoughnessAnisotropyFromTangentTexture = true;
+            const extensions = properties.extensions ?? {};
+            // If this is glTF-style anisotropy, mark it as such.
+            if (!extensions.EXT_materials_anisotropy_openpbr?.extensions.EXT_materials_anisotropy_openpbr) {
+                openpbrMaterial._useGltfStyleAnisotropy = true;
+            }
         } else {
             const pbrMaterial = babylonMaterial as PBRMaterial;
             pbrMaterial.anisotropy.isEnabled = true;

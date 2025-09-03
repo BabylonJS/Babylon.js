@@ -159,6 +159,12 @@ nativeOverride.filter = function <T extends (...params: any) => boolean>(predica
         nativeOverride(target, propertyKey, descriptor, predicate);
 };
 
+/**
+ * Adds accessors for a material property.
+ * @param setCallback - The name of the callback function to call when the property is set.
+ * @param targetKey - The key to use for the target property (defaults to the original property key).
+ * @returns A property decorator.
+ */
 export function addAccessorsForMaterialProperty(setCallback: string, targetKey: Nullable<string> = null) {
     return (target: any, propertyKey: string) => {
         const key = propertyKey;

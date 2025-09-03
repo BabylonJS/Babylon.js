@@ -324,16 +324,26 @@ export class GLTFExporter {
         return this._ApplyExtensions(material, (extension, node) => extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial));
     }
 
-    public _extensionsPostExportMaterialAdditionalTextures(context: string, material: IMaterial, babylonMaterial: Material): BaseTexture[] {
+    /**
+     * Get additional textures for a material
+     * @param context The context when loading the asset
+     * @param material The glTF material
+     * @param babylonMaterial The Babylon.js material
+     * @returns List of additional textures
+     */
+    public async _extensionsPostExportMaterialAdditionalTexturesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         const output: BaseTexture[] = [];
 
-        for (const name of GLTFExporter._ExtensionNames) {
-            const extension = this._extensions[name];
+        await Promise.all(
+            GLTFExporter._ExtensionNames.map(async (name) => {
+                const extension = this._extensions[name];
 
-            if (extension.postExportMaterialAdditionalTextures) {
-                output.push(...extension.postExportMaterialAdditionalTextures(context, material, babylonMaterial));
-            }
-        }
+                if (extension.postExportMaterialAdditionalTexturesAsync) {
+                    const textures = await extension.postExportMaterialAdditionalTexturesAsync(context, material, babylonMaterial);
+                    output.push(...textures);
+                }
+            })
+        );
 
         return output;
     }

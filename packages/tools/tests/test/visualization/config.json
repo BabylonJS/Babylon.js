@@ -2933,6 +2933,11 @@
             "title": "OpenPBR IBL Anisotropy Dielectric",
             "playgroundId": "#GRQHVV#63",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Anisotropy - glTF style",
+            "playgroundId": "#GRQHVV#67",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

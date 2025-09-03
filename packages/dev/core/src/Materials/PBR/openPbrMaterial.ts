@@ -238,6 +238,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public SPECULAR_WEIGHT_IN_ALPHA = false;
     public SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = false;
     public SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
+    public USE_GLTF_STYLE_ANISOTROPY = false;
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
@@ -1104,6 +1105,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _useSpecularRoughnessAnisotropyFromTangentTexture = false;
+
+    /**
+     * Assume the anisotropy data is stored in the format specified by
+     * KHR_materials_anisotropy.
+     * @internal
+     */
+    public _useGltfStyleAnisotropy = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
@@ -2510,6 +2518,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
                 defines._needUVs = true;
                 defines.MAINUV1 = true;
+            }
+            if (this._useGltfStyleAnisotropy) {
+                defines.USE_GLTF_STYLE_ANISOTROPY = true;
             }
         } else {
             defines.ANISOTROPIC = false;

@@ -38,7 +38,7 @@ export class EXT_materials_clearcoat_color implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
-    public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
+    public async postExportMaterialAdditionalTexturesAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         const additionalTextures: BaseTexture[] = [];
         if (babylonMaterial instanceof PBRBaseMaterial) {
             if (babylonMaterial.clearCoat.isEnabled) {

@@ -37,7 +37,7 @@ export class EXT_materials_clearcoat_darkening implements IGLTFExporterExtension
         return this._wasUsed;
     }
 
-    public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
+    public async postExportMaterialAdditionalTexturesAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         const additionalTextures: BaseTexture[] = [];
         if (babylonMaterial instanceof OpenPBRMaterial) {
             if (babylonMaterial.coatDarkening) {
