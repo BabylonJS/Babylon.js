@@ -8,6 +8,8 @@ import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import type { Nullable } from "core/types";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import "./Shaders/ShadersInclude/atmosphereFunctions";
+import "./Shaders/ShadersInclude/atmosphereUbo";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -243,8 +245,8 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                             true,
                             distanceFromCamera,
                             NumAerialPerspectiveLutLayers,
-                            AerialPerspectiveLutKmPerSlice,
-                            AerialPerspectiveLutRangeKm,
+                            AerialPerspectiveLutKMPerSlice,
+                            AerialPerspectiveLutRangeKM,
                             aerialPerspective)) {
                         finalColor = aerialPerspective + (1. - aerialPerspective.a) * finalColor;
                     }

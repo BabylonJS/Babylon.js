@@ -123,14 +123,14 @@ export function BuildShader(filePath: string, basePackageName: string = "core", 
     let includeText = "";
     const includes = GetIncludes(fxData);
     includes.forEach((entry) => {
-        // Entry may have a path like <core/helperFunctions> where "core" is intended to override the <basePackageName>.
-        // Currently only "core" is supported e.g., to include <core/helperFunctions> from the addons package.
-        const isCoreImport = (entry as string).startsWith("core/");
+        // Entry may have been something like #include<core/helperFunctions> where "core" is intended to override the basePackageName.
+        // Currently only "core/" is supported for the include path e.g., to include core/helperFunctions from the addons package.
+        const isCoreInclude = (entry as string).startsWith("core/");
 
         if (isCore) {
-            // If this is already "core", consider using the <core/...> style import as an error since it's not necessary.
-            if (isCoreImport) {
-                throw new Error("Unnecessary core import");
+            // If this shader is already from core, consider #include<core/...> as an error since it's not necessary.
+            if (isCoreInclude) {
+                throw new Error("Unnecessary core include");
             }
 
             includeText =
@@ -138,11 +138,16 @@ export function BuildShader(filePath: string, basePackageName: string = "core", 
                 `import "./ShadersInclude/${entry}";
 `;
         } else {
-            const basePackageNameForImport = isCoreImport ? "core" : basePackageName;
+            const basePackageNameForImport = isCoreInclude ? "core" : basePackageName;
+            const actualEntry = (entry as string).replace(/^core\//, "");
             includeText =
                 includeText +
-                `import "${basePackageNameForImport}/Shaders/ShadersInclude/${entry}";
+                `import "${basePackageNameForImport}/Shaders/ShadersInclude/${actualEntry}";
 `;
+            // The shader code itself also needs to be updated by replacing `#include<core/helperFunctions>` with `#include<helperFunctions>`
+            if (isCoreInclude) {
+                fxData = fxData.replace(new RegExp(`#include<${entry}>`, "g"), `#include<${actualEntry}>`);
+            }
         }
     });
 
