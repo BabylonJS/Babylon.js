@@ -39,8 +39,12 @@ var textureSampler: texture_2d<f32>;
 
 	uniform totalStrength: f32;
 	uniform base: f32;
+#ifdef ORTHOGRAPHIC_CAMERA
+	uniform viewport: vec4f;
+#else
 	uniform xViewport: f32;
 	uniform yViewport: f32;
+#endif
 	uniform depthProjection: mat3x3f;
 	uniform maxZ: f32;
 	uniform minZAspect: f32;
@@ -58,7 +62,11 @@ var textureSampler: texture_2d<f32>;
 		var occlusion: f32 = 0.0;
 		var correctedRadius: f32 = min(uniforms.radius, uniforms.minZAspect * depth / uniforms.near);
 
+	#ifdef ORTHOGRAPHIC_CAMERA
+		var vViewRay: vec3f =  vec3f(mix(uniforms.viewport.x, uniforms.viewport.y, input.vUV.x), mix(uniforms.viewport.z, uniforms.viewport.w, input.vUV.y), depthSign);
+	#else
 		var vViewRay: vec3f =  vec3f((input.vUV.x * 2.0 - 1.0)*uniforms.xViewport, (input.vUV.y * 2.0 - 1.0)*uniforms.yViewport, depthSign);
+	#endif
 		var vDepthFactor: vec3f = uniforms.depthProjection *  vec3f(1.0, 1.0, depth);
 		var origin: vec3f = vViewRay * vDepthFactor;
 		var rvec: vec3f = random * 2.0 - 1.0;

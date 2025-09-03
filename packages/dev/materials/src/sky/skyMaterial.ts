@@ -199,7 +199,19 @@ export class SkyMaterial extends PushMaterial {
             return true;
         }
 
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            false,
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._setVertexOutputInvariant
+        );
 
         // Attribs
         PrepareDefinesForAttributes(mesh, defines, true, false);
