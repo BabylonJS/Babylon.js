@@ -37,7 +37,7 @@ const Versions = {
     dist: [
         { url: "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(), instantResolve: false },
         { url: "https://preview.babylonjs.com/babylon.js", instantResolve: false },
-        { url: "https://preview.babylonjs.com/addons/babylonjs.addons.min.js", instantResolve: false },
+        { url: "https://preview.babylonjs.com/addons/babylonjs.addons.min.js", instantResolve: false, minVersion: "7.32.4" },
         { url: "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js", instantResolve: false },
         { url: "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", instantResolve: true },
@@ -64,6 +64,29 @@ let loadInSequence = async function (versions, index, resolve) {
     await loadScriptAsync(versions[index].url, versions[index].instantResolve);
 
     loadInSequence(versions, index + 1, resolve);
+};
+
+const isVersionGreaterOrEqual = function (version1, version2) {
+    // Split versions into parts and convert to numbers
+    const v1Parts = version1.split(".").map(Number);
+    const v2Parts = version2.split(".").map(Number);
+
+    // Compare major, minor, and revision in order
+    for (let i = 0; i < 3; i++) {
+        const v1Part = v1Parts[i] ?? 0; // Default to 0 if part is missing
+        const v2Part = v2Parts[i] ?? 0;
+
+        if (v1Part > v2Part) {
+            return true;
+        }
+        if (v1Part < v2Part) {
+            return false;
+        }
+        // If equal, continue to next part
+    }
+
+    // All parts are equal
+    return true;
 };
 
 let checkBabylonVersionAsync = function () {
@@ -97,10 +120,12 @@ let checkBabylonVersionAsync = function () {
             instantResolve: v.instantResolve,
         }));
     } else if (version && activeVersion === "dist") {
-        versions = versions.map((v) => ({
-            url: v.url.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version),
-            instantResolve: v.instantResolve,
-        }));
+        versions = versions
+            .filter((v) => !v.minVersion || isVersionGreaterOrEqual(version, v.minVersion))
+            .map((v) => ({
+                url: v.url.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version),
+                instantResolve: v.instantResolve,
+            }));
     }
 
     return new Promise((resolve, _reject) => {
