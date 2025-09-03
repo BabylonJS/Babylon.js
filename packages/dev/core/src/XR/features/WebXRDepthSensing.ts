@@ -21,6 +21,7 @@ import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials
 import type { Camera } from "core/Cameras/camera";
 import { Matrix } from "core/Maths/math.vector";
 import type { Engine } from "core/Engines/engine";
+import { RegisterClass } from "../../Misc/typeStore";
 
 export type WebXRDepthUsage = "cpu" | "gpu";
 export type WebXRDepthDataFormat = "ushort" | "float" | "luminance-alpha";
@@ -287,6 +288,8 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
         super.dispose(_forceDisposeTextures);
     }
 }
+
+RegisterClass(`BABYLON.DepthSensingMaterialPlugin`, WebXRDepthSensingMaterialPlugin);
 
 /**
  * WebXR Feature for WebXR Depth Sensing Module

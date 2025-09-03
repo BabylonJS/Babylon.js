@@ -7,6 +7,7 @@ import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector2 } from "core/Maths/math.vector";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
+import { RegisterClass } from "../../../Misc/typeStore";
 
 class TAAJitterMaterialDefines extends MaterialDefines {
     TAA_JITTER = false;
@@ -114,6 +115,8 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
         }
     }
 }
+
+RegisterClass(`BABYLON.TAAJitterMaterialPlugin`, TAAJitterMaterialPlugin);
 
 /**
  * Applies and manages the TAA jitter plugin on all materials.
