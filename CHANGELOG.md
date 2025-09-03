@@ -1,5 +1,17 @@
 # Changelog
 
+## 8.25.2
+
+### Core
+
+- SSAO2: Allow passing an existing instance of a geometry buffer renderer - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17116](https://github.com/BabylonJS/Babylon.js/pull/17116))
+- Add ImportMeshOptions support to AssetManager - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17113](https://github.com/BabylonJS/Babylon.js/pull/17113))
+- Ensure bone's absolute matrix is updated when dirty - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#17109](https://github.com/BabylonJS/Babylon.js/pull/17109))
+- FrameGraph: Fix of incorrectly rendered bounding boxes and outlines in geometry textures - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17112](https://github.com/BabylonJS/Babylon.js/pull/17112))
+- Material: Fix plugin classes not injected into BABYLON namespace - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17111](https://github.com/BabylonJS/Babylon.js/pull/17111))
+- geometry: Ensure GPU buffers upload for delay loaded geometries with multiple meshes - by [kzhsw](https://github.com/kzhsw) ([#17110](https://github.com/BabylonJS/Babylon.js/pull/17110))
+- Fix nullengine createRenderTargetTexture - by [sebavan](https://github.com/sebavan) ([#17108](https://github.com/BabylonJS/Babylon.js/pull/17108))
+
 ## 8.25.1
 
 ### Core
