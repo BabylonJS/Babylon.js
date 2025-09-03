@@ -85,6 +85,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
     public override getUniforms(): { ubo?: { name: string; size: number; type: string }[]; vertex?: string; fragment?: string } {
         return {
             ubo: [{ name: "inverseViewportSize", size: 2, type: "vec2" }],
+            fragment: "uniform vec2 inverseViewportSize;\n",
         };
     }
 
@@ -188,6 +189,8 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             return null;
         }
 
+        const useUbo = this._atmosphere._scene.getEngine().supportsUniformBuffers;
+
         return {
             CUSTOM_FRAGMENT_DEFINITIONS:
                 this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
@@ -195,10 +198,11 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                     : "uniform sampler2D transmittanceLut;\r\n#include<atmosphereUbo>\r\n#include<atmosphereFunctions>",
             CUSTOM_LIGHT0_COLOR: `
             {
-                vec3 positionGlobal = vPositionW / 1000. + vec3(0., planetRadius, 0.);
+                vec3 positionGlobal = 0.001 * vPositionW + vec3(0., planetRadius, 0.);
                 float positionRadius = length(positionGlobal);
                 vec3 geocentricNormal = positionGlobal / positionRadius;
-                float cosAngleLightToZenith = dot(-light0.vLightData.xyz, geocentricNormal);
+                vec3 directionToLight = ${useUbo ? "-light0.vLightData.xyz" : "-vLightData.xyz"};
+                float cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
                 diffuse0 = lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
             }
             `,
@@ -208,7 +212,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 float positionRadius = length(positionGlobal);
                 vec3 geocentricNormal = positionGlobal / positionRadius;
 
-                vec3 directionToLight = -light0.vLightData.xyz;
+                vec3 directionToLight = ${useUbo ? "-light0.vLightData.xyz" : "-vLightData.xyz"};
                 float cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
 
                 vec2 uv = vec2(0.5 + 0.5 * cosAngleLightToZenith, (positionRadius - planetRadius) / atmosphereThickness);
@@ -236,20 +240,20 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             CUSTOM_FRAGMENT_BEFORE_FOG: `
             #if USE_AERIAL_PERSPECTIVE_LUT
             {
-                    vec3 positionGlobal = 0.001 * vPositionW + vec3(0., planetRadius, 0.);
-                    float distanceFromCamera = distance(positionGlobal, cameraPositionGlobal);
+                vec3 positionGlobal = 0.001 * vPositionW + vec3(0., planetRadius, 0.);
+                float distanceFromCamera = distance(positionGlobal, cameraPositionGlobal);
 
-                    vec4 aerialPerspective = vec4(0.);
-                    if (sampleAerialPerspectiveLut(
-                            gl_FragCoord.xy * inverseViewportSize,
-                            true,
-                            distanceFromCamera,
-                            NumAerialPerspectiveLutLayers,
-                            AerialPerspectiveLutKMPerSlice,
-                            AerialPerspectiveLutRangeKM,
-                            aerialPerspective)) {
-                        finalColor = aerialPerspective + (1. - aerialPerspective.a) * finalColor;
-                    }
+                vec4 aerialPerspective = vec4(0.);
+                if (sampleAerialPerspectiveLut(
+                        gl_FragCoord.xy * inverseViewportSize,
+                        true,
+                        distanceFromCamera,
+                        NumAerialPerspectiveLutLayers,
+                        AerialPerspectiveLutKMPerSlice,
+                        AerialPerspectiveLutRangeKM,
+                        aerialPerspective)) {
+                    finalColor = aerialPerspective + (1. - aerialPerspective.a) * finalColor;
+                }
             }
             #endif
             `,
