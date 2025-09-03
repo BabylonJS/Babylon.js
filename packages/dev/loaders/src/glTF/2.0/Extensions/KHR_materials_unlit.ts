@@ -22,8 +22,6 @@ declare module "../../glTFFileLoader" {
     }
 }
 
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
-
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_unlit/README.md)
  */
@@ -63,27 +61,19 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync(context, material, this.name, async () => {
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
-            return await this._loadUnlitPropertiesAsync(context, material, babylonMaterial, useOpenPBR);
+            return await this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
         });
     }
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+    private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
-        babylonMaterial.unlit = true;
         let baseColor: Color3 = Color3.White();
         let alpha: number = 1;
         const properties = material.pbrMetallicRoughness;
@@ -97,7 +87,7 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Base Color)`;
-                        if (useOpenPBR) {
+                        if (this._loader.parent.useOpenPBR) {
                             (babylonMaterial as OpenPBRMaterial).baseColorTexture = texture;
                         } else {
                             (babylonMaterial as PBRMaterial).albedoTexture = texture;
@@ -107,17 +97,24 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
             }
         }
 
-        if (useOpenPBR) {
-            (babylonMaterial as OpenPBRMaterial).baseColor = baseColor;
-            (babylonMaterial as OpenPBRMaterial).geometryOpacity = alpha;
+        if (this._loader.parent.useOpenPBR) {
+            const mat = babylonMaterial as OpenPBRMaterial;
+            mat.unlit = true;
+            mat.baseColor = baseColor;
+            mat.geometryOpacity = alpha;
+            if (material.doubleSided) {
+                mat.backFaceCulling = false;
+                mat.twoSidedLighting = true;
+            }
         } else {
-            (babylonMaterial as PBRMaterial).albedoColor = baseColor;
-            (babylonMaterial as PBRMaterial).alpha = alpha;
-        }
-
-        if (material.doubleSided) {
-            babylonMaterial.backFaceCulling = false;
-            babylonMaterial.twoSidedLighting = true;
+            const mat = babylonMaterial as PBRMaterial;
+            mat.unlit = true;
+            mat.albedoColor = baseColor;
+            mat.alpha = alpha;
+            if (material.doubleSided) {
+                mat.backFaceCulling = false;
+                mat.twoSidedLighting = true;
+            }
         }
 
         this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);

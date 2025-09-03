@@ -3,11 +3,11 @@ import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "..
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
-import { Color3, Color4 } from "../../Maths/math.color";
+import type { Color4 } from "../../Maths/math.color";
+import { Color3 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
-import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
@@ -56,8 +56,8 @@ import { MaterialFlags } from "../materialFlags";
 import type { SubMesh } from "../../Meshes/subMesh";
 import { Logger } from "core/Misc/logger";
 import { UVDefinesMixin } from "../uv.defines";
-import { Vector2, Vector3, Vector4, TmpVectors } from "core/Maths/math.vector";
-import type { Matrix } from "core/Maths/math.vector";
+import { Vector2, Vector4, TmpVectors } from "core/Maths/math.vector";
+import type { Vector3, Matrix } from "core/Maths/math.vector";
 import type { Mesh } from "../../Meshes/mesh";
 import { ImageProcessingMixin } from "../imageProcessing";
 import { PushMaterial } from "../pushMaterial";
@@ -70,9 +70,9 @@ const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: 
 class Uniform {
     public name: string;
     public numComponents: number;
-    public linkedProperties: { [name: string]: Property<any> } = {};
+    public linkedProperties: { [name: string]: Property<PropertyType> } = {};
     public populateVectorFromLinkedProperties(vector: Vector4 | Vector3 | Vector2): void {
-        const destinationSize = vector instanceof Vector4 ? 4 : vector instanceof Vector3 ? 3 : vector instanceof Vector2 ? 2 : 1;
+        const destinationSize = vector.dimension[0];
         for (const propKey in this.linkedProperties) {
             const prop = this.linkedProperties[propKey];
             const sourceSize = prop.numComponents;
@@ -99,10 +99,12 @@ class Uniform {
     private static _tmpArray: number[] = [0, 0, 0, 0];
 }
 
+type PropertyType = Vector2 | Vector3 | Vector4 | number | Color3 | Color4;
+
 /**
  * Defines a property for the OpenPBRMaterial.
  */
-class Property<T> {
+class Property<T extends PropertyType> {
     public name: string;
     public targetUniformName: string;
     public defaultValue: T;
@@ -140,18 +142,8 @@ class Property<T> {
     public get numComponents(): number {
         if (typeof this.defaultValue === "number") {
             return 1;
-        } else if (this.defaultValue instanceof Color3) {
-            return 3;
-        } else if (this.defaultValue instanceof Color4) {
-            return 4;
-        } else if (this.defaultValue instanceof Vector2) {
-            return 2;
-        } else if (this.defaultValue instanceof Vector3) {
-            return 3;
-        } else if (this.defaultValue instanceof Vector4) {
-            return 4;
         }
-        return 0; // Default size for unsupported types
+        return this.defaultValue.dimension[0];
     }
 }
 
@@ -396,40 +388,12 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
 
 class OpenPBRMaterialBase extends ImageProcessingMixin(PushMaterial) {}
 /**
- * The Physically based material of BJS.
+ * A Physically based material that follows the specification of OpenPBR.
  *
- * This offers the main features of a standard PBR material.
  * For more information, please refer to the documentation :
- * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * https://academysoftwarefoundation.github.io/OpenPBR/index.html
  */
 export class OpenPBRMaterial extends OpenPBRMaterialBase {
-    /**
-     * OpenPBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
-     */
-    public static readonly PBRMATERIAL_OPAQUE = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
-
-    /**
-     * OpenPBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
-     */
-    public static readonly PBRMATERIAL_ALPHATEST = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
-
-    /**
-     * OpenPBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-     */
-    public static readonly PBRMATERIAL_ALPHABLEND = PBRBaseMaterial.PBRMATERIAL_ALPHABLEND;
-
-    /**
-     * OpenPBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-     * They are also discarded below the alpha cutoff threshold to improve performances.
-     */
-    public static readonly PBRMATERIAL_ALPHATESTANDBLEND = PBRBaseMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
-
-    /**
-     * Defines the default value of how much AO map is occluding the analytical lights
-     * (point spot...).
-     */
-    public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
-
     /**
      * Base Weight is a multiplier on the diffuse and metal lobes.
      * See OpenPBR's specs for base_weight
@@ -444,7 +408,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * See OpenPBR's specs for base_weight
      */
     public baseWeightTexture: Nullable<BaseTexture>;
-    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseColorTexture")
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "baseWeightTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _baseWeightTexture: Sampler = new Sampler("base_weight", "baseWeight", "BASE_WEIGHT");
 
@@ -476,7 +440,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _baseDiffuseRoughness: Property<number> = new Property<number>("base_diffuse_roughness", 0, "vBaseDiffuseRoughness", 1);
 
     /**
-     * Roughness of the diffuse lobe.
+     * Roughness texture of the diffuse lobe.
      * See OpenPBR's specs for base_diffuse_roughness
      */
     public baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
@@ -512,8 +476,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _specularWeight: Property<number> = new Property<number>("specular_weight", 1, "vReflectanceInfo", 4, 3);
 
     /**
-     * Roughness of the diffuse lobe.
-     * See OpenPBR's specs for base_diffuse_roughness
+     * Weight texture of the specular lobe.
+     * See OpenPBR's specs for specular_weight
      */
     public specularWeightTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "specularWeightTexture")
@@ -548,7 +512,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _specularRoughness: Property<number> = new Property<number>("specular_roughness", 0.3, "vReflectanceInfo", 4, 1);
 
     /**
-     * Roughness texture.
+     * Roughness texture of the specular lobe.
      * See OpenPBR's specs for specular_roughness
      */
     public specularRoughnessTexture: Nullable<BaseTexture>;
@@ -611,7 +575,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _coatColor: Property<Color3> = new Property<Color3>("coat_color", Color3.White(), "vCoatColor", 3, 0);
 
     /**
-     * Color of the clear coat.
+     * Color texture of the clear coat.
      * See OpenPBR's specs for coat_color
      */
     public coatColorTexture: Nullable<BaseTexture>;
@@ -629,7 +593,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _coatRoughness: Property<number> = new Property<number>("coat_roughness", 0.0, "vCoatRoughness", 1, 0);
 
     /**
-     * Roughness of the clear coat.
+     * Roughness texture of the clear coat.
      * See OpenPBR's specs for coat_roughness
      */
     public coatRoughnessTexture: Nullable<BaseTexture>;
@@ -732,7 +696,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _geometryOpacity: Property<number> = new Property<number>("geometry_opacity", 1.0, "vBaseColor", 4, 3);
 
     /**
-     * Defines the opacity of the material's geometry.
+     * Defines the opacity texture of the material's geometry.
      * See OpenPBR's specs for geometry_opacity
      */
     public geometryOpacityTexture: Nullable<BaseTexture>;
@@ -741,8 +705,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _geometryOpacityTexture: Sampler = new Sampler("geometry_opacity", "geometryOpacity", "GEOMETRY_OPACITY");
 
     /**
-     * Defines the opacity of the material's geometry.
-     * See OpenPBR's specs for geometry_opacity
+     * Defines the luminance of the material's emission.
+     * See OpenPBR's specs for emission_luminance
      */
     public emissionLuminance: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "emissionLuminance")
@@ -759,7 +723,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _emissionColor: Property<Color3> = new Property<Color3>("emission_color", Color3.Black(), "vEmissionColor", 3);
 
     /**
-     * Defines the color of the material's emission.
+     * Defines the texture of the material's emission color.
      * See OpenPBR's specs for emission_color
      */
     public emissionColorTexture: Nullable<BaseTexture>;
@@ -780,7 +744,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _samplersList: { [name: string]: Sampler } = {};
     private _samplerDefines: { [name: string]: { type: string; default: any } } = {};
 
-    private static _noiseTexture: Nullable<BaseTexture> = null;
+    private static _noiseTextures: { [id: number]: BaseTexture } = {};
 
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -847,7 +811,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     public get usePhysicalLightFalloff(): boolean {
-        return this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
+        return this._lightFalloff === Material.LIGHTFALLOFF_PHYSICAL;
     }
 
     /**
@@ -861,9 +825,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             this._markAllSubMeshesAsTexturesDirty();
 
             if (value) {
-                this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
+                this._lightFalloff = Material.LIGHTFALLOFF_PHYSICAL;
             } else {
-                this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
+                this._lightFalloff = Material.LIGHTFALLOFF_STANDARD;
             }
         }
     }
@@ -874,7 +838,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     @serialize()
     public get useGLTFLightFalloff(): boolean {
-        return this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_GLTF;
+        return this._lightFalloff === Material.LIGHTFALLOFF_GLTF;
     }
 
     /**
@@ -887,9 +851,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             this._markAllSubMeshesAsTexturesDirty();
 
             if (value) {
-                this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_GLTF;
+                this._lightFalloff = Material.LIGHTFALLOFF_GLTF;
             } else {
-                this._lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_STANDARD;
+                this._lightFalloff = Material.LIGHTFALLOFF_STANDARD;
             }
         }
     }
@@ -1038,46 +1002,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public applyDecalMapAfterDetailMap = false;
 
     /**
-     * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
-     */
-    public static readonly LIGHTFALLOFF_PHYSICAL = 0;
-
-    /**
-     * PBRMaterialLightFalloff gltf: light is falling off as described in the gltf moving to PBR document
-     * to enhance interoperability with other engines.
-     */
-    public static readonly LIGHTFALLOFF_GLTF = 1;
-
-    /**
-     * PBRMaterialLightFalloff Standard: light is falling off like in the standard material
-     * to enhance interoperability with other materials.
-     */
-    public static readonly LIGHTFALLOFF_STANDARD = 2;
-
-    /**
      * Force all the PBR materials to compile to glsl even on WebGPU engines.
      * False by default. This is mostly meant for backward compatibility.
      */
     public static ForceGLSL = false;
 
     /**
-     * Intensity of the direct lights e.g. the four lights available in your scene.
-     * This impacts both the direct diffuse and specular highlights.
-     * @internal
-     */
-    public _directIntensity: number = 1.0;
-
-    /**
-     * Intensity of the environment e.g. how much the environment will light the object
-     * either through harmonics for rough material or through the reflection for shiny ones.
-     * @internal
-     */
-    public _environmentIntensity: number = 1.0;
-
-    /**
      * This stores the direct, emissive, environment, and specular light intensities into a Vector4.
      */
-    private _lightingInfos: Vector4 = new Vector4(this._directIntensity, 1.0, this._environmentIntensity, 1.0);
+    private _lightingInfos: Vector4 = new Vector4(this.directIntensity, 1.0, this.environmentIntensity, 1.0);
 
     /**
      * Stores the radiance (and, possibly, irradiance) values in a texture.
@@ -1160,7 +1093,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * It by default is Physical.
      * @internal
      */
-    public _lightFalloff = PBRBaseMaterial.LIGHTFALLOFF_PHYSICAL;
+    public _lightFalloff = Material.LIGHTFALLOFF_PHYSICAL;
 
     /**
      * Allows using an object space normal map (instead of tangent space).
@@ -1357,16 +1290,16 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
     constructor(name: string, scene?: Scene, forceGLSL = false) {
-        super(name, scene, undefined, forceGLSL || PBRBaseMaterial.ForceGLSL);
+        super(name, scene, undefined, forceGLSL || OpenPBRMaterial.ForceGLSL);
         // TODO: Check if we're running WebGL 2.0 or above
-        if (scene && !scene?.getEngine().isWebGPU && (scene.getEngine() as Engine).webGLVersion < 2) {
+        if (this.getScene() && !this.getScene()?.getEngine().isWebGPU && (this.getScene().getEngine() as Engine).webGLVersion < 2) {
             Logger.Error("OpenPBRMaterial: WebGL 2.0 or above is required for this material.");
         }
 
-        if (OpenPBRMaterial._noiseTexture === null || OpenPBRMaterial._noiseTexture.getScene()?.getEngine() !== scene?.getEngine()) {
-            OpenPBRMaterial._noiseTexture = new Texture(
+        if (!OpenPBRMaterial._noiseTextures[this.getScene().uniqueId]) {
+            OpenPBRMaterial._noiseTextures[this.getScene().uniqueId] = new Texture(
                 "https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png",
-                scene,
+                this.getScene(),
                 false,
                 true,
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE
@@ -1497,44 +1430,28 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         return "OpenPBRMaterial";
     }
 
-    /**
-     * Returns true if alpha blending should be disabled.
-     */
-    protected override get _disableAlphaBlending(): boolean {
-        return this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_OPAQUE || this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
+    protected override _transparencyMode: number = Material.MATERIAL_OPAQUE;
+
+    @serialize()
+    public override get transparencyMode(): number {
+        return this._transparencyMode;
     }
 
-    /**
-     * @returns whether or not this material should be rendered in alpha blend mode.
-     */
-    public override needAlphaBlending(): boolean {
-        if (this._hasTransparencyMode) {
-            return this._transparencyModeIsBlend;
+    public override set transparencyMode(value: number) {
+        if (this._transparencyMode === value) {
+            return;
         }
 
-        if (this._disableAlphaBlending) {
-            return false;
-        }
+        this._transparencyMode = value;
 
-        return this.geometryOpacity < 1.0 || this.geometryOpacityTexture != null || this._shouldUseAlphaFromAlbedoTexture();
-    }
-
-    /**
-     * @returns whether or not this material should be rendered in alpha test mode.
-     */
-    public override needAlphaTesting(): boolean {
-        if (this._hasTransparencyMode) {
-            return this._transparencyModeIsTest;
-        }
-
-        return this._hasAlphaChannel() && (this._transparencyMode == null || this._transparencyMode === PBRBaseMaterial.PBRMATERIAL_ALPHATEST);
+        this._markAllSubMeshesAsTexturesAndMiscDirty();
     }
 
     /**
      * @returns whether or not the alpha value of the albedo texture should be used for alpha blending.
      */
     protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-        return this.baseColorTexture != null && this.baseColorTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
+        return this.baseColorTexture != null && this.baseColorTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
     }
 
     /**
@@ -1718,8 +1635,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                if (OpenPBRMaterial._noiseTexture) {
-                    if (!OpenPBRMaterial._noiseTexture.isReady()) {
+                if (OpenPBRMaterial._noiseTextures[scene.uniqueId]) {
+                    if (!OpenPBRMaterial._noiseTextures[scene.uniqueId].isReady()) {
                         return false;
                     }
                 }
@@ -1929,14 +1846,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         uniform.populateVectorFromLinkedProperties(TmpVectors.Vector2[0]);
                         ubo.updateFloat2(uniform.name, TmpVectors.Vector2[0].x, TmpVectors.Vector2[0].y);
                     } else if (uniform.numComponents === 1) {
-                        ubo.updateFloat(uniform.name, uniform.linkedProperties[Object.keys(uniform.linkedProperties)[0]].value);
+                        ubo.updateFloat(uniform.name, uniform.linkedProperties[Object.keys(uniform.linkedProperties)[0]].value as number);
                     }
                 });
 
                 // Misc
-                this._lightingInfos.x = this._directIntensity;
+                this._lightingInfos.x = this.directIntensity;
                 this._lightingInfos.y = this.emissionLuminance;
-                this._lightingInfos.z = this._environmentIntensity * scene.environmentIntensity;
+                this._lightingInfos.z = this.environmentIntensity * scene.environmentIntensity;
                 this._lightingInfos.w = 1.0; // This is used to be _specularIntensity.
 
                 ubo.updateVector4("vLightingIntensity", this._lightingInfos);
@@ -1961,7 +1878,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 }
 
                 if (defines.ANISOTROPIC) {
-                    ubo.setTexture("blueNoiseSampler", OpenPBRMaterial._noiseTexture);
+                    ubo.setTexture("blueNoiseSampler", OpenPBRMaterial._noiseTextures[this.getScene().uniqueId]);
                 }
             }
 
@@ -2413,7 +2330,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines["MAINUV" + i] = false;
             }
             if (scene.texturesEnabled) {
-                // TODO - loop through samplers and prepare defines for each texture
+                // Loop through samplers and prepare defines for each texture
                 for (const key in this._samplersList) {
                     const sampler = this._samplersList[key];
                     if (sampler.value) {
@@ -2474,10 +2391,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 }
             }
 
-            if (this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_STANDARD) {
+            if (this._lightFalloff === Material.LIGHTFALLOFF_STANDARD) {
                 defines.USEPHYSICALLIGHTFALLOFF = false;
                 defines.USEGLTFLIGHTFALLOFF = false;
-            } else if (this._lightFalloff === PBRBaseMaterial.LIGHTFALLOFF_GLTF) {
+            } else if (this._lightFalloff === Material.LIGHTFALLOFF_GLTF) {
                 defines.USEPHYSICALLIGHTFALLOFF = false;
                 defines.USEGLTFLIGHTFALLOFF = true;
             } else {
@@ -2513,7 +2430,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
-        if (this.specularRoughnessAnisotropy > 0.0 && OpenPBRMaterial._noiseTexture) {
+        if (this.specularRoughnessAnisotropy > 0.0 && OpenPBRMaterial._noiseTextures[scene.uniqueId] && MaterialFlags.ReflectionTextureEnabled) {
             defines.ANISOTROPIC = true;
             if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
                 defines._needUVs = true;
@@ -2551,7 +2468,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
 
         // Attribs
-        PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
+        PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== Material.MATERIAL_OPAQUE);
 
         // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);

@@ -1,10 +1,9 @@
 /* eslint-disable github/no-then */
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IEXTMaterialsClearcoatDarkening } from "babylonjs-gltf2interface";
@@ -22,8 +21,6 @@ declare module "../../glTFFileLoader" {
         ["EXT_materials_clearcoat_darkening"]: {};
     }
 }
-
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/2518)
@@ -65,17 +62,10 @@ export class EXT_materials_clearcoat_darkening implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IEXTMaterialsClearcoatDarkening>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                // Logger.Warn(`${extensionContext}: The EXT_materials_clearcoat_darkening extension is only supported with OpenPBR materials. Falling back to PBRMaterial.`);
-                return await Promise.resolve();
-            }
             promises.push(this._loadDarkeningPropertiesAsync(extensionContext, material, babylonMaterial, extension));
             return await Promise.all(promises).then(() => {});
         });
@@ -83,7 +73,7 @@ export class EXT_materials_clearcoat_darkening implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadDarkeningPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IEXTMaterialsClearcoatDarkening): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 

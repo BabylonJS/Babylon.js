@@ -340,19 +340,19 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
     /**
      * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
      */
-    public static readonly LIGHTFALLOFF_PHYSICAL = 0;
+    public static override readonly LIGHTFALLOFF_PHYSICAL = 0;
 
     /**
      * PBRMaterialLightFalloff gltf: light is falling off as described in the gltf moving to PBR document
      * to enhance interoperability with other engines.
      */
-    public static readonly LIGHTFALLOFF_GLTF = 1;
+    public static override readonly LIGHTFALLOFF_GLTF = 1;
 
     /**
      * PBRMaterialLightFalloff Standard: light is falling off like in the standard material
      * to enhance interoperability with other materials.
      */
-    public static readonly LIGHTFALLOFF_STANDARD = 2;
+    public static override readonly LIGHTFALLOFF_STANDARD = 2;
 
     /**
      * Force all the PBR materials to compile to glsl even on WebGPU engines.

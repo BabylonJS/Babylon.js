@@ -24,8 +24,6 @@ declare module "../../glTFFileLoader" {
     }
 }
 
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
-
 /**
  * !!! Experimental Extension Subject to Changes !!!
  */
@@ -65,25 +63,18 @@ export class EXT_materials_clearcoat_color implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IEXTMaterialsClearcoatColor>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
-            promises.push(this._loadColorPropertiesAsync(extensionContext, material, babylonMaterial, extension, useOpenPBR));
+            promises.push(this._loadColorPropertiesAsync(extensionContext, material, babylonMaterial, extension));
             return await Promise.all(promises).then(() => {});
         });
     }
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
-    private _loadColorPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IEXTMaterialsClearcoatColor, useOpenPBR: boolean): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+    private _loadColorPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IEXTMaterialsClearcoatColor): Promise<void> {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
@@ -105,7 +96,7 @@ export class EXT_materials_clearcoat_color implements IGLTFLoaderExtension {
         }
 
         return texturePromise.then(() => {
-            if (useOpenPBR) {
+            if (this._loader.parent.useOpenPBR) {
                 const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
                 openpbrMaterial.coatColor = colorFactor;
                 if (colorFactorTexture) {

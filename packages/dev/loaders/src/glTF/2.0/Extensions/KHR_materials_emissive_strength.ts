@@ -22,8 +22,6 @@ declare module "../../glTFFileLoader" {
     }
 }
 
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
-
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_emissive_strength/README.md)
  */
@@ -63,28 +61,21 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, async (extensionContext, extension) => {
             await this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
-            this._loadEmissiveProperties(extensionContext, extension, babylonMaterial, useOpenPBR);
+            this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
             return await Promise.resolve();
         });
     }
 
-    private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material, useOpenPBR: boolean): void {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+    private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         if (properties.emissiveStrength !== undefined) {
-            if (useOpenPBR) {
+            if (this._loader.parent.useOpenPBR) {
                 (babylonMaterial as OpenPBRMaterial).emissionLuminance = properties.emissiveStrength;
             } else {
                 (babylonMaterial as PBRMaterial).emissiveIntensity = properties.emissiveStrength;

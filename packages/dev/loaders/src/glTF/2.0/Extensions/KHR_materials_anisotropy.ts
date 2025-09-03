@@ -23,8 +23,6 @@ declare module "../../glTFFileLoader" {
     }
 }
 
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
-
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy)
  */
@@ -64,25 +62,18 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsAnisotropy>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
-            promises.push(this._loadAnisotropyPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
+            promises.push(this._loadAnisotropyPropertiesAsync(extensionContext, extension, babylonMaterial));
             await Promise.all(promises);
         });
     }
 
-    private async _loadAnisotropyPropertiesAsync(context: string, properties: IKHRMaterialsAnisotropy, babylonMaterial: Material, useOpenPBR: boolean): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
-            throw new Error(`${context}: Material type not supported`);
+    private async _loadAnisotropyPropertiesAsync(context: string, properties: IKHRMaterialsAnisotropy, babylonMaterial: Material): Promise<void> {
+        if (!this._loader._pbrMaterialClass) {
+            throw new Error(`${context}: PBR Material class not loaded`);
         }
 
         const promises = new Array<Promise<any>>();
@@ -101,7 +92,7 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
         }
 
         await Promise.all(promises);
-        if (useOpenPBR) {
+        if (this._loader.parent.useOpenPBR) {
             const openpbrMaterial: OpenPBRMaterial = babylonMaterial as OpenPBRMaterial;
             openpbrMaterial.specularRoughnessAnisotropy = anisotropyWeight;
             openpbrMaterial.geometryTangentTexture = anisotropyTexture;
