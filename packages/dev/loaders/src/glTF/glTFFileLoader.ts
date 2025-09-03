@@ -191,6 +191,14 @@ type DefaultExtensionOptions<BaseExtensionOptions> = {
     enabled?: boolean;
 } & BaseExtensionOptions;
 
+/**
+ * This class contains all the concrete (not abstract) glTF options, excluding callbacks.
+ * The purpose of this class is to make it easy to provide a way to mutate the default
+ * loader options (see the GLTFLoaderDefaultOptions instance below) without duplicating
+ * all the options in yet another object. Since this class is instantiated for the default
+ * options object, abstract properties and callbacks are not included, it's more just
+ * flag-type options.
+ */
 class GLTFLoaderBaseOptions {
     /**
      * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
@@ -300,6 +308,11 @@ class GLTFLoaderBaseOptions {
     public validate = false;
 }
 
+/**
+ * The default GLTF loader options.
+ * Override the properties of this object to globally change the default loader options.
+ * To specify options for a specific load call, pass those options into the associated load function.
+ */
 export const GLTFLoaderDefaultOptions = new GLTFLoaderBaseOptions();
 
 abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
