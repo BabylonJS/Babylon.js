@@ -895,20 +895,10 @@ export class Bone extends Node {
             result.y = lm.m[13];
             result.z = lm.m[14];
         } else {
-            let wm: Nullable<Matrix> = null;
+            const tmat = Bone._TmpMats[0].copyFrom(this.getAbsoluteMatrix());
 
-            // tNode.getWorldMatrix() needs to be called before skeleton.computeAbsoluteMatrices()... WHY???
             if (tNode) {
-                wm = tNode.getWorldMatrix();
-            }
-
-            let tmat = Bone._TmpMats[0];
-
-            if (tNode && wm) {
-                tmat.copyFrom(this.getAbsoluteMatrix());
-                tmat.multiplyToRef(wm, tmat);
-            } else {
-                tmat = this.getAbsoluteMatrix();
+                tmat.multiplyToRef(tNode.getWorldMatrix(), tmat);
             }
 
             result.x = tmat.m[12];
