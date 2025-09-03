@@ -29,6 +29,15 @@ You can pass a variables map in the constructor of Player. These variables will 
 
 You can use the AnimationConfiguration to change certain parameters of the parser/player. For example, loopAnimation to loop the animation, or ignoreOpacityAnimation for performance if you know your animation doesn't modify opacity.
 
+## Security
+
+For this player to work, if you are applying CSP to your website, you need the following headers:
+_worker-src blob:_
+_script-src thedomainservingyourjs_
+
+worker-src is used to load the worker. To simplify configuration, we have a small wrapper over the real worker that loads it as a blob.
+script-src is used by the scripts the worker references, like the classes it needs from babylon.js to render. If your CSP is blocking the domain of those scripts, then the worker will fail. You can use 'self' if you are serving your .js from the same domain you are serving your site, or your domain if your .js is served from a separate domain like a CDN.
+
 ## Remarks
 
 - Prefer to use the class Player that uses an Offscreen canvas and the worker thread. If for some reason that is not available to you, you can use LocalPlayer and call playAnimationAsync which renders in the main JS thread.
