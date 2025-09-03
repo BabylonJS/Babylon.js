@@ -24,8 +24,6 @@ declare module "../../glTFFileLoader" {
     }
 }
 
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
-
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_specular/README.md)
  */
@@ -65,21 +63,14 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSpecular>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
-            promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
+            promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
             // Handle the EXT_materials_specular_edge_color sub-extension
             // https://github.com/KhronosGroup/glTF/blob/2a1111b88f052cbd3e2d82abb9faee56e7494904/extensions/2.0/Vendor/EXT_materials_specular_edge_color/README.md
-            if (!useOpenPBR && extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
+            if (!this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
                 const specularEdgeColorExtension = extension.extensions.EXT_materials_specular_edge_color as IEXTMaterialsSpecularEdgeColor;
                 if (specularEdgeColorExtension.specularEdgeColorEnabled) {
                     (babylonMaterial as PBRMaterial).brdf.dielectricSpecularModel = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR;
@@ -92,8 +83,8 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
     }
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    private _loadSpecularPropertiesAsync(context: string, properties: IKHRMaterialsSpecular, babylonMaterial: Material, useOpenPBR: boolean): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+    private _loadSpecularPropertiesAsync(context: string, properties: IKHRMaterialsSpecular, babylonMaterial: Material): Promise<void> {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
@@ -126,7 +117,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
 
         // eslint-disable-next-line github/no-then
         return Promise.all(promises).then(() => {
-            if (useOpenPBR) {
+            if (this._loader.parent.useOpenPBR) {
                 const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
                 openpbrMaterial.specularWeight = specularWeight;
                 openpbrMaterial.specularColor = specularColor;

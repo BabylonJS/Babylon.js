@@ -1,6 +1,5 @@
 import type { Nullable } from "core/types";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -62,8 +61,6 @@ interface ITransmissionHelperOptions {
      */
     clearColor?: Color4;
 }
-
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /**
  * A class to handle setting up the rendering of opaque objects to be shown through transmissive objects.
@@ -169,7 +166,7 @@ class TransmissionHelper {
         if (!material) {
             return false;
         }
-        if (material instanceof PBRMaterialClass && (material as any).subSurface.isRefractionEnabled) {
+        if ((material as any).subSurface.isRefractionEnabled) {
             return true;
         }
         return false;
@@ -223,7 +220,7 @@ class TransmissionHelper {
         // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
         const useTransmission = this._shouldRenderAsTransmission(mesh.material);
         if (useTransmission) {
-            if (mesh.material instanceof PBRMaterialClass) {
+            if (mesh.material) {
                 (mesh.material as any).subSurface.refractionTexture = this._opaqueRenderTarget;
             }
             if (opaqueIdx !== -1) {
@@ -369,35 +366,22 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTransmission>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
-            promises.push(this._loadTransparentPropertiesAsync(extensionContext, material, babylonMaterial, extension, useOpenPBR));
+            promises.push(this._loadTransparentPropertiesAsync(extensionContext, material, babylonMaterial, extension));
             // eslint-disable-next-line github/no-then
             return await Promise.all(promises).then(() => {});
         });
     }
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
-    private _loadTransparentPropertiesAsync(
-        context: string,
-        material: IMaterial,
-        babylonMaterial: Material,
-        extension: IKHRMaterialsTransmission,
-        useOpenPBR: boolean
-    ): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+    private _loadTransparentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsTransmission): Promise<void> {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
-        if (useOpenPBR) {
+        if (this._loader.parent.useOpenPBR) {
             return Promise.resolve();
         }
 

@@ -1,6 +1,5 @@
 import type { Nullable } from "core/types";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
@@ -23,8 +22,6 @@ declare module "../../glTFFileLoader" {
         ["KHR_materials_sheen"]: {};
     }
 }
-
-let PBRMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial;
 
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_sheen/README.md)
@@ -66,26 +63,19 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
      * @internal
      */
     // eslint-disable-next-line no-restricted-syntax
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, useOpenPBR: boolean = false): Nullable<Promise<void>> {
+    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsSheen>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            if (useOpenPBR) {
-                const mod = await import("core/Materials/PBR/openPbrMaterial");
-                PBRMaterialClass = mod.OpenPBRMaterial;
-            } else {
-                const mod = await import("core/Materials/PBR/pbrMaterial");
-                PBRMaterialClass = mod.PBRMaterial;
-            }
-            promises.push(this._loadSheenPropertiesAsync(extensionContext, extension, babylonMaterial, useOpenPBR));
+            promises.push(this._loadSheenPropertiesAsync(extensionContext, extension, babylonMaterial));
             // eslint-disable-next-line github/no-then
             return await Promise.all(promises).then(() => {});
         });
     }
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    private _loadSheenPropertiesAsync(context: string, properties: IKHRMaterialsSheen, babylonMaterial: Material, useOpenPBR: boolean): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterialClass)) {
+    private _loadSheenPropertiesAsync(context: string, properties: IKHRMaterialsSheen, babylonMaterial: Material): Promise<void> {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
@@ -125,7 +115,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
 
         // eslint-disable-next-line github/no-then
         return Promise.all(promises).then(() => {
-            if (useOpenPBR) {
+            if (this._loader.parent.useOpenPBR) {
                 return;
             }
             const pbrMaterial = babylonMaterial as PBRMaterial;
