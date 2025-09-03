@@ -20,7 +20,9 @@ export function Vector2ToFixed(vector: IVector2Like, decimalCount: number): stri
  * @param b defines the second vector
  * @returns the dot product
  */
-export const Vector3Dot = <T extends IVector3Like, U extends IVector3Like>(a: DeepImmutable<T>, b: DeepImmutable<U>) => a.x * b.x + a.y * b.y + a.z * b.z;
+export function Vector3Dot<T extends IVector3Like, U extends IVector3Like>(a: DeepImmutable<T>, b: DeepImmutable<U>) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
 
 /**
  * Creates a string representation of the Vector3
