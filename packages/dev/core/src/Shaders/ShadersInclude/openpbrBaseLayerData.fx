@@ -167,15 +167,17 @@ geometry_tangent = vSpecularAnisotropy.rg;
     // TODO - optimize this. Currently, we're computing the tangent angle from both the texture and the uniform,
     // then combining them. If we ignored the uniform when the texture was used, we wouldn't have to do any of this.
     // Or, at least, we could pass the uniform in as an angle to avoid one of the atan's.
-    float tangent_angle_texture = atan(geometryTangentFromTexture.y, geometryTangentFromTexture.x);
+    vec2 tangentFromTexture = normalize(geometryTangentFromTexture.xy * 2.0 - 1.0);
+    float tangent_angle_texture = atan(tangentFromTexture.y, tangentFromTexture.x);
     float tangent_angle_uniform = atan(geometry_tangent.y, geometry_tangent.x);
     float tangent_angle = tangent_angle_texture + tangent_angle_uniform;
     geometry_tangent = vec2(cos(tangent_angle), sin(tangent_angle));
 }
 #endif
 
-#ifdef SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE
-        specular_roughness_anisotropy *= geometryTangentFromTexture.b;
+#if defined(GEOMETRY_TANGENT) &&                                               \
+    defined(SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE)
+specular_roughness_anisotropy *= geometryTangentFromTexture.b;
 #elif defined(SPECULAR_ROUGHNESS_ANISOTROPY)
     specular_roughness_anisotropy *= anisotropyFromTexture;
 #endif
@@ -185,4 +187,14 @@ geometry_tangent = vSpecularAnisotropy.rg;
     float loLerp = mix(0., specular_roughness, detailRoughness * 2.);
     float hiLerp = mix(specular_roughness, 1., (detailRoughness - 0.5) * 2.);
     specular_roughness = mix(loLerp, hiLerp, step(detailRoughness, 0.5));
+#endif
+
+#ifdef USE_GLTF_STYLE_ANISOTROPY
+    float baseAlpha = specular_roughness * specular_roughness;
+
+    // From glTF to OpenPBR
+    float roughnessT = mix(baseAlpha, 1.0, specular_roughness_anisotropy * specular_roughness_anisotropy);
+    float roughnessB = baseAlpha;
+    specular_roughness_anisotropy = 1.0 - roughnessB / max(roughnessT, 0.00001);
+    specular_roughness = sqrt(roughnessT / sqrt(2.0 / (1.0 + (1.0 - specular_roughness_anisotropy) * (1.0 - specular_roughness_anisotropy))));
 #endif

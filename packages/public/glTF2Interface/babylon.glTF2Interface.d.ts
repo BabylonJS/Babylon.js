@@ -1107,6 +1107,14 @@ declare module BABYLON.GLTF2 {
         anisotropyStrength?: number;
         anisotropyRotation?: number;
         anisotropyTexture?: ITextureInfo;
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /** @internal */
+    interface IKHRMaterialsAnisotropyOpenPbr {
+        anisotropyOpenPbrEnabled: boolean;
     }
 
     /**

@@ -308,7 +308,7 @@ export class GLTFMaterialExporter {
     }
 
     private async _finishMaterialAsync(glTFMaterial: IMaterial, babylonMaterial: Material): Promise<void> {
-        const textures = this._exporter._extensionsPostExportMaterialAdditionalTextures("exportMaterial", glTFMaterial, babylonMaterial);
+        const textures = await this._exporter._extensionsPostExportMaterialAdditionalTexturesAsync("exportMaterial", glTFMaterial, babylonMaterial);
 
         const promises: Array<Promise<Nullable<ITextureInfo>>> = [];
 
