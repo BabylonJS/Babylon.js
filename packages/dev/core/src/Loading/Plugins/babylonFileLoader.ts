@@ -155,6 +155,7 @@ const FindMaterial = (materialId: any, scene: Scene) => {
 };
 
 /**
+ * @experimental
  * Loads an AssetContainer from a serialized Babylon scene.
  * @param scene The scene to load the asset container into.
  * @param serializedScene The serialized scene data. This can be either a JSON string, or an object (e.g. from a call to JSON.parse).
