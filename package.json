@@ -93,6 +93,8 @@
         "test:unit": "npm run build:assets:smart-filters && jest --selectProjects=unit",
         "test:visualization": "playwright test -c ./playwright.config.ts",
         "test:visualization:ui": "playwright test -c ./playwright.config.ts --ui",
+        "test:visualization:devhost": "playwright test -c ./playwright.devhost.config.ts",
+        "test:visualization:devhost:ui": "playwright test -c ./playwright.devhost.config.ts --ui",
         "test:integration": "jest --selectProjects=integration --runInBand && npm run test -w @tools/memory-leak-tests",
         "test:performance": "playwright test -c ./playwright.config.ts --project=performance",
         "test:interactions": "playwright test -c ./playwright.config.ts --project=interaction",
@@ -110,7 +112,8 @@
         "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
-        "start": "concurrently --kill-others -m 3 -n dev-watch,cdn-server,dev-host \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\" \"npm run serve -w @tools/dev-host\""
+        "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\"",
+        "start:devhost": "concurrently --kill-others -m 1 -n dev-host \"npm run serve -w @tools/dev-host\""
     },
     "engines": {
         "node": ">=20.11.0 <23.0.0",
