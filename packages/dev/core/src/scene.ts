@@ -4903,7 +4903,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         const hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
-                        if (renderTarget.enableBoundingBoxRendering && boundingBoxRenderer && !currentBoundingBoxMeshList) {
+                        if (boundingBoxRenderer && !currentBoundingBoxMeshList) {
                             // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which will be reset/updated when processing this target
                             currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
                             currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;

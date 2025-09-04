@@ -191,7 +191,131 @@ type DefaultExtensionOptions<BaseExtensionOptions> = {
     enabled?: boolean;
 } & BaseExtensionOptions;
 
-abstract class GLTFLoaderOptions {
+/**
+ * This class contains all the concrete (not abstract) glTF options, excluding callbacks.
+ * The purpose of this class is to make it easy to provide a way to mutate the default
+ * loader options (see the GLTFLoaderDefaultOptions instance below) without duplicating
+ * all the options in yet another object. Since this class is instantiated for the default
+ * options object, abstract properties and callbacks are not included, it's more just
+ * flag-type options.
+ */
+class GLTFLoaderBaseOptions {
+    /**
+     * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
+     */
+    public alwaysComputeBoundingBox = false;
+
+    /**
+     * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
+     * Set this to true if loading assets with invalid `skin.skeleton` values.
+     */
+    public alwaysComputeSkeletonRootNode = false;
+
+    /**
+     * The animation start mode. Defaults to FIRST.
+     */
+    public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
+
+    /**
+     * Defines if the loader should compile materials before raising the success callback. Defaults to false.
+     */
+    public compileMaterials = false;
+
+    /**
+     * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
+     */
+    public compileShadowGenerators = false;
+
+    /**
+     * The coordinate system mode. Defaults to AUTO.
+     */
+    public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+
+    /**
+     * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
+     */
+    public createInstances = true;
+
+    /**
+     * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
+     */
+    public loadAllMaterials = false;
+
+    /**
+     * Defines if the loader should load morph targets. Defaults to true.
+     */
+    public loadMorphTargets = true;
+
+    /**
+     * Defines if the loader should load node animations. Defaults to true.
+     * NOTE: The animation of this node will still load if the node is also a joint of a skin and `loadSkins` is true.
+     */
+    public loadNodeAnimations = true;
+
+    /**
+     * If true, load only the materials defined in the file. Defaults to false.
+     */
+    public loadOnlyMaterials = false;
+
+    /**
+     * Defines if the loader should load skins. Defaults to true.
+     */
+    public loadSkins = true;
+
+    /**
+     * If true, do not load any materials defined in the file. Defaults to false.
+     */
+    public skipMaterials = false;
+
+    /**
+     * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
+     */
+    public targetFps = 60;
+
+    /**
+     * Defines if the Alpha blended materials are only applied as coverage.
+     * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
+     * If true, no extra effects are applied to transparent pixels.
+     */
+    public transparencyAsCoverage = false;
+
+    /**
+     * Defines if the loader should also compile materials with clip planes. Defaults to false.
+     */
+    public useClipPlane = false;
+
+    /**
+     * If true, the loader will derive the name for Babylon textures from the glTF texture name, image name, or image url. Defaults to false.
+     * Note that it is possible for multiple Babylon textures to share the same name when the Babylon textures load from the same glTF texture or image.
+     */
+    public useGltfTextureNames = false;
+
+    /**
+     * Defines if the loader should use range requests when load binary glTF files from HTTP.
+     * Enabling will disable offline support and glTF validator.
+     * Defaults to false.
+     */
+    public useRangeRequests = false;
+
+    /**
+     * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
+     */
+    public useSRGBBuffers = true;
+
+    /**
+     * Defines if the loader should validate the asset.
+     */
+    public validate = false;
+}
+
+/**
+ * The default GLTF loader options.
+ * Override the properties of this object to globally change the default loader options.
+ * To specify options for a specific load call, pass those options into the associated load function.
+ */
+export const GLTFLoaderDefaultOptions = new GLTFLoaderBaseOptions();
+
+abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
     // eslint-disable-next-line babylonjs/available
     protected copyFrom(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         if (options) {
@@ -244,45 +368,9 @@ abstract class GLTFLoaderOptions {
     // ----------
 
     /**
-     * Defines if the loader should always compute the bounding boxes of meshes and not use the min/max values from the position accessor. Defaults to false.
-     */
-    public alwaysComputeBoundingBox = false;
-
-    /**
-     * Defines if the loader should always compute the nearest common ancestor of the skeleton joints instead of using `skin.skeleton`. Defaults to false.
-     * Set this to true if loading assets with invalid `skin.skeleton` values.
-     */
-    public alwaysComputeSkeletonRootNode = false;
-
-    /**
-     * The animation start mode. Defaults to FIRST.
-     */
-    public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
-
-    /**
      * Defines if the loader should capture performance counters.
      */
     public abstract capturePerformanceCounters: boolean;
-
-    /**
-     * Defines if the loader should compile materials before raising the success callback. Defaults to false.
-     */
-    public compileMaterials = false;
-
-    /**
-     * Defines if the loader should compile shadow generators before raising the success callback. Defaults to false.
-     */
-    public compileShadowGenerators = false;
-
-    /**
-     * The coordinate system mode. Defaults to AUTO.
-     */
-    public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
-
-    /**
-     * Defines if the loader should create instances when multiple glTF nodes point to the same glTF mesh. Defaults to true.
-     */
-    public createInstances = true;
 
     /**
      * Defines the node to use as the root of the hierarchy when loading the scene (default: undefined). If not defined, a root node will be automatically created.
@@ -301,32 +389,6 @@ abstract class GLTFLoaderOptions {
             [Option in keyof DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>]: DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>[Option];
         };
     } = {};
-
-    /**
-     * If true, load all materials defined in the file, even if not used by any mesh. Defaults to false.
-     */
-    public loadAllMaterials = false;
-
-    /**
-     * Defines if the loader should load morph targets. Defaults to true.
-     */
-    public loadMorphTargets = true;
-
-    /**
-     * Defines if the loader should load node animations. Defaults to true.
-     * NOTE: The animation of this node will still load if the node is also a joint of a skin and `loadSkins` is true.
-     */
-    public loadNodeAnimations = true;
-
-    /**
-     * If true, load only the materials defined in the file. Defaults to false.
-     */
-    public loadOnlyMaterials = false;
-
-    /**
-     * Defines if the loader should load skins. Defaults to true.
-     */
-    public loadSkins = true;
 
     /**
      * If true, enable logging for the loader. Defaults to false.
@@ -371,51 +433,6 @@ abstract class GLTFLoaderOptions {
      * @returns Async url to load
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
-
-    /**
-     * If true, do not load any materials defined in the file. Defaults to false.
-     */
-    public skipMaterials = false;
-
-    /**
-     * When loading glTF animations, which are defined in seconds, target them to this FPS. Defaults to 60.
-     */
-    public targetFps = 60;
-
-    /**
-     * Defines if the Alpha blended materials are only applied as coverage.
-     * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
-     * If true, no extra effects are applied to transparent pixels.
-     */
-    public transparencyAsCoverage = false;
-
-    /**
-     * Defines if the loader should also compile materials with clip planes. Defaults to false.
-     */
-    public useClipPlane = false;
-
-    /**
-     * If true, the loader will derive the name for Babylon textures from the glTF texture name, image name, or image url. Defaults to false.
-     * Note that it is possible for multiple Babylon textures to share the same name when the Babylon textures load from the same glTF texture or image.
-     */
-    public useGltfTextureNames = false;
-
-    /**
-     * Defines if the loader should use range requests when load binary glTF files from HTTP.
-     * Enabling will disable offline support and glTF validator.
-     * Defaults to false.
-     */
-    public useRangeRequests = false;
-
-    /**
-     * If true, load the color (gamma encoded) textures into sRGB buffers (if supported by the GPU), which will yield more accurate results when sampling the texture. Defaults to true.
-     */
-    public useSRGBBuffers = true;
-
-    /**
-     * Defines if the loader should validate the asset.
-     */
-    public validate = false;
 }
 
 /**
@@ -434,7 +451,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
      */
     public constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         super();
-        this.copyFrom(options);
+        this.copyFrom(Object.assign({ ...GLTFLoaderDefaultOptions }, options));
     }
 
     // --------------------
