@@ -110,7 +110,7 @@ export class Sound {
      * Is this sound currently played.
      */
     public get isPlaying(): boolean {
-        return this._soundV2 instanceof _WebAudioSoundSource ? true : this._soundV2.state === SoundState.Started;
+        return this._soundV2 instanceof _WebAudioSoundSource ? true : this._soundV2.state === SoundState.Started || this._optionsV2.autoplay!;
     }
 
     /**
@@ -663,6 +663,9 @@ export class Sound {
 
         TmpStopOptions.waitTime = time || 0;
         this._soundV2.stop(TmpStopOptions);
+
+        // Set autoplay to `false` so `isPlaying` correctly returns `false`.
+        this._optionsV2.autoplay = false;
     }
 
     /**
