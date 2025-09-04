@@ -11,6 +11,11 @@ import { AudioTestSamples } from "./helpers/audioTestSamples";
 import { MockedAudioObjects } from "./helpers/mockedAudioObjects";
 import type { Nullable } from "../../../src/types";
 
+// Required for timers (eg. setTimeout) to work.
+jest.useFakeTimers();
+
+const realSetTimeout = jest.requireActual("timers").setTimeout;
+
 async function CreateSoundAsync(
     name: string,
     urlOrArrayBuffer: any,
@@ -18,28 +23,29 @@ async function CreateSoundAsync(
     readyToPlayCallback: Nullable<() => void> = null,
     options?: ISoundOptions
 ): Promise<Sound> {
-    const sound = new Sound(name, urlOrArrayBuffer, scene, readyToPlayCallback, options);
-
     return new Promise<Sound>((resolve, reject) => {
-        const startTime = jest.getRealSystemTime();
+        const timer = realSetTimeout(() => {
+            throw new Error("Sound creation timed out.");
+        }, 1000);
 
-        while (!sound.isReady) {
-            if (jest.getRealSystemTime() - startTime > 1000) {
-                reject("Sound initialization took too long.");
-            }
-        }
-
-        resolve(sound);
+        const sound = new Sound(
+            name,
+            urlOrArrayBuffer,
+            scene,
+            () => {
+                clearTimeout(timer);
+                readyToPlayCallback?.();
+                resolve(sound);
+            },
+            options
+        );
     });
 }
 
-// Required for timers (eg. setTimeout) to work.
-jest.useFakeTimers();
-
 describe("Sound with no scene", () => {
-    it("constructor does not set scene if no scene is given", async () => {
+    it("constructor does not set scene if no scene is given", () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = new Sound(expect.getState().currentTestName, audioSample.arrayBuffer);
 
         expect((sound as any)._scene).toBeUndefined();
     });
