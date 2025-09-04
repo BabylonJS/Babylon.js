@@ -46,9 +46,6 @@ export function ImageProcessingDefinesMixin<Tbase extends ImageProcessingDefines
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public SKIPFINALCOLORCLAMP = false;
         public EXPOSURE = false;
-        public MULTIVIEW = false;
-        public ORDER_INDEPENDENT_TRANSPARENCY = false;
-        public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
     };
 }
 

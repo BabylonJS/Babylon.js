@@ -1,6 +1,7 @@
 // _____________________________ Base Diffuse Layer IBL _______________________________________
 #ifdef REFLECTION
-    // Pass in a vector to sample teh irradiance with (to handle reflection or )
+    // Pass in a vector to sample the irradiance with. A normal can be used for
+    // diffuse irradiance while a refracted vector can be used for diffuse transmission.
     vec3 baseDiffuseEnvironmentLight = sampleIrradiance(
         normalW
         #if defined(NORMAL) && defined(USESPHERICALINVERTEX)

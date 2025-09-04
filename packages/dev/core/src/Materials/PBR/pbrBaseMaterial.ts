@@ -250,6 +250,10 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
     public NUM_MORPH_INFLUENCERS = 0;
     public MORPHTARGETS_TEXTURE = false;
 
+    public MULTIVIEW = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY = false;
+    public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
+
     public USEPHYSICALLIGHTFALLOFF = false;
     public USEGLTFLIGHTFALLOFF = false;
     public TWOSIDEDLIGHTING = false;
