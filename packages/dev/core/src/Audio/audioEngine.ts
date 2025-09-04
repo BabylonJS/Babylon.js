@@ -21,7 +21,6 @@ AbstractEngine.AudioEngineFactory = (
  * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
  */
 export class AudioEngine implements IAudioEngine {
-    private _audioContext: Nullable<AudioContext> = null;
     private _masterGain: GainNode;
     private _tryToRun = false;
     private _useCustomUnlockedButton: boolean = false;
@@ -169,7 +168,7 @@ export class AudioEngine implements IAudioEngine {
      * This is helpful to resume play once browser policies have been satisfied.
      */
     public unlock() {
-        if (this._audioContext?.state === "running") {
+        if (this._v2._audioContext?.state === "running") {
             if (!this.unlocked) {
                 // Notify users that the audio stack is unlocked/unmuted
                 this.unlocked = true;
@@ -185,10 +184,10 @@ export class AudioEngine implements IAudioEngine {
 
     /** @internal */
     public _resumeAudioContextOnStateChange(): void {
-        this._audioContext?.addEventListener(
+        this._v2._audioContext?.addEventListener(
             "statechange",
             () => {
-                if (this.unlocked && this._audioContext?.state !== "running") {
+                if (this.unlocked && this._v2._audioContext?.state !== "running") {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     this._resumeAudioContextAsync();
                 }
