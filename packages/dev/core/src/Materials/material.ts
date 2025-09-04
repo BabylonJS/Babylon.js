@@ -206,6 +206,23 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
 
     /**
+     * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
+     */
+    public static readonly LIGHTFALLOFF_PHYSICAL = 0;
+
+    /**
+     * PBRMaterialLightFalloff gltf: light is falling off as described in the gltf moving to PBR document
+     * to enhance interoperability with other engines.
+     */
+    public static readonly LIGHTFALLOFF_GLTF = 1;
+
+    /**
+     * PBRMaterialLightFalloff Standard: light is falling off like in the standard material
+     * to enhance interoperability with other materials.
+     */
+    public static readonly LIGHTFALLOFF_STANDARD = 2;
+
+    /**
      * Event observable which raises global events common to all materials (like MaterialPluginEvent.Created)
      */
     public static OnEventObservable = new Observable<Material>();

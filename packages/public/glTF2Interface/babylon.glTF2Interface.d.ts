@@ -1072,6 +1072,24 @@ declare module BABYLON.GLTF2 {
         clearcoatRoughnessFactor?: number;
         clearcoatRoughnessTexture?: ITextureInfo;
         clearcoatNormalTexture?: IMaterialNormalTextureInfo;
+        /**
+         * Dictionary object with extension-specific objects
+         */
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /** @internal */
+    interface IEXTMaterialsClearcoatDarkening {
+        clearcoatDarkeningFactor?: number;
+        clearcoatDarkeningTexture?: ITextureInfo;
+    }
+
+    /** @internal */
+    interface IEXTMaterialsClearcoatColor {
+        clearcoatColorFactor?: number[];
+        clearcoatColorTexture?: ITextureInfo;
     }
 
     /** @internal */
@@ -1089,6 +1107,14 @@ declare module BABYLON.GLTF2 {
         anisotropyStrength?: number;
         anisotropyRotation?: number;
         anisotropyTexture?: ITextureInfo;
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /** @internal */
+    interface IKHRMaterialsAnisotropyOpenPbr {
+        anisotropyOpenPbrEnabled: boolean;
     }
 
     /**

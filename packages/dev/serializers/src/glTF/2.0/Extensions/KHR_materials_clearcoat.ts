@@ -6,6 +6,7 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 import { Tools } from "core/Misc/tools";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -38,7 +39,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
-    public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
+    public async postExportMaterialAdditionalTexturesAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         const additionalTextures: BaseTexture[] = [];
         if (babylonMaterial instanceof PBRBaseMaterial) {
             if (babylonMaterial.clearCoat.isEnabled) {
@@ -50,6 +51,19 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                 }
                 if (babylonMaterial.clearCoat.bumpTexture) {
                     additionalTextures.push(babylonMaterial.clearCoat.bumpTexture);
+                }
+                return additionalTextures;
+            }
+        } else if (babylonMaterial instanceof OpenPBRMaterial) {
+            if (babylonMaterial.coatWeight > 0) {
+                if (babylonMaterial.coatWeightTexture) {
+                    additionalTextures.push(babylonMaterial.coatWeightTexture);
+                }
+                if (babylonMaterial.geometryCoatNormalTexture) {
+                    additionalTextures.push(babylonMaterial.geometryCoatNormalTexture);
+                }
+                if (babylonMaterial.coatRoughnessTexture) {
+                    additionalTextures.push(babylonMaterial.coatRoughnessTexture);
                 }
                 return additionalTextures;
             }
@@ -93,6 +107,43 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                     clearcoatFactor: babylonMaterial.clearCoat.intensity,
                     clearcoatTexture: clearCoatTextureInfo ?? undefined,
                     clearcoatRoughnessFactor: babylonMaterial.clearCoat.roughness,
+                    clearcoatRoughnessTexture: clearCoatTextureRoughnessInfo ?? undefined,
+                    clearcoatNormalTexture: clearCoatNormalTextureInfo ?? undefined,
+                };
+
+                if (clearCoatInfo.clearcoatTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null || clearCoatInfo.clearcoatRoughnessTexture !== null) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
+
+                node.extensions[NAME] = clearCoatInfo;
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                if (babylonMaterial.coatWeight == 0.0) {
+                    resolve(node);
+                    return;
+                }
+
+                this._wasUsed = true;
+
+                node.extensions = node.extensions || {};
+
+                const clearCoatTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.coatWeightTexture);
+                let clearCoatTextureRoughnessInfo;
+                if (babylonMaterial.useCoatRoughnessFromWeightTexture) {
+                    clearCoatTextureRoughnessInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.coatWeightTexture);
+                } else {
+                    clearCoatTextureRoughnessInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.coatRoughnessTexture);
+                }
+
+                if (babylonMaterial.coatColorTexture) {
+                    Tools.Warn(`Clear Color tint is not supported for glTF export. Ignoring for: ${babylonMaterial.name}`);
+                }
+
+                const clearCoatNormalTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.geometryCoatNormalTexture);
+
+                const clearCoatInfo: IKHRMaterialsClearcoat = {
+                    clearcoatFactor: babylonMaterial.coatWeight,
+                    clearcoatTexture: clearCoatTextureInfo ?? undefined,
+                    clearcoatRoughnessFactor: babylonMaterial.coatRoughness,
                     clearcoatRoughnessTexture: clearCoatTextureRoughnessInfo ?? undefined,
                     clearcoatNormalTexture: clearCoatNormalTextureInfo ?? undefined,
                 };

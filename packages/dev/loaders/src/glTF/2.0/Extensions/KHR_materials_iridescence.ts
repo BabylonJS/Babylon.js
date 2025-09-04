@@ -1,6 +1,7 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -72,24 +73,29 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadIridescencePropertiesAsync(context: string, properties: IKHRMaterialsIridescence, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        let iridescenceWeight = 0.0;
+        let iridescenceWeightTexture: Nullable<BaseTexture> = null;
+        let iridescenceIor = 1.3;
+        let iridescenceThicknessMinimum = 100;
+        let iridescenceThicknessMaximum = 400;
+        let iridescenceThicknessTexture: Nullable<BaseTexture> = null;
+
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.iridescence.isEnabled = true;
-
-        babylonMaterial.iridescence.intensity = properties.iridescenceFactor ?? 0;
-        babylonMaterial.iridescence.indexOfRefraction = properties.iridescenceIor ?? (properties as any).iridescenceIOR ?? 1.3;
-        babylonMaterial.iridescence.minimumThickness = properties.iridescenceThicknessMinimum ?? 100;
-        babylonMaterial.iridescence.maximumThickness = properties.iridescenceThicknessMaximum ?? 400;
+        iridescenceWeight = properties.iridescenceFactor ?? 0;
+        iridescenceIor = properties.iridescenceIor ?? (properties as any).iridescenceIOR ?? 1.3;
+        iridescenceThicknessMinimum = properties.iridescenceThicknessMinimum ?? 100;
+        iridescenceThicknessMaximum = properties.iridescenceThicknessMaximum ?? 400;
 
         if (properties.iridescenceTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/iridescenceTexture`, properties.iridescenceTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Iridescence)`;
-                    babylonMaterial.iridescence.texture = texture;
+                    iridescenceWeightTexture = texture;
                 })
             );
         }
@@ -98,13 +104,23 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/iridescenceThicknessTexture`, properties.iridescenceThicknessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Iridescence Thickness)`;
-                    babylonMaterial.iridescence.thicknessTexture = texture;
+                    iridescenceThicknessTexture = texture;
                 })
             );
         }
 
         // eslint-disable-next-line github/no-then
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => {
+            const pbrMaterial = babylonMaterial as PBRMaterial;
+            pbrMaterial.iridescence.isEnabled = true;
+
+            pbrMaterial.iridescence.intensity = iridescenceWeight;
+            pbrMaterial.iridescence.indexOfRefraction = iridescenceIor;
+            pbrMaterial.iridescence.minimumThickness = iridescenceThicknessMinimum;
+            pbrMaterial.iridescence.maximumThickness = iridescenceThicknessMaximum;
+            pbrMaterial.iridescence.texture = iridescenceWeightTexture;
+            pbrMaterial.iridescence.thicknessTexture = iridescenceThicknessTexture;
+        });
     }
 }
 

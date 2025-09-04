@@ -1,6 +1,6 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -77,14 +77,19 @@ export class KHR_materials_ior implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadIorPropertiesAsync(context: string, properties: IKHRMaterialsIor, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        let indexOfRefraction = 1.5;
         if (properties.ior !== undefined) {
-            babylonMaterial.indexOfRefraction = properties.ior;
+            indexOfRefraction = properties.ior;
         } else {
-            babylonMaterial.indexOfRefraction = KHR_materials_ior._DEFAULT_IOR;
+            indexOfRefraction = KHR_materials_ior._DEFAULT_IOR;
+        }
+
+        if (!this._loader.parent.useOpenPBR) {
+            (babylonMaterial as PBRMaterial).indexOfRefraction = indexOfRefraction;
         }
 
         return Promise.resolve();

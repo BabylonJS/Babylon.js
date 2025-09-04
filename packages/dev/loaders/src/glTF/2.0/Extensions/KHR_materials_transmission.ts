@@ -1,5 +1,5 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -166,7 +166,7 @@ class TransmissionHelper {
         if (!material) {
             return false;
         }
-        if (material instanceof PBRMaterial && material.subSurface.isRefractionEnabled) {
+        if ((material as any).subSurface.isRefractionEnabled) {
             return true;
         }
         return false;
@@ -220,8 +220,8 @@ class TransmissionHelper {
         // If the material is transparent, make sure that it's added to the transparent list and removed from the opaque list
         const useTransmission = this._shouldRenderAsTransmission(mesh.material);
         if (useTransmission) {
-            if (mesh.material instanceof PBRMaterial) {
-                mesh.material.subSurface.refractionTexture = this._opaqueRenderTarget;
+            if (mesh.material) {
+                (mesh.material as any).subSurface.refractionTexture = this._opaqueRenderTarget;
             }
             if (opaqueIdx !== -1) {
                 this._opaqueMeshesCache.splice(opaqueIdx, 1);
@@ -378,13 +378,35 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadTransparentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsTransmission): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
-        const pbrMaterial = babylonMaterial;
+        if (this._loader.parent.useOpenPBR) {
+            return Promise.resolve();
+        }
+
+        let transmissionWeight = 0.0;
+        let transmissionWeightTexture: Nullable<BaseTexture> = null;
+
+        let texturePromise = new Promise<Nullable<BaseTexture>>((resolve) => resolve(null));
+        if (extension.transmissionFactor !== undefined) {
+            transmissionWeight = extension.transmissionFactor;
+        } else {
+            return Promise.resolve();
+        }
+        if (extension.transmissionTexture) {
+            (extension.transmissionTexture as ITextureInfo).nonColorData = true;
+            // eslint-disable-next-line github/no-then
+            texturePromise = this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, (texture: BaseTexture) => {
+                texture.name = `${babylonMaterial.name} (Transmission)`;
+                transmissionWeightTexture = texture;
+            });
+        }
+
+        const pbrMaterial = babylonMaterial as PBRMaterial;
 
         // Enables "refraction" texture which represents transmitted light.
-        pbrMaterial.subSurface.isRefractionEnabled = true;
+        pbrMaterial.subSurface.isRefractionEnabled = transmissionWeight !== 0;
 
         // Since this extension models thin-surface transmission only, we must make IOR = 1.0
         pbrMaterial.subSurface.volumeIndexOfRefraction = 1.0;
@@ -392,8 +414,9 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         // Albedo colour will tint transmission.
         pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
 
-        if (extension.transmissionFactor !== undefined) {
-            pbrMaterial.subSurface.refractionIntensity = extension.transmissionFactor;
+        pbrMaterial.subSurface.refractionIntensity = transmissionWeight;
+
+        if (transmissionWeight) {
             const scene = pbrMaterial.getScene() as unknown as ITransmissionHelperHolder;
             if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper) {
                 new TransmissionHelper({}, pbrMaterial.getScene());
@@ -401,25 +424,16 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
                 // If the render target is not valid, recreate it.
                 scene._transmissionHelper?._setupRenderTargets();
             }
-        } else {
-            pbrMaterial.subSurface.refractionIntensity = 0.0;
-            pbrMaterial.subSurface.isRefractionEnabled = false;
-            return Promise.resolve();
         }
 
         pbrMaterial.subSurface.minimumThickness = 0.0;
         pbrMaterial.subSurface.maximumThickness = 0.0;
-        if (extension.transmissionTexture) {
-            (extension.transmissionTexture as ITextureInfo).nonColorData = true;
-            // eslint-disable-next-line github/no-then
-            return this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, undefined).then((texture: BaseTexture) => {
-                texture.name = `${babylonMaterial.name} (Transmission)`;
-                pbrMaterial.subSurface.refractionIntensityTexture = texture;
-                pbrMaterial.subSurface.useGltfStyleTextures = true;
-            });
-        } else {
-            return Promise.resolve();
-        }
+
+        // eslint-disable-next-line github/no-then
+        return texturePromise.then(() => {
+            pbrMaterial.subSurface.refractionIntensityTexture = transmissionWeightTexture;
+            pbrMaterial.subSurface.useGltfStyleTextures = true;
+        });
     }
 }
 

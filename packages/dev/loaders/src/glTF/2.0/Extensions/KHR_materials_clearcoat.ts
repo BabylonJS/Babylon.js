@@ -1,12 +1,16 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
-import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { EXT_materials_clearcoat_darkening } from "./EXT_materials_clearcoat_darkening";
+import type { EXT_materials_clearcoat_color } from "./EXT_materials_clearcoat_color";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -65,42 +69,67 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsClearcoat>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
+            if (!this._loader._pbrMaterialClass) {
+                throw new Error(`${context}: Material type not supported`);
+            }
             promises.push(this._loadClearCoatPropertiesAsync(extensionContext, extension, babylonMaterial));
+            if (this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.EXT_materials_clearcoat_darkening) {
+                let darkeningExtension = await registeredGLTFExtensions.get("EXT_materials_clearcoat_darkening")?.factory(this._loader);
+                darkeningExtension = darkeningExtension as EXT_materials_clearcoat_darkening;
+                if (darkeningExtension && darkeningExtension.enabled && darkeningExtension.loadMaterialPropertiesAsync) {
+                    const promise = darkeningExtension.loadMaterialPropertiesAsync(extensionContext, extension as any, babylonMaterial);
+                    if (promise) {
+                        promises.push(promise);
+                    }
+                }
+            }
+            if (this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.EXT_materials_clearcoat_color) {
+                let colorExtension = await registeredGLTFExtensions.get("EXT_materials_clearcoat_color")?.factory(this._loader);
+                colorExtension = colorExtension as EXT_materials_clearcoat_color;
+                if (colorExtension && colorExtension.enabled && colorExtension.loadMaterialPropertiesAsync) {
+                    const promise = colorExtension.loadMaterialPropertiesAsync(extensionContext, extension as any, babylonMaterial);
+                    if (promise) {
+                        promises.push(promise);
+                    }
+                }
+            }
             await Promise.all(promises);
         });
     }
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadClearCoatPropertiesAsync(context: string, properties: IKHRMaterialsClearcoat, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
-
-        babylonMaterial.clearCoat.isEnabled = true;
-        babylonMaterial.clearCoat.useRoughnessFromMainTexture = false;
-        babylonMaterial.clearCoat.remapF0OnInterfaceChange = false;
+        let coatRoughness = 0;
+        let coatWeight = 0;
+        let coatWeightTexture: Nullable<BaseTexture> = null;
+        let coatRoughnessTexture: Nullable<BaseTexture> = null;
+        let coatNormalTexture: Nullable<BaseTexture> = null;
+        let coatNormalTextureScale = 1;
 
         if (properties.clearcoatFactor != undefined) {
-            babylonMaterial.clearCoat.intensity = properties.clearcoatFactor;
+            coatWeight = properties.clearcoatFactor;
         } else {
-            babylonMaterial.clearCoat.intensity = 0;
+            coatWeight = 0;
         }
 
         if (properties.clearcoatTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/clearcoatTexture`, properties.clearcoatTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (ClearCoat)`;
-                    babylonMaterial.clearCoat.texture = texture;
+                    coatWeightTexture = texture;
                 })
             );
         }
 
         if (properties.clearcoatRoughnessFactor != undefined) {
-            babylonMaterial.clearCoat.roughness = properties.clearcoatRoughnessFactor;
+            coatRoughness = properties.clearcoatRoughnessFactor;
         } else {
-            babylonMaterial.clearCoat.roughness = 0;
+            coatRoughness = 0;
         }
 
         if (properties.clearcoatRoughnessTexture) {
@@ -108,7 +137,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
-                    babylonMaterial.clearCoat.textureRoughness = texture;
+                    coatRoughnessTexture = texture;
                 })
             );
         }
@@ -118,19 +147,45 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
-                    babylonMaterial.clearCoat.bumpTexture = texture;
+                    coatNormalTexture = texture;
                 })
             );
 
-            babylonMaterial.invertNormalMapX = !babylonMaterial.getScene().useRightHandedSystem;
-            babylonMaterial.invertNormalMapY = babylonMaterial.getScene().useRightHandedSystem;
+            if (!this._loader.parent.useOpenPBR) {
+                (babylonMaterial as PBRMaterial).invertNormalMapX = !babylonMaterial.getScene().useRightHandedSystem;
+                (babylonMaterial as PBRMaterial).invertNormalMapY = babylonMaterial.getScene().useRightHandedSystem;
+            }
             if (properties.clearcoatNormalTexture.scale != undefined) {
-                babylonMaterial.clearCoat.bumpTexture!.level = properties.clearcoatNormalTexture.scale;
+                coatNormalTextureScale = properties.clearcoatNormalTexture.scale;
             }
         }
 
         // eslint-disable-next-line github/no-then
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => {
+            if (this._loader.parent.useOpenPBR) {
+                const material = babylonMaterial as OpenPBRMaterial;
+                material.coatWeight = coatWeight;
+                material.coatWeightTexture = coatWeightTexture;
+                material.coatRoughness = coatRoughness;
+                material.coatRoughnessTexture = coatRoughnessTexture;
+                material.geometryCoatNormalTexture = coatNormalTexture;
+                return;
+            } else {
+                const material = babylonMaterial as PBRMaterial;
+                material.clearCoat.isEnabled = true;
+                material.clearCoat.useRoughnessFromMainTexture = false;
+                material.clearCoat.remapF0OnInterfaceChange = false;
+                material.clearCoat.intensity = coatWeight;
+                material.clearCoat.texture = coatWeightTexture;
+                material.clearCoat.roughness = coatRoughness;
+                material.clearCoat.textureRoughness = coatRoughnessTexture;
+
+                material.clearCoat.bumpTexture = coatNormalTexture;
+                if (coatNormalTexture) {
+                    material.clearCoat.bumpTexture!.level = coatNormalTextureScale;
+                }
+            }
+        });
     }
 }
 
