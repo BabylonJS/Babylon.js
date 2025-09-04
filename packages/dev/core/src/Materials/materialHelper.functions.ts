@@ -764,6 +764,7 @@ export function PrepareDefinesForIBL(
         if (!reflectionTexture.isReadyOrNotBlocking()) {
             return false;
         }
+        defines._needNormals = true;
         defines.REFLECTION = true;
         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
         defines.RGBDREFLECTION = reflectionTexture.isRGBD;

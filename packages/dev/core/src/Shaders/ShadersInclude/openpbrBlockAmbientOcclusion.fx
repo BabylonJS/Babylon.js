@@ -6,6 +6,7 @@ struct ambientOcclusionOutParams
 #endif
 };
 
+#define pbr_inline
 ambientOcclusionOutParams ambientOcclusionBlock(
 #ifdef AMBIENT_OCCLUSION
     in vec3 ambientOcclusionColorMap_,
