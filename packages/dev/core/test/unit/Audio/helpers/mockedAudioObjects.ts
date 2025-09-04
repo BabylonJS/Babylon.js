@@ -1,6 +1,6 @@
 import { Engine } from "core/Engines";
 
-import { AudioTestSamples } from "./audioTestSamples";
+import { AudioBuffer, AudioTestSamples } from "./audioTestSamples";
 
 class AudioParamMock {
     public cancelScheduledValues = jest.fn().mockName("cancelScheduledValues");
@@ -28,7 +28,30 @@ class AudioNodeMock {
     private _destination: any = null;
 }
 
+class AnalyserNodeMock extends AudioNodeMock {
+    fftSize = 2048;
+    frequencyBinCount = this.fftSize / 2;
+    minDecibels = -100;
+    maxDecibels = -30;
+    smoothingTimeConstant = 0.8;
+
+    getFloatFrequencyData = jest.fn().mockName("getFloatFrequencyData");
+    getByteFrequencyData = jest.fn().mockName("getByteFrequencyData");
+    getFloatTimeDomainData = jest.fn().mockName("getFloatTimeDomainData");
+    getByteTimeDomainData = jest.fn().mockName("getByteTimeDomainData");
+}
+
 class AudioBufferSourceNodeMock extends AudioNodeMock {
+    buffer = {
+        duration: 0,
+    };
+    detune = new AudioParamMock();
+    loop = false;
+    loopEnd = 0;
+    loopStart = 0;
+    playbackRate = new AudioParamMock();
+    startTime = 0;
+
     onended = () => void 0;
 
     start = jest
@@ -45,17 +68,8 @@ class AudioBufferSourceNodeMock extends AudioNodeMock {
             this.onended();
         });
 
-    buffer = {
-        duration: 0,
-    };
-    loop = false;
-    loopEnd = 0;
-    loopStart = 0;
-    playbackRate = {
-        value: 1,
-    };
-
-    startTime = 0;
+    addEventListener = jest.fn().mockName("addEventListener");
+    removeEventListener = jest.fn().mockName("removeEventListener");
 }
 
 class GainNodeMock extends AudioNodeMock {
@@ -65,14 +79,99 @@ class GainNodeMock extends AudioNodeMock {
 class MediaElementAudioSourceNodeMock extends AudioNodeMock {}
 
 class PannerNodeMock extends AudioNodeMock {
-    positionX = new AudioParamMock();
-    positionY = new AudioParamMock();
-    positionZ = new AudioParamMock();
     coneInnerAngle = new AudioParamMock();
     coneOuterAngle = new AudioParamMock();
     coneOuterGain = new AudioParamMock();
+    orientationX = new AudioParamMock();
+    orientationY = new AudioParamMock();
+    orientationZ = new AudioParamMock();
+    positionX = new AudioParamMock();
+    positionY = new AudioParamMock();
+    positionZ = new AudioParamMock();
 
     setOrientation = jest.fn().mockName("setOrientation");
+}
+
+class StereoPannerNodeMock extends AudioNodeMock {
+    pan = new AudioParamMock();
+}
+
+class AudioContext {
+    private _audioBufferSources = new Array<AudioBufferSourceNodeMock>();
+
+    currentTime = 0;
+    state = "running";
+
+    close = jest
+        .fn()
+        .mockName("close")
+        .mockImplementation(() => {
+            this.state = "closed";
+            return Promise.resolve();
+        });
+
+    createBufferSource = jest
+        .fn()
+        .mockName("createBufferSource")
+        .mockImplementation(() => {
+            const bufferSource = new AudioBufferSourceNodeMock();
+            this._audioBufferSources.push(bufferSource);
+            return bufferSource;
+        });
+
+    createGain = jest
+        .fn()
+        .mockName("createGain")
+        .mockImplementation(() => {
+            // Note that when creating a single Sound object, createGain() is called three times:
+            // 1) from AudioEngine._initializeAudioContext() to create the master gain.
+            // 2) from Sound constructor.
+            // 3) from main SoundTrack._initializeSoundTrackAudioGraph().
+            return new GainNodeMock();
+        });
+
+    createMediaElementSource = jest
+        .fn()
+        .mockName("createMediaElementSource")
+        .mockImplementation((mediaElement: HTMLMediaElement) => {
+            // Streaming sounds need to be able to create a media element source node.
+            return new MediaElementAudioSourceNodeMock();
+        });
+
+    createPanner = jest
+        .fn()
+        .mockName("createPanner")
+        .mockImplementation(() => {
+            return new PannerNodeMock();
+        });
+
+    decodeAudioData = jest
+        .fn()
+        .mockName("decodeAudioData")
+        .mockImplementation((data: ArrayBuffer, success?: (buffer: AudioBuffer) => void) => {
+            if (success) {
+                success(AudioTestSamples.GetAudioBuffer(data));
+            }
+        });
+
+    resume = jest
+        .fn()
+        .mockName("resume")
+        .mockImplementation(() => {
+            this.state = "running";
+            return Promise.resolve();
+        });
+
+    suspend = jest
+        .fn()
+        .mockName("suspend")
+        .mockImplementation(() => {
+            this.state = "suspended";
+            return Promise.resolve();
+        });
+
+    addEventListener = jest.fn().mockName("addEventListener");
+    removeEventListener = jest.fn().mockName("removeEventListener");
 }
 
 export class MockedAudioObjects {
@@ -84,13 +183,22 @@ export class MockedAudioObjects {
         document.body.appendChild = jest.fn().mockName("appendChild");
         document.body.removeChild = jest.fn().mockName("removeChild");
 
+        global.fetch = jest
+            .fn()
+            .mockName("fetch")
+            .mockResolvedValue({
+                arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+            } as Response);
+
         global.Audio = jest
             .fn()
             .mockName("Audio")
             .mockImplementation(() => {
                 return {
                     addEventListener: jest.fn().mockName("addEventListener"),
+                    removeEventListener: jest.fn().mockName("removeEventListener"),
                     canPlayType: jest.fn().mockName("canPlayType").mockReturnValue(""),
+                    children: [],
                     controls: true,
                     crossOrigin: null,
                     loop: false,
@@ -99,83 +207,21 @@ export class MockedAudioObjects {
                     preload: "none",
                 };
             });
-        global.AudioBuffer = jest.fn().mockName("AudioBuffer");
         global.MediaStream = jest.fn().mockName("MediaStream");
 
         // AudioContext mock.
         this._previousAudioContext = window.AudioContext;
-        window.AudioContext = jest
-            .fn()
-            .mockName("AudioContext")
-            .mockImplementation(() => {
-                return {
-                    currentTime: 0,
-                    state: "running",
-                    close: jest
-                        .fn()
-                        .mockName("close")
-                        .mockImplementation(() => {
-                            this.audioContext.state = "closed";
-                            return Promise.resolve();
-                        }),
-                    createBufferSource: jest
-                        .fn()
-                        .mockName("createBufferSource")
-                        .mockImplementation(() => {
-                            const bufferSource = new AudioBufferSourceNodeMock();
-                            this._audioBufferSources.push(bufferSource);
-                            return bufferSource;
-                        }),
-                    createGain: jest
-                        .fn()
-                        .mockName("createGain")
-                        .mockImplementation(() => {
-                            // Note that when creating a single Sound object, createGain() is called three times:
-                            // 1) from AudioEngine._initializeAudioContext() to create the master gain.
-                            // 2) from Sound constructor.
-                            // 3) from main SoundTrack._initializeSoundTrackAudioGraph().
-                            return new GainNodeMock();
-                        }),
-                    createMediaElementSource: jest
-                        .fn()
-                        .mockName("createMediaElementSource")
-                        .mockImplementation((mediaElement: HTMLMediaElement) => {
-                            // Streaming sounds need to be able to create a media element source node.
-                            return new MediaElementAudioSourceNodeMock();
-                        }),
-                    createPanner: jest
-                        .fn()
-                        .mockName("createPanner")
-                        .mockImplementation(() => {
-                            return new PannerNodeMock();
-                        }),
-                    decodeAudioData: jest
-                        .fn()
-                        .mockName("decodeAudioData")
-                        .mockImplementation((data: ArrayBuffer, success: (buffer: AudioBuffer) => void) => {
-                            success(AudioTestSamples.GetAudioBuffer(data));
-                        }),
-                    resume: jest
-                        .fn()
-                        .mockName("resume")
-                        .mockImplementation(() => {
-                            this.audioContext.state = "running";
-                            return Promise.resolve();
-                        }),
-                    suspend: jest
-                        .fn()
-                        .mockName("suspend")
-                        .mockImplementation(() => {
-                            this.audioContext.state = "suspended";
-                            return Promise.resolve();
-                        }),
-                    addEventListener: jest.fn().mockName("addEventListener"),
-                    removeEventListener: jest.fn().mockName("removeEventListener"),
-                };
-            }) as any;
-
+        window.AudioContext = AudioContext as any;
         window.OfflineAudioContext = window.AudioContext as any;
+
+        window.AudioBuffer = AudioBuffer as any;
+
+        window.AnalyserNode = AnalyserNodeMock as any;
+        window.AudioBufferSourceNode = AudioBufferSourceNodeMock as any;
         window.GainNode = GainNodeMock as any;
+        window.MediaElementAudioSourceNode = MediaElementAudioSourceNodeMock as any;
+        window.PannerNode = PannerNodeMock as any;
+        window.StereoPannerNode = StereoPannerNodeMock as any;
     }
 
     get audioBufferSource() {
@@ -188,7 +234,11 @@ export class MockedAudioObjects {
 
     get audioContext() {
         // Return the audio context as `any` so its `state` property can be set.
-        return Engine.audioEngine!.audioContext! as any;
+        const audioEngine = Engine.audioEngine;
+        if (!audioEngine) {
+            throw new Error("No audio engine available");
+        }
+        return audioEngine!.audioContext! as any;
     }
 
     dispose() {
