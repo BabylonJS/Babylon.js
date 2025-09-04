@@ -1004,4 +1004,3 @@ export class ObjectRenderer {
         }
     }
 }
-
