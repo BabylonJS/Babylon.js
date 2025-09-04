@@ -19,7 +19,7 @@ import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
-import { Logger, type BaseBlock, type SmartFilter } from "smart-filters";
+import { createStrongRef, Logger, type BaseBlock, type SmartFilter } from "smart-filters";
 import { inputsNamespace } from "smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
@@ -325,11 +325,27 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 this._mouseLocationY,
                 async (_nodeData) => {
                     const oldBlock = _nodeData.data as BaseBlock;
-                    const blockTypeAndNamespace = GetBlockKey(oldBlock.blockType, oldBlock.namespace);
+                    let blockType = oldBlock.blockType;
+                    let blockNamespace = oldBlock.namespace;
+
+                    // Input blocks are special case, fix up the blockType and namespace
+                    if (oldBlock.blockType === "InputBlock") {
+                        blockType = BlockTools.GetStringFromConnectionNodeType(oldBlock.outputs[0].type);
+                        blockNamespace = inputsNamespace;
+                    }
+
+                    const blockTypeAndNamespace = GetBlockKey(blockType, blockNamespace);
+
                     const newBlock = await this.createBlockAsync(blockTypeAndNamespace, true);
                     if (!newBlock) {
                         return null;
                     }
+
+                    // If it was an input block, copy the value over too
+                    if (oldBlock.blockType === "InputBlock" && oldBlock.outputs[0].runtimeData) {
+                        newBlock.outputs[0].runtimeData = createStrongRef(oldBlock.outputs[0].runtimeData.value);
+                    }
+
                     return this.appendBlock(newBlock, false);
                 },
                 this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
