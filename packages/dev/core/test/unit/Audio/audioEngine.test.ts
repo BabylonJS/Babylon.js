@@ -7,6 +7,8 @@ import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { Sound } from "core/Audio/sound";
 
+import type { AudioContextMock } from "./helpers/mockedAudioObjects";
+
 import { MockedAudioObjects } from "./helpers/mockedAudioObjects";
 import { AudioTestSamples } from "./helpers/audioTestSamples";
 import { AudioTestHelper } from "./helpers/audioTestHelper";
@@ -31,14 +33,14 @@ describe("AudioEngine", () => {
     });
 
     afterEach(() => {
+        mock.dispose();
+        (mock as any) = null;
+
         scene.dispose();
         (scene as any) = null;
 
         engine.dispose();
         (engine as any) = null;
-
-        mock.dispose();
-        (mock as any) = null;
     });
 
     it("unlocked is initialized to false when browser requires user interaction", () => {
@@ -68,6 +70,7 @@ describe("AudioEngine", () => {
         jest.useFakeTimers();
 
         const audioEngine = createAudioEngine("suspended");
+        (audioEngine._v2._audioContext as unknown as AudioContextMock).requireUserInteraction = true;
 
         const arrayBuffer = AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz");
         const sound = new Sound(expect.getState().currentTestName, arrayBuffer);

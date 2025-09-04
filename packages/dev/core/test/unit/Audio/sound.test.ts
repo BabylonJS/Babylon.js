@@ -2,19 +2,22 @@
  * @jest-environment jsdom
  */
 
-import { AudioEngine, Sound, type ISoundOptions } from "core/Audio";
+import type { ISoundOptions } from "core/Audio";
+import type { Nullable } from "core/types";
+
+import { AudioEngine, Sound } from "core/Audio";
 import { AbstractEngine, NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 
 import { AudioTestHelper } from "./helpers/audioTestHelper";
 import { AudioTestSamples } from "./helpers/audioTestSamples";
 import { MockedAudioObjects } from "./helpers/mockedAudioObjects";
-import type { Nullable } from "../../../src/types";
 
 // Required for timers (eg. setTimeout) to work.
 jest.useFakeTimers();
 
 const realSetTimeout = jest.requireActual("timers").setTimeout;
+const realClearTimeout = jest.requireActual("timers").clearTimeout;
 
 async function CreateSoundAsync(
     name: string,
@@ -23,9 +26,11 @@ async function CreateSoundAsync(
     readyToPlayCallback: Nullable<() => void> = null,
     options?: ISoundOptions
 ): Promise<Sound> {
+    const callstack = new Error().stack;
+
     return new Promise<Sound>((resolve, reject) => {
         const timer = realSetTimeout(() => {
-            throw new Error("Sound creation timed out.");
+            throw new Error("Sound creation timed out.\n" + callstack);
         }, 1000);
 
         const sound = new Sound(
@@ -33,12 +38,20 @@ async function CreateSoundAsync(
             urlOrArrayBuffer,
             scene,
             () => {
-                clearTimeout(timer);
+                realClearTimeout(timer);
                 readyToPlayCallback?.();
                 resolve(sound);
             },
             options
         );
+    });
+}
+
+async function ZeroTimeoutAsync(): Promise<void> {
+    return new Promise<void>((resolve) => {
+        realSetTimeout(() => {
+            resolve();
+        }, 0);
     });
 }
 
@@ -67,15 +80,15 @@ describe("Sound", () => {
     });
 
     afterEach(() => {
+        mock.dispose();
+        (mock as any) = null;
+
         scene.dispose();
         (scene as any) = null;
 
         engine.dispose();
         (engine as any) = null;
         (audioEngine as any) = null;
-
-        mock.dispose();
-        (mock as any) = null;
     });
 
     it("constructor initializes AudioSceneComponent", async () => {
@@ -596,7 +609,7 @@ describe("Sound", () => {
 
         sound.play();
 
-        expect(mock.nodeIsGainNode(mock.audioBufferSource.destination)).toBe(true);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(false);
     });
 
     it("connects to panner node when spatialized via constructor", async () => {
@@ -606,51 +619,59 @@ describe("Sound", () => {
 
         sound.play();
 
-        expect(mock.nodeIsPannerNode(mock.audioBufferSource.destination)).toBe(true);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
     });
 
     it("connects to panner node when spatialized via property", async () => {
         const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: false,
         });
+
         sound.spatialSound = true;
+        await ZeroTimeoutAsync();
 
         sound.play();
 
-        expect(mock.nodeIsPannerNode(mock.audioBufferSource.destination)).toBe(true);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
     });
 
     it("connects to panner node when spatialized via updateOptions", async () => {
         const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: false,
         });
+
         sound.updateOptions({ spatialSound: true });
+        await ZeroTimeoutAsync();
 
         sound.play();
 
-        expect(mock.nodeIsPannerNode(mock.audioBufferSource.destination)).toBe(true);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
     });
 
     it("connects to gain node when unspatialized via property", async () => {
         const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: true,
         });
+
         sound.spatialSound = false;
+        await ZeroTimeoutAsync();
 
         sound.play();
 
-        expect(mock.nodeIsGainNode(mock.audioBufferSource.destination)).toBe(true);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(false);
     });
 
     it("connects to gain node when unspatialized via updateOptions", async () => {
         const sound = await CreateSoundAsync(expect.getState().currentTestName, AudioTestSamples.GetArrayBuffer("silence, 1 second, 1 channel, 48000 kHz"), null, null, {
             spatialSound: true,
         });
+
         sound.updateOptions({ spatialSound: false });
+        await ZeroTimeoutAsync();
 
         sound.play();
 
-        expect(mock.nodeIsGainNode(mock.audioBufferSource.destination)).toBe(true);
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(false);
     });
 
     it("connects to panner node when playing and spatialSound property is set to false before being set to true", async () => {
@@ -659,9 +680,13 @@ describe("Sound", () => {
         });
 
         sound.play();
-        sound.spatialSound = false;
-        sound.spatialSound = true;
 
-        expect(mock.nodeIsPannerNode(mock.audioBufferSource.destination)).toBe(true);
+        sound.spatialSound = false;
+        await ZeroTimeoutAsync();
+
+        sound.spatialSound = true;
+        await ZeroTimeoutAsync();
+
+        expect(mock.connectsToPannerNode(mock.audioBufferSource)).toBe(true);
     });
 });

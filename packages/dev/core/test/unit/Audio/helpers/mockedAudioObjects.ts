@@ -13,19 +13,19 @@ class AudioParamMock {
 }
 
 class AudioNodeMock {
+    private readonly _connections = new Array<any>();
+
     public connect(destination: any) {
-        this._destination = destination;
+        this._connections.push(destination);
     }
 
     public disconnect() {
-        this._destination = null;
+        this._connections.length = 0;
     }
 
-    public get destination() {
-        return this._destination;
+    public get connections() {
+        return this._connections;
     }
-
-    private _destination: any = null;
 }
 
 class AnalyserNodeMock extends AudioNodeMock {
@@ -53,6 +53,12 @@ class AudioBufferSourceNodeMock extends AudioNodeMock {
     startTime = 0;
 
     onended = () => void 0;
+
+    constructor(audioContext: AudioContextMock) {
+        super();
+
+        audioContext.addAudioBufferSource(this);
+    }
 
     start = jest
         .fn()
@@ -96,11 +102,38 @@ class StereoPannerNodeMock extends AudioNodeMock {
     pan = new AudioParamMock();
 }
 
-class AudioContext {
+export class AudioContextMock {
     private _audioBufferSources = new Array<AudioBufferSourceNodeMock>();
 
     currentTime = 0;
     state = "running";
+
+    requireUserInteraction = false;
+
+    get audioBufferSource() {
+        return this._audioBufferSources[this._audioBufferSources.length - 1];
+    }
+
+    get audioBufferSourceWasCreated() {
+        return 0 < this._audioBufferSources.length;
+    }
+
+    addAudioBufferSource(audioBufferSource: AudioBufferSourceNodeMock) {
+        this._audioBufferSources.push(audioBufferSource);
+    }
+
+    dispose() {
+        this._audioBufferSources.length = 0;
+    }
+
+    incrementCurrentTime(seconds: number) {
+        this.currentTime += seconds;
+        this._audioBufferSources.forEach((audioBufferSource) => {
+            if (audioBufferSource.startTime + audioBufferSource.buffer.duration <= this.currentTime) {
+                audioBufferSource.stop();
+            }
+        });
+    }
 
     close = jest
         .fn()
@@ -114,8 +147,8 @@ class AudioContext {
         .fn()
         .mockName("createBufferSource")
         .mockImplementation(() => {
-            const bufferSource = new AudioBufferSourceNodeMock();
-            this._audioBufferSources.push(bufferSource);
+            const bufferSource = new AudioBufferSourceNodeMock(this);
+            this.addAudioBufferSource(bufferSource);
             return bufferSource;
         });
 
@@ -158,7 +191,10 @@ class AudioContext {
         .fn()
         .mockName("resume")
         .mockImplementation(() => {
-            this.state = "running";
+            if (!this.requireUserInteraction) {
+                this.state = "running";
+            }
+
             return Promise.resolve();
         });
 
@@ -174,8 +210,13 @@ class AudioContext {
     removeEventListener = jest.fn().mockName("removeEventListener");
 }
 
+class OfflineAudioContextMock {}
+
+class AudioContext extends AudioContextMock {}
+class OfflineAudioContext extends OfflineAudioContextMock {}
+
 export class MockedAudioObjects {
-    static Instance: MockedAudioObjects;
+    private _previousAudioContext: any;
 
     constructor() {
         MockedAudioObjects.Instance = this;
@@ -212,7 +253,7 @@ export class MockedAudioObjects {
         // AudioContext mock.
         this._previousAudioContext = window.AudioContext;
         window.AudioContext = AudioContext as any;
-        window.OfflineAudioContext = window.AudioContext as any;
+        window.OfflineAudioContext = OfflineAudioContext as any;
 
         window.AudioBuffer = AudioBuffer as any;
 
@@ -225,44 +266,40 @@ export class MockedAudioObjects {
     }
 
     get audioBufferSource() {
-        return this._audioBufferSources[this._audioBufferSources.length - 1];
+        return this.audioContext.audioBufferSource;
     }
 
     get audioBufferSourceWasCreated() {
-        return 0 < this._audioBufferSources.length;
+        return this.audioContext.audioBufferSourceWasCreated;
     }
 
     get audioContext() {
-        // Return the audio context as `any` so its `state` property can be set.
         const audioEngine = Engine.audioEngine;
         if (!audioEngine) {
             throw new Error("No audio engine available");
         }
-        return audioEngine!.audioContext! as any;
+
+        return audioEngine!.audioContext as unknown as AudioContextMock;
     }
 
     dispose() {
-        this._audioBufferSources.length = 0;
+        this.audioContext.dispose();
         window.AudioContext = this._previousAudioContext;
     }
 
     incrementCurrentTime(seconds: number) {
-        this.audioContext.currentTime += seconds;
-        this._audioBufferSources.forEach((audioBufferSource) => {
-            if (audioBufferSource.startTime + audioBufferSource.buffer.duration <= this.audioContext.currentTime) {
-                audioBufferSource.stop();
+        this.audioContext.incrementCurrentTime(seconds);
+    }
+
+    connectsToPannerNode(node: AudioNodeMock) {
+        for (const connection of node.connections) {
+            if (connection instanceof PannerNodeMock || this.connectsToPannerNode(connection)) {
+                return true;
             }
-        });
+        }
+
+        return false;
     }
 
-    nodeIsGainNode(node: AudioNode) {
-        return node instanceof GainNodeMock;
-    }
-
-    nodeIsPannerNode(node: AudioNode) {
-        return node instanceof PannerNodeMock;
-    }
-
-    private _previousAudioContext: any;
-    private _audioBufferSources = new Array<AudioBufferSourceNodeMock>();
+    static Instance: MockedAudioObjects;
 }

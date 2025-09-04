@@ -243,28 +243,29 @@ export class Sound {
             playbackRate: options.playbackRate || 1,
             pitch: 0,
             skipCodecCheck: options.skipCodecCheck || false,
-            spatialAutoUpdate: false,
-            spatialDistanceModel: options.distanceModel || "linear",
-            spatialEnabled: options.spatialSound || false,
-            spatialMaxDistance: options.maxDistance ?? 100,
-            spatialMinDistance: options.refDistance ?? 1,
-            spatialPanningModel: (this._scene.headphone ? "HRTF" : "equalpower") as "equalpower" | "HRTF",
-            spatialRolloffFactor: options.rolloffFactor ?? 1,
+            stereoEnabled: false,
+            stereoPan: 0,
             startOffset: options.offset || 0,
             volume: options.volume ?? 1,
-
-            // Options not available in the old API ...
-            spatialConeInnerAngle: 360,
-            spatialConeOuterAngle: 360,
-            spatialConeOuterVolume: _SpatialAudioDefaults.coneOuterVolume,
-            spatialMinUpdateTime: 0,
-            spatialOrientation: _SpatialAudioDefaults.orientation,
-            spatialPosition: _SpatialAudioDefaults.position,
-            spatialRotation: _SpatialAudioDefaults.rotation,
-            spatialRotationQuaternion: _SpatialAudioDefaults.rotationQuaternion,
-            stereoPan: 0,
-            stereoEnabled: false,
         };
+
+        if (options.spatialSound) {
+            optionsV2.spatialAutoUpdate = false;
+            optionsV2.spatialConeInnerAngle = 360;
+            optionsV2.spatialConeOuterAngle = 360;
+            optionsV2.spatialConeOuterVolume = _SpatialAudioDefaults.coneOuterVolume;
+            optionsV2.spatialDistanceModel = options.distanceModel || "linear";
+            optionsV2.spatialEnabled = options.spatialSound || false;
+            optionsV2.spatialMaxDistance = options.maxDistance ?? 100;
+            optionsV2.spatialMinDistance = options.refDistance ?? 1;
+            optionsV2.spatialMinUpdateTime = 0;
+            optionsV2.spatialOrientation = _SpatialAudioDefaults.orientation;
+            optionsV2.spatialPanningModel = (this._scene.headphone ? "HRTF" : "equalpower") as "equalpower" | "HRTF";
+            optionsV2.spatialPosition = _SpatialAudioDefaults.position;
+            optionsV2.spatialRolloffFactor = options.rolloffFactor ?? 1;
+            optionsV2.spatialRotation = _SpatialAudioDefaults.rotation;
+            optionsV2.spatialRotationQuaternion = _SpatialAudioDefaults.rotationQuaternion;
+        }
 
         this.useCustomAttenuation = options.useCustomAttenuation ?? false;
 
@@ -627,6 +628,8 @@ export class Sound {
      * @param length (optional) Sound duration (in seconds)
      */
     public play(time?: number, offset?: number, length?: number): void {
+        void this._soundV2.engine.unlockAsync();
+
         // WebAudio sound sources have no `play` function because they are always playing.
         if (this._soundV2 instanceof _WebAudioSoundSource) {
             return;

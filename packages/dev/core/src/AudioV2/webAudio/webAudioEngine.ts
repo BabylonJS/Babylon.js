@@ -381,6 +381,9 @@ export class _WebAudioEngine extends AudioEngineV2 {
         }
 
         this._resumePromise = this._audioContext.resume();
+
+        this.stateChangedObservable.notifyObservers(this.state);
+
         return this._resumePromise;
     }
 
