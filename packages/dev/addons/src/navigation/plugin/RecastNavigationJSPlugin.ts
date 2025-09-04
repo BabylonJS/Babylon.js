@@ -15,6 +15,7 @@ import { ComputeSmoothPath } from "../common/smooth-path";
 import { CreateDebugNavMesh } from "../debug/simple-debug";
 import { BjsRecast } from "../factory/common";
 import { InjectGenerators } from "../generator/injection";
+import { WaitForFullTileCacheUpdate } from "../common";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
@@ -197,6 +198,10 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     public createDebugNavMesh(scene: Scene): Mesh {
         if (!this.navMesh) {
             throw new Error("There is no navMesh generated.");
+        }
+
+        if (this.navMesh && this.tileCache) {
+            WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
         }
 
         return CreateDebugNavMesh(this.navMesh, scene);
@@ -487,10 +492,15 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param position world position
      * @param radius cylinder radius
      * @param height cylinder height
+     * @param doNotWaitForCacheUpdate if true the function will not wait for the tile cache to be fully updated before returning
      * @returns the obstacle freshly created
      */
-    public addCylinderObstacle(position: IVector3Like, radius: number, height: number): IObstacle {
-        return this.tileCache?.addCylinderObstacle(position, radius, height) ?? (null as unknown as IObstacle);
+    public addCylinderObstacle(position: IVector3Like, radius: number, height: number, doNotWaitForCacheUpdate = false): IObstacle {
+        const obstacle = this.tileCache?.addCylinderObstacle(position, radius, height) ?? (null as unknown as IObstacle);
+        if (obstacle && !doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
+            WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
+        }
+        return obstacle;
     }
 
     /**
@@ -498,10 +508,15 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param position world position
      * @param extent box size
      * @param angle angle in radians of the box orientation on Y axis
+     * @param doNotWaitForCacheUpdate if true the function will not wait for the tile cache to be fully updated before returning
      * @returns the obstacle freshly created
      */
-    public addBoxObstacle(position: IVector3Like, extent: IVector3Like, angle: number): IObstacle {
-        return this.tileCache?.addBoxObstacle(position, extent, angle) ?? (null as unknown as IObstacle);
+    public addBoxObstacle(position: IVector3Like, extent: IVector3Like, angle: number, doNotWaitForCacheUpdate = false): IObstacle {
+        const obstacle = this.tileCache?.addBoxObstacle(position, extent, angle) ?? (null as unknown as IObstacle);
+        if (obstacle && !doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
+            WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
+        }
+        return obstacle;
     }
 
     /**
