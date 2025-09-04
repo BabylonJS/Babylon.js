@@ -79,6 +79,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
     public _isLoading = false;
     public _targetLinkCandidate: Nullable<NodeLink> = null;
 
+    private _isCopyingOrPasting: boolean = false;
     private _copiedNodes: GraphNode[] = [];
     private _copiedFrames: GraphFrame[] = [];
 
@@ -471,86 +472,94 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             return;
         }
 
-        if (evt.key === "c" || evt.key === "C") {
-            // Copy
-            this._copiedNodes = [];
-            this._copiedFrames = [];
+        // Now we're doing copy or paste - ensure we only do one at a time since these operations are async
+        if (this._isCopyingOrPasting) {
+            return;
+        }
+        try {
+            if (evt.key === "c" || evt.key === "C") {
+                // Copy
+                this._copiedNodes = [];
+                this._copiedFrames = [];
 
-            if (this.selectedFrames.length) {
-                for (const frame of this.selectedFrames) {
-                    frame.serialize(true);
-                    this._copiedFrames.push(frame);
-                }
-                return;
-            }
-
-            const selectedItems = this.selectedNodes;
-            if (!selectedItems.length) {
-                return;
-            }
-
-            const selectedItem = selectedItems[0];
-
-            if (!selectedItem.content.data) {
-                return;
-            }
-
-            this._copiedNodes = selectedItems.slice(0);
-        } else if (evt.key === "v" || evt.key === "V") {
-            // Paste
-            const zoomLevel = this.zoom;
-            let currentY = (mouseLocationY - rootElement.offsetTop - this.y - 20) / zoomLevel;
-
-            if (this._copiedFrames.length) {
-                for (const frame of this._copiedFrames) {
-                    // New frame
-                    const newFrame = new GraphFrame(null, this, true);
-                    this.frames.push(newFrame);
-
-                    newFrame.width = frame.width;
-                    newFrame.height = frame.height;
-                    newFrame.width / 2;
-                    newFrame.name = frame.name;
-                    newFrame.color = frame.color;
-
-                    let currentX = (mouseLocationX - rootElement.offsetLeft - this.x) / zoomLevel;
-                    newFrame.x = currentX - newFrame.width / 2;
-                    newFrame.y = currentY;
-
-                    // Paste nodes
-                    if (frame.nodes.length) {
-                        currentX = newFrame.x + frame.nodes[0].x - frame.x;
-                        currentY = newFrame.y + frame.nodes[0].y - frame.y;
-
-                        this._frameIsMoving = true;
-                        // eslint-disable-next-line no-await-in-loop
-                        const newNodes = await this.pasteSelectionAsync(frame.nodes, currentX, currentY, dataGenerator);
-                        if (newNodes) {
-                            for (const node of newNodes) {
-                                newFrame.syncNode(node);
-                            }
-                        }
-                        this._frameIsMoving = false;
+                if (this.selectedFrames.length) {
+                    for (const frame of this.selectedFrames) {
+                        frame.serialize(true);
+                        this._copiedFrames.push(frame);
                     }
-
-                    newFrame.adjustPorts();
-
-                    if (frame.isCollapsed) {
-                        newFrame.isCollapsed = true;
-                    }
-
-                    // Select
-                    this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
                     return;
                 }
-            }
 
-            if (!this._copiedNodes.length) {
-                return;
-            }
+                const selectedItems = this.selectedNodes;
+                if (!selectedItems.length) {
+                    return;
+                }
 
-            const currentX = (mouseLocationX - rootElement.offsetLeft - this.x - GraphCanvasComponent.NodeWidth) / zoomLevel;
-            await this.pasteSelectionAsync(this._copiedNodes, currentX, currentY, dataGenerator, true);
+                const selectedItem = selectedItems[0];
+
+                if (!selectedItem.content.data) {
+                    return;
+                }
+
+                this._copiedNodes = selectedItems.slice(0);
+            } else if (evt.key === "v" || evt.key === "V") {
+                // Paste
+                const zoomLevel = this.zoom;
+                let currentY = (mouseLocationY - rootElement.offsetTop - this.y - 20) / zoomLevel;
+
+                if (this._copiedFrames.length) {
+                    for (const frame of this._copiedFrames) {
+                        // New frame
+                        const newFrame = new GraphFrame(null, this, true);
+                        this.frames.push(newFrame);
+
+                        newFrame.width = frame.width;
+                        newFrame.height = frame.height;
+                        newFrame.width / 2;
+                        newFrame.name = frame.name;
+                        newFrame.color = frame.color;
+
+                        let currentX = (mouseLocationX - rootElement.offsetLeft - this.x) / zoomLevel;
+                        newFrame.x = currentX - newFrame.width / 2;
+                        newFrame.y = currentY;
+
+                        // Paste nodes
+                        if (frame.nodes.length) {
+                            currentX = newFrame.x + frame.nodes[0].x - frame.x;
+                            currentY = newFrame.y + frame.nodes[0].y - frame.y;
+
+                            this._frameIsMoving = true;
+                            // eslint-disable-next-line no-await-in-loop
+                            const newNodes = await this.pasteSelectionAsync(frame.nodes, currentX, currentY, dataGenerator);
+                            if (newNodes) {
+                                for (const node of newNodes) {
+                                    newFrame.syncNode(node);
+                                }
+                            }
+                            this._frameIsMoving = false;
+                        }
+
+                        newFrame.adjustPorts();
+
+                        if (frame.isCollapsed) {
+                            newFrame.isCollapsed = true;
+                        }
+
+                        // Select
+                        this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newFrame, forceKeepSelection: true });
+                        return;
+                    }
+                }
+
+                if (!this._copiedNodes.length) {
+                    return;
+                }
+
+                const currentX = (mouseLocationX - rootElement.offsetLeft - this.x - GraphCanvasComponent.NodeWidth) / zoomLevel;
+                await this.pasteSelectionAsync(this._copiedNodes, currentX, currentY, dataGenerator, true);
+            }
+        } finally {
+            this._isCopyingOrPasting = false;
         }
     }
 
