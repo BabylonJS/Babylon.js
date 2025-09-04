@@ -105,7 +105,7 @@ export class Sound {
     /**
      * The sound track id this sound belongs to.
      */
-    public soundTrackId: number;
+    public soundTrackId: number = -1;
     /**
      * Is this sound currently played.
      */
@@ -191,7 +191,7 @@ export class Sound {
     private _isOutputConnected = false;
 
     // private readonly _audioEngineV2: AudioEngineV2;
-    private readonly _optionsV2: IStaticSoundOptions;
+    private readonly _optionsV2: Partial<IStaticSoundOptions>;
     private readonly _soundV2: _WebAudioSoundSource | _WebAudioStaticSound | _WebAudioStreamingSound;
 
     /**
@@ -230,7 +230,7 @@ export class Sound {
 
         options = options || {};
 
-        const optionsV2: IStaticSoundOptions = {
+        const optionsV2: Partial<IStaticSoundOptions> = {
             analyzerEnabled: false,
             autoplay: options.autoplay || false,
             duration: options.length || 0,
@@ -254,12 +254,8 @@ export class Sound {
             volume: options.volume ?? 1,
 
             // Options not available in the old API ...
-            analyzerFFTSize: _AudioAnalyzerDefaults.fftSize,
-            analyzerMinDecibels: _AudioAnalyzerDefaults.minDecibels,
-            analyzerMaxDecibels: _AudioAnalyzerDefaults.maxDecibels,
-            analyzerSmoothing: _AudioAnalyzerDefaults.smoothing,
-            spatialConeInnerAngle: _SpatialAudioDefaults.coneInnerAngle,
-            spatialConeOuterAngle: _SpatialAudioDefaults.coneOuterAngle,
+            spatialConeInnerAngle: 360,
+            spatialConeOuterAngle: 360,
             spatialConeOuterVolume: _SpatialAudioDefaults.coneOuterVolume,
             spatialMinUpdateTime: 0,
             spatialOrientation: _SpatialAudioDefaults.orientation,
@@ -274,12 +270,11 @@ export class Sound {
 
         let streaming = options?.streaming || false;
 
-        // const audioEngineV2 = (this._audioEngineV2 = (AbstractEngine.audioEngine as AudioEngine)._v2);
         const audioEngineV2 = (AbstractEngine.audioEngine as AudioEngine)._v2;
 
         const createSoundV2 = () => {
             if (streaming) {
-                const streamingOptionsV2: IStreamingSoundOptions = {
+                const streamingOptionsV2: Partial<IStreamingSoundOptions> = {
                     preloadCount: 0,
                     ...optionsV2,
                 };
@@ -289,7 +284,10 @@ export class Sound {
                 // eslint-disable-next-line github/no-then
                 void sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
                     // eslint-disable-next-line github/no-then
-                    void sound.preloadInstancesAsync(1).then(this._readyToPlayCallback);
+                    void sound.preloadInstancesAsync(1).then(() => {
+                        this._isReadyToPlay = true;
+                        this._readyToPlayCallback();
+                    });
                 });
 
                 return sound;
@@ -298,25 +296,26 @@ export class Sound {
             const sound = new _WebAudioStaticSound(name, audioEngineV2, optionsV2);
 
             // eslint-disable-next-line github/no-then
-            void sound._initAsync(urlOrArrayBuffer, optionsV2).then(this._readyToPlayCallback());
+            void sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
+                this._isReadyToPlay = true;
+                this._readyToPlayCallback();
+            });
 
             return sound;
         };
-
-        let create = false;
 
         // If no parameter is passed then the setAudioBuffer should be called to prepare the sound.
         if (!urlOrArrayBuffer) {
             // Create the sound but don't call _initAsync on it, yet. Call it later when `setAudioBuffer` is called.
             this._soundV2 = new _WebAudioStaticSound(name, audioEngineV2, optionsV2);
         } else if (typeof urlOrArrayBuffer === "string") {
-            create = true;
+            this._soundV2 = createSoundV2();
         } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
             streaming = false;
-            create = true;
+            this._soundV2 = createSoundV2();
         } else if (urlOrArrayBuffer instanceof HTMLMediaElement) {
             streaming = true;
-            create = true;
+            this._soundV2 = createSoundV2();
         } else if (urlOrArrayBuffer instanceof MediaStream) {
             const node = new MediaStreamAudioSourceNode(audioEngineV2._audioContext, { mediaStream: urlOrArrayBuffer });
             this._soundV2 = new _WebAudioSoundSource(name, node, audioEngineV2, optionsV2);
@@ -324,12 +323,8 @@ export class Sound {
             void this._soundV2._initAsync(optionsV2).then(this._readyToPlayCallback());
         } else if (urlOrArrayBuffer instanceof AudioBuffer) {
             streaming = false;
-            create = true;
+            this._soundV2 = createSoundV2();
         } else if (Array.isArray(urlOrArrayBuffer)) {
-            create = true;
-        }
-
-        if (create) {
             this._soundV2 = createSoundV2();
         }
 
@@ -450,13 +445,13 @@ export class Sound {
             spatial.minDistance = 1;
             spatial.maxDistance = Number.MAX_VALUE;
             spatial.rolloffFactor = 1;
-            spatial.panningModel = this._optionsV2.spatialPanningModel;
+            spatial.panningModel = "equalpower";
         } else {
             spatial.distanceModel = this.distanceModel;
             spatial.minDistance = this.refDistance;
             spatial.maxDistance = this.maxDistance;
             spatial.rolloffFactor = this.rolloffFactor;
-            spatial.panningModel = this._optionsV2.spatialPanningModel;
+            spatial.panningModel = this._optionsV2.spatialPanningModel || "equalpower";
         }
     }
 
@@ -523,7 +518,7 @@ export class Sound {
      * Gets or sets the inner angle for the directional cone.
      */
     public get directionalConeInnerAngle(): number {
-        return this._optionsV2.spatialConeInnerAngle;
+        return typeof this._optionsV2.spatialConeInnerAngle === "number" ? this._optionsV2.spatialConeInnerAngle : 360;
     }
 
     /**
@@ -531,7 +526,7 @@ export class Sound {
      */
     public set directionalConeInnerAngle(value: number) {
         if (value != this._optionsV2.spatialConeInnerAngle) {
-            if (this._optionsV2.spatialConeOuterAngle < value) {
+            if (this.directionalConeOuterAngle < value) {
                 Logger.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
                 return;
             }
@@ -546,7 +541,7 @@ export class Sound {
      * Gets or sets the outer angle for the directional cone.
      */
     public get directionalConeOuterAngle(): number {
-        return this._optionsV2.spatialConeOuterAngle;
+        return typeof this._optionsV2.spatialConeOuterAngle === "number" ? this._optionsV2.spatialConeOuterAngle : 360;
     }
 
     /**
@@ -554,7 +549,7 @@ export class Sound {
      */
     public set directionalConeOuterAngle(value: number) {
         if (value != this._optionsV2.spatialConeOuterAngle) {
-            if (value < this._optionsV2.spatialConeInnerAngle) {
+            if (value < this.directionalConeInnerAngle) {
                 Logger.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
                 return;
             }
@@ -570,8 +565,11 @@ export class Sound {
      * @param newPosition Defines the new position
      */
     public setPosition(newPosition: Vector3): void {
-        if (newPosition.equals(this._optionsV2.spatialPosition)) {
+        if (this._optionsV2.spatialPosition && newPosition.equals(this._optionsV2.spatialPosition)) {
             return;
+        }
+        if (!this._optionsV2.spatialPosition) {
+            this._optionsV2.spatialPosition = Vector3.Zero();
         }
         this._optionsV2.spatialPosition.copyFrom(newPosition);
         if (this.spatialSound && !isNaN(newPosition.x) && !isNaN(newPosition.y) && !isNaN(newPosition.z)) {
