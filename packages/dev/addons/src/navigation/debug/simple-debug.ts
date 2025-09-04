@@ -21,11 +21,6 @@ export function CreateDebugNavMesh(navMesh: NavMesh, scene: Scene, parent?: Node
     const mesh = new Mesh("NavMeshDebug", scene);
     const vertexData = new VertexData();
 
-    for (let i = 0; i < indices.length; i += 3) {
-        // Swap the order of the second and third vertex in each triangle
-        [indices[i + 1], indices[i + 2]] = [indices[i + 2], indices[i + 1]];
-    }
-
     vertexData.indices = GetReversedIndices(indices);
     vertexData.positions = positions;
     vertexData.applyToMesh(mesh, false);
