@@ -188,7 +188,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 
         const useUbo = this._atmosphere._scene.getEngine().supportsUniformBuffers;
         const directionToLightSnippet = useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz";
-        const atmosphereImportSnippet = useUbo ? "#include<atmosphereUboDeclaration>" : "#include<atmosphereFragment>";
+        const atmosphereImportSnippet = useUbo ? "#include<atmosphereUboDeclaration>" : "#include<atmosphereFragmentDeclaration>";
 
         return {
             CUSTOM_FRAGMENT_DEFINITIONS:
