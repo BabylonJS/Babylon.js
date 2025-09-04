@@ -382,8 +382,11 @@ export function ReadBvh(text: string, scene: Scene, assetContainer: Nullable<Ass
     if (isNaN(frameTime)) {
         throw new Error("Failed to read frame time.");
     }
+    if (frameTime <= 0) {
+        throw new Error("Failed to read frame time. Invalid value " + frameTime);
+    }
 
-    context.frameRate = frameTime;
+    context.frameRate = 1 / frameTime;
 
     // read frame data line by line
     for (let i = 0; i < numFrames; ++i) {

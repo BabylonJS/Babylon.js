@@ -41,10 +41,13 @@ export class SpotLight extends ShadowLight {
 
     private _angle: number;
     private _innerAngle: number = 0;
-    private _cosHalfAngle: number;
+    /** @internal */
+    public _cosHalfAngle: number;
 
-    private _lightAngleScale: number;
-    private _lightAngleOffset: number;
+    /** @internal */
+    public _lightAngleScale: number;
+    /** @internal */
+    public _lightAngleOffset: number;
 
     private _iesProfileTexture: Nullable<BaseTexture> = null;
 

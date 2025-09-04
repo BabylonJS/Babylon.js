@@ -12,6 +12,7 @@ import { useObservableCollection, useObservableState, useOrderedObservableCollec
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { ShellServiceIdentity } from "../../shellService";
+import { useMemo } from "react";
 
 export const PropertiesServiceIdentity = Symbol("PropertiesService");
 
@@ -68,19 +69,24 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                 const sections = useOrderedObservableCollection(sectionsCollection);
                 const sectionContent = useObservableCollection(sectionContentCollection);
                 const entity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
-                const applicableContent = entity
-                    ? sectionContent
-                          .filter((section) => section.predicate(entity))
-                          .flatMap((section) => {
-                              return section.content.map((content) => {
-                                  return {
-                                      key: section.key,
-                                      section: content.section,
-                                      component: content.component,
-                                  };
-                              });
-                          })
-                    : [];
+                const applicableContent = useMemo(
+                    () =>
+                        entity
+                            ? sectionContent
+                                  .filter((section) => section.predicate(entity))
+                                  .flatMap((section) => {
+                                      return section.content.map((content) => {
+                                          return {
+                                              key: section.key,
+                                              section: content.section,
+                                              order: content.order,
+                                              component: content.component,
+                                          };
+                                      });
+                                  })
+                            : [],
+                    [sectionContent, entity]
+                );
 
                 return <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} />;
             },

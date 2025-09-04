@@ -310,7 +310,7 @@ export class Geometry implements IGetSetVerticesData {
         if (kind === VertexBuffer.PositionKind) {
             this._totalVertices = totalVertices ?? buffer._maxVerticesCount;
 
-            this._updateExtend(buffer.getFloatData(this._totalVertices));
+            this._updateExtend(this.useBoundingInfoFromGeometry && this._boundingInfo ? null : buffer.getFloatData(this._totalVertices));
             this._resetPointsArrayCache();
 
             // this._extend can be empty if buffer.getFloatData(this._totalVertices) returned null
@@ -784,12 +784,11 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     private _applyToMesh(mesh: Mesh): void {
-        const numOfMeshes = this._meshes.length;
-
         // vertexBuffers
         for (const kind in this._vertexBuffers) {
-            if (numOfMeshes === 1) {
-                this._vertexBuffers[kind].create();
+            const vertexBuffer = this._vertexBuffers[kind];
+            if (!vertexBuffer._buffer.getBuffer()) {
+                vertexBuffer.create();
             }
 
             if (kind === VertexBuffer.PositionKind) {
@@ -806,7 +805,7 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         // indexBuffer
-        if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
+        if (!this._indexBuffer && this._indices && this._indices.length > 0) {
             this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable, "Geometry_" + this.id + "_IndexBuffer");
         }
 

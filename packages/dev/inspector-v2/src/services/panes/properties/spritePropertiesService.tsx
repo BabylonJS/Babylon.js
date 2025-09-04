@@ -2,7 +2,7 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { IPropertiesService } from "./propertiesService";
 import type { ISelectionService } from "../../selectionService";
 
-import { Sprite } from "core/Sprites";
+import { Sprite } from "core/Sprites/sprite";
 
 import { PropertiesServiceIdentity } from "./propertiesService";
 import { SelectionServiceIdentity } from "../../selectionService";
@@ -22,7 +22,7 @@ export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IProperti
             content: [
                 {
                     section: "General",
-                    component: ({ context }) => <SpriteGeneralProperties sprite={context} setSelectedEntity={(entity) => (selectionService.selectedEntity = entity)} />,
+                    component: ({ context }) => <SpriteGeneralProperties sprite={context} selectionService={selectionService} />,
                 },
             ],
         });

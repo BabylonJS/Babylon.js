@@ -34,6 +34,7 @@ module.exports = (env) => {
                 core: path.resolve("../../dev/core/dist"),
                 loaders: path.resolve("../../dev/loaders/dist"),
                 gui: path.resolve("../../dev/gui/dist"),
+                serializers: path.resolve("../../dev/serializers/dist"),
             },
         },
         externals: [

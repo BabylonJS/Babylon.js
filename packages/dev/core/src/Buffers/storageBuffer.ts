@@ -47,6 +47,15 @@ export class StorageBuffer {
     }
 
     /**
+     * Clears the storage buffer to zeros
+     * @param byteOffset the byte offset to start clearing (optional)
+     * @param byteLength the byte length to clear (optional)
+     */
+    public clear(byteOffset?: number, byteLength?: number): void {
+        this._engine.clearStorageBuffer(this._buffer, byteOffset, byteLength);
+    }
+
+    /**
      * Updates the storage buffer
      * @param data the data used to update the storage buffer
      * @param byteOffset the byte offset of the data (optional)

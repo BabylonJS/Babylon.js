@@ -1260,26 +1260,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /**
-     * Returns the mesh VertexBuffer object from the requested `kind`
-     * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
-     * - VertexBuffer.PositionKind
-     * - VertexBuffer.NormalKind
-     * - VertexBuffer.UVKind
-     * - VertexBuffer.UV2Kind
-     * - VertexBuffer.UV3Kind
-     * - VertexBuffer.UV4Kind
-     * - VertexBuffer.UV5Kind
-     * - VertexBuffer.UV6Kind
-     * - VertexBuffer.ColorKind
-     * - VertexBuffer.MatricesIndicesKind
-     * - VertexBuffer.MatricesIndicesExtraKind
-     * - VertexBuffer.MatricesWeightsKind
-     * - VertexBuffer.MatricesWeightsExtraKind
-     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
-     * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
-     */
-    public getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
+    public override getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
         if (!this._geometry) {
             return null;
         }
@@ -1551,9 +1532,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         internalDataInfo._preActivateId = sceneRenderId;
-        if (this.hasInstances) {
-            this._getInstanceDataStorage().visibleInstances = null;
-        }
+        this._getInstanceDataStorage().visibleInstances = null;
         return this;
     }
 
@@ -1561,9 +1540,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     public override _preActivateForIntermediateRendering(renderId: number): Mesh {
-        if (!this.hasInstances) {
-            return this;
-        }
         const instanceDataStorage = this._getInstanceDataStorage();
         if (instanceDataStorage.visibleInstances) {
             instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
@@ -2054,6 +2030,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const scene = this.getScene();
         const engine = scene.getEngine();
+        const currentMaterialContext = engine._currentMaterialContext;
+        const useVertexPulling = currentMaterialContext && currentMaterialContext.useVertexPulling;
 
         if ((this._unIndexed && fillMode !== Material.WireFrameFillMode) || fillMode == Material.PointFillMode) {
             // or triangles as points
@@ -2061,6 +2039,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         } else if (fillMode == Material.WireFrameFillMode) {
             // Triangles as wireframe
             engine.drawElementsType(fillMode, 0, subMesh._linesIndexCount, this.forcedInstanceCount || instancesCount);
+        } else if (useVertexPulling) {
+            // We're rendering the number of indices in the index buffer but the vertex shader is handling the data itself.
+            engine.drawArraysType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
         } else {
             engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, this.forcedInstanceCount || instancesCount);
         }
@@ -2706,7 +2687,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
             }
             this._internalMeshDataInfo._effectiveSideOrientation = sideOrientation!;
-        } else if (this.hasInstances) {
+        } else {
             sideOrientation = this._internalMeshDataInfo._effectiveSideOrientation;
         }
 

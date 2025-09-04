@@ -21,6 +21,9 @@
         },
         {
             "path": "../materials/tsconfig.build.json"
+        },
+        {
+            "path": "../serializers/tsconfig.build.json"
         }
     ],
 

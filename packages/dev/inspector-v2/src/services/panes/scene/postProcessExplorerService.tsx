@@ -4,8 +4,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { BlurRegular } from "@fluentui/react-icons";
 
-import { Observable } from "core/Misc";
-import { PostProcess } from "core/PostProcesses/postProcess";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -23,7 +22,6 @@ export const PostProcessExplorerServiceDefinition: ServiceDefinition<[], [IScene
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Post Processes",
             order: DefaultSectionsOrder.PostProcesses,
-            predicate: (entity) => entity instanceof PostProcess,
             getRootEntities: () => scene.postProcesses,
             getEntityDisplayInfo: (postProcess) => {
                 const onChangeObservable = new Observable<void>();

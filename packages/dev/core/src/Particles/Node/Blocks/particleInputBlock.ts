@@ -136,6 +136,8 @@ export class ParticleInputBlock extends NodeParticleBlock {
                     this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                     break;
                 case NodeParticleContextualSources.Color:
+                case NodeParticleContextualSources.InitialColor:
+                case NodeParticleContextualSources.ColorDead:
                     this._type = NodeParticleBlockConnectionPointTypes.Color4;
                     break;
                 case NodeParticleContextualSources.Age:

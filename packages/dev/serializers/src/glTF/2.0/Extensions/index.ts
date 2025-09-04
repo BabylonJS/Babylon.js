@@ -15,3 +15,6 @@ export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_volume";
 export * from "./EXT_materials_diffuse_roughness";
 export * from "./KHR_texture_transform";
+export * from "./KHR_texture_basisu";
+export * from "./EXT_texture_webp";
+export * from "./EXT_texture_avif";

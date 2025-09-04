@@ -54,10 +54,19 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
 
     /**
      * If the data string can be loaded directly.
+     * @param data - direct load data
      * @returns if the data can be loaded directly
      */
-    public canDirectLoad(): boolean {
-        return true;
+    public canDirectLoad(data: string): boolean {
+        return this.isBvhHeader(data);
+    }
+
+    public isBvhHeader(text: string): boolean {
+        return text.split("\n")[0] == "HIERARCHY";
+    }
+
+    public isNotBvhHeader(text: string): boolean {
+        return !this.isBvhHeader(text);
     }
 
     /**
@@ -72,6 +81,10 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         if (typeof data !== "string") {
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject("BVH loader expects string data.");
+        }
+        if (this.isNotBvhHeader(data as string)) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            return Promise.reject("BVH loader expects HIERARCHY header.");
         }
         try {
             const skeleton = ReadBvh(data, scene, null, this._loadingOptions);
@@ -103,6 +116,10 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject("BVH loader expects string data.");
         }
+        if (this.isNotBvhHeader(data as string)) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            return Promise.reject("BVH loader expects HIERARCHY header.");
+        }
 
         // eslint-disable-next-line github/no-then
         return this.importMeshAsync(null, scene, data).then(() => {
@@ -121,6 +138,10 @@ export class BVHFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         if (typeof data !== "string") {
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             return Promise.reject("BVH loader expects string data.");
+        }
+        if (this.isNotBvhHeader(data as string)) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+            return Promise.reject("BVH loader expects HIERARCHY header.");
         }
         const assetContainer = new AssetContainer(scene);
         try {

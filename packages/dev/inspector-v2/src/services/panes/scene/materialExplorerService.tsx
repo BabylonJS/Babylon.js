@@ -4,8 +4,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { PaintBrushRegular } from "@fluentui/react-icons";
 
-import { Material } from "core/Materials/material";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -23,8 +22,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Materials",
             order: DefaultSectionsOrder.Materials,
-            predicate: (entity) => entity instanceof Material,
-            getRootEntities: () => scene.materials,
+            getRootEntities: () => [...scene.materials, ...scene.multiMaterials],
             getEntityDisplayInfo: (material) => {
                 const onChangeObservable = new Observable<void>();
 

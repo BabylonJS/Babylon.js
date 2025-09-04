@@ -951,6 +951,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     protected _createTargetRenderTexture(): void {
         const engine = this._scene.getEngine();
+        this._shadowMap?.dispose();
         if (engine._features.supportDepthStencilTexture) {
             this._shadowMap = new RenderTargetTexture(
                 this._light.name + "_shadowMap",
@@ -2155,16 +2156,17 @@ export class ShadowGenerator implements IShadowGenerator {
         const shadowGenerator = constr ? constr(parsedShadowGenerator.mapSize, light, camera) : new ShadowGenerator(parsedShadowGenerator.mapSize, light, undefined, camera);
         const shadowMap = shadowGenerator.getShadowMap();
 
-        for (let meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
-            const meshes = scene.getMeshesById(parsedShadowGenerator.renderList[meshIndex]);
+        if (parsedShadowGenerator.renderList.length && shadowMap) {
+            const renderSet = new Set<string>(parsedShadowGenerator.renderList);
+            let renderList = shadowMap.renderList;
+            if (!renderList) {
+                renderList = shadowMap.renderList = [];
+            }
+            const meshes = scene.meshes;
             for (const mesh of meshes) {
-                if (!shadowMap) {
-                    continue;
+                if (renderSet.has(mesh.id)) {
+                    renderList.push(mesh);
                 }
-                if (!shadowMap.renderList) {
-                    shadowMap.renderList = [];
-                }
-                shadowMap.renderList.push(mesh);
             }
         }
 

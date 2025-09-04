@@ -201,6 +201,28 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
+     * Define if bounding box rendering should be enabled (still subject to Mesh.showBoundingBox or scene.forceShowBoundingBoxes). (Default: false).
+     */
+    public get enableBoundingBoxRendering() {
+        return this._objectRenderer.enableBoundingBoxRendering;
+    }
+
+    public set enableBoundingBoxRendering(value: boolean) {
+        this._objectRenderer.enableBoundingBoxRendering = value;
+    }
+
+    /**
+     * Define if outline/overlay rendering should be enabled (still subject to Mesh.renderOutline/Mesh.renderOverlay). (Default: true).
+     */
+    public get enableOutlineRendering() {
+        return this._objectRenderer.enableOutlineRendering;
+    }
+
+    public set enableOutlineRendering(value: boolean) {
+        this._objectRenderer.enableOutlineRendering = value;
+    }
+
+    /**
      * Force checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined) (default: false).
      */
     public get forceLayerMaskCheck() {

@@ -10,7 +10,7 @@ import { Portal } from "./portal.js";
 
 import { MessageDialog } from "shared-ui-components/components/MessageDialog.js";
 import { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas.js";
-import { LogComponent, LogEntry } from "./components/log/logComponent.js";
+import { LogComponent } from "./components/log/logComponent.js";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger.js";
 import { BlockTools } from "./blockTools.js";
 import { PropertyTabComponent } from "./components/propertyTab/propertyTabComponent.js";
@@ -19,7 +19,7 @@ import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
-import type { BaseBlock, SmartFilter } from "smart-filters";
+import { Logger, type BaseBlock, type SmartFilter } from "smart-filters";
 import { inputsNamespace } from "smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
@@ -36,6 +36,7 @@ import type { BlockNodeData } from "./graphSystem/blockNodeData";
 import { DataStorage } from "core/Misc/dataStorage.js";
 import { OnlyShowCustomBlocksDefaultValue } from "./constants.js";
 import { ThinEngine } from "core/Engines/thinEngine.js";
+import { HistoryStack } from "shared-ui-components/historyStack.js";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -65,6 +66,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     private _graphCanvas!: GraphCanvasComponent;
     private _diagramContainer!: HTMLDivElement;
     private _canvasResizeObserver: Nullable<ResizeObserver> = null;
+    private _historyStack: Nullable<HistoryStack> = null;
 
     private _mouseLocationX = 0;
     private _mouseLocationY = 0;
@@ -99,6 +101,49 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         return newInputBlock;
     }
 
+    prepareHistoryStack() {
+        const globalState = this.props.globalState;
+
+        // eslint-disable-next-line no-restricted-syntax
+        const dataProvider = async () => {
+            // return the serialized version to store
+            if (globalState.copySmartFilterToStringAsync) {
+                this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
+                return await globalState.copySmartFilterToStringAsync();
+            }
+
+            return "";
+        };
+
+        const applyUpdateAsync = async (data: any) => {
+            if (this.props.globalState.pasteSmartFilterFromStringAsync) {
+                this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
+                await this.props.globalState.pasteSmartFilterFromStringAsync(data);
+            }
+        };
+
+        // Create the stack
+        this._historyStack = new HistoryStack(dataProvider, applyUpdateAsync);
+        globalState.stateManager.historyStack = this._historyStack;
+
+        // Connect to relevant events
+        globalState.stateManager.onUpdateRequiredObservable.add(() => {
+            void this._historyStack!.storeAsync();
+        });
+        globalState.stateManager.onRebuildRequiredObservable.add(() => {
+            void this._historyStack!.storeAsync();
+        });
+        globalState.stateManager.onNodeMovedObservable.add(() => {
+            void this._historyStack!.storeAsync();
+        });
+        globalState.stateManager.onNewNodeCreatedObservable.add(() => {
+            void this._historyStack!.storeAsync();
+        });
+        globalState.onClearUndoStack.add(() => {
+            this._historyStack!.reset();
+        });
+    }
+
     override componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
 
@@ -112,12 +157,13 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
+            this.prepareHistoryStack();
             this._diagramContainer = this._diagramContainerRef.current!;
             const canvas = this.props.globalState.hostDocument.getElementById("sfe-preview-canvas") as HTMLCanvasElement;
             if (canvas && this.props.globalState.onNewEngine) {
                 const engine = InitializePreview(canvas, this.props.globalState.forceWebGL1);
                 const versionToLog = `Babylon.js v${ThinEngine.Version} - WebGL${engine.webGLVersion}`;
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(versionToLog, false));
+                Logger.Log(versionToLog);
                 this.props.globalState.engine = engine;
                 this.props.globalState.onNewEngine(engine);
                 this._canvasResizeObserver.observe(canvas);
@@ -133,8 +179,20 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.props.globalState.onSmartFilterLoadedObservable?.add((smartFilter: SmartFilter) => {
+            if (!this._historyStack) {
+                return;
+            }
+
             this.props.globalState.smartFilter = smartFilter;
             this.props.globalState.onResetRequiredObservable.notifyObservers(false);
+
+            if (!this._historyStack.hasData) {
+                // For the first load when there is no history, we capture the baseline
+                setTimeout(() => {
+                    // We skip the current frame to let the location being updated
+                    this.props.globalState.onClearUndoStack.notifyObservers();
+                });
+            }
         });
 
         this.props.globalState.onlyShowCustomBlocksObservable.notifyObservers(DataStorage.ReadBoolean("OnlyShowCustomBlocks", OnlyShowCustomBlocksDefaultValue));
@@ -144,6 +202,8 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         this.props.globalState.previewFillContainer.onChangedObservable.add((newValue: boolean) => {
             localStorage.setItem(PreviewFillContainerKey, newValue ? "true" : "");
         });
+
+        this.props.globalState.onClearUndoStack.notifyObservers();
 
         this.build();
     }
@@ -159,6 +219,13 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         // Save new editor data
         this.props.globalState.onSaveEditorDataRequiredObservable.notifyObservers();
+
+        this.props.globalState.onClearUndoStack.clear();
+
+        if (this._historyStack) {
+            this._historyStack.dispose();
+            this._historyStack = null as any;
+        }
 
         // if (this._previewManager) {
         //     this._previewManager.dispose();
@@ -228,6 +295,10 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         };
 
         this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
+            if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
+                return;
+            }
+
             // If one of the selected nodes is an OutputBlock, and the keypress is delete, remove the OutputBlock from the selected list
             if (evt.keyCode === 46 || evt.keyCode === 8) {
                 const indexOfOutputBlock = this._graphCanvas.selectedNodes.findIndex((node) => (node.content as BlockNodeData).data.isOutput);

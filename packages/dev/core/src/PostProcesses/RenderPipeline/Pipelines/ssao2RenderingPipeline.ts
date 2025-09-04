@@ -15,7 +15,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { EngineStore } from "../../../Engines/engineStore";
 import { SSAO2Configuration } from "../../../Rendering/ssao2Configuration";
 import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
-import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
+import { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { RandomRange } from "../../../Maths/math.scalar.functions";
@@ -121,6 +121,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         return this._textureSamples;
     }
 
+    private _forcedGeometryBuffer: Nullable<GeometryBufferRenderer> = null;
     /**
      * Force rendering the geometry through geometry buffer.
      */
@@ -130,7 +131,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (!this._forceGeometryBuffer) {
             return null;
         }
-        return this._scene.geometryBufferRenderer;
+        return this._forcedGeometryBuffer ?? this._scene.geometryBufferRenderer;
     }
     private get _prePassRenderer(): Nullable<PrePassRenderer> {
         if (this._forceGeometryBuffer) {
@@ -265,21 +266,33 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * @constructor
+     * Creates the SSAO2 rendering pipeline.
      * @param name The rendering pipeline name
      * @param scene The scene linked to this pipeline
      * @param ratio The size of the postprocesses. Can be a number shared between passes or an object for more precision: { ssaoRatio: 0.5, blurRatio: 1.0 }
      * @param cameras The array of cameras that the rendering pipeline will be attached to
-     * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer
+     * @param forceGeometryBuffer Set to true if you want to use the legacy geometry buffer renderer. You can also pass an existing instance of GeometryBufferRenderer if you want to use your own geometry buffer renderer.
      * @param textureType The texture type used by the different post processes created by SSAO (default: Constants.TEXTURETYPE_UNSIGNED_BYTE)
      */
-    constructor(name: string, scene: Scene, ratio: any, cameras?: Camera[], forceGeometryBuffer = false, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE) {
+    constructor(
+        name: string,
+        scene: Scene,
+        ratio: any,
+        cameras?: Camera[],
+        forceGeometryBuffer: boolean | GeometryBufferRenderer = false,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE
+    ) {
         super(scene.getEngine(), name);
 
         this._scene = scene;
         this._ratio = ratio;
         this._textureType = textureType;
-        this._forceGeometryBuffer = forceGeometryBuffer;
+        if (forceGeometryBuffer instanceof GeometryBufferRenderer) {
+            this._forceGeometryBuffer = true;
+            this._forcedGeometryBuffer = forceGeometryBuffer;
+        } else {
+            this._forceGeometryBuffer = forceGeometryBuffer;
+        }
 
         if (!this.isSupported) {
             Logger.Error("The current engine does not support SSAO 2.");
@@ -291,7 +304,9 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         // Set up assets
         if (this._forceGeometryBuffer) {
-            scene.enableGeometryBufferRenderer();
+            if (!this._forcedGeometryBuffer) {
+                scene.enableGeometryBufferRenderer();
+            }
             if (scene.geometryBufferRenderer?.generateNormalsInWorldSpace) {
                 Logger.Error("SSAO2RenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
             }
@@ -396,7 +411,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         this._randomTexture.dispose();
 
-        if (disableGeometryBufferRenderer) {
+        if (disableGeometryBufferRenderer && !this._forcedGeometryBuffer) {
             this._scene.disableGeometryBufferRenderer();
         }
 
@@ -536,7 +551,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _getDefinesForSSAO() {
-        const defines = `#define SSAO\n#define SAMPLES ${this.samples}\n#define EPSILON ${this.epsilon.toFixed(4)}`;
+        let defines = `#define SSAO\n#define SAMPLES ${this.samples}\n#define EPSILON ${this.epsilon.toFixed(4)}`;
+
+        if (this._scene.activeCamera?.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+            defines += `\n#define ORTHOGRAPHIC_CAMERA`;
+        }
 
         return defines;
     }
@@ -567,6 +586,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 "texelSize",
                 "xViewport",
                 "yViewport",
+                "viewport",
                 "maxZ",
                 "minZAspect",
                 "depthProjection",
@@ -621,8 +641,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
                 const orthoBottom = this._scene.activeCamera.orthoBottom ?? -halfHeight;
                 const orthoTop = this._scene.activeCamera.orthoTop ?? halfHeight;
                 effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.ORTHO_DEPTH_PROJECTION);
-                effect.setFloat("xViewport", (orthoRight - orthoLeft) * 0.5);
-                effect.setFloat("yViewport", (orthoTop - orthoBottom) * 0.5);
+                effect.setFloat4("viewport", orthoLeft, orthoRight, orthoBottom, orthoTop);
             }
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 

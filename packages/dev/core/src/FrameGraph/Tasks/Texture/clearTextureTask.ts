@@ -1,6 +1,7 @@
 import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
 import { Color4, TmpColors } from "../../../Maths/math.color";
 import { FrameGraphTask } from "../../frameGraphTask";
+import { backbufferColorTextureHandle } from "../../frameGraphTypes";
 
 /**
  * Task used to clear a texture.
@@ -91,7 +92,10 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: the depth texture and the target texture must have the same number of samples.`);
         }
 
-        const attachments = this._frameGraph.engine.buildTextureLayout(targetTextures ? Array(targetTextures.length).fill(true) : []);
+        const attachments = this._frameGraph.engine.buildTextureLayout(
+            targetTextures ? Array(targetTextures.length).fill(true) : [],
+            this.targetTexture === backbufferColorTextureHandle
+        );
 
         const color = TmpColors.Color4[0];
 

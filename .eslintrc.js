@@ -261,6 +261,12 @@ const rules = {
                         selector: "import",
                         format: ["strictCamelCase", "StrictPascalCase"],
                     },
+                    // Allow any casing for destructured variables, particularly for dynamic imports.
+                    {
+                        selector: "variable",
+                        format: null,
+                        modifiers: ["destructured"],
+                    },
                     {
                         selector: "variable",
                         format: ["StrictPascalCase", "UPPER_CASE"],
@@ -594,6 +600,7 @@ const rules = {
         "no-async-promise-executor": "warn",
         "no-throw-literal": "error",
         curly: "error",
+        "babylonjs/no-cross-package-relative-imports": "error",
     },
 };
 

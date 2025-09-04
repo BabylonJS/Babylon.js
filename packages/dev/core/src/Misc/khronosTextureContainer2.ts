@@ -142,13 +142,23 @@ export class DefaultKTX2DecoderOptions {
 
         this._isDirty = false;
 
-        const options: IKTX2DecoderOptions = {
-            useRGBAIfASTCBC7NotAvailableWhenUASTC: this._useRGBAIfASTCBC7NotAvailableWhenUASTC,
-            forceRGBA: this._forceRGBA,
-            forceR8: this._forceR8,
-            forceRG8: this._forceRG8,
-            bypassTranscoders: this._bypassTranscoders,
-        };
+        const options: IKTX2DecoderOptions = {};
+
+        if (this._useRGBAIfASTCBC7NotAvailableWhenUASTC !== undefined) {
+            options.useRGBAIfASTCBC7NotAvailableWhenUASTC = this._useRGBAIfASTCBC7NotAvailableWhenUASTC;
+        }
+        if (this._forceRGBA !== undefined) {
+            options.forceRGBA = this._forceRGBA;
+        }
+        if (this._forceR8 !== undefined) {
+            options.forceR8 = this._forceR8;
+        }
+        if (this._forceRG8 !== undefined) {
+            options.forceRG8 = this._forceRG8;
+        }
+        if (this._bypassTranscoders !== undefined) {
+            options.bypassTranscoders = this._bypassTranscoders;
+        }
 
         if (this.useRGBAIfOnlyBC1BC3AvailableWhenUASTC) {
             options.transcodeFormatDecisionTree = {

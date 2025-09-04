@@ -162,7 +162,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const gsMesh = mesh as GaussianSplattingMesh;
 
         // Misc.
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            false,
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._setVertexOutputInvariant
+        );
 
         // Values that need to be evaluated on every frame
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, true);

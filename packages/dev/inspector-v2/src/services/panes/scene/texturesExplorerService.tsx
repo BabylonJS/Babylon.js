@@ -4,9 +4,8 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
 
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -24,10 +23,15 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Textures",
             order: DefaultSectionsOrder.Textures,
-            predicate: (entity): entity is BaseTexture => entity instanceof BaseTexture && entity.getClassName() !== "AdvancedDynamicTexture",
             getRootEntities: () => scene.textures.filter((texture) => texture.getClassName() !== "AdvancedDynamicTexture"),
             getEntityDisplayInfo: (texture) => {
                 const onChangeObservable = new Observable<void>();
+
+                const displayNameHookToken = InterceptProperty(texture, "displayName", {
+                    afterSet: () => {
+                        onChangeObservable.notifyObservers();
+                    },
+                });
 
                 const nameHookToken = InterceptProperty(texture, "name", {
                     afterSet: () => {
@@ -42,6 +46,7 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
                     onChange: onChangeObservable,
                     dispose: () => {
                         nameHookToken.dispose();
+                        displayNameHookToken.dispose();
                         onChangeObservable.clear();
                     },
                 };

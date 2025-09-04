@@ -5,7 +5,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { AppGenericRegular } from "@fluentui/react-icons";
 
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -28,7 +28,6 @@ export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorer
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "GUI",
             order: DefaultSectionsOrder.GUIs,
-            predicate: IsAdvancedDynamicTexture,
             getRootEntities: () => scene.textures.filter(IsAdvancedDynamicTexture),
             getEntityDisplayInfo: (texture) => {
                 const onChangeObservable = new Observable<void>();
