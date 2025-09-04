@@ -635,7 +635,9 @@ export class ObjectRenderer {
             const outlineRenderer = (this._scene as any).getOutlineRenderer?.();
             const outlineRendererIsEnabled = outlineRenderer?.enabled;
 
-            outlineRenderer.enabled = this.enableOutlineRendering;
+            if (outlineRenderer) {
+                outlineRenderer.enabled = this.enableOutlineRendering;
+            }
 
             this.onBeforeRenderingManagerRenderObservable.notifyObservers(passIndex);
 
@@ -1002,3 +1004,4 @@ export class ObjectRenderer {
         }
     }
 }
+
