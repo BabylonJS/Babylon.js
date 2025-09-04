@@ -141,7 +141,7 @@
         },
         {
             "label": "Run visualization tests (Dev)",
-            "dependsOn": ["CDN and DevHost Serve and watch (Dev)"],
+            "dependsOn": ["CDN Serve and watch (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -161,7 +161,7 @@
         },
         {
             "label": "Run visualization tests headless (Dev)",
-            "dependsOn": ["CDN and DevHost Serve and watch (Dev)"],
+            "dependsOn": ["CDN Serve and watch (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -177,7 +177,7 @@
         },
         {
             "label": "Launch visualization test runner (Dev)",
-            "dependsOn": ["CDN and DevHost Serve and watch (Dev)"],
+            "dependsOn": ["CDN Serve and watch (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -232,15 +232,6 @@
             "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         },
         {
-            "label": "CDN and DevHost Serve and watch (Dev)",
-            "dependsOn": ["CDN Serve and watch (Dev)", "DevHost Serve and watch (Dev)"],
-            "dependsOrder": "parallel",
-            "presentation": {
-                "group": "watch"
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "CDN Serve and watch (Dev)",
             "dependsOn": ["Watch all for CDN (Dev)"],
             "type": "shell",
@@ -252,24 +243,6 @@
                 "cwd": "${workspaceFolder}"
             },
             "args": ["run", "serve", "-w", "@tools/babylon-server"],
-            "isBackground": true,
-            "presentation": {
-                "group": "watch"
-            },
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
-        },
-        {
-            "label": "DevHost Serve and watch (Dev)",
-            "dependsOn": ["Watch all for CDN (Dev)"],
-            "type": "shell",
-            "command": "npm",
-            "runOptions": {
-                "instanceLimit": 1
-            },
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "args": ["run", "serve", "-w", "@tools/dev-host"],
             "isBackground": true,
             "presentation": {
                 "group": "watch"
