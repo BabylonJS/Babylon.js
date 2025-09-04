@@ -4,7 +4,7 @@ import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { OpenPBRMaterial } from "core/Materials";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 const NAME = "KHR_materials_specular";
 
