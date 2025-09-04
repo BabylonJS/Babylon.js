@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // MIT License
 
-layout(std140) uniform atmosphereUbo {
+layout(std140, column_major) uniform;
+
+uniform atmosphereUbo {
     vec3 peakRayleighScattering;
     float planetRadius;
     vec3 peakMieScattering;

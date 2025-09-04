@@ -201,7 +201,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 vec3 positionGlobal = 0.001 * vPositionW + vec3(0., planetRadius, 0.);
                 float positionRadius = length(positionGlobal);
                 vec3 geocentricNormal = positionGlobal / positionRadius;
-                vec3 directionToLight = ${useUbo ? "-light0.vLightData.xyz" : "-vLightData.xyz"};
+                vec3 directionToLight = ${useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz"};
                 float cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
                 diffuse0 = lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
             }
@@ -212,7 +212,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 float positionRadius = length(positionGlobal);
                 vec3 geocentricNormal = positionGlobal / positionRadius;
 
-                vec3 directionToLight = ${useUbo ? "-light0.vLightData.xyz" : "-vLightData.xyz"};
+                vec3 directionToLight = ${useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz"};
                 float cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
 
                 vec2 uv = vec2(0.5 + 0.5 * cosAngleLightToZenith, (positionRadius - planetRadius) / atmosphereThickness);
