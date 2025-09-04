@@ -450,4 +450,3 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
 }
 
 RegisterClass("BABYLON.TAARenderingPipeline", TAARenderingPipeline);
-
