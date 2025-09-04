@@ -9,7 +9,7 @@ import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import type { Nullable } from "core/types";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import "./Shaders/ShadersInclude/atmosphereFunctions";
-import "./Shaders/ShadersInclude/atmosphereUbo";
+import "./Shaders/ShadersInclude/atmosphereUboDeclaration";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -187,29 +187,31 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         }
 
         const useUbo = this._atmosphere._scene.getEngine().supportsUniformBuffers;
+        const directionToLightSnippet = useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz";
+        const atmosphereImportSnippet = useUbo ? "#include<atmosphereUboDeclaration>" : "#include<atmosphereFragment>";
 
         return {
             CUSTOM_FRAGMENT_DEFINITIONS:
                 this._isAerialPerspectiveEnabled && this._atmosphere.isAerialPerspectiveLutEnabled
-                    ? "uniform sampler2D transmittanceLut;\r\nprecision highp sampler2DArray;\r\nuniform sampler2DArray aerialPerspectiveLut;\r\n#include<atmosphereUbo>\r\n#include<atmosphereFunctions>"
-                    : "uniform sampler2D transmittanceLut;\r\n#include<atmosphereUbo>\r\n#include<atmosphereFunctions>",
+                    ? `uniform sampler2D transmittanceLut;\r\nprecision highp sampler2DArray;\r\nuniform sampler2DArray aerialPerspectiveLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`
+                    : `uniform sampler2D transmittanceLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
             CUSTOM_LIGHT0_COLOR: `
             {
                 vec3 positionGlobal = 0.001 * vPositionW + vec3(0., planetRadius, 0.);
                 float positionRadius = length(positionGlobal);
                 vec3 geocentricNormal = positionGlobal / positionRadius;
-                vec3 directionToLight = ${useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz"};
+                vec3 directionToLight = ${directionToLightSnippet};
                 float cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
                 diffuse0 = lightIntensity * sampleTransmittanceLut(transmittanceLut, positionRadius, cosAngleLightToZenith);
             }
-            `,
+`,
             CUSTOM_REFLECTION: `
             {
                 vec3 positionGlobal =  0.001 * vPositionW + vec3(0., planetRadius, 0.);
                 float positionRadius = length(positionGlobal);
                 vec3 geocentricNormal = positionGlobal / positionRadius;
 
-                vec3 directionToLight = ${useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz"};
+                vec3 directionToLight = ${directionToLightSnippet};
                 float cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
 
                 vec2 uv = vec2(0.5 + 0.5 * cosAngleLightToZenith, (positionRadius - planetRadius) / atmosphereThickness);
@@ -232,7 +234,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 reflectionOut.environmentIrradiance = environmentIrradiance;
                 reflectionOut.environmentRadiance.rgb = reflectionOut.environmentIrradiance;
             }
-            `,
+`,
             // TODO: Support full ray marching if USE_AERIAL_PERSPECTIVE_LUT is disabled.
             CUSTOM_FRAGMENT_BEFORE_FOG: `
             #if USE_AERIAL_PERSPECTIVE_LUT
@@ -253,7 +255,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 }
             }
             #endif
-            `,
+`,
         };
     }
 }

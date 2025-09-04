@@ -5,7 +5,8 @@ precision highp float;
 
 const float DiffuseSkyIrradianceLutSampleCount = 32.0;
 
-#include<atmosphereUbo>
+#include<__decl__atmosphereFragment>
+
 #include<core/helperFunctions>
 #include<depthFunctions>
 #include<atmosphereFunctions>

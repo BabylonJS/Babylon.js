@@ -7,7 +7,8 @@ precision highp float;
 
 #define COMPUTE_MULTI_SCATTERING 1
 
-#include<atmosphereUbo>
+#include<__decl__atmosphereFragment>
+
 #include<core/helperFunctions>
 #include<atmosphereFunctions>
 

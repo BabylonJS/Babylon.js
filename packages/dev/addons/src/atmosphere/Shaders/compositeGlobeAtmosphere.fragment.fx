@@ -6,7 +6,8 @@ precision highp sampler2D;
 
 // In global views, renders the atmosphere.
 
-#include<atmosphereUbo>
+#include<__decl__atmosphereFragment>
+
 #include<core/helperFunctions>
 #include<depthFunctions>
 #include<atmosphereFunctions>

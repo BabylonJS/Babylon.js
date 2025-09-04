@@ -7,7 +7,7 @@ precision highp sampler2DArray;
 
 // Composites the aerial perspective over any fragment with a depth value within the atmosphere.
 
-#include<atmosphereUbo>
+#include<__decl__atmosphereFragment>
 
 #if USE_AERIAL_PERSPECTIVE_LUT
 uniform sampler2DArray aerialPerspectiveLut;

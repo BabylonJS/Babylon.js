@@ -3,7 +3,7 @@
 
 layout(std140, column_major) uniform;
 
-uniform atmosphereUbo {
+uniform Atmosphere {
     vec3 peakRayleighScattering;
     float planetRadius;
     vec3 peakMieScattering;

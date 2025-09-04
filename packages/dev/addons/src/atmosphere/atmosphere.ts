@@ -33,8 +33,10 @@ import "./Shaders/fullscreenTriangle.vertex";
 import "./Shaders/multiScattering.fragment";
 import "./Shaders/skyView.fragment";
 import "./Shaders/aerialPerspective.fragment";
+import "./Shaders/ShadersInclude/atmosphereFragmentDeclaration";
 import "./Shaders/ShadersInclude/atmosphereFunctions";
-import "./Shaders/ShadersInclude/atmosphereUbo";
+import "./Shaders/ShadersInclude/atmosphereUboDeclaration";
+import "./Shaders/ShadersInclude/atmosphereVertexDeclaration";
 import "./Shaders/ShadersInclude/depthFunctions";
 
 const MaterialPlugin = "atmo-pbr";
@@ -543,7 +545,7 @@ export class Atmosphere extends TransformNode {
      */
     public get uniformBuffer(): UniformBuffer {
         if (this._atmosphereUbo === null) {
-            const atmosphereUbo = (this._atmosphereUbo = new UniformBuffer(this.getEngine(), undefined, true, "atmosphereUbo"));
+            const atmosphereUbo = (this._atmosphereUbo = new UniformBuffer(this.getEngine(), undefined, true, "Atmosphere"));
             atmosphereUbo.addUniform("peakRayleighScattering", 3);
             atmosphereUbo.addUniform("planetRadius", 1);
             // 16-byte boundary

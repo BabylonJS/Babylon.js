@@ -4,7 +4,7 @@
 precision highp float;
 
 #if COMPUTE_WORLD_RAY
-#include<atmosphereUbo>
+#include<__decl__atmosphereVertex>
 #endif
 
 #if POSITION_VEC2
