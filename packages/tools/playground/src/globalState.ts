@@ -71,4 +71,6 @@ export class GlobalState {
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();
+
+    public doNotRun = false;
 }

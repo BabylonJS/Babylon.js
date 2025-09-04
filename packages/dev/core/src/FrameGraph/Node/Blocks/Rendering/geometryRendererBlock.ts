@@ -84,6 +84,16 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         return this._frameGraphTask.objectRenderer.options.doNotChangeAspectRatio;
     }
 
+    /** Indicates if layer mask check must be forced */
+    @editableInPropertyPage("Force layer mask check", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get forceLayerMaskCheck() {
+        return this._frameGraphTask.forceLayerMaskCheck;
+    }
+
+    public set forceLayerMaskCheck(value: boolean) {
+        this._frameGraphTask.forceLayerMaskCheck = value;
+    }
+
     public set doNotChangeAspectRatio(value: boolean) {
         const disabled = this._frameGraphTask.disabled;
         const depthTest = this.depthTest;

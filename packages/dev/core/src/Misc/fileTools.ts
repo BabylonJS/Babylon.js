@@ -467,7 +467,7 @@ export const LoadFile = (
     fileOrUrl: File | string,
     onSuccess: (data: string | ArrayBuffer, responseURL?: string, contentType?: Nullable<string>) => void,
     onProgress?: (ev: ProgressEvent) => void,
-    offlineProvider?: IOfflineProvider,
+    offlineProvider?: Nullable<IOfflineProvider>,
     useArrayBuffer?: boolean,
     onError?: (request?: WebRequest, exception?: LoadFileError) => void,
     onOpened?: (request: WebRequest) => void
@@ -559,12 +559,14 @@ export const RequestFile = (
     url: string,
     onSuccess?: (data: string | ArrayBuffer, request?: WebRequest) => void,
     onProgress?: (event: ProgressEvent) => void,
-    offlineProvider?: IOfflineProvider,
+    offlineProvider?: Nullable<IOfflineProvider>,
     useArrayBuffer?: boolean,
     onError?: (error: RequestFileError) => void,
     onOpened?: (request: WebRequest) => void
 ): IFileRequest => {
-    offlineProvider ??= EngineStore.LastCreatedScene?.offlineProvider;
+    if (offlineProvider !== null) {
+        offlineProvider ??= EngineStore.LastCreatedScene?.offlineProvider;
+    }
     url = FileToolsOptions.CleanUrl(url);
     url = FileToolsOptions.PreprocessUrl(url);
 

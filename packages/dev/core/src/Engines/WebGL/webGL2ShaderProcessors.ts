@@ -46,6 +46,9 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension || hasOutput ? "" : outputDeclaration) + "void main(");
         } else {
+            if (defines.indexOf("#define VERTEXOUTPUT_INVARIANT") >= 0) {
+                code = "invariant gl_Position;\n" + code;
+            }
             const hasMultiviewExtension = defines.indexOf("#define MULTIVIEW") !== -1;
             if (hasMultiviewExtension) {
                 return "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + code;

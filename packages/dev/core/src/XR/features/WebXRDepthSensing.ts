@@ -17,10 +17,11 @@ import type { Material } from "core/Materials/material";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import { RegisterMaterialPlugin } from "core/Materials/materialPluginManager";
+import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
 import type { Camera } from "core/Cameras/camera";
 import { Matrix } from "core/Maths/math.vector";
 import type { Engine } from "core/Engines/engine";
+import { RegisterClass } from "../../Misc/typeStore";
 
 export type WebXRDepthUsage = "cpu" | "gpu";
 export type WebXRDepthDataFormat = "ushort" | "float" | "luminance-alpha";
@@ -145,6 +146,7 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     constructor(material: Material) {
         super(material, "DepthSensing", 222, new DepthSensingMaterialDefines());
         this._varColorName = material instanceof PBRBaseMaterial ? "finalColor" : "color";
+        this.doNotSerialize = true;
         ManagedMaterialPlugins.push(this);
     }
 
@@ -287,6 +289,8 @@ class WebXRDepthSensingMaterialPlugin extends MaterialPluginBase {
     }
 }
 
+RegisterClass(`BABYLON.DepthSensingMaterialPlugin`, WebXRDepthSensingMaterialPlugin);
+
 /**
  * WebXR Feature for WebXR Depth Sensing Module
  * @since 5.49.1
@@ -425,6 +429,8 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
         // https://immersive-web.github.io/depth-sensing/
         Tools.Warn("depth-sensing is an experimental and unstable feature.");
         EnableDiscard = !options.useToleranceFactorForDepthSensing;
+
+        RegisterMaterialPlugin("WebXRDepthSensingMaterialPlugin", (material) => new WebXRDepthSensingMaterialPlugin(material));
     }
 
     /**
@@ -494,6 +500,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * Dispose this feature and all of the resources attached
      */
     public override dispose(): void {
+        UnregisterMaterialPlugin("WebXRDepthSensingMaterialPlugin");
         this._cachedDepthImageTexture?.dispose();
         this.onGetDepthInMetersAvailable.clear();
         // cleanup
@@ -706,5 +713,3 @@ WebXRFeaturesManager.AddWebXRFeature(
     WebXRDepthSensing.Version,
     false
 );
-
-RegisterMaterialPlugin("WebXRDepthSensingMaterialPlugin", (material) => new WebXRDepthSensingMaterialPlugin(material));

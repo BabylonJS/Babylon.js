@@ -3,6 +3,7 @@ import type { AnimationConfiguration } from "./animationConfiguration";
 import type { AnimationSizeMessagePayload, AnimationUrlMessage, ContainerResizeMessage, Message, StartAnimationMessage } from "./messageTypes";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
 import { CalculateScaleFactor } from "./rendering/animationController";
+import { BlobWorkerWrapper as Worker } from "./blobWorkerWrapper";
 
 /**
  * Allows you to play Lottie animations using Babylon.js.
@@ -17,7 +18,7 @@ export class Player {
 
     private _playing: boolean = false;
     private _disposed: boolean = false;
-    private _worker: Nullable<Worker> = null;
+    private _worker: Nullable<globalThis.Worker> = null;
     private _canvas: Nullable<HTMLCanvasElement> = null;
     private _animationWidth: number = 0;
     private _animationHeight: number = 0;
@@ -54,7 +55,8 @@ export class Player {
         }
 
         if ("OffscreenCanvas" in window) {
-            this._worker = new Worker(new URL("./worker", import.meta.url), { type: "module" });
+            const wrapperWorker = new Worker(new URL("./worker", import.meta.url));
+            this._worker = wrapperWorker.getWorker();
             this._worker.onmessage = (evt: MessageEvent) => {
                 const message = evt.data as Message;
                 if (message === undefined) {

@@ -5,7 +5,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
 
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";

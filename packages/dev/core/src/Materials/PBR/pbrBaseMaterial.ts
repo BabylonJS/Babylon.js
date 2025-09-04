@@ -2010,7 +2010,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 defines,
                 this._applyDecalMapAfterDetailMap,
                 this._useVertexPulling,
-                renderingMesh
+                renderingMesh,
+                this._setVertexOutputInvariant
             );
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;

@@ -22,6 +22,8 @@ import {
     BlendBlockGlsl,
     NonOptimizableSimpleBlockGlsl,
     ExpectedBlendBlockComboMain2,
+    TestHelperAccessesUniformBlockGlsl,
+    TestHelperHasParamWithSameNameAsUniformBlockGlsl,
 } from "./smartFilterOptimizer.testData.js";
 
 describe("smartFilterOptimizer", () => {
@@ -31,8 +33,10 @@ describe("smartFilterOptimizer", () => {
     const testBlockWithTwoHelpers1Definition = importCustomBlockDefinition(TwoHelpersFirstBlockGlsl) as SerializedShaderBlockDefinition;
     const testBlockWithTwoHelpers2Definition = importCustomBlockDefinition(TwoHelpersSecondBlockGlsl) as SerializedShaderBlockDefinition;
     const testHelperConsolidationDefinition = importCustomBlockDefinition(TestHelperConsolidationBlockGlsl) as SerializedShaderBlockDefinition;
+    const testHelperAccessesUniformDefinition = importCustomBlockDefinition(TestHelperAccessesUniformBlockGlsl) as SerializedShaderBlockDefinition;
     const testBlockNonOptimizableDefinition = importCustomBlockDefinition(NonOptimizableSimpleBlockGlsl) as SerializedShaderBlockDefinition;
     const testBlockBlendDefinition = importCustomBlockDefinition(BlendBlockGlsl) as SerializedShaderBlockDefinition;
+    const testHelperHasParamWithSameNameAsUniformDefinition = importCustomBlockDefinition(TestHelperHasParamWithSameNameAsUniformBlockGlsl) as SerializedShaderBlockDefinition;
 
     describe("when a block has multiple overloads of a helper function", () => {
         it("should emit all of them in the optimized shader block", () => {
@@ -256,7 +260,50 @@ describe("smartFilterOptimizer", () => {
 
             // Allow optional numeric decoration like _helperNoUniformAccess_2_ before the '('
             expect(countOfRegexMatches(fragmentShaderCode!, /vec2 _helperNoUniformAccess_(?:\d+_)?\(vec2 uv\) {/g)).toBe(1);
-            expect(countOfRegexMatches(fragmentShaderCode!, /vec4 _helperAccessesUniform_(?:\d+_)?\(vec2 vUV\) {/g)).toBe(2);
+        });
+    });
+
+    describe("when a helper tries to access a uniform", () => {
+        it("should throw an error", () => {
+            // Arrange
+            const smartFilter = new SmartFilter("Test");
+
+            const testBlock = CustomShaderBlock.Create(smartFilter, "TestBlock", testHelperAccessesUniformDefinition);
+            const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
+
+            textureInputBlock.output.connectTo(testBlock.findInput("input")!);
+            testBlock.output.connectTo(smartFilter.output);
+
+            const optimizer = new SmartFilterOptimizer(smartFilter, {
+                maxSamplersInFragmentShader: 16,
+                removeDisabledBlocks: false,
+            });
+
+            // Act
+            expect(() => optimizer.optimize()).toThrow();
+        });
+    });
+
+    describe("when a helper has a param which has the same name as a uniform", () => {
+        it("should not throw an error", () => {
+            // Arrange
+            const smartFilter = new SmartFilter("Test");
+
+            const testBlock = CustomShaderBlock.Create(smartFilter, "TestBlock", testHelperHasParamWithSameNameAsUniformDefinition);
+            const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
+            const vec2InputBlock = new InputBlock(smartFilter, "vec2", ConnectionPointType.Vector2, { x: 0, y: 1 });
+
+            textureInputBlock.output.connectTo(testBlock.findInput("input")!);
+            vec2InputBlock.output.connectTo(testBlock.findInput("foo")!);
+            testBlock.output.connectTo(smartFilter.output);
+
+            const optimizer = new SmartFilterOptimizer(smartFilter, {
+                maxSamplersInFragmentShader: 16,
+                removeDisabledBlocks: false,
+            });
+
+            // Act
+            expect(() => optimizer.optimize()).not.toThrow();
         });
     });
 

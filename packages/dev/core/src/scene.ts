@@ -5616,6 +5616,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         // Release morph targets
         this._disposeList(this.morphTargetManagers);
 
+        // Release frame graphs
+        this._disposeList(this.frameGraphs);
+
         // Release UBO
         this._sceneUbo.dispose();
 
