@@ -296,7 +296,7 @@ export class Atmosphere extends TransformNode {
         const renderTarget = (this._skyViewLutRenderTarget = CreateRenderTargetTexture("atmo-skyView", { width: 128, height: 128 }, this._scene));
         renderTarget.coordinatesMode = Constants.TEXTURE_EQUIRECTANGULAR_MODE;
 
-        this._skyViewLutEffectWrapper = CreateSkyViewEffectWrapper(this.getEngine(), this.uniformBuffer.name);
+        this._skyViewLutEffectWrapper = CreateSkyViewEffectWrapper(this.getEngine(), this.uniformBuffer);
 
         return renderTarget;
     }
@@ -329,7 +329,7 @@ export class Atmosphere extends TransformNode {
         const scene = this._scene;
         const name = "atmo-aerialPerspective";
         const renderTarget = (this._aerialPerspectiveLutRenderTarget = CreateRenderTargetTexture(name, { width: 16, height: 64, layers: 32 }, scene, {}));
-        this._aerialPerspectiveLutEffectWrapper = CreateAerialPerspectiveEffectWrapper(this.getEngine(), this.uniformBuffer.name);
+        this._aerialPerspectiveLutEffectWrapper = CreateAerialPerspectiveEffectWrapper(this.getEngine(), this.uniformBuffer);
 
         return renderTarget;
     }
@@ -755,6 +755,11 @@ export class Atmosphere extends TransformNode {
     public constructor(name: string, scene: Scene, lights: DirectionalLight[], options?: IAtmosphereOptions) {
         super(name, scene);
 
+        const isWebGpuEngine = scene.getEngine().isWebGPU;
+        if (isWebGpuEngine) {
+            throw new Error("Atmosphere is not supported on WebGPU.");
+        }
+
         this._physicalProperties = options?.physicalProperties ?? new AtmospherePhysicalProperties();
         this._physicalProperties.onChangedObservable.add(() => {
             this._transmittanceLut?.markDirty();
@@ -959,6 +964,8 @@ export class Atmosphere extends TransformNode {
     private _createMultiScatteringEffectWrapper(): EffectWrapper {
         const engine = this.getEngine();
         const name = "atmo-multiScattering";
+        const ubo = this.uniformBuffer;
+        const useUbo = ubo.useUbo;
 
         const defines: string[] = ["#define POSITION_VEC2"];
         if (!this._groundAlbedo.equals(Color3.BlackReadOnly)) {
@@ -971,8 +978,8 @@ export class Atmosphere extends TransformNode {
             vertexShader: "fullscreenTriangle",
             fragmentShader: "multiScattering",
             attributeNames: ["position"],
-            uniformNames: ["depth"],
-            uniformBuffers: [this.uniformBuffer.name],
+            uniformNames: ["depth", ...(useUbo ? [] : this.uniformBuffer.getUniformNames())],
+            uniformBuffers: useUbo ? [this.uniformBuffer.name] : [],
             samplerNames: ["transmittanceLut"],
             defines,
             useShaderStore: true,
@@ -1022,7 +1029,7 @@ export class Atmosphere extends TransformNode {
         const engine = this.getEngine();
         this._aerialPerspectiveCompositorEffectWrapper ??= CreateAerialPerspectiveCompositorEffectWrapper(
             engine,
-            this.uniformBuffer.name,
+            this.uniformBuffer,
             this._isAerialPerspectiveLutEnabled,
             this._isSkyViewLutEnabled,
             this._isLinearSpaceComposition,
@@ -1099,7 +1106,7 @@ export class Atmosphere extends TransformNode {
         const engine = this.getEngine();
         this._distantSkyCompositorEffectWrapper ??= CreateDistantSkyCompositorEffectWrapper(
             engine,
-            this.uniformBuffer.name,
+            this.uniformBuffer,
             this._isSkyViewLutEnabled,
             this._isLinearSpaceComposition,
             this._applyApproximateTransmittance
@@ -1154,7 +1161,7 @@ export class Atmosphere extends TransformNode {
         const engine = this.getEngine();
         this._globeAtmosphereCompositorEffectWrapper ??= CreateGlobeAtmosphereCompositorEffectWrapper(
             engine,
-            this.uniformBuffer.name,
+            this.uniformBuffer,
             this._isSkyViewLutEnabled,
             this._isLinearSpaceComposition,
             this._applyApproximateTransmittance,
@@ -1568,7 +1575,7 @@ const DrawEffect = (
 /**
  * Creates an EffectWrapper for the distant sky compositor.
  * @param engine - The engine to use.
- * @param uniformBufferName - The name of the uniform buffer.
+ * @param uniformBuffer - The uniform buffer to use.
  * @param isSkyViewLutEnabled - Whether the sky view LUT is enabled.
  * @param isLinearSpaceComposition - Whether composition is in linear space.
  * @param applyApproximateTransmittance - Whether to apply approximate transmittance.
@@ -1576,11 +1583,12 @@ const DrawEffect = (
  */
 const CreateDistantSkyCompositorEffectWrapper = (
     engine: AbstractEngine,
-    uniformBufferName: string,
+    uniformBuffer: UniformBuffer,
     isSkyViewLutEnabled: boolean,
     isLinearSpaceComposition: boolean,
     applyApproximateTransmittance: boolean
 ): EffectWrapper => {
+    const useUbo = uniformBuffer.useUbo;
     const defines = ["COMPUTE_WORLD_RAY"];
     if (isSkyViewLutEnabled) {
         defines.push("USE_SKY_VIEW_LUT");
@@ -1592,30 +1600,38 @@ const CreateDistantSkyCompositorEffectWrapper = (
         defines.push("APPLY_TRANSMITTANCE_BLENDING");
     }
     const textures = isSkyViewLutEnabled ? ["skyViewLut"] : ["transmittanceLut", "multiScatteringLut"];
-    return CreateEffectWrapper(engine, "atmo-distantSkyCompositor", "compositeDistantSky", ["depth"], textures, [uniformBufferName], defines);
+    return CreateEffectWrapper(
+        engine,
+        "atmo-distantSkyCompositor",
+        "compositeDistantSky",
+        ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
+        textures,
+        useUbo ? [uniformBuffer.name] : [],
+        defines
+    );
 };
 
 /**
  * Creates an EffectWrapper for the aerial perspective LUT.
  * @param engine - The engine to use.
- * @param uniformBufferName - The name of the uniform buffer.
+ * @param uniformBuffer - The uniform buffer to use.
  * @returns The created EffectWrapper.
  */
-const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBufferName: string): EffectWrapper =>
+const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper =>
     CreateEffectWrapper(
         engine,
         "atmo-aerialPerspective",
         "aerialPerspective",
-        ["layerIdx", "depth"],
+        ["layerIdx", "depth", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
         ["transmittanceLut", "multiScatteringLut"],
-        [uniformBufferName],
+        uniformBuffer.useUbo ? [uniformBuffer.name] : [],
         ["COMPUTE_WORLD_RAY"]
     );
 
 /**
  * Creates an EffectWrapper for the aerial perspective compositor.
  * @param engine - The engine to use.
- * @param uniformBufferName - The name of the uniform buffer.
+ * @param uniformBuffer - The uniform buffer.
  * @param isAerialPerspectiveLutEnabled - Whether the aerial perspective LUT is enabled.
  * @param isSkyViewLutEnabled - Whether the sky view LUT is enabled.
  * @param isLinearSpaceComposition - Whether composition is in linear space.
@@ -1626,7 +1642,7 @@ const CreateAerialPerspectiveEffectWrapper = (engine: AbstractEngine, uniformBuf
  */
 const CreateAerialPerspectiveCompositorEffectWrapper = (
     engine: AbstractEngine,
-    uniformBufferName: string,
+    uniformBuffer: UniformBuffer,
     isAerialPerspectiveLutEnabled: boolean,
     isSkyViewLutEnabled: boolean,
     isLinearSpaceComposition: boolean,
@@ -1634,6 +1650,7 @@ const CreateAerialPerspectiveCompositorEffectWrapper = (
     aerialPerspectiveIntensity: number,
     aerialPerspectiveRadianceBias: number
 ): EffectWrapper => {
+    const useUbo = uniformBuffer.useUbo;
     const defines = ["COMPUTE_WORLD_RAY"];
     if (isAerialPerspectiveLutEnabled) {
         defines.push("USE_AERIAL_PERSPECTIVE_LUT");
@@ -1653,6 +1670,7 @@ const CreateAerialPerspectiveCompositorEffectWrapper = (
     if (aerialPerspectiveRadianceBias !== 0.0) {
         defines.push("APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS");
     }
+
     const samplers = ["transmittanceLut", "multiScatteringLut", "depthTexture"];
     if (isSkyViewLutEnabled) {
         samplers.push("skyViewLut");
@@ -1660,13 +1678,22 @@ const CreateAerialPerspectiveCompositorEffectWrapper = (
     if (isAerialPerspectiveLutEnabled) {
         samplers.push("aerialPerspectiveLut");
     }
-    return CreateEffectWrapper(engine, "atmo-aerialPerspectiveCompositor", "compositeAerialPerspective", ["depth"], samplers, [uniformBufferName], defines);
+
+    return CreateEffectWrapper(
+        engine,
+        "atmo-aerialPerspectiveCompositor",
+        "compositeAerialPerspective",
+        ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
+        samplers,
+        useUbo ? [uniformBuffer.name] : [],
+        defines
+    );
 };
 
 /**
  * Creates an EffectWrapper for the globe atmosphere compositor.
  * @param engine - The engine to use.
- * @param uniformBufferName - The name of the uniform buffer.
+ * @param uniformBuffer - The uniform buffer to use.
  * @param isSkyViewLutEnabled - Whether the sky view LUT is enabled.
  * @param isLinearSpaceComposition - Whether composition is in linear space.
  * @param applyApproximateTransmittance - Whether to apply approximate transmittance.
@@ -1677,7 +1704,7 @@ const CreateAerialPerspectiveCompositorEffectWrapper = (
  */
 const CreateGlobeAtmosphereCompositorEffectWrapper = (
     engine: AbstractEngine,
-    uniformBufferName: string,
+    uniformBuffer: UniformBuffer,
     isSkyViewLutEnabled: boolean,
     isLinearSpaceComposition: boolean,
     applyApproximateTransmittance: boolean,
@@ -1685,6 +1712,7 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
     aerialPerspectiveRadianceBias: number,
     hasDepthTexture: boolean
 ): EffectWrapper => {
+    const useUbo = uniformBuffer.useUbo;
     const defines = ["COMPUTE_WORLD_RAY"];
     if (isSkyViewLutEnabled) {
         defines.push("USE_SKY_VIEW_LUT");
@@ -1704,6 +1732,7 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
     if (aerialPerspectiveRadianceBias !== 0.0) {
         defines.push("APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS");
     }
+
     const samplers = ["transmittanceLut", "multiScatteringLut"];
     if (isSkyViewLutEnabled) {
         samplers.push("skyViewLut");
@@ -1711,14 +1740,30 @@ const CreateGlobeAtmosphereCompositorEffectWrapper = (
     if (hasDepthTexture) {
         samplers.push("depthTexture");
     }
-    return CreateEffectWrapper(engine, "atmo-globeAtmosphereCompositor", "compositeGlobeAtmosphere", ["depth"], samplers, [uniformBufferName], defines);
+
+    return CreateEffectWrapper(
+        engine,
+        "atmo-globeAtmosphereCompositor",
+        "compositeGlobeAtmosphere",
+        ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
+        samplers,
+        useUbo ? [uniformBuffer.name] : [],
+        defines
+    );
 };
 
 /**
  * Creates an EffectWrapper for the sky view LUT.
  * @param engine - The engine to use.
- * @param uniformBufferName - The name of the uniform buffer.
+ * @param uniformBuffer - The uniform buffer to use.
  * @returns The created EffectWrapper.
  */
-const CreateSkyViewEffectWrapper = (engine: AbstractEngine, uniformBufferName: string): EffectWrapper =>
-    CreateEffectWrapper(engine, "atmo-skyView", "skyView", ["depth"], ["transmittanceLut", "multiScatteringLut"], [uniformBufferName]);
+const CreateSkyViewEffectWrapper = (engine: AbstractEngine, uniformBuffer: UniformBuffer): EffectWrapper =>
+    CreateEffectWrapper(
+        engine,
+        "atmo-skyView",
+        "skyView",
+        ["depth", ...(uniformBuffer.useUbo ? [] : uniformBuffer.getUniformNames())],
+        ["transmittanceLut", "multiScatteringLut"],
+        uniformBuffer.useUbo ? [uniformBuffer.name] : []
+    );

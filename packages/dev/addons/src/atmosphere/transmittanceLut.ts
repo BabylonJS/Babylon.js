@@ -130,14 +130,15 @@ export class TransmittanceLut {
         renderTarget.anisotropicFilteringLevel = 1;
         renderTarget.skipInitialClear = true;
 
+        const useUbo = this._atmosphere.uniformBuffer.useUbo;
         this._effectWrapper = new EffectWrapper({
             engine,
             name,
             vertexShader: "fullscreenTriangle",
             fragmentShader: "transmittance",
             attributeNames: ["position"],
-            uniformNames: ["depth"],
-            uniformBuffers: [this._atmosphere.uniformBuffer.name],
+            uniformNames: ["depth", ...(useUbo ? [] : this._atmosphere.uniformBuffer.getUniformNames())],
+            uniformBuffers: useUbo ? [this._atmosphere.uniformBuffer.name] : [],
             defines: ["#define POSITION_VEC2"],
             useShaderStore: true,
         });
@@ -163,7 +164,6 @@ export class TransmittanceLut {
             const cosAngleLightToZenith =
                 directionToLight.x * pointGeocentricNormal.x + directionToLight.y * pointGeocentricNormal.y + directionToLight.z * pointGeocentricNormal.z;
             SampleLutToRef(this._atmosphere.physicalProperties, this._lutData, pointRadius, cosAngleLightToZenith, Color4Temp);
-
             result.r = Color4Temp.r;
             result.g = Color4Temp.g;
             result.b = Color4Temp.b;

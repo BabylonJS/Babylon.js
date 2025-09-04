@@ -3,9 +3,7 @@
 
 precision highp float;
 
-#if COMPUTE_WORLD_RAY
-#include<__decl__atmosphereVertex>
-#endif
+#include<__decl__atmosphereFragment>
 
 #if POSITION_VEC2
 attribute vec2 position;

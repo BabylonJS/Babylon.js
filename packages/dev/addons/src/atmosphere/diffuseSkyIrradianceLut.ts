@@ -95,14 +95,16 @@ export class DiffuseSkyIrradianceLut {
         renderTarget.anisotropicFilteringLevel = 1;
         renderTarget.skipInitialClear = true;
 
+        const useUbo = this._atmosphere.uniformBuffer.useUbo;
+
         this._effectWrapper = new EffectWrapper({
             engine,
             name,
             vertexShader: "fullscreenTriangle",
             fragmentShader: "diffuseSkyIrradiance",
             attributeNames: ["position"],
-            uniformNames: ["depth"],
-            uniformBuffers: [atmosphere.uniformBuffer.name],
+            uniformNames: ["depth", ...(useUbo ? [] : this._atmosphere.uniformBuffer.getUniformNames())],
+            uniformBuffers: useUbo ? [atmosphere.uniformBuffer.name] : [],
             defines: [
                 "#define POSITION_VEC2",
                 `#define NUM_SAMPLES ${RaySamples}u`,

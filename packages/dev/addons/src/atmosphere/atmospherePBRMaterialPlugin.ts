@@ -13,11 +13,11 @@ import "./Shaders/ShadersInclude/atmosphereUboDeclaration";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public USE_AERIAL_PERSPECTIVE_LUT;
+    public USE_AERIAL_PERSPECTIVE_LUT: boolean;
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public APPLY_AERIAL_PERSPECTIVE_INTENSITY;
+    public APPLY_AERIAL_PERSPECTIVE_INTENSITY = false;
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS;
+    public APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS = false;
 
     /**
      * Constructs the {@link AtmospherePBRMaterialDefines}.
@@ -26,47 +26,55 @@ class AtmospherePBRMaterialDefines extends MaterialDefines {
     constructor(useAerialPerspectiveLut: boolean) {
         super();
         this.USE_AERIAL_PERSPECTIVE_LUT = useAerialPerspectiveLut;
-        this.APPLY_AERIAL_PERSPECTIVE_INTENSITY = false;
-        this.APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS = false;
     }
 }
+
+const UboArray = [{ name: "inverseViewportSize", size: 2, type: "vec2" }];
+const MakeUniforms = (atmosphere: Atmosphere) => ({
+    ubo: UboArray,
+    fragment: "uniform vec2 inverseViewportSize;\n",
+    externalUniforms: atmosphere.uniformBuffer.getUniformNames(),
+});
+
+const PluginName = "AtmospherePBRMaterialPlugin";
+const PluginPriority = 600;
 
 /**
  * Adds shading logic to a PBRMaterial that provides radiance, diffuse sky irradiance, and aerial perspective from the atmosphere.
  */
 export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
-    private readonly _atmosphere: Atmosphere;
-    private readonly _isAerialPerspectiveEnabled: boolean;
-
     /**
      * Constructs the {@link AtmospherePBRMaterialPlugin}.
      * @param material - The material to apply the plugin to.
-     * @param atmosphere - The atmosphere to use for shading.
-     * @param isAerialPerspectiveEnabled - Whether to apply aerial perspective.
+     * @param _atmosphere - The atmosphere to use for shading.
+     * @param _isAerialPerspectiveEnabled - Whether to apply aerial perspective.
      */
-    constructor(material: Material, atmosphere: Atmosphere, isAerialPerspectiveEnabled = false) {
+    constructor(
+        material: Material,
+        private readonly _atmosphere: Atmosphere,
+        private readonly _isAerialPerspectiveEnabled = false
+    ) {
         super(
             material,
-            "AtmospherePBRMaterialPlugin",
-            600,
+            PluginName,
+            PluginPriority,
             {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                USE_CUSTOM_REFLECTION: atmosphere.diffuseSkyIrradianceLut !== null,
+                USE_CUSTOM_REFLECTION: _atmosphere.diffuseSkyIrradianceLut !== null,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                CUSTOM_FRAGMENT_BEFORE_FOG: isAerialPerspectiveEnabled,
+                CUSTOM_FRAGMENT_BEFORE_FOG: _isAerialPerspectiveEnabled,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                USE_AERIAL_PERSPECTIVE_LUT: isAerialPerspectiveEnabled && atmosphere.isAerialPerspectiveLutEnabled,
+                USE_AERIAL_PERSPECTIVE_LUT: _isAerialPerspectiveEnabled && _atmosphere.isAerialPerspectiveLutEnabled,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                APPLY_AERIAL_PERSPECTIVE_INTENSITY: isAerialPerspectiveEnabled && atmosphere.aerialPerspectiveIntensity !== 1.0,
+                APPLY_AERIAL_PERSPECTIVE_INTENSITY: _isAerialPerspectiveEnabled && _atmosphere.aerialPerspectiveIntensity !== 1.0,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS: isAerialPerspectiveEnabled && atmosphere.aerialPerspectiveRadianceBias !== 0.0,
+                APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS: _isAerialPerspectiveEnabled && _atmosphere.aerialPerspectiveRadianceBias !== 0.0,
             },
             false, // addPluginToList -- false because we need to control when this is added to the list
             true, // enable
             true // resolveIncludes
         );
-        this._atmosphere = atmosphere;
-        this._isAerialPerspectiveEnabled = isAerialPerspectiveEnabled;
+        this._isAerialPerspectiveEnabled = _isAerialPerspectiveEnabled;
 
         // This calls `getCode` so we need to do this after having initialized the class fields.
         this._pluginManager._addPlugin(this);
@@ -76,17 +84,17 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
      * @override
      */
     public override getUniformBuffersNames(_ubos: string[]): void {
-        _ubos.push(this._atmosphere.uniformBuffer.name);
+        const uniformBuffer = this._atmosphere.uniformBuffer;
+        if (uniformBuffer.useUbo) {
+            _ubos.push(uniformBuffer.name);
+        }
     }
 
     /**
      * @override
      */
-    public override getUniforms(): { ubo?: { name: string; size: number; type: string }[]; vertex?: string; fragment?: string } {
-        return {
-            ubo: [{ name: "inverseViewportSize", size: 2, type: "vec2" }],
-            fragment: "uniform vec2 inverseViewportSize;\n",
-        };
+    public override getUniforms() {
+        return MakeUniforms(this._atmosphere);
     }
 
     /**
@@ -186,9 +194,11 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             return null;
         }
 
-        const useUbo = this._atmosphere._scene.getEngine().supportsUniformBuffers;
+        const useUbo = this._atmosphere.getEngine().supportsUniformBuffers;
         const directionToLightSnippet = useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz";
-        const atmosphereImportSnippet = useUbo ? "#include<atmosphereUboDeclaration>" : "#include<atmosphereFragmentDeclaration>";
+
+        const useAtmosphereUbo = this._atmosphere.uniformBuffer.useUbo;
+        const atmosphereImportSnippet = useAtmosphereUbo ? "#include<atmosphereUboDeclaration>" : "#include<atmosphereFragmentDeclaration>";
 
         return {
             CUSTOM_FRAGMENT_DEFINITIONS:
