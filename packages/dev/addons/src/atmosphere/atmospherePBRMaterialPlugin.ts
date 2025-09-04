@@ -132,10 +132,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         // Bind the atmosphere's uniform buffer to the effect.
         const effect = uniformBuffer.currentEffect;
         if (effect) {
-            const atmosphereUbo = atmosphere.uniformBuffer;
-            const atmosphereUboName = atmosphere.uniformBuffer.name;
-            atmosphereUbo.bindToEffect(effect, atmosphereUboName);
-            engine.bindUniformBufferBase(atmosphereUbo.getBuffer()!, effect._uniformBuffersNames[atmosphereUboName], atmosphereUboName);
+            this._atmosphere.bindUniformBufferToEffect(effect);
         }
 
         const width = engine.getRenderWidth();

@@ -215,9 +215,7 @@ export class TransmittanceLut {
         const effect = effectWrapper.effect;
         effectRenderer.bindBuffers(effect);
 
-        const uniformBuffer = this._atmosphere.uniformBuffer;
-        uniformBuffer.bindToEffect(effect, uniformBuffer.name);
-        engine.bindUniformBufferBase(uniformBuffer.getBuffer()!, effect._uniformBuffersNames[0], uniformBuffer.name);
+        this._atmosphere.bindUniformBufferToEffect(effect);
 
         effect.setFloat("depth", 0);
 

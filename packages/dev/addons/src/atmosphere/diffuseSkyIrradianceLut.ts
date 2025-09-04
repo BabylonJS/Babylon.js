@@ -196,9 +196,7 @@ export class DiffuseSkyIrradianceLut {
         effect.setTexture("transmittanceLut", this._atmosphere.transmittanceLut!.renderTarget);
         effect.setTexture("multiScatteringLut", this._atmosphere.multiScatteringLutRenderTarget);
 
-        const uniformBuffer = this._atmosphere.uniformBuffer;
-        uniformBuffer.bindToEffect(effect, uniformBuffer.name);
-        engine.bindUniformBufferBase(uniformBuffer.getBuffer()!, effect._uniformBuffersNames[0], uniformBuffer.name);
+        this._atmosphere.bindUniformBufferToEffect(effect);
 
         effect.setFloat("depth", 0.0);
 

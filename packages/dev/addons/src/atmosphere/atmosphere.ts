@@ -111,11 +111,6 @@ export class Atmosphere extends TransformNode {
     public readonly onBeforeLightVariablesUpdateObservable = new Observable<void>();
 
     /**
-     * Called after the per-camera variables have been applied to the UBO.
-     */
-    public readonly onAfterUniformBufferUpdateObservable = new Observable<void>();
-
-    /**
      * Called before the LUTs are rendered for this camera. This happens after the per-camera UBO update.
      */
     public readonly onBeforeRenderLutsForCameraObservable = new Observable<void>();
@@ -992,22 +987,14 @@ export class Atmosphere extends TransformNode {
             this._effectRenderer!,
             this._multiScatteringEffectWrapper,
             this._multiScatteringLutRenderTarget,
-            this._getAtmosphereUniformBufferAsArray(),
             (effectRenderer, renderTarget, effect, engine) => {
+                this.bindUniformBufferToEffect(effect);
                 engine.bindFramebuffer(renderTarget!, undefined, undefined, undefined, true);
                 effectRenderer.bindBuffers(effect);
                 effect.setTexture("transmittanceLut", transmittanceLut);
                 effectRenderer.draw();
             }
         );
-    }
-
-    private _getAtmosphereUniformBufferAsArray(): UniformBuffer[] {
-        const array = this._atmosphereUniformBufferAsArray;
-        if (!array.length) {
-            array.push(this.uniformBuffer);
-        }
-        return array;
     }
 
     /**
@@ -1062,11 +1049,11 @@ export class Atmosphere extends TransformNode {
             this._effectRenderer!,
             this._aerialPerspectiveCompositorEffectWrapper,
             null, // No render target, it will render to the current buffer.
-            this._getAtmosphereUniformBufferAsArray(),
             (effectRenderer, _, effect) => {
                 if (this.depthTexture === null) {
                     throw new Error("Depth texture is required for aerial perspective compositor.");
                 }
+                this.bindUniformBufferToEffect(effect);
                 effectRenderer.bindBuffers(effect);
                 effect.setTexture("transmittanceLut", transmittanceLut);
                 effect.setTexture("multiScatteringLut", multiScatteringLut);
@@ -1128,8 +1115,8 @@ export class Atmosphere extends TransformNode {
             this._effectRenderer!,
             this._distantSkyCompositorEffectWrapper,
             null, // No render target, it will render to the current buffer.
-            this._getAtmosphereUniformBufferAsArray(),
             (effectRenderer, _, effect) => {
+                this.bindUniformBufferToEffect(effect);
                 effectRenderer.bindBuffers(effect);
                 effect.setTexture("multiScatteringLut", multiScatteringLut);
                 effect.setTexture("transmittanceLut", transmittanceLut);
@@ -1190,8 +1177,8 @@ export class Atmosphere extends TransformNode {
             this._effectRenderer!,
             this._globeAtmosphereCompositorEffectWrapper,
             null, // No render target, it will render to the current buffer.
-            this._getAtmosphereUniformBufferAsArray(),
             (effectRenderer, _, effect) => {
+                this.bindUniformBufferToEffect(effect);
                 effectRenderer.bindBuffers(effect);
                 effect.setTexture("transmittanceLut", transmittanceLut);
                 effect.setTexture("multiScatteringLut", multiScatteringLut);
@@ -1276,7 +1263,9 @@ export class Atmosphere extends TransformNode {
             this._lightRadianceAtCamera.set(intensity * this._linearLightColor.r, intensity * this._linearLightColor.g, intensity * this._linearLightColor.b);
         }
 
-        this.updateUniformBuffer();
+        if (this.uniformBuffer.useUbo) {
+            this._updateUniformBuffer();
+        }
 
         // Render the LUTs.
         const isEnabled = this.isEnabled();
@@ -1327,9 +1316,25 @@ export class Atmosphere extends TransformNode {
     }
 
     /**
+     * Binds the atmosphere's uniform buffer to an {@link Effect}.
+     * @param effect - The {@link Effect} to bind the uniform buffer to.
+     */
+    public bindUniformBufferToEffect(effect: Effect): void {
+        const uniformBuffer = this.uniformBuffer;
+        const name = uniformBuffer.name;
+        uniformBuffer.bindToEffect(effect, name);
+        if (uniformBuffer.useUbo) {
+            const engine = this._scene.getEngine();
+            engine.bindUniformBufferBase(uniformBuffer.getBuffer()!, effect._uniformBuffersNames[name], name);
+        } else {
+            this._updateUniformBuffer();
+        }
+    }
+
+    /**
      * Updates the atmosphere's uniform buffer.
      */
-    public updateUniformBuffer(): void {
+    private _updateUniformBuffer(): void {
         const physicalProperties = this._physicalProperties;
         const cameraAtmosphereVariables = this._cameraAtmosphereVariables;
         const ubo = this.uniformBuffer;
@@ -1380,8 +1385,6 @@ export class Atmosphere extends TransformNode {
         ubo.updateFloat("sinCameraAtmosphereHorizonAngleFromNadir", cameraAtmosphereVariables.sinCameraAtmosphereHorizonAngleFromNadir);
         ubo.updateFloat("atmosphereExposure", this._exposure);
         ubo.update();
-
-        this.onAfterUniformBufferUpdateObservable.notifyObservers();
     }
 
     /**
@@ -1395,8 +1398,8 @@ export class Atmosphere extends TransformNode {
             this._effectRenderer!,
             this._aerialPerspectiveLutEffectWrapper,
             this._aerialPerspectiveLutRenderTarget,
-            this._getAtmosphereUniformBufferAsArray(),
             (effectRenderer, renderTarget, effect, engine) => {
+                this.bindUniformBufferToEffect(effect);
                 const layers = 32;
                 effect.setTexture("transmittanceLut", transmittanceLut);
                 effect.setTexture("multiScatteringLut", multiScatteringLut);
@@ -1416,20 +1419,14 @@ export class Atmosphere extends TransformNode {
     private _drawSkyViewLut(): void {
         const transmittanceLut = this._transmittanceLut!.renderTarget;
         const multiScatteringLut = this._multiScatteringLutRenderTarget!;
-        DrawEffect(
-            this.getEngine(),
-            this._effectRenderer!,
-            this._skyViewLutEffectWrapper,
-            this._skyViewLutRenderTarget,
-            this._getAtmosphereUniformBufferAsArray(),
-            (effectRenderer, renderTarget, effect, engine) => {
-                engine.bindFramebuffer(renderTarget!, undefined, undefined, undefined, true);
-                effectRenderer.bindBuffers(effect);
-                effect.setTexture("transmittanceLut", transmittanceLut);
-                effect.setTexture("multiScatteringLut", multiScatteringLut);
-                effectRenderer.draw();
-            }
-        );
+        DrawEffect(this.getEngine(), this._effectRenderer!, this._skyViewLutEffectWrapper, this._skyViewLutRenderTarget, (effectRenderer, renderTarget, effect, engine) => {
+            this.bindUniformBufferToEffect(effect);
+            engine.bindFramebuffer(renderTarget!, undefined, undefined, undefined, true);
+            effectRenderer.bindBuffers(effect);
+            effect.setTexture("transmittanceLut", transmittanceLut);
+            effect.setTexture("multiScatteringLut", multiScatteringLut);
+            effectRenderer.draw();
+        });
     }
 }
 
@@ -1500,7 +1497,6 @@ const CreateRenderTargetTexture = (
  * @param effectRenderer - The effect renderer to use.
  * @param effectWrapper - The effect wrapper to use.
  * @param renderTarget - The render target.
- * @param uniformBuffers - The uniform buffers to bind.
  * @param drawCallback - Callback function that performs the drawing.
  * @param depth - The depth value to set in the effect.
  * @param alphaMode - The alpha mode to set before drawing.
@@ -1514,7 +1510,6 @@ const DrawEffect = (
     effectRenderer: EffectRenderer,
     effectWrapper: Nullable<EffectWrapper>,
     renderTarget: Nullable<RenderTargetTexture>,
-    uniformBuffers: UniformBuffer[] | undefined,
     drawCallback: (effectRenderer: EffectRenderer, renderTarget: Nullable<RenderTargetWrapper>, effect: Effect, engine: AbstractEngine) => void,
     depth = 0,
     alphaMode = Constants.ALPHA_DISABLE,
@@ -1548,14 +1543,6 @@ const DrawEffect = (
     const effect = effectWrapper.effect;
 
     effect.setFloat("depth", depth);
-
-    // Bind the uniform buffers.
-    if (uniformBuffers) {
-        for (const uniformBuffer of uniformBuffers) {
-            uniformBuffer.bindToEffect(effect, uniformBuffer.name);
-            engine.bindUniformBufferBase(uniformBuffer.getBuffer()!, effect._uniformBuffersNames[uniformBuffer.name], uniformBuffer.name);
-        }
-    }
 
     // Call the specific drawing logic.
     drawCallback(effectRenderer, renderTarget?.renderTarget!, effect, engine);
