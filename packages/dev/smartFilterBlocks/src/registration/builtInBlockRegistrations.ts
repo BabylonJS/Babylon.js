@@ -47,10 +47,16 @@ export const BuiltInBlockRegistrations: IBlockRegistration[] = [
     {
         blockType: kaleidoscopeBlockType,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
+        factory: async (
+            smartFilter: SmartFilter,
+            _engine: ThinEngine,
+            _smartFilterDeserializer: SmartFilterDeserializer,
+            serializedBlock: ISerializedBlockV1 | undefined,
+            suppressAutomaticInputBlocks?: boolean
+        ) => {
             const module = await import(/* webpackChunkName: "kaleidoscopeBlock" */ "../blocks/babylon/demo/effects/kaleidoscopeBlock.js");
             const block = new module.KaleidoscopeBlock(smartFilter, serializedBlock?.name || "Kaleidoscope");
-            if (!serializedBlock) {
+            if (!serializedBlock && !suppressAutomaticInputBlocks) {
                 const input = new InputBlock(smartFilter, "Angle", ConnectionPointType.Float, 0);
                 input.output.connectTo(block.time);
             }
@@ -62,10 +68,16 @@ export const BuiltInBlockRegistrations: IBlockRegistration[] = [
     {
         blockType: posterizeBlockType,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
+        factory: async (
+            smartFilter: SmartFilter,
+            _engine: ThinEngine,
+            _smartFilterDeserializer: SmartFilterDeserializer,
+            serializedBlock: ISerializedBlockV1 | undefined,
+            suppressAutomaticInputBlocks?: boolean
+        ) => {
             const module = await import(/* webpackChunkName: "posterizeBlock" */ "../blocks/babylon/demo/effects/posterizeBlock.block.js");
             const block = new module.PosterizeBlock(smartFilter, serializedBlock?.name || "Posterize");
-            if (!serializedBlock) {
+            if (!serializedBlock && !suppressAutomaticInputBlocks) {
                 const input = new InputBlock(smartFilter, "Intensity", ConnectionPointType.Float, 0.5);
                 input.output.connectTo(block.intensity);
             }
@@ -77,10 +89,16 @@ export const BuiltInBlockRegistrations: IBlockRegistration[] = [
     {
         blockType: desaturateBlockType,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
+        factory: async (
+            smartFilter: SmartFilter,
+            _engine: ThinEngine,
+            _smartFilterDeserializer: SmartFilterDeserializer,
+            serializedBlock: ISerializedBlockV1 | undefined,
+            suppressAutomaticInputBlocks?: boolean
+        ) => {
             const module = await import(/* webpackChunkName: "desaturateBlock" */ "../blocks/babylon/demo/effects/desaturateBlock.block.js");
             const block = new module.DesaturateBlock(smartFilter, serializedBlock?.name || "Desaturate");
-            if (!serializedBlock) {
+            if (!serializedBlock && !suppressAutomaticInputBlocks) {
                 const input = new InputBlock(smartFilter, "Intensity", ConnectionPointType.Float, 0.5);
                 input.output.connectTo(block.intensity);
             }
@@ -92,10 +110,16 @@ export const BuiltInBlockRegistrations: IBlockRegistration[] = [
     {
         blockType: contrastBlockType,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
+        factory: async (
+            smartFilter: SmartFilter,
+            _engine: ThinEngine,
+            _smartFilterDeserializer: SmartFilterDeserializer,
+            serializedBlock: ISerializedBlockV1 | undefined,
+            suppressAutomaticInputBlocks?: boolean
+        ) => {
             const module = await import(/* webpackChunkName: "contrastBlock" */ "../blocks/babylon/demo/effects/contrastBlock.block.js");
             const block = new module.ContrastBlock(smartFilter, serializedBlock?.name || "Contrast");
-            if (!serializedBlock) {
+            if (!serializedBlock && !suppressAutomaticInputBlocks) {
                 const input = new InputBlock(smartFilter, "Intensity", ConnectionPointType.Float, 0.5);
                 input.output.connectTo(block.intensity);
             }
@@ -107,10 +131,16 @@ export const BuiltInBlockRegistrations: IBlockRegistration[] = [
     {
         blockType: greenScreenBlockType,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
+        factory: async (
+            smartFilter: SmartFilter,
+            _engine: ThinEngine,
+            _smartFilterDeserializer: SmartFilterDeserializer,
+            serializedBlock: ISerializedBlockV1 | undefined,
+            suppressAutomaticInputBlocks?: boolean
+        ) => {
             const module = await import(/* webpackChunkName: "greenScreenBlock" */ "../blocks/babylon/demo/effects/greenScreenBlock.block.js");
             const block = new module.GreenScreenBlock(smartFilter, serializedBlock?.name || "GreenScreen");
-            if (!serializedBlock) {
+            if (!serializedBlock && !suppressAutomaticInputBlocks) {
                 const reference = new InputBlock(smartFilter, "Reference", ConnectionPointType.Color3, {
                     r: 92 / 255,
                     g: 204 / 255,
@@ -128,10 +158,16 @@ export const BuiltInBlockRegistrations: IBlockRegistration[] = [
     {
         blockType: pixelateBlockType,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
+        factory: async (
+            smartFilter: SmartFilter,
+            _engine: ThinEngine,
+            _smartFilterDeserializer: SmartFilterDeserializer,
+            serializedBlock: ISerializedBlockV1 | undefined,
+            suppressAutomaticInputBlocks?: boolean
+        ) => {
             const module = await import(/* webpackChunkName: "pixelateBlock" */ "../blocks/babylon/demo/effects/pixelateBlock.block.js");
             const block = new module.PixelateBlock(smartFilter, serializedBlock?.name || "Pixelate");
-            if (!serializedBlock) {
+            if (!serializedBlock && !suppressAutomaticInputBlocks) {
                 const input = new InputBlock(smartFilter, "Intensity", ConnectionPointType.Float, 0.4);
                 input.output.connectTo(block.intensity);
             }
@@ -143,10 +179,16 @@ export const BuiltInBlockRegistrations: IBlockRegistration[] = [
     {
         blockType: exposureBlockType,
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        factory: async (smartFilter: SmartFilter, _engine: ThinEngine, _smartFilterDeserializer: SmartFilterDeserializer, serializedBlock: ISerializedBlockV1 | undefined) => {
+        factory: async (
+            smartFilter: SmartFilter,
+            _engine: ThinEngine,
+            _smartFilterDeserializer: SmartFilterDeserializer,
+            serializedBlock: ISerializedBlockV1 | undefined,
+            suppressAutomaticInputBlocks?: boolean
+        ) => {
             const module = await import(/* webpackChunkName: "exposureBlock" */ "../blocks/babylon/demo/effects/exposureBlock.block.js");
             const block = new module.ExposureBlock(smartFilter, serializedBlock?.name || "Exposure");
-            if (!serializedBlock) {
+            if (!serializedBlock && !suppressAutomaticInputBlocks) {
                 const input = new InputBlock(smartFilter, "Amount", ConnectionPointType.Float, 0.7);
                 input.output.connectTo(block.amount);
             }

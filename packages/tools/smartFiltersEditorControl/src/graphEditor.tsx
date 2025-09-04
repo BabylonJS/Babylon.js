@@ -326,7 +326,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 async (_nodeData) => {
                     const oldBlock = _nodeData.data as BaseBlock;
                     const blockTypeAndNamespace = GetBlockKey(oldBlock.blockType, oldBlock.namespace);
-                    const newBlock = await this.createBlockAsync(blockTypeAndNamespace);
+                    const newBlock = await this.createBlockAsync(blockTypeAndNamespace, true);
                     if (!newBlock) {
                         return null;
                     }
@@ -418,14 +418,20 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         }
     };
 
-    async createBlockAsync(blockTypeAndNamespace: string): Promise<Nullable<BaseBlock>> {
+    async createBlockAsync(blockTypeAndNamespace: string, suppressAutomaticInputBlocks: boolean): Promise<Nullable<BaseBlock>> {
         const { blockType, namespace } = DecodeBlockKey(blockTypeAndNamespace);
 
         let block: Nullable<BaseBlock> = null;
 
         // First try the block registrations provided to the editor
         if (this.props.globalState.engine && this.props.globalState.blockEditorRegistration) {
-            block = await this.props.globalState.blockEditorRegistration.getBlock(blockType, namespace, this.props.globalState.smartFilter, this.props.globalState.engine);
+            block = await this.props.globalState.blockEditorRegistration.getBlock(
+                blockType,
+                namespace,
+                this.props.globalState.smartFilter,
+                this.props.globalState.engine,
+                suppressAutomaticInputBlocks
+            );
         }
 
         // If we haven't created the block yet, see if it's a standard input block
@@ -454,7 +460,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     }
 
     async emitNewBlockAsync(blockTypeAndNamespace: string, targetX: number, targetY: number) {
-        const block = await this.createBlockAsync(blockTypeAndNamespace);
+        const block = await this.createBlockAsync(blockTypeAndNamespace, false);
         if (!block) {
             return;
         }

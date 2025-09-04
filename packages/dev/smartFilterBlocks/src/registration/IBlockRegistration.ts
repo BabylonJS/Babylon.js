@@ -17,9 +17,16 @@ export interface IBlockRegistration {
      * @param engine - The engine to use for creating blocks
      * @param smartFilterDeserializer - The deserializer to use for deserializing blocks
      * @param serializedBlock - The serialized block to deserialize, if any
+     * @param suppressAutomaticInputBlocks - If true, automatic input blocks will not be created for the block
      * @returns - A promise for a new instance of the block
      */
-    factory?: (smartFilter: SmartFilter, engine: ThinEngine, smartFilterDeserializer: SmartFilterDeserializer, serializedBlock?: ISerializedBlockV1) => Promise<BaseBlock>;
+    factory?: (
+        smartFilter: SmartFilter,
+        engine: ThinEngine,
+        smartFilterDeserializer: SmartFilterDeserializer,
+        serializedBlock?: ISerializedBlockV1,
+        suppressAutomaticInputBlocks?: boolean
+    ) => Promise<BaseBlock>;
 
     /**
      * The namespace of the block
