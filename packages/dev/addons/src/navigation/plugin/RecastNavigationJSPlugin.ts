@@ -499,13 +499,17 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param doNotWaitForCacheUpdate if true the function will not wait for the tile cache to be fully updated before returning
      * @returns the obstacle freshly created
      */
-    public addCylinderObstacle(position: IVector3Like, radius: number, height: number, doNotWaitForCacheUpdate = false): IObstacle {
+    public addCylinderObstacle(position: IVector3Like, radius: number, height: number, doNotWaitForCacheUpdate = false): Nullable<IObstacle> {
         const obstacleResult = this.tileCache?.addCylinderObstacle(position, radius, height);
-        const obstacle = obstacleResult?.obstacle ?? (null as unknown as IObstacle);
-        if (obstacle && !doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
+        if (!obstacleResult?.success) {
+            return null;
+        }
+
+        if (!doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
             WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
         }
-        return obstacle;
+
+        return (obstacleResult.obstacle as IObstacle) ?? null;
     }
 
     /**
@@ -516,13 +520,17 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param doNotWaitForCacheUpdate if true the function will not wait for the tile cache to be fully updated before returning
      * @returns the obstacle freshly created
      */
-    public addBoxObstacle(position: IVector3Like, extent: IVector3Like, angle: number, doNotWaitForCacheUpdate = false): IObstacle {
+    public addBoxObstacle(position: IVector3Like, extent: IVector3Like, angle: number, doNotWaitForCacheUpdate = false): Nullable<IObstacle> {
         const obstacleResult = this.tileCache?.addBoxObstacle(position, extent, angle);
-        const obstacle = obstacleResult?.obstacle ?? (null as unknown as IObstacle);
+        if (!obstacleResult?.success) {
+            return null;
+        }
+
         if (!doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
             WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
         }
-        return obstacle;
+
+        return (obstacleResult.obstacle as IObstacle) ?? null;
     }
 
     /**
@@ -533,6 +541,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      */
     public removeObstacle(obstacle: IObstacle, doNotWaitForCacheUpdate = false): void {
         this.tileCache?.removeObstacle(obstacle);
+
         if (!doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
             WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
         }
