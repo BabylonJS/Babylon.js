@@ -486,7 +486,10 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
     protected _onEnded = () => {
         this._enginePlayTime = 0;
 
-        this.onEndedObservable.notifyObservers(this);
+        if (this._state !== SoundState.Paused) {
+            this.onEndedObservable.notifyObservers(this);
+        }
+
         this._deinitSourceNode();
     };
 

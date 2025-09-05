@@ -525,7 +525,7 @@ describe("Sound", () => {
 
     it("does not call onended when paused", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer);
         mock.audioContext.currentTime = 0.1;
         const onended = jest.fn().mockName("onended");
         sound.onended = onended;

@@ -56,10 +56,14 @@ class AudioBufferSourceNodeMock extends AudioNodeMock {
 
     onended = () => void 0;
 
-    constructor(audioContext: AudioContextMock) {
+    constructor(audioContext: AudioContextMock, options?: any) {
         super();
 
         audioContext.addAudioBufferSource(this);
+
+        if (options && options.buffer) {
+            this.buffer = options.buffer;
+        }
     }
 
     start = jest
@@ -152,11 +156,13 @@ export class AudioContextMock {
 
     incrementCurrentTime(seconds: number) {
         this.currentTime += seconds;
-        this._audioBufferSources.forEach((audioBufferSource) => {
-            if (audioBufferSource.startTime + audioBufferSource.buffer.duration <= this.currentTime) {
+
+        for (const audioBufferSource of this._audioBufferSources) {
+            const currentTime = this.currentTime;
+            if (audioBufferSource.startTime + audioBufferSource.buffer.duration <= currentTime) {
                 audioBufferSource.stop();
             }
-        });
+        }
     }
 
     close = jest
