@@ -26,7 +26,6 @@ export function GenerateNavMesh(meshes: Array<Mesh>, parameters: INavMeshParamet
     }
 
     const [positions, indices] = GetPositionsAndIndices(meshes);
-
     if (!positions || !indices) {
         throw new Error("Unable to get nav mesh. No vertices or indices.");
     }

@@ -8,14 +8,14 @@ import { TmpVectors, Vector3 } from "core/Maths/math";
 import type { IVector3Like } from "core/Maths/math.like";
 import type { Nullable } from "core/types";
 
-import type { CreateNavMeshresult, GeneratorIntermediates, INavMeshParametersV2, RecastInjection } from "../types";
+import type { CreateNavMeshResult, GeneratorIntermediates, INavMeshParametersV2, RecastInjection } from "../types";
 import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
 import { CreateDebugNavMesh } from "../debug/simple-debug";
 import { BjsRecast } from "../factory/common";
 import { InjectGenerators } from "../generator/injection";
-import { WaitForFullTileCacheUpdate } from "../common";
+import { DefaultMaxObstacles, WaitForFullTileCacheUpdate } from "../common";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
@@ -32,7 +32,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param parameters bunch of parameters used to filter geometry
      * @returns the created navmesh and navmesh query
      */
-    createNavMeshImpl: (meshes: Array<Mesh>, parameters: INavMeshParametersV2) => CreateNavMeshresult;
+    createNavMeshImpl: (meshes: Array<Mesh>, parameters: INavMeshParametersV2) => CreateNavMeshResult;
 
     /**
      * Creates a navigation mesh - will be injected by the factory
@@ -40,7 +40,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param parameters bunch of parameters used to filter geometry
      * @returns the created navmesh and navmesh query
      */
-    createNavMeshAsyncImpl: (meshes: Array<Mesh>, parameters: INavMeshParametersV2) => Promise<CreateNavMeshresult>;
+    createNavMeshAsyncImpl: (meshes: Array<Mesh>, parameters: INavMeshParametersV2) => Promise<CreateNavMeshResult>;
 
     /**
      * recast-navigation-js injection
@@ -165,10 +165,12 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns the created navmesh and navmesh query
      * @throws Error if the function is not injected yet or if the navmesh is not created
      */
-    public createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParametersV2): CreateNavMeshresult {
+    public createNavMesh(meshes: Array<Mesh>, parameters: INavMeshParametersV2): CreateNavMeshResult {
         if (!this.createNavMeshImpl) {
             throw new Error("Function not injected yet. Use the factory to create the plugin.");
         }
+
+        this._preprocessParameters(parameters);
 
         const result = this.createNavMeshImpl(meshes, parameters);
         return this._processNavMeshResult(result);
@@ -181,10 +183,12 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns the created navmesh and navmesh query
      * @throws Error if the function is not injected yet or if the navmesh is not created
      */
-    public async createNavMeshAsync(meshes: Array<Mesh>, parameters: INavMeshParametersV2): Promise<CreateNavMeshresult> {
+    public async createNavMeshAsync(meshes: Array<Mesh>, parameters: INavMeshParametersV2): Promise<CreateNavMeshResult> {
         if (!this.createNavMeshAsyncImpl) {
             throw new Error("Function not injected yet. Use the factory to create the plugin.");
         }
+
+        this._preprocessParameters(parameters);
 
         const result = await this.createNavMeshAsyncImpl(meshes, parameters);
         return this._processNavMeshResult(result);
@@ -496,7 +500,8 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns the obstacle freshly created
      */
     public addCylinderObstacle(position: IVector3Like, radius: number, height: number, doNotWaitForCacheUpdate = false): IObstacle {
-        const obstacle = this.tileCache?.addCylinderObstacle(position, radius, height) ?? (null as unknown as IObstacle);
+        const obstacleResult = this.tileCache?.addCylinderObstacle(position, radius, height);
+        const obstacle = obstacleResult?.obstacle ?? (null as unknown as IObstacle);
         if (obstacle && !doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
             WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
         }
@@ -512,8 +517,9 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns the obstacle freshly created
      */
     public addBoxObstacle(position: IVector3Like, extent: IVector3Like, angle: number, doNotWaitForCacheUpdate = false): IObstacle {
-        const obstacle = this.tileCache?.addBoxObstacle(position, extent, angle) ?? (null as unknown as IObstacle);
-        if (obstacle && !doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
+        const obstacleResult = this.tileCache?.addBoxObstacle(position, extent, angle);
+        const obstacle = obstacleResult?.obstacle ?? (null as unknown as IObstacle);
+        if (!doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
             WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
         }
         return obstacle;
@@ -647,7 +653,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param result The partial result from navmesh creation
      * @returns The validated and complete CreateNavMeshresult
      */
-    private _processNavMeshResult(result: Nullable<Partial<CreateNavMeshresult>>): CreateNavMeshresult {
+    private _processNavMeshResult(result: Nullable<Partial<CreateNavMeshResult>>): CreateNavMeshResult {
         if (!result?.navMesh || !result?.navMeshQuery) {
             throw new Error("Unable to create navmesh. No navMesh or navMeshQuery returned.");
         }
@@ -663,5 +669,11 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             intermediates: result.intermediates,
             tileCache: result.tileCache, // tileCache is optional
         };
+    }
+
+    private _preprocessParameters(parameters: INavMeshParametersV2) {
+        if (parameters.tileSize ?? 0 > 0) {
+            parameters.maxObstacles = DefaultMaxObstacles;
+        }
     }
 }

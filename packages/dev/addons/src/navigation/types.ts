@@ -49,7 +49,7 @@ export interface IOffMeshConnection {
 /**
  * Result of a navigation mesh creation.
  */
-export type CreateNavMeshresult = Nullable<{
+export type CreateNavMeshResult = Nullable<{
     /**
      * Navigation mesh
      */

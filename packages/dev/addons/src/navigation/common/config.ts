@@ -6,6 +6,8 @@ import { Logger } from "core/Misc/logger";
 import type { IAgentParametersV2, INavMeshParametersV2 } from "../types";
 import { CreateDefaultTileCacheMeshProcess } from "./tile-cache";
 
+export const DefaultMaxObstacles = 32;
+
 /**
  * Creates a SoloNavMesh configuration based on the provided parameters.
  * @param parameters The parameters used to configure the SoloNavMesh generation.
@@ -38,7 +40,7 @@ export function CreateTileCacheNavMeshConfig(parameters: INavMeshParametersV2): 
     const cfg: Partial<TileCacheGeneratorConfig> = {
         ...CreateTiledNavMeshConfig(parameters),
         expectedLayersPerTile: parameters.expectedLayersPerTile ?? 1,
-        maxObstacles: parameters.maxObstacles ?? 10,
+        maxObstacles: parameters.maxObstacles ?? DefaultMaxObstacles,
     };
 
     if (parameters.tileCacheMeshProcess) {
