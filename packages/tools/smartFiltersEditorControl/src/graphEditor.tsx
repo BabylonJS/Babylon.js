@@ -92,11 +92,11 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         );
     }
 
-    createInputBlock(blockTypeAndNamespace: string) {
+    createInputBlock(blockTypeAndNamespace: string, name?: string) {
         const { blockType } = DecodeBlockKey(blockTypeAndNamespace);
         const nodeType = BlockTools.GetConnectionNodeTypeFromString(blockType);
 
-        const newInputBlock = CreateDefaultInput(this.props.globalState.smartFilter, nodeType, this.props.globalState.engine);
+        const newInputBlock = CreateDefaultInput(this.props.globalState.smartFilter, nodeType, this.props.globalState.engine, name);
 
         return newInputBlock;
     }
@@ -436,6 +436,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         // Copy over InputBlock specific data
         if (oldBlock.blockType === "InputBlock" && newBlock instanceof InputBlock && oldBlock instanceof InputBlock) {
+            // Make a copy of the value, unless it's a texture, then let it be the default
             if (oldBlock.outputs[0].runtimeData && oldBlock.type !== ConnectionPointType.Texture) {
                 newBlock.outputs[0].runtimeData = createStrongRef(JSON.parse(JSON.stringify(oldBlock.outputs[0].runtimeData.value)));
             }
@@ -443,6 +444,11 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             // Copy appMetadata over, which could be any type
             if (oldBlock.appMetadata) {
                 newBlock.appMetadata = JSON.parse(JSON.stringify(oldBlock.appMetadata));
+            }
+
+            // Copy editorData over
+            if (oldBlock.editorData) {
+                newBlock.editorData = JSON.parse(JSON.stringify(oldBlock.editorData));
             }
         }
 
@@ -474,7 +480,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         // If we haven't created the block yet, see if it's a standard input block
         if (!block && namespace === inputsNamespace) {
-            block = this.createInputBlock(blockTypeAndNamespace);
+            block = this.createInputBlock(blockTypeAndNamespace, name);
         }
 
         // If we don't have a block yet, display an error
