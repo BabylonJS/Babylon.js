@@ -23,9 +23,17 @@ export type BlockEditorRegistration = {
      * @param smartFilter - The Smart Filter to create the block for
      * @param engine - The engine to use for creating blocks
      * @param suppressAutomaticInputBlocks - Whether to suppress automatic input blocks
+     * @param name - If provided, the name to assign to the block, otherwise a default name will be used
      * @returns A new instance of the block, or null if the block name is not recognized
      */
-    getBlock(blockType: string, namespace: Nullable<string>, smartFilter: SmartFilter, engine: ThinEngine, suppressAutomaticInputBlocks: boolean): Promise<Nullable<BaseBlock>>;
+    getBlock(
+        blockType: string,
+        namespace: Nullable<string>,
+        smartFilter: SmartFilter,
+        engine: ThinEngine,
+        suppressAutomaticInputBlocks: boolean,
+        name?: string
+    ): Promise<Nullable<BaseBlock>>;
 
     /**
      * An object that contains all of the blocks to display, organized by category.

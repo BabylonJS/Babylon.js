@@ -45,12 +45,13 @@ export function GetBlockEditorRegistration(
         namespace: Nullable<string>,
         smartFilter: SmartFilter,
         engine: ThinEngine,
-        suppressAutomaticInputBlocks: boolean
+        suppressAutomaticInputBlocks: boolean,
+        name?: string
     ): Promise<Nullable<BaseBlock>> => {
         const registration = allBlockRegistrations.find((r) => r.blockType === blockType && r.namespace === namespace);
         if (registration && registration.factory) {
             try {
-                return await registration.factory(smartFilter, engine, smartFilterDeserializer, undefined, suppressAutomaticInputBlocks);
+                return await registration.factory(smartFilter, engine, smartFilterDeserializer, undefined, { suppressAutomaticInputBlocks, name });
             } catch (err) {
                 const errorString = `Error creating block ${blockType} in namespace ${namespace}:\n ${err}`;
                 Logger.Error(errorString);

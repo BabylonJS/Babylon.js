@@ -19,7 +19,7 @@ import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
-import { createStrongRef, Logger, type BaseBlock, type SmartFilter } from "smart-filters";
+import { createStrongRef, Logger, ShaderBlock, type BaseBlock, type SmartFilter } from "smart-filters";
 import { inputsNamespace } from "smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
@@ -325,27 +325,10 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 this._mouseLocationY,
                 async (_nodeData) => {
                     const oldBlock = _nodeData.data as BaseBlock;
-                    let blockType = oldBlock.blockType;
-                    let blockNamespace = oldBlock.namespace;
-
-                    // Input blocks are special case, fix up the blockType and namespace
-                    if (oldBlock.blockType === "InputBlock") {
-                        blockType = BlockTools.GetStringFromConnectionNodeType(oldBlock.outputs[0].type);
-                        blockNamespace = inputsNamespace;
-                    }
-
-                    const blockTypeAndNamespace = GetBlockKey(blockType, blockNamespace);
-
-                    const newBlock = await this.createBlockAsync(blockTypeAndNamespace, true);
+                    const newBlock = await this.cloneBlockAsync(oldBlock);
                     if (!newBlock) {
                         return null;
                     }
-
-                    // If it was an input block, copy the value over too
-                    if (oldBlock.blockType === "InputBlock" && oldBlock.outputs[0].runtimeData) {
-                        newBlock.outputs[0].runtimeData = createStrongRef(oldBlock.outputs[0].runtimeData.value);
-                    }
-
                     return this.appendBlock(newBlock, false);
                 },
                 this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
@@ -434,7 +417,38 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         }
     };
 
-    async createBlockAsync(blockTypeAndNamespace: string, suppressAutomaticInputBlocks: boolean): Promise<Nullable<BaseBlock>> {
+    async cloneBlockAsync(oldBlock: BaseBlock): Promise<Nullable<BaseBlock>> {
+        let blockType = oldBlock.blockType;
+        let blockNamespace = oldBlock.namespace;
+
+        // Input blocks are special case, fix up the blockType and namespace
+        if (oldBlock.blockType === "InputBlock") {
+            blockType = BlockTools.GetStringFromConnectionNodeType(oldBlock.outputs[0].type);
+            blockNamespace = inputsNamespace;
+        }
+
+        const blockTypeAndNamespace = GetBlockKey(blockType, blockNamespace);
+
+        const newBlock = await this.createBlockAsync(blockTypeAndNamespace, true, oldBlock.name);
+        if (!newBlock) {
+            return null;
+        }
+
+        // If it was an input block, copy the value over too
+        if (oldBlock.blockType === "InputBlock" && oldBlock.outputs[0].runtimeData) {
+            newBlock.outputs[0].runtimeData = createStrongRef(oldBlock.outputs[0].runtimeData.value);
+        }
+
+        // Copy over the data that block factories are not responsible for setting
+        newBlock.comments = oldBlock.comments;
+        if (oldBlock instanceof ShaderBlock && oldBlock.outputTextureOptions && newBlock instanceof ShaderBlock) {
+            newBlock.outputTextureOptions = { ...oldBlock.outputTextureOptions };
+        }
+
+        return newBlock;
+    }
+
+    async createBlockAsync(blockTypeAndNamespace: string, suppressAutomaticInputBlocks: boolean, name?: string): Promise<Nullable<BaseBlock>> {
         const { blockType, namespace } = DecodeBlockKey(blockTypeAndNamespace);
 
         let block: Nullable<BaseBlock> = null;
@@ -446,7 +460,8 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 namespace,
                 this.props.globalState.smartFilter,
                 this.props.globalState.engine,
-                suppressAutomaticInputBlocks
+                suppressAutomaticInputBlocks,
+                name
             );
         }
 
