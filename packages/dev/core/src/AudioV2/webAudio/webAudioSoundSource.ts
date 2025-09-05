@@ -1,7 +1,8 @@
 import type { Nullable } from "../../types";
-import type { AbstractAudioNode, AbstractSpatialAudio } from "../abstractAudio";
+import type { AbstractAudioNode } from "../abstractAudio/abstractAudioNode";
 import type { ISoundSourceOptions } from "../abstractAudio/abstractSoundSource";
 import { AbstractSoundSource } from "../abstractAudio/abstractSoundSource";
+import type { AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _WebAudioBusAndSoundSubGraph } from "./subNodes/webAudioBusAndSoundSubGraph";
