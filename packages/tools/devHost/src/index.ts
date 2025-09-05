@@ -24,7 +24,7 @@ switch (ExpQsp) {
 
 ImportPromise.then(async (module) => {
     console.log("Loading experience:", ExpQsp);
-    await module.Main();
+    await module.Main(SearchParams);
     console.log("Loading experience completed");
 }).catch((err) => {
     console.log("Error loading experience:", err);
