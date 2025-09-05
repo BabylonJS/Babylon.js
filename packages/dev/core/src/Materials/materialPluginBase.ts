@@ -288,6 +288,7 @@ export class MaterialPluginBase {
         ubo?: Array<{ name: string; size?: number; type?: string; arraySize?: number }>;
         vertex?: string;
         fragment?: string;
+        externalUniforms?: string[];
     } {
         return {};
     }

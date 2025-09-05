@@ -123,16 +123,31 @@ export function BuildShader(filePath: string, basePackageName: string = "core", 
     let includeText = "";
     const includes = GetIncludes(fxData);
     includes.forEach((entry) => {
+        // Entry may have been something like #include<core/helperFunctions> where "core" is intended to override the basePackageName.
+        // Currently only "core/" is supported for the include path e.g., to include core/helperFunctions from the addons package.
+        const isCoreInclude = (entry as string).startsWith("core/");
+
         if (isCore) {
+            // If this shader is already from core, consider #include<core/...> as an error since it's not necessary.
+            if (isCoreInclude) {
+                throw new Error("Unnecessary core include");
+            }
+
             includeText =
                 includeText +
                 `import "./ShadersInclude/${entry}";
 `;
         } else {
+            const basePackageNameForImport = isCoreInclude ? "core" : basePackageName;
+            const actualEntry = (entry as string).replace(/^core\//, "");
             includeText =
                 includeText +
-                `import "${basePackageName}/Shaders/ShadersInclude/${entry}";
+                `import "${basePackageNameForImport}/Shaders/ShadersInclude/${actualEntry}";
 `;
+            // The shader code itself also needs to be updated by replacing `#include<core/helperFunctions>` with `#include<helperFunctions>`
+            if (isCoreInclude) {
+                fxData = fxData.replace(new RegExp(`#include<${entry}>`, "g"), `#include<${actualEntry}>`);
+            }
         }
     });
 
@@ -148,7 +163,7 @@ export function BuildShader(filePath: string, basePackageName: string = "core", 
             shaderStoreLocation = "../Engines/shaderStore";
         }
     } else {
-        shaderStoreLocation = basePackageName + "/Engines/shaderStore";
+        shaderStoreLocation = "core/Engines/shaderStore";
     }
 
     // Fill template in.

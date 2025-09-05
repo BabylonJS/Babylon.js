@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IVector2Like } from "core/Maths";
+import type { IVector2Like } from "core/Maths/math.like";
 
 /** @internal */
 export type ParagraphOptions = {
