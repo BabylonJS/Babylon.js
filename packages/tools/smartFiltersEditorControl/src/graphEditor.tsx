@@ -37,6 +37,7 @@ import { DataStorage } from "core/Misc/dataStorage.js";
 import { OnlyShowCustomBlocksDefaultValue } from "./constants.js";
 import { ThinEngine } from "core/Engines/thinEngine.js";
 import { HistoryStack } from "shared-ui-components/historyStack.js";
+import { WebCamInputBlockName } from "./configuration/editorBlocks/blockNames.js";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -425,6 +426,11 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         if (oldBlock.blockType === "InputBlock") {
             blockType = BlockTools.GetStringFromConnectionNodeType(oldBlock.outputs[0].type);
             blockNamespace = inputsNamespace;
+
+            // A special type of input block is the webcam block, which uses a special blockType so its registration can be found
+            if (oldBlock.name === WebCamInputBlockName) {
+                blockType = WebCamInputBlockName;
+            }
         }
 
         const blockTypeAndNamespace = GetBlockKey(blockType, blockNamespace);
