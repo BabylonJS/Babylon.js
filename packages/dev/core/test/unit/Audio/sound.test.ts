@@ -426,7 +426,7 @@ describe("Sound", () => {
 
     it("restarts the buffer source at the given zero offset when play, stop, play, pause, and play are called", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
