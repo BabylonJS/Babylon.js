@@ -252,12 +252,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             return this._graphCanvas.findNodeFromData(block);
         };
 
-        this.props.globalState.hostDocument.addEventListener("keydown", async (evt) => {
+        this.props.globalState.hostDocument.addEventListener("keydown", (evt) => {
             if (this._historyStack.processKeyEvent(evt)) {
                 return;
             }
 
-            await this._graphCanvas.handleKeyDownAsync(
+            void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
                     this.props.globalState.nodeParticleSet.removeBlock(nodeData.data as NodeParticleBlock);
