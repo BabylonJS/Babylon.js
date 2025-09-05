@@ -486,7 +486,7 @@ describe("Sound", () => {
 
     it("sets current time to time it was paused at", async () => {
         const audioSample = AudioTestSamples.Get("silence, 1 second, 1 channel, 48000 kHz");
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();
