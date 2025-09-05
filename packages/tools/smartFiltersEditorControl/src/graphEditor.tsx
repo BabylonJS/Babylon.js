@@ -437,7 +437,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         // Copy over InputBlock specific data
         if (oldBlock.blockType === "InputBlock" && newBlock instanceof InputBlock && oldBlock instanceof InputBlock) {
             if (oldBlock.outputs[0].runtimeData) {
-                newBlock.outputs[0].runtimeData = createStrongRef(oldBlock.outputs[0].runtimeData.value);
+                newBlock.outputs[0].runtimeData = createStrongRef(JSON.parse(JSON.stringify(oldBlock.outputs[0].runtimeData.value)));
             }
 
             // Copy appMetadata over, which could be any type
