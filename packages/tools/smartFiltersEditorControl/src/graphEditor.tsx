@@ -19,7 +19,7 @@ import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
-import { createStrongRef, Logger, ShaderBlock, type BaseBlock, type SmartFilter } from "smart-filters";
+import { createStrongRef, Logger, ShaderBlock, type BaseBlock, type SmartFilter, InputBlock } from "smart-filters";
 import { inputsNamespace } from "smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
@@ -434,9 +434,14 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             return null;
         }
 
-        // If it was an input block, copy the value over too
-        if (oldBlock.blockType === "InputBlock" && oldBlock.outputs[0].runtimeData) {
-            newBlock.outputs[0].runtimeData = createStrongRef(oldBlock.outputs[0].runtimeData.value);
+        // Copy over InputBlock specific data
+        if (oldBlock.blockType === "InputBlock" && newBlock instanceof InputBlock && oldBlock instanceof InputBlock) {
+            if (oldBlock.outputs[0].runtimeData) {
+                newBlock.outputs[0].runtimeData = createStrongRef(oldBlock.outputs[0].runtimeData.value);
+            }
+
+            // Copy appMetadata over, which could be any type
+            newBlock.appMetadata = JSON.parse(JSON.stringify(oldBlock.appMetadata));
         }
 
         // Copy over the data that block factories are not responsible for setting
