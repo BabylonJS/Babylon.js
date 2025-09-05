@@ -12,6 +12,7 @@ import { Scene } from "core/scene";
 import { AudioTestHelper } from "./helpers/audioTestHelper";
 import { AudioTestSamples } from "./helpers/audioTestSamples";
 import { MockedAudioObjects } from "./helpers/mockedAudioObjects";
+import { SoundState } from "../../../src/AudioV2/soundState";
 
 // Required for timers (eg. setTimeout) to work.
 jest.useFakeTimers();
@@ -568,7 +569,7 @@ describe("Sound", () => {
         mock.audioContext.state = "running";
         jest.advanceTimersByTime(500);
 
-        expect(AudioTestHelper.SoundWasStarted()).toBe(false);
+        expect((sound as any)._soundV2.state).toBe(SoundState.Stopped);
     });
 
     it("does not autoplay when stopped before audio engine is unlocked", async () => {
@@ -582,7 +583,7 @@ describe("Sound", () => {
         AbstractEngine.audioEngine!.unlock();
 
         return AudioTestHelper.WhenAudioContextResumes(() => {
-            expect(AudioTestHelper.SoundWasStarted()).toBe(false);
+            expect((sound as any)._soundV2.state).toBe(SoundState.Stopped);
         });
     });
 
@@ -598,7 +599,7 @@ describe("Sound", () => {
         AbstractEngine.audioEngine!.unlock();
 
         return AudioTestHelper.WhenAudioContextResumes(() => {
-            expect(AudioTestHelper.SoundWasStarted()).toBe(false);
+            expect((sound as any)._soundV2.state).toBe(SoundState.Stopped);
         });
     });
 
