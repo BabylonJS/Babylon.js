@@ -522,9 +522,14 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     /**
      * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
      * @param obstacle obstacle to remove from the navigation
+     * @param doNotWaitForCacheUpdate if true the function will not wait for the tile cache to be fully updated before returning
+     *
      */
-    public removeObstacle(obstacle: IObstacle): void {
+    public removeObstacle(obstacle: IObstacle, doNotWaitForCacheUpdate = false): void {
         this.tileCache?.removeObstacle(obstacle);
+        if (!doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
+            WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
+        }
     }
 
     /**
