@@ -6,7 +6,7 @@ import { Logger } from "core/Misc/logger";
 import type { IAgentParametersV2, INavMeshParametersV2 } from "../types";
 import { CreateDefaultTileCacheMeshProcess } from "./tile-cache";
 
-export const DefaultMaxObstacles = 32;
+export const DefaultMaxObstacles = 128;
 
 /**
  * Creates a SoloNavMesh configuration based on the provided parameters.
