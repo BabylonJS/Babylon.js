@@ -80,7 +80,7 @@ import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "./glTFLoaderExtensionRegistry";
 import type { GLTFExtensionFactory } from "./glTFLoaderExtensionRegistry";
 import type { IInterpolationPropertyInfo } from "core/FlowGraph/typeDefinitions";
-import { GetMappingForKey } from "./Extensions/objectModelMapping";
+import { GetObjectAccessor } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import { Lazy } from "core/Misc/lazy";
@@ -1734,29 +1734,29 @@ export class GLTFLoader implements IGLTFLoader {
 
         // async-load the animation sampler to provide the interpolation of the channelTargetPath
         return LazyLoaderAnimationModulePromise.value.then(() => {
-            let properties: IInterpolationPropertyInfo[];
+            let properties: IInterpolationPropertyInfo[] | undefined;
             switch (channelTargetPath) {
                 case AnimationChannelTargetPath.TRANSLATION: {
-                    properties = GetMappingForKey("/nodes/{}/translation")?.interpolation!;
+                    properties = GetObjectAccessor("/nodes/{}/translation")?.interpolation;
                     break;
                 }
                 case AnimationChannelTargetPath.ROTATION: {
-                    properties = GetMappingForKey("/nodes/{}/rotation")?.interpolation!;
+                    properties = GetObjectAccessor("/nodes/{}/rotation")?.interpolation;
                     break;
                 }
                 case AnimationChannelTargetPath.SCALE: {
-                    properties = GetMappingForKey("/nodes/{}/scale")?.interpolation!;
+                    properties = GetObjectAccessor("/nodes/{}/scale")?.interpolation;
                     break;
                 }
                 case AnimationChannelTargetPath.WEIGHTS: {
-                    properties = GetMappingForKey("/nodes/{}/weights")?.interpolation!;
+                    properties = GetObjectAccessor("/nodes/{}/weights")?.interpolation;
                     break;
                 }
                 default: {
                     throw new Error(`${context}/target/path: Invalid value (${channel.target.path})`);
                 }
             }
-            // stay safe
+
             if (!properties) {
                 throw new Error(`${context}/target/path: Could not find interpolation properties for target path (${channel.target.path})`);
             }
