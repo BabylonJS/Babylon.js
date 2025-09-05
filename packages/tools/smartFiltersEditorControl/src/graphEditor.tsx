@@ -19,7 +19,7 @@ import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
-import { createStrongRef, Logger, ShaderBlock, type BaseBlock, type SmartFilter, InputBlock } from "smart-filters";
+import { createStrongRef, Logger, ShaderBlock, type BaseBlock, type SmartFilter, InputBlock, ConnectionPointType } from "smart-filters";
 import { inputsNamespace } from "smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
@@ -436,7 +436,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
         // Copy over InputBlock specific data
         if (oldBlock.blockType === "InputBlock" && newBlock instanceof InputBlock && oldBlock instanceof InputBlock) {
-            if (oldBlock.outputs[0].runtimeData) {
+            if (oldBlock.outputs[0].runtimeData && oldBlock.type !== ConnectionPointType.Texture) {
                 newBlock.outputs[0].runtimeData = createStrongRef(JSON.parse(JSON.stringify(oldBlock.outputs[0].runtimeData.value)));
             }
 
