@@ -339,6 +339,10 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             this._deinitSourceNode();
         }
 
+        if (this.state === SoundState.Paused) {
+            this._enginePauseTime = 0;
+        }
+
         this._options.startOffset = value;
 
         if (restart) {
