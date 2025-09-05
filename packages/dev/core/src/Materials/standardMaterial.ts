@@ -1250,7 +1250,8 @@ export class StandardMaterial extends PushMaterial {
             defines,
             this._applyDecalMapAfterDetailMap,
             this._useVertexPulling,
-            subMesh.getRenderingMesh()
+            subMesh.getRenderingMesh(),
+            this._setVertexOutputInvariant
         );
 
         // Values that need to be evaluated on every frame
@@ -1879,7 +1880,8 @@ export class StandardMaterial extends PushMaterial {
                 this._reflectionTexture ||
                 this._refractionTexture ||
                 mesh.receiveShadows ||
-                defines.PREPASS
+                defines.PREPASS ||
+                defines["CLUSTLIGHT_BATCH"]
             ) {
                 this.bindView(effect);
             }

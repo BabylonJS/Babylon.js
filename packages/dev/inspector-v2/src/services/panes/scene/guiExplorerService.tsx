@@ -5,7 +5,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { AppGenericRegular } from "@fluentui/react-icons";
 
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";

@@ -2264,7 +2264,7 @@
         {
             "title": "show-bounding-box",
             "renderCount": 5,
-            "playgroundId": "#0LN1JD#0"
+            "playgroundId": "#0LN1JD#9"
         },
         {
             "title": "cube-reflection-with-probe-and-mirrors",
@@ -2641,6 +2641,15 @@
         {
             "title": "FrameGraph nrge frozen meshes",
             "playgroundId": "#9SDNZF#32"
+        },
+        {
+            "title": "FrameGraph nrge TAA",
+            "playgroundId": "#IG8NRC#33",
+            "renderCount": 15
+        },
+        {
+            "title": "FrameGraph nrge rig camera",
+            "playgroundId": "#ATL1CS#16"
         },
         {
             "title": "FrameGraph nrg gui bloom",

@@ -580,7 +580,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Stores the value of the alpha mode
      */
     @serialize()
-    protected _alphaMode: number[] = [Constants.ALPHA_COMBINE];
+    private _alphaMode: number[] = [Constants.ALPHA_COMBINE];
 
     /**
      * Sets the value of the alpha mode.
@@ -866,6 +866,28 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         this._useLogarithmicDepth = value && fragmentDepthSupported;
 
+        this._markAllSubMeshesAsMiscDirty();
+    }
+
+    @serialize()
+    protected _setVertexOutputInvariant = false;
+    /**
+     * Gets or sets the vertex output invariant state
+     * Setting this property to true will force the shader compiler to disable some optimization to make sure the vertex output is always calculated
+     * the same way across different compilation units.
+     * You may need to enable this option if you are seeing some depth artifacts when using a depth pre-pass, for e.g.
+     * Note that this may have an impact on performance, so leave this option disabled if not needed.
+     */
+    public get setVertexOutputInvariant(): boolean {
+        return this._setVertexOutputInvariant;
+    }
+
+    public set setVertexOutputInvariant(value: boolean) {
+        if (this._setVertexOutputInvariant === value) {
+            return;
+        }
+
+        this._setVertexOutputInvariant = value;
         this._markAllSubMeshesAsMiscDirty();
     }
 
@@ -2016,8 +2038,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
 
-        serializationObject.alphaMode = this._alphaMode;
-
         serializationObject.stencil = this.stencil.serialize();
         serializationObject.uniqueId = this.uniqueId;
 
@@ -2035,6 +2055,21 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                     serializationObject.plugins[plugin.getClassName()] = plugin.serialize();
                 }
             }
+        }
+    }
+
+    /**
+     * Parses the alpha mode from the material data to parse
+     * @param parsedMaterial defines the material data to parse
+     * @param material defines the material to update
+     */
+    public static ParseAlphaMode(parsedMaterial: any, material: Material) {
+        if (parsedMaterial._alphaMode !== undefined) {
+            material._alphaMode = Array.isArray(parsedMaterial._alphaMode) ? parsedMaterial._alphaMode : [parsedMaterial._alphaMode];
+        } else if (parsedMaterial.alphaMode !== undefined) {
+            material._alphaMode = Array.isArray(parsedMaterial.alphaMode) ? parsedMaterial.alphaMode : [parsedMaterial.alphaMode];
+        } else {
+            material._alphaMode = [Constants.ALPHA_COMBINE];
         }
     }
 
@@ -2059,11 +2094,8 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         const materialType = Tools.Instantiate(parsedMaterial.customType);
         const material = materialType.Parse(parsedMaterial, scene, rootUrl);
         material._loadedUniqueId = parsedMaterial.uniqueId;
-        if (!Array.isArray(parsedMaterial.alphaMode)) {
-            material._alphaMode = [parsedMaterial.alphaMode ?? Constants.ALPHA_COMBINE];
-        } else {
-            material._alphaMode = parsedMaterial.alphaMode;
-        }
+
+        Material.ParseAlphaMode(parsedMaterial, material);
 
         return material;
     }

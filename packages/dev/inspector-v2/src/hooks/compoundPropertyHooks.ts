@@ -38,9 +38,9 @@ export function useVector3Property<TargetT extends object, PropertyKeyT extends 
  */
 export function useVector3Property<TargetT extends object, PropertyKeyT extends PropertyKeys<TargetT, Vector3>>(target: TargetT | null | undefined, propertyKey: PropertyKeyT) {
     const vector = useProperty(target, propertyKey);
-    useProperty(vector as Vector3 | null | undefined, "x");
-    useProperty(vector as Vector3 | null | undefined, "y");
-    useProperty(vector as Vector3 | null | undefined, "z");
+    useProperty(vector as Vector3 | null | undefined, "_x");
+    useProperty(vector as Vector3 | null | undefined, "_y");
+    useProperty(vector as Vector3 | null | undefined, "_z");
     return vector;
 }
 
@@ -102,10 +102,10 @@ export function useQuaternionProperty<TargetT extends object, PropertyKeyT exten
     propertyKey: PropertyKeyT
 ) {
     const quaternion = useProperty(target, propertyKey);
-    useProperty(quaternion as Quaternion | null | undefined, "x");
-    useProperty(quaternion as Quaternion | null | undefined, "y");
-    useProperty(quaternion as Quaternion | null | undefined, "z");
-    useProperty(quaternion as Quaternion | null | undefined, "w");
+    useProperty(quaternion as Quaternion | null | undefined, "_x");
+    useProperty(quaternion as Quaternion | null | undefined, "_y");
+    useProperty(quaternion as Quaternion | null | undefined, "_z");
+    useProperty(quaternion as Quaternion | null | undefined, "_w");
 
     return quaternion;
 }

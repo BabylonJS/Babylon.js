@@ -280,6 +280,8 @@ const useStyles = makeStyles({
     tab: {
         paddingTop: tokens.spacingVerticalXS,
         paddingBottom: tokens.spacingVerticalXS,
+        paddingLeft: tokens.spacingHorizontalS,
+        paddingRight: tokens.spacingHorizontalS,
         alignSelf: "center",
     },
     resizer: {
@@ -499,28 +501,30 @@ function usePane(
             <>
                 {paneComponents.length > 0 && (
                     <div className={`${classes.paneTabListDiv} ${alignment === "left" || toolbarMode === "compact" ? classes.paneTabListDivLeft : classes.paneTabListDivRight}`}>
-                        <Divider vertical inset />
                         {/* Only render the tab list if there is more than tab. It's kind of pointless to show a tab list with just one tab. */}
                         {paneComponents.length > 1 && (
-                            <TabList
-                                selectedValue={selectedTab?.key ?? ""}
-                                onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
-                                    const tab = paneComponents.find((entry) => entry.key === data.value);
-                                    setSelectedTab(tab);
-                                    setCollapsed(false);
-                                }}
-                            >
-                                {paneComponents.map((entry) => (
-                                    <SidePaneTab
-                                        key={entry.key}
-                                        alignment={alignment}
-                                        id={entry.key}
-                                        title={entry.title}
-                                        icon={entry.icon}
-                                        suppressTeachingMoment={entry.suppressTeachingMoment}
-                                    />
-                                ))}
-                            </TabList>
+                            <>
+                                <Divider vertical inset />
+                                <TabList
+                                    selectedValue={selectedTab?.key ?? ""}
+                                    onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
+                                        const tab = paneComponents.find((entry) => entry.key === data.value);
+                                        setSelectedTab(tab);
+                                        setCollapsed(false);
+                                    }}
+                                >
+                                    {paneComponents.map((entry) => (
+                                        <SidePaneTab
+                                            key={entry.key}
+                                            alignment={alignment}
+                                            id={entry.key}
+                                            title={entry.title}
+                                            icon={entry.icon}
+                                            suppressTeachingMoment={entry.suppressTeachingMoment}
+                                        />
+                                    ))}
+                                </TabList>
+                            </>
                         )}
 
                         {/* When the toolbar mode is "full", we add an extra button that allows the side panes to be collapsed. */}
@@ -685,9 +689,14 @@ export function MakeShellServiceDefinition({
                     </div>
                 );
             };
+            rootComponent.displayName = "Shell Service Root";
 
             return {
                 addToolbarItem: (entry) => {
+                    if (!entry.component.displayName) {
+                        entry.component.displayName = `${entry.key} | ${entry.verticalLocation} ${entry.horizontalLocation} bar item`;
+                    }
+
                     if (entry.verticalLocation === "top") {
                         return topBarComponentCollection.add(entry);
                     } else {
@@ -695,6 +704,10 @@ export function MakeShellServiceDefinition({
                     }
                 },
                 addSidePane: (entry) => {
+                    if (!entry.content.displayName) {
+                        entry.content.displayName = `${entry.key} | ${entry.horizontalLocation} pane`;
+                    }
+
                     if (entry.horizontalLocation === "left") {
                         return leftPaneComponentCollection.add(entry);
                     } else {

@@ -3444,6 +3444,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         // We don't create the render pass just now, we do a lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
+        // However, if snapshot rendering is enabled, we need to create the render pass immediately, to be sure currentRenderPass is not null when _endCurrentRenderPass() is called.
+        // (as in snapshot rendering mode, we may not have a call to clear() before _endCurrentRenderPass(), so lazy creation would not work)
+        if (this._snapshotRendering.play || this._snapshotRendering.record) {
+            this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);
+        }
 
         if (this._cachedViewport && !forceFullscreenViewport) {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);

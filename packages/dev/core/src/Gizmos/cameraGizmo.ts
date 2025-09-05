@@ -11,7 +11,7 @@ import type { Camera } from "../Cameras/camera";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
 import { Matrix } from "../Maths/math";
-import { CreateLines } from "../Meshes/Builders/linesBuilder";
+import { CreateLineSystem } from "../Meshes/Builders/linesBuilder";
 import type { PointerInfo } from "../Events/pointerEvents";
 import { PointerEventTypes } from "../Events/pointerEvents";
 import type { Observer } from "../Misc/observable";
@@ -67,10 +67,10 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
             }
 
             this._isHovered = !!(pointerInfo.pickInfo && this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            if (this._isHovered && pointerInfo.event.button === 0) {
+            if (this._isHovered && pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.button === 0) {
                 this.onClickedObservable.notifyObservers(this._camera);
             }
-        }, PointerEventTypes.POINTERDOWN);
+        });
     }
     protected _camera: Nullable<Camera> = null;
 
@@ -241,22 +241,25 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
         const mesh = new Mesh(root.name, scene);
         mesh.parent = root;
 
+        const lines: Vector3[][] = [];
+        const colors: Color4[][] = [];
+
         for (let y = 0; y < 4; y += 2) {
             for (let x = 0; x < 4; x += 2) {
-                let line = CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)], colors: [linesColor, linesColor] }, scene);
-                line.parent = mesh;
-                line.alwaysSelectAsActiveMesh = true;
-                line.isPickable = false;
-                line = CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)], colors: [linesColor, linesColor] }, scene);
-                line.parent = mesh;
-                line.alwaysSelectAsActiveMesh = true;
-                line.isPickable = false;
-                line = CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)], colors: [linesColor, linesColor] }, scene);
-                line.parent = mesh;
-                line.alwaysSelectAsActiveMesh = true;
-                line.isPickable = false;
+                lines.push([new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)]);
+
+                lines.push([new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)]);
+
+                lines.push([new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)]);
+                colors.push([linesColor, linesColor], [linesColor, linesColor], [linesColor, linesColor]);
             }
         }
+
+        const line = CreateLineSystem("lines", { lines, colors }, scene);
+
+        line.parent = mesh;
+        line.alwaysSelectAsActiveMesh = true;
+        line.isPickable = false;
 
         return root;
     }

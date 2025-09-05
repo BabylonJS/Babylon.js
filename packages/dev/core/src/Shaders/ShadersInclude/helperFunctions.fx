@@ -237,6 +237,10 @@ float avg(vec3 value) {
 }
 
 #ifdef WEBGL2
+uint extractBits(uint value, int offset, int width) {
+    return (value >> offset) & ((1u << width) - 1u);
+}
+
 // Returns the position of the only set bit in the value, only works if theres exactly 1 bit set
 int onlyBitPosition(uint value) {
     // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightFloatCast

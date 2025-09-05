@@ -10,6 +10,7 @@ import { VideoRecorder } from "core/Misc/videoRecorder";
 import { captureEquirectangularFromScene } from "core/Misc/equirectangularCapture";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { CameraRegular, RecordRegular, RecordStopRegular } from "@fluentui/react-icons";
+import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 
 export const CaptureRttTools: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
     const [useWidthHeight, setUseWidthHeight] = useState(false);
@@ -64,15 +65,22 @@ export const CaptureScreenshotTools: FunctionComponent<{ scene: Scene }> = ({ sc
     const videoRecorder = useRef<VideoRecorder>();
 
     const captureScreenshot = useCallback(() => {
-        if (scene.activeCamera) {
-            Tools.CreateScreenshot(scene.getEngine(), scene.activeCamera, { precision: 1 });
+        const camera = scene.frameGraph ? FrameGraphUtils.FindMainCamera(scene.frameGraph) : scene.activeCamera;
+        if (camera) {
+            Tools.CreateScreenshot(scene.getEngine(), camera, { precision: 1 });
         }
     }, [scene]);
 
     const captureEquirectangularAsync = useCallback(async () => {
+        const currentActiveCamera = scene.activeCamera;
+        if (!currentActiveCamera && scene.frameGraph) {
+            scene.activeCamera = FrameGraphUtils.FindMainCamera(scene.frameGraph);
+        }
         if (scene.activeCamera) {
             await captureEquirectangularFromScene(scene, { size: 1024, filename: "equirectangular_capture.png" });
         }
+        // eslint-disable-next-line require-atomic-updates
+        scene.activeCamera = currentActiveCamera;
     }, [scene]);
 
     const recordVideoAsync = useCallback(async () => {

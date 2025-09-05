@@ -15,3 +15,7 @@ fn getClusteredLight(lightDataTexture: texture_2d<f32>, index: u32) -> Clustered
         textureLoad(lightDataTexture, vec2u(4, index), 0)
     );
 }
+
+fn getClusteredSliceIndex(sliceData: vec2f, viewDepth: f32) -> i32 {
+    return i32(log(viewDepth) * sliceData.x + sliceData.y);
+}

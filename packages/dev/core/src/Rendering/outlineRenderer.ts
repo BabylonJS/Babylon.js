@@ -120,6 +120,11 @@ export class OutlineRenderer implements ISceneComponent {
      */
     public zOffsetUnits = 4; // 4 to account for projection a bit by default
 
+    /**
+     * Gets or sets a boolean indicating if the renderer is enabled
+     */
+    public enabled = true;
+
     private _engine: AbstractEngine;
     private _savedDepthWrite: boolean;
     private _passIdForDrawWrapper: number[];
@@ -432,6 +437,10 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _beforeRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
+        if (!this.enabled) {
+            return;
+        }
+
         // Outline - step 1
         this._savedDepthWrite = this._engine.getDepthWrite();
         if (mesh.renderOutline) {
@@ -467,6 +476,10 @@ export class OutlineRenderer implements ISceneComponent {
     }
 
     private _afterRenderingMesh(mesh: Mesh, subMesh: SubMesh, batch: _InstancesBatch): void {
+        if (!this.enabled) {
+            return;
+        }
+
         // Overlay
         if (mesh.renderOverlay) {
             const currentMode = this._engine.getAlphaMode();

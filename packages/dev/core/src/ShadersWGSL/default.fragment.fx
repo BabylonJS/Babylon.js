@@ -16,6 +16,10 @@ varying vNormalW: vec3f;
 varying vColor: vec4f;
 #endif
 
+#ifdef CLUSTLIGHT_BATCH
+varying vViewDepth: f32;
+#endif
+
 #include<mainUVVaryingDeclaration>[1..7]
 
 // Helper functions

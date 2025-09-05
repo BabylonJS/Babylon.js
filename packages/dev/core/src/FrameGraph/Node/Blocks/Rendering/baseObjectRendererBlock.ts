@@ -140,6 +140,16 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._frameGraphTask.enableBoundingBoxRendering = value;
     }
 
+    /** Indicates if outlines/overlays should be rendered */
+    @editableInPropertyPage("Enable outline/overlay rendering", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get enableOutlineRendering() {
+        return this._frameGraphTask.enableOutlineRendering;
+    }
+
+    public set enableOutlineRendering(value: boolean) {
+        this._frameGraphTask.enableOutlineRendering = value;
+    }
+
     /** Indicates if shadows must be enabled or disabled */
     @editableInPropertyPage("Disable shadows", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get disableShadows() {

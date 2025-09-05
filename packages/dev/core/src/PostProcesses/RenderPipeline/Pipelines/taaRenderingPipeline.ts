@@ -397,6 +397,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
             } else {
                 // Use the projection matrix by default since it supports most materials
                 this._taaThinPostProcess.updateProjectionMatrix();
+                this._scene.updateTransformMatrix(); // make sure the scene ubo is updated with the updated matrices
             }
 
             if (this._passPostProcess) {

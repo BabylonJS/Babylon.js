@@ -10,13 +10,25 @@ import { ConnectionPointType } from "../connection/connectionPointType.js";
 import { ShaderBlock } from "../blockFoundation/shaderBlock.js";
 import { IsTextureInputBlock } from "../blockFoundation/inputBlock.js";
 import { OptimizedShaderBlock } from "./optimizedShaderBlock.js";
-import { AutoDisableMainInputColorName, DecorateChar, DecorateSymbol, GetShaderFragmentCode, UndecorateSymbol } from "../utils/shaderCodeUtils.js";
+import { AutoDisableMainInputColorName, DecorateChar, DecorateSymbol, GetShaderFragmentCode, type ShaderProgram, UndecorateSymbol } from "../utils/shaderCodeUtils.js";
 import { DependencyGraph } from "./dependencyGraph.js";
 import { DisableableShaderBlock, BlockDisableStrategy } from "../blockFoundation/disableableShaderBlock.js";
 import { TextureOptionsMatch, type OutputTextureOptions } from "../blockFoundation/textureOptions.js";
 
 const GetDefineRegEx = /^\S*#define\s+(\w+).*$/; // Matches a #define statement line, capturing its decorated or undecorated name
 const ShowDebugData = false;
+
+type Rename = {
+    from: string;
+    to: string;
+};
+
+type RenameWork = {
+    symbolRenames: Rename[];
+    samplerRenames: Rename[];
+    sampleToFunctionCallSwaps: Rename[];
+    samplersToApplyAutoTo: string[];
+};
 
 /**
  * @internal
@@ -231,10 +243,10 @@ export class SmartFilterOptimizer {
         return newVarName;
     }
 
-    private _processDefines(block: ShaderBlock, code: string): string {
+    private _processDefines(block: ShaderBlock, renameWork: RenameWork) {
         const defines = block.getShaderProgram().fragment.defines;
         if (!defines) {
-            return code;
+            return;
         }
 
         for (const define of defines) {
@@ -265,22 +277,31 @@ export class SmartFilterOptimizer {
                 });
             }
 
-            // Replace the define name in the main shader code
-            code = code.replace(defName, newDefName);
+            // Note the rename to be used later in all the functions (main and helper)
+            renameWork.symbolRenames.push({
+                from: defName,
+                to: newDefName,
+            });
         }
-
-        return code;
     }
 
-    private _processHelperFunctions(block: ShaderBlock, code: string): string {
+    /**
+     * Processes each helper function (any function that's not the main function), adding those to emit in the final
+     * block to _remappedSymbols and noting any necessary renames in renameWork. If a helper does not access any
+     * uniforms, it only needs to be emitted once regardless of how many instances of the block that define it are
+     * folded into the final optimized block.
+     * NOTE: so this function can know about the uniforms to test for them, it must be called after _processVariables.
+     * @param block - The block we are processing
+     * @param renameWork - The list of rename work to add to as needed
+     * @param samplerList - The list of sampler names
+     */
+    private _processHelperFunctions(block: ShaderBlock, renameWork: RenameWork, samplerList: string[]): void {
         const functions = block.getShaderProgram().fragment.functions;
 
         if (functions.length === 1) {
             // There's only the main function, so we don't need to do anything
-            return code;
+            return;
         }
-
-        const replaceFuncNames: Array<[RegExp, string]> = [];
 
         for (const func of functions) {
             let funcName = func.name;
@@ -291,57 +312,83 @@ export class SmartFilterOptimizer {
 
             funcName = UndecorateSymbol(funcName);
 
-            const regexFindCurName = new RegExp(DecorateSymbol(funcName), "g");
+            // Test to see if this function accesses any uniforms
+            let uniformsAccessed: string[] = [];
+            for (const sampler of samplerList) {
+                if (func.code.includes(sampler)) {
+                    uniformsAccessed.push(sampler);
+                }
+            }
+            for (const remappedSymbol of this._remappedSymbols) {
+                if (
+                    remappedSymbol.type === "uniform" &&
+                    remappedSymbol.owners[0] &&
+                    remappedSymbol.owners[0].blockType === block.blockType &&
+                    func.code.includes(remappedSymbol.remappedName)
+                ) {
+                    uniformsAccessed.push(remappedSymbol.remappedName);
+                }
+            }
 
+            // Strip out any matches which are actually function params
+            const functionParams = func.params ? func.params.split(",").map((p) => p.trim().split(" ")[1]) : [];
+            uniformsAccessed = uniformsAccessed.filter((u) => !functionParams.includes(u));
+
+            // If it accessed any uniforms, throw an error
+            if (uniformsAccessed.length > 0) {
+                uniformsAccessed = uniformsAccessed.map((u) => (u[0] === DecorateChar ? UndecorateSymbol(u) : u));
+                throw new Error(
+                    `Helper function ${funcName} in blockType ${block.blockType} accesses uniform(s) ${uniformsAccessed.join(", ")} which is not supported. Pass them in instead.`
+                );
+            }
+
+            // Look to see if we have an exact match including parameters of this function in the list of remapped symbols
             const existingFunctionExactOverload = this._remappedSymbols.find(
                 (s) => s.type === "function" && s.name === funcName && s.params === func.params && s.owners[0] && s.owners[0].blockType === block.blockType
             );
 
+            // Look to see if we already have this function in the list of remapped symbols, regardless of parameters
             const existingFunction = this._remappedSymbols.find((s) => s.type === "function" && s.name === funcName && s.owners[0] && s.owners[0].blockType === block.blockType);
 
             // Get or create the remapped name, ignoring the parameter list
-            const newVarName = existingFunction?.remappedName ?? DecorateSymbol(this._makeSymbolUnique(funcName));
-
-            // If the function name, regardless of params, wasn't found, add the rename mapping to our list
-            if (!existingFunction) {
-                replaceFuncNames.push([regexFindCurName, newVarName]);
+            let remappedName = existingFunction?.remappedName;
+            let createdNewName = false;
+            if (!remappedName) {
+                remappedName = DecorateSymbol(this._makeSymbolUnique(funcName));
+                createdNewName = true;
+                // Since we've created a new name add it to the list of symbol renames
+                renameWork.symbolRenames.push({
+                    from: DecorateSymbol(funcName),
+                    to: remappedName,
+                });
             }
 
-            // If this exact overload wasn't found, add it to the list of remapped symbols so it'll be emitted in
-            // the final shader.
-            if (!existingFunctionExactOverload) {
-                let funcCode = func.code;
-                for (const [regex, replacement] of replaceFuncNames) {
-                    funcCode = funcCode.replace(regex, replacement);
-                }
-
+            // If we created a new name, or if we didn't but this exact overload wasn't found,
+            // add it to the list of remapped symbols so it'll be emitted in the final shader.
+            if (createdNewName || !existingFunctionExactOverload) {
                 this._remappedSymbols.push({
                     type: "function",
                     name: funcName,
-                    remappedName: newVarName,
+                    remappedName,
                     params: func.params,
-                    declaration: funcCode,
+                    declaration: func.code,
                     owners: [block],
                     inputBlock: undefined,
                 });
             }
-
-            code = code.replace(regexFindCurName, newVarName);
         }
-
-        return code;
     }
 
     private _processVariables(
         block: ShaderBlock,
-        code: string,
+        renameWork: RenameWork,
         varDecl: "const" | "uniform",
         declarations?: string,
         hasValue = false,
         forceSingleInstance = false
-    ): [string, Array<string>] {
+    ): Array<string> {
         if (!declarations) {
-            return [code, []];
+            return [];
         }
 
         let rex = `${varDecl}\\s+(\\S+)\\s+${DecorateChar}(\\w+)${DecorateChar}\\s*`;
@@ -387,18 +434,25 @@ export class SmartFilterOptimizer {
             }
 
             if (newVarName) {
-                code = code.replace(new RegExp(DecorateSymbol(varName), "g"), newVarName);
+                renameWork.symbolRenames.push({
+                    from: DecorateSymbol(varName),
+                    to: newVarName,
+                });
             }
 
             match = rx.exec(declarations);
         }
 
-        return [code, samplerList];
+        return samplerList;
     }
 
-    private _processSampleTexture(block: ShaderBlock, code: string, sampler: string, samplers: string[], inputTextureBlock?: InputBlock<ConnectionPointType.Texture>): string {
-        const rx = new RegExp(`__sampleTexture\\s*\\(\\s*${DecorateChar}${sampler}${DecorateChar}\\s*,\\s*(.*?)\\s*\\)`);
-
+    private _processSampleTexture(
+        block: ShaderBlock,
+        renameWork: RenameWork,
+        sampler: string,
+        samplers: string[],
+        inputTextureBlock?: InputBlock<ConnectionPointType.Texture>
+    ): string {
         let newSamplerName = sampler;
 
         const existingRemapped = this._remappedSymbols.find((s) => s.type === "sampler" && s.inputBlock && s.inputBlock === inputTextureBlock);
@@ -422,16 +476,12 @@ export class SmartFilterOptimizer {
             samplers.push(newSamplerName);
         }
 
-        let match = rx.exec(code);
-        while (match !== null) {
-            const uv = match[1]!;
+        renameWork.samplerRenames.push({
+            from: sampler,
+            to: newSamplerName,
+        });
 
-            code = code.substring(0, match.index) + `texture2D(${newSamplerName}, ${uv})` + code.substring(match.index + match[0]!.length);
-
-            match = rx.exec(code);
-        }
-
-        return code;
+        return UndecorateSymbol(newSamplerName);
     }
 
     private _canBeOptimized(block: BaseBlock): boolean {
@@ -457,146 +507,241 @@ export class SmartFilterOptimizer {
     private _optimizeBlock(optimizedBlock: OptimizedShaderBlock, outputConnectionPoint: ConnectionPoint, samplers: string[]): string {
         const block = outputConnectionPoint.ownerBlock;
 
-        if (block instanceof ShaderBlock) {
-            if (this._currentOutputTextureOptions === undefined) {
-                this._currentOutputTextureOptions = block.outputTextureOptions;
-            }
-
-            const shaderProgram = block.getShaderProgram();
-
-            if (!shaderProgram) {
-                throw new Error(`Shader program not found for block "${block.name}"!`);
-            }
-
-            // We get the shader code of the main function only
-            let code = GetShaderFragmentCode(shaderProgram, true);
-
-            this._vertexShaderCode = this._vertexShaderCode ?? shaderProgram.vertex;
-
-            // Generates a unique name for the fragment main function (if not already generated)
-            const shaderFuncName = shaderProgram.fragment.mainFunctionName;
-
-            let newShaderFuncName = this._blockToMainFunctionName.get(block);
-
-            if (!newShaderFuncName) {
-                newShaderFuncName = UndecorateSymbol(shaderFuncName);
-                newShaderFuncName = DecorateSymbol(this._makeSymbolUnique(newShaderFuncName));
-
-                this._blockToMainFunctionName.set(block, newShaderFuncName);
-                this._dependencyGraph.addElement(newShaderFuncName);
-            }
-
-            // Replaces the main function name by the new one
-            code = code.replace(shaderFuncName, newShaderFuncName);
-
-            // Removes the vUV declaration if it exists
-            code = code.replace(/varying\s+vec2\s+vUV\s*;/g, "");
-
-            // Replaces the texture2D calls by __sampleTexture for easier processing
-            code = code.replace(/(?<!\w)texture2D\s*\(/g, " __sampleTexture(");
-
-            // Processes the defines to make them unique
-            code = this._processDefines(block, code);
-
-            // Processes the functions other than the main function
-            code = this._processHelperFunctions(block, code);
-
-            // Processes the constants to make them unique
-            code = this._processVariables(block, code, "const", shaderProgram.fragment.const, true)[0];
-
-            // Processes the uniform inputs to make them unique. Also extract the list of samplers
-            let samplerList: string[] = [];
-            [code, samplerList] = this._processVariables(block, code, "uniform", shaderProgram.fragment.uniform, false);
-
-            let additionalSamplers = [];
-            [code, additionalSamplers] = this._processVariables(block, code, "uniform", shaderProgram.fragment.uniformSingle, false, true);
-
-            samplerList.push(...additionalSamplers);
-
-            // Processes the texture inputs
-            for (const sampler of samplerList) {
-                const samplerName = UndecorateSymbol(sampler);
-
-                const input = block.findInput(samplerName);
-                if (!input) {
-                    // No connection point found corresponding to this texture: it must be a texture used internally by the filter (here we are assuming that the shader code is not bugged!)
-                    code = this._processSampleTexture(block, code, samplerName, samplers);
-                    continue;
-                }
-
-                // input found. Is it connected?
-                if (!input.connectedTo) {
-                    throw `The connection point corresponding to the input named "${samplerName}" in block named "${block.name}" is not connected!`;
-                }
-
-                // If we are using the AutoSample strategy, we must preprocess the code that samples the texture
-                if (block instanceof DisableableShaderBlock && block.blockDisableStrategy === BlockDisableStrategy.AutoSample) {
-                    code = this._applyAutoSampleStrategy(code, sampler);
-                }
-
-                const parentBlock = input.connectedTo.ownerBlock;
-
-                if (IsTextureInputBlock(parentBlock)) {
-                    // input is connected to an InputBlock of type "Texture": we must directly sample a texture
-                    code = this._processSampleTexture(block, code, samplerName, samplers, parentBlock);
-                } else if (this._forceUnoptimized || !this._canBeOptimized(parentBlock)) {
-                    // the block connected to this input cannot be optimized: we must directly sample its output texture
-                    code = this._processSampleTexture(block, code, samplerName, samplers);
-                    let stackItem = this._blockToStackItem.get(parentBlock);
-                    if (!stackItem) {
-                        stackItem = {
-                            inputsToConnectTo: [],
-                            outputConnectionPoint: input.connectedTo,
-                        };
-                        this._blockStack.push(stackItem);
-                        this._blockToStackItem.set(parentBlock, stackItem);
-                    }
-                    // creates a new input connection point for the texture in the optimized block
-                    const connectionPoint = optimizedBlock._registerInput(samplerName, ConnectionPointType.Texture);
-                    stackItem.inputsToConnectTo.push(connectionPoint);
-                } else {
-                    let parentFuncName: string;
-
-                    if (this._blockToMainFunctionName.has(parentBlock)) {
-                        // The parent block has already been processed. We can directly use the main function name
-                        parentFuncName = this._blockToMainFunctionName.get(parentBlock)!;
-                    } else {
-                        // Recursively processes the block connected to this input to get the main function name of the parent block
-                        parentFuncName = this._optimizeBlock(optimizedBlock, input.connectedTo, samplers);
-                        this._dependencyGraph.addDependency(newShaderFuncName, parentFuncName);
-                    }
-
-                    // The texture samplerName is not used anymore by the block, as it is replaced by a call to the main function of the parent block
-                    // We remap it to an non existent sampler name, because the code that binds the texture still exists in the ShaderBinding.bind function.
-                    // We don't want this code to have any effect, as it could overwrite (and remove) the texture binding of another block using this same sampler name!
-                    this._remappedSymbols.push({
-                        type: "sampler",
-                        name: samplerName,
-                        remappedName: "L(° O °L)",
-                        declaration: ``,
-                        owners: [block],
-                        inputBlock: undefined,
-                    });
-
-                    // We have to replace the call(s) to __sampleTexture by a call to the main function of the parent block
-                    const rx = new RegExp(`__sampleTexture\\s*\\(\\s*${sampler}\\s*,\\s*(.*?)\\s*\\)`);
-
-                    let match = rx.exec(code);
-                    while (match !== null) {
-                        const uv = match[1];
-
-                        code = code.substring(0, match.index) + `${parentFuncName}(${uv})` + code.substring(match.index + match[0]!.length);
-                        match = rx.exec(code);
-                    }
-                }
-            }
-
-            this._mainFunctionNameToCode.set(newShaderFuncName, code);
-
-            return newShaderFuncName;
+        if (!(block instanceof ShaderBlock)) {
+            throw `Unhandled block type! blockType=${block.blockType}`;
         }
 
-        throw `Unhandled block type! blockType=${block.blockType}`;
+        if (this._currentOutputTextureOptions === undefined) {
+            this._currentOutputTextureOptions = block.outputTextureOptions;
+        }
+
+        const shaderProgram = block.getShaderProgram();
+        if (!shaderProgram) {
+            throw new Error(`Shader program not found for block "${block.name}"!`);
+        }
+
+        this._vertexShaderCode = this._vertexShaderCode ?? shaderProgram.vertex;
+
+        // The operations we collect which we will apply to all functions of this block later
+        const renameWork: RenameWork = {
+            symbolRenames: [],
+            samplerRenames: [],
+            sampleToFunctionCallSwaps: [],
+            samplersToApplyAutoTo: [],
+        };
+
+        // Generates a unique name for the fragment main function (if not already generated)
+        const shaderFuncName = shaderProgram.fragment.mainFunctionName;
+
+        let newShaderFuncName = this._blockToMainFunctionName.get(block);
+
+        if (!newShaderFuncName) {
+            newShaderFuncName = UndecorateSymbol(shaderFuncName);
+            newShaderFuncName = DecorateSymbol(this._makeSymbolUnique(newShaderFuncName));
+
+            this._blockToMainFunctionName.set(block, newShaderFuncName);
+            this._dependencyGraph.addElement(newShaderFuncName);
+        }
+
+        // Processes the defines to make them unique
+        this._processDefines(block, renameWork);
+
+        // Processes the constants to make them unique
+        this._processVariables(block, renameWork, "const", shaderProgram.fragment.const, true);
+
+        // Processes the uniform inputs to make them unique. Also extract the list of samplers
+        let samplerList: string[] = [];
+        samplerList = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniform, false);
+
+        let additionalSamplers = [];
+        additionalSamplers = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniformSingle, false, true);
+
+        samplerList.push(...additionalSamplers);
+
+        // Processes the functions other than the main function - must be done after _processVariables()
+        this._processHelperFunctions(block, renameWork, samplerList);
+
+        // Processes the texture inputs
+        for (const sampler of samplerList) {
+            const samplerName = UndecorateSymbol(sampler);
+
+            const input = block.findInput(samplerName);
+            if (!input) {
+                // No connection point found corresponding to this texture: it must be a texture used internally by the filter (here we are assuming that the shader code is not bugged!)
+                this._processSampleTexture(block, renameWork, samplerName, samplers);
+                continue;
+            }
+
+            // input found. Is it connected?
+            if (!input.connectedTo) {
+                throw `The connection point corresponding to the input named "${samplerName}" in block named "${block.name}" is not connected!`;
+            }
+
+            // If we are using the AutoSample strategy, we must preprocess the code that samples the texture
+            if (block instanceof DisableableShaderBlock && block.blockDisableStrategy === BlockDisableStrategy.AutoSample) {
+                renameWork.samplersToApplyAutoTo.push(sampler);
+            }
+
+            const parentBlock = input.connectedTo.ownerBlock;
+
+            if (IsTextureInputBlock(parentBlock)) {
+                // input is connected to an InputBlock of type "Texture": we must directly sample a texture
+                this._processSampleTexture(block, renameWork, samplerName, samplers, parentBlock);
+            } else if (this._forceUnoptimized || !this._canBeOptimized(parentBlock)) {
+                // the block connected to this input cannot be optimized: we must directly sample its output texture
+                const uniqueSamplerName = this._processSampleTexture(block, renameWork, samplerName, samplers);
+                let stackItem = this._blockToStackItem.get(parentBlock);
+                if (!stackItem) {
+                    stackItem = {
+                        inputsToConnectTo: [],
+                        outputConnectionPoint: input.connectedTo,
+                    };
+                    this._blockStack.push(stackItem);
+                    this._blockToStackItem.set(parentBlock, stackItem);
+                }
+                // creates a new input connection point for the texture in the optimized block
+                const connectionPoint = optimizedBlock._registerInput(uniqueSamplerName, ConnectionPointType.Texture);
+                stackItem.inputsToConnectTo.push(connectionPoint);
+            } else {
+                let parentFuncName: string;
+
+                if (this._blockToMainFunctionName.has(parentBlock)) {
+                    // The parent block has already been processed. We can directly use the main function name
+                    parentFuncName = this._blockToMainFunctionName.get(parentBlock)!;
+                } else {
+                    // Recursively processes the block connected to this input to get the main function name of the parent block
+                    parentFuncName = this._optimizeBlock(optimizedBlock, input.connectedTo, samplers);
+                    this._dependencyGraph.addDependency(newShaderFuncName, parentFuncName);
+                }
+
+                // The texture samplerName is not used anymore by the block, as it is replaced by a call to the main function of the parent block
+                // We remap it to an non existent sampler name, because the code that binds the texture still exists in the ShaderBinding.bind function.
+                // We don't want this code to have any effect, as it could overwrite (and remove) the texture binding of another block using this same sampler name!
+                this._remappedSymbols.push({
+                    type: "sampler",
+                    name: samplerName,
+                    remappedName: "L(° O °L)",
+                    declaration: ``,
+                    owners: [block],
+                    inputBlock: undefined,
+                });
+
+                // We have to replace the call(s) to __sampleTexture by a call to the main function of the parent block
+                renameWork.sampleToFunctionCallSwaps.push({ from: DecorateSymbol(samplerName), to: parentFuncName });
+            }
+        }
+
+        this._processAllFunctions(block, shaderProgram, renameWork, newShaderFuncName);
+
+        return newShaderFuncName;
+    }
+
+    /**
+     * Replaces calls to __sampleTexture(foo, uv); with calls to a function bar(uv); for chaining optimized blocks together
+     * @param code - The code to process
+     * @param samplerName - The old name of the sampler
+     * @param functionName - The name of the function to call instead
+     * @returns The updated code
+     */
+    private _replaceSampleTextureWithFunctionCall(code: string, samplerName: string, functionName: string): string {
+        const rx = new RegExp(`__sampleTexture\\s*\\(\\s*${samplerName}\\s*,\\s*(.*?)\\s*\\)`);
+
+        let match = rx.exec(code);
+        while (match !== null) {
+            const uv = match[1];
+
+            code = code.substring(0, match.index) + `${functionName}(${uv})` + code.substring(match.index + match[0]!.length);
+            match = rx.exec(code);
+        }
+
+        return code;
+    }
+
+    private _replaceSampleTextureWithTexture2DCall(code: string, sampler: string, newSamplerName: string): string {
+        const rx = new RegExp(`__sampleTexture\\s*\\(\\s*${DecorateChar}${sampler}${DecorateChar}\\s*,\\s*(.*?)\\s*\\)`);
+        let match = rx.exec(code);
+        while (match !== null) {
+            const uv = match[1]!;
+
+            code = code.substring(0, match.index) + `texture2D(${newSamplerName}, ${uv})` + code.substring(match.index + match[0]!.length);
+
+            match = rx.exec(code);
+        }
+        return code;
+    }
+
+    /**
+     * Processes all the functions, both main and helper functions, applying the renames and changes which have been collected
+     * @param block - The original block we are optimizing
+     * @param shaderProgram - The shader of the block we are optimizing
+     * @param renameWork - The rename work to apply
+     * @param newMainFunctionName - The new name for the main function
+     */
+    private _processAllFunctions(block: ShaderBlock, shaderProgram: ShaderProgram, renameWork: RenameWork, newMainFunctionName: string) {
+        // Get the main function and process it
+        let declarationsAndMainFunction = GetShaderFragmentCode(shaderProgram, true);
+        declarationsAndMainFunction = this._processMainFunction(declarationsAndMainFunction, shaderProgram, newMainFunctionName);
+        declarationsAndMainFunction = this._processFunction(block, declarationsAndMainFunction, renameWork);
+        this._mainFunctionNameToCode.set(newMainFunctionName, declarationsAndMainFunction);
+
+        // Now process all the helper functions
+        this._remappedSymbols.forEach((remappedSymbol) => {
+            if (remappedSymbol.type === "function" && remappedSymbol.owners[0] && remappedSymbol.owners[0] === block) {
+                remappedSymbol.declaration = this._processFunction(block, remappedSymbol.declaration, renameWork);
+            }
+        });
+    }
+
+    /**
+     * Applies all required changes specific to just the main function
+     * @param code - The code of the main function
+     * @param shaderProgram - The shader program containing the main function
+     * @param newMainFunctionName - The new name for the main function
+     * @returns The updated main function code
+     */
+    private _processMainFunction(code: string, shaderProgram: ShaderProgram, newMainFunctionName: string): string {
+        // Replaces the main function name by the new one
+        code = code.replace(shaderProgram.fragment.mainFunctionName, newMainFunctionName);
+
+        // Removes the vUV declaration if it exists
+        code = code.replace(/varying\s+vec2\s+vUV\s*;/g, "");
+
+        return code;
+    }
+
+    /**
+     * Applies all required changes to a function (main or helper)
+     * @param block - The original block we are optimizing
+     * @param code - The code of the function
+     * @param renameWork - The rename work to apply
+     * @returns The updated function code
+     */
+    private _processFunction(block: ShaderBlock, code: string, renameWork: RenameWork): string {
+        // Replaces the texture2D calls by __sampleTexture for easier processing
+        code = code.replace(/(?<!\w)texture2D\s*\(/g, "__sampleTexture(");
+
+        for (const sampler of renameWork.samplersToApplyAutoTo) {
+            code = this._applyAutoSampleStrategy(code, sampler);
+        }
+
+        for (const rename of renameWork.symbolRenames) {
+            code = code.replace(new RegExp(`(?<!\\w)${rename.from}(?!\\w)`, "g"), rename.to);
+        }
+
+        for (const swap of renameWork.sampleToFunctionCallSwaps) {
+            code = this._replaceSampleTextureWithFunctionCall(code, swap.from, swap.to);
+        }
+
+        for (const rename of renameWork.samplerRenames) {
+            code = this._replaceSampleTextureWithTexture2DCall(code, rename.from, rename.to);
+        }
+
+        // Ensure all __sampleTexture( instances were replaced, and error out if not
+        if (code.indexOf("__sampleTexture(") > -1) {
+            throw new Error(`Could not optimize blockType ${block.blockType} because a texture2D() sampled something other than a uniform, which is unsupported`);
+        }
+
+        return code;
     }
 
     private _saveBlockStackState(): void {
@@ -657,7 +802,8 @@ export class SmartFilterOptimizer {
         const codeDefines = [];
         let codeUniforms = "";
         let codeConsts = "";
-        let codeFunctions = "";
+        let codeHelperFunctions = "";
+        let codeHelperFunctionPrototypes = "";
 
         for (const s of this._remappedSymbols) {
             switch (s.type) {
@@ -672,7 +818,8 @@ export class SmartFilterOptimizer {
                     codeUniforms += s.declaration + "\n";
                     break;
                 case "function":
-                    codeFunctions += s.declaration + "\n";
+                    codeHelperFunctionPrototypes += s.declaration.replace(/{[\s\S]*$/, ";\n");
+                    codeHelperFunctions += s.declaration + "\n";
                     break;
             }
 
@@ -693,7 +840,7 @@ export class SmartFilterOptimizer {
         }
 
         // Builds and sets the final shader code
-        code = codeFunctions + code;
+        code = codeHelperFunctionPrototypes + code + codeHelperFunctions;
         if (ShowDebugData) {
             code = code.replace(/^ {16}/gm, "");
             code = code!.replace(/\r/g, "");

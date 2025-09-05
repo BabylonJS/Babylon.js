@@ -501,6 +501,7 @@ export function GetFogState(mesh: AbstractMesh, scene: Scene) {
  * @param applyDecalAfterDetail Defines if the decal is applied after or before the detail
  * @param useVertexPulling Defines if vertex pulling is used
  * @param renderingMesh The mesh used for rendering
+ * @param setVertexOutputInvariant Defines if the vertex output should be invariant
  */
 export function PrepareDefinesForMisc(
     mesh: AbstractMesh,
@@ -512,7 +513,8 @@ export function PrepareDefinesForMisc(
     defines: any,
     applyDecalAfterDetail: boolean = false,
     useVertexPulling: boolean = false,
-    renderingMesh?: AbstractMesh
+    renderingMesh?: AbstractMesh,
+    setVertexOutputInvariant?: boolean
 ): void {
     if (defines._areMiscDirty) {
         defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
@@ -527,6 +529,8 @@ export function PrepareDefinesForMisc(
 
         defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer;
         defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer ? indexBuffer.is32Bits : false;
+
+        defines["VERTEXOUTPUT_INVARIANT"] = !!setVertexOutputInvariant;
     }
 }
 
@@ -569,7 +573,9 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
     defines["SHADOWS"] = state.shadowEnabled;
 
     // Resetting all other lights if any
-    for (let index = lightIndex; index < maxSimultaneousLights; index++) {
+    const maxLightCount = Math.max(maxSimultaneousLights, defines["MAXLIGHTCOUNT"] || 0);
+
+    for (let index = lightIndex; index < maxLightCount; index++) {
         if (defines["LIGHT" + index] !== undefined) {
             defines["LIGHT" + index] = false;
             defines["HEMILIGHT" + index] = false;
@@ -595,6 +601,8 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["SHADOWMEDIUMQUALITY" + index] = false;
         }
     }
+
+    defines["MAXLIGHTCOUNT"] = maxSimultaneousLights;
 
     const caps = scene.getEngine().getCaps();
 
@@ -1113,7 +1121,8 @@ export function PrepareUniformsAndSamplersForLight(
         "vLightHeight" + lightIndex,
         "vLightFalloff" + lightIndex,
         "vLightGround" + lightIndex,
-        "vNumLights" + lightIndex,
+        "vSliceData" + lightIndex,
+        "vSliceRanges" + lightIndex,
         "lightMatrix" + lightIndex,
         "shadowsInfo" + lightIndex,
         "depthValues" + lightIndex

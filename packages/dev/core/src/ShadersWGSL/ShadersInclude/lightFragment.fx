@@ -10,11 +10,13 @@
         //          `computeClusteredLighting` functions to ensure consistency when clustered lighting is used.
 
         #if defined(PBR) && defined(CLUSTLIGHT{X})
+        {
+            let sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, fragmentInputs.vViewDepth), CLUSTLIGHT_SLICES - 1);
             info = computeClusteredLighting(
                 lightDataTexture{X},
                 &tileMaskBuffer{X},
                 light{X}.vLightData,
-                i32(light{X}.vNumLights),
+                vec2u(light{X}.vSliceRanges[sliceIndex].xy),
                 viewDirectionW,
                 normalW,
                 fragmentInputs.vPositionW,
@@ -39,6 +41,7 @@
                     clearcoatOut,
                 #endif
             );
+        }
         #elif defined(PBR)
 
             // Compute Pre Lighting infos
@@ -241,7 +244,10 @@
                 #endif
                     );
             #elif defined(CLUSTLIGHT{X})
-                info = computeClusteredLighting(lightDataTexture{X}, &tileMaskBuffer{X}, viewDirectionW, normalW, light{X}.vLightData, i32(light{X}.vNumLights), glossiness);
+            {
+                let sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, fragmentInputs.vViewDepth), CLUSTLIGHT_SLICES - 1);
+                info = computeClusteredLighting(lightDataTexture{X}, &tileMaskBuffer{X}, viewDirectionW, normalW, light{X}.vLightData, vec2u(light{X}.vSliceRanges[sliceIndex].xy), glossiness);
+            }
             #endif
         #endif
 

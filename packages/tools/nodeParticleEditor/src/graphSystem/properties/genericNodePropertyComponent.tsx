@@ -8,15 +8,18 @@ import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
-import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
-import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
+import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 
+/**
+ *
+ */
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -32,6 +35,9 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
     }
 }
 
+/**
+ *
+ */
 export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -41,9 +47,9 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
-    renderConnectionPoint(point: NodeGeometryConnectionPoint) {
+    renderConnectionPoint(point: NodeParticleConnectionPoint) {
         switch (point.type) {
-            case NodeGeometryBlockConnectionPointTypes.Vector2:
+            case NodeParticleBlockConnectionPointTypes.Vector2:
                 return (
                     <Vector2LineComponent
                         lockObject={this.props.stateManager.lockObject}
@@ -54,7 +60,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         onChange={() => this.processUpdate()}
                     />
                 );
-            case NodeGeometryBlockConnectionPointTypes.Vector3:
+            case NodeParticleBlockConnectionPointTypes.Vector3:
                 return (
                     <Vector3LineComponent
                         lockObject={this.props.stateManager.lockObject}
@@ -65,9 +71,9 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         onChange={() => this.processUpdate()}
                     />
                 );
-            case NodeGeometryBlockConnectionPointTypes.Vector4:
+            case NodeParticleBlockConnectionPointTypes.Color4:
                 return (
-                    <Vector4LineComponent
+                    <Color4LineComponent
                         lockObject={this.props.stateManager.lockObject}
                         key={point.name}
                         label={point.name}
@@ -81,13 +87,13 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     override render() {
-        const block = this.props.nodeData.data as NodeGeometryBlock;
+        const block = this.props.nodeData.data as NodeParticleBlock;
 
         const nonConnectedInputs = block.inputs.filter((input) => {
             return !input.isConnected && input.value !== null && input.value !== undefined;
         });
 
-        const projectedProperties = [NodeGeometryBlockConnectionPointTypes.Float, NodeGeometryBlockConnectionPointTypes.Int];
+        const projectedProperties = [NodeParticleBlockConnectionPointTypes.Float, NodeParticleBlockConnectionPointTypes.Int];
 
         return (
             <>
@@ -127,13 +133,16 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     }
 }
 
+/**
+ *
+ */
 export class GenericPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
     }
 
     override render() {
-        const block = this.props.nodeData.data as NodeGeometryBlock,
+        const block = this.props.nodeData.data as NodeParticleBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
 
         if (!propStore) {

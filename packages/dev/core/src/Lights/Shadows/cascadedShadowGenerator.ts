@@ -804,6 +804,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     protected override _createTargetRenderTexture(): void {
         const engine = this._scene.getEngine();
+        this._shadowMap?.dispose();
         const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
         this._shadowMap = new RenderTargetTexture(
             this._light.name + "_CSMShadowMap",

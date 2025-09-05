@@ -3,17 +3,18 @@ import type { TernaryDarkMode } from "usehooks-ts";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IShellService } from "../services/shellService";
 
-import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, Tooltip } from "@fluentui/react-components";
+import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { WeatherMoonRegular, WeatherSunnyRegular } from "@fluentui/react-icons";
 import { useCallback } from "react";
 import { useTernaryDarkMode } from "usehooks-ts";
 
 import { ShellServiceIdentity } from "../services/shellService";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
-    themeButton: {},
-    themeMenu: {
+    themeButton: {
+        margin: `${tokens.spacingVerticalXXS} 0`,
+    },
+    themeMenuPopover: {
         minWidth: 0,
     },
 });
@@ -59,7 +60,7 @@ export const ThemeSelectorServiceDefinition: ServiceDefinition<[], [IShellServic
                             )}
                         </MenuTrigger>
 
-                        <MenuPopover className={classes.themeMenu}>
+                        <MenuPopover className={classes.themeMenuPopover}>
                             <MenuList>
                                 <MenuItemRadio name="theme" value={"system" satisfies TernaryDarkMode}>
                                     System

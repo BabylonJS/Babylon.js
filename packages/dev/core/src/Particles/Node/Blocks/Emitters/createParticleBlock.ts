@@ -14,6 +14,8 @@ import { Vector2 } from "core/Maths/math.vector";
 import { RegisterClass } from "core/Misc/typeStore";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 
+const ColorDiff = new Color4();
+
 /**
  * @internal
  */
@@ -108,10 +110,14 @@ export class CreateParticleBlock extends NodeParticleBlock {
         system._colorCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             particle.color.copyFrom(this.color.getConnectedValue(state));
-            system.colorDead.copyFrom(this.colorDead.getConnectedValue(state));
+        };
+
+        system._colorDeadCreation.process = (particle: Particle) => {
+            state.particleContext = particle;
+            particle.colorDead.copyFrom(this.colorDead.getConnectedValue(state));
             particle.initialColor.copyFrom(particle.color);
-            system.colorDead.subtractToRef(particle.initialColor, system._colorDiff);
-            system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
+            particle.colorDead.subtractToRef(particle.initialColor, ColorDiff);
+            ColorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
         };
 
         system._sizeCreation.process = (particle: Particle) => {
