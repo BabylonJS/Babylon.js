@@ -158,6 +158,7 @@ export class Player {
 
         // Create the canvas element
         this._canvas = document.createElement("canvas");
+        this._canvas.id = "babylon-canvas";
 
         // Center the canvas in the container
         this._canvas.style.position = "absolute";

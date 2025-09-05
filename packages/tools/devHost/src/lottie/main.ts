@@ -3,12 +3,14 @@ import type { RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 import { Player } from "lottie-player/player";
 import { LocalPlayer } from "lottie-player/localPlayer";
 
-/** Main entry point for the default scene for lottie-player */
-export async function Main(): Promise<void> {
+/**
+ * Main entry point for the default scene for lottie-player
+ * @param searchParams URL QSPs where the Keys have been lowercased to avoid any casing problems. Values are unmodified.
+ */
+export async function Main(searchParams: URLSearchParams): Promise<void> {
     const div = document.getElementById("main-div") as HTMLDivElement; // The player will be inside this div
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
-    const searchParams = new URLSearchParams(window.location.search.toLowerCase());
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
     const fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
 
