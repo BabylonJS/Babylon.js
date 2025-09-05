@@ -2,6 +2,8 @@ import { Engine } from "core/Engines";
 
 import { AudioBuffer, AudioTestSamples } from "./audioTestSamples";
 
+const realSetTimeout = jest.requireActual("timers").setTimeout;
+
 class AudioParamMock {
     public cancelScheduledValues = jest.fn().mockName("cancelScheduledValues");
     public exponentialRampToValueAtTime = jest.fn().mockName("exponentialRampToValueAtTime");
@@ -265,15 +267,32 @@ export class MockedAudioObjects {
             .fn()
             .mockName("Audio")
             .mockImplementation(() => {
+                let canPlayThroughListener: () => void = () => void 0;
+
                 return {
-                    addEventListener: jest.fn().mockName("addEventListener"),
+                    addEventListener: jest
+                        .fn()
+                        .mockName("addEventListener")
+                        .mockImplementation((type: string, listener: () => void) => {
+                            if (type === "canplaythrough") {
+                                canPlayThroughListener = listener;
+                            }
+                        }),
                     removeEventListener: jest.fn().mockName("removeEventListener"),
                     canPlayType: jest.fn().mockName("canPlayType").mockReturnValue(""),
                     children: [],
                     controls: true,
                     crossOrigin: null,
                     loop: false,
-                    load: jest.fn().mockName("load"),
+                    load: jest
+                        .fn()
+                        .mockName("load")
+                        .mockImplementation(() => {
+                            // Simulate that the audio is ready to play through after load() is called.
+                            realSetTimeout(() => {
+                                canPlayThroughListener();
+                            }, 0);
+                        }),
                     pause: jest.fn().mockName("pause"),
                     preload: "none",
                 };

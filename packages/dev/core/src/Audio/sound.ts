@@ -20,6 +20,7 @@ import type { ISoundOptions } from "./Interfaces/ISoundOptions";
 import { SoundState } from "../AudioV2/soundState";
 import {
     _AudioAnalyzerDefaults,
+    _HasSpatialAudioOptions,
     _SpatialAudioDefaults,
     AudioParameterRampShape,
     type IAudioParameterRampOptions,
@@ -50,6 +51,14 @@ const TmpPlayOptions: IStaticSoundPlayOptions = {
 const TmpStopOptions: IStaticSoundStopOptions = {
     waitTime: 0,
 };
+
+function D2r(degrees: number): number {
+    return (degrees * Math.PI) / 180;
+}
+
+function R2d(radians: number): number {
+    return (radians * 180) / Math.PI;
+}
 
 /**
  * Defines a sound that can be played in the application.
@@ -134,12 +143,24 @@ export class Sound {
      * Define the max distance the sound should be heard (intensity just became 0 at this point).
      * @see https://doc.babylonjs.com/legacy/audio#creating-a-spatial-3d-sound
      */
-    public maxDistance: number = 100;
+    public get maxDistance(): number {
+        return this._optionsV2.spatialMaxDistance || 100;
+    }
+    public set maxDistance(value: number) {
+        this._optionsV2.spatialMaxDistance = value;
+        this._soundV2.spatial.maxDistance = value;
+    }
     /**
      * Define the distance attenuation model the sound will follow.
      * @see https://doc.babylonjs.com/legacy/audio#creating-a-spatial-3d-sound
      */
-    public distanceModel: "linear" | "inverse" | "exponential" = "linear";
+    public get distanceModel(): "linear" | "inverse" | "exponential" {
+        return this._optionsV2.spatialDistanceModel || "linear";
+    }
+    public set distanceModel(value: "linear" | "inverse" | "exponential") {
+        this._optionsV2.spatialDistanceModel = value;
+        this._soundV2.spatial.distanceModel = value;
+    }
     /**
      * @internal
      * Back Compat
@@ -243,26 +264,27 @@ export class Sound {
             playbackRate: options.playbackRate || 1,
             pitch: 0,
             skipCodecCheck: options.skipCodecCheck || false,
+            spatialDistanceModel: options.distanceModel,
+            spatialEnabled: options.spatialSound,
+            spatialMaxDistance: options.maxDistance,
+            spatialMinDistance: options.refDistance,
+            spatialRolloffFactor: options.rolloffFactor,
             stereoEnabled: false,
             stereoPan: 0,
             startOffset: options.offset || 0,
             volume: options.volume ?? 1,
         };
+        this._volume = options.volume ?? 1;
 
-        if (options.spatialSound) {
+        if (_HasSpatialAudioOptions(optionsV2)) {
             optionsV2.spatialAutoUpdate = false;
-            optionsV2.spatialConeInnerAngle = 360;
-            optionsV2.spatialConeOuterAngle = 360;
+            optionsV2.spatialConeInnerAngle = _SpatialAudioDefaults.coneInnerAngle;
+            optionsV2.spatialConeOuterAngle = _SpatialAudioDefaults.coneOuterAngle;
             optionsV2.spatialConeOuterVolume = _SpatialAudioDefaults.coneOuterVolume;
-            optionsV2.spatialDistanceModel = options.distanceModel || "linear";
-            optionsV2.spatialEnabled = options.spatialSound || false;
-            optionsV2.spatialMaxDistance = options.maxDistance ?? 100;
-            optionsV2.spatialMinDistance = options.refDistance ?? 1;
             optionsV2.spatialMinUpdateTime = 0;
             optionsV2.spatialOrientation = _SpatialAudioDefaults.orientation;
             optionsV2.spatialPanningModel = (this._scene.headphone ? "HRTF" : "equalpower") as "equalpower" | "HRTF";
             optionsV2.spatialPosition = _SpatialAudioDefaults.position;
-            optionsV2.spatialRolloffFactor = options.rolloffFactor ?? 1;
             optionsV2.spatialRotation = _SpatialAudioDefaults.rotation;
             optionsV2.spatialRotationQuaternion = _SpatialAudioDefaults.rotationQuaternion;
         }
@@ -519,13 +541,15 @@ export class Sound {
      * Gets or sets the inner angle for the directional cone.
      */
     public get directionalConeInnerAngle(): number {
-        return typeof this._optionsV2.spatialConeInnerAngle === "number" ? this._optionsV2.spatialConeInnerAngle : 360;
+        return R2d(typeof this._optionsV2.spatialConeInnerAngle === "number" ? this._optionsV2.spatialConeInnerAngle : _SpatialAudioDefaults.coneInnerAngle);
     }
 
     /**
      * Gets or sets the inner angle for the directional cone.
      */
     public set directionalConeInnerAngle(value: number) {
+        value = D2r(value);
+
         if (value != this._optionsV2.spatialConeInnerAngle) {
             if (this.directionalConeOuterAngle < value) {
                 Logger.Error("directionalConeInnerAngle: outer angle of the cone must be superior or equal to the inner angle.");
@@ -542,13 +566,15 @@ export class Sound {
      * Gets or sets the outer angle for the directional cone.
      */
     public get directionalConeOuterAngle(): number {
-        return typeof this._optionsV2.spatialConeOuterAngle === "number" ? this._optionsV2.spatialConeOuterAngle : 360;
+        return R2d(typeof this._optionsV2.spatialConeOuterAngle === "number" ? this._optionsV2.spatialConeOuterAngle : _SpatialAudioDefaults.coneOuterAngle);
     }
 
     /**
      * Gets or sets the outer angle for the directional cone.
      */
     public set directionalConeOuterAngle(value: number) {
+        value = D2r(value);
+
         if (value != this._optionsV2.spatialConeOuterAngle) {
             if (value < this.directionalConeInnerAngle) {
                 Logger.Error("directionalConeOuterAngle: outer angle of the cone must be superior or equal to the inner angle.");
