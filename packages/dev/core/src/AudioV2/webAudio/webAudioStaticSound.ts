@@ -399,7 +399,7 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         let startOffset = this._options.startOffset;
 
         if (this._state === SoundState.Paused) {
-            startOffset += this.currentTime;
+            startOffset += this._enginePauseTime;
             startOffset %= this._sound.buffer.duration;
         }
 

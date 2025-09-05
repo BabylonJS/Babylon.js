@@ -443,11 +443,17 @@ export class Sound {
                 this.setVolume(options.volume);
             }
             if (this._soundV2 instanceof _WebAudioStaticSound) {
+                let updated = false;
                 if (options.offset !== undefined) {
                     this._optionsV2.startOffset = options.offset;
+                    updated = true;
                 }
                 if (options.length !== undefined) {
                     this._soundV2.duration = options.length;
+                    updated = true;
+                }
+                if (updated && this.isPaused) {
+                    this.stop();
                 }
             }
 
