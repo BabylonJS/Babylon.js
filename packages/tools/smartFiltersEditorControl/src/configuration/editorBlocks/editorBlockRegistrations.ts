@@ -21,7 +21,7 @@ export const EditorBlockRegistrations: IBlockRegistration[] = [
         blockType: TimeInputBlockName,
         namespace: inputsNamespace,
         isInput: true,
-        tooltip: "Supplies a float value representing the current time",
+        tooltip: "Supplies a float value which changes over time",
         // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
         factory: (smartFilter: SmartFilter) => {
             const inputBlock = new InputBlock(smartFilter, "Time", ConnectionPointType.Float, 0.0);
