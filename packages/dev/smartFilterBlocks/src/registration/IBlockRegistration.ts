@@ -11,7 +11,7 @@ export interface IBlockRegistrationFactoryOptions {
     suppressAutomaticInputBlocks?: boolean;
 
     /**
-     * If a serialized block is not provided, the name to use for the block, otherwise, a default will be used
+     * If a serialized block is not provided, this is the name to use for the block, otherwise a default will be used
      */
     name?: string;
 }

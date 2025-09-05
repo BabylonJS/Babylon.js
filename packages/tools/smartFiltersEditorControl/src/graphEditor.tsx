@@ -294,7 +294,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             return this._graphCanvas.findNodeFromData(block);
         };
 
-        this.props.globalState.hostDocument!.addEventListener("keydown", async (evt) => {
+        this.props.globalState.hostDocument!.addEventListener("keydown", (evt) => {
             if (this._historyStack && this._historyStack.processKeyEvent(evt)) {
                 return;
             }
@@ -313,7 +313,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 }
             }
 
-            await this._graphCanvas.handleKeyDownAsync(
+            void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
                     if (!nodeData.data.isOutput) {
