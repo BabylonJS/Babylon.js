@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.26.0
+
+### Core
+
+- Inspector v2: Fix crash when showing scene properties - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17118](https://github.com/BabylonJS/Babylon.js/pull/17118))
+
 ## 8.25.2
 
 ### Core
