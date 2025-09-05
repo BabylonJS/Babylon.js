@@ -441,7 +441,9 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             }
 
             // Copy appMetadata over, which could be any type
-            newBlock.appMetadata = JSON.parse(JSON.stringify(oldBlock.appMetadata));
+            if (oldBlock.appMetadata) {
+                newBlock.appMetadata = JSON.parse(JSON.stringify(oldBlock.appMetadata));
+            }
         }
 
         // Copy over the data that block factories are not responsible for setting
