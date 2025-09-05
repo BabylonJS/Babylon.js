@@ -42,6 +42,8 @@ class AnalyserNodeMock extends AudioNodeMock {
 }
 
 class AudioBufferSourceNodeMock extends AudioNodeMock {
+    private readonly _onEndedListeners = new Array<() => void>();
+
     buffer = {
         duration: 0,
     };
@@ -72,10 +74,32 @@ class AudioBufferSourceNodeMock extends AudioNodeMock {
         .mockName("stop")
         .mockImplementation(() => {
             this.onended();
+
+            for (const listener of this._onEndedListeners) {
+                listener();
+            }
         });
 
-    addEventListener = jest.fn().mockName("addEventListener");
-    removeEventListener = jest.fn().mockName("removeEventListener");
+    addEventListener = jest
+        .fn()
+        .mockName("addEventListener")
+        .mockImplementation((type: string, listener: () => void) => {
+            if (type === "ended") {
+                this._onEndedListeners.push(listener);
+            }
+        });
+
+    removeEventListener = jest
+        .fn()
+        .mockName("removeEventListener")
+        .mockImplementation((type: string, listener: () => void) => {
+            if (type === "ended") {
+                const index = this._onEndedListeners.indexOf(listener);
+                if (index !== -1) {
+                    this._onEndedListeners.splice(index, 1);
+                }
+            }
+        });
 }
 
 class GainNodeMock extends AudioNodeMock {
