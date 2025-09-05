@@ -6,8 +6,7 @@ import type {} from "../abstractAudio/abstractSound";
 import type { IStreamingSoundOptions, IStreamingSoundPlayOptions, IStreamingSoundStoredOptions } from "../abstractAudio/streamingSound";
 import { StreamingSound } from "../abstractAudio/streamingSound";
 import { _StreamingSoundInstance } from "../abstractAudio/streamingSoundInstance";
-import { _HasSpatialAudioOptions } from "../abstractAudio/subProperties/abstractSpatialAudio";
-import type { _SpatialAudio } from "../abstractAudio/subProperties/spatialAudio";
+import { _HasSpatialAudioOptions, type AbstractSpatialAudio } from "../abstractAudio/subProperties/abstractSpatialAudio";
 import { _StereoAudio } from "../abstractAudio/subProperties/stereoAudio";
 import { _CleanUrl } from "../audioUtils";
 import { SoundState } from "../soundState";
@@ -20,9 +19,6 @@ type StreamingSoundSourceType = HTMLMediaElement | string | string[];
 
 /** @internal */
 export class _WebAudioStreamingSound extends StreamingSound implements IWebAudioSuperNode {
-    private _spatial: Nullable<_SpatialAudio> = null;
-    private readonly _spatialAutoUpdate: boolean = true;
-    private readonly _spatialMinUpdateTime: number = 0;
     private _stereo: Nullable<_StereoAudio> = null;
 
     protected override readonly _options: IStreamingSoundStoredOptions;
@@ -39,15 +35,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
     /** @internal */
     public constructor(name: string, engine: _WebAudioEngine, options: Partial<IStreamingSoundOptions>) {
-        super(name, engine);
-
-        if (typeof options.spatialAutoUpdate === "boolean") {
-            this._spatialAutoUpdate = options.spatialAutoUpdate;
-        }
-
-        if (typeof options.spatialMinUpdateTime === "number") {
-            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
-        }
+        super(name, engine, options);
 
         this._options = {
             autoplay: options.autoplay ?? false,
@@ -106,14 +94,6 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
     }
 
     /** @internal */
-    public override get spatial(): _SpatialAudio {
-        if (this._spatial) {
-            return this._spatial;
-        }
-        return this._initSpatialProperty();
-    }
-
-    /** @internal */
     public override get stereo(): _StereoAudio {
         return this._stereo ?? (this._stereo = new _StereoAudio(this._subGraph));
     }
@@ -122,7 +102,6 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
     public override dispose(): void {
         super.dispose();
 
-        this._spatial = null;
         this._stereo = null;
 
         this._subGraph.dispose();
@@ -168,12 +147,12 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
         return true;
     }
 
-    private _initSpatialProperty(): _SpatialAudio {
-        if (!this._spatial) {
-            this._spatial = new _SpatialWebAudio(this._subGraph, this._spatialAutoUpdate, this._spatialMinUpdateTime);
-        }
+    protected override _createSpatialProperty(autoUpdate: boolean, minUpdateTime: number): AbstractSpatialAudio {
+        return new _SpatialWebAudio(this._subGraph, autoUpdate, minUpdateTime);
+    }
 
-        return this._spatial;
+    public _getOptions(): IStreamingSoundStoredOptions {
+        return this._options;
     }
 
     private static _SubGraph = class extends _WebAudioBusAndSoundSubGraph {

@@ -1,4 +1,3 @@
-
 export class AudioTestSamples {
     static Initialize() {
         if (AudioTestSamples._Initialized) {
@@ -33,16 +32,32 @@ export class AudioTestSamples {
     private static _Map = new Map<string, AudioSample>();
 }
 
+export class AudioBuffer {
+    private _channelData: Float32Array;
+
+    channels: number;
+    duration: number;
+    length: number;
+    sampleRate: number;
+
+    constructor(channelCount: number, sampleRate: number, channelData: Float32Array) {
+        this._channelData = channelData;
+
+        this.channels = channelCount;
+        this.duration = channelData.length / channelCount / sampleRate;
+        this.length = channelData.length / channelCount;
+        this.sampleRate = sampleRate;
+    }
+
+    getChannelData(channel: number): Float32Array {
+        return this._channelData;
+    }
+}
+
 class AudioSample {
     constructor(channelCount: number, sampleRate: number, channelData: Float32Array) {
         this.arrayBuffer = AudioSample._CreateArrayBuffer();
-        this.audioBuffer = {
-            channels: channelCount,
-            duration: (channelData.length / channelCount) / sampleRate,
-            length: channelData.length / channelCount,
-            sampleRate: sampleRate,
-            getChannelData: () => channelData
-        } as unknown as AudioBuffer;
+        this.audioBuffer = new AudioBuffer(channelCount, sampleRate, channelData);
     }
 
     arrayBuffer: ArrayBuffer;
@@ -55,5 +70,5 @@ class AudioSample {
         const arrayBufferView = new Uint32Array(arrayBuffer);
         arrayBufferView[0] = AudioSample._CurrentArrayBufferIndex++;
         return arrayBuffer;
-    }
+    };
 }
