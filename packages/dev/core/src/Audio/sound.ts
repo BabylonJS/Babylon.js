@@ -636,6 +636,11 @@ export class Sound {
         }
 
         if (this._isReadyToPlay && this._scene.audioEnabled) {
+            // The sound can only resume from pause when the `time`, `offset` and `length` args are not set.
+            if (this._soundV2.state === SoundState.Paused && (time !== undefined || offset !== undefined || length !== undefined)) {
+                this._soundV2.stop();
+            }
+
             try {
                 TmpPlayOptions.duration = length || 0;
                 TmpPlayOptions.startOffset = offset !== undefined ? offset || this._optionsV2.startOffset! : this._optionsV2.startOffset!;
