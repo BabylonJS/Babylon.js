@@ -447,7 +447,7 @@ describe("Sound", () => {
         const options = {
             offset: 0.1,
         };
-        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.arrayBuffer, null, null, options);
+        const sound = await CreateSoundAsync(expect.getState().currentTestName, audioSample.audioBuffer, null, null, options);
         mock.audioContext.currentTime = 0.1;
 
         sound.play();

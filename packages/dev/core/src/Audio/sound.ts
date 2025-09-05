@@ -422,7 +422,7 @@ export class Sound {
             }
             if (this._soundV2 instanceof _WebAudioStaticSound) {
                 if (options.offset !== undefined) {
-                    this._soundV2.startOffset = options.offset;
+                    this._optionsV2.startOffset = options.offset;
                 }
                 if (options.length !== undefined) {
                     this._soundV2.duration = options.length;
@@ -638,7 +638,7 @@ export class Sound {
         if (this._isReadyToPlay && this._scene.audioEnabled) {
             try {
                 TmpPlayOptions.duration = length || 0;
-                TmpPlayOptions.startOffset = offset || 0;
+                TmpPlayOptions.startOffset = offset !== undefined ? offset || this._optionsV2.startOffset! : this._optionsV2.startOffset!;
                 TmpPlayOptions.waitTime = time || 0;
                 this._soundV2.play(TmpPlayOptions);
             } catch (ex) {
