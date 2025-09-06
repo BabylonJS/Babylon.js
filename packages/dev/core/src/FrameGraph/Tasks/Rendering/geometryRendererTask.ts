@@ -247,6 +247,7 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         this._renderer.renderParticles = false;
         this._renderer.enableBoundingBoxRendering = false;
         this._renderer.enableOutlineRendering = false;
+        this._renderer.disableDepthPrePass = true;
 
         this._renderer.customIsReadyFunction = (mesh: AbstractMesh, refreshRate: number, preWarm?: boolean) => {
             if (this.dontRenderWhenMaterialDepthWriteIsDisabled && mesh.material && mesh.material.disableDepthWrite) {

@@ -173,6 +173,19 @@ export class ObjectRenderer {
      */
     public dontSetTransformationMatrix = false;
 
+    private _disableDepthPrePass = false;
+    /**
+     * Specifies to disable depth pre-pass if true (default: false)
+     */
+    public get disableDepthPrePass() {
+        return this._disableDepthPrePass;
+    }
+
+    public set disableDepthPrePass(value: boolean) {
+        this._disableDepthPrePass = value;
+        this._renderingManager.disableDepthPrePass = value;
+    }
+
     /**
      * Override the mesh isReady function with your own one.
      */

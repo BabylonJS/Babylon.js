@@ -80,6 +80,21 @@ export class RenderingManager {
      */
     public _useSceneAutoClearSetup = false;
 
+    private _disableDepthPrePass = false;
+    /**
+     * Specifies to disable depth pre-pass if true (default: false)
+     */
+    public get disableDepthPrePass() {
+        return this._disableDepthPrePass;
+    }
+
+    public set disableDepthPrePass(value: boolean) {
+        this._disableDepthPrePass = value;
+        for (const group of this._renderingGroups) {
+            group.disableDepthPrePass = value;
+        }
+    }
+
     private _scene: Scene;
     private _renderingGroups = new Array<RenderingGroup>();
     private _depthStencilBufferAlreadyCleaned: boolean;
@@ -301,6 +316,7 @@ export class RenderingManager {
                 this._customAlphaTestSortCompareFn[renderingGroupId],
                 this._customTransparentSortCompareFn[renderingGroupId]
             );
+            this._renderingGroups[renderingGroupId].disableDepthPrePass = this._disableDepthPrePass;
         }
     }
 
