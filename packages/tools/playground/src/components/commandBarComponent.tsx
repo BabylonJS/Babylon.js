@@ -15,7 +15,11 @@ interface ICommandBarComponentProps {
     globalState: GlobalState;
 }
 
-export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
+interface ICommandBarComponentState {
+    isInspectorV2ModeEnabled: boolean;
+}
+
+export class CommandBarComponent extends React.Component<ICommandBarComponentProps, ICommandBarComponentState> {
     private _webGPUSupported: boolean = false;
     private _procedural: {
         label: string;
@@ -26,6 +30,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
     public constructor(props: ICommandBarComponentProps) {
         super(props);
+
+        this.state = {
+            isInspectorV2ModeEnabled: new URL(window.location.href).searchParams.has("inspectorv2"),
+        };
+
         // First Fetch JSON data for procedural code
         this._procedural = [];
         const url = "procedural.json?uncacher=" + Date.now();
@@ -81,12 +90,27 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onDownloadRequiredObservable.notifyObservers();
     }
 
-    onInspector() {
-        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+    onInspector(action: "refresh" | "toggle") {
+        this.props.globalState.onInspectorRequiredObservable.notifyObservers(action);
     }
 
     onExamples() {
         this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
+    }
+
+    onToggleInspectorV2Mode() {
+        const newState = !this.state.isInspectorV2ModeEnabled;
+        this.setState({ isInspectorV2ModeEnabled: newState }, () => {
+            // Update URL after state is set
+            const url = new URL(window.location.href);
+            if (this.state.isInspectorV2ModeEnabled) {
+                url.searchParams.set("inspectorv2", "");
+            } else {
+                url.searchParams.delete("inspectorv2");
+            }
+            window.history.pushState({}, "", url.toString());
+            this.onInspector("refresh");
+        });
     }
 
     public override render() {
@@ -280,7 +304,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 <div className="commands-left">
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" shortcut="Alt+Enter" isActive={true} onClick={() => this.onPlay()} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" shortcut="Ctrl+S" isActive={false} onClick={() => this.onSave()} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={() => this.onInspector()} />
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={() => this.onInspector("toggle")} />
                     <CommandButtonComponent
                         globalState={this.props.globalState}
                         tooltip="Download"
@@ -314,6 +338,13 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         items={versionOptions}
                     />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={() => this.onExamples()} isActive={false} />
+                    <CommandButtonComponent
+                        globalState={this.props.globalState}
+                        tooltip="Try the New Experience"
+                        icon="examples"
+                        onClick={() => this.onToggleInspectorV2Mode()}
+                        isActive={this.state.isInspectorV2ModeEnabled}
+                    />
                 </div>
             </div>
         );
