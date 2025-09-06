@@ -681,7 +681,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     }
 
     private _preprocessParameters(parameters: INavMeshParametersV2) {
-        if (parameters.tileSize ?? 0 > 0) {
+        if ((parameters.tileSize ?? 0 > 0) && !!parameters.maxObstacles) {
             parameters.maxObstacles = DefaultMaxObstacles;
         }
     }
