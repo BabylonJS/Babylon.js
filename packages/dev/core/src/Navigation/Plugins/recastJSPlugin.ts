@@ -485,7 +485,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param height cylinder height
      * @returns the obstacle freshly created
      */
-    addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle {
+    addCylinderObstacle(position: Vector3, radius: number, height: number): Nullable<IObstacle> {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
@@ -499,7 +499,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param angle angle in radians of the box orientation on Y axis
      * @returns the obstacle freshly created
      */
-    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle {
+    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): Nullable<IObstacle> {
         this._tempVec1.x = position.x;
         this._tempVec1.y = position.y;
         this._tempVec1.z = position.z;
