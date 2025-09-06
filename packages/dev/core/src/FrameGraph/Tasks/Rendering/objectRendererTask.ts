@@ -12,6 +12,7 @@ import type {
     FrameGraphShadowGeneratorTask,
     FrameGraphRenderPass,
     AbstractEngine,
+    BoundingBoxRenderer,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -166,6 +167,23 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._renderer.enableBoundingBoxRendering = value;
     }
 
+    private _enableOutlineRendering = true;
+    /**
+     * Enables the rendering of outlines/overlays for meshes (still subject to Mesh.renderOutline/Mesh.renderOverlay). Default is true.
+     */
+    public get enableOutlineRendering() {
+        return this._enableOutlineRendering;
+    }
+
+    public set enableOutlineRendering(value: boolean) {
+        if (value === this._enableOutlineRendering) {
+            return;
+        }
+
+        this._enableOutlineRendering = value;
+        this._renderer.enableOutlineRendering = value;
+    }
+
     /**
      * The output texture.
      * This texture will point to the same texture than the targetTexture property if it is set.
@@ -299,6 +317,14 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
 
+            // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+            const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
+
+            const currentBoundingBoxMeshList = boundingBoxRenderer && boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+            if (boundingBoxRenderer) {
+                currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+            }
+
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
             const camera = this._renderer.activeCamera;
@@ -320,6 +346,11 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             }
 
             additionalExecute?.(context);
+
+            if (boundingBoxRenderer) {
+                boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
+                boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList.length;
+            }
         });
 
         if (!skipCreationOfDisabledPasses) {

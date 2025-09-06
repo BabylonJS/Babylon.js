@@ -331,6 +331,11 @@ export class NodeMaterial extends PushMaterial {
 
     private BJSNODEMATERIALEDITOR = this._getGlobalNodeMaterialEditor();
 
+    /** Gets whether the node material is currently building */
+    public get buildIsInProgress(): boolean {
+        return this._buildIsInProgress;
+    }
+
     /** @internal */
     public _useAdditionalColor = false;
 

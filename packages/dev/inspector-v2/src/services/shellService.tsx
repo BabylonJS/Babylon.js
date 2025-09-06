@@ -4,10 +4,11 @@ import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
-import { Button, Divider, makeStyles, shorthands, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
+import { Button, Divider, makeStyles, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { TeachingMoment } from "../components/teachingMoment";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
@@ -259,9 +260,6 @@ const useStyles = makeStyles({
         flexDirection: "column",
         overflowX: "hidden",
         overflowY: "hidden",
-    },
-    paneContainerTransitions: {
-        ...shorthands.transition("width", "0.3s", "0s", "ease-in-out"),
     },
     paneContent: {
         display: "flex",
@@ -545,40 +543,42 @@ function usePane(
             <>
                 {paneComponents.length > 0 && (
                     <div className={`${classes.pane} ${alignment === "left" ? classes.paneLeft : classes.paneRight}`}>
-                        <div className={`${classes.paneContainer} ${resizing ? "" : classes.paneContainerTransitions}`} style={{ width: `${collapsed ? 0 : width}px` }}>
-                            {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
-                            {toolbarMode === "compact" && (paneComponents.length > 1 || topBarComponents.length > 0) && (
-                                <>
-                                    <div className={classes.barDiv}>
-                                        {/* The tablist gets merged in with the toolbar. */}
-                                        {paneTabList}
-                                        <Toolbar location="top" components={topBarComponents} />
-                                    </div>
-                                    <Divider className={classes.barDivider} />
-                                </>
-                            )}
-
-                            {/* Render the actual pane content (with resizable width). */}
-                            <div className={classes.paneContent} style={{ width: `${width}px` }}>
-                                {selectedTab?.title ? (
+                        <Collapse orientation="horizontal" visible={!collapsed}>
+                            <div className={classes.paneContainer}>
+                                {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
+                                {toolbarMode === "compact" && (paneComponents.length > 1 || topBarComponents.length > 0) && (
                                     <>
-                                        <Title3 className={classes.paneHeader}>{selectedTab.title}</Title3>
-                                        <Divider inset className={classes.headerDivider} appearance="brand" />
+                                        <div className={classes.barDiv}>
+                                            {/* The tablist gets merged in with the toolbar. */}
+                                            {paneTabList}
+                                            <Toolbar location="top" components={topBarComponents} />
+                                        </div>
+                                        <Divider className={classes.barDivider} />
                                     </>
-                                ) : null}
-                                {selectedTab?.content && <selectedTab.content />}
-                            </div>
+                                )}
 
-                            {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the top of the pane. */}
-                            {toolbarMode === "compact" && bottomBarComponents.length > 0 && (
-                                <>
-                                    <Divider className={classes.barDivider} />
-                                    <div className={classes.barDiv}>
-                                        <Toolbar location="bottom" components={bottomBarComponents} />
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                                {/* Render the actual pane content (with resizable width). */}
+                                <div className={classes.paneContent} style={{ width: `${width}px` }}>
+                                    {selectedTab?.title ? (
+                                        <>
+                                            <Title3 className={classes.paneHeader}>{selectedTab.title}</Title3>
+                                            <Divider inset className={classes.headerDivider} appearance="brand" />
+                                        </>
+                                    ) : null}
+                                    {selectedTab?.content && <selectedTab.content />}
+                                </div>
+
+                                {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the top of the pane. */}
+                                {toolbarMode === "compact" && bottomBarComponents.length > 0 && (
+                                    <>
+                                        <Divider className={classes.barDivider} />
+                                        <div className={classes.barDiv}>
+                                            <Toolbar location="bottom" components={bottomBarComponents} />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </Collapse>
                         {/* This is the resizer (width) for the pane container. */}
                         <div
                             className={`${classes.resizer} ${alignment === "left" ? classes.resizerLeft : classes.resizerRight}`}
