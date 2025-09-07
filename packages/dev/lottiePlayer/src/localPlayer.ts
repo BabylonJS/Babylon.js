@@ -137,6 +137,7 @@ export class LocalPlayer {
 
                 this._canvas.style.width = `${this._rawAnimation.w * newScale}px`;
                 this._canvas.style.height = `${this._rawAnimation.h * newScale}px`;
+                this._animationController.setScale(newScale);
             }
         }, this._resizeDebounceMs);
     }

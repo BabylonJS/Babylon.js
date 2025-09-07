@@ -229,6 +229,13 @@ export class AnimationController {
         world[5] = -1; // we are upside down with Lottie
 
         _projectionMatrix.orthoOffCenterLeftHanded(0, _engine.getRenderWidth() / (devicePixelRatio * scale), _engine.getRenderHeight() / (devicePixelRatio * scale), 0, -100, 100);
+
+        // If we are not playing anymore (animation finished), resizing clears the buffer.
+        // Redraw the last frame so the canvas does not appear blank after a resize.
+        if (!this._isPlaying && this._animation) {
+            this._engine.setViewport(this._viewport);
+            this._renderingManager.render(this._worldMatrix, this._projectionMatrix);
+        }
     }
 
     private _isHtmlCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): boolean {
@@ -298,6 +305,7 @@ export class AnimationController {
             return;
         }
 
+        let stoppingAfterThisFrame = false;
         if (this._currentFrame > this._animation.endFrame) {
             if (this._loop) {
                 this._currentFrame = (this._currentFrame % (this._animation.endFrame - this._animation.startFrame)) + this._animation.startFrame;
@@ -305,8 +313,9 @@ export class AnimationController {
                     this._animation.nodes[i].reset();
                 }
             } else {
-                this._isPlaying = false;
-                return;
+                // When not looping, clamp to the last frame of the animation
+                this._currentFrame = this._animation.endFrame;
+                stoppingAfterThisFrame = true;
             }
         }
 
@@ -316,5 +325,9 @@ export class AnimationController {
 
         // Render all layers of the animation
         this._renderingManager.render(this._worldMatrix, this._projectionMatrix);
+
+        if (stoppingAfterThisFrame) {
+            this._isPlaying = false;
+        }
     }
 }
