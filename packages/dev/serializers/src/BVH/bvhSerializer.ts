@@ -1,10 +1,11 @@
 import type { Skeleton } from "core/Bones/skeleton";
 import type { Bone } from "core/Bones/bone";
-import { AnimationRange, IAnimationKey } from "core/Animations";
+import type { IAnimationKey } from "core/Animations/animationKey";
+import { AnimationRange } from "core/Animations/animationRange";
 import { Vector3, Quaternion, Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import { Epsilon } from "core/Maths/math.constants";
-import { Nullable } from "core/types";
+import type { Nullable } from "core/types";
 
 interface IBVHBoneData {
     bone: Bone;
@@ -267,42 +268,6 @@ export class BVHExporter {
         // Clamp frame index to valid range
         const clampedIndex = Math.max(0, Math.min(frameIndex, keys.length - 1));
         return keys[clampedIndex].value.clone();
-    }
-
-    private static _GetRotationAtFrame(keys: IAnimationKey[], frame: number): Quaternion {
-        if (keys.length === 0) {
-            return Quaternion.Identity();
-        }
-
-        if (keys.length === 1) {
-            return keys[0].value.clone();
-        }
-
-        // Handle frame outside of key range
-        if (frame <= keys[0].frame) {
-            return keys[0].value.clone();
-        }
-        if (frame >= keys[keys.length - 1].frame) {
-            return keys[keys.length - 1].value.clone();
-        }
-
-        // Find the appropriate key or interpolate
-        for (let i = 0; i < keys.length - 1; i++) {
-            if (keys[i].frame <= frame && keys[i + 1].frame >= frame) {
-                const key1 = keys[i];
-                const key2 = keys[i + 1];
-
-                if (key1.frame === key2.frame) {
-                    return key1.value.clone();
-                }
-
-                const t = (frame - key1.frame) / (key2.frame - key1.frame);
-                return Quaternion.Slerp(key1.value, key2.value, t);
-            }
-        }
-
-        // Fallback to last key
-        return keys[keys.length - 1].value.clone();
     }
 
     private static _QuaternionToEuler(quaternion: Quaternion): Vector3 {
