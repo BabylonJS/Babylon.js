@@ -1,9 +1,10 @@
 import type { Skeleton } from "core/Bones/skeleton";
 import type { Bone } from "core/Bones/bone";
-import type { IAnimationKey } from "core/Animations";
+import { AnimationRange, IAnimationKey } from "core/Animations";
 import { Vector3, Quaternion, Matrix } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
 import { Epsilon } from "core/Maths/math.constants";
+import { Nullable } from "core/types";
 
 interface IBVHBoneData {
     bone: Bone;
@@ -15,34 +16,59 @@ interface IBVHBoneData {
 }
 
 export class BVHExporter {
-    public static Export(skeleton: Skeleton, animationNames: string[] = [], frameRate: number = 0.03333): string {
+    public static Export(skeleton: Skeleton, animationNames: string[] = [], frameRate?: number): string {
+        // Validate skeleton
+        if (!skeleton || skeleton.bones.length === 0) {
+            throw new Error("Invalid or empty skeleton provided");
+        }
+
         // If no animation names provided, use all available animations
         let animationsToExport = animationNames;
         if (!animationNames || animationNames.length === 0) {
             animationsToExport = skeleton.animations.map((anim) => anim.name);
         }
 
-        // Get animation range from the first animation (or create a default one)
-        let animationRange = null;
-        if (animationsToExport.length > 0) {
-            animationRange = skeleton.getAnimationRange(animationsToExport[0]);
+        // Calculate overall animation range from all specified animations
+        let overallRange: Nullable<AnimationRange> = null;
+        for (const animName of animationsToExport) {
+            const range = skeleton.getAnimationRange(animName);
+            if (range) {
+                overallRange = overallRange ? new AnimationRange("animation-range", Math.min(overallRange.from, range.from), Math.max(overallRange.to, range.to)) : range;
+            }
         }
 
-        if (!animationRange) {
-            // If no animation range found, create a default one or throw error
+        if (!overallRange) {
+            // If no animation range found, try to get from any animation
             if (skeleton.animations.length > 0) {
-                // Use the first available animation
-                animationRange = skeleton.getAnimationRange(skeleton.animations[0].name);
+                overallRange = skeleton.getAnimationRange(skeleton.animations[0].name);
             }
 
-            if (!animationRange) {
+            if (!overallRange) {
                 throw new Error("No animation range found in skeleton");
             }
         }
 
+        // Calculate frame rate from animation data if not provided
+        const actualFrameRate = frameRate || 1 / (skeleton.animations[0]?.framePerSecond || 30);
+
         // Build bone hierarchy and collect animation data
         const boneHierarchy = this._BuildBoneHierarchy(skeleton, animationsToExport);
-        const frameCount = animationRange.to - animationRange.from + 1;
+
+        // Calculate frame count from actual animation keyframes
+        let frameCount = 0;
+        for (const boneData of boneHierarchy) {
+            if (boneData.positionKeys.length > 0) {
+                frameCount = Math.max(frameCount, boneData.positionKeys.length);
+            }
+            if (boneData.rotationKeys.length > 0) {
+                frameCount = Math.max(frameCount, boneData.rotationKeys.length);
+            }
+        }
+
+        // Fallback: if no keyframes found, calculate from time range
+        if (frameCount === 0) {
+            frameCount = Math.floor((overallRange.to - overallRange.from) / actualFrameRate) + 1;
+        }
 
         let exportString = "";
         exportString += `HIERARCHY\n`;
@@ -53,11 +79,10 @@ export class BVHExporter {
         // Export motion data
         exportString += `MOTION\n`;
         exportString += `Frames: ${frameCount}\n`;
-        exportString += `Frame Time: ${frameRate}\n`;
-        exportString += `\n`;
+        exportString += `Frame Time: ${actualFrameRate.toFixed(6)}\n`;
 
         // Export frame data
-        exportString += this._ExportMotionData(boneHierarchy, frameCount, animationRange.from, animationsToExport);
+        exportString += this._ExportMotionData(boneHierarchy, frameCount, 0, animationsToExport);
 
         return exportString;
     }
@@ -90,10 +115,10 @@ export class BVHExporter {
                     if (animationNames.includes(animation.name)) {
                         if (animation.targetProperty === "position") {
                             boneData.hasPositionChannels = true;
-                            boneData.positionKeys = animation.getKeys();
+                            boneData.positionKeys.push(...animation.getKeys());
                         } else if (animation.targetProperty === "rotationQuaternion") {
                             boneData.hasRotationChannels = true;
-                            boneData.rotationKeys = animation.getKeys();
+                            boneData.rotationKeys.push(...animation.getKeys());
                         }
                     }
                 }
@@ -115,21 +140,20 @@ export class BVHExporter {
 
     private static _ExportHierarchy(boneData: IBVHBoneData[], indentLevel: number): string {
         let result = "";
-        // 4 spaces identation for each level
         const indent = "    ".repeat(indentLevel);
 
         for (const data of boneData) {
             const bone = data.bone;
+            const isEndSite = this._IsEndSite(data);
 
-            // Determine if this is an end site (bone with no children and no animations)
-            if (data.children.length === 0 && !data.hasPositionChannels && !data.hasRotationChannels) {
+            if (isEndSite) {
                 result += `${indent}End Site\n`;
                 result += `${indent}{\n`;
                 const offset = this._GetBoneOffset(bone);
                 result += `${indent}    OFFSET ${offset.x.toFixed(6)} ${offset.y.toFixed(6)} ${offset.z.toFixed(6)}\n`;
                 result += `${indent}}\n`;
             } else {
-                result += `${indent}JOINT ${bone.name}\n`;
+                result += `${indentLevel === 0 ? "ROOT" : `${indent}JOINT`} ${bone.name}\n`;
                 result += `${indent}{\n`;
                 const offset = this._GetBoneOffset(bone);
                 result += `${indent}    OFFSET ${offset.x.toFixed(6)} ${offset.y.toFixed(6)} ${offset.z.toFixed(6)}\n`;
@@ -140,7 +164,7 @@ export class BVHExporter {
                     channels.push("Xposition", "Yposition", "Zposition");
                 }
                 if (data.hasRotationChannels) {
-                    // BVH uses ZYX rotation order
+                    // BVH typically uses ZXY rotation order
                     channels.push("Zrotation", "Xrotation", "Yrotation");
                 }
 
@@ -148,37 +172,38 @@ export class BVHExporter {
                     result += `${indent}    CHANNELS ${channels.length} ${channels.join(" ")}\n`;
                 }
 
-                result += `${indent}}\n`;
-            }
+                // Export children recursively
+                if (data.children.length > 0) {
+                    result += this._ExportHierarchy(data.children, indentLevel + 1);
+                }
 
-            // Export children recursively
-            if (data.children.length > 0) {
-                result += this._ExportHierarchy(data.children, indentLevel + 1);
+                result += `${indent}}\n`;
             }
         }
 
         return result;
     }
 
+    private static _IsEndSite(data: IBVHBoneData): boolean {
+        // An end site is a bone with no children (regardless of animation channels)
+        return data.children.length === 0;
+    }
+
     private static _GetBoneOffset(bone: Bone): Vector3 {
-        // Get the local offset of the bone from its parent
-        const parent = bone.getParent();
-        if (!parent) {
-            return Vector3.Zero(); // Root bone
+        // Use the bone's rest matrix or local matrix for correct offset
+        try {
+            if (!bone.getParent()) {
+                // Root bone - use rest matrix translation
+                return bone.getRestMatrix().getTranslation();
+            }
+
+            // For child bones, use local matrix translation
+            const localMatrix = bone.getLocalMatrix();
+            return localMatrix.getTranslation();
+        } catch (error) {
+            // Fallback to zero offset if matrix operations fail
+            return Vector3.Zero();
         }
-
-        // For BVH, we need to get the bone's offset from its parent
-        // This should match the original BVH file's OFFSET values
-        const boneMatrix = bone.getBindMatrix();
-        const parentMatrix = parent.getBindMatrix();
-
-        // Calculate the relative position
-        const bonePosition = boneMatrix.getTranslation();
-        const parentPosition = parentMatrix.getTranslation();
-        const relativeOffset = bonePosition.subtract(parentPosition);
-
-        // Return the full 3D offset
-        return relativeOffset;
     }
 
     private static _ExportMotionData(boneData: IBVHBoneData[], frameCount: number, startFrame: number, animationNames: string[]): string {
@@ -196,57 +221,52 @@ export class BVHExporter {
         return result;
     }
 
-    private static _CollectFrameValues(boneData: IBVHBoneData[], frame: number, values: number[], animationNames: string[]): void {
+    private static _CollectFrameValues(boneData: IBVHBoneData[], frameIndex: number, values: number[], animationNames: string[]): void {
         for (const data of boneData) {
             // Skip end sites
-            if (data.children.length === 0 && !data.hasPositionChannels && !data.hasRotationChannels) {
+            if (this._IsEndSite(data)) {
                 continue;
             }
 
             // Add position values if available
             if (data.hasPositionChannels) {
-                const position = this._GetPositionAtFrame(data.positionKeys, frame);
+                const position = this._GetPositionAtFrameIndex(data.positionKeys, frameIndex);
                 values.push(position.x, position.y, position.z);
             }
 
             // Add rotation values if available
             if (data.hasRotationChannels) {
-                const rotation = this._GetRotationAtFrame(data.rotationKeys, frame);
-                // Convert to Euler angles in ZYX order
+                const rotation = this._GetRotationAtFrameIndex(data.rotationKeys, frameIndex);
+                // Convert to Euler angles in ZXY order
                 const euler = this._QuaternionToEuler(rotation);
                 values.push(euler.z, euler.x, euler.y);
             }
 
             // Process children recursively
             if (data.children.length > 0) {
-                this._CollectFrameValues(data.children, frame, values, animationNames);
+                this._CollectFrameValues(data.children, frameIndex, values, animationNames);
             }
         }
     }
 
-    private static _GetPositionAtFrame(keys: IAnimationKey[], frame: number): Vector3 {
+    private static _GetPositionAtFrameIndex(keys: IAnimationKey[], frameIndex: number): Vector3 {
         if (keys.length === 0) {
             return Vector3.Zero();
         }
 
-        // Find the appropriate key or interpolate
-        let key1 = keys[0];
-        let key2 = keys[keys.length - 1];
+        // Clamp frame index to valid range
+        const clampedIndex = Math.max(0, Math.min(frameIndex, keys.length - 1));
+        return keys[clampedIndex].value.clone();
+    }
 
-        for (let i = 0; i < keys.length - 1; i++) {
-            if (keys[i].frame <= frame && keys[i + 1].frame >= frame) {
-                key1 = keys[i];
-                key2 = keys[i + 1];
-                break;
-            }
+    private static _GetRotationAtFrameIndex(keys: IAnimationKey[], frameIndex: number): Quaternion {
+        if (keys.length === 0) {
+            return Quaternion.Identity();
         }
 
-        if (key1.frame === key2.frame) {
-            return key1.value.clone();
-        }
-
-        const t = (frame - key1.frame) / (key2.frame - key1.frame);
-        return Vector3.Lerp(key1.value, key2.value, t);
+        // Clamp frame index to valid range
+        const clampedIndex = Math.max(0, Math.min(frameIndex, keys.length - 1));
+        return keys[clampedIndex].value.clone();
     }
 
     private static _GetRotationAtFrame(keys: IAnimationKey[], frame: number): Quaternion {
@@ -254,39 +274,55 @@ export class BVHExporter {
             return Quaternion.Identity();
         }
 
-        // Find the appropriate key or interpolate
-        let key1 = keys[0];
-        let key2 = keys[keys.length - 1];
+        if (keys.length === 1) {
+            return keys[0].value.clone();
+        }
 
+        // Handle frame outside of key range
+        if (frame <= keys[0].frame) {
+            return keys[0].value.clone();
+        }
+        if (frame >= keys[keys.length - 1].frame) {
+            return keys[keys.length - 1].value.clone();
+        }
+
+        // Find the appropriate key or interpolate
         for (let i = 0; i < keys.length - 1; i++) {
             if (keys[i].frame <= frame && keys[i + 1].frame >= frame) {
-                key1 = keys[i];
-                key2 = keys[i + 1];
-                break;
+                const key1 = keys[i];
+                const key2 = keys[i + 1];
+
+                if (key1.frame === key2.frame) {
+                    return key1.value.clone();
+                }
+
+                const t = (frame - key1.frame) / (key2.frame - key1.frame);
+                return Quaternion.Slerp(key1.value, key2.value, t);
             }
         }
 
-        if (key1.frame === key2.frame) {
-            return key1.value.clone();
-        }
-
-        const t = (frame - key1.frame) / (key2.frame - key1.frame);
-        return Quaternion.Slerp(key1.value, key2.value, t);
+        // Fallback to last key
+        return keys[keys.length - 1].value.clone();
     }
 
     private static _QuaternionToEuler(quaternion: Quaternion): Vector3 {
-        // Convert quaternion to Euler angles in ZYX order
-        const matrix = quaternion.toRotationMatrix(new Matrix());
+        // Convert quaternion to Euler angles in ZXY order for BVH
+        const matrix = new Matrix();
+        quaternion.toRotationMatrix(matrix);
 
+        const m = matrix.m;
         let x, y, z;
 
-        if (Math.abs(matrix.m[6]) < 1 - Epsilon) {
-            x = Math.atan2(-matrix.m[7], matrix.m[8]);
-            y = Math.asin(matrix.m[6]);
-            z = Math.atan2(-matrix.m[3], matrix.m[0]);
+        // ZXY rotation order extraction
+        const sy = Math.sqrt(m[0] * m[0] + m[1] * m[1]);
+
+        if (sy > Epsilon) {
+            x = Math.atan2(m[6], m[10]);
+            y = Math.atan2(-m[2], sy);
+            z = Math.atan2(m[1], m[0]);
         } else {
-            x = Math.atan2(matrix.m[5], matrix.m[4]);
-            y = Math.asin(matrix.m[6]);
+            x = Math.atan2(-m[9], m[5]);
+            y = Math.atan2(-m[2], sy);
             z = 0;
         }
 
