@@ -1,15 +1,12 @@
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
-import { Constants } from "core/Engines/constants";
 import type { IEXTMaterialsSpecularEdgeColor, IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_specular";
 
@@ -70,11 +67,11 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
             // Handle the EXT_materials_specular_edge_color sub-extension
             // https://github.com/KhronosGroup/glTF/blob/2a1111b88f052cbd3e2d82abb9faee56e7494904/extensions/2.0/Vendor/EXT_materials_specular_edge_color/README.md
-            if (!this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
+            const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
+            if (!adapter.isOpenPBR && extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
                 const specularEdgeColorExtension = extension.extensions.EXT_materials_specular_edge_color as IEXTMaterialsSpecularEdgeColor;
                 if (specularEdgeColorExtension.specularEdgeColorEnabled) {
-                    (babylonMaterial as PBRMaterial).brdf.dielectricSpecularModel = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR;
-                    (babylonMaterial as PBRMaterial).brdf.conductorSpecularModel = Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_OPENPBR;
+                    adapter.configureSpecular(true);
                 }
             }
             // eslint-disable-next-line github/no-then
@@ -88,20 +85,19 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
         const promises = new Array<Promise<any>>();
-        promises.push(Promise.resolve());
 
-        const specularWeight = properties.specularFactor ?? 1.0;
-        const specularColor = properties.specularColorFactor !== undefined ? Color3.FromArray(properties.specularColorFactor) : new Color3(1, 1, 1);
-        let specularWeightTexture: Nullable<BaseTexture> = null;
-        let specularColorTexture: Nullable<BaseTexture> = null;
+        // Set non-texture properties immediately
+        adapter.specularWeight = properties.specularFactor ?? 1.0;
+        adapter.specularColor = properties.specularColorFactor !== undefined ? Color3.FromArray(properties.specularColorFactor) : new Color3(1, 1, 1);
 
         if (properties.specularTexture) {
             (properties.specularTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Specular)`;
-                    specularWeightTexture = texture;
+                    adapter.specularWeightTexture = texture;
                 })
             );
         }
@@ -110,37 +106,13 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Specular Color)`;
-                    specularColorTexture = texture;
+                    adapter.specularColorTexture = texture;
                 })
             );
         }
 
         // eslint-disable-next-line github/no-then
-        return Promise.all(promises).then(() => {
-            if (this._loader.parent.useOpenPBR) {
-                const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
-                openpbrMaterial.specularWeight = specularWeight;
-                openpbrMaterial.specularColor = specularColor;
-                openpbrMaterial.specularColorTexture = specularColorTexture;
-                if (specularColorTexture && specularColorTexture == specularWeightTexture) {
-                    openpbrMaterial._useSpecularWeightFromSpecularColorTexture = true;
-                } else {
-                    openpbrMaterial.specularWeightTexture = specularWeightTexture;
-                }
-                openpbrMaterial._useSpecularWeightFromAlpha = true;
-            } else {
-                const pbrMaterial = babylonMaterial as PBRMaterial;
-                pbrMaterial.metallicF0Factor = specularWeight;
-                pbrMaterial.metallicReflectanceColor = specularColor;
-                if (specularWeightTexture) {
-                    pbrMaterial.metallicReflectanceTexture = specularWeightTexture;
-                    pbrMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
-                }
-                if (specularColorTexture) {
-                    pbrMaterial.reflectanceTexture = specularColorTexture;
-                }
-            }
-        });
+        return Promise.all(promises).then(() => {});
     }
 }
 

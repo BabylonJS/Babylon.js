@@ -1,13 +1,11 @@
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
 import { Vector2 } from "core/Maths/math.vector";
 
 const NAME = "KHR_materials_anisotropy";
@@ -76,40 +74,35 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
             throw new Error(`${context}: PBR Material class not loaded`);
         }
 
+        const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
         const promises = new Array<Promise<any>>();
 
+        // Set non-texture properties immediately
         const anisotropyWeight = properties.anisotropyStrength ?? 0;
         const anisotropyAngle = properties.anisotropyRotation ?? 0;
-        let anisotropyTexture: Nullable<BaseTexture> = null;
+
+        adapter.specularRoughnessAnisotropy = anisotropyWeight;
+        adapter.anisotropyRotation = anisotropyAngle;
+        adapter.geometryTangent = new Vector2(Math.cos(anisotropyAngle), Math.sin(anisotropyAngle));
+
+        // Check if this is glTF-style anisotropy
+        const extensions = properties.extensions ?? {};
+        if (!extensions.EXT_materials_anisotropy_openpbr?.extensions.EXT_materials_anisotropy_openpbr) {
+            adapter.configureGltfStyleAnisotropy(true);
+        }
+
+        // Load texture if present
         if (properties.anisotropyTexture) {
             (properties.anisotropyTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/anisotropyTexture`, properties.anisotropyTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Anisotropy Intensity)`;
-                    anisotropyTexture = texture;
+                    adapter.geometryTangentTexture = texture;
                 })
             );
         }
 
         await Promise.all(promises);
-        if (this._loader.parent.useOpenPBR) {
-            const openpbrMaterial: OpenPBRMaterial = babylonMaterial as OpenPBRMaterial;
-            openpbrMaterial.specularRoughnessAnisotropy = anisotropyWeight;
-            openpbrMaterial.geometryTangentTexture = anisotropyTexture;
-            openpbrMaterial.geometryTangent = new Vector2(Math.cos(anisotropyAngle), Math.sin(anisotropyAngle));
-            openpbrMaterial._useSpecularRoughnessAnisotropyFromTangentTexture = true;
-            const extensions = properties.extensions ?? {};
-            // If this is glTF-style anisotropy, mark it as such.
-            if (!extensions.EXT_materials_anisotropy_openpbr?.extensions.EXT_materials_anisotropy_openpbr) {
-                openpbrMaterial._useGltfStyleAnisotropy = true;
-            }
-        } else {
-            const pbrMaterial = babylonMaterial as PBRMaterial;
-            pbrMaterial.anisotropy.isEnabled = true;
-            pbrMaterial.anisotropy.intensity = anisotropyWeight;
-            pbrMaterial.anisotropy.angle = anisotropyAngle;
-            pbrMaterial.anisotropy.texture = anisotropyTexture;
-        }
     }
 }
 

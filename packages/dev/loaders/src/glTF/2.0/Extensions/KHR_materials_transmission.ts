@@ -6,6 +6,7 @@ import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
+import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
 import type { Scene } from "core/scene";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Texture } from "core/Materials/Textures/texture";
@@ -381,59 +382,41 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
-        if (this._loader.parent.useOpenPBR) {
+
+        const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
+        const transmissionWeight = extension.transmissionFactor !== undefined ? extension.transmissionFactor : 0.0;
+
+        if (transmissionWeight === 0) {
             return Promise.resolve();
         }
 
-        let transmissionWeight = 0.0;
-        let transmissionWeightTexture: Nullable<BaseTexture> = null;
+        // Set transmission properties immediately via adapter
+        adapter.configureTransmission();
+        adapter.transmissionWeight = transmissionWeight;
 
-        let texturePromise = new Promise<Nullable<BaseTexture>>((resolve) => resolve(null));
-        if (extension.transmissionFactor !== undefined) {
-            transmissionWeight = extension.transmissionFactor;
-        } else {
-            return Promise.resolve();
-        }
-        if (extension.transmissionTexture) {
-            (extension.transmissionTexture as ITextureInfo).nonColorData = true;
-            // eslint-disable-next-line github/no-then
-            texturePromise = this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, (texture: BaseTexture) => {
-                texture.name = `${babylonMaterial.name} (Transmission)`;
-                transmissionWeightTexture = texture;
-            });
-        }
-
-        const pbrMaterial = babylonMaterial as PBRMaterial;
-
-        // Enables "refraction" texture which represents transmitted light.
-        pbrMaterial.subSurface.isRefractionEnabled = transmissionWeight !== 0;
-
-        // Since this extension models thin-surface transmission only, we must make IOR = 1.0
-        pbrMaterial.subSurface.volumeIndexOfRefraction = 1.0;
-
-        // Albedo colour will tint transmission.
-        pbrMaterial.subSurface.useAlbedoToTintRefraction = true;
-
-        pbrMaterial.subSurface.refractionIntensity = transmissionWeight;
-
-        if (transmissionWeight) {
-            const scene = pbrMaterial.getScene() as unknown as ITransmissionHelperHolder;
-            if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper) {
-                new TransmissionHelper({}, pbrMaterial.getScene());
-            } else if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper?._isRenderTargetValid()) {
+        // Handle transmission helper setup (only needed for PBR materials)
+        if (!adapter.isOpenPBR && transmissionWeight > 0) {
+            const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
+            if (!scene._transmissionHelper) {
+                new TransmissionHelper({}, babylonMaterial.getScene());
+            } else if (!scene._transmissionHelper?._isRenderTargetValid()) {
                 // If the render target is not valid, recreate it.
                 scene._transmissionHelper?._setupRenderTargets();
             }
         }
 
-        pbrMaterial.subSurface.minimumThickness = 0.0;
-        pbrMaterial.subSurface.maximumThickness = 0.0;
+        // Load texture if present
+        let texturePromise: Promise<Nullable<BaseTexture>> = Promise.resolve(null);
+        if (extension.transmissionTexture) {
+            (extension.transmissionTexture as ITextureInfo).nonColorData = true;
+            texturePromise = this._loader.loadTextureInfoAsync(`${context}/transmissionTexture`, extension.transmissionTexture, (texture: BaseTexture) => {
+                texture.name = `${babylonMaterial.name} (Transmission)`;
+                adapter.transmissionWeightTexture = texture;
+            });
+        }
 
         // eslint-disable-next-line github/no-then
-        return texturePromise.then(() => {
-            pbrMaterial.subSurface.refractionIntensityTexture = transmissionWeightTexture;
-            pbrMaterial.subSurface.useGltfStyleTextures = true;
-        });
+        return texturePromise.then(() => {});
     }
 }
 

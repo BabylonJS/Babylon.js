@@ -1,6 +1,4 @@
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -8,6 +6,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsEmissiveStrength } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_emissive_strength";
 
@@ -75,11 +74,8 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
         }
 
         if (properties.emissiveStrength !== undefined) {
-            if (this._loader.parent.useOpenPBR) {
-                (babylonMaterial as OpenPBRMaterial).emissionLuminance = properties.emissiveStrength;
-            } else {
-                (babylonMaterial as PBRMaterial).emissiveIntensity = properties.emissiveStrength;
-            }
+            const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
+            adapter.emissionLuminance = properties.emissiveStrength;
         }
     }
 }
