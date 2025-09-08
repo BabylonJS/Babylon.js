@@ -27,7 +27,7 @@ import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
 import "./Shaders/compositeAerialPerspective.fragment";
-import "./Shaders/compositeDistantSky.fragment";
+import "./Shaders/compositeSky.fragment";
 import "./Shaders/compositeGlobeAtmosphere.fragment";
 import "./Shaders/fullscreenTriangle.vertex";
 import "./Shaders/multiScattering.fragment";
@@ -43,6 +43,7 @@ const MaterialPlugin = "atmo-pbr";
 
 /**
  * Renders a physically based atmosphere.
+ * Use {@link IsSupported} to check if the atmosphere is supported before creating an instance.
  */
 export class Atmosphere extends TransformNode {
     private readonly _directionToLight = Vector3.Zero();
@@ -78,7 +79,7 @@ export class Atmosphere extends TransformNode {
     private _exposure: number;
     private _atmosphereUniformBufferAsArray: UniformBuffer[] = [];
     private _effectRenderer: Nullable<EffectRenderer> = null;
-    private _distantSkyRenderingGroup: number;
+    private _skyRenderingGroup: number;
     private _aerialPerspectiveRenderingGroup: number;
     private _globeAtmosphereRenderingGroup: number;
 
@@ -95,12 +96,21 @@ export class Atmosphere extends TransformNode {
     private _skyViewLutRenderTarget: Nullable<RenderTargetTexture> = null;
 
     private _aerialPerspectiveCompositorEffectWrapper: Nullable<EffectWrapper> = null;
-    private _distantSkyCompositorEffectWrapper: Nullable<EffectWrapper> = null;
+    private _skyCompositorEffectWrapper: Nullable<EffectWrapper> = null;
     private _globeAtmosphereCompositorEffectWrapper: Nullable<EffectWrapper> = null;
 
     private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
-    private _onBeforeRenderTargetsRenderObserver: Nullable<Observer<Scene>> = null;
+    private _onBeforeDrawPhaseObserver: Nullable<Observer<Scene>> = null;
     private _onAfterRenderingGroupObserver: Nullable<Observer<RenderingGroupInfo>> = null;
+
+    /**
+     * Checks if the {@link Atmosphere} is supported.
+     * @param engine - The engine to check.
+     * @returns True if the atmosphere is supported, false otherwise.
+     */
+    public static IsSupported(engine: AbstractEngine): boolean {
+        return !engine._badOS && !engine.isWebGPU && engine.version >= 2;
+    }
 
     /**
      * Called after the atmosphere variables have been updated for the specified camera.
@@ -124,7 +134,7 @@ export class Atmosphere extends TransformNode {
 
     /**
      * If provided, this is the depth texture used for composition passes.
-     * Expects infinite far plane on the camera, and the non-linear depth accessible in red channel.
+     * Expects an infinite far plane on the camera (camera.maxZ = 0) and the non-linear depth accessible in red channel.
      * @internal
      */
     public readonly depthTexture: Nullable<BaseTexture> = null;
@@ -268,7 +278,7 @@ export class Atmosphere extends TransformNode {
     }
 
     /**
-     * True if the sky view LUT should be used for compositing the distant sky instead of a per-pixel ray march.
+     * True if the sky view LUT should be used for compositing the sky instead of a per-pixel ray march.
      */
     public get isSkyViewLutEnabled(): boolean {
         return this._isSkyViewLutEnabled;
@@ -276,7 +286,7 @@ export class Atmosphere extends TransformNode {
 
     public set isSkyViewLutEnabled(value: boolean) {
         this._isSkyViewLutEnabled = value;
-        this._disposeDistantSkyCompositor();
+        this._disposeSkyCompositor();
         this._disposeGlobeAtmosphereCompositor();
     }
 
@@ -344,7 +354,8 @@ export class Atmosphere extends TransformNode {
     public set aerialPerspectiveIntensity(value: number) {
         value = Math.max(0.001, value);
         if (value !== this._aerialPerspectiveIntensity) {
-            const hasDefineChanged = (value === 1 && this._aerialPerspectiveIntensity !== 1) || (value !== 1 && this._aerialPerspectiveIntensity === 1);
+            // Define only needs to change if the value is changing between 1 and not 1.
+            const hasDefineChanged = (value === 1) !== (this._aerialPerspectiveIntensity === 1);
             this._aerialPerspectiveIntensity = value;
             if (hasDefineChanged) {
                 this._disposeAerialPerspectiveCompositor();
@@ -393,7 +404,8 @@ export class Atmosphere extends TransformNode {
 
     public set aerialPerspectiveRadianceBias(value: number) {
         if (value !== this._aerialPerspectiveRadianceBias) {
-            const hasDefineChanged = (value === 0 && this._aerialPerspectiveRadianceBias !== 0) || (value !== 0 && this._aerialPerspectiveRadianceBias === 0);
+            // Define only needs to change if the value is changing between 0 and not 0.
+            const hasDefineChanged = (value === 0) !== (this._aerialPerspectiveRadianceBias === 0);
             this._aerialPerspectiveRadianceBias = value;
             if (hasDefineChanged) {
                 this._disposeAerialPerspectiveCompositor();
@@ -415,7 +427,7 @@ export class Atmosphere extends TransformNode {
         if (value !== this._isLinearSpaceComposition) {
             this._isLinearSpaceComposition = value;
             // Note, LUTs will remain in linear space. Up to compositors to apply gamma if needed.
-            this._disposeDistantSkyCompositor();
+            this._disposeSkyCompositor();
             this._disposeAerialPerspectiveCompositor();
             this._disposeGlobeAtmosphereCompositor();
         }
@@ -487,7 +499,7 @@ export class Atmosphere extends TransformNode {
     public set applyApproximateTransmittance(value: boolean) {
         if (this._applyApproximateTransmittance !== value) {
             this._applyApproximateTransmittance = value;
-            this._disposeDistantSkyCompositor();
+            this._disposeSkyCompositor();
             this._disposeAerialPerspectiveCompositor();
             this._disposeGlobeAtmosphereCompositor();
         }
@@ -502,15 +514,15 @@ export class Atmosphere extends TransformNode {
     }
 
     /**
-     * The rendering group ID for the distant sky compositor.
-     * The distant sky will only be rendered for this group.
+     * The rendering group ID for the sky compositor.
+     * The sky will only be rendered for this group.
      */
-    public get distantSkyRenderingGroup(): number {
-        return this._distantSkyRenderingGroup;
+    public get skyRenderingGroup(): number {
+        return this._skyRenderingGroup;
     }
 
-    public set distantSkyRenderingGroup(value: number) {
-        this._distantSkyRenderingGroup = value;
+    public set skyRenderingGroup(value: number) {
+        this._skyRenderingGroup = value;
         this._scene.renderingManager.getRenderingGroup(value);
     }
 
@@ -749,15 +761,18 @@ export class Atmosphere extends TransformNode {
      * Constructs the {@link Atmosphere}.
      * @param name - The name of this instance.
      * @param scene - The scene to which the atmosphere will be added.
-     * @param lights - The light sources that illuminate the atmosphere.
+     * @param lights - The light sources that illuminate the atmosphere. Currently only supports one light, and that light should be the first light in the scene.
      * @param options - The options used to create the atmosphere.
      */
     public constructor(name: string, scene: Scene, lights: DirectionalLight[], options?: IAtmosphereOptions) {
         super(name, scene);
 
-        const isWebGpuEngine = scene.getEngine().isWebGPU;
-        if (isWebGpuEngine) {
+        const engine = scene.getEngine();
+        if (engine.isWebGPU) {
             throw new Error("Atmosphere is not supported on WebGPU.");
+        }
+        if (engine.version < 2) {
+            throw new Error(`Atmosphere is not supported on WebGL ${engine.version}.`);
         }
 
         this._physicalProperties = options?.physicalProperties ?? new AtmospherePhysicalProperties();
@@ -795,7 +810,7 @@ export class Atmosphere extends TransformNode {
             ? new Color3().copyFrom(options.minimumMultiScatteringColor)
             : new Color3(30.0 / 255.0, 40.0 / 255.0, 77.0 / 255.0));
 
-        this._distantSkyRenderingGroup = options?.distantSkyRenderingGroup ?? 0;
+        this._skyRenderingGroup = options?.skyRenderingGroup ?? 0;
         this._aerialPerspectiveRenderingGroup = options?.aerialPerspectiveRenderingGroup ?? 0;
         this._globeAtmosphereRenderingGroup = options?.globeAtmosphereRenderingGroup ?? 0;
 
@@ -804,7 +819,7 @@ export class Atmosphere extends TransformNode {
         this._minimumMultiScattering.y = minimumMultiScatteringColor.g * this._minimumMultiScatteringIntensity;
         this._minimumMultiScattering.z = minimumMultiScatteringColor.b * this._minimumMultiScatteringIntensity;
 
-        this._effectRenderer = new EffectRenderer(scene.getEngine(), {
+        this._effectRenderer = new EffectRenderer(engine, {
             // Full screen triangle.
             indices: [0, 2, 1],
             positions: [-1, -1, -1, 3, 3, -1],
@@ -830,24 +845,30 @@ export class Atmosphere extends TransformNode {
 
         {
             const renderingManager = scene.renderingManager;
-            renderingManager.getRenderingGroup(this._distantSkyRenderingGroup);
+            renderingManager.getRenderingGroup(this._skyRenderingGroup);
             renderingManager.getRenderingGroup(this._aerialPerspectiveRenderingGroup);
             renderingManager.getRenderingGroup(this._globeAtmosphereRenderingGroup);
 
-            // Mark all rendering groups as being "not empty" before rendering targets.
-            // This ensures onAfterRenderTargetsRenderObservable is called for empty groups.
-            this._onBeforeRenderTargetsRenderObserver = scene.onBeforeRenderTargetsRenderObservable.add(() => {
-                renderingManager.getRenderingGroup(this._distantSkyRenderingGroup)._empty = false;
+            // Mark all rendering groups as being "not empty" before rendering the corresponding targets.
+            // This ensures onAfterRenderTargetsRenderObservable is called for empty groups,
+            // which allows the atmosphere to be rendered even when the groups are otherwise empty e.g.,
+            // a scene with only the atmosphere in it, and no other Meshes.
+            this._onBeforeDrawPhaseObserver = scene.onBeforeDrawPhaseObservable.add(() => {
+                renderingManager.getRenderingGroup(this._skyRenderingGroup)._empty = false;
                 renderingManager.getRenderingGroup(this._aerialPerspectiveRenderingGroup)._empty = false;
                 renderingManager.getRenderingGroup(this._globeAtmosphereRenderingGroup)._empty = false;
             });
 
             // Draw compositors after the respective rendering group.
             this._onAfterRenderingGroupObserver = scene.onAfterRenderingGroupObservable.add((group) => {
+                if (group.renderingManager !== scene.renderingManager) {
+                    return;
+                }
+
                 const groupId = group.renderingGroupId;
 
-                if (this._distantSkyRenderingGroup === groupId) {
-                    this._drawDistantSkyCompositor();
+                if (this._skyRenderingGroup === groupId) {
+                    this._drawSkyCompositor();
                 }
 
                 if (this._aerialPerspectiveRenderingGroup === groupId) {
@@ -878,14 +899,14 @@ export class Atmosphere extends TransformNode {
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         this._onBeforeCameraRenderObserver?.remove();
         this._onBeforeCameraRenderObserver = null;
-        this._onBeforeRenderTargetsRenderObserver?.remove();
-        this._onBeforeRenderTargetsRenderObserver = null;
+        this._onBeforeDrawPhaseObserver?.remove();
+        this._onBeforeDrawPhaseObserver = null;
         this._onAfterRenderingGroupObserver?.remove();
         this._onAfterRenderingGroupObserver = null;
         this._globeAtmosphereCompositorEffectWrapper?.dispose();
         this._globeAtmosphereCompositorEffectWrapper = null;
-        this._distantSkyCompositorEffectWrapper?.dispose();
-        this._distantSkyCompositorEffectWrapper = null;
+        this._skyCompositorEffectWrapper?.dispose();
+        this._skyCompositorEffectWrapper = null;
         this._aerialPerspectiveCompositorEffectWrapper?.dispose();
         this._aerialPerspectiveCompositorEffectWrapper = null;
         this._skyViewLutRenderTarget?.dispose();
@@ -1085,15 +1106,15 @@ export class Atmosphere extends TransformNode {
     }
 
     /**
-     * Draws the distant sky compositor using {@link EffectWrapper} and {@link EffectRenderer}.
+     * Draws the sky compositor using {@link EffectWrapper} and {@link EffectRenderer}.
      */
-    private _drawDistantSkyCompositor(): void {
+    private _drawSkyCompositor(): void {
         const isEnabled = this.isEnabled();
         if (!isEnabled) {
             return;
         }
 
-        // Distant sky compositor only renders when inside the atmosphere.
+        // The sky compositor only renders when inside the atmosphere.
         const isOutsideAtmosphere = this._cameraAtmosphereVariables.clampedCameraRadius > this._physicalProperties.atmosphereRadius;
         if (isOutsideAtmosphere) {
             return;
@@ -1104,7 +1125,7 @@ export class Atmosphere extends TransformNode {
         }
 
         const engine = this.getEngine();
-        this._distantSkyCompositorEffectWrapper ??= CreateDistantSkyCompositorEffectWrapper(
+        this._skyCompositorEffectWrapper ??= CreateSkyCompositorEffectWrapper(
             engine,
             this.uniformBuffer,
             this._isSkyViewLutEnabled,
@@ -1115,14 +1136,14 @@ export class Atmosphere extends TransformNode {
         const skyViewLut = this._isSkyViewLutEnabled ? this.skyViewLutRenderTarget : null;
         const multiScatteringLut = this._multiScatteringLutRenderTarget!;
         const transmittanceLut = this._transmittanceLut!.renderTarget;
-        if (!this._distantSkyCompositorEffectWrapper.isReady() || !(skyViewLut?.isReady() ?? true) || !multiScatteringLut.isReady() || !transmittanceLut.isReady()) {
+        if (!this._skyCompositorEffectWrapper.isReady() || !(skyViewLut?.isReady() ?? true) || !multiScatteringLut.isReady() || !transmittanceLut.isReady()) {
             return;
         }
 
         DrawEffect(
             engine,
             this._effectRenderer!,
-            this._distantSkyCompositorEffectWrapper,
+            this._skyCompositorEffectWrapper,
             null, // No render target, it will render to the current buffer.
             (effectRenderer, _, effect) => {
                 this.bindUniformBufferToEffect(effect);
@@ -1208,9 +1229,9 @@ export class Atmosphere extends TransformNode {
         );
     }
 
-    private _disposeDistantSkyCompositor(): void {
-        this._distantSkyCompositorEffectWrapper?.dispose();
-        this._distantSkyCompositorEffectWrapper = null;
+    private _disposeSkyCompositor(): void {
+        this._skyCompositorEffectWrapper?.dispose();
+        this._skyCompositorEffectWrapper = null;
     }
 
     private _disposeAerialPerspectiveCompositor(): void {
@@ -1573,7 +1594,7 @@ const DrawEffect = (
 };
 
 /**
- * Creates an EffectWrapper for the distant sky compositor.
+ * Creates an EffectWrapper for the sky compositor.
  * @param engine - The engine to use.
  * @param uniformBuffer - The uniform buffer to use.
  * @param isSkyViewLutEnabled - Whether the sky view LUT is enabled.
@@ -1581,7 +1602,7 @@ const DrawEffect = (
  * @param applyApproximateTransmittance - Whether to apply approximate transmittance.
  * @returns The created EffectWrapper.
  */
-const CreateDistantSkyCompositorEffectWrapper = (
+const CreateSkyCompositorEffectWrapper = (
     engine: AbstractEngine,
     uniformBuffer: UniformBuffer,
     isSkyViewLutEnabled: boolean,
@@ -1602,8 +1623,8 @@ const CreateDistantSkyCompositorEffectWrapper = (
     const textures = isSkyViewLutEnabled ? ["skyViewLut"] : ["transmittanceLut", "multiScatteringLut"];
     return CreateEffectWrapper(
         engine,
-        "atmo-distantSkyCompositor",
-        "compositeDistantSky",
+        "atmo-skyCompositor",
+        "compositeSky",
         ["depth", ...(useUbo ? [] : uniformBuffer.getUniformNames())],
         textures,
         useUbo ? [uniformBuffer.name] : [],

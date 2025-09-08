@@ -48,7 +48,7 @@ void main() {
     vec4 aerialPerspective = vec4(0.);
     if (sampleAerialPerspectiveLut(
             uv,
-            false, // don't clamp to LUT range-- will fallback to ray marching for distant pixels.
+            false, // don't clamp to LUT range-- will fallback to ray marching for pixels beyond the LUT range.
             distanceToSurface,
             NumAerialPerspectiveLutLayers,
             AerialPerspectiveLutKMPerSlice,
@@ -62,8 +62,8 @@ void main() {
 
     } else {
 
-        // The pixel wasn't covered by the LUT. This could be because LUTs are disabled,
-        // or this is a distant pixel. Fill in remaining pixels with ray marching.
+        // The pixel wasn't covered by the LUT. This could be because LUTs are disabled
+        // or this pixel's distance is beyond the LUT range. Fill in remaining pixels with ray marching.
 
         bool intersectsAtmosphere = false;
         vec3 cameraPositionGlobalClampedToTopOfAtmosphere = vec3(0.);

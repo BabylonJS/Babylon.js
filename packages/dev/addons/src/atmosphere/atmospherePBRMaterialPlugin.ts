@@ -8,8 +8,6 @@ import { MaterialDefines } from "core/Materials/materialDefines";
 import { MaterialPluginBase } from "core/Materials/materialPluginBase";
 import type { Nullable } from "core/types";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
-import "./Shaders/ShadersInclude/atmosphereFunctions";
-import "./Shaders/ShadersInclude/atmosphereUboDeclaration";
 
 class AtmospherePBRMaterialDefines extends MaterialDefines {
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -74,7 +72,8 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             true, // enable
             true // resolveIncludes
         );
-        this._isAerialPerspectiveEnabled = _isAerialPerspectiveEnabled;
+
+        this.doNotSerialize = true;
 
         // This calls `getCode` so we need to do this after having initialized the class fields.
         this._pluginManager._addPlugin(this);
@@ -225,18 +224,17 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 float cosAngleLightToZenith = dot(directionToLight, geocentricNormal);
 
                 vec2 uv = vec2(0.5 + 0.5 * cosAngleLightToZenith, (positionRadius - planetRadius) / atmosphereThickness);
+                float irradianceScaleT = 0.5 * dot(normalW, geocentricNormal) + 0.5;
+                float irradianceScale = ((-0.6652 * irradianceScaleT) + 1.5927) * irradianceScaleT + 0.1023;
                 vec3 environmentIrradiance = lightIntensity * sampleReflection(irradianceSampler, uv).rgb;
 
                 // Add a contribution here to estimate indirect lighting.
-                const float r = 0.3;
-                float nDotGeoN = dot(normalW, geocentricNormal);
-                float bounceWeight = 0.5 * nDotGeoN + 0.5;
-                float bounceScale =  0.1 + 0.9 * max(0., cosAngleLightToZenith);
-                float indirect = bounceScale * bounceWeight * getLuminance(environmentIrradiance) / max(0.00001, 1. - r);
+                const float r = 0.2;
+                float indirect = getLuminance(environmentIrradiance) / max(0.00001, 1. - r);
+                environmentIrradiance *= irradianceScale;
+                environmentIrradiance += indirect;
 
                 environmentIrradiance += additionalDiffuseSkyIrradiance;
-
-                environmentIrradiance += indirect;
 
                 const float diffuseBrdf = 1. / PI;
                 environmentIrradiance *= diffuseBrdf * diffuseSkyIrradianceIntensity;

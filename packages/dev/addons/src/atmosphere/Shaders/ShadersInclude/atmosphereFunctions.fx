@@ -427,7 +427,6 @@ void integrateScatteredRadiance(
         transmittance *= sampleTransmittance;
     }
 
-    #if COMPUTE_MULTI_SCATTERING
     #if USE_GROUND_ALBEDO
         // Account for the light bounced off the ground when computing multiple scattering.
         if (tMax == tBottom && tBottom > 0.) {
@@ -439,7 +438,6 @@ void integrateScatteredRadiance(
             const float diffuseBrdf = RECIPROCAL_PI;
             radiance += lightTransmittance * transmittance * groundAlbedo * (nDotL * diffuseBrdf);
         }
-    #endif
     #endif
 
     radiance *= lightIntensity;

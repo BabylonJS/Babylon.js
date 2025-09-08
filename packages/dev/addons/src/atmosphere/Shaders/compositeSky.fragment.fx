@@ -26,7 +26,7 @@ void main() {
 
     vec3 rayDirection = normalize(positionOnNearPlane);
 
-    // If the sky view LUT is enabled, use it to render the distant sky when inside the atmosphere,
+    // If the sky view LUT is enabled, use it to render the sky when inside the atmosphere,
     // and use it to render the atmosphere itself when outside the atmosphere.
     #if USE_SKY_VIEW_LUT
 

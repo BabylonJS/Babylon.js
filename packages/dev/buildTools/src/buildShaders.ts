@@ -2,6 +2,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { checkDirectorySync, checkArgs, getHashOfFile, getHashOfContent } from "./utils.js";
+import type { DevPackageName } from "./packageMapping.js";
+
 // import * as glob from "glob";
 // import * as chokidar from "chokidar";
 // import { DevPackageName } from "./packageMapping";
@@ -78,13 +80,34 @@ function GetIncludes(sourceCode: string) {
     return includes;
 }
 
+function IsFromPackage(packageName: DevPackageName, filePath: string): boolean {
+    return filePath.includes(path.sep + packageName + path.sep) || filePath.includes(`/${packageName}/`);
+}
+
+function DetermineBasePackageNameForShaderInclude(shaderFilePath: string): string | undefined {
+    // Handle addons package:
+    // * Shaders for a given <addon> exist in "addons/src/<addon>/Shaders/" e.g., "addons/src/<addon>/Shaders/foo.fragment.fx"
+    // * Corresponding include files exist in "addons/src/<addon>/Shaders/ShadersInclude/" e.g., "addons/src/<addon>/Shaders/ShadersInclude/fooFunctions.fx"
+    // To ensure the generated imports have the correct path to their includes,
+    // the final import used from the generated "foo.fragment.ts" is `import "../Shaders/ShadersInclude/fooFunctions";`
+    // That resolves to "addons/src/<addon>/Shaders" + "../Shaders/ShadersInclude/fooFunctions", keeping the path relative to the addon itself.
+    // Therefore, the final base package name for these addon includes can be ".."
+    const isAddonShader = IsFromPackage("addons", shaderFilePath);
+    if (isAddonShader) {
+        return "..";
+    }
+
+    // Otherwise fallback to core for the base package name.
+    return "core";
+}
+
 /**
  * Generate a ts file per shader file.
  * @param filePath
  * @param basePackageName
  * @param isCore
  */
-export function BuildShader(filePath: string, basePackageName: string = "core", isCore?: boolean | string) {
+export function BuildShader(filePath: string, basePackageName: string | undefined, isCore?: boolean | string) {
     const isVerbose = checkArgs("--verbose", true);
     isVerbose && console.log("Generating shaders for " + filePath);
     const content = fs.readFileSync(filePath, "utf8");
@@ -98,7 +121,7 @@ export function BuildShader(filePath: string, basePackageName: string = "core", 
     let fxData = content.toString();
 
     if (checkArgs("--global", true)) {
-        isCore = filePath.includes(path.sep + "core" + path.sep) || filePath.includes("/core/");
+        isCore = IsFromPackage("core", filePath);
     }
 
     // Remove Trailing whitespace...
@@ -124,8 +147,12 @@ export function BuildShader(filePath: string, basePackageName: string = "core", 
     const includes = GetIncludes(fxData);
     includes.forEach((entry) => {
         // Entry may have been something like #include<core/helperFunctions> where "core" is intended to override the basePackageName.
-        // Currently only "core/" is supported for the include path e.g., to include core/helperFunctions from the addons package.
         const isCoreInclude = (entry as string).startsWith("core/");
+
+        // Currently only "core/" is supported for the include path.
+        if (!isCoreInclude && (entry as string).includes("/")) {
+            throw new Error("Currently only specifying 'core' in path includes (e.g. #include<core/helperFunctions.fx>) is supported.");
+        }
 
         if (isCore) {
             // If this shader is already from core, consider #include<core/...> as an error since it's not necessary.
@@ -138,7 +165,7 @@ export function BuildShader(filePath: string, basePackageName: string = "core", 
                 `import "./ShadersInclude/${entry}";
 `;
         } else {
-            const basePackageNameForImport = isCoreInclude ? "core" : basePackageName;
+            const basePackageNameForImport = isCoreInclude ? "core" : basePackageName === undefined ? DetermineBasePackageNameForShaderInclude(filePath) : basePackageName;
             const actualEntry = (entry as string).replace(/^core\//, "");
             includeText =
                 includeText +

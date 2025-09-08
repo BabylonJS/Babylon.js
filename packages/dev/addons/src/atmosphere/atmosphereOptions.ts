@@ -15,9 +15,9 @@ export interface IAtmosphereOptions {
     physicalProperties?: AtmospherePhysicalProperties;
 
     /**
-     * The depth texture to use for fullscreen passes.
-     * Used for deferred rendering scenarios where atmospheric effects need to be composited with geometry buffers.
-     * Expects infinite far plane on the camera and a non-linear depth to be stored in the red channel.
+     * An optional depth texture that will be used by the fullscreen passes that render the sky, aerial perspective, or globe atmosphere.
+     * This enables deferred rendering scenarios, where atmospheric effects need to be composited onto geometry buffers.
+     * Expects infinite far plane on the camera (camera.maxZ = 0) and a non-linear depth to be stored in the red channel.
      */
     depthTexture?: BaseTexture;
 
@@ -46,7 +46,7 @@ export interface IAtmosphereOptions {
     applyApproximateTransmittance?: boolean;
 
     /**
-     * Whether to use the sky view LUT for compositing the distant sky.
+     * Whether to use the sky view LUT for compositing the sky.
      * When false, full ray marching is required (slower).
      */
     isSkyViewLutEnabled?: boolean;
@@ -141,11 +141,11 @@ export interface IAtmosphereOptions {
     originHeight?: number;
 
     /**
-     * The rendering group ID for the distant sky compositor.
-     * When specified, the distant sky will only be rendered for this group.
+     * The rendering group ID for the sky compositor.
+     * When specified, the sky will only be rendered for this group.
      * If not specified, defaults to group 0.
      */
-    distantSkyRenderingGroup?: number;
+    skyRenderingGroup?: number;
 
     /**
      * The rendering group ID for the aerial perspective compositor.
