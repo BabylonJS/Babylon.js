@@ -2,7 +2,8 @@ import type { AnimationConfiguration } from "./animationConfiguration";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
 import { DefaultConfiguration } from "./animationConfiguration";
 import { GetRawAnimationDataAsync } from "./parsing/parser";
-import { AnimationController, CalculateScaleFactor } from "./rendering/animationController";
+import { AnimationController } from "./rendering/animationController";
+import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
 
 /**
  * Allows you to play Lottie animations using Babylon.js.
@@ -22,6 +23,8 @@ export class LocalPlayer {
     private _canvas: HTMLCanvasElement | null = null;
     private _resizeObserver: ResizeObserver | null = null;
     private _animationController: AnimationController | null = null;
+    private _resizeDebounceHandle: number | null = null;
+    private _resizeDebounceMs: number = 1000 / 60; // Debounce resize updates to approximately 60 FPS
 
     /**
      * Creates a new instance of the LottiePlayer.
@@ -81,21 +84,10 @@ export class LocalPlayer {
         this._animationController.playAnimation();
         this._playing = true;
 
-        window.addEventListener("resize", this._onWindowResize);
-
         if ("ResizeObserver" in window) {
             this._resizeObserver = new ResizeObserver(() => {
-                if (this._disposed || !this._canvas || !this._rawAnimation || this._animationController === null) {
-                    return;
-                }
-
-                this._scaleFactor = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._container);
-                this._canvas.style.width = `${this._rawAnimation.w * this._scaleFactor}px`;
-                this._canvas.style.height = `${this._rawAnimation.h * this._scaleFactor}px`;
-
-                this._animationController.setScale(this._scaleFactor);
+                this._scheduleResizeUpdate();
             });
-
             this._resizeObserver.observe(this._container);
         }
 
@@ -106,11 +98,14 @@ export class LocalPlayer {
      * Disposes the LottiePlayer instance, cleaning up resources and event listeners.
      */
     public dispose(): void {
-        window.removeEventListener("resize", this._onWindowResize);
-
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
             this._resizeObserver = null;
+        }
+
+        if (this._resizeDebounceHandle !== null) {
+            clearTimeout(this._resizeDebounceHandle);
+            this._resizeDebounceHandle = null;
         }
 
         if (this._canvas) {
@@ -121,15 +116,29 @@ export class LocalPlayer {
         this._disposed = true;
     }
 
-    private _onWindowResize = () => {
+    private _scheduleResizeUpdate(): void {
         if (this._disposed || !this._canvas || !this._rawAnimation || this._animationController === null) {
             return;
         }
 
-        this._scaleFactor = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._container);
-        this._canvas.style.width = `${this._rawAnimation.w * this._scaleFactor}px`;
-        this._canvas.style.height = `${this._rawAnimation.h * this._scaleFactor}px`;
+        if (this._resizeDebounceHandle !== null) {
+            clearTimeout(this._resizeDebounceHandle);
+        }
 
-        this._animationController.setScale(this._scaleFactor);
-    };
+        this._resizeDebounceHandle = window.setTimeout(() => {
+            this._resizeDebounceHandle = null;
+            if (this._disposed || !this._canvas || !this._rawAnimation || this._animationController === null) {
+                return;
+            }
+
+            const newScale = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._container);
+            if (this._scaleFactor !== newScale) {
+                this._scaleFactor = newScale;
+
+                this._canvas.style.width = `${this._rawAnimation.w * newScale}px`;
+                this._canvas.style.height = `${this._rawAnimation.h * newScale}px`;
+                this._animationController.setScale(newScale);
+            }
+        }, this._resizeDebounceMs);
+    }
 }
