@@ -295,10 +295,7 @@ export class Sound {
                 // eslint-disable-next-line github/no-then
                 void sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
                     // eslint-disable-next-line github/no-then
-                    void sound.preloadInstancesAsync(1).then(() => {
-                        this._isReadyToPlay = true;
-                        this._readyToPlayCallback();
-                    });
+                    void sound.preloadInstancesAsync(1).then(this._onReadyToPlay);
                 });
 
                 return sound;
@@ -307,10 +304,7 @@ export class Sound {
             const sound = new _WebAudioStaticSound(name, audioEngineV2, optionsV2);
 
             // eslint-disable-next-line github/no-then
-            void sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
-                this._isReadyToPlay = true;
-                this._readyToPlayCallback();
-            });
+            void sound._initAsync(urlOrArrayBuffer, optionsV2).then(this._onReadyToPlay);
 
             return sound;
         };
@@ -331,7 +325,7 @@ export class Sound {
             const node = new MediaStreamAudioSourceNode(audioEngineV2._audioContext, { mediaStream: urlOrArrayBuffer });
             this._soundV2 = new _WebAudioSoundSource(name, node, audioEngineV2, optionsV2);
             // eslint-disable-next-line github/no-then
-            void this._soundV2._initAsync(optionsV2).then(this._readyToPlayCallback());
+            void this._soundV2._initAsync(optionsV2).then(this._onReadyToPlay);
         } else if (urlOrArrayBuffer instanceof AudioBuffer) {
             streaming = false;
             this._soundV2 = createSoundV2();
@@ -350,6 +344,12 @@ export class Sound {
             this._soundV2.onEndedObservable.add(this._onended);
         }
     }
+
+    private _onReadyToPlay = () => {
+        this._scene.mainSoundTrack.addSound(this);
+        this._isReadyToPlay = true;
+        this._readyToPlayCallback();
+    };
 
     /**
      * Release the sound and its associated resources
@@ -403,10 +403,9 @@ export class Sound {
         }
 
         if (this._soundV2 instanceof _WebAudioStaticSound) {
-            void this._soundV2._initAsync(audioBuffer, this._optionsV2);
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+            this._soundV2._initAsync(audioBuffer, this._optionsV2).then(this._onReadyToPlay);
         }
-
-        this._isReadyToPlay = true;
     }
 
     /**
