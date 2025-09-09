@@ -136,6 +136,7 @@ export class AudioContextMock {
     private _audioBufferSources = new Array<AudioBufferSourceNodeMock>();
 
     currentTime = 0;
+    destination = new AudioNodeMock();
     state = "running";
 
     requireUserInteraction = false;
