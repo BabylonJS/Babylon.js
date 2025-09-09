@@ -141,7 +141,6 @@ export class PanoramaToCubeMapTools {
         invertY: boolean,
         stride: number
     ): Float32Array {
-        supersample = false;
         const buffer = new ArrayBuffer(texSize * texSize * 4 * 3);
         const textureArray = new Float32Array(buffer);
 
