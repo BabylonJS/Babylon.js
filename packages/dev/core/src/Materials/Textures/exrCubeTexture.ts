@@ -4,7 +4,8 @@ import { EnvCubeTexture } from "./envCubeTexture";
 import { RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import "../../Materials/Textures/baseTexture.polynomial";
-import { PanoramaToCubeMapTools, type CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
+import { PanoramaToCubeMapTools } from "../../Misc/HighDynamicRange/panoramaToCubemap";
+import type { CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import { ReadExrDataAsync } from "./Loaders/exrTextureLoader";
 
 /**
