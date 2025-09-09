@@ -295,6 +295,7 @@ export class MockedAudioObjects {
                             }, 0);
                         }),
                     pause: jest.fn().mockName("pause"),
+                    play: jest.fn().mockName("play").mockReturnValue(Promise.resolve()),
                     preload: "none",
                 };
             });
