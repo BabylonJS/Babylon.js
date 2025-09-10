@@ -28,8 +28,6 @@ module.exports = (env) => {
               serializers: path.resolve(__dirname, "../../dev/serializers/dist"),
           };
 
-    ensureBuiltIfMissingDist(aliasDist, { production });
-
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
