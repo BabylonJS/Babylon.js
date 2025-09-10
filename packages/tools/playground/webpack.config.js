@@ -21,6 +21,7 @@ module.exports = (env) => {
                 new MonacoWebpackPlugin({
                     // publicPath: "public/",
                     languages: ["typescript", "javascript"],
+                    filename: "static/[name].worker.js",
                 }),
             ]
         ),
