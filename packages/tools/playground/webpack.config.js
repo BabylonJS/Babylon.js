@@ -24,6 +24,9 @@ module.exports = (env) => {
                 }),
             ]
         ),
+        output: {
+            publicPath: "/",
+        },
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
