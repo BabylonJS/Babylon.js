@@ -134,7 +134,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
      */
     public override bindForSubMesh(uniformBuffer: UniformBuffer): void {
         const atmosphere = this._atmosphere;
-        const engine = atmosphere.getScene().getEngine();
+        const engine = atmosphere.scene.getEngine();
 
         // Bind the atmosphere's uniform buffer to the effect.
         const effect = uniformBuffer.currentEffect;
@@ -193,7 +193,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             return null;
         }
 
-        const useUbo = this._atmosphere.getEngine().supportsUniformBuffers;
+        const useUbo = this._atmosphere.scene.getEngine().supportsUniformBuffers;
         const directionToLightSnippet = useUbo ? "-light0.vLightData.xyz" : "-vLightData0.xyz";
 
         const useAtmosphereUbo = this._atmosphere.uniformBuffer.useUbo;

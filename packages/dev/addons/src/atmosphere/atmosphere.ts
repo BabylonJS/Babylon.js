@@ -16,13 +16,12 @@ import type { Effect } from "core/Materials/effect";
 import { EffectRenderer, EffectWrapper } from "core/Materials/effectRenderer";
 import type { IAtmosphereOptions } from "./atmosphereOptions";
 import type { IColor3Like, IVector3Like } from "core/Maths/math.like";
+import type { IDisposable, Scene } from "core/scene";
 import { Observable, type Observer } from "core/Misc/observable";
 import { RegisterMaterialPlugin, UnregisterMaterialPlugin } from "core/Materials/materialPluginManager";
 import type { RenderingGroupInfo } from "core/Rendering/renderingManager";
 import { RenderTargetTexture, type RenderTargetTextureOptions } from "core/Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import type { Scene } from "core/scene";
-import { TransformNode } from "core/Meshes/transformNode";
 import { TransmittanceLut } from "./transmittanceLut";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Vector3 } from "core/Maths/math.vector";
@@ -44,10 +43,12 @@ const MaterialPlugin = "atmo-pbr";
 /**
  * Renders a physically based atmosphere.
  * Use {@link IsSupported} to check if the atmosphere is supported before creating an instance.
+ * @experimental
  */
-export class Atmosphere extends TransformNode {
+export class Atmosphere implements IDisposable {
     private readonly _directionToLight = Vector3.Zero();
     private readonly _tempSceneAmbient = new Color3();
+    private readonly _engine: AbstractEngine;
     private _physicalProperties: AtmospherePhysicalProperties;
     private _transmittanceLut: Nullable<TransmittanceLut>;
     private _diffuseSkyIrradianceLut: Nullable<DiffuseSkyIrradianceLut>;
@@ -82,6 +83,7 @@ export class Atmosphere extends TransformNode {
     private _skyRenderingGroup: number;
     private _aerialPerspectiveRenderingGroup: number;
     private _globeAtmosphereRenderingGroup: number;
+    private _isEnabled = true;
 
     private _hasRenderedMultiScatteringLut = false;
     private _multiScatteringEffectWrapper: Nullable<EffectWrapper> = null;
@@ -303,10 +305,10 @@ export class Atmosphere extends TransformNode {
             return this._skyViewLutRenderTarget;
         }
 
-        const renderTarget = (this._skyViewLutRenderTarget = CreateRenderTargetTexture("atmo-skyView", { width: 128, height: 128 }, this._scene));
+        const renderTarget = (this._skyViewLutRenderTarget = CreateRenderTargetTexture("atmo-skyView", { width: 128, height: 128 }, this.scene));
         renderTarget.coordinatesMode = Constants.TEXTURE_EQUIRECTANGULAR_MODE;
 
-        this._skyViewLutEffectWrapper = CreateSkyViewEffectWrapper(this.getEngine(), this.uniformBuffer);
+        this._skyViewLutEffectWrapper = CreateSkyViewEffectWrapper(this._engine, this.uniformBuffer);
 
         return renderTarget;
     }
@@ -336,10 +338,10 @@ export class Atmosphere extends TransformNode {
             return this._aerialPerspectiveLutRenderTarget;
         }
 
-        const scene = this._scene;
+        const scene = this.scene;
         const name = "atmo-aerialPerspective";
         const renderTarget = (this._aerialPerspectiveLutRenderTarget = CreateRenderTargetTexture(name, { width: 16, height: 64, layers: 32 }, scene, {}));
-        this._aerialPerspectiveLutEffectWrapper = CreateAerialPerspectiveEffectWrapper(this.getEngine(), this.uniformBuffer);
+        this._aerialPerspectiveLutEffectWrapper = CreateAerialPerspectiveEffectWrapper(this._engine, this.uniformBuffer);
 
         return renderTarget;
     }
@@ -523,7 +525,7 @@ export class Atmosphere extends TransformNode {
 
     public set skyRenderingGroup(value: number) {
         this._skyRenderingGroup = value;
-        this._scene.renderingManager.getRenderingGroup(value);
+        this.scene.renderingManager.getRenderingGroup(value);
     }
 
     /**
@@ -536,7 +538,7 @@ export class Atmosphere extends TransformNode {
 
     public set aerialPerspectiveRenderingGroup(value: number) {
         this._aerialPerspectiveRenderingGroup = value;
-        this._scene.renderingManager.getRenderingGroup(value);
+        this.scene.renderingManager.getRenderingGroup(value);
     }
 
     /**
@@ -549,7 +551,7 @@ export class Atmosphere extends TransformNode {
 
     public set globeAtmosphereRenderingGroup(value: number) {
         this._globeAtmosphereRenderingGroup = value;
-        this._scene.renderingManager.getRenderingGroup(value);
+        this.scene.renderingManager.getRenderingGroup(value);
     }
 
     /**
@@ -557,7 +559,7 @@ export class Atmosphere extends TransformNode {
      */
     public get uniformBuffer(): UniformBuffer {
         if (this._atmosphereUbo === null) {
-            const atmosphereUbo = (this._atmosphereUbo = new UniformBuffer(this.getEngine(), undefined, true, "Atmosphere"));
+            const atmosphereUbo = (this._atmosphereUbo = new UniformBuffer(this._engine, undefined, true, "Atmosphere"));
             atmosphereUbo.addUniform("peakRayleighScattering", 3);
             atmosphereUbo.addUniform("planetRadius", 1);
             // 16-byte boundary
@@ -764,10 +766,13 @@ export class Atmosphere extends TransformNode {
      * @param lights - The light sources that illuminate the atmosphere. Currently only supports one light, and that light should be the first light in the scene.
      * @param options - The options used to create the atmosphere.
      */
-    public constructor(name: string, scene: Scene, lights: DirectionalLight[], options?: IAtmosphereOptions) {
-        super(name, scene);
-
-        const engine = scene.getEngine();
+    public constructor(
+        public readonly name: string,
+        public readonly scene: Scene,
+        lights: DirectionalLight[],
+        options?: IAtmosphereOptions
+    ) {
+        const engine = (this._engine = scene.getEngine());
         if (engine.isWebGPU) {
             throw new Error("Atmosphere is not supported on WebGPU.");
         }
@@ -881,6 +886,11 @@ export class Atmosphere extends TransformNode {
             });
         }
 
+        // Ensure the atmosphere is disposed when the scene is disposed.
+        scene.onDisposeObservable.addOnce(() => {
+            this.dispose();
+        });
+
         // Registers a material plugin which will allow common materials to sample the atmosphere environment maps e.g.,
         // sky view LUT for glossy reflections and diffuse sky illiminance LUT for irradiance.
         // It also handles aerial perspective application when Atmosphere is not provided with a depth texture.
@@ -896,7 +906,7 @@ export class Atmosphere extends TransformNode {
     /**
      * @override
      */
-    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
+    public dispose(): void {
         this._onBeforeCameraRenderObserver?.remove();
         this._onBeforeCameraRenderObserver = null;
         this._onBeforeDrawPhaseObserver?.remove();
@@ -936,14 +946,29 @@ export class Atmosphere extends TransformNode {
         this._atmosphereUniformBufferAsArray.length = 0;
 
         UnregisterMaterialPlugin(MaterialPlugin);
-
-        super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
     /**
-     * @override
+     * True if the atmosphere is enabled.
+     * @returns - True if the atmosphere is enabled.
      */
-    public override getClassName(): string {
+    public isEnabled() {
+        return this._isEnabled;
+    }
+
+    /**
+     * Sets the enabled state of the atmosphere.
+     * @param enabled - True to enable the atmosphere, false to disable it.
+     */
+    public setEnabled(enabled: boolean) {
+        this._isEnabled = enabled;
+    }
+
+    /**
+     * The class name of the {@link Atmosphere}.
+     * @returns - The class name of the atmosphere.
+     */
+    public getClassName(): string {
         return "Atmosphere";
     }
 
@@ -983,7 +1008,7 @@ export class Atmosphere extends TransformNode {
      * @returns The newly created {@link EffectWrapper}.
      */
     private _createMultiScatteringEffectWrapper(): EffectWrapper {
-        const engine = this.getEngine();
+        const engine = this._engine;
         const name = "atmo-multiScattering";
         const ubo = this.uniformBuffer;
         const useUbo = ubo.useUbo;
@@ -1013,7 +1038,7 @@ export class Atmosphere extends TransformNode {
     private _drawMultiScatteringLut(): void {
         const transmittanceLut = this._transmittanceLut!.renderTarget;
         DrawEffect(
-            this.getEngine(),
+            this._engine,
             this._effectRenderer!,
             this._multiScatteringEffectWrapper,
             this._multiScatteringLutRenderTarget,
@@ -1047,7 +1072,7 @@ export class Atmosphere extends TransformNode {
             return;
         }
 
-        const engine = this.getEngine();
+        const engine = this._engine;
         this._aerialPerspectiveCompositorEffectWrapper ??= CreateAerialPerspectiveCompositorEffectWrapper(
             engine,
             this.uniformBuffer,
@@ -1124,7 +1149,7 @@ export class Atmosphere extends TransformNode {
             return;
         }
 
-        const engine = this.getEngine();
+        const engine = this._engine;
         this._skyCompositorEffectWrapper ??= CreateSkyCompositorEffectWrapper(
             engine,
             this.uniformBuffer,
@@ -1179,7 +1204,7 @@ export class Atmosphere extends TransformNode {
             return;
         }
 
-        const engine = this.getEngine();
+        const engine = this._engine;
         this._globeAtmosphereCompositorEffectWrapper ??= CreateGlobeAtmosphereCompositorEffectWrapper(
             engine,
             this.uniformBuffer,
@@ -1271,7 +1296,7 @@ export class Atmosphere extends TransformNode {
         if (!this.isLinearSpaceLight) {
             this._tempSceneAmbient.toGammaSpaceToRef(this._tempSceneAmbient);
         }
-        this._scene.ambientColor = this._tempSceneAmbient;
+        this.scene.ambientColor = this._tempSceneAmbient;
 
         this.onAfterUpdateVariablesForCameraObservable.notifyObservers(camera);
     }
@@ -1354,7 +1379,7 @@ export class Atmosphere extends TransformNode {
         const name = uniformBuffer.name;
         uniformBuffer.bindToEffect(effect, name);
         if (uniformBuffer.useUbo) {
-            const engine = this._scene.getEngine();
+            const engine = this.scene.getEngine();
             engine.bindUniformBufferBase(uniformBuffer.getBuffer()!, effect._uniformBuffersNames[name], name);
         } else {
             this._updateUniformBuffer();
@@ -1424,7 +1449,7 @@ export class Atmosphere extends TransformNode {
         const transmittanceLut = this._transmittanceLut!.renderTarget;
         const multiScatteringLut = this._multiScatteringLutRenderTarget;
         DrawEffect(
-            this.getEngine(),
+            this._engine,
             this._effectRenderer!,
             this._aerialPerspectiveLutEffectWrapper,
             this._aerialPerspectiveLutRenderTarget,
@@ -1449,7 +1474,7 @@ export class Atmosphere extends TransformNode {
     private _drawSkyViewLut(): void {
         const transmittanceLut = this._transmittanceLut!.renderTarget;
         const multiScatteringLut = this._multiScatteringLutRenderTarget!;
-        DrawEffect(this.getEngine(), this._effectRenderer!, this._skyViewLutEffectWrapper, this._skyViewLutRenderTarget, (effectRenderer, renderTarget, effect, engine) => {
+        DrawEffect(this._engine, this._effectRenderer!, this._skyViewLutEffectWrapper, this._skyViewLutRenderTarget, (effectRenderer, renderTarget, effect, engine) => {
             this.bindUniformBufferToEffect(effect);
             engine.bindFramebuffer(renderTarget!, undefined, undefined, undefined, true);
             effectRenderer.bindBuffers(effect);

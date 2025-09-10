@@ -44,8 +44,6 @@ import { EffectLayerItemComponent } from "./entities/effectLayerPipelineTreeItem
 import { FrameGraphTreeItemComponent } from "./entities/frameGraphTreeItemComponent";
 import type { EffectLayer } from "core/Layers/effectLayer";
 import type { FrameGraph } from "core/FrameGraph/frameGraph";
-import { AtmosphereTreeItemComponent } from "./entities/atmosphereTreeItemComponent";
-import type { Atmosphere } from "addons/atmosphere/atmosphere";
 
 interface ITreeItemSpecializedComponentProps {
     label: string;
@@ -191,17 +189,6 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
 
             if (className.indexOf("FrameGraph") !== -1) {
                 return <FrameGraphTreeItemComponent extensibilityGroups={this.props.extensibilityGroups} frameGraph={entity as FrameGraph} onClick={() => this.onClick()} />;
-            }
-
-            if (className.indexOf("Atmosphere") !== -1) {
-                return (
-                    <AtmosphereTreeItemComponent
-                        globalState={this.props.globalState}
-                        extensibilityGroups={this.props.extensibilityGroups}
-                        atmosphere={entity as Atmosphere}
-                        onClick={() => this.onClick()}
-                    />
-                );
             }
 
             if (entity._host) {

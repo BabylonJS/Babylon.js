@@ -115,7 +115,7 @@ export class TransmittanceLut {
     constructor(atmosphere: Atmosphere) {
         this._atmosphere = atmosphere;
 
-        const scene = this._atmosphere.getScene();
+        const scene = this._atmosphere.scene;
         const engine = scene.getEngine();
 
         const name = "atmo-transmittance";
@@ -202,7 +202,7 @@ export class TransmittanceLut {
             return false;
         }
 
-        const engine = this._atmosphere.getScene().getEngine();
+        const engine = this._atmosphere.scene.getEngine();
 
         engine.bindFramebuffer(this.renderTarget.renderTarget!, undefined, undefined, undefined, true);
 

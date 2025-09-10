@@ -79,7 +79,7 @@ export class DiffuseSkyIrradianceLut {
      */
     constructor(atmosphere: Atmosphere) {
         this._atmosphere = atmosphere;
-        const scene = atmosphere.getScene();
+        const scene = atmosphere.scene;
         const engine = scene.getEngine();
 
         const name = "atmo-diffuseSkyIrradiance";
@@ -182,7 +182,7 @@ export class DiffuseSkyIrradianceLut {
             return false;
         }
 
-        const engine = this._atmosphere.getScene().getEngine();
+        const engine = this._atmosphere.scene.getEngine();
 
         engine.bindFramebuffer(this.renderTarget.renderTarget!, undefined, undefined, undefined, true);
 

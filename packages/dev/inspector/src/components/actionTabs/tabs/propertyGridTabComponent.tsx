@@ -116,8 +116,6 @@ import { SkyMaterialPropertyGridComponent } from "./propertyGrids/materials/skyM
 import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { RectAreaLight } from "core/Lights/rectAreaLight";
-import type { Atmosphere } from "addons/atmosphere/atmosphere";
-import { AtmospherePropertyGridComponent } from "./propertyGrids/atmospherePropertyGridComponent";
 import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 
 export class PropertyGridTabComponent extends PaneComponent {
@@ -746,18 +744,6 @@ export class PropertyGridTabComponent extends PaneComponent {
             if (entity._host) {
                 const control = entity as Control;
                 return <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
-
-            if (className === "Atmosphere") {
-                const atmosphere = entity as Atmosphere;
-                return (
-                    <AtmospherePropertyGridComponent
-                        atmosphere={atmosphere}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
             }
 
             return (
