@@ -33,8 +33,7 @@ export default defineConfig({
     globalTeardown: browserType === "BrowserStack" ? require.resolve("./packages/tools/tests/globalTeardown.ts") : undefined,
 
     /* Start the dev host automatically before the tests.
-       Playwright will wait until the URL responds (HTTP 200/302) before executing tests.
-       reuseExistingServer allows local iterative runs without re-spawning if already running. */
+       Playwright will wait until the URL responds (HTTP 200/302) before executing tests. */
     webServer: {
         command: process.env.PW_DEVHOST_CMD || "npm run serve -w @tools/dev-host",
         url: process.env.BASE_URL || "http://localhost:1338",
