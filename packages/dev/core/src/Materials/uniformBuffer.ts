@@ -33,6 +33,7 @@ export class UniformBuffer {
     private _uniformLocations: { [key: string]: number };
     private _uniformSizes: { [key: string]: number };
     private _uniformArraySizes: { [key: string]: { strideSize: number; arraySize: number } };
+    private _uniformNames: string[] = [];
     private _uniformLocationPointer: number;
     private _needSync: boolean;
     private _noUBO: boolean;
@@ -362,6 +363,14 @@ export class UniformBuffer {
     }
 
     /**
+     * The names of the uniforms in the buffer.
+     * @returns an array of uniform names
+     */
+    public getUniformNames(): string[] {
+        return this._uniformNames;
+    }
+
+    /**
      * std140 layout specifies how to align data within an UBO structure.
      * See https://khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
      * for specs.
@@ -404,14 +413,18 @@ export class UniformBuffer {
             // Keep track of stride for `updateFloatArray`
             this._uniformArraySizes[name] = { strideSize: size, arraySize };
         }
-        if (this._noUBO) {
-            return;
-        }
 
         if (this._uniformLocations[name] !== undefined) {
             // Already existing uniform
             return;
         }
+
+        this._uniformNames.push(name);
+
+        if (this._noUBO) {
+            return;
+        }
+
         // This function must be called in the order of the shader layout !
         // size can be the size of the uniform, or data directly
         let data;
@@ -567,7 +580,7 @@ export class UniformBuffer {
     // It is meant to more easily know what this buffer is about when debugging
     // Some buffers can have a lot of uniforms (several dozens), so the method only returns the first 10 of them
     // (should be enough to understand what the buffer is for)
-    private _getNames() {
+    private _getNamesDebug() {
         const names = [];
         let i = 0;
         for (const name in this._uniformLocations) {
@@ -586,9 +599,9 @@ export class UniformBuffer {
         }
 
         if (this._dynamic) {
-            this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
+            this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNamesDebug());
         } else {
-            this._buffer = this._engine.createUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
+            this._buffer = this._engine.createUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNamesDebug());
         }
 
         if (this._trackUBOsInFrame) {
