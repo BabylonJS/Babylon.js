@@ -89,25 +89,33 @@ export class PanoramaToCubeMapTools {
      * @param inputHeight The height of the input panorama.
      * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
      * @param supersample enable supersampling the cubemap
+     * @param invertY defines if the Y axis must be inverted
      * @returns The cubemap data
      */
-    public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number, supersample = false): CubeMapInfo {
+    public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number, supersample = false, invertY = true): CubeMapInfo {
         if (!float32Array) {
             // eslint-disable-next-line no-throw-literal
             throw "ConvertPanoramaToCubemap: input cannot be null";
         }
 
+        let stride = 0;
         if (float32Array.length != inputWidth * inputHeight * 3) {
-            // eslint-disable-next-line no-throw-literal
-            throw "ConvertPanoramaToCubemap: input size is wrong";
+            if (float32Array.length != inputWidth * inputHeight * 4) {
+                // eslint-disable-next-line no-throw-literal
+                throw "ConvertPanoramaToCubemap: input size is wrong";
+            } else {
+                stride = 4;
+            }
+        } else {
+            stride = 3;
         }
 
-        const textureFront = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight, supersample);
-        const textureBack = this.CreateCubemapTexture(size, this.FACE_BACK, float32Array, inputWidth, inputHeight, supersample);
-        const textureLeft = this.CreateCubemapTexture(size, this.FACE_LEFT, float32Array, inputWidth, inputHeight, supersample);
-        const textureRight = this.CreateCubemapTexture(size, this.FACE_RIGHT, float32Array, inputWidth, inputHeight, supersample);
-        const textureUp = this.CreateCubemapTexture(size, this.FACE_UP, float32Array, inputWidth, inputHeight, supersample);
-        const textureDown = this.CreateCubemapTexture(size, this.FACE_DOWN, float32Array, inputWidth, inputHeight, supersample);
+        const textureFront = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight, supersample, invertY, stride);
+        const textureBack = this.CreateCubemapTexture(size, this.FACE_BACK, float32Array, inputWidth, inputHeight, supersample, invertY, stride);
+        const textureLeft = this.CreateCubemapTexture(size, this.FACE_LEFT, float32Array, inputWidth, inputHeight, supersample, invertY, stride);
+        const textureRight = this.CreateCubemapTexture(size, this.FACE_RIGHT, float32Array, inputWidth, inputHeight, supersample, invertY, stride);
+        const textureUp = this.CreateCubemapTexture(size, this.FACE_UP, float32Array, inputWidth, inputHeight, supersample, invertY, stride);
+        const textureDown = this.CreateCubemapTexture(size, this.FACE_DOWN, float32Array, inputWidth, inputHeight, supersample, invertY, stride);
 
         return {
             front: textureFront,
@@ -123,7 +131,16 @@ export class PanoramaToCubeMapTools {
         };
     }
 
-    private static CreateCubemapTexture(texSize: number, faceData: Vector3[], float32Array: Float32Array, inputWidth: number, inputHeight: number, supersample = false) {
+    private static CreateCubemapTexture(
+        texSize: number,
+        faceData: Vector3[],
+        float32Array: Float32Array,
+        inputWidth: number,
+        inputHeight: number,
+        supersample: boolean,
+        invertY: boolean,
+        stride: number
+    ): Float32Array {
         const buffer = new ArrayBuffer(texSize * texSize * 4 * 3);
         const textureArray = new Float32Array(buffer);
 
@@ -148,7 +165,7 @@ export class PanoramaToCubeMapTools {
                         const v = xv2.subtract(xv1).scale(fy).add(xv1);
                         v.normalize();
 
-                        const color = this.CalcProjectionSpherical(v, float32Array, inputWidth, inputHeight);
+                        const color = this.CalcProjectionSpherical(v, float32Array, inputWidth, inputHeight, stride, invertY);
 
                         // 3 channels per pixels
                         textureArray[y * texSize * 3 + x * 3 + 0] += color.r * sampleFactorSqr;
@@ -167,7 +184,7 @@ export class PanoramaToCubeMapTools {
         return textureArray;
     }
 
-    private static CalcProjectionSpherical(vDir: Vector3, float32Array: Float32Array, inputWidth: number, inputHeight: number): any {
+    private static CalcProjectionSpherical(vDir: Vector3, float32Array: Float32Array, inputWidth: number, inputHeight: number, stride: number, invertY: boolean): any {
         let theta = Math.atan2(vDir.z, vDir.x);
         const phi = Math.acos(vDir.y);
 
@@ -198,10 +215,10 @@ export class PanoramaToCubeMapTools {
             py = inputHeight - 1;
         }
 
-        const inputY = inputHeight - py - 1;
-        const r = float32Array[inputY * inputWidth * 3 + px * 3 + 0];
-        const g = float32Array[inputY * inputWidth * 3 + px * 3 + 1];
-        const b = float32Array[inputY * inputWidth * 3 + px * 3 + 2];
+        const inputY = invertY ? inputHeight - py - 1 : py;
+        const r = float32Array[inputY * inputWidth * stride + px * stride + 0];
+        const g = float32Array[inputY * inputWidth * stride + px * stride + 1];
+        const b = float32Array[inputY * inputWidth * stride + px * stride + 2];
 
         return {
             r: r,

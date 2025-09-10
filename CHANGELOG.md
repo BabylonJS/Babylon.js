@@ -1,5 +1,33 @@
 # Changelog
 
+## 8.26.1
+
+### Core
+
+- GreasedLineMesh: preallocate buffers - by [kzhsw](https://github.com/kzhsw) ([#17137](https://github.com/BabylonJS/Babylon.js/pull/17137))
+- Node Material: expose buildIsInProgress publicly - by [sebavan](https://github.com/sebavan) ([#17134](https://github.com/BabylonJS/Babylon.js/pull/17134))
+- FrameGraph: Disable needDepthPrePass in the geometry renderer task - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17133](https://github.com/BabylonJS/Babylon.js/pull/17133))
+- Depth Renderer: Allows a custom RTT to be passed through the constructor - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#17131](https://github.com/BabylonJS/Babylon.js/pull/17131))
+- Fix MergeMeshes issues with multimaterials - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17130](https://github.com/BabylonJS/Babylon.js/pull/17130))
+- Fixed tiled box vertex colors and positions - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#17125](https://github.com/BabylonJS/Babylon.js/pull/17125))
+- BoundingBoxGizmo: merge lines to a line system mesh - by [kzhsw](https://github.com/kzhsw) ([#17129](https://github.com/BabylonJS/Babylon.js/pull/17129))
+- Configurable default glTF loader options + expose function to load AssetContainer from serialized Babylon scene - by [ryantrem](https://github.com/ryantrem) ([#17117](https://github.com/BabylonJS/Babylon.js/pull/17117))
+- Bounding boxes: Fix bounding boxes not showing in some cases - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17123](https://github.com/BabylonJS/Babylon.js/pull/17123))
+- TAA: Fix scene UBO not updated with TAA matrices - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17121](https://github.com/BabylonJS/Babylon.js/pull/17121))
+- ObjectRenderer: Fix crash in ES6 when outline renderer is not imported - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17122](https://github.com/BabylonJS/Babylon.js/pull/17122))
+
+### Loaders
+
+- Configurable default glTF loader options + expose function to load AssetContainer from serialized Babylon scene - by [ryantrem](https://github.com/ryantrem) ([#17117](https://github.com/BabylonJS/Babylon.js/pull/17117))
+
+### Node Editor
+
+- Smart Filters Editor: Add Copy/Paste - by [AmoebaChant](https://github.com/AmoebaChant) ([#17119](https://github.com/BabylonJS/Babylon.js/pull/17119))
+
+### Serializers
+
+- Bvh Exporter Fix - by [yuripourre](https://github.com/yuripourre) ([#17135](https://github.com/BabylonJS/Babylon.js/pull/17135))
+
 ## 8.26.0
 
 ### Core
