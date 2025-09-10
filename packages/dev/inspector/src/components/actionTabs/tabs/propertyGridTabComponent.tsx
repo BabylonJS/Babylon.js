@@ -297,11 +297,11 @@ export class PropertyGridTabComponent extends PaneComponent {
             }
 
             if (className === "DirectionalLight") {
-                const pointLight = entity as DirectionalLight;
+                const directionalLight = entity as DirectionalLight;
                 return (
                     <DirectionalLightPropertyGridComponent
                         globalState={this.props.globalState}
-                        light={pointLight}
+                        light={directionalLight}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
@@ -309,11 +309,11 @@ export class PropertyGridTabComponent extends PaneComponent {
             }
 
             if (className === "SpotLight") {
-                const pointLight = entity as SpotLight;
+                const spotLight = entity as SpotLight;
                 return (
                     <SpotLightPropertyGridComponent
                         globalState={this.props.globalState}
-                        light={pointLight}
+                        light={spotLight}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onSelectionChangedObservable={this.props.onSelectionChangedObservable}
@@ -322,11 +322,11 @@ export class PropertyGridTabComponent extends PaneComponent {
             }
 
             if (className === "RectAreaLight") {
-                const pointLight = entity as RectAreaLight;
+                const rectAreaLight = entity as RectAreaLight;
                 return (
                     <RectAreaLightPropertyGridComponent
                         globalState={this.props.globalState}
-                        light={pointLight}
+                        light={rectAreaLight}
                         lockObject={this._lockObject}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         onSelectionChangedObservable={this.props.onSelectionChangedObservable}

@@ -1810,8 +1810,6 @@ export class Viewer implements IDisposable {
         high.pipeline.resetAccumulation();
         // shadow map
         this._shadowState.normal?.ground.setEnabled(false);
-        high.pipeline.toggleShadow(true);
-        high.ground.setEnabled(true);
         this._startIblShadowsRenderTime();
 
         this._shadowState.high = high;
