@@ -4,30 +4,6 @@ const path = require("path");
 
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
-    const standalone = env.mode === "standalone" || process.env.NODE_ENV === "standalone";
-
-    const aliasDist = standalone
-        ? {
-              "shared-ui-components": "@dev/shared-ui-components",
-              "inspector-v2": "@dev/inspector-v2",
-              addons: "@dev/addons",
-              materials: "@dev/materials",
-              core: "@dev/core",
-              loaders: "@dev/loaders",
-              gui: "@dev/gui",
-              serializers: "@dev/serializers",
-          }
-        : {
-              "shared-ui-components": path.resolve(__dirname, "../../dev/sharedUiComponents/dist"),
-              "inspector-v2": path.resolve(__dirname, "../../dev/inspector-v2/dist"),
-              addons: path.resolve(__dirname, "../../dev/addons/dist"),
-              materials: path.resolve(__dirname, "../../dev/materials/dist"),
-              core: path.resolve(__dirname, "../../dev/core/dist"),
-              loaders: path.resolve(__dirname, "../../dev/loaders/dist"),
-              gui: path.resolve(__dirname, "../../dev/gui/dist"),
-              serializers: path.resolve(__dirname, "../../dev/serializers/dist"),
-          };
-
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
@@ -49,8 +25,17 @@ module.exports = (env) => {
             ]
         ),
         resolve: {
-            extensions: [".js", ".ts", ".tsx", ".scss", ".svg"],
-            alias: aliasDist,
+            extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
+            alias: {
+                "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
+                "inspector-v2": path.resolve("../../dev/inspector-v2/dist"),
+                addons: path.resolve("../../dev/addons/dist"),
+                materials: path.resolve("../../dev/materials/dist"),
+                core: path.resolve("../../dev/core/dist"),
+                loaders: path.resolve("../../dev/loaders/dist"),
+                gui: path.resolve("../../dev/gui/dist"),
+                serializers: path.resolve("../../dev/serializers/dist"),
+            },
         },
         externals: [
             function ({ context, request }, callback) {
