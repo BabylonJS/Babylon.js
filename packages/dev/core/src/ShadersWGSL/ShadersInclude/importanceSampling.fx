@@ -87,6 +87,45 @@ fn hemisphereImportanceSampleDggx(u: vec2f, a: f32) -> vec3f {
     return  vec3f(sinTheta * cos(phi), sinTheta * sin(phi), cosTheta);
 }
 
+// Helper function for anisotropic GGX importance sampling
+fn hemisphereImportanceSampleDggxAnisotropic(Xi: vec2f, alphaTangent: f32, alphaBitangent: f32) -> vec3f
+{
+    // Clamp to avoid division by zero but allow extreme anisotropy
+    var alphaT: f32 = max(alphaTangent, 0.0001);
+    var alphaB: f32 = max(alphaBitangent, 0.0001);
+    
+    // Transform uniform sample to anisotropic distribution
+    // This is the correct formula from "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"
+    
+    // Sample azimuthal angle phi
+    var phi: f32 = atan(alphaB / alphaT * tan(2.0 * PI * Xi.x + 0.5 * PI));
+    if (Xi.x > 0.5) {
+        phi += PI;
+    }
+    
+    var cosPhi: f32 = cos(phi);
+    var sinPhi: f32 = sin(phi);
+    
+    // Sample polar angle theta
+    var alphaTangent2: f32 = alphaT * alphaT;
+    var alphaBitangent2: f32 = alphaB * alphaB;
+    
+    var tanTheta2: f32 = Xi.y / (1.0 - Xi.y);
+    var alpha2_effective: f32 = (cosPhi * cosPhi * alphaTangent2) + (sinPhi * sinPhi * alphaBitangent2);
+    tanTheta2 = tanTheta2 * alpha2_effective;
+    
+    var cosTheta: f32 = 1.0 / sqrt(1.0 + tanTheta2);
+    var sinTheta: f32 = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
+    
+    // Build the microfacet normal in tangent space
+    var H: vec3f;
+    H.x = sinTheta * cosPhi;
+    H.y = sinTheta * sinPhi;
+    H.z = cosTheta;
+    
+    return normalize(H);
+}
+
 //
 //
 // Importance sampling Charlie

@@ -2938,6 +2938,11 @@
             "title": "OpenPBR Anisotropy - glTF style",
             "playgroundId": "#GRQHVV#67",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Anisotropy - Realtime Filtered IBL",
+            "playgroundId": "#GRQHVV#71",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

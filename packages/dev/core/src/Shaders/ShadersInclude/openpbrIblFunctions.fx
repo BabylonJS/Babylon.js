@@ -175,19 +175,6 @@
 
         #ifdef REALTIME_FILTERING
             environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
-        // #elif defined(ANISOTROPIC)
-        //     vec4 radianceSample = vec4(0.0);
-        //     const int samples = 16;
-        //     for (int i = 0; i < samples; ++i) {
-        //         float t = (float(i) * (1.0f / float(max(samples - 1, 1))) - 0.5f) * 3.14159 * alphaT;
-        //         vec3 perturbed_N = geoInfo.anisotropicTangent * t;
-        //         // Add noise (mostly in the tangent direction) to smooth out sampling
-        //         // perturbed_N.xy += new_noise.xy;
-                
-        //         vec3 newCoords = normalize(reflectionCoords + perturbed_N);
-        //         radianceSample += sampleReflectionLod(reflectionSampler, newCoords, reflectionLOD);
-        //     }
-        //     environmentRadiance = vec4(radianceSample.xyz / float(samples), 1.0);
         #else
             environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
         #endif
@@ -247,7 +234,22 @@
         reflectionLOD = reflectionLOD * vReflectionMicrosurfaceInfos.y + vReflectionMicrosurfaceInfos.z;
 
         #ifdef REALTIME_FILTERING
-            environmentRadiance = vec4(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+            vec3 view = (reflectionMatrix * vec4(viewDirectionW, 0.0)).xyz;
+            vec3 tangent = (reflectionMatrix * vec4(geoInfo.anisotropicTangent, 0.0)).xyz;
+            vec3 bitangent = (reflectionMatrix * vec4(geoInfo.anisotropicBitangent, 0.0)).xyz;
+            vec3 normal = (reflectionMatrix * vec4(normalW, 0.0)).xyz;
+            #ifdef REFLECTIONMAP_OPPOSITEZ
+                view.z *= -1.0;
+                tangent.z *= -1.0;
+                bitangent.z *= -1.0;
+                normal.z *= -1.0;
+            #endif
+            environmentRadiance =
+                vec4(radianceAnisotropic(alphaT, alphaB, reflectionSampler,
+                                     view, tangent,
+                                     bitangent, normal,
+                                     vReflectionFilteringInfo, noise.xy),
+                 1.0);
         #else
             // We will sample multiple reflections using interpolated surface normals along
             // the tangent direction from -tangent to +tangent.

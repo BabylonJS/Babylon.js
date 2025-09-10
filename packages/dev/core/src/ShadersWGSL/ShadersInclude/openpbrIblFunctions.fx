@@ -231,7 +231,22 @@
         reflectionLOD = reflectionLOD * reflectionMicrosurfaceInfos.y + reflectionMicrosurfaceInfos.z;
 
         #ifdef REALTIME_FILTERING
-            environmentRadiance = vec4f(radiance(modifiedAlphaG, reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionFilteringInfo), 1.0f);
+            var view = (uniforms.reflectionMatrix * vec4f(viewDirectionW, 0.0f)).xyz;
+            var tangent = (uniforms.reflectionMatrix * vec4f(geoInfo.anisotropicTangent, 0.0f)).xyz;
+            var bitangent = (uniforms.reflectionMatrix * vec4f(geoInfo.anisotropicBitangent, 0.0f)).xyz;
+            var normal = (uniforms.reflectionMatrix * vec4f(normalW, 0.0f)).xyz;
+            #ifdef REFLECTIONMAP_OPPOSITEZ
+                view.z *= -1.0f;
+                tangent.z *= -1.0f;
+                bitangent.z *= -1.0f;
+                normal.z *= -1.0f;
+            #endif
+            environmentRadiance =
+                vec4f(radianceAnisotropic(alphaT, alphaB, reflectionSampler, reflectionSamplerSampler,
+                                         view, tangent,
+                                         bitangent, normal,
+                                         reflectionFilteringInfo, noise.xy),
+                     1.0f);
         #else
             // We will sample multiple reflections using interpolated surface normals along
             // the tangent direction from -tangent to +tangent.
