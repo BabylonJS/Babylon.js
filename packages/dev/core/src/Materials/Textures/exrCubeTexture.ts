@@ -1,19 +1,17 @@
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { EnvCubeTexture } from "./envCubeTexture";
-import { GetCubeMapTextureData } from "../../Misc/HighDynamicRange/hdr";
 import { RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import "../../Materials/Textures/baseTexture.polynomial";
+import { PanoramaToCubeMapTools } from "../../Misc/HighDynamicRange/panoramaToCubemap";
 import type { CubeMapInfo } from "../../Misc/HighDynamicRange/panoramaToCubemap";
+import { ReadExrDataAsync } from "./Loaders/exrTextureLoader";
 
 /**
- * This represents a texture coming from an HDR input.
- *
- * The supported format is currently panorama picture stored in RGBE format.
- * Example of such files can be found on Poly Haven: https://polyhaven.com/hdris
+ * This represents a texture coming from an EXR input.
  */
-export class HDRCubeTexture extends EnvCubeTexture {
+export class EXRCubeTexture extends EnvCubeTexture {
     /**
      * Instantiates an HDRTexture from the following parameters.
      *
@@ -49,10 +47,10 @@ export class HDRCubeTexture extends EnvCubeTexture {
 
     /**
      * Get the current class name of the texture useful for serialization or dynamic coding.
-     * @returns "HDRCubeTexture"
+     * @returns "EXRCubeTexture"
      */
     public override getClassName(): string {
-        return "HDRCubeTexture";
+        return "EXRCubeTexture";
     }
 
     /**
@@ -63,11 +61,17 @@ export class HDRCubeTexture extends EnvCubeTexture {
      * @returns The cube map data
      */
     protected async _getCubeMapTextureDataAsync(buffer: ArrayBuffer, size: number, supersample: boolean): Promise<CubeMapInfo> {
-        return GetCubeMapTextureData(buffer, size, supersample);
+        const exrData = await ReadExrDataAsync(buffer);
+        if (!exrData.data) {
+            throw new Error("EXR data could not be decoded.");
+        }
+
+        const cubeMapData = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(exrData.data, exrData.width, exrData.height, size, supersample, false);
+        return cubeMapData;
     }
 
     protected _instantiateClone(): this {
-        return new HDRCubeTexture(this.url, this.getScene() || this._getEngine()!, this._size, this._noMipmap, this._generateHarmonics, this.gammaSpace) as this;
+        return new EXRCubeTexture(this.url, this.getScene() || this._getEngine()!, this._size, this._noMipmap, this._generateHarmonics, this.gammaSpace) as this;
     }
 
     /**
@@ -80,24 +84,24 @@ export class HDRCubeTexture extends EnvCubeTexture {
             return null;
         }
 
-        serializationObject.customType = "BABYLON.HDRCubeTexture";
+        serializationObject.customType = "BABYLON.EXRCubeTexture";
 
         return serializationObject;
     }
 
     /**
-     * Parses a JSON representation of an HDR Texture in order to create the texture
+     * Parses a JSON representation of an EXR Texture in order to create the texture
      * @param parsedTexture Define the JSON representation
      * @param scene Define the scene the texture should be created in
      * @param rootUrl Define the root url in case we need to load relative dependencies
      * @returns the newly created texture after parsing
      */
-    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<HDRCubeTexture> {
+    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<EXRCubeTexture> {
         if (!parsedTexture.name || parsedTexture.isRenderTarget) {
             return null;
         }
 
-        const texture = new HDRCubeTexture(
+        const texture = new EXRCubeTexture(
             rootUrl + parsedTexture.name,
             scene,
             parsedTexture.size,
@@ -110,4 +114,4 @@ export class HDRCubeTexture extends EnvCubeTexture {
     }
 }
 
-RegisterClass("BABYLON.HDRCubeTexture", HDRCubeTexture);
+RegisterClass("BABYLON.EXRCubeTexture", EXRCubeTexture);

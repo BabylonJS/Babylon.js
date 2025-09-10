@@ -22,7 +22,7 @@ import { RandomRange } from "../../../Maths/math.scalar.functions";
 import { RawTexture } from "../../../Materials/Textures/rawTexture";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
-import { ShaderLanguage } from "core/Materials";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Render pipeline to produce ssao effect
