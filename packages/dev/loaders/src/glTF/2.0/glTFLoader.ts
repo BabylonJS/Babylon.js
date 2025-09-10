@@ -85,7 +85,7 @@ import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import { Lazy } from "core/Misc/lazy";
-import { MaterialLoadingAdapter } from "./materialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "./iMaterialLoadingAdapter";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
 const LazyAnimationGroupModulePromise = new Lazy(() => import("core/Animations/animationGroup"));
@@ -225,6 +225,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _rootBabylonMesh: Nullable<TransformNode> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
+    private readonly _materialAdapterCache = new WeakMap<Material, IMaterialLoadingAdapter>();
 
     /** @internal */
     public _pbrMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial | null = null;
@@ -309,6 +310,52 @@ export class GLTFLoader implements IGLTFLoader {
      */
     constructor(parent: GLTFFileLoader) {
         this._parent = parent;
+    }
+
+    /**
+     * Creates or gets a cached material loading adapter with dynamic imports
+     * @param material The material to adapt
+     * @returns Promise that resolves to the appropriate adapter
+     * @internal
+     */
+    public async _getOrCreateMaterialAdapterAsync(material: Material): Promise<IMaterialLoadingAdapter> {
+        let adapter = this._materialAdapterCache.get(material);
+        if (!adapter) {
+            adapter = await this._createMaterialAdapterAsync(material);
+            this._materialAdapterCache.set(material, adapter);
+        }
+        return adapter;
+    }
+
+    /**
+     * Gets a cached material loading adapter (must be created first with _getOrCreateMaterialAdapterAsync)
+     * @param material The material to get adapter for
+     * @returns The cached adapter or null if not found
+     * @internal
+     */
+    public _getMaterialAdapter(material: Material): Nullable<IMaterialLoadingAdapter> {
+        return this._materialAdapterCache.get(material) ?? null;
+    }
+
+    /**
+     * Creates a material loading adapter with dynamic imports
+     * @param material The material to adapt
+     * @returns Promise that resolves to the appropriate adapter
+     * @internal
+     */
+    private async _createMaterialAdapterAsync(material: Material): Promise<IMaterialLoadingAdapter> {
+        const materialClassName = material.getClassName();
+        if (materialClassName === "OpenPBRMaterial") {
+            // Dynamically import OpenPBR adapter only when needed
+            const { OpenPBRMaterialLoadingAdapter } = await import("./openPbrMaterialLoadingAdapter");
+            return new OpenPBRMaterialLoadingAdapter(material);
+        } else if (materialClassName === "PBRMaterial") {
+            // Dynamically import PBR adapter only when needed
+            const { PBRMaterialLoadingAdapter } = await import("./pbrMaterialLoadingAdapter");
+            return new PBRMaterialLoadingAdapter(material);
+        } else {
+            throw new Error(`Unsupported material type: ${materialClassName}`);
+        }
     }
 
     /** @internal */
@@ -2159,7 +2206,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const promises = new Array<Promise<unknown>>();
-        const adapter = new MaterialLoadingAdapter(babylonMaterial, this.parent.useOpenPBR);
+        const adapter: IMaterialLoadingAdapter = this._getMaterialAdapter(babylonMaterial)!;
 
         if (properties) {
             // Set base color and alpha using adapter
@@ -2224,10 +2271,13 @@ export class GLTFLoader implements IGLTFLoader {
 
             const babylonMaterial = this.createMaterial(context, material, babylonDrawMode);
 
+            // Create the adapter for this material immediately after creation
+            const adapterPromise = this._getOrCreateMaterialAdapterAsync(babylonMaterial);
+
             babylonData = {
                 babylonMaterial: babylonMaterial,
                 babylonMeshes: [],
-                promise: this.loadMaterialPropertiesAsync(context, material, babylonMaterial),
+                promise: adapterPromise.then(() => this.loadMaterialPropertiesAsync(context, material, babylonMaterial)),
             };
 
             material._data[babylonDrawMode] = babylonData;
@@ -2264,22 +2314,8 @@ export class GLTFLoader implements IGLTFLoader {
         const babylonMaterial = new this._pbrMaterialClass(name, this._babylonScene);
         babylonMaterial._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
-
-        // Create adapter for unified property access
-        const adapter = new MaterialLoadingAdapter(babylonMaterial, this.parent.useOpenPBR);
-
-        // Moved to mesh so user can change materials on gltf meshes: babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
-        if (!this.parent.useOpenPBR) {
-            (babylonMaterial as PBRMaterial).enableSpecularAntiAliasing = true;
-            (babylonMaterial as PBRMaterial).useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
-            (babylonMaterial as PBRMaterial).useSpecularOverAlpha = !this._parent.transparencyAsCoverage;
-        }
         babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_OPAQUE;
-
-        // Set default metallic and roughness values using adapter
-        adapter.baseMetalness = 1.0;
-        adapter.specularRoughness = 1.0;
 
         return babylonMaterial;
     }
@@ -2311,6 +2347,13 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves when the load is complete
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
+        const adapter = this._getMaterialAdapter(babylonMaterial)!;
+        adapter.transparencyAsAlphaCoverage = this._parent.transparencyAsCoverage;
+
+        // Set default metallic and roughness values
+        adapter.baseMetalness = 1.0;
+        adapter.specularRoughness = 1.0;
+
         const extensionPromise = this._extensionsLoadMaterialPropertiesAsync(context, material, babylonMaterial);
         if (extensionPromise) {
             return extensionPromise;
@@ -2342,7 +2385,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const promises = new Array<Promise<unknown>>();
-        const adapter = new MaterialLoadingAdapter(babylonMaterial, this.parent.useOpenPBR);
+        const adapter = this._getMaterialAdapter(babylonMaterial)!;
 
         // Set emission color using adapter
         adapter.emissionColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
@@ -2421,7 +2464,7 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        const adapter = new MaterialLoadingAdapter(babylonMaterial, this.parent.useOpenPBR);
+        const adapter = this._getMaterialAdapter(babylonMaterial)!;
         const baseColorTexture = adapter.baseColorTexture;
 
         const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;

@@ -6,7 +6,7 @@ import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
 import type { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_sheen";
 
@@ -77,7 +77,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately

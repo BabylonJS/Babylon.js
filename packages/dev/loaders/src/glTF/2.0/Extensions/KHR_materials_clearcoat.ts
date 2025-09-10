@@ -7,7 +7,7 @@ import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { EXT_materials_clearcoat_darkening } from "./EXT_materials_clearcoat_darkening";
 import type { EXT_materials_clearcoat_color } from "./EXT_materials_clearcoat_color";
-import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -100,7 +100,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately

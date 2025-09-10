@@ -6,7 +6,7 @@ import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
-import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 import type { Scene } from "core/scene";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Texture } from "core/Materials/Textures/texture";
@@ -383,7 +383,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
         const transmissionWeight = extension.transmissionFactor !== undefined ? extension.transmissionFactor : 0.0;
 
         if (transmissionWeight === 0) {
@@ -395,7 +395,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
         adapter.transmissionWeight = transmissionWeight;
 
         // Handle transmission helper setup (only needed for PBR materials)
-        if (!adapter.isOpenPBR && transmissionWeight > 0) {
+        if (transmissionWeight > 0) {
             const scene = babylonMaterial.getScene() as unknown as ITransmissionHelperHolder;
             if (!scene._transmissionHelper) {
                 new TransmissionHelper({}, babylonMaterial.getScene());

@@ -5,7 +5,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 import { Vector2 } from "core/Maths/math.vector";
 
 const NAME = "KHR_materials_anisotropy";
@@ -74,7 +74,7 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
             throw new Error(`${context}: PBR Material class not loaded`);
         }
 
-        const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately

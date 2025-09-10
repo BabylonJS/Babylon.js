@@ -6,7 +6,7 @@ import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
 import type { IEXTMaterialsSpecularEdgeColor, IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { MaterialLoadingAdapter } from "../materialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_specular";
 
@@ -67,11 +67,11 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
             // Handle the EXT_materials_specular_edge_color sub-extension
             // https://github.com/KhronosGroup/glTF/blob/2a1111b88f052cbd3e2d82abb9faee56e7494904/extensions/2.0/Vendor/EXT_materials_specular_edge_color/README.md
-            const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
-            if (!adapter.isOpenPBR && extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
+            const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
+            if (extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
                 const specularEdgeColorExtension = extension.extensions.EXT_materials_specular_edge_color as IEXTMaterialsSpecularEdgeColor;
                 if (specularEdgeColorExtension.specularEdgeColorEnabled) {
-                    adapter.configureSpecular(true);
+                    adapter.enableSpecularEdgeColor(true);
                 }
             }
             // eslint-disable-next-line github/no-then
@@ -85,7 +85,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        const adapter = MaterialLoadingAdapter.GetOrCreate(babylonMaterial, this._loader.parent.useOpenPBR);
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately
