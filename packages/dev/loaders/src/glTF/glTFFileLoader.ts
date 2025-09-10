@@ -306,6 +306,11 @@ class GLTFLoaderBaseOptions {
      * Defines if the loader should validate the asset.
      */
     public validate = false;
+
+    /**
+     * Load the glTF files using the OpenPBR material.
+     */
+    public useOpenPBR = false;
 }
 
 /**
@@ -434,11 +439,6 @@ abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
      * @returns Async url to load
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
-
-    /**
-     * Load the glTF files using the OpenPBR material.
-     */
-    public useOpenPBR = false;
 }
 
 /**
