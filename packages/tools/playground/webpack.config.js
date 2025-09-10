@@ -4,57 +4,29 @@ const path = require("path");
 
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
-    const base = webpackTools.commonDevWebpackConfiguration(
-        {
-            ...env,
-            outputFilename: "babylon.playground.js",
-            dirName: __dirname,
-            enableHotReload: true,
-        },
-        {
-            static: ["public"],
-            port: process.env.PLAYGROUND_PORT || 1338,
-        },
-        [
-            new MonacoWebpackPlugin({
-                languages: ["typescript", "javascript"],
-                filename: "static/[name].worker.js",
-                publicPath: "/",
-            }),
-        ]
-    );
-
-    return {
-        ...base,
-
-        entry: { "babylon.playground": "./src/legacy/legacy.ts" },
-
-        output: {
-            ...(base.output || {}),
-            path: path.resolve(__dirname, "dist"),
-            publicPath: "/",
-            filename: "[name].js",
-            chunkFilename: "chunks/[name].[contenthash].js",
-            assetModuleFilename: "assets/[name][ext]",
-            clean: true,
-        },
-
-        optimization: {
-            ...(base.optimization || {}),
-            chunkIds: "deterministic",
-            moduleIds: "deterministic",
-            splitChunks: {
-                ...((base.optimization && base.optimization.splitChunks) || {}),
-                chunks: "all",
+    const commonConfig = {
+        entry: "./src/legacy/legacy.ts",
+        ...webpackTools.commonDevWebpackConfiguration(
+            {
+                ...env,
+                outputFilename: "babylon.playground.js",
+                dirName: __dirname,
+                enableHotReload: true,
             },
-            runtimeChunk: (base.optimization && base.optimization.runtimeChunk) || "single",
-        },
-
+            {
+                static: ["public"],
+                port: process.env.PLAYGROUND_PORT || 1338,
+            },
+            [
+                new MonacoWebpackPlugin({
+                    // publicPath: "public/",
+                    languages: ["typescript", "javascript"],
+                }),
+            ]
+        ),
         resolve: {
-            ...(base.resolve || {}),
-            extensions: [".js", ".ts", ".tsx", ".scss", ".svg"],
+            extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
-                ...(base.resolve && base.resolve.alias ? base.resolve.alias : {}),
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/dist"),
                 "inspector-v2": path.resolve("../../dev/inspector-v2/dist"),
                 addons: path.resolve("../../dev/addons/dist"),
@@ -65,40 +37,43 @@ module.exports = (env) => {
                 serializers: path.resolve("../../dev/serializers/dist"),
             },
         },
-
         externals: [
             function ({ context, request }, callback) {
                 if (/^@dev\/core$/.test(request)) {
                     return callback(null, "BABYLON");
                 }
-                if (context && context.includes("inspector-v2")) {
+
+                if (context.includes("inspector-v2")) {
                     if (/^core\//.test(request)) {
                         return callback(null, "BABYLON");
-                    }
-                    if (/^loaders\//.test(request)) {
+                    } else if (/^loaders\//.test(request)) {
                         return callback(null, "BABYLON");
-                    }
-                    if (/^addons\//.test(request)) {
+                    } else if (/^addons\//.test(request)) {
                         return callback(null, "ADDONS");
-                    }
-                    if (/^materials\//.test(request)) {
+                    } else if (/^materials\//.test(request)) {
                         return callback(null, "BABYLON");
-                    }
-                    if (/^gui\//.test(request)) {
+                    } else if (/^gui\//.test(request)) {
                         return callback(null, "BABYLON.GUI");
                     }
                 }
+
+                // Continue without externalizing the import
                 callback();
             },
         ],
-
         module: {
             rules: webpackTools.getRules({
                 sideEffects: true,
                 includeCSS: true,
                 extraRules: [
-                    { test: /\.ttf$/, type: "asset/resource" },
-                    { test: /\.svg$/, use: ["@svgr/webpack"] },
+                    {
+                        test: /\.ttf$/,
+                        type: "asset/resource",
+                    },
+                    {
+                        test: /\.svg$/,
+                        use: ["@svgr/webpack"],
+                    },
                 ],
                 tsOptions: {
                     compilerOptions: {
@@ -109,4 +84,5 @@ module.exports = (env) => {
             }),
         },
     };
+    return commonConfig;
 };
