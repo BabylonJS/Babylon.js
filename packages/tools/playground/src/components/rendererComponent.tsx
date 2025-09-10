@@ -24,15 +24,23 @@ declare const Recast: any;
 declare const HavokPhysics: any;
 declare const HK: any;
 
+/**
+ *
+ */
 export class RenderingComponent extends React.Component<IRenderingComponentProps> {
+    /** Engine instance for current run */
     private _engine: Nullable<Engine>;
+    /** Active scene */
     private _scene: Nullable<Scene>;
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
     private _babylonToolkitWasLoaded = false;
-    private _tmpErrorEvent?: ErrorEvent;
     private _inspectorFallback: boolean = false;
 
+    /**
+     * Create the rendering component.
+     * @param props Props
+     */
     public constructor(props: IRenderingComponentProps) {
         super(props);
 
@@ -110,8 +118,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         window.addEventListener("error", this._saveError);
     }
 
-    private _saveError = (err: ErrorEvent) => {
-        this._tmpErrorEvent = err;
+    private _saveError = (_err: ErrorEvent) => {
+        // no-op placeholder retained for backward compatibility
     };
 
     private async _loadScriptAsync(url: string): Promise<void> {
@@ -203,7 +211,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             while ((audioEngine = LastCreatedAudioEngine())) {
                 audioEngine.dispose();
             }
-        } catch (ex) {
+        } catch {
             // just ignore
         }
 
@@ -219,6 +227,32 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             const canvas = this._canvasRef.current!;
             globalObject.canvas = canvas;
+
+            // Define startRenderLoop once (PG_V2 + legacy) before any bootstrap uses it
+            globalObject.startRenderLoop = (engine: Engine, canvasEl: HTMLCanvasElement) => {
+                engine.runRenderLoop(() => {
+                    if (!this._scene || !this._engine) {
+                        return;
+                    }
+
+                    if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
+                        if (canvasEl.width !== canvasEl.clientWidth || canvasEl.height !== canvasEl.clientHeight) {
+                            this._engine.resize();
+                        }
+                    }
+
+                    if (this._scene.activeCamera || this._scene.frameGraph || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
+                        this._scene.render();
+                    }
+
+                    // Update FPS if camera is not a webxr camera
+                    if (!(this._scene.activeCamera && this._scene.activeCamera.getClassName && this._scene.activeCamera.getClassName() === "WebXRCamera")) {
+                        if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
+                            this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
+                        }
+                    }
+                });
+            };
 
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function () {
@@ -266,8 +300,70 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 return;
             }
 
+            // Multi-file V2 module pipeline detection
+            const isPGV2 = code.startsWith("/*PG_V2*/");
+
             code = this._sanitizeCode(code);
 
+            if (isPGV2) {
+                // Evaluate bootstrap (defines window.__pg_v2_run)
+                try {
+                    Utilities.FastEval(code);
+                } catch (e) {
+                    (window as any).handleException(e);
+                    this._preventReentrancy = false;
+                    return;
+                }
+                // Prepare engine creation function wrappers (like legacy path) but defer scene creation to pg_v2 run
+                let createEngineFunction = "createDefaultEngine";
+                if (code.indexOf("createEngine") !== -1) {
+                    createEngineFunction = "createEngine";
+                }
+
+                // Build initFunction similar to legacy but without createScene invocation yet
+                const v2Init = `window.initFunction = async function() {\n${""}var asyncEngineCreation = async function() {\ntry { return ${createEngineFunction}(); } catch(e) { console.log('createEngine failed, falling back'); return createDefaultEngine(); }\n};\nwindow.engine = await asyncEngineCreation();\nif (!engine) throw 'engine should not be null.';\nstartRenderLoop(engine, canvas);\n}`;
+                try {
+                    Utilities.FastEval(v2Init);
+                } catch (e) {
+                    (window as any).handleException(e);
+                    this._preventReentrancy = false;
+                    return;
+                }
+                await (window as any).initFunction();
+                this._engine = (window as any).engine;
+                if (!this._engine) {
+                    this._preventReentrancy = false;
+                    return this._notifyError("createEngine function must return an engine.");
+                }
+                // Run module pipeline to obtain scene (supports async)
+                let sceneResult: any = null;
+                if (typeof (window as any).__pg_v2_run === "function") {
+                    try {
+                        sceneResult = await (window as any).__pg_v2_run(this._engine, this._canvasRef.current);
+                    } catch (err) {
+                        (window as any).handleException(err);
+                        this._preventReentrancy = false;
+                        return;
+                    }
+                } else {
+                    this._preventReentrancy = false;
+                    return this._notifyError("__pg_v2_run missing from bootstrap.");
+                }
+                if (!sceneResult) {
+                    this._preventReentrancy = false;
+                    return this._notifyError("createScene export not found or returned null.");
+                }
+                this._scene = sceneResult as Scene;
+                (window as any).scene = this._scene;
+                this._engine!.scenes[0]?.executeWhenReady(() => {
+                    this.props.globalState.onRunExecutedObservable.notifyObservers();
+                });
+                this._preventReentrancy = false;
+                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+                return;
+            }
+
+            // Legacy single-file pathway continues below
             // Check for Ammo.js
             let ammoInit = "";
             if (code.indexOf("AmmoJSPlugin") > -1 && typeof Ammo === "function") {
@@ -357,31 +453,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         ${audioInit}
                     }`;
                 code += "\r\nif (!engine) throw 'engine should not be null.';";
-
-                globalObject.startRenderLoop = (engine: Engine, canvas: HTMLCanvasElement) => {
-                    engine.runRenderLoop(() => {
-                        if (!this._scene || !this._engine) {
-                            return;
-                        }
-
-                        if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
-                            if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                                this._engine.resize();
-                            }
-                        }
-
-                        if (this._scene.activeCamera || this._scene.frameGraph || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
-                            this._scene.render();
-                        }
-
-                        // Update FPS if camera is not a webxr camera
-                        if (!(this._scene.activeCamera && this._scene.activeCamera.getClassName && this._scene.activeCamera.getClassName() === "WebXRCamera")) {
-                            if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
-                                this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
-                            }
-                        }
-                    });
-                };
+                // startRenderLoop already defined globally (legacy + v2)
                 code += "\r\nstartRenderLoop(engine, canvas);";
 
                 if (this.props.globalState.language === "JS") {
@@ -393,8 +465,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 }
 
                 code += `}`; // Finish "initFunction" definition.
-
-                this._tmpErrorEvent = undefined;
 
                 try {
                     // Execute the code
@@ -448,51 +518,47 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this._scene = globalObject.scene as Scene;
             }
 
-            if (checkSceneCount && this._engine.scenes.length === 0) {
+            if (!this._scene) {
+                const nodeTest = /createScene\(\)\s*{((.|\s)*?)new BABYLON/;
+                if (nodeTest.test(code)) {
+                    this._preventReentrancy = false;
+                    return this._notifyError("The createScene function must return the created scene.");
+                }
+
                 this._preventReentrancy = false;
-                return this._notifyError("You must at least create a scene.");
+                return this._notifyError("createScene function must return a scene.");
             }
 
-            if (this._engine.scenes[0] && displayInspector && !globalObject.scene.then) {
-                this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+            if (checkCamera && !this._scene.activeCamera) {
+                this._preventReentrancy = false;
+                return this._notifyError("Please add a camera to your scene.");
             }
 
-            if (checkCamera && this._engine.scenes[0].activeCamera == null) {
+            if (checkSceneCount && EngineStore.Instances[0].scenes.length > 1) {
                 this._preventReentrancy = false;
-                return this._notifyError("You must at least create a camera.");
-            } else if (globalObject.scene.then) {
-                globalObject.scene.then(
-                    () => {
-                        if (this._engine!.scenes[0] && displayInspector) {
-                            this.props.globalState.onInspectorRequiredObservable.notifyObservers();
-                        }
-                        this._engine!.scenes[0].executeWhenReady(() => {
-                            this.props.globalState.onRunExecutedObservable.notifyObservers();
-                        });
-                        this._preventReentrancy = false;
-                    },
-                    (err: any) => {
-                        // eslint-disable-next-line no-console
-                        console.error(err);
-                        this._preventReentrancy = false;
-                    }
-                );
-            } else {
-                this._engine.scenes[0].executeWhenReady(() => {
-                    this.props.globalState.onRunExecutedObservable.notifyObservers();
-                });
-                this._preventReentrancy = false;
+                return this._notifyError("Please make sure to ONLY return the main scene.");
             }
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error(err, "Retrying if possible. If this error persists please notify the team.");
-            this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
+
+            this._scene.executeWhenReady(() => {
+                if (displayInspector) {
+                    this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+                }
+                this.props.globalState.onRunExecutedObservable.notifyObservers();
+            });
+
+            this._preventReentrancy = false;
+            this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+        } catch (e) {
+            (window as any).handleException(e as Error);
             this._preventReentrancy = false;
         }
-        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
     }
 
+    /**
+     * Render canvas element
+     * @returns Canvas element
+     */
     public override render() {
-        return <canvas id="renderCanvas" ref={this._canvasRef}></canvas>;
+        return <canvas id="renderCanvas" ref={this._canvasRef} className={this.props.globalState.runtimeMode === RuntimeMode.Full ? "fullscreen" : ""}></canvas>;
     }
 }

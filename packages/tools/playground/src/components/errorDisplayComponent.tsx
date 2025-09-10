@@ -8,17 +8,43 @@ interface IErrorDisplayComponentProps {
     globalState: GlobalState;
 }
 
+/**
+ *
+ */
 export class CompilationError {
+    /**
+     *
+     */
     message:
         | string
         | {
+              /**
+               *
+               */
               messageText: string;
           };
+    /**
+     *
+     */
     lineNumber?: number;
+    /**
+     *
+     */
     columnNumber?: number;
 }
 
-export class ErrorDisplayComponent extends React.Component<IErrorDisplayComponentProps, { error: Nullable<CompilationError> }> {
+/**
+ *
+ */
+export class ErrorDisplayComponent extends React.Component<
+    IErrorDisplayComponentProps,
+    {
+        /**
+         *
+         */
+        error: Nullable<CompilationError>;
+    }
+> {
     public constructor(props: IErrorDisplayComponentProps) {
         super(props);
 
@@ -45,7 +71,7 @@ export class ErrorDisplayComponent extends React.Component<IErrorDisplayComponen
         if (!this.state.error) {
             return null;
         }
-
+        console.log("Error display", this.state.error);
         return (
             <div className="error-display" onClick={() => this._onClick()}>
                 {typeof this.state.error === "string" && this.state.error}

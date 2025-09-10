@@ -20,9 +20,16 @@ const DecodeBase64ToBinaryReproduced = (base64Data: string): ArrayBuffer => {
     return bufferView.buffer;
 };
 
+/**
+ *
+ */
 export class LoadManager {
     private _previousHash = "";
 
+    /**
+     * Creates a new LoadManager.
+     * @param globalState Shared global state.
+     */
     public constructor(public globalState: GlobalState) {
         // Check the url to prepopulate data
         this._checkHash();
@@ -99,19 +106,7 @@ export class LoadManager {
             xmlHttp.onreadystatechange = () => {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
-                        if (xmlHttp.responseText.indexOf("class Playground") !== -1) {
-                            if (this.globalState.language === "JS") {
-                                Utilities.SwitchLanguage("TS", this.globalState, true);
-                            }
-                        } else {
-                            // If we're loading JS content and it's TS page
-                            if (this.globalState.language === "TS") {
-                                Utilities.SwitchLanguage("JS", this.globalState, true);
-                            }
-                        }
-
                         const snippet = JSON.parse(xmlHttp.responseText);
-
                         // Check if title / descr / tags are already set
                         if (snippet.name != null && snippet.name != "") {
                             this.globalState.currentSnippetTitle = snippet.name;
@@ -143,6 +138,46 @@ export class LoadManager {
                             code = decoder.decode((DecodeBase64ToBinary || DecodeBase64ToBinaryReproduced)(encodedData));
                         }
 
+                        try {
+                            const maybeV2 = JSON.parse(code);
+                            if (maybeV2 && maybeV2.v === 2 && maybeV2.files && typeof maybeV2.files === "object") {
+                                const v2 = maybeV2 as {
+                                    v: 2;
+                                    language: "JS" | "TS";
+                                    entry: string;
+                                    imports?: Record<string, string>;
+                                    files: Record<string, string>;
+                                    meta?: { title?: string; description?: string; tags?: string[] };
+                                };
+
+                                if (v2.language !== this.globalState.language) {
+                                    Utilities.SwitchLanguage(v2.language, this.globalState, true);
+                                }
+
+                                if (!this.globalState.currentSnippetTitle && v2.meta?.title) {
+                                    this.globalState.currentSnippetTitle = v2.meta.title;
+                                }
+                                if (!this.globalState.currentSnippetDescription && v2.meta?.description) {
+                                    this.globalState.currentSnippetDescription = v2.meta.description;
+                                }
+                                if (!this.globalState.currentSnippetTags && v2.meta?.tags?.length) {
+                                    this.globalState.currentSnippetTags = v2.meta.tags.join(",");
+                                }
+
+                                this.globalState.onV2HydrateRequiredObservable.notifyObservers({
+                                    files: v2.files,
+                                    entry: v2.entry || (v2.language === "JS" ? "index.js" : "index.ts"),
+                                    imports: v2.imports || {},
+                                    language: v2.language,
+                                });
+
+                                this.globalState.loadingCodeInProgress = false;
+                                this.globalState.onMetadataUpdatedObservable.notifyObservers();
+
+                                return;
+                            }
+                        } catch {}
+
                         // check the engine
                         if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
                             // check if an engine is forced in the URL
@@ -164,7 +199,24 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
                             }
                         }
 
-                        this.globalState.onCodeLoaded.notifyObservers(code);
+                        const guessed = this._guessLanguageFromCode(code); // "TS" | "JS"
+                        if (guessed !== this.globalState.language) {
+                            Utilities.SwitchLanguage(guessed, this.globalState, true);
+                        }
+
+                        const fileName = guessed === "TS" ? "index.ts" : "index.js";
+
+                        queueMicrotask(() => {
+                            this.globalState.onV2HydrateRequiredObservable.notifyObservers({
+                                files: { [fileName]: code },
+                                entry: fileName,
+                                imports: {},
+                                language: guessed,
+                            });
+                        });
+
+                        this.globalState.loadingCodeInProgress = false;
+                        this.globalState.onMetadataUpdatedObservable.notifyObservers();
 
                         this.globalState.onMetadataUpdatedObservable.notifyObservers();
                     }
@@ -185,9 +237,36 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
 
             xmlHttp.open("GET", this.globalState.SnippetServerUrl + "/" + id.replace(/#/g, "/"));
             xmlHttp.send();
-        } catch (e) {
+        } catch {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             this.globalState.loadingCodeInProgress = false;
             this.globalState.onCodeLoaded.notifyObservers("");
         }
+    }
+    private _guessLanguageFromCode(code: string): "TS" | "JS" {
+        if (!code) {
+            return this.globalState.language as "TS" | "JS";
+        }
+
+        // Strong TS signals
+        const tsSignals = [
+            /\binterface\s+[A-Za-z_]\w*/m, // interface Foo
+            /\benum\s+[A-Za-z_]\w*/m, // enum X
+            /\btype\s+[A-Za-z_]\w*\s*=/m, // type T = ...
+            /\bimplements\s+[A-Za-z_]/m, // class C implements X
+            /\breadonly\b/m, // readonly
+            /\bpublic\b|\bprivate\b|\bprotected\b/m, // visibility modifiers
+            /\babstract\s+class\b/m, // abstract class
+            /\bas\s+const\b/m, // as const
+            /\bimport\s+type\s+/m, // import type { X }
+        ];
+
+        const hasTypeAnn = /[:]\s*[A-Za-z_$][\w$.<>,\s?\\[\]|&]*\b(?![:=])/m.test(code);
+
+        if (tsSignals.some((r) => r.test(code)) || hasTypeAnn) {
+            return "TS";
+        }
+
+        return "JS";
     }
 }

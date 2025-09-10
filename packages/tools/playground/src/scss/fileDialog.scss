@@ -1,0 +1,171 @@
+/* Modern File Dialog Styles */
+.file-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fade-in 0.15s ease-out;
+}
+
+.file-dialog {
+    background: var(--pg-menu-bg, #fff);
+    border: 1px solid var(--pg-divider, #e5e5e5);
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+    min-width: 400px;
+    max-width: 500px;
+    animation: dialog-appear 0.2s ease-out;
+}
+
+.file-dialog__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--pg-divider, #e5e5e5);
+}
+
+.file-dialog__header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--pg-fg-strong, #1a1a1a);
+}
+
+.file-dialog__close {
+    background: transparent;
+    border: none;
+    color: var(--pg-fg, #666);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    font-size: 18px;
+    line-height: 1;
+    transition: all 0.1s ease;
+}
+
+.file-dialog__close:hover {
+    background: var(--pg-btn-hover, #f0f0f0);
+    color: var(--pg-fg-strong, #1a1a1a);
+}
+
+.file-dialog__form {
+    padding: 20px 24px 24px;
+}
+
+.file-dialog__input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--pg-divider, #e5e5e5);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: ui-monospace, Menlo, 'Cascadia Code', Consolas, monospace;
+    background: var(--pg-input-bg, #fff);
+    color: var(--pg-fg, #1a1a1a);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+    margin-bottom: 16px;
+}
+
+.file-dialog__input:focus {
+    border-color: var(--pg-accent, #007acc);
+    box-shadow: 0 0 0 3px var(--pg-accent-alpha, rgba(0, 122, 204, 0.1));
+}
+
+.file-dialog__input::placeholder {
+    color: var(--pg-fg-muted, #888);
+}
+
+.file-dialog__actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.file-dialog__button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    border: none;
+    outline: none;
+}
+
+.file-dialog__button:focus {
+    box-shadow: 0 0 0 3px var(--pg-accent-alpha, rgba(0, 122, 204, 0.1));
+}
+
+.file-dialog__button--secondary {
+    background: var(--pg-btn-secondary-bg, #f6f6f6);
+    color: var(--pg-fg, #1a1a1a);
+    border: 1px solid var(--pg-divider, #e5e5e5);
+}
+
+.file-dialog__button--secondary:hover {
+    background: var(--pg-btn-secondary-hover, #eaeaea);
+}
+
+.file-dialog__button--primary {
+    background: var(--pg-accent, #007acc);
+    color: white;
+}
+
+.file-dialog__button--primary:hover:not(:disabled) {
+    background: var(--pg-accent-hover, #005a9e);
+}
+
+.file-dialog__button--primary:disabled {
+    background: var(--pg-btn-disabled, #ccc);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Animations */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes dialog-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .file-dialog {
+        --pg-menu-bg: #2d2d30;
+        --pg-divider: #3c3c3c;
+        --pg-fg-strong: #ffffff;
+        --pg-fg: #cccccc;
+        --pg-fg-muted: #888888;
+        --pg-input-bg: #1e1e1e;
+        --pg-btn-secondary-bg: #3c3c3c;
+        --pg-btn-secondary-hover: #464647;
+        --pg-btn-hover: #3c3c3c;
+        --pg-btn-disabled: #555555;
+        --pg-accent: #0e639c;
+        --pg-accent-hover: #1177bb;
+        --pg-accent-alpha: rgba(14, 99, 156, 0.3);
+    }
+}

@@ -1,10 +1,8 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-
 // import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
 // import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
-
 import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/languageFeatures";
 
 import type { GlobalState } from "../globalState";
@@ -15,37 +13,258 @@ import { debounce } from "ts-debounce";
 
 import type { editor } from "monaco-editor/esm/vs/editor/editor.api";
 
-//declare var monaco: any;
-
+/**
+ *
+ */
 export class MonacoManager {
     private _editor: editor.IStandaloneCodeEditor;
     private _definitionWorker: Worker;
-    private _tagCandidates: { name: string; tagName: string }[];
+    private _models: Map<string, monaco.editor.ITextModel> = new Map();
+    private _tagCandidates:
+        | {
+              /**
+               *
+               */
+              name: string;
+              /**
+               *
+               */
+              tagName: string;
+          }[]
+        | undefined;
     private _hostElement: HTMLDivElement;
     private _templates: {
+        /**
+         *
+         */
         label: string;
+        /**
+         *
+         */
         key: string;
+        /**
+         *
+         */
         documentation: string;
+        /**
+         *
+         */
         insertText: string;
+        /**
+         *
+         */
         language: string;
+        /**
+         *
+         */
         kind: number;
+        /**
+         *
+         */
         sortText: string;
+        /**
+         *
+         */
         insertTextRules: number;
-    }[];
+    }[] = [];
 
     private _isDirty = false;
 
+    // --- Bare import stubs + type acquisition state ---
+    private _bareImportStubDisposables: {
+        /**
+         *
+         */
+        ts?: monaco.IDisposable /**
+         *
+         */;
+        js?: monaco.IDisposable;
+    } = {};
+    private _typeLibDisposables: monaco.IDisposable[] = [];
+    private _acquiredSpecs = new Set<string>();
+    private _failedSpecs = new Set<string>();
+    private _pathsMap: Record<string, string[]> = {};
+    private _tsBaseOpts: monaco.languages.typescript.CompilerOptions | null = null;
+    private _jsBaseOpts: monaco.languages.typescript.CompilerOptions | null = null;
+
     public constructor(public globalState: GlobalState) {
-        this._templates = [];
         this._load(globalState);
     }
+
+    // ---------------- Multi-file (V2) model management ----------------
+
+    /**
+     *
+     * @param files
+     * @param activePath
+     * @param entryPath
+     * @param imports
+     */
+    public setFiles(files: Record<string, string>, activePath: string, entryPath?: string, imports?: Record<string, string>) {
+        const defaultEntry = this.globalState.language === "JS" ? "index.js" : "index.ts";
+        const entry = entryPath || defaultEntry;
+        if (!files[entry]) {
+            files[entry] = this.globalState.language === "JS" ? "// Entry file\n" : "// Entry file\n";
+        }
+        if (!activePath) {
+            activePath = entry;
+        }
+
+        // Dispose models not present anymore
+        for (const [p, m] of this._models) {
+            if (!files[p]) {
+                m.dispose();
+                this._models.delete(p);
+            }
+        }
+
+        const fallbackLang = this.globalState.language === "JS" ? "javascript" : "typescript";
+        // (Re)create models
+        for (const [path, code] of Object.entries(files)) {
+            const existing = this._models.get(path);
+            if (existing) {
+                if (existing.getValue() !== code) {
+                    existing.setValue(code);
+                }
+            } else {
+                const uri = monaco.Uri.file(path);
+                const model = monaco.editor.createModel(code, MonacoLanguageFor(path, fallbackLang), uri);
+                model.onDidChangeContent(() => {
+                    this.globalState.files[path] = model.getValue();
+                    this._isDirty = true;
+                });
+                this._models.set(path, model);
+            }
+        }
+
+        this.globalState.files = { ...files };
+        if (imports) {
+            this.globalState.importsMap = { ...imports };
+        }
+        this.globalState.entryFilePath = entry;
+        this.globalState.activeFilePath = activePath;
+        this.globalState.isMultiFile = true;
+
+        this.globalState.onFilesChangedObservable.notifyObservers();
+        this.globalState.onManifestChangedObservable.notifyObservers();
+
+        if (this._editor) {
+            const model = this._models.get(activePath) || [...this._models.values()][0];
+            if (model) {
+                this._editor.setModel(model);
+            }
+        }
+
+        // Ensure stubs / typings reflect the new file set
+        this._installBareImportStubs();
+    }
+
+    /**
+     *
+     * @returns Current in-memory files (multi-file mode).
+     */
+    public getFiles(): Record<string, string> {
+        const out: Record<string, string> = {};
+        for (const [p, m] of this._models) {
+            out[p] = m.getValue();
+        }
+        return out;
+    }
+
+    /**
+     *
+     * @param path Path of the file to switch to
+     */
+    public switchActiveFile(path: string) {
+        const model = this._models.get(path);
+        if (!model || !this._editor) {
+            return;
+        }
+        this._editor.setModel(model);
+        this.globalState.activeFilePath = path;
+        this.globalState.onActiveFileChangedObservable.notifyObservers();
+    }
+
+    /**
+     *
+     * @param path Path of the new file to add
+     * @param initial
+     */
+    public addFile(path: string, initial = "") {
+        // Auto-upgrade to multi-file if not already
+        if (!this.globalState.isMultiFile) {
+            const entry = this.globalState.entryFilePath || (this.globalState.language === "JS" ? "index.js" : "index.ts");
+            if (!this._models.has(entry)) {
+                const existingCode = this._editor?.getValue() || this.globalState.currentCode || initial;
+                const uri = monaco.Uri.file(entry);
+                const fallbackLang0 = this.globalState.language === "JS" ? "javascript" : "typescript";
+                const model0 = monaco.editor.createModel(existingCode, MonacoLanguageFor(entry, fallbackLang0), uri);
+                model0.onDidChangeContent(() => {
+                    this.globalState.files[entry] = model0.getValue();
+                    this._isDirty = true;
+                });
+                this._models.set(entry, model0);
+                this.globalState.files[entry] = existingCode;
+                this.globalState.activeFilePath = entry;
+                this.globalState.entryFilePath = entry;
+            }
+            this.globalState.isMultiFile = true;
+        }
+        if (this._models.has(path)) {
+            return;
+        }
+
+        const fallbackLang = this.globalState.language === "JS" ? "javascript" : "typescript";
+        const uri = monaco.Uri.file(path);
+        const model = monaco.editor.createModel(initial, MonacoLanguageFor(path, fallbackLang), uri);
+        model.onDidChangeContent(() => {
+            this.globalState.files[path] = model.getValue();
+            this._isDirty = true;
+        });
+        this._models.set(path, model);
+        this.globalState.files[path] = initial;
+        this.switchActiveFile(path);
+        this.globalState.onFilesChangedObservable.notifyObservers();
+        this.globalState.onManifestChangedObservable.notifyObservers();
+    }
+
+    /**
+     *
+     * @param path Path of the file to remove
+     */
+    public removeFile(path: string) {
+        const m = this._models.get(path);
+        if (m) {
+            m.dispose();
+            this._models.delete(path);
+        }
+        delete this.globalState.files[path];
+
+        const fallback = this.globalState.language === "JS" ? "index.js" : "index.ts";
+        if (this.globalState.entryFilePath === path) {
+            if (!this.globalState.files[fallback]) {
+                this.addFile(fallback, "// Entry file\n");
+            }
+            this.globalState.entryFilePath = fallback;
+        }
+        if (!this.globalState.files[fallback]) {
+            this.addFile(fallback, "// Entry file\n");
+        }
+
+        const next = Object.keys(this.globalState.files)[0] || fallback;
+        this.switchActiveFile(next);
+        this.globalState.onFilesChangedObservable.notifyObservers();
+        this.globalState.onManifestChangedObservable.notifyObservers();
+    }
+
+    // ---------------- Boot / wiring ----------------
 
     private _load(globalState: GlobalState) {
         window.addEventListener("beforeunload", (evt) => {
             if (this._isDirty && Utilities.ReadBoolFromStore("safe-mode", false)) {
                 const message = "Are you sure you want to leave. You have unsaved work.";
                 evt.preventDefault();
-                evt.returnValue = message;
+                (evt as any).returnValue = message;
             }
         });
 
@@ -79,15 +298,17 @@ export class MonacoManager {
         globalState.onCodeLoaded.add((code) => {
             if (!code) {
                 this._setDefaultContent();
+                this._installBareImportStubs();
                 return;
             }
-
             if (this._editor) {
-                this._editor?.setValue(code);
+                this._editor.setValue(code);
                 this._isDirty = false;
                 this.globalState.onRunRequiredObservable.notifyObservers();
+                this._installBareImportStubs();
             } else {
                 this.globalState.currentCode = code;
+                this._installBareImportStubs();
             }
         });
 
@@ -96,45 +317,48 @@ export class MonacoManager {
         });
 
         globalState.onMinimapChangedObservable.add((value) => {
-            this._editor?.updateOptions({
-                minimap: {
-                    enabled: value,
-                },
-            });
+            this._editor?.updateOptions({ minimap: { enabled: value } });
         });
 
         globalState.onFontSizeChangedObservable.add(() => {
-            this._editor?.updateOptions({
-                fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
-            });
+            this._editor?.updateOptions({ fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")) });
         });
 
         globalState.onLanguageChangedObservable.add(async () => {
             await this.setupMonacoAsync(this._hostElement);
+            this._installBareImportStubs();
         });
 
         globalState.onThemeChangedObservable.add(() => {
             this._createEditor();
         });
 
-        // Register a global observable for inspector to request code changes
-        const pgConnect = {
-            onRequestCodeChangeObservable: new Observable(),
-        };
+        // V2 hydrate
+        this.globalState.onV2HydrateRequiredObservable.add(({ files, entry, imports, language }) => {
+            if (language !== this.globalState.language) {
+                Utilities.SwitchLanguage(language, this.globalState, true);
+            }
+            const first = entry && files[entry] ? entry : Object.keys(files)[0];
+            this.setFiles(files, first, entry, imports);
+        });
 
+        // Keep stubs up-to-date when files change
+        this.globalState.onFilesChangedObservable.add(() => this._installBareImportStubs());
+
+        // PG connect (unchanged)
+        const pgConnect = { onRequestCodeChangeObservable: new Observable() };
         pgConnect.onRequestCodeChangeObservable.add((options: any) => {
             let code = this._editor?.getValue() || "";
             code = code.replace(options.regex, options.replace);
-
             this._editor?.setValue(code);
         });
-
         (window as any).Playground = pgConnect;
     }
 
+    // ---------------- Editor lifecycle ----------------
+
     private _setNewContent() {
         this._createEditor();
-
         this.globalState.currentSnippetToken = "";
 
         if (this.globalState.language === "JS") {
@@ -180,51 +404,50 @@ class Playground {
         }
 
         this.globalState.onRunRequiredObservable.notifyObservers();
-
         if (location.pathname.indexOf("pg/") !== -1) {
-            // reload to create a new pg if in full-path playground mode.
             window.location.pathname = "";
         }
+        this._installBareImportStubs();
     }
 
     private _indentCode(code: string, indentation: number): string {
         const indent = " ".repeat(indentation);
-        const lines = code.split("\n");
-        const indentedCode = lines.map((line) => indent + line).join("\n");
-        return indentedCode;
+        return code
+            .split("\n")
+            .map((line) => indent + line)
+            .join("\n");
     }
 
     private _getCode(key: string): string {
         let code = "";
-        this._templates.forEach(function (item) {
+        this._templates.forEach((item) => {
             if (item.key === key) {
-                // Remove monaco placeholders
                 const regex = /\$\{[0-9]+:([^}]+)\}|\$\{[0-9]+\}/g;
-                code = item.insertText.replace(regex, (match, p1) => p1 || "");
+                code = item.insertText.replace(regex, (_m, p1) => p1 || "");
             }
         });
         return code + "\n";
     }
 
     private _insertCodeAtCursor(code: string) {
-        if (this._editor) {
-            // Get the current position of the cursor
-            const position = this._editor.getPosition();
-            if (position) {
-                // Fix indent regarding current position
-                if (position.column && position.column > 1) {
-                    code = this._indentCode(code, position.column - 1).slice(position.column - 1);
-                }
-                // Insert code
-                this._editor.executeEdits("", [
-                    {
-                        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-                        text: code,
-                        forceMoveMarkers: true,
-                    },
-                ]);
-            }
+        if (!this._editor) {
+            return;
         }
+        const position = this._editor.getPosition();
+        if (!position) {
+            return;
+        }
+
+        if (position.column && position.column > 1) {
+            code = this._indentCode(code, position.column - 1).slice(position.column - 1);
+        }
+        this._editor.executeEdits("", [
+            {
+                range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                text: code,
+                forceMoveMarkers: true,
+            },
+        ]);
     }
 
     private _insertSnippet(snippetKey: string) {
@@ -261,25 +484,33 @@ class Playground {
             showFoldingControls: "always",
             fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
             renderIndentGuides: true,
-            minimap: {
-                enabled: Utilities.ReadBoolFromStore("minimap", true),
-            },
+            minimap: { enabled: Utilities.ReadBoolFromStore("minimap", true) },
         };
 
         this._editor = monaco.editor.create(this._hostElement, editorOptions as any);
 
-        const analyzeCodeDebounced = debounce(async () => await this._analyzeCodeAsync(), 500);
-        this._editor.onDidChangeModelContent(() => {
-            const newCode = this._editor.getValue();
-            if (this.globalState.currentCode !== newCode) {
-                this.globalState.currentCode = newCode;
-                this._isDirty = true;
-                analyzeCodeDebounced();
+        if (this.globalState.isMultiFile && this.globalState.activeFilePath) {
+            const model = this._models.get(this.globalState.activeFilePath);
+            if (model) {
+                this._editor.setModel(model);
             }
-        });
+        } else {
+            // single-file: update diagnostics + stubs as you type
+            const analyzeCodeDebounced = debounce(async () => await this._analyzeCodeAsync(), 500);
+            const refreshStubs = debounce(() => this._installBareImportStubs(), 300);
 
-        if (this.globalState.currentCode) {
-            this._editor.setValue(this.globalState.currentCode);
+            this._editor.onDidChangeModelContent(() => {
+                const newCode = this._editor.getValue();
+                if (this.globalState.currentCode !== newCode) {
+                    this.globalState.currentCode = newCode;
+                    this._isDirty = true;
+                    analyzeCodeDebounced();
+                    refreshStubs();
+                }
+            });
+            if (this.globalState.currentCode) {
+                this._editor.setValue(this.globalState.currentCode);
+            }
         }
 
         this.globalState.getCompiledCode = async () => await this._getRunCodeAsync();
@@ -287,8 +518,18 @@ class Playground {
         if (this.globalState.currentCode) {
             this.globalState.onRunRequiredObservable.notifyObservers();
         }
+
+        // After (re)creating editor, ensure stubs reflect current code
+        this._installBareImportStubs();
     }
 
+    // ---------------- Monaco setup ----------------
+
+    /**
+     * Setup Monaco editor.
+     * @param hostElement The HTML element to host the editor.
+     * @param initialCall Whether this is the initial setup call.
+     */
     public async setupMonacoAsync(hostElement: HTMLDivElement, initialCall = false) {
         this._hostElement = hostElement;
 
@@ -304,266 +545,282 @@ class Playground {
             "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
             "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
             "https://preview.babylonjs.com/addons/babylonjs.addons.d.ts",
+            "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",
+            "https://assets.babylonjs.com/generated/Assets.d.ts",
         ];
 
+        // snapshot/version/local overrides
         let snapshot = "";
-        // see if a snapshot should be used
         if (window.location.search.indexOf("snapshot=") !== -1) {
-            snapshot = window.location.search.split("snapshot=")[1];
-            // cleanup, just in case
-            snapshot = snapshot.split("&")[0];
-            for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot);
+            snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
+            for (let i = 0; i < declarations.length; i++) {
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot);
             }
         }
 
         let version = "";
         if (window.location.search.indexOf("version=") !== -1) {
-            version = window.location.search.split("version=")[1];
-            // cleanup, just in case
-            version = version.split("&")[0];
-            for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version);
+            version = window.location.search.split("version=")[1].split("&")[0];
+            for (let i = 0; i < declarations.length; i++) {
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version);
             }
         }
 
-        // Local mode
         if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
-            for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index].replace("https://preview.babylonjs.com/", "//localhost:1337/");
+            for (let i = 0; i < declarations.length; i++) {
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", "//localhost:1337/");
             }
         }
 
-        declarations.push("https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts");
-        declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
-
-        // Check for Babylon Toolkit
         if (location.href.indexOf("BabylonToolkit") !== -1 || Utilities.ReadBoolFromStore("babylon-toolkit", false) || Utilities.ReadBoolFromStore("babylon-toolkit-used", false)) {
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
             declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
         }
 
-        const timestamp = typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__ ? (globalThis as any).__babylonSnapshotTimestamp__ : 0;
+        const timestamp = (typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__) || 0;
         if (timestamp) {
-            for (let index = 0; index < declarations.length; index++) {
-                if (declarations[index].indexOf("preview.babylonjs.com") !== -1) {
-                    declarations[index] = declarations[index] + "?t=" + timestamp;
+            for (let i = 0; i < declarations.length; i++) {
+                if (declarations[i].indexOf("preview.babylonjs.com") !== -1) {
+                    declarations[i] = declarations[i] + "?t=" + timestamp;
                 }
             }
         }
 
         let libContent = "";
-        const responses = await Promise.all(declarations.map(async (declaration) => await fetch(declaration)));
+        const responses = await Promise.all(declarations.map(async (d) => await fetch(d)));
         const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
         for (const response of responses) {
             if (!response.ok) {
-                // attempt a fallback
                 const fallbackResponse = await fetch(response.url.replace("https://preview.babylonjs.com", fallbackUrl));
                 if (fallbackResponse.ok) {
                     libContent += await fallbackResponse.text();
                 } else {
-                    // eslint-disable-next-line no-console
-                    console.log("missing declaration", response.url);
+                    Logger.Log(`missing declaration: ${response.url}`);
                 }
             } else {
                 libContent += await response.text();
             }
         }
         libContent += `
-interface Window {
-    engine: BABYLON.Engine;
-    canvas: HTMLCanvasElement;
-};
-
+interface Window { engine: BABYLON.Engine; canvas: HTMLCanvasElement; }
 declare var engine: BABYLON.Engine;
 declare var canvas: HTMLCanvasElement;
         `;
 
         this._createEditor();
-
-        // Definition worker
         this._setupDefinitionWorker(libContent);
-
-        // Setup the Monaco compilation pipeline, so we can reuse it directly for our scripting needs
         this._setupMonacoCompilationPipeline(libContent);
-
-        // This is used for a vscode-like color preview for ColorX types
         this._setupMonacoColorProvider();
+
+        // Keep stubs/typings aligned with the current code base
+        this._installBareImportStubs();
 
         if (initialCall) {
             try {
-                // Fetch JSON data for templates code
                 const templatesCodeUrl = "templates.json?uncacher=" + Date.now();
                 this._templates = await (await fetch(templatesCodeUrl)).json();
-
-                // enhance templates with extra properties
                 for (const template of this._templates) {
                     template.kind = monaco.languages.CompletionItemKind.Snippet;
-                    template.sortText = "!" + template.label; // make sure templates are on top of the completion window
+                    template.sortText = "!" + template.label;
                     template.insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
                 }
             } catch {
                 Logger.Log("Error loading templates code");
             }
-
             this._hookMonacoCompletionProviderAsync();
         }
 
         if (!this.globalState.loadingCodeInProgress) {
-            this._setDefaultContent();
+            setTimeout(() => this._setDefaultContent(), 100);
         }
     }
+
+    // ---------------- Rename ----------------
+
+    public renameFile(oldPath: string, newPath: string) {
+        const model = this._models.get(oldPath);
+        if (!model) {
+            return;
+        }
+        if (this._models.has(newPath)) {
+            throw new Error("Target file already exists");
+        }
+
+        const lang = model.getModeId();
+        const value = model.getValue();
+        const uri = monaco.Uri.file(newPath);
+        const newModel = monaco.editor.createModel(value, lang, uri);
+        newModel.onDidChangeContent(() => {
+            this.globalState.files[newPath] = newModel.getValue();
+        });
+        this._models.set(newPath, newModel);
+        this._models.delete(oldPath);
+        model.dispose();
+        delete this.globalState.files[oldPath];
+        this.globalState.files[newPath] = value;
+        if (this.globalState.activeFilePath === oldPath) {
+            this.switchActiveFile(newPath);
+        }
+        if (this.globalState.entryFilePath === oldPath) {
+            this.globalState.entryFilePath = newPath;
+        }
+        if (this.globalState.filesOrder?.length) {
+            this.globalState.filesOrder = this.globalState.filesOrder.map((p) => (p === oldPath ? newPath : p));
+            this.globalState.onFilesOrderChangedObservable?.notifyObservers();
+        }
+        this.globalState.onFilesChangedObservable.notifyObservers();
+        this.globalState.onManifestChangedObservable.notifyObservers();
+        this._installBareImportStubs();
+    }
+
+    // ---------------- Defaults ----------------
 
     private _setDefaultContent() {
-        if (this.globalState.language === "JS") {
-            this._editor.setValue(`var createScene = function () {
-    // This creates a basic Babylon Scene object (non-mesh)
+        const entry = this.globalState.language === "JS" ? "index.js" : "index.ts";
+        const defaultJs = `var createScene = function () {
     var scene = new BABYLON.Scene(engine);
-
-    // This creates and positions a free camera (non-mesh)
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-
-    // This targets the camera to scene origin
     camera.setTarget(BABYLON.Vector3.Zero());
-
-    // This attaches the camera to the canvas
     camera.attachControl(canvas, true);
-
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
-    // Default intensity is 1. Let's dim the light a small amount
     light.intensity = 0.7;
-
-    // Our built-in 'sphere' shape.
     var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
-
-    // Move the sphere upward 1/2 its height
     sphere.position.y = 1;
-
-    // Our built-in 'ground' shape.
     var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-
     return scene;
-};`);
-        } else {
-            this._editor.setValue(`class Playground {
+};`;
+        const defaultTs = `class Playground {
     public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
-        // This creates a basic Babylon Scene object (non-mesh)
         var scene = new BABYLON.Scene(engine);
-
-        // This creates and positions a free camera (non-mesh)
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-
-        // This targets the camera to scene origin
         camera.setTarget(BABYLON.Vector3.Zero());
-
-        // This attaches the camera to the canvas
         camera.attachControl(canvas, true);
-
-        // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
         var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
-
-        // Default intensity is 1. Let's dim the light a small amount
         light.intensity = 0.7;
-
-        // Our built-in 'sphere' shape. Params: name, options, scene
         var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
-
-        // Move the sphere upward 1/2 its height
         sphere.position.y = 1;
-
-        // Our built-in 'ground' shape. Params: name, options, scene
         var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-
         return scene;
     }
-}`);
+}
+export { Playground };`;
+        const defaultCode = this.globalState.language === "JS" ? defaultJs : defaultTs;
+
+        this.globalState.isMultiFile = true;
+        this.globalState.entryFilePath = entry;
+        this.globalState.activeFilePath = entry;
+
+        if (!this._models.has(entry)) {
+            const fallbackLang = this.globalState.language === "JS" ? "javascript" : "typescript";
+            const uri = monaco.Uri.file(entry);
+            const model = monaco.editor.createModel(defaultCode, MonacoLanguageFor(entry, fallbackLang), uri);
+            model.onDidChangeContent(() => {
+                this.globalState.files[entry] = model.getValue();
+                this._isDirty = true;
+            });
+            this._models.set(entry, model);
+            this.globalState.files[entry] = defaultCode;
+            if (this._editor) {
+                this._editor.setModel(model);
+            }
+        } else {
+            const model = this._models.get(entry)!;
+            if (!model.getValue()) {
+                model.setValue(defaultCode);
+            }
+            this.switchActiveFile(entry);
         }
 
+        if (!this.globalState.filesOrder || !this.globalState.filesOrder.length) {
+            this.globalState.filesOrder = [entry];
+            this.globalState.onFilesOrderChangedObservable?.notifyObservers();
+        }
         this._isDirty = false;
-
+        this.globalState.onFilesChangedObservable.notifyObservers();
+        this.globalState.onManifestChangedObservable.notifyObservers();
         this.globalState.onRunRequiredObservable.notifyObservers();
+        this._installBareImportStubs();
     }
 
-    // Provide an adornment for BABYLON.ColorX types: color preview
+    // ---------------- Color provider ----------------
+
     protected _setupMonacoColorProvider() {
         monaco.languages.registerColorProvider(this.globalState.language == "JS" ? "javascript" : "typescript", {
-            provideColorPresentations: (model: any, colorInfo: any) => {
-                const color = colorInfo.color;
-
-                const precision = 100.0;
-                const converter = (n: number) => Math.round(n * precision) / precision;
-
-                let label;
-                if (color.alpha === undefined || color.alpha === 1.0) {
-                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)})`;
-                } else {
-                    label = `(${converter(color.red)}, ${converter(color.green)}, ${converter(color.blue)}, ${converter(color.alpha)})`;
-                }
-
-                return [
-                    {
-                        label: label,
-                    },
-                ];
+            provideColorPresentations: (_model: any, colorInfo: any) => {
+                const c = colorInfo.color;
+                const p = 100.0;
+                const cvt = (n: number) => Math.round(n * p) / p;
+                const label =
+                    c.alpha === undefined || c.alpha === 1.0
+                        ? `(${cvt(c.red)}, ${cvt(c.green)}, ${cvt(c.blue)})`
+                        : `(${cvt(c.red)}, ${cvt(c.green)}, ${cvt(c.blue)}, ${cvt(c.alpha)})`;
+                return [{ label }];
             },
-
             provideDocumentColors: (model: any) => {
                 const digitGroup = "\\s*(\\d*(?:\\.\\d+)?)\\s*";
-                // we add \n{0} to workaround a Monaco bug, when setting regex options on their side
                 const regex = `BABYLON\\.Color(?:3|4)\\s*\\(${digitGroup},${digitGroup},${digitGroup}(?:,${digitGroup})?\\)\\n{0}`;
                 const matches = model.findMatches(regex, false, true, true, null, true);
-
-                const converter = (g: string) => (g === undefined ? undefined : Number(g));
-
-                return matches.map((match: any) => ({
-                    color: {
-                        red: converter(match.matches![1])!,
-                        green: converter(match.matches![2])!,
-                        blue: converter(match.matches![3])!,
-                        alpha: converter(match.matches![4])!,
-                    },
+                const num = (g: string) => (g === undefined ? undefined : Number(g));
+                return matches.map((m: any) => ({
+                    color: { red: num(m.matches![1])!, green: num(m.matches![2])!, blue: num(m.matches![3])!, alpha: num(m.matches![4])! },
                     range: {
-                        startLineNumber: match.range.startLineNumber,
-                        startColumn: match.range.startColumn + match.matches![0].indexOf("("),
-                        endLineNumber: match.range.startLineNumber,
-                        endColumn: match.range.endColumn,
+                        startLineNumber: m.range.startLineNumber,
+                        startColumn: m.range.startColumn + m.matches![0].indexOf("("),
+                        endLineNumber: m.range.startLineNumber,
+                        endColumn: m.range.endColumn,
                     },
                 }));
             },
         });
     }
 
-    // Setup both JS and TS compilation pipelines to work with our scripts.
+    // ---------------- TS/JS pipeline ----------------
+
     protected _setupMonacoCompilationPipeline(libContent: string) {
-        const typescript = monaco.languages.typescript;
+        const tsLang = monaco.languages.typescript;
 
         if (this.globalState.language === "JS") {
-            typescript.javascriptDefaults.setCompilerOptions({
-                noLib: false,
-                allowNonTsExtensions: true, // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
+            const opts: monaco.languages.typescript.CompilerOptions = {
                 allowJs: true,
-            });
-
-            typescript.javascriptDefaults.addExtraLib(libContent, "babylon.d.ts");
+                allowNonTsExtensions: true,
+                checkJs: false,
+                target: tsLang.ScriptTarget.ES2020,
+                module: tsLang.ModuleKind.ESNext,
+                moduleResolution: tsLang.ModuleResolutionKind.NodeJs,
+                allowSyntheticDefaultImports: true,
+                esModuleInterop: true,
+                allowArbitraryExtensions: true,
+                baseUrl: ".",
+            };
+            this._jsBaseOpts = opts;
+            tsLang.javascriptDefaults.setCompilerOptions({ ...opts, paths: this._pathsMap });
+            tsLang.javascriptDefaults.setEagerModelSync(true);
+            tsLang.javascriptDefaults.addExtraLib(libContent, "babylon.d.ts");
         } else {
-            typescript.typescriptDefaults.setCompilerOptions({
-                module: typescript.ModuleKind.AMD,
-                target: typescript.ScriptTarget.ESNext,
-                noLib: false,
+            const opts: monaco.languages.typescript.CompilerOptions = {
+                target: tsLang.ScriptTarget.ES2020,
+                module: tsLang.ModuleKind.ESNext,
+                moduleResolution: tsLang.ModuleResolutionKind.NodeJs,
+                allowSyntheticDefaultImports: true,
+                esModuleInterop: true,
+                allowJs: true,
+                resolveJsonModule: true,
+                skipLibCheck: true,
+                allowNonTsExtensions: true,
+                noEmit: false,
+                isolatedModules: true,
                 strict: false,
-                alwaysStrict: false,
-                strictFunctionTypes: false,
-                suppressExcessPropertyErrors: false,
-                suppressImplicitAnyIndexErrors: true,
-                noResolve: true,
-                suppressOutputPathCheck: true,
-
-                allowNonTsExtensions: true, // required to prevent Uncaught Error: Could not find file: 'inmemory://model/1'.
-            });
-            typescript.typescriptDefaults.addExtraLib(libContent, "babylon.d.ts");
+                allowArbitraryExtensions: true,
+                baseUrl: ".",
+            };
+            this._tsBaseOpts = opts;
+            tsLang.typescriptDefaults.setCompilerOptions({ ...opts, paths: this._pathsMap });
+            tsLang.typescriptDefaults.setEagerModelSync(true);
+            tsLang.typescriptDefaults.addExtraLib(libContent, "babylon.d.ts");
         }
+
+        // Immediate pass to silence missing-module squiggles, then async ATA
+        this._installBareImportStubs();
     }
 
     protected _setupDefinitionWorker(libContent: string) {
@@ -572,21 +829,11 @@ declare var canvas: HTMLCanvasElement;
             this._tagCandidates = data.result;
             this._analyzeCodeAsync();
         });
-        this._definitionWorker.postMessage({
-            code: libContent,
-        });
+        this._definitionWorker.postMessage({ code: libContent });
     }
 
-    // This will make sure that all members marked with an interesting jsdoc attribute will be marked as such in Monaco UI
-    // We use a prefiltered list of tag candidates, because the effective call to Monaco API can be slow.
-    // @see setupDefinitionWorker
     private async _analyzeCodeAsync() {
-        // if the definition worker is very fast, this can be called out of context. @see setupDefinitionWorker
-        if (!this._editor) {
-            return;
-        }
-
-        if (!this._tagCandidates) {
+        if (!this._editor || !this._tagCandidates) {
             return;
         }
 
@@ -596,25 +843,39 @@ declare var canvas: HTMLCanvasElement;
         }
 
         const uri = model.uri;
-
-        let worker = null;
-        if (this.globalState.language === "JS") {
-            worker = await monaco.languages.typescript.getJavaScriptWorker();
-        } else {
-            worker = await monaco.languages.typescript.getTypeScriptWorker();
-        }
+        const worker = this.globalState.language === "JS" ? await monaco.languages.typescript.getJavaScriptWorker() : await monaco.languages.typescript.getTypeScriptWorker();
 
         const languageService = await worker(uri);
         const source = "[preview]";
-
         monaco.editor.setModelMarkers(model, source, []);
         const markers: {
+            /**
+             *
+             */
             startLineNumber: number;
+            /**
+             *
+             */
             endLineNumber: number;
+            /**
+             *
+             */
             startColumn: number;
+            /**
+             *
+             */
             endColumn: number;
+            /**
+             *
+             */
             message: string;
+            /**
+             *
+             */
             severity: number;
+            /**
+             *
+             */
             source: string;
         }[] = [];
 
@@ -631,30 +892,30 @@ declare var canvas: HTMLCanvasElement;
                 if (model.isDisposed()) {
                     continue;
                 }
-                const position = {
-                    lineNumber: match.range.startLineNumber,
-                    column: match.range.startColumn,
-                };
+                const position = { lineNumber: match.range.startLineNumber, column: match.range.startColumn };
                 const wordInfo = model.getWordAtPosition(position);
                 const offset = model.getOffsetAt(position);
-
                 if (!wordInfo) {
                     continue;
                 }
 
-                // continue if we already found an issue here
                 if (markers.find((m) => m.startLineNumber == position.lineNumber && m.startColumn == position.column)) {
                     continue;
                 }
 
-                // the following is time consuming on all suggestions, that's why we precompute tag candidate names in the definition worker to filter calls
-                // @see setupDefinitionWorker
                 const details = await languageService.getCompletionEntryDetails(uri.toString(), offset, wordInfo.word);
                 if (!details || !details.tags) {
                     continue;
                 }
 
-                const tag = details.tags.find((t: { name: string }) => t.name === candidate.tagName);
+                const tag = details.tags.find(
+                    (t: {
+                        /**
+                         *
+                         */
+                        name: string;
+                    }) => t.name === candidate.tagName
+                );
                 if (tag) {
                     markers.push({
                         startLineNumber: match.range.startLineNumber,
@@ -663,7 +924,7 @@ declare var canvas: HTMLCanvasElement;
                         endColumn: wordInfo.endColumn,
                         message: this._getTagMessage(tag),
                         severity: this._getCandidateMarkerSeverity(candidate),
-                        source: source,
+                        source,
                     });
                 }
             }
@@ -672,7 +933,12 @@ declare var canvas: HTMLCanvasElement;
         monaco.editor.setModelMarkers(model, source, markers);
     }
 
-    private _getCandidateMarkerSeverity(candidate: { tagName: string }) {
+    private _getCandidateMarkerSeverity(candidate: {
+        /**
+         *
+         */
+        tagName: string;
+    }) {
         switch (candidate.tagName) {
             case "deprecated":
                 return monaco.MarkerSeverity.Warning;
@@ -681,7 +947,12 @@ declare var canvas: HTMLCanvasElement;
         }
     }
 
-    private _getCandidateCompletionSuffix(candidate: { tagName: string }) {
+    private _getCandidateCompletionSuffix(candidate: {
+        /**
+         *
+         */
+        tagName: string;
+    }) {
         switch (candidate.tagName) {
             case "deprecated":
                 return "⚠️";
@@ -692,90 +963,280 @@ declare var canvas: HTMLCanvasElement;
 
     private _getTagMessage(tag: any) {
         if (tag?.text instanceof String) {
-            if (tag.text.indexOf("data:") === 0) {
+            if ((tag.text as string).indexOf("data:") === 0) {
                 return `<img src="${tag.text}">`;
             }
             return tag.text;
         }
-
         if (tag?.text instanceof Array) {
             return tag.text
-                .filter((i: { kind: string }) => i.kind === "text")
-                .map((i: { text: any }) => (i.text.indexOf("data:") === 0 ? `<img src="${i.text}">` : i.text))
+                .filter(
+                    (i: {
+                        /**
+                         *
+                         */
+                        kind: string;
+                    }) => i.kind === "text"
+                )
+                .map(
+                    (i: {
+                        /**
+                         *
+                         */
+                        text: any;
+                    }) => ((i.text as string).indexOf("data:") === 0 ? `<img src="${i.text}">` : i.text)
+                )
                 .join(", ");
         }
-
         return "";
     }
 
-    // This is our hook in the Monaco suggest adapter, we are called everytime a completion UI is displayed
-    // So we need to be super fast.
     private async _hookMonacoCompletionProviderAsync() {
         const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const owner = this;
+        const owner = this; // eslint-disable-line @typescript-eslint/no-this-alias
 
         languageFeatures.SuggestAdapter.prototype.provideCompletionItems = async function (model: any, position: any, context: any, token: any) {
-            // reuse 'this' to preserve context through call (using apply)
             const result = await oldProvideCompletionItems.apply(this, [model, position, context, token]);
-
             if (!result || !result.suggestions) {
                 return result;
             }
 
-            // filter non public members
             const suggestions = result.suggestions.filter((item: any) => !item.label.startsWith("_"));
 
             for (const suggestion of suggestions) {
-                const candidate = owner._tagCandidates.find((t) => t.name === suggestion.label);
+                const candidate = owner._tagCandidates?.find((t) => t.name === suggestion.label);
                 if (candidate) {
-                    // the following is time consuming on all suggestions, that's why we precompute deprecated candidate names in the definition worker to filter calls
-                    // @see setupDefinitionWorker
                     const uri = suggestion.uri;
-                    const worker = await this._worker(uri);
-                    const model = monaco.editor.getModel(uri);
-                    const details = await worker.getCompletionEntryDetails(uri.toString(), model!.getOffsetAt(position), suggestion.label);
-
+                    const worker = await (this as any)._worker(uri);
+                    const m = monaco.editor.getModel(uri);
+                    const details = await worker.getCompletionEntryDetails(uri.toString(), m!.getOffsetAt(position), suggestion.label);
                     if (!details || !details.tags) {
                         continue;
                     }
-
-                    const tag = details.tags.find((t: { name: string }) => t.name === candidate.tagName);
+                    const tag = details.tags.find(
+                        (t: {
+                            /**
+                             *
+                             */
+                            name: string;
+                        }) => t.name === candidate.tagName
+                    );
                     if (tag) {
-                        const suffix = owner._getCandidateCompletionSuffix(candidate);
-                        suggestion.label = suggestion.label + suffix;
+                        suggestion.label = suggestion.label + owner._getCandidateCompletionSuffix(candidate);
                     }
                 }
             }
 
-            // add our own templates when invoked without context
             if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
                 const language = owner.globalState.language === "JS" ? "javascript" : "typescript";
                 for (const template of owner._templates) {
                     if (template.language && language !== template.language) {
                         continue;
                     }
-
                     suggestions.push(template);
                 }
             }
 
-            // preserve incomplete flag or force it when the definition is not yet analyzed
-            const incomplete = (result.incomplete && result.incomplete == true) || owner._tagCandidates.length == 0;
-            return {
-                suggestions: JSON.parse(JSON.stringify(suggestions)),
-                incomplete: incomplete,
-            };
+            const incomplete = (result.incomplete && result.incomplete == true) || (owner._tagCandidates?.length ?? 0) == 0;
+            return { suggestions: JSON.parse(JSON.stringify(suggestions)), incomplete };
         };
     }
 
+    // ---------------- Bare import stubs + Automatic Type Acquisition ----------------
+
+    private _collectAllSourceTexts(): string[] {
+        if (this.globalState.isMultiFile) {
+            return Object.values(this.globalState.files || {});
+        }
+        return [this._editor?.getValue() || this.globalState.currentCode || ""];
+    }
+
+    private _discoverBareImports(): Set<string> {
+        // Matches: import ... from 'x'; export ... from 'x'; import('x'); import 'x';
+        const importStmt = /(import\s+[^'";]*?['"]([^'"]+)['"][^;]*;?|export\s+[^;]*?from\s+['"]([^'"]+)['"];?|import\s*\(\s*['"]([^'"]+)['"]\s*\)|import\s*['"]([^'"]+)['"];)/g;
+
+        const specs = new Set<string>();
+        for (const code of this._collectAllSourceTexts()) {
+            if (!code) {
+                continue;
+            }
+            for (const m of code.matchAll(importStmt)) {
+                const spec = (m[2] || m[3] || m[4] || m[5]) as string | undefined;
+                if (!spec) {
+                    continue;
+                }
+                if (spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/") || spec.startsWith("__pg__/")) {
+                    continue;
+                }
+                specs.add(spec.split(/[?#]/)[0]);
+            }
+        }
+        return specs;
+    }
+
+    private _installBareImportStubs() {
+        const specs = this._discoverBareImports();
+
+        // dispose previous stubs
+        this._bareImportStubDisposables.ts?.dispose?.();
+        this._bareImportStubDisposables.js?.dispose?.();
+        this._bareImportStubDisposables = {};
+
+        if (!specs.size) {
+            return;
+        }
+
+        // Generic any-typed modules to silence 2307 immediately
+        let dts = "";
+        for (const s of specs) {
+            dts += `declare module "${s}" { const _m: any; export = _m; }\n`;
+            dts += `declare module "${s}/*" { const _m: any; export = _m; }\n`;
+        }
+
+        const ts = monaco.languages.typescript;
+        this._bareImportStubDisposables.ts = ts.typescriptDefaults.addExtraLib(dts, "pg-bare-imports.d.ts");
+        this._bareImportStubDisposables.js = ts.javascriptDefaults.addExtraLib(dts, "pg-bare-imports-js.d.ts");
+
+        // Try to fetch real typings (async)
+        this._acquireTypingsForBareImportsAsync(specs);
+    }
+
+    private async _acquireTypingsForBareImportsAsync(specs: Set<string>) {
+        for (const spec of specs) {
+            if (this._acquiredSpecs.has(spec) || this._failedSpecs.has(spec)) {
+                continue;
+            }
+            try {
+                const ok = await this._acquireTypesForSpecAsync(spec);
+                if (ok) {
+                    this._acquiredSpecs.add(spec);
+                } else {
+                    this._failedSpecs.add(spec);
+                }
+            } catch {
+                this._failedSpecs.add(spec);
+            }
+        }
+    }
+
+    private async _acquireTypesForSpecAsync(spec: string): Promise<boolean> {
+        // 1) Try esm.sh ?dts (works for many packages, including bundled types)
+        const cdn = (globalThis as any).__pg_v2_cdn?.toString() || "https://esm.sh/";
+        const esmBase = cdn.includes("esm.sh") ? cdn.replace(/\/$/, "") : "https://esm.sh";
+        const esmUrl = `${esmBase}/${spec}?dts`;
+
+        try {
+            const res = await fetch(esmUrl, { cache: "force-cache" });
+            if (res.ok) {
+                const text = await res.text();
+                const vdir = `types/esm/${spec}`;
+                const vfile = `${vdir}/index.d.ts`;
+                this._registerTypingFile(vfile, text);
+                this._addPathsFor(spec, vfile);
+                this._addPathsFor(spec + "/*", vdir + "/*");
+                return true;
+            }
+        } catch {
+            // ignore
+        }
+
+        // 2) Fallback to DefinitelyTyped (@types/<pkg>)
+        const pkg = spec.split("/")[0]; // 'lodash' from 'lodash/fp'
+        const rootUrl = `https://cdn.jsdelivr.net/npm/@types/${pkg}`;
+        try {
+            const files = await this._fetchDtsTreeAsync(rootUrl, "index.d.ts");
+            if (!files) {
+                return false;
+            }
+
+            const base = `types/@types/${pkg}`;
+            for (const [rel, txt] of files) {
+                this._registerTypingFile(`${base}/${rel}`, txt);
+            }
+
+            this._addPathsFor(spec, `${base}/index.d.ts`);
+            this._addPathsFor(spec + "/*", `${base}/*`);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    // Recursively fetch .d.ts graph from a base URL
+    private async _fetchDtsTreeAsync(baseUrl: string, entryRel: string): Promise<Map<string, string> | null> {
+        const out = new Map<string, string>();
+        const queue = [entryRel];
+        const seen = new Set<string>();
+        const relImport = /(?:import|export)\s+(?:[^'"]*from\s+)?["'](\.\/[^"']+)["'];|\/\/\/\s*<reference\s+path=["']([^"']+)["']\s*\/>/g;
+
+        while (queue.length) {
+            const rel = queue.shift()!;
+            if (seen.has(rel)) {
+                continue;
+            }
+            seen.add(rel);
+
+            const url = `${baseUrl}/${rel}`;
+            const res = await fetch(url);
+            if (!res.ok) {
+                return null;
+            }
+            const text = await res.text();
+            out.set(rel, text);
+
+            for (const m of text.matchAll(relImport)) {
+                const dep = (m[1] || m[2]) as string | undefined;
+                if (!dep) {
+                    continue;
+                }
+                let next = dep.endsWith(".d.ts") ? dep : `${dep}.d.ts`;
+                next = next.replace(/^.\//, "");
+                if (!seen.has(next)) {
+                    queue.push(next);
+                }
+            }
+        }
+        return out;
+        // Note: this is intentionally simple; complex packages may need additional mapping.
+    }
+
+    private _registerTypingFile(virtualPath: string, contents: string) {
+        const lib = monaco.languages.typescript.typescriptDefaults.addExtraLib(contents, virtualPath);
+        const libJs = monaco.languages.typescript.javascriptDefaults.addExtraLib(contents, virtualPath);
+        this._typeLibDisposables.push(lib, libJs);
+    }
+
+    private _applyCompilerOptions() {
+        const ts = monaco.languages.typescript;
+        if (this._tsBaseOpts) {
+            ts.typescriptDefaults.setCompilerOptions({ ...this._tsBaseOpts, paths: this._pathsMap });
+        }
+        if (this._jsBaseOpts) {
+            ts.javascriptDefaults.setCompilerOptions({ ...this._jsBaseOpts, paths: this._pathsMap });
+        }
+    }
+
+    private _addPathsFor(specOrGlob: string, target: string) {
+        this._pathsMap[specOrGlob] = [target];
+        this._applyCompilerOptions();
+    }
+
+    // ---------------- Build / run ----------------
+
     private async _getRunCodeAsync() {
-        if (this.globalState.language == "JS") {
+        // If multi-file (V2), build JSON manifest and return iframe bootstrap.
+        if (this.globalState.isMultiFile) {
+            const files = this.getFiles();
+            const entry = this.globalState.entryFilePath || (this.globalState.language === "JS" ? "index.js" : "index.ts");
+            const manifest: any = { v: 2, language: this.globalState.language, entry, imports: this.globalState.importsMap || {}, files };
+            return BuildV2Bootstrap(manifest);
+        }
+
+        if (this.globalState.language === "JS") {
             return this._editor.getValue();
         } else {
             const model = this._editor.getModel()!;
             const uri = model.uri;
-
             const worker = await monaco.languages.typescript.getTypeScriptWorker();
             const languageService = await worker(uri);
 
@@ -787,7 +1248,6 @@ declare var canvas: HTMLCanvasElement;
                 if (diagset.length) {
                     const diagnostic = diagset[0];
                     const position = model.getPositionAt(diagnostic.start!);
-
                     const err = new CompilationError();
                     err.message = diagnostic.messageText as string;
                     err.lineNumber = position.lineNumber;
@@ -798,8 +1258,245 @@ declare var canvas: HTMLCanvasElement;
 
             const output = result.outputFiles[0].text;
             const stub = "var createScene = function() { return Playground.CreateScene(engine, engine.getRenderingCanvas()); }";
-
             return output + stub;
         }
     }
+}
+
+// ---------------- helpers ----------------
+
+function ExtFromPath(p: string) {
+    return p.endsWith(".ts") || p.endsWith(".tsx") ? "ts" : p.endsWith(".js") || p.endsWith(".jsx") ? "js" : "txt";
+}
+function MonacoLanguageFor(path: string, fallback: "javascript" | "typescript") {
+    const ext = ExtFromPath(path);
+    if (ext === "ts") {
+        return "typescript";
+    }
+    if (ext === "js") {
+        return "javascript";
+    }
+    return fallback;
+}
+
+/**
+ *
+ * @param manifest The manifest object containing version, language, entry, imports, and files.
+ * @returns
+ */
+function BuildV2Bootstrap(manifest: any): string {
+    const metaJSON = JSON.stringify(manifest);
+
+    return `/*PG_V2*/(function(){
+/* Playground V2 ES Module Bootstrap with bare import resolution */
+const META = ${metaJSON};
+const RUN_NONCE = (globalThis.__pg_v2_nonce_inc = (globalThis.__pg_v2_nonce_inc||0)+1) + '-' + Date.now();
+
+// Let host override CDN base if desired (e.g., 'https://cdn.jsdelivr.net/npm/')
+const CDN_BASE = String(globalThis.__pg_v2_cdn || 'https://esm.sh/');
+
+function cdnUrl(spec) {
+  if (CDN_BASE.includes('esm.sh')) {
+    return CDN_BASE.replace(/\\/$/, '') + '/' + spec;
+  }
+  if (CDN_BASE.includes('cdn.jsdelivr.net')) {
+    return CDN_BASE.replace(/\\/$/, '') + '/' + spec + '/+esm';
+  }
+  return CDN_BASE.replace(/\\/$/, '') + '/' + spec;
+}
+
+// Exposed to renderer: returns a (possibly promised) BABYLON.Scene
+window.__pg_v2_run = async function(engine, canvas) {
+  if (Array.isArray(globalThis.__pg_v2_blob_urls)) {
+    for (const u of globalThis.__pg_v2_blob_urls) try { URL.revokeObjectURL(u); } catch {}
+  }
+  globalThis.__pg_v2_blob_urls = [];
+
+  const needsTS = Object.keys(META.files).some(p => /[.]tsx?$/i.test(p));
+  if (needsTS && !window.ts) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/typescript@5.4.5/lib/typescript.min.js';
+      s.onload = () => res(null);
+      s.onerror = () => rej(new Error('Failed to load TypeScript'));
+      document.head.appendChild(s);
+    });
+  }
+
+  const ts = window.ts;
+  const files = META.files;
+  const entry = META.entry || (META.language === 'TS' ? 'index.ts' : 'index.js');
+  globalThis.engine = engine;
+  globalThis.canvas = canvas;
+
+  // ---------- Import rewriting helpers ----------
+  function resolveRelative(fromPath, rel) {
+    const fromSeg = fromPath.split('/'); fromSeg.pop();
+    const relSeg = rel.split('/');
+    for (const part of relSeg) {
+      if (part === '.' || part === '') continue;
+      if (part === '..') { fromSeg.pop(); continue; }
+      fromSeg.push(part);
+    }
+    return fromSeg.join('/');
+  }
+  const known = new Set(Object.keys(files));
+  function pickActual(p) {
+    if (known.has(p)) return p;
+    if (known.has(p + '.ts')) return p + '.ts';
+    if (known.has(p + '.tsx')) return p + '.tsx';
+    if (known.has(p + '.js')) return p + '.js';
+    if (known.has(p + '.mjs')) return p + '.mjs';
+    return null;
+  }
+
+  const specKey = (p) => '__pg__/' + p + '?v=' + RUN_NONCE;
+  // Matches: import ... from 'x';  export ... from 'x';  import('x');  import 'x';
+  const importRegex = /(import\\s+[^'";]*?['"][^'"]+['"][^;]*;?|export\\s+[^;]*?from\\s+['"][^'"]+['"];?|import\\s*\\(\\s*['"][^'"]+['"]\\s*\\)|import\\s*['"][^'"]+['"];)/g;
+  const specRegex = /(['"])((?:\\\\.|[^'"])+?)\\1/;
+  const isBare = (s) => !s.startsWith('./') && !s.startsWith('../') && !s.startsWith('/') && !s.startsWith(specKey(''));
+
+  function rewriteImports(path, code) {
+    return code.replace(importRegex, (stmt) => {
+      const m = specRegex.exec(stmt); if (!m) return stmt;
+      const full = m[0]; const spec = m[2];
+      // Only rewrite RELATIVE imports here. Bare imports are handled by import map.
+      if (!isBare(spec) && (spec.startsWith('./') || spec.startsWith('../'))) {
+        const targetRaw = resolveRelative(path, spec);
+        const target = pickActual(targetRaw.replace(/\\\\/g,'/'));
+        if (!target) return stmt;
+        const absId = specKey(target);
+        return stmt.replace(full, "'" + absId + "'");
+      }
+      return stmt;
+    });
+  }
+
+  function hasCreateSceneDecl(code) {
+    const fnDecl = /\\bfunction\\s+createScene\\s*\\(/;
+    const fnExpr = /\\b(?:var|let|const)\\s+createScene\\s*=\\s*(?:async\\s*)?function\\b/;
+    const arrow  = /\\b(?:var|let|const)\\s+createScene\\s*=\\s*[^=]*=>/;
+    return fnDecl.test(code) || fnExpr.test(code) || arrow.test(code);
+  }
+
+  function ensureExports(path, code) {
+    if (path === entry) {
+      const hasExportedCreate =
+        /\\bexport\\s+function\\s+createScene\\b/.test(code) ||
+        /\\bexport\\s*\\{[^}]*\\bcreateScene\\b[^}]*\\}/.test(code) ||
+        /\\bexport\\s+default\\b/.test(code);
+
+      if (hasCreateSceneDecl(code) && !hasExportedCreate) {
+        code += ' export { createScene };';
+      }
+
+      const hasPlayground = /\\bclass\\s+Playground\\b/.test(code);
+      const hasExportedPlayground =
+        /\\bexport\\s+class\\s+Playground\\b/.test(code) ||
+        /\\bexport\\s*\\{[^}]*\\bPlayground\\b[^}]*\\}/.test(code);
+
+      if (hasPlayground && !hasExportedPlayground) {
+        code += ' export { Playground };';
+      }
+    }
+    return code;
+  }
+
+  // ---------- Phase 1: compile + rewrite relatives ----------
+  const compiled = {};
+  for (const [path, original] of Object.entries(files)) {
+    let code = original;
+    code = ensureExports(path, code);
+    code = rewriteImports(path, code);
+    if (/[.]tsx?$/i.test(path) && ts) {
+      try {
+        code = ts.transpileModule(code, {
+          compilerOptions: {
+            module: ts.ModuleKind.ESNext,
+            target: ts.ScriptTarget.ES2020,
+            moduleResolution: ts.ModuleResolutionKind.NodeJs,
+            esModuleInterop: true,
+            allowSyntheticDefaultImports: true
+          }
+        }).outputText;
+      } catch (e) {
+        console.error('TS transpile failed for', path, e);
+        throw e;
+      }
+    }
+    compiled[path] = code;
+  }
+
+  // ---------- Phase 2: build import map ----------
+  const imports = { ...(META.imports || {}) };
+
+  // Map our compiled local modules
+  for (const path of Object.keys(compiled)) {
+    const spec = specKey(path);
+    const blob = new Blob([compiled[path]], { type: 'text/javascript' });
+    const url = URL.createObjectURL(blob);
+    imports[spec] = url;
+    (globalThis.__pg_v2_blob_urls || (globalThis.__pg_v2_blob_urls = [])).push(url);
+  }
+
+  // Detect bare imports and map them to CDN
+  const bareSet = new Set();
+  const stmtsRegex = importRegex;
+  const oneSpec = /(['"])((?:\\\\.|[^'"])+?)\\1/;
+  for (const code of Object.values(compiled)) {
+    const stmts = code.match(stmtsRegex) || [];
+    for (const stmt of stmts) {
+      const m = oneSpec.exec(stmt);
+      if (!m) continue;
+      const spec = m[2];
+      const isBare = !spec.startsWith('./') && !spec.startsWith('../') && !spec.startsWith('/') && !spec.startsWith(specKey(''));
+      if (isBare) bareSet.add(spec);
+    }
+  }
+
+  for (const spec of bareSet) {
+    if (imports[spec]) continue; // user override wins
+    imports[spec] = cdnUrl(spec);
+    const prefixKey = spec.endsWith('/') ? spec : spec + '/';
+    const prefixVal = cdnUrl(prefixKey);
+    imports[prefixKey] = prefixVal.endsWith('/') ? prefixVal : (prefixVal + '/');
+  }
+
+  // Nice-to-have: support "npm:pkg" style specifiers
+  if (!imports['npm:']) {
+    imports['npm:'] = CDN_BASE.replace(/\\/$/, '/') ;
+  }
+
+  // Install/replace the import map
+  const existing = document.getElementById('pg-v2-import-map');
+  if (existing) existing.remove();
+  const importMapEl = document.createElement('script');
+  importMapEl.id = 'pg-v2-import-map';
+  importMapEl.type = 'importmap';
+  importMapEl.textContent = JSON.stringify({ imports });
+  document.head.appendChild(importMapEl);
+
+  // ---------- Phase 3: run entry ----------
+  const entrySpec = specKey(entry);
+  let mod;
+  try {
+    mod = await import(entrySpec);
+  } catch (e) {
+    console.error('Failed to import entry', entrySpec, e);
+    throw e;
+  }
+
+  let createSceneFn = null;
+  if (typeof mod.createScene === 'function') createSceneFn = mod.createScene;
+  else if (typeof mod.default === 'function') createSceneFn = mod.default;
+  else if (mod.Playground && typeof mod.Playground.CreateScene === 'function') createSceneFn = (e, c) => mod.Playground.CreateScene(e, c);
+  else if (typeof globalThis.createScene === 'function') createSceneFn = globalThis.createScene;
+  else if (globalThis.Playground && typeof globalThis.Playground.CreateScene === 'function') createSceneFn = (e, c) => globalThis.Playground.CreateScene(e, c);
+
+  if (!createSceneFn) throw new Error('No createScene export (createScene / default / Playground.CreateScene) found in entry module.');
+
+  const scene = await (createSceneFn(engine, canvas) ?? createSceneFn());
+  return scene;
+};
+})();`;
 }
