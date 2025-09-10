@@ -25,7 +25,10 @@ module.exports = (env) => {
             ]
         ),
         output: {
+            filename: "babylon.playground.js",
+            path: path.resolve(__dirname, "dist"),
             publicPath: "/",
+            chunkFilename: "[name].[contenthash].js",
         },
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
