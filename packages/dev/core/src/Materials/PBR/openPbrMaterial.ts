@@ -1304,6 +1304,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 true,
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE
             );
+            this.getScene().onDisposeObservable.addOnce(() => {
+                OpenPBRMaterial._noiseTextures[this.getScene().uniqueId]?.dispose();
+                delete OpenPBRMaterial._noiseTextures[this.getScene().uniqueId];
+            });
         }
 
         // Setup the default processing configuration to the scene.
