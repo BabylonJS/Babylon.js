@@ -90,7 +90,6 @@
 .pg-tabs {
   display: inline-flex;
   flex: none;
-  width: max-content;
   white-space: nowrap;
   overflow: visible;
   transform: translateX(0);
@@ -120,7 +119,7 @@
   right: 0;
   bottom: 0;
   height: 6px !important;
-  bottom: -2px !important;
+  bottom: 0;
 }
 
 .monaco-scrollable-element > .scrollbar.vertical {
@@ -473,4 +472,10 @@
 .pg-monaco-wrapper {
   grid-row: 1 / -1;
   grid-column: 1 / -1;
+}
+
+// monaco overrides
+
+.minimap, .sticky-widget, .editor-widget {
+  z-index: 1 !important;
 }

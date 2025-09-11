@@ -106,7 +106,10 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         });
         gs.onActiveFileChangedObservable.add(() => {
             this.setState({ active: gs.activeFilePath });
-            this._scrollActiveIntoView();
+            requestAnimationFrame(() => {
+                this._layoutTabsScrollbar();
+                this._syncTabsTransformFromScrollable();
+            });
         });
         gs.onFilesOrderChangedObservable?.add(() => {
             const ord = gs.filesOrder?.slice() || [];
@@ -150,6 +153,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         node.appendChild(content);
 
         this._layoutTabsScrollbar();
+        this._syncTabsTransformFromScrollable();
 
         this._ro = new ResizeObserver(() => this._layoutTabsScrollbar());
         this._ro.observe(host);
@@ -177,44 +181,93 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         this._scrollable = null;
     }
 
+    private _measureTabsWidth(): number {
+        const content = this._tabsContentRef.current!;
+        let w = 0;
+        // force layout by reading offsetWidth
+        const tabs = content.querySelectorAll<HTMLElement>(".pg-tab");
+        tabs.forEach((t) => {
+            w += t.offsetWidth;
+        });
+        // account for subpixel/borders
+        return Math.ceil(w);
+    }
+
     private _onTabsScroll = (e: { scrollLeft: number }) => {
         const content = this._tabsContentRef.current!;
         content.style.transform = `translateX(${-e.scrollLeft}px)`;
     };
 
+    private _syncTabsTransformFromScrollable() {
+        const content = this._tabsContentRef.current!;
+        if (!content) {
+            return;
+        }
+        const pos = (this._scrollable as any)?.getScrollPosition?.();
+        const scrollLeft = pos?.scrollLeft ?? 0;
+        content.style.transform = `translateX(${-scrollLeft}px)`;
+    }
+
     private _layoutTabsScrollbar = () => {
         if (!this._scrollable) {
             return;
         }
+
         const viewport = this._scrollable.getDomNode();
         const content = this._tabsContentRef.current!;
         const width = viewport.clientWidth;
         const height = viewport.clientHeight || this._tabsHostRef.current!.clientHeight || 0;
-        const scrollWidth = content.scrollWidth;
+
+        const measured = this._measureTabsWidth();
+        content.style.width = measured + "px";
+
+        const scrollWidth = measured;
         const scrollHeight = content.scrollHeight;
 
         (this._scrollable as any).setScrollDimensions?.({ width, height, scrollWidth, scrollHeight });
 
-        const active = viewport.querySelector<HTMLElement>(`.pg-tab[data-path="${CSS.escape(this.state.active)}"]`);
-        if (active) {
-            const left = active.offsetLeft;
-            const right = left + active.offsetWidth;
-            const { scrollLeft } = (this._scrollable as any).getScrollPosition?.() || { scrollLeft: viewport.scrollLeft };
-            const viewRight = scrollLeft + width;
+        const maxScrollLeft = Math.max(0, scrollWidth - width);
 
-            let nextLeft = scrollLeft;
-            if (left < scrollLeft) {
+        // 2) If no horizontal scroll is needed, hard reset
+        if (maxScrollLeft === 0) {
+            (this._scrollable as any).setScrollPositionNow?.({ scrollLeft: 0 });
+            content.style.transform = "translateX(0)";
+            return;
+        }
+
+        // 3) Ensure active tab is visible (after measuring & pinning)
+        const activeEl = content.querySelector<HTMLElement>(`.pg-tab[data-path="${CSS.escape(this.state.active)}"]`);
+        const pos = (this._scrollable as any).getScrollPosition?.() || { scrollLeft: 0 };
+        const curLeft = pos.scrollLeft ?? 0;
+
+        let nextLeft = curLeft;
+        if (activeEl) {
+            const left = activeEl.offsetLeft;
+            const right = left + activeEl.offsetWidth;
+            const viewRight = curLeft + width;
+            if (left < curLeft) {
                 nextLeft = left;
             } else if (right > viewRight) {
                 nextLeft = right - width;
             }
+        }
 
+        nextLeft = Math.max(0, Math.min(nextLeft, maxScrollLeft));
+
+        if (Math.abs(nextLeft - curLeft) > 0.5) {
             (this._scrollable as any).setScrollPositionNow?.({ scrollLeft: nextLeft });
         }
+
+        // 4) Keep transform in lockstep with Monaco’s internal scrollLeft
+        this._syncTabsTransformFromScrollable();
     };
 
-    /** Lifecycle: component did update */
-    override componentDidUpdate(): void {
+    /**
+     *
+     * @param _prevprops
+     * @param prevState
+     */
+    override componentDidUpdate(_prevprops: IMonacoComponentProps, prevState: IComponentState): void {
         // Update context menu position
         if (this.state.ctx.open && this._menuRef.current) {
             if (this.state.ctx.open && this._menuRef.current) {
@@ -230,6 +283,13 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         const currentTheme = this._getCurrentTheme();
         if (this.state.theme !== currentTheme) {
             this.setState({ theme: currentTheme });
+        }
+
+        if (prevState.active !== this.state.active || prevState.files.length !== this.state.files.length || prevState.order.join("|") !== this.state.order.join("|")) {
+            requestAnimationFrame(() => {
+                this._layoutTabsScrollbar();
+                this._syncTabsTransformFromScrollable();
+            });
         }
     }
 

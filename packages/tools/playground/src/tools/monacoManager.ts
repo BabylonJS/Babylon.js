@@ -81,6 +81,7 @@ export class MonacoManager {
         js?: monaco.IDisposable;
     } = {};
     private _typeLibDisposables: monaco.IDisposable[] = [];
+    private _importIndexCache = new WeakMap<monaco.editor.ITextModel, { version: number; items: any[] }>();
     private _acquiredSpecs = new Set<string>();
     private _failedSpecs = new Set<string>();
     private _pathsMap: Record<string, string[]> = {};
@@ -214,8 +215,9 @@ export class MonacoManager {
         if (!model) {
             return;
         }
-
-        this._editor.setModel(model);
+        try {
+            this._editor.setModel(model);
+        } catch {}
         this.globalState.activeFilePath = path;
 
         // Restore the new file’s view state (scroll position, cursor, etc.)
@@ -524,6 +526,16 @@ class Playground {
             showFoldingControls: "always",
             fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
             minimap: { enabled: Utilities.ReadBoolFromStore("minimap", true) },
+            definitionLinkOpensInPeek: true,
+            multiCursorModifier: "alt",
+            gotoLocation: {
+                multiple: "peek",
+                multipleDefinitions: "peek",
+                multipleDeclarations: "peek",
+                multipleImplementations: "peek",
+                multipleTypeDefinitions: "peek",
+                multipleReferences: "peek",
+            },
         };
 
         this._editor = monaco.editor.create(this._hostElement, editorOptions as any);
@@ -564,8 +576,36 @@ class Playground {
             this.globalState.onRunRequiredObservable.notifyObservers();
         }
 
+        this._editor.onDidChangeModel(() => {
+            const m = this._editor.getModel();
+            if (!m) {
+                return;
+            }
+
+            // Find our logical path for this URI
+            let path: string | undefined;
+            for (const [p, model] of this._models) {
+                if (model.uri.toString() === m.uri.toString()) {
+                    path = p;
+                    break;
+                }
+            }
+            if (!path) {
+                return;
+            }
+
+            // Update GS and notify so the tab highlights correctly
+            if (this.globalState.activeFilePath !== path) {
+                this.globalState.activeFilePath = path;
+                this.globalState.onActiveFileChangedObservable.notifyObservers();
+            }
+        });
+
         // After (re)creating editor, ensure stubs reflect current code
         this._installBareImportStubs();
+
+        // Wire up cmd click override
+        this._wireCmdClickOverride();
     }
 
     // ---------------- Monaco setup ----------------
@@ -846,6 +886,7 @@ declare module "*.fx"   { const source: string; export default source; }
                 allowSyntheticDefaultImports: true,
                 esModuleInterop: true,
                 allowArbitraryExtensions: true,
+                experimentalDecorators: true,
                 baseUrl: ".",
             };
             this._jsBaseOpts = opts;
@@ -867,6 +908,8 @@ declare module "*.fx"   { const source: string; export default source; }
                 isolatedModules: true,
                 strict: false,
                 allowArbitraryExtensions: true,
+                experimentalDecorators: true,
+                emitDecoratorMetadata: false,
                 baseUrl: ".",
             };
             this._tsBaseOpts = opts;
@@ -1206,225 +1249,598 @@ declare module "*.fx"   { const source: string; export default source; }
         });
     }
 
-    private _installCrossModuleDefinitionProvider() {
-        this._defProviderDisposable?.dispose();
-        const lang = this._langId(); // 'javascript' | 'typescript'
+    private async _importAtPositionAsync(model: monaco.editor.ITextModel, position: monaco.Position) {
+        const items = await this._indexImportsAsync(model);
+        const pos = model.getOffsetAt(position);
 
-        const stripQuery = (s: string) => s.replace(/\?.*$/, "");
-        const pgToLocal = (spec: string): string | null => {
-            const im = this.globalState.importsMap || {};
-            if (im[spec]) {
-                return im[spec];
-            }
-            const x = stripQuery(spec).replace(/^__pg__\//, "");
-            if (this._models.has(x)) {
-                return x;
-            }
-            const noDot = x.replace(/^\.\//, "");
-            if (this._models.has(noDot)) {
-                return noDot;
-            }
+        const hit = items.find((it: any) => pos >= it.ss && pos <= it.se);
+        if (!hit) {
             return null;
-        };
-        const pickActual = (p: string): string | null => {
-            if (this._models.has(p)) {
-                return p;
+        }
+
+        const clickedBinding =
+            hit.entries.find((e: any) => {
+                const a = model.getOffsetAt(new monaco.Position(e.range.startLineNumber, e.range.startColumn));
+                const b = model.getOffsetAt(new monaco.Position(e.range.endLineNumber, e.range.endColumn));
+                return pos >= a && pos <= b;
+            }) || null;
+
+        const specA = model.getOffsetAt(new monaco.Position(hit.originSelectionRange.startLineNumber, hit.originSelectionRange.startColumn));
+        const specB = model.getOffsetAt(new monaco.Position(hit.originSelectionRange.endLineNumber, hit.originSelectionRange.endColumn));
+        const isOnSpec = pos >= specA && pos <= specB;
+
+        return { ...hit, clickedBinding, isOnSpec };
+    }
+
+    // --- path helpers (class methods) ---
+    private _stripQuery(s: string) {
+        return s.replace(/\?.*$/, "");
+    }
+
+    private _pgToLocal(spec: string): string | null {
+        const im = this.globalState.importsMap || {};
+        if (im[spec]) {
+            return im[spec];
+        }
+        const x = this._stripQuery(spec).replace(/^__pg__\//, "");
+        if (this._models.has(x)) {
+            return x;
+        }
+        const noDot = x.replace(/^\.\//, "");
+        if (this._models.has(noDot)) {
+            return noDot;
+        }
+        return null;
+    }
+
+    private _resolveRelative(fromPath: string, rel: string) {
+        const base = fromPath.split("/");
+        base.pop();
+        for (const part of rel.split("/")) {
+            if (!part || part === ".") {
+                continue;
             }
-            for (const ext of [".ts", ".tsx", ".js", ".mjs"]) {
-                if (this._models.has(p + ext)) {
-                    return p + ext;
-                }
+            if (part === "..") {
+                base.pop();
+            } else {
+                base.push(part);
             }
-            return null;
-        };
-        const resolveRelative = (fromPath: string, rel: string): string => {
-            const base = fromPath.split("/");
-            base.pop();
-            for (const part of rel.split("/")) {
-                if (!part || part === ".") {
-                    continue;
-                }
-                if (part === "..") {
-                    base.pop();
-                } else {
-                    base.push(part);
-                }
+        }
+        return base.join("/");
+    }
+
+    private _pickActual(p: string): string | null {
+        if (this._models.has(p)) {
+            return p;
+        }
+        for (const ext of [".ts", ".tsx", ".js", ".mjs"]) {
+            if (this._models.has(p + ext)) {
+                return p + ext;
             }
-            return base.join("/");
-        };
+        }
+        return null;
+    }
 
-        const findExportRangeInTarget = (targetModel: monaco.editor.ITextModel, name: string, wantDefault: boolean) => {
-            const all = (re: RegExp) => targetModel.findMatches(re.source, false, true, false, null, true);
-            const first = (rs: monaco.editor.FindMatch[]) => rs[0];
+    // --- find a specific export in a target model (class method) ---
+    private _findExportRangeInTarget(targetModel: monaco.editor.ITextModel, targetPath: string, name: string, wantDefault: boolean): monaco.Range {
+        const all = (re: RegExp) => targetModel.findMatches(re.source, false, true, false, null, true);
+        const first = (rs: monaco.editor.FindMatch[]) => (rs && rs.length ? rs[0] : undefined);
 
-            if (wantDefault) {
-                const m = first(all(/\bexport\s+default\b/));
-                if (m) {
-                    return m.range;
-                }
+        if (wantDefault) {
+            const m = first(all(/\bexport\s+default\s+(?:abstract\s+)?(?:class|function)\s+[A-Za-z_$][\w$]*/)) || first(all(/\bexport\s+default\b/));
+            if (m) {
+                return m.range;
             }
-            {
-                const m = first(all(new RegExp(String.raw`\bexport\s+(?:abstract\s+)?(?:class|function|const|let|var)\s+${name}\b`)));
-                if (m) {
-                    return m.range;
-                }
+        }
+
+        {
+            const m = first(all(new RegExp(String.raw`\bexport\s+(?:abstract\s+)?(?:class|function|const|let|var|type|interface)\s+${name}\b`)));
+            if (m) {
+                return m.range;
             }
-            {
-                const m = first(all(new RegExp(String.raw`\bexport\s*\{[^}]*\b(?:${name}\b|(?:[A-Za-z_$][\w$]*)\s+as\s+${name}\b)[^}]*\}`)));
-                if (m) {
-                    return m.range;
-                }
+        }
+
+        {
+            const m = first(all(new RegExp(String.raw`\bexport\s*\{[^}]*\b(?:${name}\b|(?:[A-Za-z_$][\w$]*)\s+as\s+${name}\b)[^}]*\}`)));
+            if (m) {
+                const text = targetModel.getValueInRange(m.range);
+                const aliasRe = new RegExp(String.raw`([A-Za-z_$][\w$]*)\s+as\s+${name}\b`);
+                const local = aliasRe.exec(text)?.[1] || name;
+
+                const d =
+                    first(all(new RegExp(String.raw`\bexport\s+(?:abstract\s+)?(?:class|function|const|let|var|type|interface)\s+${local}\b`))) ||
+                    first(all(new RegExp(String.raw`\b(?:class|function|const|let|var|type|interface)\s+${local}\b`)));
+
+                return (d || m).range;
             }
-            {
-                const m = first(all(new RegExp(String.raw`\b${name}\b`)));
-                if (m) {
-                    return m.range;
-                }
-            }
-            return new monaco.Range(1, 1, 1, 1);
-        };
+        }
 
-        const parseImportUnderCursor = (model: monaco.editor.ITextModel, position: monaco.Position) => {
-            // Find the import statement that contains the cursor
-            const text = model.getValue();
-            const posOffset = model.getOffsetAt(position);
+        {
+            const reListFrom = /\bexport\s*\{[^}]+\}\s*from\s*['"]([^'"]+)['"]/g;
+            const matches = targetModel.findMatches(reListFrom.source, false, true, false, null, true);
+            for (const mm of matches) {
+                const text = targetModel.getValueInRange(mm.range);
+                const list = /\{([\s\S]*?)\}/.exec(text)?.[1] || "";
+                const spec = /from\s*['"]([^'"]+)['"]/.exec(text)?.[1] || "";
 
-            // Matches multi-line: import <clause> from 'spec';
-            const re = /(^|\n)\s*import\s+([\s\S]*?)\s+from\s+(['"])([^'"]+)\3\s*;?/g;
-            let m: RegExpExecArray | null;
-            while ((m = re.exec(text))) {
-                const start = m.index + (m[1] ? 1 : 0);
-                const end = start + m[0].length;
-                if (posOffset < start || posOffset > end) {
-                    continue;
-                }
+                for (const raw of list
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean)) {
+                    const parts = raw.split(/\s+as\s+/);
+                    const orig = parts[0].trim();
+                    const exported = (parts[1] || parts[0]).trim();
 
-                const clause = m[2]; // e.g. Default, { A as B, C }
-                const spec = m[4]; // the module string
-                // Compute the range of just the spec string (without quotes)
-                const specToken = m[3] + spec + m[3];
-                const within = m[0];
-                const specIdxInWithin = within.indexOf(specToken);
-                const specStartOffset = start + specIdxInWithin + 1; // +1 skip opening quote
-                const specEndOffset = specStartOffset + spec.length;
-                const originSelectionRange = new monaco.Range(
-                    model.getPositionAt(specStartOffset).lineNumber,
-                    model.getPositionAt(specStartOffset).column,
-                    model.getPositionAt(specEndOffset).lineNumber,
-                    model.getPositionAt(specEndOffset).column
-                );
+                    if (exported === name) {
+                        const targetRaw =
+                            spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/") ? this._resolveRelative(targetPath, spec) : (this._pgToLocal(spec) ?? null);
+                        const nextPath = targetRaw ? this._pickActual(targetRaw.replace(/\\/g, "/")) : null;
 
-                // Extract imported bindings
-                type Entry = { imported: string; isDefault: boolean };
-                const entries: Entry[] = [];
-
-                // default import
-                const def = clause.match(/^\s*([A-Za-z_$][\w$]*)\s*(?:,|$)/);
-                if (def) {
-                    entries.push({ imported: "default", isDefault: true });
-                }
-
-                // named imports
-                const named = clause.match(/\{([\s\S]*?)\}/);
-                if (named) {
-                    const parts = named[1]
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean);
-                    for (const p of parts) {
-                        const mm = p.match(/^([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?$/);
-                        if (!mm) {
-                            continue;
+                        if (nextPath && this._models.has(nextPath)) {
+                            const nextModel = this._models.get(nextPath)!;
+                            const nextIsDefault = orig === "default";
+                            return this._findExportRangeInTarget(nextModel, nextPath, nextIsDefault ? name : orig, nextIsDefault);
                         }
-                        const exported = mm[1]; // exported name in the module
-                        entries.push({ imported: exported, isDefault: false });
+                        return mm.range;
                     }
                 }
-
-                // namespace import -> just open file top
-                const isNamespace = /\*\s+as\s+[A-Za-z_$][\w$]*/.test(clause);
-
-                return { spec, entries, originSelectionRange, isNamespace };
             }
-            return null;
-        };
+        }
 
-        this._defProviderDisposable = monaco.languages.registerDefinitionProvider(lang, {
-            // eslint-disable-next-line
-            provideDefinition: async (model, position) => {
-                const uriStr = model.uri.toString();
+        {
+            const star = targetModel.findMatches(String.raw`\bexport\s*\*\s*from\s*['"]([^'"]+)['"]`, false, true, false, null, true);
+            for (const mm of star) {
+                const spec = /from\s*['"]([^'"]+)['"]/.exec(targetModel.getValueInRange(mm.range))?.[1] || "";
+                const targetRaw =
+                    spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/") ? this._resolveRelative(targetPath, spec) : (this._pgToLocal(spec) ?? null);
+                const nextPath = targetRaw ? this._pickActual(targetRaw.replace(/\\/g, "/")) : null;
 
-                // 1) Try TS worker first
-                try {
-                    const svc = await this._getTsWorkerAsync(model.uri);
-                    const offset = model.getOffsetAt(position);
-                    const defs = await svc.getDefinitionAtPosition(uriStr, offset);
-                    if (defs && defs.length) {
-                        const links: monaco.languages.LocationLink[] = [];
-                        for (const d of defs) {
-                            const targetUri = monaco.Uri.parse(d.fileName);
-                            const tModel = monaco.editor.getModel(targetUri);
-                            if (tModel && (d as any).textSpan) {
-                                const ts = (d as any).textSpan;
-                                const start = tModel.getPositionAt(ts.start);
-                                const end = tModel.getPositionAt(ts.start + ts.length);
-                                links.push({ uri: targetUri, range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column) });
-                            } else {
-                                links.push({ uri: targetUri, range: new monaco.Range(1, 1, 1, 1) });
-                            }
-                        }
-                        if (links.length) {
-                            return links;
-                        }
+                if (nextPath && this._models.has(nextPath)) {
+                    const nextModel = this._models.get(nextPath)!;
+                    const r = this._findExportRangeInTarget(nextModel, nextPath, name, false);
+                    if (r) {
+                        return r;
                     }
-                } catch {
-                    // ignore
+                }
+            }
+        }
+
+        const m = targetModel.findMatches(String.raw`\b${name}\b`, false, true, false, null, true)[0];
+        return m ? m.range : new monaco.Range(1, 1, 1, 1);
+    }
+
+    private _wireCmdClickOverride() {
+        let pendingNav: { targetPath: string; destRange: monaco.Range } | null = null;
+
+        const deferNav = (fn: () => void) => setTimeout(() => requestAnimationFrame(() => setTimeout(fn, 0)), 0);
+
+        this._editor.onMouseDown((e) => {
+            if (!e.event.leftButton) {
+                return;
+            }
+            const isCmd = e.event.metaKey || e.event.ctrlKey;
+            if (!isCmd) {
+                return;
+            }
+
+            const model = this._editor.getModel();
+            const pos = e.target.position;
+            if (!model || !pos) {
+                return;
+            }
+
+            e.event.preventDefault?.();
+            e.event.stopPropagation?.();
+
+            (async () => {
+                const hit = await this._importAtPositionAsync(model, pos);
+                if (!hit) {
+                    pendingNav = null;
+                    return;
                 }
 
-                // 2) If cursor is in an import '...': go to the symbol(s) in the local module
-                const parsed = parseImportUnderCursor(model, position);
-                if (!parsed) {
-                    return [];
+                const { spec, entries, isNamespace, clickedBinding, isOnSpec } = hit;
+                const isRelative = spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/");
+                const isLocalMapped = !!this._pgToLocal(spec);
+                // Peek if this is not a local import
+                if (!isRelative && !isLocalMapped) {
+                    pendingNav = null;
+                    return;
                 }
 
-                const { spec, entries, originSelectionRange, isNamespace } = parsed;
+                const fromPath = model.uri.path.replace(/^[\\/]/, "").replace(/\\/g, "/");
 
-                // Resolve target path
                 let targetPath: string | null;
-                if (spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/")) {
-                    targetPath = pickActual(resolveRelative(model.uri.path.replace(/^\//, ""), spec));
+                if (isRelative) {
+                    targetPath = this._pickActual(this._resolveRelative(fromPath, spec));
                 } else {
-                    targetPath = pgToLocal(spec);
+                    targetPath = this._pgToLocal(spec);
                     if (targetPath) {
-                        targetPath = pickActual(targetPath) ?? targetPath;
+                        targetPath = this._pickActual(targetPath) ?? targetPath;
                     }
                 }
                 if (!targetPath || !this._models.has(targetPath)) {
-                    return [];
+                    pendingNav = null;
+                    return;
                 }
 
                 const targetModel = this._models.get(targetPath)!;
 
-                // Namespace import -> single link to file top
-                if (isNamespace || entries.length === 0) {
+                let destRange: monaco.Range;
+                if (isOnSpec || isNamespace || entries.length === 0) {
+                    destRange = new monaco.Range(1, 1, 1, 1);
+                } else {
+                    const b = clickedBinding ?? entries[0];
+                    destRange = this._findExportRangeInTarget(targetModel, targetPath, b.imported, b.isDefault);
+                }
+
+                pendingNav = { targetPath, destRange };
+            })().catch(() => { // eslint-disable-line
+                pendingNav = null;
+            });
+        });
+
+        this._editor.onMouseUp((_e) => {
+            if (!pendingNav) {
+                return;
+            }
+
+            const { targetPath, destRange } = pendingNav;
+            pendingNav = null;
+
+            deferNav(async () => {
+                if (!this._models.has(targetPath)) {
+                    return;
+                }
+                this.switchActiveFile(targetPath);
+                this._editor.revealRangeInCenter(destRange, monaco.editor.ScrollType.Smooth);
+                this._editor.setPosition({ lineNumber: destRange.startLineNumber, column: destRange.startColumn });
+                this._editor.focus();
+            });
+        });
+    }
+
+    private _installCrossModuleDefinitionProvider() {
+        this._defProviderDisposable?.dispose();
+        const lang = this._langId(); // 'javascript' | 'typescript'
+        this._defProviderDisposable = monaco.languages.registerDefinitionProvider(lang, {
+            // eslint-disable-next-line
+            provideDefinition: async (model, position) => {
+                const importHit = await this._importAtPositionAsync(model, position);
+                if (!importHit) {
+                    return undefined;
+                }
+
+                const { spec, entries, isNamespace, clickedBinding, isOnSpec } = importHit;
+
+                const stripQuery = (s: string) => s.replace(/\?.*$/, "");
+                const pgToLocal = (s: string): string | null => {
+                    const im = this.globalState.importsMap || {};
+                    if (im[s]) {
+                        return im[s];
+                    }
+                    const x = stripQuery(s).replace(/^__pg__\//, "");
+                    if (this._models.has(x)) {
+                        return x;
+                    }
+                    const noDot = x.replace(/^\.\//, "");
+                    if (this._models.has(noDot)) {
+                        return noDot;
+                    }
+                    return null;
+                };
+                const resolveRelative = (fromPath: string, rel: string) => {
+                    const base = fromPath.split("/");
+                    base.pop();
+                    for (const part of rel.split("/")) {
+                        if (!part || part === ".") {
+                            continue;
+                        }
+                        if (part === "..") {
+                            base.pop();
+                        } else {
+                            base.push(part);
+                        }
+                    }
+                    return base.join("/");
+                };
+                const pickActual = (p: string): string | null => {
+                    if (this._models.has(p)) {
+                        return p;
+                    }
+                    for (const ext of [".ts", ".tsx", ".js", ".mjs"]) {
+                        if (this._models.has(p + ext)) {
+                            return p + ext;
+                        }
+                    }
+                    return null;
+                };
+                const fromPath = model.uri.path.replace(/^[\\/]/, "").replace(/\\/g, "/");
+                let targetPath: string | null;
+                if (spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/")) {
+                    targetPath = this._pickActual(this._resolveRelative(fromPath, spec));
+                } else {
+                    targetPath = this._pgToLocal(spec);
+                    if (targetPath) {
+                        targetPath = this._pickActual(targetPath) ?? targetPath;
+                    }
+                }
+                if (!targetPath || !this._models.has(targetPath)) {
+                    return undefined;
+                }
+
+                const targetModel = this._models.get(targetPath)!;
+
+                const findExportRangeInTarget = (targetModel: monaco.editor.ITextModel, targetPath: string, name: string, wantDefault: boolean): monaco.Range => {
+                    const all = (re: RegExp) => targetModel.findMatches(re.source, false, true, false, null, true);
+                    const first = (rs: monaco.editor.FindMatch[]) => (rs && rs.length ? rs[0] : undefined);
+
+                    // 0) default export
+                    if (wantDefault) {
+                        // export default class|function Name ...
+                        const m = first(all(/\bexport\s+default\s+(?:abstract\s+)?(?:class|function)\s+[A-Za-z_$][\w$]*/)) || first(all(/\bexport\s+default\b/));
+                        if (m) {
+                            return m.range;
+                        }
+                    }
+
+                    // 1) direct named declarations
+                    {
+                        const m = first(all(new RegExp(String.raw`\bexport\s+(?:abstract\s+)?(?:class|function|const|let|var|type|interface)\s+${name}\b`)));
+                        if (m) {
+                            return m.range;
+                        }
+                    }
+
+                    // 2) export list in same file: export { A, B as C }
+                    {
+                        const m = first(all(new RegExp(String.raw`\bexport\s*\{[^}]*\b(?:${name}\b|(?:[A-Za-z_$][\w$]*)\s+as\s+${name}\b)[^}]*\}`)));
+                        if (m) {
+                            // Try to jump to the local declaration (the left side of "as", or the same name)
+                            const text = targetModel.getValueInRange(m.range);
+                            const aliasRe = new RegExp(String.raw`([A-Za-z_$][\w$]*)\s+as\s+${name}\b`);
+                            const local = aliasRe.exec(text)?.[1] || name;
+
+                            const d =
+                                first(all(new RegExp(String.raw`\bexport\s+(?:abstract\s+)?(?:class|function|const|let|var|type|interface)\s+${local}\b`))) ||
+                                first(all(new RegExp(String.raw`\b(?:class|function|const|let|var|type|interface)\s+${local}\b`)));
+
+                            return (d || m).range;
+                        }
+                    }
+
+                    // 3) re-exports with list: export { X as Y } from './mod'
+                    {
+                        // find all "export { ... } from '...'"
+                        const reListFrom = /\bexport\s*\{[^}]+\}\s*from\s*['"]([^'"]+)['"]/g;
+                        const matches = targetModel.findMatches(reListFrom.source, false, true, false, null, true);
+                        for (const mm of matches) {
+                            const text = targetModel.getValueInRange(mm.range);
+                            const list = /\{([\s\S]*?)\}/.exec(text)?.[1] || "";
+                            const spec = /from\s*['"]([^'"]+)['"]/.exec(text)?.[1] || "";
+
+                            // parse "A", "B as C" items
+                            for (const raw of list
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean)) {
+                                const parts = raw.split(/\s+as\s+/);
+                                const orig = parts[0].trim();
+                                const exported = (parts[1] || parts[0]).trim();
+
+                                if (exported === name) {
+                                    // resolve next module and recurse
+                                    const targetRaw =
+                                        spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/") ? resolveRelative(targetPath, spec) : (pgToLocal(spec) ?? null);
+                                    const nextPath = targetRaw ? pickActual(targetRaw.replace(/\\/g, "/")) : null;
+
+                                    if (nextPath && this._models.has(nextPath)) {
+                                        const nextModel = this._models.get(nextPath)!;
+                                        const nextIsDefault = orig === "default";
+                                        return findExportRangeInTarget(nextModel, nextPath, nextIsDefault ? name : orig, nextIsDefault);
+                                    }
+                                    // couldn't resolve file — at least jump to this export
+                                    return mm.range;
+                                }
+                            }
+                        }
+                    }
+
+                    // 4) star re-exports: export * from './mod'
+                    {
+                        const star = targetModel.findMatches(String.raw`\bexport\s*\*\s*from\s*['"]([^'"]+)['"]`, false, true, false, null, true);
+                        for (const mm of star) {
+                            const spec = /from\s*['"]([^'"]+)['"]/.exec(targetModel.getValueInRange(mm.range))?.[1] || "";
+                            const targetRaw =
+                                spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/") ? resolveRelative(targetPath, spec) : (pgToLocal(spec) ?? null);
+                            const nextPath = targetRaw ? pickActual(targetRaw.replace(/\\/g, "/")) : null;
+
+                            if (nextPath && this._models.has(nextPath)) {
+                                const nextModel = this._models.get(nextPath)!;
+                                const r = findExportRangeInTarget(nextModel, nextPath, name, false);
+                                if (r) {
+                                    return r;
+                                }
+                            }
+                        }
+                    }
+
+                    // 5) last resort: first occurrence
+                    const m = first(all(new RegExp(String.raw`\b${name}\b`)));
+                    return m ? m.range : new monaco.Range(1, 1, 1, 1);
+                };
+
+                // If the click is on the quoted spec (or it's a namespace import),
+                // jump to the file (single location) -> Monaco navigates (no peek)
+                if (isOnSpec || isNamespace || entries.length === 0) {
+                    const top = new monaco.Range(1, 1, 1, 1);
                     return [
                         {
                             uri: targetModel.uri,
-                            range: new monaco.Range(1, 1, 1, 1),
-                            originSelectionRange,
+                            range: top,
                         },
                     ];
                 }
 
-                // Build LocationLinks for each imported binding (default + named)
-                const links: monaco.languages.LocationLink[] = [];
-                for (const e of entries) {
-                    const targetRange = findExportRangeInTarget(targetModel, e.imported, e.isDefault);
-                    links.push({ uri: targetModel.uri, range: targetRange, originSelectionRange });
-                }
-                return links;
+                // Clicked a specific binding -> jump right to that export
+                const bindings = clickedBinding ? [clickedBinding] : entries;
+                const locs = bindings.map((e: any) => {
+                    const r = findExportRangeInTarget(targetModel, targetPath, e.imported, e.isDefault);
+                    return { uri: targetModel.uri, range: r } as monaco.languages.Location;
+                });
+                return locs;
             },
         });
+    }
+
+    // global lexer
+    // Load once, no dynamic import. Uses UMD build -> global esModuleLexer.
+    private async _getModuleLexerAsync(): Promise<{ init: Promise<void>; parse: (code: string) => any[] }> {
+        const g = globalThis as any;
+
+        // If the bootstrap already put a module object here, just use it.
+        if (g.__pg_v2_esmLexer) {
+            return g.__pg_v2_esmLexer;
+        }
+
+        // If UMD already present (e.g. another part loaded it), use it.
+        if (g.esModuleLexer) {
+            await g.esModuleLexer.init;
+            g.__pg_v2_esmLexer = g.esModuleLexer;
+            return g.__pg_v2_esmLexer;
+        }
+
+        // Otherwise inject the UMD script.
+        await new Promise<void>((resolve, reject) => {
+            const existing = document.querySelector<HTMLScriptElement>('script[data-loader="es-module-lexer"]');
+            if (existing) {
+                existing.addEventListener("load", () => resolve(), { once: true });
+                existing.addEventListener("error", () => reject(new Error("es-module-lexer load error")), { once: true });
+                return;
+            }
+            const s = document.createElement("script");
+            s.src = "https://cdn.jsdelivr.net/npm/es-module-lexer/dist/lexer.min.js";
+            s.async = true;
+            s.dataset.loader = "es-module-lexer";
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error("es-module-lexer load error"));
+            document.head.appendChild(s);
+        });
+
+        const mod = (globalThis as any).esModuleLexer;
+        await mod.init;
+        (globalThis as any).__pg_v2_esmLexer = mod;
+        return mod;
+    }
+
+    private async _indexImportsAsync(model: monaco.editor.ITextModel) {
+        const version = model.getVersionId();
+        const cached = this._importIndexCache.get(model);
+        if (cached && cached.version === version) {
+            return cached.items;
+        }
+
+        const { parse } = await this._getModuleLexerAsync();
+        const code = model.getValue();
+        const [imports] = parse(code);
+
+        // Normalize to objects with statement + spec + binding ranges
+        const items = imports.map((im: any) => {
+            // Use normalized spec (string value) when available
+            const spec: string = im.n ?? code.slice(im.s, im.e);
+
+            // Robust statement start/end fallbacks
+            const findStmtStart = (pos: number) => {
+                // walk left to previous semicolon or line start
+                for (let i = pos; i >= 0; i--) {
+                    const ch = code.charCodeAt(i);
+                    if (ch === 59 /* ; */) {
+                        return i + 1;
+                    }
+                    if (ch === 10 /* \n */ || ch === 13 /* \r */) {
+                        return i + 1;
+                    }
+                    // cheap guard: stop if we hit another "import" or "export" keyword boundary
+                    if (i >= 5 && (code.slice(i - 6, i).endsWith("import") || code.slice(i - 6, i).endsWith("export"))) {
+                        return i - 6;
+                    }
+                }
+                return 0;
+            };
+            const findStmtEnd = (pos: number) => {
+                // walk right to semicolon or line end
+                for (let i = pos; i < code.length; i++) {
+                    const ch = code.charCodeAt(i);
+                    if (ch === 59 /* ; */) {
+                        return i + 1;
+                    }
+                    if (ch === 10 /* \n */ || ch === 13 /* \r */) {
+                        return i + 1;
+                    }
+                }
+                return code.length;
+            };
+
+            const ss = typeof im.ss === "number" ? im.ss : findStmtStart(im.s);
+            const se = typeof im.se === "number" ? im.se : findStmtEnd(im.e);
+
+            const clauseStart = ss; // starts at statement start
+            const clauseEnd = im.s; // right before the spec string
+            const clause = code.slice(clauseStart, clauseEnd);
+
+            type Entry = { imported: string; isDefault: boolean; range: monaco.IRange };
+            const entries: Entry[] = [];
+
+            // Default import
+            const def = /^\s*import\s+([A-Za-z_$][\w$]*)\s*(?:,|from\b|$)/.exec(clause);
+            if (def) {
+                const local = def[1];
+                const a = clauseStart + def.index + def[0].indexOf(local);
+                const b = a + local.length;
+                entries.push({
+                    imported: "default",
+                    isDefault: true,
+                    range: new monaco.Range(model.getPositionAt(a).lineNumber, model.getPositionAt(a).column, model.getPositionAt(b).lineNumber, model.getPositionAt(b).column),
+                });
+            }
+
+            // Namespace import
+            const ns = /import\s+\*\s+as\s+([A-Za-z_$][\w$]*)/.exec(clause);
+            const isNamespace = !!ns;
+
+            // Named imports
+            const named = /\{([\s\S]*?)\}/.exec(clause);
+            if (named) {
+                const inner = named[1];
+                const innerStart = clauseStart + named.index! + 1;
+                const partRe = /([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?/g;
+                let m: RegExpExecArray | null;
+                while ((m = partRe.exec(inner))) {
+                    const exported = m[1];
+                    const local = m[2] || m[1];
+                    const a = innerStart + m.index + m[0].lastIndexOf(local);
+                    const b = a + local.length;
+                    entries.push({
+                        imported: exported,
+                        isDefault: false,
+                        range: new monaco.Range(model.getPositionAt(a).lineNumber, model.getPositionAt(a).column, model.getPositionAt(b).lineNumber, model.getPositionAt(b).column),
+                    });
+                }
+            }
+
+            // spec selection range (no quotes when using im.n; still fine for hit testing)
+            const originSelectionRange = new monaco.Range(
+                model.getPositionAt(im.s).lineNumber,
+                model.getPositionAt(im.s).column,
+                model.getPositionAt(im.e).lineNumber,
+                model.getPositionAt(im.e).column
+            );
+
+            return { ss, se, s: im.s, e: im.e, spec, clauseStart, clauseEnd, entries, isNamespace, originSelectionRange };
+        });
+
+        this._importIndexCache.set(model, { version, items });
+        return items;
     }
 
     // ---------------- Bare import stubs + Automatic Type Acquisition ----------------
@@ -2047,7 +2463,9 @@ window.__pg_v2_run = async function(engine, canvas) {
             target: ts.ScriptTarget.ES2020,
             moduleResolution: ts.ModuleResolutionKind.NodeJs,
             esModuleInterop: true,
-            allowSyntheticDefaultImports: true
+            allowSyntheticDefaultImports: true,
+            experimentalDecorators: true,
+            emitDecoratorMetadata: false,
           }
         }).outputText;
       } catch (e) {
@@ -2132,3 +2550,18 @@ window.__pg_v2_run = async function(engine, canvas) {
 };
 })();`;
 }
+
+window.addEventListener(
+    "unhandledrejection",
+    (ev: PromiseRejectionEvent) => {
+        const r = ev.reason;
+        if (r && (r.name === "Canceled" || r.message === "Canceled")) {
+            ev.preventDefault(); // ignore Monaco cancellation noise
+            ev.stopImmediatePropagation();
+            ev.stopPropagation();
+            return true;
+        }
+        return false;
+    },
+    { capture: true, passive: false, once: false }
+);
