@@ -652,7 +652,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                         <span aria-hidden="true">＋</span>
                     </button>
                 </div>
-
+                <div style={{ height: "2px", backgroundColor: "var(--pg-tab-active)" }} />
                 {/* Context menu */}
                 {this.state.ctx.open &&
                     this.state.ctx.path &&
