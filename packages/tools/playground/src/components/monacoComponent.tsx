@@ -118,10 +118,11 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             this.setState({ theme: this._getCurrentTheme() });
         });
 
-        // Close ctx menu on click elsewhere
+        // Close ctx menu on click elsewhere if not clicking on the menu itself (guard in handler)
         window.addEventListener("click", this._closeCtxMenu, { capture: true });
     }
 
+    /** Lifecycle: component did mount */
     override componentDidMount() {
         const hostElement = this.props.refObject.current!;
         this._mutationObserver.observe(hostElement, { childList: true, subtree: true });
@@ -136,8 +137,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             horizontal: ScrollbarVisibility.Auto,
             vertical: ScrollbarVisibility.Hidden,
             useShadows: false,
-            alwaysConsumeMouseWheel: true, // <- important so wheel doesn't bubble to page
-
+            alwaysConsumeMouseWheel: true,
             handleMouseWheel: true,
             horizontalSliderSize: 3,
             horizontalHasArrows: false,
@@ -145,26 +145,20 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
         this._scrollable.onScroll(this._onTabsScroll);
 
-        // Mount: ScrollableElement provides a wrapper node
         const node = this._scrollable.getDomNode();
         host.appendChild(node);
         node.appendChild(content);
 
-        // drive dimensions initially + on changes
         this._layoutTabsScrollbar();
 
-        // keep in sync on resize / content changes
         this._ro = new ResizeObserver(() => this._layoutTabsScrollbar());
         this._ro.observe(host);
         this._ro.observe(content);
 
-        // Keep your existing behavior
         this._scrollActiveIntoView();
 
-        // Re-scan on resize to keep thumb in sync
         window.addEventListener("resize", this._layoutTabsScrollbar, { passive: true } as any);
 
-        // When your tab list changes (you already notify on order/files changes), ask it to rescan:
         this.props.globalState.onFilesChangedObservable.add(this._layoutTabsScrollbar);
         this.props.globalState.onFilesOrderChangedObservable?.add(this._layoutTabsScrollbar);
     }
@@ -185,7 +179,6 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
     private _onTabsScroll = (e: { scrollLeft: number }) => {
         const content = this._tabsContentRef.current!;
-        // translate the whole tabs row
         content.style.transform = `translateX(${-e.scrollLeft}px)`;
     };
 

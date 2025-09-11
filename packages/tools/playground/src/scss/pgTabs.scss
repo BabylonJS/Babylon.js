@@ -1,6 +1,6 @@
 .pg-monaco-wrapper {
   --pg-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --pg-bar-height: 35px;
+  --pg-bar-height: 30px;
   --pg-radius: 2px;
   --pg-radius-lg: 3px;
   --pg-speed: 0.1s;
@@ -57,7 +57,9 @@
   }
 }
 
-
+.pg-monaco-wrapper__fullscreen {
+  width: 100% !important;
+}
 .pg-monaco-wrapper {
   display: flex;
   flex-direction: column;
@@ -86,12 +88,12 @@
 }
 
 .pg-tabs {
-  display: inline-flex;     /* shrink-to-fit to children */
-  flex: none;               /* don't grow or shrink */
-  width: max-content;       /* intrinsic width */
+  display: inline-flex;
+  flex: none;
+  width: max-content;
   white-space: nowrap;
   overflow: visible;
-  transform: translateX(0); /* will be updated from JS */
+  transform: translateX(0);
 }
 
 .pg-tabs-host {
@@ -118,6 +120,7 @@
   right: 0;
   bottom: 0;
   height: 6px !important;
+  bottom: -2px !important;
 }
 
 .monaco-scrollable-element > .scrollbar.vertical {
@@ -369,7 +372,7 @@
   .pg-tabs-bar {
     height: 32px;
   }
-
+  
   .pg-tab {
     height: 32px;
     min-width: 100px;
@@ -386,12 +389,15 @@
 }
 
 @media screen and (max-width: 768px) {
-  .pg-tabs-bar {
-    height: 28px;
+  .pg-monaco-wrapper {
+    --pg-bar-height: 25px;
   }
-
+  .pg-tabs-bar {
+    height: 25px;
+  }
+ 
   .pg-tab {
-    height: 28px;
+    height: 25px;
     min-width: 80px;
     max-width: 140px;
     padding: 0 4px 0 8px;
@@ -413,8 +419,8 @@
   }
 
   .pg-tab__add {
-    width: 28px;
-    height: 28px;
+    width: 25px;
+    height: 25px;
     font-size: 12px;
   }
 

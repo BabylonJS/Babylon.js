@@ -17,6 +17,9 @@ export class MonacoManager {
     private _editor: editor.IStandaloneCodeEditor;
     private _definitionWorker: Worker;
     private _models: Map<string, monaco.editor.ITextModel> = new Map();
+    private _defProviderDisposable: monaco.IDisposable | null = null;
+    private _viewStates: Map<string, monaco.editor.ICodeEditorViewState | null> = new Map();
+
     private _tagCandidates:
         | {
               /**
@@ -125,7 +128,7 @@ export class MonacoManager {
                 }
             } else {
                 const uri = monaco.Uri.file(path);
-                const model = monaco.editor.createModel(code, MonacoLanguageFor(path, fallbackLang), uri);
+                const model = monaco.editor.createModel(code, MonacoLanguageForPathAndContent(path, fallbackLang), uri);
                 model.onDidChangeContent(() => {
                     this.globalState.files[path] = model.getValue();
                     this._isDirty = true;
@@ -149,6 +152,7 @@ export class MonacoManager {
             const model = this._models.get(activePath) || [...this._models.values()][0];
             if (model) {
                 this._editor.setModel(model);
+                this._restoreViewStateFor(this.globalState.activeFilePath || activePath);
             }
         }
 
@@ -168,17 +172,55 @@ export class MonacoManager {
         return out;
     }
 
+    private _saveViewStateFor(path: string) {
+        if (!this._editor) {
+            return;
+        }
+        const state = this._editor.saveViewState();
+        this._viewStates.set(path, state);
+    }
+
+    private _restoreViewStateFor(path: string) {
+        if (!this._editor) {
+            return;
+        }
+        const state = this._viewStates.get(path);
+        if (state) {
+            this._editor.restoreViewState(state);
+            // optional: ensure cursor/viewport is visible and focus the editor
+            this._editor.focus();
+        } else {
+            // default if no saved state exists
+            this._editor.setScrollTop(0);
+        }
+    }
+
     /**
      *
      * @param path Path of the file to switch to
      */
     public switchActiveFile(path: string) {
-        const model = this._models.get(path);
-        if (!model || !this._editor) {
+        if (!this._editor) {
             return;
         }
+
+        // Save the current file’s view state before switching
+        const prevPath = this.globalState.activeFilePath;
+        if (prevPath) {
+            this._saveViewStateFor(prevPath);
+        }
+
+        const model = this._models.get(path);
+        if (!model) {
+            return;
+        }
+
         this._editor.setModel(model);
         this.globalState.activeFilePath = path;
+
+        // Restore the new file’s view state (scroll position, cursor, etc.)
+        this._restoreViewStateFor(path);
+
         this.globalState.onActiveFileChangedObservable.notifyObservers();
     }
 
@@ -195,7 +237,7 @@ export class MonacoManager {
                 const existingCode = this._editor?.getValue() || this.globalState.currentCode || initial;
                 const uri = monaco.Uri.file(entry);
                 const fallbackLang0 = this.globalState.language === "JS" ? "javascript" : "typescript";
-                const model0 = monaco.editor.createModel(existingCode, MonacoLanguageFor(entry, fallbackLang0), uri);
+                const model0 = monaco.editor.createModel(existingCode, MonacoLanguageForPathAndContent(entry, fallbackLang0), uri);
                 model0.onDidChangeContent(() => {
                     this.globalState.files[entry] = model0.getValue();
                     this._isDirty = true;
@@ -213,7 +255,7 @@ export class MonacoManager {
 
         const fallbackLang = this.globalState.language === "JS" ? "javascript" : "typescript";
         const uri = monaco.Uri.file(path);
-        const model = monaco.editor.createModel(initial, MonacoLanguageFor(path, fallbackLang), uri);
+        const model = monaco.editor.createModel(initial, MonacoLanguageForPathAndContent(path, fallbackLang), uri);
         model.onDidChangeContent(() => {
             this.globalState.files[path] = model.getValue();
             this._isDirty = true;
@@ -235,6 +277,7 @@ export class MonacoManager {
             m.dispose();
             this._models.delete(path);
         }
+        this._viewStates.delete(path);
         delete this.globalState.files[path];
 
         const fallback = this.globalState.language === "JS" ? "index.js" : "index.ts";
@@ -484,11 +527,17 @@ class Playground {
         };
 
         this._editor = monaco.editor.create(this._hostElement, editorOptions as any);
-
+        this._editor.onDidScrollChange(() => {
+            const p = this.globalState.activeFilePath;
+            if (p) {
+                this._viewStates.set(p, this._editor.saveViewState());
+            }
+        });
         if (this.globalState.isMultiFile && this.globalState.activeFilePath) {
             const model = this._models.get(this.globalState.activeFilePath);
             if (model) {
                 this._editor.setModel(model);
+                this._restoreViewStateFor(this.globalState.activeFilePath);
             }
         } else {
             // single-file: update diagnostics + stubs as you type
@@ -602,8 +651,9 @@ interface Window { engine: BABYLON.Engine; canvas: HTMLCanvasElement; }
 declare var engine: BABYLON.Engine;
 declare var canvas: HTMLCanvasElement;
         `;
-
+        this._registerShaderLanguages();
         this._createEditor();
+        this._installCrossModuleDefinitionProvider();
         this._setupDefinitionWorker(libContent);
         this._setupMonacoCompilationPipeline(libContent);
         this._setupMonacoColorProvider();
@@ -641,7 +691,10 @@ declare var canvas: HTMLCanvasElement;
         if (this._models.has(newPath)) {
             throw new Error("Target file already exists");
         }
-
+        if (this._viewStates.has(oldPath)) {
+            this._viewStates.set(newPath, this._viewStates.get(oldPath)!);
+            this._viewStates.delete(oldPath);
+        }
         const lang = model.getLanguageId();
         const value = model.getValue();
         const uri = monaco.Uri.file(newPath);
@@ -709,7 +762,7 @@ export { Playground };`;
         if (!this._models.has(entry)) {
             const fallbackLang = this.globalState.language === "JS" ? "javascript" : "typescript";
             const uri = monaco.Uri.file(entry);
-            const model = monaco.editor.createModel(defaultCode, MonacoLanguageFor(entry, fallbackLang), uri);
+            const model = monaco.editor.createModel(defaultCode, MonacoLanguageForPathAndContent(entry, fallbackLang), uri);
             model.onDidChangeContent(() => {
                 this.globalState.files[entry] = model.getValue();
                 this._isDirty = true;
@@ -774,7 +827,14 @@ export { Playground };`;
 
     protected _setupMonacoCompilationPipeline(libContent: string) {
         const tsLang = monaco.languages.typescript;
+        const shaderDts = `
+declare module "*.wgsl" { const source: string; export default source; }
+declare module "*.glsl" { const source: string; export default source; }
+declare module "*.fx"   { const source: string; export default source; }
+`;
 
+        monaco.languages.typescript.typescriptDefaults.addExtraLib(shaderDts, "pg-shaders.d.ts");
+        monaco.languages.typescript.javascriptDefaults.addExtraLib(shaderDts, "pg-shaders-js.d.ts");
         if (this.globalState.language === "JS") {
             const opts: monaco.languages.typescript.CompilerOptions = {
                 allowJs: true,
@@ -993,7 +1053,7 @@ export { Playground };`;
         return this.globalState.language === "JS" ? "javascript" : "typescript";
     }
 
-    private _getTsWorker = async (uri: monaco.Uri) => {
+    private _getTsWorkerAsync = async (uri: monaco.Uri) => {
         if (this.globalState.language === "JS") {
             const getWorker = await monaco.languages.typescript.getJavaScriptWorker();
             return await getWorker(uri);
@@ -1064,7 +1124,7 @@ export { Playground };`;
             triggerCharacters: [".", '"', "'", "/", "@"],
             // eslint-disable-next-line
             provideCompletionItems: async (model, position, context, _token) => {
-                const svc = await this._getTsWorker(model.uri);
+                const svc = await this._getTsWorkerAsync(model.uri);
                 const offset = model.getOffsetAt(position);
                 const info = await svc.getCompletionsAtPosition(model.uri.toString(), offset);
 
@@ -1111,7 +1171,7 @@ export { Playground };`;
                         return item;
                     }
 
-                    const svc = await this._getTsWorker(monaco.Uri.parse(uriStr));
+                    const svc = await this._getTsWorkerAsync(monaco.Uri.parse(uriStr));
                     let offset: number | undefined = (item as any).__offset;
 
                     if (offset == null && item.range) {
@@ -1142,6 +1202,227 @@ export { Playground };`;
                     // ignore
                 }
                 return item;
+            },
+        });
+    }
+
+    private _installCrossModuleDefinitionProvider() {
+        this._defProviderDisposable?.dispose();
+        const lang = this._langId(); // 'javascript' | 'typescript'
+
+        const stripQuery = (s: string) => s.replace(/\?.*$/, "");
+        const pgToLocal = (spec: string): string | null => {
+            const im = this.globalState.importsMap || {};
+            if (im[spec]) {
+                return im[spec];
+            }
+            const x = stripQuery(spec).replace(/^__pg__\//, "");
+            if (this._models.has(x)) {
+                return x;
+            }
+            const noDot = x.replace(/^\.\//, "");
+            if (this._models.has(noDot)) {
+                return noDot;
+            }
+            return null;
+        };
+        const pickActual = (p: string): string | null => {
+            if (this._models.has(p)) {
+                return p;
+            }
+            for (const ext of [".ts", ".tsx", ".js", ".mjs"]) {
+                if (this._models.has(p + ext)) {
+                    return p + ext;
+                }
+            }
+            return null;
+        };
+        const resolveRelative = (fromPath: string, rel: string): string => {
+            const base = fromPath.split("/");
+            base.pop();
+            for (const part of rel.split("/")) {
+                if (!part || part === ".") {
+                    continue;
+                }
+                if (part === "..") {
+                    base.pop();
+                } else {
+                    base.push(part);
+                }
+            }
+            return base.join("/");
+        };
+
+        const findExportRangeInTarget = (targetModel: monaco.editor.ITextModel, name: string, wantDefault: boolean) => {
+            const all = (re: RegExp) => targetModel.findMatches(re.source, false, true, false, null, true);
+            const first = (rs: monaco.editor.FindMatch[]) => rs[0];
+
+            if (wantDefault) {
+                const m = first(all(/\bexport\s+default\b/));
+                if (m) {
+                    return m.range;
+                }
+            }
+            {
+                const m = first(all(new RegExp(String.raw`\bexport\s+(?:abstract\s+)?(?:class|function|const|let|var)\s+${name}\b`)));
+                if (m) {
+                    return m.range;
+                }
+            }
+            {
+                const m = first(all(new RegExp(String.raw`\bexport\s*\{[^}]*\b(?:${name}\b|(?:[A-Za-z_$][\w$]*)\s+as\s+${name}\b)[^}]*\}`)));
+                if (m) {
+                    return m.range;
+                }
+            }
+            {
+                const m = first(all(new RegExp(String.raw`\b${name}\b`)));
+                if (m) {
+                    return m.range;
+                }
+            }
+            return new monaco.Range(1, 1, 1, 1);
+        };
+
+        const parseImportUnderCursor = (model: monaco.editor.ITextModel, position: monaco.Position) => {
+            // Find the import statement that contains the cursor
+            const text = model.getValue();
+            const posOffset = model.getOffsetAt(position);
+
+            // Matches multi-line: import <clause> from 'spec';
+            const re = /(^|\n)\s*import\s+([\s\S]*?)\s+from\s+(['"])([^'"]+)\3\s*;?/g;
+            let m: RegExpExecArray | null;
+            while ((m = re.exec(text))) {
+                const start = m.index + (m[1] ? 1 : 0);
+                const end = start + m[0].length;
+                if (posOffset < start || posOffset > end) {
+                    continue;
+                }
+
+                const clause = m[2]; // e.g. Default, { A as B, C }
+                const spec = m[4]; // the module string
+                // Compute the range of just the spec string (without quotes)
+                const specToken = m[3] + spec + m[3];
+                const within = m[0];
+                const specIdxInWithin = within.indexOf(specToken);
+                const specStartOffset = start + specIdxInWithin + 1; // +1 skip opening quote
+                const specEndOffset = specStartOffset + spec.length;
+                const originSelectionRange = new monaco.Range(
+                    model.getPositionAt(specStartOffset).lineNumber,
+                    model.getPositionAt(specStartOffset).column,
+                    model.getPositionAt(specEndOffset).lineNumber,
+                    model.getPositionAt(specEndOffset).column
+                );
+
+                // Extract imported bindings
+                type Entry = { imported: string; isDefault: boolean };
+                const entries: Entry[] = [];
+
+                // default import
+                const def = clause.match(/^\s*([A-Za-z_$][\w$]*)\s*(?:,|$)/);
+                if (def) {
+                    entries.push({ imported: "default", isDefault: true });
+                }
+
+                // named imports
+                const named = clause.match(/\{([\s\S]*?)\}/);
+                if (named) {
+                    const parts = named[1]
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                    for (const p of parts) {
+                        const mm = p.match(/^([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?$/);
+                        if (!mm) {
+                            continue;
+                        }
+                        const exported = mm[1]; // exported name in the module
+                        entries.push({ imported: exported, isDefault: false });
+                    }
+                }
+
+                // namespace import -> just open file top
+                const isNamespace = /\*\s+as\s+[A-Za-z_$][\w$]*/.test(clause);
+
+                return { spec, entries, originSelectionRange, isNamespace };
+            }
+            return null;
+        };
+
+        this._defProviderDisposable = monaco.languages.registerDefinitionProvider(lang, {
+            // eslint-disable-next-line
+            provideDefinition: async (model, position) => {
+                const uriStr = model.uri.toString();
+
+                // 1) Try TS worker first
+                try {
+                    const svc = await this._getTsWorkerAsync(model.uri);
+                    const offset = model.getOffsetAt(position);
+                    const defs = await svc.getDefinitionAtPosition(uriStr, offset);
+                    if (defs && defs.length) {
+                        const links: monaco.languages.LocationLink[] = [];
+                        for (const d of defs) {
+                            const targetUri = monaco.Uri.parse(d.fileName);
+                            const tModel = monaco.editor.getModel(targetUri);
+                            if (tModel && (d as any).textSpan) {
+                                const ts = (d as any).textSpan;
+                                const start = tModel.getPositionAt(ts.start);
+                                const end = tModel.getPositionAt(ts.start + ts.length);
+                                links.push({ uri: targetUri, range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column) });
+                            } else {
+                                links.push({ uri: targetUri, range: new monaco.Range(1, 1, 1, 1) });
+                            }
+                        }
+                        if (links.length) {
+                            return links;
+                        }
+                    }
+                } catch {
+                    // ignore
+                }
+
+                // 2) If cursor is in an import '...': go to the symbol(s) in the local module
+                const parsed = parseImportUnderCursor(model, position);
+                if (!parsed) {
+                    return [];
+                }
+
+                const { spec, entries, originSelectionRange, isNamespace } = parsed;
+
+                // Resolve target path
+                let targetPath: string | null;
+                if (spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/")) {
+                    targetPath = pickActual(resolveRelative(model.uri.path.replace(/^\//, ""), spec));
+                } else {
+                    targetPath = pgToLocal(spec);
+                    if (targetPath) {
+                        targetPath = pickActual(targetPath) ?? targetPath;
+                    }
+                }
+                if (!targetPath || !this._models.has(targetPath)) {
+                    return [];
+                }
+
+                const targetModel = this._models.get(targetPath)!;
+
+                // Namespace import -> single link to file top
+                if (isNamespace || entries.length === 0) {
+                    return [
+                        {
+                            uri: targetModel.uri,
+                            range: new monaco.Range(1, 1, 1, 1),
+                            originSelectionRange,
+                        },
+                    ];
+                }
+
+                // Build LocationLinks for each imported binding (default + named)
+                const links: monaco.languages.LocationLink[] = [];
+                for (const e of entries) {
+                    const targetRange = findExportRangeInTarget(targetModel, e.imported, e.isDefault);
+                    links.push({ uri: targetModel.uri, range: targetRange, originSelectionRange });
+                }
+                return links;
             },
         });
     }
@@ -1310,6 +1591,186 @@ export { Playground };`;
         this._typeLibDisposables.push(lib, libJs);
     }
 
+    private _registerShaderLanguages() {
+        const wgslId = "wgsl";
+        const glslId = "glsl";
+
+        const ensureLang = (id: string) => {
+            try {
+                monaco.languages.getLanguages().find((l) => l.id === id) || monaco.languages.register({ id });
+            } catch {
+                monaco.languages.register({ id });
+            }
+        };
+
+        ensureLang(wgslId);
+        ensureLang(glslId);
+
+        const slashComments = [
+            [/(\/\/.*$)/, "comment"],
+            [/\/\*/, { token: "comment", next: "@comment" }],
+        ];
+
+        const numberRule = [/(\d+(\.\d+)?([eE][+-]?\d+)?[fF]?)/, "number"];
+        const ident = /[A-Za-z_]\w*/;
+
+        monaco.languages.setMonarchTokensProvider(wgslId, {
+            defaultToken: "source",
+            tokenizer: {
+                root: [
+                    ...slashComments,
+                    numberRule,
+                    [/(struct|var|let|const|override|fn|return|if|else|switch|case|default|break|continue|loop|for|while|discard|enable|requires|type|alias)\b/, "keyword"],
+                    [/(true|false)/, "constant"],
+                    [/(i32|u32|f32|f16|vec[234](?:i|u|f)?|mat[234]x[234]|ptr|array|texture\w*|sampler|bool)/, "type"],
+                    [/@(binding|group|builtin|location|stage|vertex|fragment|compute|workgroup_size)/, "annotation"],
+                    [ident, "identifier"],
+                    [/"([^"\\]|\\.)*"?/, "string"],
+                ] as any[],
+                comment: [
+                    [/[^/*]+/, "comment"],
+                    [/\*\//, "comment", "@pop"],
+                    [/./, "comment"],
+                ],
+            },
+        });
+
+        monaco.languages.setMonarchTokensProvider(glslId, {
+            defaultToken: "source",
+            tokenizer: {
+                root: [
+                    [/#\s*(version|define|undef|if|ifdef|ifndef|else|elif|endif|extension|pragma|line).*/, "meta"],
+                    ...slashComments,
+                    numberRule,
+                    [
+                        /(attribute|varying|uniform|buffer|layout|in|out|inout|const|struct|return|if|else|switch|case|default|break|continue|discard|while|for|do|precision|highp|mediump|lowp)\b/,
+                        "keyword",
+                    ],
+                    [/(void|bool|int|uint|float|double|mat[234](?:x[234])?|vec[234]|ivec[234]|u?sampler\w*|image\w*)/, "type"],
+                    [/(true|false)/, "constant"],
+                    [ident, "identifier"],
+                    [/"([^"\\]|\\.)*"?/, "string"],
+                ] as any[],
+                comment: [
+                    [/[^/*]+/, "comment"],
+                    [/\*\//, "comment", "@pop"],
+                    [/./, "comment"],
+                ],
+            },
+        });
+
+        // Brackets & comments config
+        const cfg: monaco.languages.LanguageConfiguration = {
+            comments: { lineComment: "//", blockComment: ["/*", "*/"] },
+            brackets: [
+                ["{", "}"],
+                ["[", "]"],
+                ["(", ")"],
+            ],
+            autoClosingPairs: [
+                { open: "{", close: "}" },
+                { open: "[", close: "]" },
+                { open: "(", close: ")" },
+                { open: '"', close: '"' },
+            ],
+        };
+        monaco.languages.setLanguageConfiguration(wgslId, cfg);
+        monaco.languages.setLanguageConfiguration(glslId, cfg);
+
+        // simple keyword completions
+        const provideKw = (id: string, words: string[]) =>
+            monaco.languages.registerCompletionItemProvider(id, {
+                triggerCharacters: ["@", ".", "_"],
+                provideCompletionItems: (model, position) => {
+                    const word = model.getWordUntilPosition(position);
+                    const range = new monaco.Range(position.lineNumber, word.startColumn, position.lineNumber, word.endColumn);
+                    return {
+                        suggestions: words.map((w) => ({
+                            label: w,
+                            kind: monaco.languages.CompletionItemKind.Keyword,
+                            insertText: w,
+                            range: range,
+                        })),
+                    };
+                },
+            });
+
+        provideKw(wgslId, [
+            "struct",
+            "var",
+            "let",
+            "const",
+            "override",
+            "fn",
+            "return",
+            "if",
+            "else",
+            "switch",
+            "case",
+            "default",
+            "break",
+            "continue",
+            "loop",
+            "for",
+            "while",
+            "discard",
+            "enable",
+            "requires",
+            "type",
+            "alias",
+            "true",
+            "false",
+            "@group",
+            "@binding",
+            "@builtin",
+            "@location",
+            "@stage",
+            "@compute",
+            "@fragment",
+            "@vertex",
+            "@workgroup_size",
+        ]);
+
+        provideKw(glslId, [
+            "#version",
+            "#define",
+            "#ifdef",
+            "#ifndef",
+            "#if",
+            "#else",
+            "#elif",
+            "#endif",
+            "attribute",
+            "varying",
+            "uniform",
+            "buffer",
+            "layout",
+            "in",
+            "out",
+            "inout",
+            "const",
+            "struct",
+            "return",
+            "if",
+            "else",
+            "switch",
+            "case",
+            "default",
+            "break",
+            "continue",
+            "discard",
+            "while",
+            "for",
+            "do",
+            "precision",
+            "highp",
+            "mediump",
+            "lowp",
+            "true",
+            "false",
+        ]);
+    }
+
     private _applyCompilerOptions() {
         const ts = monaco.languages.typescript;
         if (this._tsBaseOpts) {
@@ -1370,15 +1831,57 @@ export { Playground };`;
 // ---------------- helpers ----------------
 
 function ExtFromPath(p: string) {
-    return p.endsWith(".ts") || p.endsWith(".tsx") ? "ts" : p.endsWith(".js") || p.endsWith(".jsx") ? "js" : "txt";
+    const low = p.toLowerCase();
+    if (low.endsWith(".ts") || low.endsWith(".tsx")) {
+        return "ts";
+    }
+    if (low.endsWith(".js") || low.endsWith(".jsx")) {
+        return "js";
+    }
+    if (low.endsWith(".wgsl")) {
+        return "wgsl";
+    }
+    if (low.endsWith(".glsl")) {
+        return "glsl";
+    }
+    if (low.endsWith(".fx")) {
+        return "fx";
+    }
+    return "txt";
 }
-function MonacoLanguageFor(path: string, fallback: "javascript" | "typescript") {
+
+function DetectFxLangFromContent(text: string): "wgsl" | "glsl" {
+    // Heuristics: WGSL has @group/@binding/@location, 'fn', 'let', 'var<storage>'
+    // GLSL often has '#version', 'attribute/varying', 'precision', 'void main'
+    const t = text || "";
+    const isProbablyWGSL = /@group\(|@binding\(|@location\(|\bfn\b|\blet\b|\bvar\s*<|\btexture\w*\b|\bsampler\b/.test(t);
+    const isProbablyGLSL = /#\s*version\b|\b(attribute|varying|precision)\b|\bvoid\s+main\s*\(/.test(t);
+    if (isProbablyWGSL && !isProbablyGLSL) {
+        return "wgsl";
+    }
+    if (isProbablyGLSL && !isProbablyWGSL) {
+        return "glsl";
+    }
+    // Tie-break: default to WGSL (more modern in web contexts)
+    return "wgsl";
+}
+
+function MonacoLanguageForPathAndContent(path: string, fallback: "javascript" | "typescript", content?: string) {
     const ext = ExtFromPath(path);
     if (ext === "ts") {
         return "typescript";
     }
     if (ext === "js") {
         return "javascript";
+    }
+    if (ext === "wgsl") {
+        return "wgsl";
+    }
+    if (ext === "glsl") {
+        return "glsl";
+    }
+    if (ext === "fx") {
+        return DetectFxLangFromContent(content || "");
     }
     return fallback;
 }
@@ -1527,6 +2030,13 @@ window.__pg_v2_run = async function(engine, canvas) {
   // ---------- Phase 1: compile + rewrite relatives ----------
   const compiled = {};
   for (const [path, original] of Object.entries(files)) {
+    // 1) Shader sources -> JS modules that default-export the raw text
+    if (/[.](wgsl|glsl|fx)$/i.test(path)) {
+        compiled[path] = \`export default \${JSON.stringify(original)};\`;
+        continue;
+    }
+
+    // 2) Normal TS/JS flow
     let code = original;
     code = ensureExports(path, code);
     if (/[.]tsx?$/i.test(path) && ts) {

@@ -62,7 +62,7 @@
 }
 
 .file-dialog__input {
-    width: 100%;
+    width: calc(100% - 40px);
     padding: 12px 16px;
     border: 2px solid var(--pg-divider, #e5e5e5);
     border-radius: 8px;
