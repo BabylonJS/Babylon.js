@@ -474,6 +474,15 @@
   grid-column: 1 / -1;
 }
 
+.pg-tabs-host > .monaco-scrollable-element {
+  touch-action: none;
+  overscroll-behavior-x: contain;
+}
+.pg-tabs-host {
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+}
+
 // monaco overrides
 
 .minimap, .sticky-widget, .editor-widget {

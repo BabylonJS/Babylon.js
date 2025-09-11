@@ -47,6 +47,11 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
     private _tabsContentRef = React.createRef<HTMLDivElement>();
     private _scrollable: ScrollableElement | null = null;
     private _ro?: ResizeObserver;
+    private _ptrActive = false;
+    private _ptrId = -1;
+    private _ptrStartX = 0;
+    private _ptrStartY = 0;
+    private _ptrStartScrollLeft = 0;
 
     /**
      * Creates a new MonacoComponent instance.
@@ -165,6 +170,12 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
         this.props.globalState.onFilesChangedObservable.add(this._layoutTabsScrollbar);
         this.props.globalState.onFilesOrderChangedObservable?.add(this._layoutTabsScrollbar);
+
+        const wrapper = this._scrollable!.getDomNode();
+        wrapper.addEventListener("pointerdown", this._onPtrDown, { passive: false });
+        window.addEventListener("pointermove", this._onPtrMove, { passive: false });
+        window.addEventListener("pointerup", this._onPtrUp, { passive: true });
+        window.addEventListener("pointercancel", this._onPtrUp, { passive: true });
     }
 
     /** Lifecycle: component will unmount */
@@ -175,10 +186,76 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
         this.props.globalState.onFilesChangedObservable.removeCallback?.(this._layoutTabsScrollbar as any);
         this.props.globalState.onFilesOrderChangedObservable?.removeCallback?.(this._layoutTabsScrollbar as any);
-
+        const wrapper = (this._scrollable as any)?.getDomNode();
+        if (wrapper) {
+            wrapper.removeEventListener("pointerdown", this._onPtrDown as any);
+        }
+        window.removeEventListener("pointermove", this._onPtrMove as any);
+        window.removeEventListener("pointerup", this._onPtrUp as any);
+        window.removeEventListener("pointercancel", this._onPtrUp as any);
         this._ro?.disconnect();
         this._scrollable?.dispose();
         this._scrollable = null;
+    }
+
+    private _onPtrDown = (e: PointerEvent) => {
+        if (e.pointerType !== "touch" && e.pointerType !== "pen") {
+            return;
+        }
+
+        this._ptrActive = true;
+        this._ptrId = e.pointerId;
+        this._ptrStartX = e.clientX;
+        this._ptrStartY = e.clientY;
+
+        const pos = (this._scrollable as any).getScrollPosition?.() || { scrollLeft: 0 };
+        this._ptrStartScrollLeft = pos.scrollLeft || 0;
+
+        try {
+            (e.target as Element).setPointerCapture?.(e.pointerId);
+        } catch {}
+
+        e.preventDefault();
+    };
+
+    private _onPtrMove = (e: PointerEvent) => {
+        if (!this._ptrActive || e.pointerId !== this._ptrId) {
+            return;
+        }
+
+        const dx = e.clientX - this._ptrStartX;
+        const dy = e.clientY - this._ptrStartY;
+        if (Math.abs(dx) < Math.abs(dy) * 1.2) {
+            return;
+        }
+
+        const wrapper = this._scrollable!.getDomNode();
+        const width = wrapper.clientWidth;
+        const content = this._tabsContentRef.current!;
+        let scrollWidth = content.scrollWidth;
+        if (scrollWidth <= width) {
+            scrollWidth = Array.from(content.children).reduce((s, el) => s + (el as HTMLElement).offsetWidth, 0);
+        }
+
+        const max = Math.max(0, scrollWidth - width);
+        const next = this._clamp(this._ptrStartScrollLeft - dx, 0, max);
+
+        (this._scrollable as any).setScrollPositionNow?.({ scrollLeft: next });
+        this._onTabsScroll({ scrollLeft: next });
+
+        e.preventDefault();
+    };
+
+    private _onPtrUp = (e: PointerEvent) => {
+        if (e.pointerId !== this._ptrId) {
+            return;
+        }
+        this._ptrActive = false;
+        this._ptrId = -1;
+    };
+
+    private _clamp(n: number, min: number, max: number) {
+        return Math.max(min, Math.min(max, n));
     }
 
     private _measureTabsWidth(): number {
