@@ -1,9 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-// import 'monaco-editor/esm/vs/basic-languages/typescript/typescript.contribution';
-// import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution';
-import * as languageFeatures from "monaco-editor/esm/vs/language/typescript/languageFeatures";
 
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
@@ -313,7 +310,7 @@ export class MonacoManager {
         });
 
         globalState.onFormatCodeRequiredObservable.add(() => {
-            this._editor?.getAction("editor.action.formatDocument").run();
+            this._editor?.getAction("editor.action.formatDocument")?.run();
         });
 
         globalState.onMinimapChangedObservable.add((value) => {
@@ -483,7 +480,6 @@ class Playground {
             folding: true,
             showFoldingControls: "always",
             fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
-            renderIndentGuides: true,
             minimap: { enabled: Utilities.ReadBoolFromStore("minimap", true) },
         };
 
@@ -646,7 +642,7 @@ declare var canvas: HTMLCanvasElement;
             throw new Error("Target file already exists");
         }
 
-        const lang = model.getModeId();
+        const lang = model.getLanguageId();
         const value = model.getValue();
         const uri = monaco.Uri.file(newPath);
         const newModel = monaco.editor.createModel(value, lang, uri);
@@ -991,55 +987,163 @@ export { Playground };`;
         return "";
     }
 
+    private _completionDisposable: monaco.IDisposable | null = null;
+
+    private _langId(): "javascript" | "typescript" {
+        return this.globalState.language === "JS" ? "javascript" : "typescript";
+    }
+
+    private _getTsWorker = async (uri: monaco.Uri) => {
+        if (this.globalState.language === "JS") {
+            const getWorker = await monaco.languages.typescript.getJavaScriptWorker();
+            return await getWorker(uri);
+        } else {
+            const getWorker = await monaco.languages.typescript.getTypeScriptWorker();
+            return await getWorker(uri);
+        }
+    };
+
+    private _tsKindToMonaco(kind: string): monaco.languages.CompletionItemKind {
+        switch (kind) {
+            case "method":
+                return monaco.languages.CompletionItemKind.Method;
+            case "function":
+                return monaco.languages.CompletionItemKind.Function;
+            case "constructor":
+                return monaco.languages.CompletionItemKind.Constructor;
+            case "field":
+                return monaco.languages.CompletionItemKind.Field;
+            case "variable":
+                return monaco.languages.CompletionItemKind.Variable;
+            case "class":
+                return monaco.languages.CompletionItemKind.Class;
+            case "interface":
+                return monaco.languages.CompletionItemKind.Interface;
+            case "module":
+                return monaco.languages.CompletionItemKind.Module;
+            case "property":
+                return monaco.languages.CompletionItemKind.Property;
+            case "enum":
+                return monaco.languages.CompletionItemKind.Enum;
+            case "keyword":
+                return monaco.languages.CompletionItemKind.Keyword;
+            case "snippet":
+                return monaco.languages.CompletionItemKind.Snippet;
+            default:
+                return monaco.languages.CompletionItemKind.Text;
+        }
+    }
+
+    private _shouldDecorateLabel = (label: string) => {
+        return this._tagCandidates?.some((t) => t.name === label) ?? false;
+    };
+
+    private _buildTemplates(language: "javascript" | "typescript") {
+        const out: monaco.languages.CompletionItem[] = [];
+        for (const t of this._templates) {
+            if (t.language && t.language !== language) {
+                continue;
+            }
+            out.push({
+                label: t.label,
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                insertText: t.insertText,
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                documentation: t.documentation,
+                sortText: t.sortText || "!" + t.label,
+                range: undefined as any, // we’ll fill range later
+            });
+        }
+        return out;
+    }
+
     private async _hookMonacoCompletionProviderAsync() {
-        const oldProvideCompletionItems = languageFeatures.SuggestAdapter.prototype.provideCompletionItems;
-        const owner = this; // eslint-disable-line @typescript-eslint/no-this-alias
+        this._completionDisposable?.dispose();
+        const language = this._langId();
+        this._completionDisposable = monaco.languages.registerCompletionItemProvider(language, {
+            triggerCharacters: [".", '"', "'", "/", "@"],
+            // eslint-disable-next-line
+            provideCompletionItems: async (model, position, context, _token) => {
+                const svc = await this._getTsWorker(model.uri);
+                const offset = model.getOffsetAt(position);
+                const info = await svc.getCompletionsAtPosition(model.uri.toString(), offset);
 
-        languageFeatures.SuggestAdapter.prototype.provideCompletionItems = async function (model: any, position: any, context: any, token: any) {
-            const result = await oldProvideCompletionItems.apply(this, [model, position, context, token]);
-            if (!result || !result.suggestions) {
-                return result;
-            }
+                const word = model.getWordUntilPosition(position);
+                const replaceRange = new monaco.Range(position.lineNumber, word.startColumn, position.lineNumber, word.endColumn);
 
-            const suggestions = result.suggestions.filter((item: any) => !item.label.startsWith("_"));
+                const suggestions: monaco.languages.CompletionItem[] = [];
 
-            for (const suggestion of suggestions) {
-                const candidate = owner._tagCandidates?.find((t) => t.name === suggestion.label);
-                if (candidate) {
-                    const uri = suggestion.uri;
-                    const worker = await (this as any)._worker(uri);
-                    const m = monaco.editor.getModel(uri);
-                    const details = await worker.getCompletionEntryDetails(uri.toString(), m!.getOffsetAt(position), suggestion.label);
-                    if (!details || !details.tags) {
+                for (const e of info?.entries ?? []) {
+                    if (e.name?.startsWith("_")) {
                         continue;
                     }
-                    const tag = details.tags.find(
-                        (t: {
-                            /**
-                             *
-                             */
-                            name: string;
-                        }) => t.name === candidate.tagName
-                    );
-                    if (tag) {
-                        suggestion.label = suggestion.label + owner._getCandidateCompletionSuffix(candidate);
-                    }
-                }
-            }
 
-            if (context.triggerKind == monaco.languages.CompletionTriggerKind.Invoke) {
-                const language = owner.globalState.language === "JS" ? "javascript" : "typescript";
-                for (const template of owner._templates) {
-                    if (template.language && language !== template.language) {
-                        continue;
-                    }
-                    suggestions.push(template);
+                    suggestions.push({
+                        label: e.name,
+                        kind: this._tsKindToMonaco(e.kind),
+                        sortText: e.sortText ?? e.name,
+                        filterText: e.insertText ?? e.name,
+                        insertText: e.insertText ?? e.name,
+                        range: replaceRange,
+                        // @ts-expect-error custom fields
+                        __uri: model.uri.toString(), // eslint-disable-line
+                        __offset: offset, // eslint-disable-line
+                        __source: e.source, // eslint-disable-line
+                    });
                 }
-            }
 
-            const incomplete = (result.incomplete && result.incomplete == true) || (owner._tagCandidates?.length ?? 0) == 0;
-            return { suggestions: JSON.parse(JSON.stringify(suggestions)), incomplete };
-        };
+                if (context.triggerKind === monaco.languages.CompletionTriggerKind.Invoke) {
+                    const templates = this._buildTemplates(language).map((t) => ({ ...t, range: replaceRange }));
+                    suggestions.push(...templates);
+                }
+
+                const incomplete = !!info?.isIncomplete || (this._tagCandidates?.length ?? 0) === 0;
+
+                return { suggestions, incomplete };
+            },
+
+            // eslint-disable-next-line
+            resolveCompletionItem: async (item) => {
+                try {
+                    const uriStr = (item as any).__uri ?? monaco.editor.getModels()[0]?.uri.toString();
+
+                    if (!uriStr) {
+                        return item;
+                    }
+
+                    const svc = await this._getTsWorker(monaco.Uri.parse(uriStr));
+                    let offset: number | undefined = (item as any).__offset;
+
+                    if (offset == null && item.range) {
+                        const m = monaco.editor.getModel(monaco.Uri.parse(uriStr));
+                        if (m && typeof (item.range as any).startLineNumber === "number") {
+                            const r = item.range as monaco.IRange;
+                            offset = m.getOffsetAt(new monaco.Position(r.startLineNumber, r.startColumn));
+                        }
+                    }
+
+                    if (offset == null) {
+                        return item;
+                    }
+
+                    const labelStr = typeof item.label === "string" ? item.label : item.label.label;
+                    if (!this._shouldDecorateLabel(labelStr)) {
+                        return item;
+                    }
+
+                    const details = await svc.getCompletionEntryDetails(uriStr, offset, labelStr);
+
+                    const candidate = this._tagCandidates?.find((t) => t.name === labelStr);
+                    const hit = details?.tags?.find((t: any) => t.name === candidate?.tagName);
+                    if (hit) {
+                        item.label = labelStr + this._getCandidateCompletionSuffix(candidate!);
+                    }
+                } catch {
+                    // ignore
+                }
+                return item;
+            },
+        });
     }
 
     // ---------------- Bare import stubs + Automatic Type Acquisition ----------------
@@ -1305,6 +1409,15 @@ function cdnUrl(spec) {
   return CDN_BASE.replace(/\\/$/, '') + '/' + spec;
 }
 
+// --- tiny helper: on-demand es-module-lexer ---
+async function withModuleLexer() {
+  if (globalThis.__pg_v2_esmLexer) return globalThis.__pg_v2_esmLexer;
+  const mod = await import('https://cdn.jsdelivr.net/npm/es-module-lexer/+esm');
+  await mod.init; // WASM init (no-op if already done)
+  globalThis.__pg_v2_esmLexer = mod;
+  return mod;
+}
+
 // Exposed to renderer: returns a (possibly promised) BABYLON.Scene
 window.__pg_v2_run = async function(engine, canvas) {
   if (Array.isArray(globalThis.__pg_v2_blob_urls)) {
@@ -1351,32 +1464,41 @@ window.__pg_v2_run = async function(engine, canvas) {
   }
 
   const specKey = (p) => '__pg__/' + p + '?v=' + RUN_NONCE;
-  // Matches: import ... from 'x';  export ... from 'x';  import('x');  import 'x';
-  const importRegex = /(import\\s+[^'";]*?['"][^'"]+['"][^;]*;?|export\\s+[^;]*?from\\s+['"][^'"]+['"];?|import\\s*\\(\\s*['"][^'"]+['"]\\s*\\)|import\\s*['"][^'"]+['"];)/g;
-  const specRegex = /(['"])((?:\\\\.|[^'"])+?)\\1/;
-  const isBare = (s) => !s.startsWith('./') && !s.startsWith('../') && !s.startsWith('/') && !s.startsWith(specKey(''));
-
-  function rewriteImports(path, code) {
-    return code.replace(importRegex, (stmt) => {
-      const m = specRegex.exec(stmt); if (!m) return stmt;
-      const full = m[0]; const spec = m[2];
-      // Only rewrite RELATIVE imports here. Bare imports are handled by import map.
-      if (!isBare(spec) && (spec.startsWith('./') || spec.startsWith('../'))) {
-        const targetRaw = resolveRelative(path, spec);
-        const target = pickActual(targetRaw.replace(/\\\\/g,'/'));
-        if (!target) return stmt;
-        const absId = specKey(target);
-        return stmt.replace(full, "'" + absId + "'");
-      }
-      return stmt;
-    });
-  }
 
   function hasCreateSceneDecl(code) {
     const fnDecl = /\\bfunction\\s+createScene\\s*\\(/;
     const fnExpr = /\\b(?:var|let|const)\\s+createScene\\s*=\\s*(?:async\\s*)?function\\b/;
     const arrow  = /\\b(?:var|let|const)\\s+createScene\\s*=\\s*[^=]*=>/;
     return fnDecl.test(code) || fnExpr.test(code) || arrow.test(code);
+  }
+
+  // Lexer-based import rewriter (safe against strings/comments)
+  async function rewriteImports(path, code) {
+    const { parse } = await withModuleLexer();
+    const [imports] = parse(code);
+    if (!imports.length) return code;
+
+    let out = '';
+    let last = 0;
+    for (const im of imports) {
+      // im.n is the spec string for static imports/exports; undefined for non-static dynamic imports
+      const spec = im.n;
+      if (!spec) continue;
+      const isRelative = spec.startsWith('./') || spec.startsWith('../') || spec.startsWith('/');
+      let replacement = null;
+
+      if (isRelative) {
+        const targetRaw = resolveRelative(path, spec);
+        const target = pickActual(targetRaw.replace(/\\\\/g, '/'));
+        if (target) replacement = specKey(target);
+      }
+
+      // im.s..im.e are the exact indices of the specifier string (without surrounding code)
+      out += code.slice(last, im.s) + (replacement ?? code.slice(im.s, im.e));
+      last = im.e;
+    }
+    out += code.slice(last);
+    return out;
   }
 
   function ensureExports(path, code) {
@@ -1407,7 +1529,6 @@ window.__pg_v2_run = async function(engine, canvas) {
   for (const [path, original] of Object.entries(files)) {
     let code = original;
     code = ensureExports(path, code);
-    code = rewriteImports(path, code);
     if (/[.]tsx?$/i.test(path) && ts) {
       try {
         code = ts.transpileModule(code, {
@@ -1424,6 +1545,7 @@ window.__pg_v2_run = async function(engine, canvas) {
         throw e;
       }
     }
+    code = await rewriteImports(path, code);
     compiled[path] = code;
   }
 
@@ -1439,18 +1561,18 @@ window.__pg_v2_run = async function(engine, canvas) {
     (globalThis.__pg_v2_blob_urls || (globalThis.__pg_v2_blob_urls = [])).push(url);
   }
 
-  // Detect bare imports and map them to CDN
+  // Detect bare imports with the lexer (robust)if 
   const bareSet = new Set();
-  const stmtsRegex = importRegex;
-  const oneSpec = /(['"])((?:\\\\.|[^'"])+?)\\1/;
-  for (const code of Object.values(compiled)) {
-    const stmts = code.match(stmtsRegex) || [];
-    for (const stmt of stmts) {
-      const m = oneSpec.exec(stmt);
-      if (!m) continue;
-      const spec = m[2];
-      const isBare = !spec.startsWith('./') && !spec.startsWith('../') && !spec.startsWith('/') && !spec.startsWith(specKey(''));
-      if (isBare) bareSet.add(spec);
+  {
+    const { parse } = await withModuleLexer();
+    for (const code of Object.values(compiled)) {
+      const [importsFound] = parse(code);
+      for (const im of importsFound) {
+        const spec = im.n;
+        if (!spec) continue;                    // non-static dynamic import
+        const looksLocal = spec.startsWith('./') || spec.startsWith('../') || spec.startsWith('/') || spec.startsWith(specKey(''));
+        if (!looksLocal) bareSet.add(spec);
+      }
     }
   }
 

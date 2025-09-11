@@ -57,27 +57,26 @@
   }
 }
 
-.pg-monaco-host {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  margin: 0;
-  overflow: unset;
-}
 
 .pg-monaco-wrapper {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 100%;
   height: 100%;
+  min-height: 0;
   background: var(--pg-bg);
   font-family: var(--pg-font);
+  position: relative;
+  overflow: hidden;
 }
 
 .pg-tabs-bar {
   display: flex;
   align-items: stretch;
   height: var(--pg-bar-height);
+  min-height: var(--pg-bar-height); /* Prevent compression */
+  flex: 0 0 auto; /* Don't grow or shrink */
   background: var(--pg-bg);
   border-bottom: 1px solid var(--pg-border);
   padding: 0;
@@ -87,22 +86,54 @@
 }
 
 .pg-tabs {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-
-  &::-webkit-scrollbar { height: 3px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb {
-    background: var(--pg-scroll-thumb);
-    border-radius: 0;
-  }
+  display: inline-flex;     /* shrink-to-fit to children */
+  flex: none;               /* don't grow or shrink */
+  width: max-content;       /* intrinsic width */
+  white-space: nowrap;
+  overflow: visible;
+  transform: translateX(0); /* will be updated from JS */
 }
+
+.pg-tabs-host {
+  --vscode-scrollbarSlider-background: rgba(121,121,121,0.4);
+  --vscode-scrollbarSlider-hoverBackground: rgba(100,100,100,0.7);
+  --vscode-scrollbarSlider-activeBackground: rgba(100,100,100,0.9);
+  --vscode-scrollbar-shadow: rgba(0,0,0,0.13);
+}
+
+.pg-tabs-host > .monaco-scrollable-element {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.monaco-scrollable-element > .scrollbar {
+  position: absolute;
+  z-index: 11;
+}
+
+.monaco-scrollable-element > .scrollbar.horizontal {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px !important;
+}
+
+.monaco-scrollable-element > .scrollbar.vertical {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+.monaco-scrollable-element > .scrollbar > .slider {
+  position: absolute;
+  border-radius: 3px;
+  height: 100%;
+  background: rgba(121,121,121,0.45);  /* make it visible */
+}
+
 
 .pg-tab {
   position: relative;
@@ -319,4 +350,121 @@
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.pg-tabs-host {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--pg-bar-height);
+  position: relative;
+  overflow: hidden;
+}
+
+.pg-tabs-host > .monaco-scrollable-element {
+  width: 100%;
+  height: 100%;
+}
+
+@media screen and (max-width: 1140px) {
+  .pg-tabs-bar {
+    height: 32px;
+  }
+
+  .pg-tab {
+    height: 32px;
+    min-width: 100px;
+    max-width: 180px;
+    padding: 0 6px 0 12px;
+    font-size: 12px;
+  }
+
+  .pg-tab__add {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .pg-tabs-bar {
+    height: 28px;
+  }
+
+  .pg-tab {
+    height: 28px;
+    min-width: 80px;
+    max-width: 140px;
+    padding: 0 4px 0 8px;
+    font-size: 11px;
+  }
+
+  .pg-tab__name {
+    max-width: 80px;
+  }
+
+  .pg-tab__close {
+    width: 16px;
+    height: 16px;
+    
+    svg {
+      width: 10px;
+      height: 10px;
+    }
+  }
+
+  .pg-tab__add {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .pg-tab__entry {
+    font-size: 10px;
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .pg-tab {
+    border-width: 0.5px;
+  }
+  
+  .pg-tabs-bar {
+    border-bottom-width: 0.5px;
+  }
+}
+
+.monaco-editor-container {
+  .pg-monaco-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+#pg-split .pg-monaco-wrapper {
+  height: 100%;
+  width: 100%;
+}
+
+.monaco-container .pg-monaco-wrapper,
+.code-panel .pg-monaco-wrapper,
+[data-panel="code"] .pg-monaco-wrapper {
+  height: 100%;
+  width: 100%;
+}
+
+.pg-monaco-wrapper .monaco-editor {
+  height: 100%;
+  width: 100%;
+}
+
+.pg-monaco-wrapper,
+.pg-monaco-wrapper .monaco-editor .monaco-scrollable-element,
+.pg-monaco-wrapper .monaco-editor .overflow-guard {
+  height: 100% !important;
+}
+
+.pg-monaco-wrapper {
+  grid-row: 1 / -1;
+  grid-column: 1 / -1;
 }

@@ -3,6 +3,8 @@ import { MonacoManager } from "../tools/monacoManager";
 import { Utilities } from "../tools/utilities";
 import type { GlobalState } from "../globalState";
 import { FileDialog } from "./fileDialog";
+import { ScrollbarVisibility } from "monaco-editor/esm/vs/base/common/scrollable";
+import { ScrollableElement } from "monaco-editor/esm/vs/base/browser/ui/scrollbar/scrollableElement";
 
 import "../scss/monaco.scss";
 import "../scss/pgTabs.scss";
@@ -41,6 +43,10 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
     private _monacoManager: MonacoManager;
     private _draggingPath: string | null = null;
     private _menuRef: React.RefObject<HTMLDivElement> = React.createRef();
+    private _tabsHostRef = React.createRef<HTMLDivElement>();
+    private _tabsContentRef = React.createRef<HTMLDivElement>();
+    private _scrollable: ScrollableElement | null = null;
+    private _ro?: ResizeObserver;
 
     /**
      * Creates a new MonacoComponent instance.
@@ -116,20 +122,103 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         window.addEventListener("click", this._closeCtxMenu, { capture: true });
     }
 
-    /** Lifecycle: component did mount */
     override componentDidMount() {
         const hostElement = this.props.refObject.current!;
         this._mutationObserver.observe(hostElement, { childList: true, subtree: true });
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._monacoManager.setupMonacoAsync(hostElement, true);
+        void this._monacoManager.setupMonacoAsync(hostElement, true);
+
+        const host = this._tabsHostRef.current!;
+        const content = this._tabsContentRef.current!;
+        content.style.willChange = "transform";
+        content.style.position = "relative";
+        this._scrollable = new ScrollableElement(content, {
+            className: "pg-tabs-scrollable",
+            horizontal: ScrollbarVisibility.Auto,
+            vertical: ScrollbarVisibility.Hidden,
+            useShadows: false,
+            alwaysConsumeMouseWheel: true, // <- important so wheel doesn't bubble to page
+
+            handleMouseWheel: true,
+            horizontalSliderSize: 3,
+            horizontalHasArrows: false,
+        });
+
+        this._scrollable.onScroll(this._onTabsScroll);
+
+        // Mount: ScrollableElement provides a wrapper node
+        const node = this._scrollable.getDomNode();
+        host.appendChild(node);
+        node.appendChild(content);
+
+        // drive dimensions initially + on changes
+        this._layoutTabsScrollbar();
+
+        // keep in sync on resize / content changes
+        this._ro = new ResizeObserver(() => this._layoutTabsScrollbar());
+        this._ro.observe(host);
+        this._ro.observe(content);
+
+        // Keep your existing behavior
         this._scrollActiveIntoView();
+
+        // Re-scan on resize to keep thumb in sync
+        window.addEventListener("resize", this._layoutTabsScrollbar, { passive: true } as any);
+
+        // When your tab list changes (you already notify on order/files changes), ask it to rescan:
+        this.props.globalState.onFilesChangedObservable.add(this._layoutTabsScrollbar);
+        this.props.globalState.onFilesOrderChangedObservable?.add(this._layoutTabsScrollbar);
     }
 
     /** Lifecycle: component will unmount */
     override componentWillUnmount(): void {
         this._mutationObserver.disconnect();
         window.removeEventListener("click", this._closeCtxMenu, { capture: true } as any);
+        window.removeEventListener("resize", this._layoutTabsScrollbar as any);
+
+        this.props.globalState.onFilesChangedObservable.removeCallback?.(this._layoutTabsScrollbar as any);
+        this.props.globalState.onFilesOrderChangedObservable?.removeCallback?.(this._layoutTabsScrollbar as any);
+
+        this._ro?.disconnect();
+        this._scrollable?.dispose();
+        this._scrollable = null;
     }
+
+    private _onTabsScroll = (e: { scrollLeft: number }) => {
+        const content = this._tabsContentRef.current!;
+        // translate the whole tabs row
+        content.style.transform = `translateX(${-e.scrollLeft}px)`;
+    };
+
+    private _layoutTabsScrollbar = () => {
+        if (!this._scrollable) {
+            return;
+        }
+        const viewport = this._scrollable.getDomNode();
+        const content = this._tabsContentRef.current!;
+        const width = viewport.clientWidth;
+        const height = viewport.clientHeight || this._tabsHostRef.current!.clientHeight || 0;
+        const scrollWidth = content.scrollWidth;
+        const scrollHeight = content.scrollHeight;
+
+        (this._scrollable as any).setScrollDimensions?.({ width, height, scrollWidth, scrollHeight });
+
+        const active = viewport.querySelector<HTMLElement>(`.pg-tab[data-path="${CSS.escape(this.state.active)}"]`);
+        if (active) {
+            const left = active.offsetLeft;
+            const right = left + active.offsetWidth;
+            const { scrollLeft } = (this._scrollable as any).getScrollPosition?.() || { scrollLeft: viewport.scrollLeft };
+            const viewRight = scrollLeft + width;
+
+            let nextLeft = scrollLeft;
+            if (left < scrollLeft) {
+                nextLeft = left;
+            } else if (right > viewRight) {
+                nextLeft = right - width;
+            }
+
+            (this._scrollable as any).setScrollPositionNow?.({ scrollLeft: nextLeft });
+        }
+    };
 
     /** Lifecycle: component did update */
     override componentDidUpdate(): void {
@@ -439,78 +528,77 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         const submitLabel = this.state.dialog.type === "rename" ? "Rename" : this.state.dialog.type === "duplicate" ? "Duplicate" : "Create";
         const entry = this.props.globalState.entryFilePath;
         return (
-            <div className={`pg-monaco-wrapper ${this.props.className || ""} pg-theme-${theme}`}>
+            <div ref={this.props.refObject} className={`pg-monaco-wrapper ${this.props.className || ""} pg-theme-${theme}`}>
                 <div className="pg-tabs-bar">
-                    <div className="pg-tabs" aria-label="Files">
-                        {files.map((p, index) => {
-                            const isActive = p === active;
-                            const isDragging = this._draggingPath === p;
-                            const isDragOver = dragOverIndex === index;
-                            const isEntry = p === entry;
-                            const display = this._toDisplay(p);
-                            return (
-                                <div
-                                    key={p}
-                                    className={`pg-tab ${isActive ? "active" : ""} ${isDragging ? "dragging" : ""} ${isDragOver ? "drag-over" : ""}`}
-                                    data-path={p}
-                                    data-active={isActive ? "true" : "false"}
-                                    draggable
-                                    title={display + (isEntry ? " (entry)" : "")}
-                                    onClick={() => this._switchFile(p)}
-                                    onMouseDown={(e) => this._onMouseDownTab(e, p)}
-                                    onContextMenu={(e) => this._openCtxMenu(e, p)}
-                                    onDragStart={(e) => this._onDragStart(e, p)}
-                                    onDragOver={(e) => this._onDragOver(e, p)}
-                                    onDrop={(e) => this._onDrop(e, p)}
-                                    onDragEnd={this._onDragEnd}
-                                >
-                                    {isEntry && (
-                                        <span className="pg-tab__entry" aria-label="Entry file" title="Entry file">
-                                            ★
-                                        </span>
-                                    )}
-                                    <span className="pg-tab__name">{display}</span>
-                                    <button
-                                        type="button"
-                                        className="pg-tab__close"
-                                        aria-label={isEntry ? "Entry file (cannot delete)" : `Close ${display}`}
-                                        title={isEntry ? "Entry file (cannot delete)" : "Close"}
-                                        disabled={isEntry}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (isEntry) {
-                                                return;
-                                            }
-                                            this._removeFile(p);
-                                        }}
+                    <div className="pg-tabs-host" ref={this._tabsHostRef}>
+                        <div className="pg-tabs" ref={this._tabsContentRef} aria-label="Files">
+                            {files.map((p, index) => {
+                                const isActive = p === active;
+                                const isDragging = this._draggingPath === p;
+                                const isDragOver = dragOverIndex === index;
+                                const isEntry = p === entry;
+                                const display = this._toDisplay(p);
+                                return (
+                                    <div
+                                        key={p}
+                                        className={`pg-tab ${isActive ? "active" : ""} ${isDragging ? "dragging" : ""} ${isDragOver ? "drag-over" : ""}`}
+                                        data-path={p}
+                                        data-active={isActive ? "true" : "false"}
+                                        draggable
+                                        title={display + (isEntry ? " (entry)" : "")}
+                                        onClick={() => this._switchFile(p)}
+                                        onMouseDown={(e) => this._onMouseDownTab(e, p)}
+                                        onContextMenu={(e) => this._openCtxMenu(e, p)}
+                                        onDragStart={(e) => this._onDragStart(e, p)}
+                                        onDragOver={(e) => this._onDragOver(e, p)}
+                                        onDrop={(e) => this._onDrop(e, p)}
+                                        onDragEnd={this._onDragEnd}
                                     >
-                                        <svg
-                                            aria-hidden="true"
-                                            focusable="false"
-                                            data-prefix="fas"
-                                            data-icon="xmark"
-                                            className="svg-inline--fa fa-xmark "
-                                            role="img"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 384 512"
+                                        {isEntry && (
+                                            <span className="pg-tab__entry" aria-label="Entry file" title="Entry file">
+                                                ★
+                                            </span>
+                                        )}
+                                        <span className="pg-tab__name">{display}</span>
+                                        <button
+                                            type="button"
+                                            className="pg-tab__close"
+                                            aria-label={isEntry ? "Entry file (cannot delete)" : `Close ${display}`}
+                                            title={isEntry ? "Entry file (cannot delete)" : "Close"}
+                                            disabled={isEntry}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (isEntry) {
+                                                    return;
+                                                }
+                                                this._removeFile(p);
+                                            }}
                                         >
-                                            <path
-                                                fill="currentColor"
-                                                d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
-                                            ></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            );
-                        })}
+                                            <svg
+                                                aria-hidden="true"
+                                                focusable="false"
+                                                data-prefix="fas"
+                                                data-icon="xmark"
+                                                className="svg-inline--fa fa-xmark "
+                                                role="img"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 384 512"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
+                                                ></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                     <button type="button" className="pg-tab__add" onClick={this._addFile} aria-label="New file" title="New file">
                         <span aria-hidden="true">＋</span>
                     </button>
                 </div>
-
-                {/* Monaco host */}
-                <div id="monacoHost" ref={this.props.refObject} className="pg-monaco-host"></div>
 
                 {/* Context menu */}
                 {this.state.ctx.open &&
