@@ -94,36 +94,22 @@ vec3 hemisphereImportanceSampleDggxAnisotropic(vec2 Xi, float alphaTangent, floa
     alphaTangent = max(alphaTangent, 0.0001);
     alphaBitangent = max(alphaBitangent, 0.0001);
     
-    // Transform uniform sample to anisotropic distribution
-    // This is the correct formula from "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"
-    
-    // Sample azimuthal angle phi
-    float phi = atan(alphaBitangent / alphaTangent * tan(2.0 * PI * Xi.x + 0.5 * PI));
-    if (Xi.x > 0.5) {
-        phi += PI;
-    }
-    
+    // Map [0,1]^2 → spherical coordinates
+    float phi = atan(alphaBitangent / alphaTangent * tan(2.0 * 3.14159265 * Xi.x));
+    if (Xi.x > 0.5) phi += 3.14159265; // make sure phi ∈ [0, 2π]
+
     float cosPhi = cos(phi);
     float sinPhi = sin(phi);
-    
-    // Sample polar angle theta
-    float alphaTangent2 = alphaTangent * alphaTangent;
-    float alphaBitangent2 = alphaBitangent * alphaBitangent;
-    
-    float tanTheta2 = Xi.y / (1.0 - Xi.y);
-    float alpha2_effective = (cosPhi * cosPhi * alphaTangent2) + (sinPhi * sinPhi * alphaBitangent2);
-    tanTheta2 = tanTheta2 * alpha2_effective;
-    
+
+    float alpha2 = (cosPhi*cosPhi) / (alphaTangent*alphaTangent) +
+                   (sinPhi*sinPhi) / (alphaBitangent*alphaBitangent);
+    float tanTheta2 = Xi.y / (1.0 - Xi.y) / alpha2;
+
     float cosTheta = 1.0 / sqrt(1.0 + tanTheta2);
-    float sinTheta = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
-    
-    // Build the microfacet normal in tangent space
-    vec3 H;
-    H.x = sinTheta * cosPhi;
-    H.y = sinTheta * sinPhi;
-    H.z = cosTheta;
-    
-    return normalize(H);
+    float sinTheta = sqrt(max(0.0, 1.0 - cosTheta*cosTheta));
+
+    // Local half-vector in stretched space
+    return vec3(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
 }
 
 //

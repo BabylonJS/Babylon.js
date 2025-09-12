@@ -91,39 +91,28 @@ fn hemisphereImportanceSampleDggx(u: vec2f, a: f32) -> vec3f {
 fn hemisphereImportanceSampleDggxAnisotropic(Xi: vec2f, alphaTangent: f32, alphaBitangent: f32) -> vec3f
 {
     // Clamp to avoid division by zero but allow extreme anisotropy
-    var alphaT: f32 = max(alphaTangent, 0.0001);
-    var alphaB: f32 = max(alphaBitangent, 0.0001);
+    let alphaT: f32 = max(alphaTangent, 0.0001);
+    let alphaB: f32 = max(alphaBitangent, 0.0001);
     
-    // Transform uniform sample to anisotropic distribution
-    // This is the correct formula from "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"
     
-    // Sample azimuthal angle phi
-    var phi: f32 = atan(alphaB / alphaT * tan(2.0 * PI * Xi.x + 0.5 * PI));
+    // Map [0,1]^2 → spherical coordinates
+    var phi: f32 = atan(alphaB / alphaT * tan(2.0f * PI * Xi.x));
     if (Xi.x > 0.5) {
-        phi += PI;
+        phi += PI; // make sure phi ∈ [0, 2π]
     }
-    
-    var cosPhi: f32 = cos(phi);
-    var sinPhi: f32 = sin(phi);
-    
-    // Sample polar angle theta
-    var alphaTangent2: f32 = alphaT * alphaT;
-    var alphaBitangent2: f32 = alphaB * alphaB;
-    
-    var tanTheta2: f32 = Xi.y / (1.0 - Xi.y);
-    var alpha2_effective: f32 = (cosPhi * cosPhi * alphaTangent2) + (sinPhi * sinPhi * alphaBitangent2);
-    tanTheta2 = tanTheta2 * alpha2_effective;
-    
-    var cosTheta: f32 = 1.0 / sqrt(1.0 + tanTheta2);
-    var sinTheta: f32 = sqrt(max(0.0, 1.0 - cosTheta * cosTheta));
-    
-    // Build the microfacet normal in tangent space
-    var H: vec3f;
-    H.x = sinTheta * cosPhi;
-    H.y = sinTheta * sinPhi;
-    H.z = cosTheta;
-    
-    return normalize(H);
+
+    let cosPhi: f32 = cos(phi);
+    let sinPhi: f32 = sin(phi);
+
+    let alpha2: f32 = (cosPhi*cosPhi) / (alphaTangent*alphaTangent) +
+                   (sinPhi*sinPhi) / (alphaBitangent*alphaBitangent);
+    let tanTheta2: f32 = Xi.y / (1.0f - Xi.y) / alpha2;
+
+    let cosTheta: f32 = 1.0f / sqrt(1.0f + tanTheta2);
+    let sinTheta: f32 = sqrt(max(0.0f, 1.0f - cosTheta*cosTheta));
+
+    // Local half-vector in stretched space
+    return vec3f(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
 }
 
 //

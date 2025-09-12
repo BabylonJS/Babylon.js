@@ -369,10 +369,9 @@
             var dim0: f32 = filteringInfo.x;
 
             // Compute effective dimension scaled by anisotropy for proper solid angle
-            // Using fourth root for better anisotropic mipmap scaling
-            var effectiveDim: f32 = dim0 * sqrt(sqrt(alphaTangent * alphaBitangent));
+            var effectiveDim: f32 = dim0 * sqrt(alphaTangent * alphaBitangent);
             var omegaP: f32 = (4.f * PI) / (6.f * effectiveDim * effectiveDim);
-
+            let noiseScale: f32 = clamp(log2(f32(NUM_SAMPLES)) / 12.0f, 0.0f, 1.0f);
             var weight: f32 = 0.f;
 
             for(var i: u32 = 0u; i < NUM_SAMPLES; i++)
@@ -380,17 +379,10 @@
                 var Xi: vec2f = hammersley(i, NUM_SAMPLES);
                 
                 // Add noise to sample coordinates to break up sampling artifacts
-                Xi = fract(Xi + noiseInput * vec2f(0.2f)); // Wrap around to stay in [0,1] range
+                Xi = fract(Xi + noiseInput * mix(0.5f, 0.015f, noiseScale)); // Wrap around to stay in [0,1] range
                 
                 // Generate anisotropic half vector using importance sampling
                 var H_tangent: vec3f = hemisphereImportanceSampleDggxAnisotropic(Xi, alphaTangent, alphaBitangent);
-
-                // Scale the sampled half-vector based on the ratio of alphaT and alphaB.
-                // We want to avoid big gaps in the sampling distribution near the normal vector.
-                var ratio: f32 = alphaBitangent / alphaTangent;
-                // When alphaT is near 1.0 and alphaB is near 0, we're squaring the distribution to compress the
-                // values near the normal vector.
-                H_tangent.x = mix(sign(H_tangent.x) * H_tangent.x * H_tangent.x, H_tangent.x, clamp(sqrt(sqrt(ratio)), 0.0f, 1.0f));
                 
                 // Transform half vector from tangent space to world space
                 var H: vec3f = normalize(H_tangent.x * T + H_tangent.y * B + H_tangent.z * N);

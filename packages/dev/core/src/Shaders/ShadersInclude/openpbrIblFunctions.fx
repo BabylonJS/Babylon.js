@@ -253,71 +253,43 @@
         #else
             // We will sample multiple reflections using interpolated surface normals along
             // the tangent direction from -tangent to +tangent.
-            // We don't want to waste samples where the view direction is back-facing so
-            // we'll compress samples into the valid range.
             const int samples = 16;
-            // Find the maximum safe interpolation range
-            float normalDot = dot(viewDirectionW, normalW);
-            float tangentDot = dot(viewDirectionW, geoInfo.anisotropicTangent);
-            float negTangentDot = dot(viewDirectionW, -geoInfo.anisotropicTangent);
-        
-            // Find the valid interpolation range on each side of the normal
-            float maxPositiveT = 1.0;  // Default: sample all the way to +tangent
-            float maxNegativeT = -1.0; // Default: sample all the way to -tangent
-        
-            // If +tangent is back-facing, find where the interpolation becomes back-facing
-            if (tangentDot <= 0.0) {
-                // Find t where mix(normalW, tangentW, t) becomes perpendicular to view
-                if (abs(tangentDot - normalDot) > 0.001) {
-                    maxPositiveT = clamp(-normalDot / (tangentDot - normalDot), 0.0, 1.0);
-                } else {
-                    maxPositiveT = 0.0; // Can't sample towards tangent
-                }
-            }
-        
-            // If -tangent is back-facing, find where the interpolation becomes back-facing  
-            if (negTangentDot <= 0.0) {
-                // Find t where mix(-tangentW, normalW, blend) becomes perpendicular to view
-                // This is equivalent to mix(normalW, -tangentW, -t) for t < 0
-                if (abs(negTangentDot - normalDot) > 0.001) {
-                    float negT = -normalDot / (negTangentDot - normalDot);
-                    maxNegativeT = clamp(-negT, -1.0, 0.0);
-                } else {
-                    maxNegativeT = 0.0; // Can't sample towards -tangent
-                }
-            }
-
-            // Further compress the sampling range based on the level of anisotropic roughness
-            float tangentRange = clamp(sqrt(sqrt(alphaT)) * geoInfo.anisotropy, 0.0, 1.0) * (0.25 * noise.x + 0.75);
-            maxPositiveT *= maxPositiveT * tangentRange;
-            maxNegativeT = -(maxNegativeT * maxNegativeT) * tangentRange;
-        
             vec4 radianceSample = vec4(0.0);
             vec3 reflectionCoords = vec3(0.0);
             float sample_weight = 0.0;
             float total_weight = 0.0;
+            float step = 1.0 / float(max(samples-1, 1));
             for (int i = 0; i < samples; ++i) {
-                // Find interpolation parameter in our valid range
-                float t = mix(maxNegativeT, maxPositiveT, float(i) / float(max(samples - 1, 1)));
+                // Calculate interpolation parameter
+                float t = mix(-1.0, 1.0, float(i) * step);
+                // Use noise to bridge gap between samples
+                t += step * 2.0 * noise.x;
+
+                // Empirical weighting to reduce affect of outer samples (geometry masking).
+                // Could we improve this with correct masking function?
+                sample_weight = max(1.0 - abs(t), 0.001);
+                sample_weight *= sample_weight;
+
+                // Scale location of samples based on amount of anisotropy
+                t *= min(4.0 * alphaT * geoInfo.anisotropy, 1.0);
                 
-                // Generate sample direction
-                vec3 sampleDirection;
+                // Generate a new normal that represents the normal of the microfacet to sample.
+                vec3 bentNormal;
                 if (t < 0.0) {
                     // Interpolate from -tangent towards normal
                     float blend = t + 1.0;
-                    sampleDirection = normalize(mix(-geoInfo.anisotropicTangent, normalW, blend));
+                    bentNormal = normalize(mix(-geoInfo.anisotropicTangent, normalW, blend));
                 } else if (t > 0.0) {
                     // Interpolate from normal towards +tangent
                     float blend = t;
-                    sampleDirection = normalize(mix(normalW, geoInfo.anisotropicTangent, blend));
+                    bentNormal = normalize(mix(normalW, geoInfo.anisotropicTangent, blend));
                 } else {
                     // t = 0, sample the normal
-                    sampleDirection = normalW;
+                    bentNormal = normalW;
                 }
                 
-                // Empirical approximation of geometry masking.
-                sample_weight = pow(clamp(dot(normalW, sampleDirection), 0.0, 1.0), 16.0);
-                reflectionCoords = createReflectionCoords(positionW, sampleDirection);
+                // Use this new normal to calculate a reflection vector to sample from.
+                reflectionCoords = createReflectionCoords(positionW, bentNormal);
                 radianceSample = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
                 #ifdef RGBDREFLECTION
                     environmentRadiance.rgb += sample_weight * fromRGBD(radianceSample);

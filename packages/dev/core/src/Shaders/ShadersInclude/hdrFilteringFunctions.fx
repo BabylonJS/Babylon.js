@@ -402,10 +402,9 @@
             float dim0 = filteringInfo.x;
             
             // Compute effective dimension scaled by anisotropy for proper solid angle
-            // Using fourth root for better anisotropic mipmap scaling
-            float effectiveDim = dim0 * sqrt(sqrt(alphaTangent * alphaBitangent));
+            float effectiveDim = dim0 * sqrt(alphaTangent * alphaBitangent);
             float omegaP = (4. * PI) / (6. * effectiveDim * effectiveDim);
-
+            const float noiseScale = clamp(log2(float(NUM_SAMPLES)) / 12.0f, 0.0f, 1.0f);
             float weight = 0.;
             
             #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
@@ -417,18 +416,11 @@
                 vec2 Xi = hammersley(i, NUM_SAMPLES);
                 
                 // Add noise to sample coordinates to break up sampling artifacts
-                Xi = fract(Xi + noiseInput * vec2(0.2)); // Wrap around to stay in [0,1] range
-                
+                Xi = fract(Xi + noiseInput * mix(0.5f, 0.015f, noiseScale)); // Wrap around to stay in [0,1] range
+
                 // Generate anisotropic half vector using importance sampling
                 vec3 H_tangent = hemisphereImportanceSampleDggxAnisotropic(Xi, alphaTangent, alphaBitangent);
 
-                // Scale the sampled half-vector based on the ratio of alphaT and alphaB.
-                // We want to avoid big gaps in the sampling distribution near the normal vector.
-                float ratio = alphaBitangent / alphaTangent;
-                // When alphaT is near 1.0 and alphaB is near 0, we're squaring the distribution to compress the
-                // values near the normal vector.
-                H_tangent.x = mix(sign(H_tangent.x) * H_tangent.x * H_tangent.x, H_tangent.x, clamp(sqrt(sqrt(ratio)), 0.0, 1.0));
-                
                 // Transform half vector from tangent space to world space
                 vec3 H = normalize(H_tangent.x * T + H_tangent.y * B + H_tangent.z * N);
                 

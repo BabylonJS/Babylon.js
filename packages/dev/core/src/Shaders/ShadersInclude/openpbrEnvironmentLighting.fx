@@ -63,7 +63,7 @@
 
     // Purely empirical blend between diffuse and specular lobes when roughness gets very high.
     #ifdef ANISOTROPIC
-        baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, min(specularAlphaG * specularAlphaG, 0.5));
+        baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG * specularAlphaG * max(1.0 - baseGeoInfo.anisotropy, 0.3));
     #else
         baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
     #endif
