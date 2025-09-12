@@ -1,13 +1,12 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
-
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
 import type { IKHRMaterialsSheen } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_sheen";
 
@@ -74,34 +73,31 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadSheenPropertiesAsync(context: string, properties: IKHRMaterialsSheen, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.sheen.isEnabled = true;
-        babylonMaterial.sheen.intensity = 1;
+        adapter.configureFuzz();
 
-        if (properties.sheenColorFactor != undefined) {
-            babylonMaterial.sheen.color = Color3.FromArray(properties.sheenColorFactor);
-        } else {
-            babylonMaterial.sheen.color = Color3.Black();
-        }
+        // Set non-texture properties immediately
+        const sheenColor = properties.sheenColorFactor !== undefined ? Color3.FromArray(properties.sheenColorFactor) : Color3.Black();
+        const sheenRoughness = properties.sheenRoughnessFactor !== undefined ? properties.sheenRoughnessFactor : 0.0;
 
+        adapter.fuzzWeight = 1; // KHR_materials_sheen assumes intensity of 1
+        adapter.fuzzColor = sheenColor;
+        adapter.fuzzRoughness = sheenRoughness;
+
+        // Load textures
         if (properties.sheenColorTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/sheenColorTexture`, properties.sheenColorTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Sheen Color)`;
-                    babylonMaterial.sheen.texture = texture;
+                    adapter.fuzzColorTexture = texture;
                 })
             );
-        }
-
-        if (properties.sheenRoughnessFactor !== undefined) {
-            babylonMaterial.sheen.roughness = properties.sheenRoughnessFactor;
-        } else {
-            babylonMaterial.sheen.roughness = 0;
         }
 
         if (properties.sheenRoughnessTexture) {
@@ -109,13 +105,10 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
-                    babylonMaterial.sheen.textureRoughness = texture;
+                    adapter.fuzzRoughnessTexture = texture;
                 })
             );
         }
-
-        babylonMaterial.sheen.albedoScaling = true;
-        babylonMaterial.sheen.useRoughnessFromMainTexture = false;
 
         // eslint-disable-next-line github/no-then
         return Promise.all(promises).then(() => {});

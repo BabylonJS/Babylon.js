@@ -1,6 +1,7 @@
 import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -47,19 +48,27 @@ export class MSFT_sRGBFactors implements IGLTFLoaderExtension {
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, async (extraContext, extra) => {
             if (extra) {
-                if (!(babylonMaterial instanceof PBRMaterial)) {
+                if (!this._loader._pbrMaterialClass) {
                     throw new Error(`${extraContext}: Material type not supported`);
                 }
 
                 const promise = this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
 
                 const useExactSrgbConversions = babylonMaterial.getScene().getEngine().useExactSrgbConversions;
-                if (!babylonMaterial.albedoTexture) {
-                    babylonMaterial.albedoColor.toLinearSpaceToRef(babylonMaterial.albedoColor, useExactSrgbConversions);
-                }
-
-                if (!babylonMaterial.reflectivityTexture) {
-                    babylonMaterial.reflectivityColor.toLinearSpaceToRef(babylonMaterial.reflectivityColor, useExactSrgbConversions);
+                if (this._loader.parent.useOpenPBR) {
+                    if (!(babylonMaterial as OpenPBRMaterial).baseColorTexture) {
+                        (babylonMaterial as OpenPBRMaterial).baseColor.toLinearSpaceToRef((babylonMaterial as OpenPBRMaterial).baseColor, useExactSrgbConversions);
+                    }
+                    if (!(babylonMaterial as OpenPBRMaterial).specularColorTexture) {
+                        (babylonMaterial as OpenPBRMaterial).specularColor.toLinearSpaceToRef((babylonMaterial as OpenPBRMaterial).specularColor, useExactSrgbConversions);
+                    }
+                } else {
+                    if (!(babylonMaterial as PBRMaterial).albedoTexture) {
+                        (babylonMaterial as PBRMaterial).albedoColor.toLinearSpaceToRef((babylonMaterial as PBRMaterial).albedoColor, useExactSrgbConversions);
+                    }
+                    if (!(babylonMaterial as PBRMaterial).reflectivityTexture) {
+                        (babylonMaterial as PBRMaterial).reflectivityColor.toLinearSpaceToRef((babylonMaterial as PBRMaterial).reflectivityColor, useExactSrgbConversions);
+                    }
                 }
 
                 return await promise;

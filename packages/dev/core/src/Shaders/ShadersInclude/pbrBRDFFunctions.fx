@@ -9,7 +9,7 @@
 #define CONDUCTOR_SPECULAR_MODEL_GLTF 0
 #define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
 
-#ifndef PBR_VERTEX_SHADER
+#if !defined(PBR_VERTEX_SHADER) && !defined(OPENPBR_VERTEX_SHADER)
 
 // ______________________________________________________________________
 //

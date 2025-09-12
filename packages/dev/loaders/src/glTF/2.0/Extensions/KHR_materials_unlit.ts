@@ -1,6 +1,7 @@
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -68,35 +69,52 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
-        babylonMaterial.unlit = true;
-
+        let baseColor: Color3 = Color3.White();
+        let alpha: number = 1;
         const properties = material.pbrMetallicRoughness;
         if (properties) {
             if (properties.baseColorFactor) {
-                babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
-                babylonMaterial.alpha = properties.baseColorFactor[3];
-            } else {
-                babylonMaterial.albedoColor = Color3.White();
+                baseColor = Color3.FromArray(properties.baseColorFactor);
+                alpha = properties.baseColorFactor[3];
             }
 
             if (properties.baseColorTexture) {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Base Color)`;
-                        babylonMaterial.albedoTexture = texture;
+                        if (this._loader.parent.useOpenPBR) {
+                            (babylonMaterial as OpenPBRMaterial).baseColorTexture = texture;
+                        } else {
+                            (babylonMaterial as PBRMaterial).albedoTexture = texture;
+                        }
                     })
                 );
             }
         }
 
-        if (material.doubleSided) {
-            babylonMaterial.backFaceCulling = false;
-            babylonMaterial.twoSidedLighting = true;
+        if (this._loader.parent.useOpenPBR) {
+            const mat = babylonMaterial as OpenPBRMaterial;
+            mat.unlit = true;
+            mat.baseColor = baseColor;
+            mat.geometryOpacity = alpha;
+            if (material.doubleSided) {
+                mat.backFaceCulling = false;
+                mat.twoSidedLighting = true;
+            }
+        } else {
+            const mat = babylonMaterial as PBRMaterial;
+            mat.unlit = true;
+            mat.albedoColor = baseColor;
+            mat.alpha = alpha;
+            if (material.doubleSided) {
+                mat.backFaceCulling = false;
+                mat.twoSidedLighting = true;
+            }
         }
 
         this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);

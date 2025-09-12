@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
+import { Color3 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_volume";
 
@@ -81,38 +83,62 @@ export class KHR_materials_volume implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadVolumePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsVolume): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
+
         // If transparency isn't enabled already, this extension shouldn't do anything.
         // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
-        if ((!babylonMaterial.subSurface.isRefractionEnabled && !babylonMaterial.subSurface.isTranslucencyEnabled) || !extension.thicknessFactor) {
+        if ((!adapter.isTransmissionEnabled && !adapter.isSubsurfaceEnabled) || !extension.thicknessFactor) {
             return Promise.resolve();
         }
 
-        // IOR in this extension only affects interior.
-        babylonMaterial.subSurface.volumeIndexOfRefraction = babylonMaterial.indexOfRefraction;
-        const attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
-        babylonMaterial.subSurface.tintColorAtDistance = attenuationDistance;
+        let attenuationDistance = Number.MAX_VALUE;
+        const attenuationColor: Color3 = Color3.White();
+        let thicknessTexture: Nullable<BaseTexture> = null;
+        let thicknessFactor = 0.0;
+
+        const promises = new Array<Promise<any>>();
+
+        attenuationDistance = extension.attenuationDistance !== undefined ? extension.attenuationDistance : Number.MAX_VALUE;
         if (extension.attenuationColor !== undefined && extension.attenuationColor.length == 3) {
-            babylonMaterial.subSurface.tintColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
+            attenuationColor.copyFromFloats(extension.attenuationColor[0], extension.attenuationColor[1], extension.attenuationColor[2]);
         }
 
-        babylonMaterial.subSurface.minimumThickness = 0.0;
-        babylonMaterial.subSurface.maximumThickness = extension.thicknessFactor;
-        babylonMaterial.subSurface.useThicknessAsDepth = true;
+        thicknessFactor = extension.thicknessFactor;
         if (extension.thicknessTexture) {
             (extension.thicknessTexture as ITextureInfo).nonColorData = true;
             // eslint-disable-next-line github/no-then
-            return this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture).then((texture: BaseTexture) => {
-                texture.name = `${babylonMaterial.name} (Thickness)`;
-                babylonMaterial.subSurface.thicknessTexture = texture;
-                babylonMaterial.subSurface.useGltfStyleTextures = true;
-            });
-        } else {
-            return Promise.resolve();
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/thicknessTexture`, extension.thicknessTexture, (texture: BaseTexture) => {
+                    texture.name = `${babylonMaterial.name} (Thickness)`;
+                    thicknessTexture = texture;
+                })
+            );
         }
+
+        // eslint-disable-next-line github/no-then
+        return Promise.all(promises).then(() => {
+            if (this._loader.parent.useOpenPBR) {
+                return;
+            }
+
+            const pbrMaterial = babylonMaterial as PBRMaterial;
+            // IOR in this extension only affects interior.
+            pbrMaterial.subSurface.volumeIndexOfRefraction = pbrMaterial.indexOfRefraction;
+            pbrMaterial.subSurface.tintColorAtDistance = attenuationDistance;
+            pbrMaterial.subSurface.tintColor = attenuationColor;
+
+            pbrMaterial.subSurface.minimumThickness = 0.0;
+            pbrMaterial.subSurface.maximumThickness = thicknessFactor;
+            pbrMaterial.subSurface.useThicknessAsDepth = true;
+            if (thicknessTexture) {
+                pbrMaterial.subSurface.thicknessTexture = thicknessTexture;
+                pbrMaterial.subSurface.useGltfStyleTextures = true;
+            }
+        });
     }
 }
 
