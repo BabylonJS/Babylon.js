@@ -55,7 +55,6 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -921,22 +920,22 @@ export class Viewer implements IDisposable {
                 this._markSceneMutated();
             });
 
-            const ssaoRatio = {
-                ssaoRatio: 1, // Ratio of the SSAO post-process, in a lower resolution
-                blurRatio: 1, // Ratio of the combine post-process (combines the SSAO and the scene)
-            };
-            if (SSAO2RenderingPipeline.IsSupported) {
-                const ssao = new SSAO2RenderingPipeline("ssao", scene, ssaoRatio);
-                ssao.radius = 2;
-                ssao.totalStrength = 0.3;
-                ssao.expensiveBlur = true;
-                ssao.samples = 16;
-                ssao.maxZ = 250;
-                // Attach camera to the SSAO render pipeline
-                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
-            } else {
-                alert("WebGL2 is required to use SSAO2 effect");
-            }
+            // const ssaoRatio = {
+            //     ssaoRatio: 1, // Ratio of the SSAO post-process, in a lower resolution
+            //     blurRatio: 1, // Ratio of the combine post-process (combines the SSAO and the scene)
+            // };
+            // if (SSAO2RenderingPipeline.IsSupported) {
+            //     const ssao = new SSAO2RenderingPipeline("ssao", scene, ssaoRatio);
+            //     ssao.radius = 2;
+            //     ssao.totalStrength = 0.3;
+            //     ssao.expensiveBlur = true;
+            //     ssao.samples = 16;
+            //     ssao.maxZ = 250;
+            //     // Attach camera to the SSAO render pipeline
+            //     scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+            // } else {
+            //     alert("WebGL2 is required to use SSAO2 effect");
+            // }
 
             scene.onClearColorChangedObservable.add(() => {
                 this._markSceneMutated();
