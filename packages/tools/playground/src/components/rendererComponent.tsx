@@ -142,7 +142,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     }
 
     private _preventReentrancy = false;
-
     private _sanitizeCode(code: string): string {
         let result = code.normalize("NFKC");
 
@@ -185,7 +184,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
-        const displayInspector = InspectorV2ModulePromise ? (await InspectorV2ModulePromise).IsInspectorVisible() : this._scene?.debugLayer.isVisible();
+        //  const displayInspector = InspectorV2ModulePromise ? (await InspectorV2ModulePromise).IsInspectorVisible() : this._scene?.debugLayer.isVisible();
 
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
@@ -282,272 +281,66 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 };
             }
 
-            const zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
-            let defaultEngineZip = `var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: ${forceWebGL1}}); }`;
+            // Build the runnable (always V2)
+            let runner;
+            try {
+                runner = await this.props.globalState.getRunnable!();
+            } catch (e) {
+                (window as any).handleException(e as Error);
+                this._preventReentrancy = false;
+                return;
+            }
 
+            // Create engine (same as your existing engine selection logic)
+            let engine: Engine | null = null;
             if (useWebGPU) {
-                defaultEngineZip = `var createDefaultEngine = async function() { 
-                    var engine = new BABYLON.WebGPUEngine(canvas);
-                    await engine.initAsync();
-                    return engine;
-                }`;
+                try {
+                    const wgpu = new WebGPUEngine(this._canvasRef.current!, { enableAllFeatures: true, setMaximumLimits: true, enableGPUDebugMarkers: true });
+                    await wgpu.initAsync();
+                    engine = wgpu as any;
+                } catch (e) {
+                    // console.error("WebGPU creation failed; falling back to WebGL.", e);
+                }
+            }
+            if (!engine) {
+                engine = new Engine(canvas, true, {
+                    disableWebGL2Support: forceWebGL1,
+                    preserveDrawingBuffer: true,
+                    stencil: true,
+                });
             }
 
-            let code = await this.props.globalState.getCompiledCode();
+            this._engine = engine as Engine;
+            (window as any).engine = this._engine; // optional, if other parts rely on it
+            (window as any).canvas = canvas;
 
-            if (!code) {
+            // Start render loop exactly like before
+            (window as any).startRenderLoop(this._engine, canvas);
+
+            // Run the scene via the runnable
+            let sceneResult: any = null;
+            try {
+                sceneResult = await runner.run(this._engine, canvas);
+            } catch (err) {
+                (window as any).handleException(err as Error);
                 this._preventReentrancy = false;
                 return;
             }
-
-            // Multi-file V2 module pipeline detection
-            const isPGV2 = code.startsWith("/*PG_V2*/");
-
-            code = this._sanitizeCode(code);
-
-            if (isPGV2) {
-                // Evaluate bootstrap (defines window.__pg_v2_run)
-                try {
-                    Utilities.FastEval(code);
-                } catch (e) {
-                    (window as any).handleException(e);
-                    this._preventReentrancy = false;
-                    return;
-                }
-                // Prepare engine creation function wrappers (like legacy path) but defer scene creation to pg_v2 run
-                let createEngineFunction = "createDefaultEngine";
-                if (code.indexOf("createEngine") !== -1) {
-                    createEngineFunction = "createEngine";
-                }
-
-                // Build initFunction similar to legacy but without createScene invocation yet
-                const v2Init = `window.initFunction = async function() {\n${""}var asyncEngineCreation = async function() {\ntry { return ${createEngineFunction}(); } catch(e) { console.log('createEngine failed, falling back'); return createDefaultEngine(); }\n};\nwindow.engine = await asyncEngineCreation();\nif (!engine) throw 'engine should not be null.';\nstartRenderLoop(engine, canvas);\n}`;
-                try {
-                    Utilities.FastEval(v2Init);
-                } catch (e) {
-                    (window as any).handleException(e);
-                    this._preventReentrancy = false;
-                    return;
-                }
-                await (window as any).initFunction();
-                this._engine = (window as any).engine;
-                if (!this._engine) {
-                    this._preventReentrancy = false;
-                    return this._notifyError("createEngine function must return an engine.");
-                }
-                // Run module pipeline to obtain scene (supports async)
-                let sceneResult: any = null;
-                if (typeof (window as any).__pg_v2_run === "function") {
-                    try {
-                        sceneResult = await (window as any).__pg_v2_run(this._engine, this._canvasRef.current);
-                    } catch (err) {
-                        (window as any).handleException(err);
-                        this._preventReentrancy = false;
-                        return;
-                    }
-                } else {
-                    this._preventReentrancy = false;
-                    return this._notifyError("__pg_v2_run missing from bootstrap.");
-                }
-                if (!sceneResult) {
-                    this._preventReentrancy = false;
-                    return this._notifyError("createScene export not found or returned null.");
-                }
-                this._scene = sceneResult as Scene;
-                (window as any).scene = this._scene;
-                this._engine!.scenes[0]?.executeWhenReady(() => {
-                    this.props.globalState.onRunExecutedObservable.notifyObservers();
-                });
+            if (!sceneResult) {
                 this._preventReentrancy = false;
-                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
-                return;
+                return this._notifyError("createScene export not found or returned null.");
             }
 
-            // Legacy single-file pathway continues below
-            // Check for Ammo.js
-            let ammoInit = "";
-            if (code.indexOf("AmmoJSPlugin") > -1 && typeof Ammo === "function") {
-                ammoInit = "await Ammo();";
-            }
+            this._scene = sceneResult as Scene;
+            (window as any).scene = this._scene;
 
-            // Check for Recast.js
-            let recastInit = "";
-            if (code.indexOf("RecastJSPlugin") > -1 && typeof Recast === "function") {
-                recastInit = "await Recast();";
-            }
-
-            let havokInit = "";
-            if (code.includes("HavokPlugin") && typeof HavokPhysics === "function" && typeof HK === "undefined") {
-                havokInit = "globalThis.HK = await HavokPhysics();";
-            }
-
-            let audioInit = "";
-            if (code.includes("BABYLON.Sound")) {
-                audioInit =
-                    "BABYLON.AbstractEngine.audioEngine = BABYLON.AbstractEngine.AudioEngineFactory(window.engine.getRenderingCanvas(), window.engine.getAudioContext(), window.engine.getAudioDestination());";
-            }
-
-            const babylonToolkit =
-                !this._babylonToolkitWasLoaded &&
-                (code.includes("BABYLON.Toolkit.SceneManager.InitializePlayground") ||
-                    code.includes("SM.InitializePlayground") ||
-                    location.href.indexOf("BabylonToolkit") !== -1 ||
-                    Utilities.ReadBoolFromStore("babylon-toolkit", false));
-            // Check for Babylon Toolkit
-            if (babylonToolkit) {
-                await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.js");
-                this._babylonToolkitWasLoaded = true;
-            }
-            Utilities.StoreBoolToStore("babylon-toolkit-used", babylonToolkit);
-
-            let createEngineFunction = "createDefaultEngine";
-            let createSceneFunction = "";
-            let checkCamera = true;
-            let checkSceneCount = true;
-
-            if (code.indexOf("createEngine") !== -1) {
-                createEngineFunction = "createEngine";
-            }
-
-            // Check for different typos
-            if (code.indexOf("delayCreateScene") !== -1) {
-                // delayCreateScene
-                createSceneFunction = "delayCreateScene";
-                checkCamera = false;
-            } else if (code.indexOf("createScene") !== -1) {
-                // createScene
-                createSceneFunction = "createScene";
-            } else if (code.indexOf("CreateScene") !== -1) {
-                // CreateScene
-                createSceneFunction = "CreateScene";
-            } else if (code.indexOf("createscene") !== -1) {
-                // createscene
-                createSceneFunction = "createscene";
-            }
-
-            if (!createSceneFunction) {
-                this._preventReentrancy = false;
-                return this._notifyError("You must provide a function named createScene.");
-            } else {
-                // Write an "initFunction" that creates engine and scene
-                // using the appropriate default or user-provided functions.
-                // (Use "window.x = foo" to allow later deletion, see above.)
-                code += `
-                window.initFunction = async function() {
-                    ${ammoInit}
-                    ${havokInit}
-                    ${recastInit}
-                    var asyncEngineCreation = async function() {
-                        try {
-                        return ${createEngineFunction}();
-                        } catch(e) {
-                        console.log("the available createEngine function failed. Creating the default engine instead");
-                        return createDefaultEngine();
-                        }
-                    }
-
-                    window.engine = await asyncEngineCreation();
-                    
-                    const engineOptions = window.engine.getCreationOptions?.();
-                    if (!engineOptions || engineOptions.audioEngine !== false) {
-                        ${audioInit}
-                    }`;
-                code += "\r\nif (!engine) throw 'engine should not be null.';";
-                // startRenderLoop already defined globally (legacy + v2)
-                code += "\r\nstartRenderLoop(engine, canvas);";
-
-                if (this.props.globalState.language === "JS") {
-                    code += "\r\n" + "window.scene = " + createSceneFunction + "();";
-                } else {
-                    const startCar = code.search("var " + createSceneFunction);
-                    code = code.substring(0, startCar) + code.substr(startCar + 4);
-                    code += "\n" + "window.scene = " + createSceneFunction + "();";
-                }
-
-                code += `}`; // Finish "initFunction" definition.
-
-                try {
-                    // Execute the code
-                    Utilities.FastEval(code);
-                } catch (e) {
-                    (window as any).handleException(e);
-                }
-
-                // Return early if there is a parameter to prevent auto-running
-                if (this.props.globalState.doNotRun) {
-                    this.props.globalState.doNotRun = false;
-                    this._preventReentrancy = false;
-                    this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
-                    return;
-                }
-
-                await globalObject.initFunction();
-
-                this._engine = globalObject.engine;
-
-                if (!this._engine) {
-                    this._preventReentrancy = false;
-                    return this._notifyError("createEngine function must return an engine.");
-                }
-
-                if (!globalObject.scene) {
-                    this._preventReentrancy = false;
-                    return this._notifyError("createScene function must return a scene.");
-                }
-
-                let sceneToRenderCode = "sceneToRender = scene";
-
-                // if scene returns a promise avoid checks
-                if (globalObject.scene.then) {
-                    checkCamera = false;
-                    checkSceneCount = false;
-                    sceneToRenderCode = "scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n";
-                }
-
-                const createEngineZip = createEngineFunction === "createEngine" ? zipVariables : zipVariables + defaultEngineZip;
-
-                this.props.globalState.zipCode = createEngineZip + ";\r\n" + code + ";\r\ninitFunction().then(() => {" + sceneToRenderCode;
-            }
-
-            if (globalObject.scene.then) {
-                globalObject.scene.then((s: Scene) => {
-                    this._scene = s;
-                    globalObject.scene = this._scene;
-                });
-            } else {
-                this._scene = globalObject.scene as Scene;
-            }
-
-            if (!this._scene) {
-                const nodeTest = /createScene\(\)\s*{((.|\s)*?)new BABYLON/;
-                if (nodeTest.test(code)) {
-                    this._preventReentrancy = false;
-                    return this._notifyError("The createScene function must return the created scene.");
-                }
-
-                this._preventReentrancy = false;
-                return this._notifyError("createScene function must return a scene.");
-            }
-
-            if (checkCamera && !this._scene.activeCamera) {
-                this._preventReentrancy = false;
-                return this._notifyError("Please add a camera to your scene.");
-            }
-
-            if (checkSceneCount && EngineStore.Instances[0].scenes.length > 1) {
-                this._preventReentrancy = false;
-                return this._notifyError("Please make sure to ONLY return the main scene.");
-            }
-
-            this._scene.executeWhenReady(() => {
-                if (displayInspector) {
-                    this.props.globalState.onInspectorRequiredObservable.notifyObservers();
-                }
+            this._engine!.scenes[0]?.executeWhenReady(() => {
                 this.props.globalState.onRunExecutedObservable.notifyObservers();
             });
 
             this._preventReentrancy = false;
             this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+            return;
         } catch (e) {
             (window as any).handleException(e as Error);
             this._preventReentrancy = false;

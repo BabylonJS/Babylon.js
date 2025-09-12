@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MonacoManager } from "../tools/monacoManager";
+import { MonacoManager } from "../tools/monaco/monacoManager";
 import { Utilities } from "../tools/utilities";
 import type { GlobalState } from "../globalState";
 import { FileDialog } from "./fileDialog";
