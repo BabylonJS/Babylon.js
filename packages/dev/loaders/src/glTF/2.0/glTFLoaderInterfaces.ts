@@ -312,3 +312,10 @@ export interface IEXTLightsIES_Light extends GLTF2.IEXTLightsIES_Light, IArrayIt
     /** @hidden */
     _babylonLight?: Light;
 }
+
+/** @internal */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export interface IEXTLightsArea_Light extends GLTF2.IEXTLightsArea_Light, IArrayItem {
+    /** @hidden */
+    _babylonLight?: Light;
+}
