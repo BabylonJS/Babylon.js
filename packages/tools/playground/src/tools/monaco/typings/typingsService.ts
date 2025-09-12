@@ -20,7 +20,11 @@ export class TypingsService {
     private _ata: ReturnType<typeof setupTypeAcquisition>;
 
     constructor(private _addPaths: AddPathsFn) {
-        // Heuristic: is this the entry file for the spec?
+        function toVfsUriFromAtaPath(path: string) {
+            // put everything under file:///node_modules/...
+            const clean = NormalizeVirtualPath(path); // you already have this
+            return `file:///node_modules/${clean}`;
+        }
         function isEntryForSpec(path: string, spec: string) {
             const p = NormalizeVirtualPath(path);
             if (/\/@types\/[^/]+\/index\.d\.ts$/i.test(p)) {
@@ -40,9 +44,6 @@ export class TypingsService {
             return false;
         }
 
-        function isJson(path: string) {
-            return /\.json$/i.test(path);
-        }
         const ts = CreateTsShim({
             libNames: monaco.languages.typescript.typescriptDefaults.getCompilerOptions().lib ?? undefined,
         });
@@ -50,34 +51,28 @@ export class TypingsService {
             projectName: "pg",
             typescript: ts as any,
             logger: console,
-            // Optional: observe network
-            // fetcher(input, init) { console.debug("ATA fetch:", input); return fetch(input, init); },
             delegate: {
                 receivedFile: (code: string, path: string) => {
-                    console.log("Received file", code.length, path);
                     const spec = GuessSpecFromTypesPath(path);
-                    if (!spec || isJson(path)) {
+                    if (!spec || /\.json$/i.test(path)) {
                         return;
                     }
 
-                    // Drop the stub before adding the first real file
                     if (!this._acquired.has(spec)) {
                         this._removeBareStub(spec);
                         this._removeBareStub(spec + "/*");
+                        this._removeBareStubsForBase(spec);
                     }
 
-                    // Create a more accurate filename that preserves the actual path structure
-                    const fname = `file://${spec.replace(/[^\w@/.-]/g, "_")}/index.d.ts`;
-
-                    const d1 = monaco.languages.typescript.typescriptDefaults.addExtraLib(code, fname);
-                    const d2 = monaco.languages.typescript.javascriptDefaults.addExtraLib(code, fname);
+                    const vuri = toVfsUriFromAtaPath(path);
+                    const d1 = monaco.languages.typescript.typescriptDefaults.addExtraLib(code, vuri);
+                    const d2 = monaco.languages.typescript.javascriptDefaults.addExtraLib(code, vuri);
                     this._typeLibDisposables.push(d1, d2);
 
-                    // Only map once, and only for a real entry
                     if (isEntryForSpec(path, spec) && !this._entryMapped.has(spec)) {
-                        const dir = fname.replace(/\/index\.d\.ts$/i, "");
-                        this._addPaths(spec, fname);
-                        this._addPaths(spec + "/*", dir + "/*");
+                        const vdir = vuri.replace(/\/index\.d\.ts$/i, "");
+                        this._addPaths(spec, `${vdir}/index.d.ts`);
+                        this._addPaths(spec + "/*", `${vdir}/*`);
                         this._entryMapped.add(spec);
                         this._acquired.add(spec);
                     }
@@ -97,6 +92,14 @@ export class TypingsService {
         this._acquired.clear();
         this._failed.clear();
         this._currentBare.clear();
+    }
+
+    private _removeBareStubsForBase(base: string) {
+        for (const key of Array.from(this._bareStubBySpec.keys())) {
+            if (key === base || key === base + "/*" || key.startsWith(base + "/")) {
+                this._removeBareStub(key);
+            }
+        }
     }
 
     discoverBareImports(sourceTexts: string[]): Set<string> {
@@ -152,10 +155,8 @@ export class TypingsService {
     }
 
     async acquireForAsync(sourceTexts: Set<string>) {
-        this._ata(BuildSyntheticAtaEntry(sourceTexts));
+        await this._ata(BuildSyntheticAtaEntry(sourceTexts));
     }
-
-    // ---- internals --------------------------------------------------------
 
     private _addBareStub(spec: string) {
         // Allow both CJS/ESM syntaxes; also add a wildcard form for subpath imports
