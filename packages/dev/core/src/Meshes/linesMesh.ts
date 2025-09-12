@@ -352,4 +352,3 @@ export class InstancedLinesMesh extends InstancedMesh {
         return "InstancedLinesMesh";
     }
 }
-
