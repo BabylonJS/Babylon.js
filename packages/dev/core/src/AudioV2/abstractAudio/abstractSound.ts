@@ -63,8 +63,8 @@ export abstract class AbstractSound extends AbstractSoundSource {
      */
     public readonly onEndedObservable = new Observable<AbstractSound>();
 
-    protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine, AudioNodeType.HAS_INPUTS_AND_OUTPUTS); // Inputs are for instances.
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IAbstractSoundOptions>) {
+        super(name, engine, options, AudioNodeType.HAS_INPUTS_AND_OUTPUTS); // Inputs are for instances.
     }
 
     /**

@@ -114,8 +114,8 @@ export abstract class StaticSound extends AbstractSound {
      */
     public abstract readonly buffer: StaticSoundBuffer;
 
-    protected constructor(name: string, engine: AudioEngineV2) {
-        super(name, engine);
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IStaticSoundOptions>) {
+        super(name, engine, options);
     }
 
     /**
