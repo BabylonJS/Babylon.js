@@ -55,6 +55,7 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -920,6 +921,23 @@ export class Viewer implements IDisposable {
                 this._markSceneMutated();
             });
 
+            const ssaoRatio = {
+                ssaoRatio: 1, // Ratio of the SSAO post-process, in a lower resolution
+                blurRatio: 1, // Ratio of the combine post-process (combines the SSAO and the scene)
+            };
+            if (SSAO2RenderingPipeline.IsSupported) {
+                const ssao = new SSAO2RenderingPipeline("ssao", scene, ssaoRatio);
+                ssao.radius = 2;
+                ssao.totalStrength = 0.3;
+                ssao.expensiveBlur = true;
+                ssao.samples = 16;
+                ssao.maxZ = 250;
+                // Attach camera to the SSAO render pipeline
+                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+            } else {
+                alert("WebGL2 is required to use SSAO2 effect");
+            }
+
             scene.onClearColorChangedObservable.add(() => {
                 this._markSceneMutated();
             });
@@ -1477,6 +1495,29 @@ export class Viewer implements IDisposable {
             assetContainer.addAllToScene();
             this._snapshotHelper.fixMeshes(assetContainer.meshes);
 
+            const hasMaterials = assetContainer.materials.length > 0;
+
+            if (!hasMaterials) {
+                const defaultMaterial = new PBRMaterial("defaultReplacementMaterial", this._scene);
+                defaultMaterial.albedoColor = Color3.Gray();
+                defaultMaterial.metallic = 0;
+                defaultMaterial.roughness = 0.8;
+                defaultMaterial.baseDiffuseRoughness = 0.3;
+                defaultMaterial.environmentIntensity = 1;
+                defaultMaterial.microSurface = 1;
+                defaultMaterial.emissiveColor = Color3.Black();
+                defaultMaterial.ambientColor = Color3.Black();
+                defaultMaterial.usePhysicalLightFalloff = true;
+                defaultMaterial.forceNormalForward = true;
+                defaultMaterial.twoSidedLighting = true;
+                defaultMaterial.backFaceCulling = false;
+                assetContainer.meshes.forEach((mesh) => {
+                    if (mesh instanceof Mesh && !mesh.material) {
+                        mesh.material = defaultMaterial;
+                    }
+                });
+            }
+
             let selectedAnimation = -1;
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
             // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1903,7 +1944,6 @@ export class Viewer implements IDisposable {
             ground.receiveShadows = true;
             ground.position.y = worldBounds.extents.min[1];
             ground.material = shadowMaterial;
-            light.includedOnlyMeshes = [ground];
 
             const newNormal: ShadowState["normal"] = (normal = {
                 light: light,
@@ -2776,6 +2816,7 @@ export class Viewer implements IDisposable {
         if (shouldHaveDefaultLight) {
             if (!this._light) {
                 this._light = new HemisphericLight("defaultLight", Vector3.Up(), this._scene);
+                this._light.intensity = 0.4;
             }
         } else {
             this._light?.dispose();
