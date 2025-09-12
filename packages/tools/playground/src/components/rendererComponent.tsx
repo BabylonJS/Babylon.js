@@ -29,12 +29,11 @@ declare const HK: any;
  */
 export class RenderingComponent extends React.Component<IRenderingComponentProps> {
     /** Engine instance for current run */
-    private _engine: Nullable<Engine>;
+    private _engine!: Nullable<Engine>;
     /** Active scene */
-    private _scene: Nullable<Scene>;
+    private _scene!: Nullable<Scene>;
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
-    private _babylonToolkitWasLoaded = false;
     private _inspectorFallback: boolean = false;
 
     /**
@@ -122,18 +121,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         // no-op placeholder retained for backward compatibility
     };
 
-    private async _loadScriptAsync(url: string): Promise<void> {
-        return await new Promise((resolve) => {
-            const script = document.createElement("script");
-            script.setAttribute("type", "text/javascript");
-            script.setAttribute("src", url);
-            script.onload = () => {
-                resolve();
-            };
-            document.head.appendChild(script);
-        });
-    }
-
     private _notifyError(message: string) {
         this.props.globalState.onErrorObservable.notifyObservers({
             message: message,
@@ -142,39 +129,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     }
 
     private _preventReentrancy = false;
-    private _sanitizeCode(code: string): string {
-        let result = code.normalize("NFKC");
-
-        const hiddenCharsRegex = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
-        // eslint-disable-next-line no-control-regex
-        const controlCharsRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
-
-        // Visualizer markers for hidden characters
-        const markers: Record<string, string> = {
-            "\u200B": "⟦ZWSP⟧",
-            "\u200C": "⟦ZWNJ⟧",
-            "\u200D": "⟦ZWJ⟧",
-            "\u200E": "⟦LRM⟧",
-            "\u200F": "⟦RLM⟧",
-            "\u202A": "⟦LRE⟧",
-            "\u202B": "⟦RLE⟧",
-            "\u202C": "⟦PDF⟧",
-            "\u202D": "⟦LRO⟧",
-            "\u202E": "⟦RLO⟧",
-            "\u2060": "⟦WJ⟧",
-            "\u2066": "⟦LRI⟧",
-            "\u2067": "⟦RLI⟧",
-            "\u2068": "⟦FSI⟧",
-            "\u2069": "⟦PDI⟧",
-            "\uFEFF": "⟦BOM⟧",
-        };
-
-        result = result.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, (ch) => markers[ch] || `⟦U+${ch.charCodeAt(0).toString(16).toUpperCase()}⟧`);
-
-        result = result.replace(hiddenCharsRegex, "").replace(controlCharsRegex, "");
-
-        return result;
-    }
 
     private async _compileAndRunAsync() {
         if (this._preventReentrancy) {

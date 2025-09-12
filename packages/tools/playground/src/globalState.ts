@@ -5,7 +5,6 @@ import type { CompilationError } from "./components/errorDisplayComponent";
 import { Observable } from "@dev/core";
 import type { Nullable } from "@dev/core";
 import type { V2Runner } from "./tools/monaco/run/runner";
-import { CreateV2Runner } from "./tools/monaco/run/runner";
 
 export enum EditionMode {
     Desktop,
@@ -23,7 +22,7 @@ export class GlobalState {
     public readonly MobileSizeTrigger = 1024;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public SnippetServerUrl = "https://snippet.babylonjs.com";
-    public currentCode: string;
+    public currentCode!: string;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public getRunnable: () => Promise<V2Runner> = async () => {
@@ -32,7 +31,7 @@ export class GlobalState {
     currentRunner?: V2Runner | null;
 
     public language = Utilities.ReadStringFromStore("language", "JS");
-    public fpsElement: HTMLDivElement;
+    public fpsElement!: HTMLDivElement;
     public mobileDefaultMode = EditionMode.RenderingOnly;
     public runtimeMode = RuntimeMode.Editor;
     public currentSnippetTitle = "";

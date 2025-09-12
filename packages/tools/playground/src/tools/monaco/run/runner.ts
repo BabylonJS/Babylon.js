@@ -42,6 +42,40 @@ export type V2Runner = {
     dispose(): void;
 };
 
+function SanitizeCode(code: string): string {
+    let result = code.normalize("NFKC");
+
+    const hiddenCharsRegex = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
+    // eslint-disable-next-line no-control-regex
+    const controlCharsRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
+
+    // Visualizer markers for hidden characters
+    const markers: Record<string, string> = {
+        "\u200B": "⟦ZWSP⟧",
+        "\u200C": "⟦ZWNJ⟧",
+        "\u200D": "⟦ZWJ⟧",
+        "\u200E": "⟦LRM⟧",
+        "\u200F": "⟦RLM⟧",
+        "\u202A": "⟦LRE⟧",
+        "\u202B": "⟦RLE⟧",
+        "\u202C": "⟦PDF⟧",
+        "\u202D": "⟦LRO⟧",
+        "\u202E": "⟦RLO⟧",
+        "\u2060": "⟦WJ⟧",
+        "\u2066": "⟦LRI⟧",
+        "\u2067": "⟦RLI⟧",
+        "\u2068": "⟦FSI⟧",
+        "\u2069": "⟦PDI⟧",
+        "\uFEFF": "⟦BOM⟧",
+    };
+
+    result = result.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, (ch) => markers[ch] || `⟦U+${ch.charCodeAt(0).toString(16).toUpperCase()}⟧`);
+
+    result = result.replace(hiddenCharsRegex, "").replace(controlCharsRegex, "");
+
+    return result;
+}
+
 export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions, pipeline: TsPipeline): Promise<V2Runner> {
     const ts = {};
     const monaco = opts.monaco as typeof monacoNs;
@@ -192,7 +226,8 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
     }
 
     // Phase 1: per-file transpile (TS->JS) and shader wrapping
-    for (const [path, src] of Object.entries(manifest.files)) {
+    for (const [path, rawSrc] of Object.entries(manifest.files)) {
+        const src = SanitizeCode(rawSrc);
         if (/[.](wgsl|glsl|fx)$/i.test(path)) {
             compiled[path] = `export default ${JSON.stringify(src)};`;
             continue;
@@ -360,7 +395,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         // SOUND
         if (want.sound) {
             try {
-                const anyB = BABYLON as any;
+                const anyB = (window as any).BABYLON as any;
                 const opts = (engine as any).getCreationOptions?.();
                 if (!opts || opts.audioEngine !== false) {
                     anyB.AbstractEngine.audioEngine = anyB.AbstractEngine.AudioEngineFactory(
