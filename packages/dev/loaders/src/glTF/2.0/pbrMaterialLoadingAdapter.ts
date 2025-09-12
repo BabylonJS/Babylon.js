@@ -687,11 +687,21 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // ========================================
 
     /**
+     * Configures sheen for PBR material.
+     * Enables sheen and sets up proper configuration.
+     */
+    public configureFuzz(): void {
+        this._material.sheen.isEnabled = true;
+        this._material.sheen.useRoughnessFromMainTexture = false;
+        this._material.sheen.albedoScaling = true;
+    }
+
+    /**
      * Sets the sheen weight (mapped to PBR sheen.intensity).
      * Automatically enables sheen.
      * @param value The sheen weight value
      */
-    public set sheenWeight(value: number) {
+    public set fuzzWeight(value: number) {
         this._material.sheen.isEnabled = true;
         this._material.sheen.intensity = value;
     }
@@ -701,7 +711,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Automatically enables sheen.
      * @param value The sheen color as a Color3
      */
-    public set sheenColor(value: Color3) {
+    public set fuzzColor(value: Color3) {
         this._material.sheen.isEnabled = true;
         this._material.sheen.color = value;
     }
@@ -711,7 +721,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Automatically enables sheen.
      * @param value The sheen color texture or null
      */
-    public set sheenColorTexture(value: Nullable<BaseTexture>) {
+    public set fuzzColorTexture(value: Nullable<BaseTexture>) {
         this._material.sheen.isEnabled = true;
         this._material.sheen.texture = value;
     }
@@ -721,7 +731,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Automatically enables sheen.
      * @param value The sheen roughness value (0-1)
      */
-    public set sheenRoughness(value: number) {
+    public set fuzzRoughness(value: number) {
         this._material.sheen.isEnabled = true;
         this._material.sheen.roughness = value;
     }
@@ -731,7 +741,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Automatically enables sheen.
      * @param value The sheen roughness texture or null
      */
-    public set sheenRoughnessTexture(value: Nullable<BaseTexture>) {
+    public set fuzzRoughnessTexture(value: Nullable<BaseTexture>) {
         this._material.sheen.isEnabled = true;
         this._material.sheen.textureRoughness = value;
     }

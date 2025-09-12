@@ -80,20 +80,22 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
         const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
         const promises = new Array<Promise<any>>();
 
+        adapter.configureFuzz();
+
         // Set non-texture properties immediately
         const sheenColor = properties.sheenColorFactor !== undefined ? Color3.FromArray(properties.sheenColorFactor) : Color3.Black();
         const sheenRoughness = properties.sheenRoughnessFactor !== undefined ? properties.sheenRoughnessFactor : 0.0;
 
-        adapter.sheenWeight = 1; // KHR_materials_sheen assumes intensity of 1
-        adapter.sheenColor = sheenColor;
-        adapter.sheenRoughness = sheenRoughness;
+        adapter.fuzzWeight = 1; // KHR_materials_sheen assumes intensity of 1
+        adapter.fuzzColor = sheenColor;
+        adapter.fuzzRoughness = sheenRoughness;
 
         // Load textures
         if (properties.sheenColorTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/sheenColorTexture`, properties.sheenColorTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Sheen Color)`;
-                    adapter.sheenColorTexture = texture;
+                    adapter.fuzzColorTexture = texture;
                 })
             );
         }
@@ -103,7 +105,7 @@ export class KHR_materials_sheen implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/sheenRoughnessTexture`, properties.sheenRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Sheen Roughness)`;
-                    adapter.sheenRoughnessTexture = texture;
+                    adapter.fuzzRoughnessTexture = texture;
                 })
             );
         }

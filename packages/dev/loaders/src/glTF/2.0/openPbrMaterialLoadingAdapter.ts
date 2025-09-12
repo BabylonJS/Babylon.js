@@ -668,53 +668,61 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets the sheen weight.
-     * TODO: Implementation pending OpenPBR sheen feature availability.
-     * @param value The sheen weight value
+     * Configures fuzz for OpenPBR.
+     * Enables fuzz and sets up proper configuration.
      */
-    public set sheenWeight(value: number) {
-        // TODO: Implement when OpenPBR sheen is available
-        // this._material.sheenWeight = value;
+    public configureFuzz(): void {
+        // Currently no setup to do for OpenPBR
     }
 
     /**
-     * Sets the sheen color.
-     * TODO: Implementation pending OpenPBR sheen feature availability.
-     * @param value The sheen color as a Color3
+     * Sets the fuzz weight.
+     * TODO: Implementation pending OpenPBR fuzz feature availability.
+     * @param value The fuzz weight value
      */
-    public set sheenColor(value: Color3) {
-        // TODO: Implement when OpenPBR sheen is available
-        // this._material.sheenColor = value;
+    public set fuzzWeight(value: number) {
+        // TODO: Implement when OpenPBR fuzz is available
+        // this._material.fuzzWeight = value;
     }
 
     /**
-     * Sets the sheen color texture.
-     * TODO: Implementation pending OpenPBR sheen feature availability.
-     * @param value The sheen color texture or null
+     * Sets the fuzz color.
+     * TODO: Implementation pending OpenPBR fuzz feature availability.
+     * @param value The fuzz color as a Color3
      */
-    public set sheenColorTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR sheen is available
-        // this._material.sheenColorTexture = value;
+    public set fuzzColor(value: Color3) {
+        // TODO: Implement when OpenPBR fuzz is available
+        // this._material.fuzzColor = value;
     }
 
     /**
-     * Sets the sheen roughness.
-     * TODO: Implementation pending OpenPBR sheen feature availability.
-     * @param value The sheen roughness value (0-1)
+     * Sets the fuzz color texture.
+     * TODO: Implementation pending OpenPBR fuzz feature availability.
+     * @param value The fuzz color texture or null
      */
-    public set sheenRoughness(value: number) {
-        // TODO: Implement when OpenPBR sheen is available
-        // this._material.sheenRoughness = value;
+    public set fuzzColorTexture(value: Nullable<BaseTexture>) {
+        // TODO: Implement when OpenPBR fuzz is available
+        // this._material.fuzzColorTexture = value;
     }
 
     /**
-     * Sets the sheen roughness texture.
-     * TODO: Implementation pending OpenPBR sheen feature availability.
-     * @param value The sheen roughness texture or null
+     * Sets the fuzz roughness.
+     * TODO: Implementation pending OpenPBR fuzz feature availability.
+     * @param value The fuzz roughness value (0-1)
      */
-    public set sheenRoughnessTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR sheen is available
-        // this._material.sheenRoughnessTexture = value;
+    public set fuzzRoughness(value: number) {
+        // TODO: Implement when OpenPBR fuzz is available
+        // this._material.fuzzRoughness = value;
+    }
+
+    /**
+     * Sets the fuzz roughness texture.
+     * TODO: Implementation pending OpenPBR fuzz feature availability.
+     * @param value The fuzz roughness texture or null
+     */
+    public set fuzzRoughnessTexture(value: Nullable<BaseTexture>) {
+        // TODO: Implement when OpenPBR fuzz is available
+        // this._material.fuzzRoughnessTexture = value;
     }
 
     // ========================================

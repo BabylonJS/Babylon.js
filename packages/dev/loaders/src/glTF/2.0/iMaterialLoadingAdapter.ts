@@ -271,29 +271,34 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets the sheen weight (OpenPBR: sheenWeight, PBR: sheen.intensity)
+     * Configures initial settings for fuzz for material.
      */
-    sheenWeight: number;
+    configureFuzz(): void;
 
     /**
-     * Sets the sheen color (OpenPBR: sheenColor, PBR: sheen.color)
+     * Sets the fuzz weight (OpenPBR: fuzzWeight, PBR: fuzz.intensity)
      */
-    sheenColor: Color3;
+    fuzzWeight: number;
 
     /**
-     * Sets the sheen color texture (OpenPBR: sheenColorTexture, PBR: sheen.texture)
+     * Sets the fuzz color (OpenPBR: fuzzColor, PBR: fuzz.color)
      */
-    sheenColorTexture: Nullable<BaseTexture>;
+    fuzzColor: Color3;
 
     /**
-     * Sets the sheen roughness (OpenPBR: sheenRoughness, PBR: sheen.roughness)
+     * Sets the fuzz color texture (OpenPBR: fuzzColorTexture, PBR: fuzz.texture)
      */
-    sheenRoughness: number;
+    fuzzColorTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets the sheen roughness texture (OpenPBR: sheenRoughnessTexture, PBR: sheen.textureRoughness)
+     * Sets the fuzz roughness (OpenPBR: fuzzRoughness, PBR: fuzz.roughness)
      */
-    sheenRoughnessTexture: Nullable<BaseTexture>;
+    fuzzRoughness: number;
+
+    /**
+     * Sets the fuzz roughness texture (OpenPBR: fuzzRoughnessTexture, PBR: fuzz.textureRoughness)
+     */
+    fuzzRoughnessTexture: Nullable<BaseTexture>;
 
     // ========================================
     // ANISOTROPY
