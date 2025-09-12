@@ -1133,15 +1133,6 @@ export class GLTFLoader implements IGLTFLoader {
                 let babylonMaterial = this._defaultBabylonMaterialData[babylonDrawMode];
                 if (!babylonMaterial) {
                     babylonMaterial = this._createDefaultMaterial("__GLTFLoader._default", babylonDrawMode);
-                    promises.push(
-                        this._createMaterialAdapterAsync(babylonMaterial).then((adapter) => {
-                            adapter.transparencyAsAlphaCoverage = this._parent.transparencyAsCoverage;
-
-                            // Set default metallic and roughness values
-                            adapter.baseMetalness = 1.0;
-                            adapter.specularRoughness = 1.0;
-                        })
-                    );
                     this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
                     this._defaultBabylonMaterialData[babylonDrawMode] = babylonMaterial;
                 }
@@ -2325,7 +2316,16 @@ export class GLTFLoader implements IGLTFLoader {
         this._babylonScene._blockEntityCollection = false;
         babylonMaterial.fillMode = babylonDrawMode;
         babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_OPAQUE;
+        // Create the material adapter and set some default properties.
+        // We don't need to wait for the promise to resolve here.
+        void this._getOrCreateMaterialAdapterAsync(babylonMaterial).then((adapter) => {
+            adapter.transparencyAsAlphaCoverage = this._parent.transparencyAsCoverage;
 
+            // Set default metallic and roughness values
+            adapter.baseMetalness = 1.0;
+            adapter.specularRoughness = 1.0;
+            return adapter;
+        });
         return babylonMaterial;
     }
 
