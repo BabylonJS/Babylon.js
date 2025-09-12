@@ -186,6 +186,7 @@ export class LinesMesh extends Mesh {
         this._setMaterial(material);
         if (this.material) {
             this.material.fillMode = Material.LineListDrawMode;
+            (this.material as any).disableLighting = true;
         }
     }
 
@@ -351,3 +352,4 @@ export class InstancedLinesMesh extends InstancedMesh {
         return "InstancedLinesMesh";
     }
 }
+
