@@ -7,6 +7,96 @@ import { CreateTsShim } from "./tsService";
 
 type AddPathsFn = (spec: string, target: string) => void;
 
+// --- NEW: built-ins + blocklist ------------------------------------------------
+const NodeBuiltins = new Set([
+    "assert",
+    "buffer",
+    "console",
+    "constants",
+    "crypto",
+    "dns",
+    "domain",
+    "events",
+    "fs",
+    "http",
+    "http2",
+    "https",
+    "inspector",
+    "module",
+    "net",
+    "os",
+    "path",
+    "perf_hooks",
+    "process",
+    "punycode",
+    "querystring",
+    "readline",
+    "repl",
+    "stream",
+    "string_decoder",
+    "timers",
+    "tls",
+    "tty",
+    "url",
+    "util",
+    "v8",
+    "vm",
+    "worker_threads",
+    "zlib",
+]);
+
+// Packages that drag a Node-only tree or are pointless to ATA in-browser
+// Or pollute the namespace with non-modules
+const BlocklistBase = new Set([
+    "node",
+    "nodetypes",
+    "npm",
+    "npx",
+    "ts-node",
+    "typescript",
+    "ws",
+    "yargs",
+    "yargs-parser",
+    "@types/node",
+    "@types/node-globals",
+    "@types/node-fetch",
+    "@types/webpack-env",
+    "envify",
+    "source-map-support",
+    "source-map",
+    "bufferutil",
+    "utf-8-validate",
+    "fsevents",
+    "original-fs",
+    "graceful-fs",
+    "mock-fs",
+    "enhanced-resolve",
+    "memory-fs",
+    "pnpapi",
+    "jest-haste-map",
+    "metro-resolver",
+    "metro-source-map",
+    "react-native/Libraries/Core/InitializeCore",
+    "aws-sdk",
+    "firebase-admin",
+    "firebase-functions",
+    "assemblyscript",
+    "assemblyscript/asc",
+]);
+
+function IsNodeish(spec: string) {
+    return spec.startsWith("node:") || NodeBuiltins.has(spec);
+}
+function SanitizeSpecifier(s: string) {
+    s = s.replace(/^['"]|['"]$/g, "");
+    try {
+        s = decodeURIComponent(s);
+    } catch {
+        /* noop */
+    }
+    return s;
+}
+
 export class TypingsService {
     private _acquired = new Set<string>();
     private _failed = new Set<string>();
@@ -18,6 +108,9 @@ export class TypingsService {
 
     // ATA runner
     private _ata: ReturnType<typeof setupTypeAcquisition>;
+    private _ataInFlight = false;
+    private _ataSafetyTimer: number | undefined;
+    private _ata404s = 0;
 
     constructor(private _addPaths: AddPathsFn) {
         function toVfsUriFromAtaPath(path: string) {
@@ -36,6 +129,9 @@ export class TypingsService {
             if (/\/index\.d\.ts$/i.test(p)) {
                 return true;
             }
+            if (spec.includes("@types/node/")) {
+                return false; // never map node types as entry
+            }
             // scoped/unscoped "<spec>@<ver>/index.d.ts"
             const esc = spec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
             if (new RegExp(`^node_modules/(?:@types/)?${esc}(?:@[^/]+)?/index\\.d\\.ts$`, "i").test(p)) {
@@ -47,14 +143,68 @@ export class TypingsService {
         const ts = CreateTsShim({
             libNames: monaco.languages.typescript.typescriptDefaults.getCompilerOptions().lib ?? undefined,
         });
+
+        const fetcherAsync: (input: RequestInfo, init?: RequestInit) => Promise<Response> = async (input, init) => {
+            let url = typeof input === "string" ? input : input.url;
+
+            // jsDelivr resolve endpoint often sees quoted specs from upstream — strip them:
+            url = url.replace(/%22/g, ""); // remove encoded quotes
+            url = url.replace(/"([^"]+)"/g, "$1"); // belt-and-suspenders for unencoded quotes
+
+            // quick denylist: if it’s trying to resolve a node builtin, short-circuit
+            const m = url.match(/\/npm\/([^@/]+)@/);
+            if (m && IsNodeish(decodeURIComponent(m[1]))) {
+                this._ata404s++;
+                return new Response("builtin-ignored", { status: 404 });
+            }
+
+            // stop-the-bleed if we’ve seen too many 404s this run
+            if (this._ata404s >= 20) {
+                return new Response("too-many-404s", { status: 429 });
+            }
+
+            // timeout wrapper
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 8000);
+            try {
+                const res = await fetch(url, { ...(init ?? {}), signal: controller.signal });
+                if (res.status === 404) {
+                    this._ata404s++;
+                }
+                return res;
+            } catch {
+                // treat network failures as ignorable to keep ATA moving
+                return new Response("fetch-failed", { status: 520 });
+            } finally {
+                clearTimeout(timer);
+            }
+        };
         this._ata = setupTypeAcquisition({
             projectName: "pg",
             typescript: ts as any,
             logger: console,
+            fetcher: fetcherAsync as any,
             delegate: {
+                started: () => {
+                    this._ataInFlight = true;
+                    this._ata404s = 0;
+                    // safety: ensure UI can recover even if finished never fires
+                    clearTimeout(this._ataSafetyTimer);
+                    this._ataSafetyTimer = window.setTimeout(() => {
+                        this._ataInFlight = false;
+                    }, 15000);
+                },
+                progress: () => {
+                    /* optional UI hook */
+                },
+                finished: () => {
+                    this._ataInFlight = false;
+                    clearTimeout(this._ataSafetyTimer);
+                },
+
                 receivedFile: (code: string, path: string) => {
                     const spec = GuessSpecFromTypesPath(path);
-                    if (!spec || /\.json$/i.test(path)) {
+                    if (!spec || /\.json$/i.test(path) || path.includes("@types/node/")) {
                         return;
                     }
 
@@ -150,12 +300,26 @@ export class TypingsService {
             }
             this._addBareStub(raw);
             const { canonical } = NormalizeBareSpec(raw);
-            this._addPaths(raw, canonical); // keep your resolver mapping in sync (editor-only)
+            this._addPaths(raw, canonical);
         }
     }
 
     async acquireForAsync(sourceTexts: Set<string>) {
-        await this._ata(BuildSyntheticAtaEntry(sourceTexts));
+        if (this._ataInFlight) {
+            return;
+        }
+
+        const candidates = new Set(
+            Array.from(sourceTexts)
+                .map(SanitizeSpecifier)
+                .filter((s) => IsBare(s))
+                .filter((s) => !IsNodeish(s))
+                .filter((s) => !BlocklistBase.has(NormalizeBareSpec(s).basePkg))
+        );
+        if (candidates.size === 0) {
+            return;
+        }
+        await this._ata(BuildSyntheticAtaEntry(candidates));
     }
 
     private _addBareStub(spec: string) {

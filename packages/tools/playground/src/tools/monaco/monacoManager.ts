@@ -3,8 +3,9 @@
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import type { GlobalState } from "../../globalState";
 import { Utilities } from "../utilities";
-import { Observable } from "@dev/core";
+import { Logger, Observable } from "@dev/core";
 import { debounce } from "ts-debounce";
+import { v5 as uuidv5 } from "uuid";
 
 import { EditorHost } from "./editor/editorHost";
 import { FilesManager } from "./files/filesManager";
@@ -25,6 +26,7 @@ interface IRunConfig {
     options: V2RunnerOptions;
 }
 
+const NamespaceUUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
 /**
  *
  */
@@ -293,7 +295,7 @@ export class MonacoManager {
             importMapId: config.options.importMapId,
             runtime: config.options.runtime,
         });
-        return btoa(manifestStr + optionsStr).slice(0, 32);
+        return uuidv5(manifestStr + optionsStr, NamespaceUUID);
     }
 
     /**
@@ -322,7 +324,7 @@ export class MonacoManager {
                 err.message = `${path}:${line}:${column} ${message}`;
                 err.lineNumber = line;
                 err.columnNumber = column;
-                // this.globalState.onErrorObservable.notifyObservers(err);
+                this.globalState.onErrorObservable.notifyObservers(err);
             },
         };
 
@@ -460,32 +462,85 @@ export class MonacoManager {
             // Load templates
             await this._templates.loadAsync(initialCall);
 
-            // Setup TS pipeline with proper Babylon.js types
-            let libContent = "";
-            try {
-                // Try to get Babylon.js type definitions
-                const babylonTypesUrl = "https://preview.babylonjs.com/babylon.d.ts";
-                const response = await fetch(babylonTypesUrl);
-                if (response.ok) {
-                    libContent = await response.text();
+            const declarations = [
+                "https://preview.babylonjs.com/babylon.d.ts",
+                "https://preview.babylonjs.com/gui/babylon.gui.d.ts",
+                "https://preview.babylonjs.com/loaders/babylonjs.loaders.d.ts",
+                "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.d.ts",
+                "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.d.ts",
+                "https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.d.ts",
+                "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
+                "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
+                "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+                "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
+                "https://preview.babylonjs.com/addons/babylonjs.addons.d.ts",
+                "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",
+                "https://assets.babylonjs.com/generated/Assets.d.ts",
+            ];
+
+            // snapshot/version/local overrides
+            let snapshot = "";
+            if (window.location.search.indexOf("snapshot=") !== -1) {
+                snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
+                for (let i = 0; i < declarations.length; i++) {
+                    declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot);
                 }
-            } catch {
-                // Fallback to basic types if fetching fails
-                libContent = `
-declare namespace BABYLON {
-    export class Engine { constructor(canvas: HTMLCanvasElement, antialias?: boolean); }
-    export class Scene { constructor(engine: Engine); }
-    export class FreeCamera { constructor(name: string, position: Vector3, scene: Scene); setTarget(target: Vector3): void; attachControl(canvas: HTMLCanvasElement, noPreventDefault?: boolean): void; }
-    export class HemisphericLight { constructor(name: string, direction: Vector3, scene: Scene); intensity: number; }
-    export class Vector3 { constructor(x: number, y: number, z: number); static Zero(): Vector3; }
-    export namespace MeshBuilder {
-        export function CreateSphere(name: string, options: any, scene: Scene): any;
-        export function CreateGround(name: string, options: any, scene: Scene): any;
-    }
-}`;
             }
 
-            this._tsPipeline.setup(libContent, this.globalState.language as "JS" | "TS");
+            let version = "";
+            if (window.location.search.indexOf("version=") !== -1) {
+                version = window.location.search.split("version=")[1].split("&")[0];
+                for (let i = 0; i < declarations.length; i++) {
+                    declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version);
+                }
+            }
+
+            if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
+                for (let i = 0; i < declarations.length; i++) {
+                    declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", "//localhost:1337/");
+                }
+            }
+
+            if (
+                location.href.indexOf("BabylonToolkit") !== -1 ||
+                Utilities.ReadBoolFromStore("babylon-toolkit", false) ||
+                Utilities.ReadBoolFromStore("babylon-toolkit-used", false)
+            ) {
+                declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
+                declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
+            }
+
+            const timestamp = (typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__) || 0;
+            if (timestamp) {
+                for (let i = 0; i < declarations.length; i++) {
+                    if (declarations[i].indexOf("preview.babylonjs.com") !== -1) {
+                        declarations[i] = declarations[i] + "?t=" + timestamp;
+                    }
+                }
+            }
+
+            let libContent = "";
+            const responses = await Promise.all(declarations.map(async (d) => await fetch(d)));
+            const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
+            for (const response of responses) {
+                if (!response.ok) {
+                    const fallbackResponse = await fetch(response.url.replace("https://preview.babylonjs.com", fallbackUrl));
+                    if (fallbackResponse.ok) {
+                        libContent += await fallbackResponse.text();
+                    } else {
+                        Logger.Log(`missing declaration: ${response.url}`);
+                    }
+                } else {
+                    libContent += await response.text();
+                }
+            }
+            libContent += `
+interface Window { engine: BABYLON.Engine; canvas: HTMLCanvasElement; }
+declare var engine: BABYLON.Engine;
+declare var canvas: HTMLCanvasElement;
+        `;
+
+            this._tsPipeline.setup(libContent);
 
             // Register completion provider
             this._completions.register(this.globalState.language as "JS" | "TS", this._templates.templates);

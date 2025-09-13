@@ -42,6 +42,11 @@ export type V2Runner = {
     dispose(): void;
 };
 
+/**
+ * Sanitize and normalize code for processing
+ * @param code
+ * @returns
+ */
 function SanitizeCode(code: string): string {
     let result = code.normalize("NFKC");
 
@@ -50,6 +55,7 @@ function SanitizeCode(code: string): string {
     const controlCharsRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 
     // Visualizer markers for hidden characters
+    /* eslint-disable @typescript-eslint/naming-convention */
     const markers: Record<string, string> = {
         "\u200B": "⟦ZWSP⟧",
         "\u200C": "⟦ZWNJ⟧",
@@ -68,7 +74,7 @@ function SanitizeCode(code: string): string {
         "\u2069": "⟦PDI⟧",
         "\uFEFF": "⟦BOM⟧",
     };
-
+    /* eslint-enable @typescript-eslint/naming-convention */
     result = result.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, (ch) => markers[ch] || `⟦U+${ch.charCodeAt(0).toString(16).toUpperCase()}⟧`);
 
     result = result.replace(hiddenCharsRegex, "").replace(controlCharsRegex, "");
@@ -76,6 +82,13 @@ function SanitizeCode(code: string): string {
     return result;
 }
 
+/**
+ *
+ * @param manifest
+ * @param opts
+ * @param pipeline
+ * @returns
+ */
 export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions, pipeline: TsPipeline): Promise<V2Runner> {
     const ts = {};
     const monaco = opts.monaco as typeof monacoNs;

@@ -4,48 +4,50 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 /**
  *
  */
+
+const TsOptions: monaco.languages.typescript.CompilerOptions = {
+    allowJs: true,
+    allowSyntheticDefaultImports: true,
+    esModuleInterop: true,
+    module: monaco.languages.typescript.ModuleKind.ESNext,
+    moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+    resolvePackageJsonExports: true,
+    resolvePackageJsonImports: true,
+    target: monaco.languages.typescript.ScriptTarget.ES2020,
+    noEmit: false,
+    allowNonTsExtensions: true,
+    skipLibCheck: true,
+    strict: false,
+    baseUrl: "file:///pg/",
+    typeRoots: [],
+    isolatedModules: true,
+    experimentalDecorators: true,
+    emitDecoratorMetadata: false,
+    allowUmdGlobalAccess: true,
+    inlineSourceMap: true,
+    inlineSources: true,
+    sourceRoot: "file:///pg/",
+};
+
+const JsOptions: monaco.languages.typescript.CompilerOptions = {
+    ...TsOptions,
+    checkJs: false,
+    noImplicitAny: false,
+};
+/**
+ *
+ */
 export class TsPipeline {
     private _paths: Record<string, string[]> = {};
     private _extraLibUris = new Set<string>();
     private _setupDone = false;
 
-    setup(libContent: string, lang: "JS" | "TS") {
+    setup(libContent: string) {
         if (!this._setupDone) {
-            const tsOptions: monaco.languages.typescript.CompilerOptions = {
-                allowJs: true,
-                allowSyntheticDefaultImports: true,
-                esModuleInterop: true,
-                module: monaco.languages.typescript.ModuleKind.ESNext,
-                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-                resolvePackageJsonExports: true,
-                resolvePackageJsonImports: true,
-                target: monaco.languages.typescript.ScriptTarget.ES2020,
-                noEmit: false,
-                allowNonTsExtensions: true,
-                skipLibCheck: true,
-                strict: false,
-                baseUrl: "file:///pg/",
-                paths: this._paths,
-                typeRoots: [],
-                isolatedModules: true,
-                experimentalDecorators: true,
-                emitDecoratorMetadata: false,
-                allowUmdGlobalAccess: true,
-                inlineSourceMap: true,
-                inlineSources: true,
-                sourceRoot: "file:///pg/",
-                // If you ever use .tsx:
-                // jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
-            };
+            const options = { ...TsOptions, paths: this._paths };
+            const jsOptions = { ...JsOptions, paths: this._paths };
 
-            const jsOptions: monaco.languages.typescript.CompilerOptions = {
-                ...tsOptions,
-                allowJs: true,
-                checkJs: false,
-                noImplicitAny: false,
-            };
-
-            monaco.languages.typescript.typescriptDefaults.setCompilerOptions(tsOptions);
+            monaco.languages.typescript.typescriptDefaults.setCompilerOptions(options);
             monaco.languages.typescript.javascriptDefaults.setCompilerOptions(jsOptions);
 
             monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
@@ -72,18 +74,18 @@ declare module "*.fx"   { const content: string; export default content; }`;
         }
         this._paths[raw] = [canonical];
 
-        // Update both TypeScript and JavaScript configurations
-        const tsOptions = monaco.languages.typescript.typescriptDefaults.getCompilerOptions();
-        const jsOptions = monaco.languages.typescript.javascriptDefaults.getCompilerOptions();
-
         monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-            ...tsOptions,
-            paths: { ...(tsOptions.paths || {}), ...this._paths },
+            ...TsOptions,
+            paths: { ...this._paths },
         });
-
         monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
-            ...jsOptions,
-            paths: { ...(jsOptions.paths || {}), ...this._paths },
+            ...JsOptions,
+            paths: { ...this._paths },
+        });
+        monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+            noSemanticValidation: false,
+            noSyntaxValidation: false,
+            noSuggestionDiagnostics: false,
         });
     }
 
@@ -115,7 +117,15 @@ declare module "*.fx"   { const content: string; export default content; }`;
         return monaco.editor.createModel(code, "typescript", uri);
     }
 
-    async emitOneAsync(path: string): Promise<{ js: string; map?: string }> {
+    async emitOneAsync(path: string): Promise<{
+        /**
+         *
+         */
+        js: string /**
+         *
+         */;
+        map?: string;
+    }> {
         const clean = path.replace(/^\//, "");
         const uri = monaco.Uri.parse(`file:///pg/${clean}`);
         const wf = await monaco.languages.typescript.getTypeScriptWorker();

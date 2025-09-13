@@ -19,6 +19,7 @@
         "@svgr/webpack": "^7.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
+        "@types/uuid": "^10.0.0",
         "@typescript/ata": "^0.9.8",
         "copy-webpack-plugin": "^11.0.0",
         "css-loader": "^7.1.0",

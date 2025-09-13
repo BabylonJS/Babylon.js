@@ -6,7 +6,7 @@ import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
 
 import type { Nullable, Scene } from "@dev/core";
 
@@ -18,11 +18,6 @@ const InspectorV2ModulePromise = new URLSearchParams(window.location.search).has
 interface IRenderingComponentProps {
     globalState: GlobalState;
 }
-
-declare const Ammo: any;
-declare const Recast: any;
-declare const HavokPhysics: any;
-declare const HK: any;
 
 /**
  *
@@ -253,7 +248,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     await wgpu.initAsync();
                     engine = wgpu as any;
                 } catch (e) {
-                    // console.error("WebGPU creation failed; falling back to WebGL.", e);
+                    Logger.Warn("WebGPU not supported. Falling back to WebGL.");
                 }
             }
             if (!engine) {
@@ -265,13 +260,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             this._engine = engine as Engine;
-            (window as any).engine = this._engine; // optional, if other parts rely on it
+            (window as any).engine = this._engine;
             (window as any).canvas = canvas;
 
-            // Start render loop exactly like before
             (window as any).startRenderLoop(this._engine, canvas);
 
-            // Run the scene via the runnable
             let sceneResult: any = null;
             try {
                 sceneResult = await runner.run(this._engine, canvas);
