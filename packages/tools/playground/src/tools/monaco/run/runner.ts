@@ -1,10 +1,13 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable jsdoc/require-jsdoc */
 
+import { Logger } from "@dev/core";
 import type { ThinEngine, Scene } from "@dev/core";
 import type * as monacoNs from "monaco-editor/esm/vs/editor/editor.api";
 import * as lexer from "es-module-lexer";
 import type { TsPipeline } from "../ts/tsPipeline";
+import type { DirHandle } from "./localPackage";
+import { BuildLocalPackageImportMap } from "./localPackage";
 
 lexer.initSync();
 
@@ -254,6 +257,21 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         compiled[path] = code;
     }
 
+    // ------ Phase 1.5: map local packages (hot-read from disk) ------
+    const localHandles: Record<string, DirHandle> = (window as any).__PG_LOCAL_PKG_HANDLES__ || {};
+    const localImports: Record<string, string> = {};
+    for (const fullSpec of Object.keys(localHandles)) {
+        // safety: only accept “…@local”
+        if (!/@local$/.test(fullSpec)) {
+            continue;
+        }
+        try {
+            Object.assign(localImports, await BuildLocalPackageImportMap(fullSpec, localHandles[fullSpec]));
+        } catch (e) {
+            Logger.Warn("Failed to build local package import map for " + fullSpec);
+        }
+    }
+
     // Phase 2: rewrite imports to local spec keys or CDN
     const { parse } = lexer;
     const rewritten: Record<string, string> = {};
@@ -282,14 +300,16 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
 
             const isRel = spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/");
             let replacement = spec;
+            const normalized = normalizeForCdn(spec);
 
-            if (isRel) {
+            if (localImports[spec] || localImports[normalized]) {
+                replacement = localImports[spec] ?? localImports[normalized]!;
+            } else if (isRel) {
                 const target = pickActual(resolveRelative(path, spec).replace(/\\/g, "/"));
                 if (target) {
                     replacement = specKey(target);
                 }
             } else {
-                const normalized = normalizeForCdn(spec);
                 replacement = manifest.imports?.[spec] ?? manifest.imports?.[normalized] ?? cdnUrl(normalized);
             }
 
@@ -304,6 +324,10 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
     // Phase 3: Build import map and blob URLs
     const blobUrls: string[] = [];
     const imports: Record<string, string> = { ...(manifest.imports || {}) };
+    // seed local blobs first
+    for (const [k, v] of Object.entries(localImports)) {
+        imports[k] = v;
+    }
     for (const [path, code] of Object.entries(rewritten)) {
         const spec = specKey(path);
         const blob = new Blob([code], { type: "text/javascript" });

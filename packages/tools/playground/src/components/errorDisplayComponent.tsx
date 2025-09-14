@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 import type { Nullable } from "core/types";
@@ -8,34 +9,16 @@ interface IErrorDisplayComponentProps {
     globalState: GlobalState;
 }
 
-/**
- *
- */
 export class CompilationError {
-    /**
-     *
-     */
-    message:
+    message!:
         | string
         | {
-              /**
-               *
-               */
               messageText: string;
           };
-    /**
-     *
-     */
     lineNumber?: number;
-    /**
-     *
-     */
     columnNumber?: number;
 }
 
-/**
- *
- */
 export class ErrorDisplayComponent extends React.Component<
     IErrorDisplayComponentProps,
     {
@@ -71,7 +54,6 @@ export class ErrorDisplayComponent extends React.Component<
         if (!this.state.error) {
             return null;
         }
-        console.log("Error display", this.state.error);
         return (
             <div className="error-display" onClick={() => this._onClick()}>
                 {typeof this.state.error === "string" && this.state.error}

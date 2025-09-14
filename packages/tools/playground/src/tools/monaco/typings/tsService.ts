@@ -22,8 +22,6 @@ function CollectRefs(text: string, re: RegExp) {
     }
     return out;
 }
-
-// Optional: tell ATA which libs are already provided by Monaco so it won’t try to “download” them
 const DefaultLibNames = [
     "dom",
     "dom.iterable",

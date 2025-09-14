@@ -10,7 +10,18 @@ interface IWaitRingProps {
     globalState: GlobalState;
 }
 
-export class WaitRingComponent extends React.Component<IWaitRingProps, { isVisible: boolean }> {
+/**
+ *
+ */
+export class WaitRingComponent extends React.Component<
+    IWaitRingProps,
+    {
+        /**
+         *
+         */
+        isVisible: boolean;
+    }
+> {
     public constructor(props: IWaitRingProps) {
         super(props);
         this.state = { isVisible: true };

@@ -20,6 +20,9 @@ import { DefinitionService } from "./navigation/definitionService";
 import type { V2Manifest, V2RunnerOptions } from "./run/runner";
 import { CreateV2Runner } from "./run/runner";
 import { CompilationError } from "../../components/errorDisplayComponent";
+import { ParseSpec } from "./typings/utils";
+import { CodeLensService } from "./codeLens/codeLensProvider";
+import type { RequestLocalResolve } from "./typings/types";
 
 interface IRunConfig {
     manifest: V2Manifest;
@@ -34,15 +37,21 @@ export class MonacoManager {
     private _editorHost = new EditorHost();
     private _files = new FilesManager(() => (this.globalState.language === "JS" ? "javascript" : "typescript"));
     private _tsPipeline = new TsPipeline();
-    private _typings = new TypingsService((spec, target) => this._tsPipeline.addPathsFor(spec, target));
+    private _typings = new TypingsService(
+        (spec, target) => this._tsPipeline.addPathsFor(spec, target),
+        (resolveInfo) => this._onRequestLocalResolve(resolveInfo)
+    );
     private _templates = new TemplatesService();
     private _completions = new CompletionService();
     private _codeAnalysis = new CodeAnalysisService();
     private _definitions = new DefinitionService(this._files, (path) => this.switchActiveFile(path));
+    private _codeLens = new CodeLensService(async (fullSpec) => await this._resolveOneLocalAsync(fullSpec));
 
     private _hostElement!: HTMLDivElement;
     private _lastRunConfig: IRunConfig | null = null;
     private _lastRunConfigHash: string | null = null;
+
+    private _localPkgHandles = new Map<string, FileSystemDirectoryHandle>();
 
     public constructor(public globalState: GlobalState) {
         window.addEventListener("beforeunload", (evt) => {
@@ -398,6 +407,16 @@ export class MonacoManager {
         }
         this._editorHost.create(this._hostElement, lang);
 
+        // Key binding to run the PG code - ctrl/cmd + enter
+        this._editorHost.editor.addAction({
+            id: "pg.run",
+            label: "Run",
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+            // eslint-disable-next-line
+            run: () => {
+                this.globalState.onRunRequiredObservable.notifyObservers();
+            },
+        });
         const analyzeCodeDebounced = debounce(async () => {
             const model = this._editorHost.editor.getModel();
             if (model) {
@@ -544,6 +563,9 @@ declare var canvas: HTMLCanvasElement;
 
             // Register completion provider
             this._completions.register(this.globalState.language as "JS" | "TS", this._templates.templates);
+
+            // Register code lens
+            this._codeLens.register(this.globalState.language as "JS" | "TS");
 
             // Install definition provider
             this._definitions.installProvider();
@@ -754,4 +776,77 @@ export { Playground };`;
             .map((line) => (line.length > 0 ? indent + line : line))
             .join("\n");
     }
+
+    private async _resolveOneLocalAsync(fullSpec: string) {
+        const picked = await this._pickDirectoryAsync();
+        if (!picked) {
+            return;
+        }
+
+        this._localPkgHandles.set(fullSpec, picked.handle);
+        this._publishLocalHandlesToWindow();
+
+        await this._typings.mapLocalTypingsAsync(fullSpec, `${ParseSpec(fullSpec).name}@local`, picked.files);
+
+        this._syncBareImportStubs();
+    }
+
+    private _hasFsAccessApi(): boolean {
+        // @ts-expect-error: FS Access API
+        return !!window.showDirectoryPicker;
+    }
+
+    private async _pickDirectoryAsync(): Promise<{
+        dirName: string;
+        handle: FileSystemDirectoryHandle;
+        files: Array<{ path: string; content: string }>;
+    } | null> {
+        if (!this._hasFsAccessApi()) {
+            alert("Your browser does not support the File System Access API. Please use a compatible browser like Chrome or Edge.");
+            return null;
+        }
+
+        // @ts-expect-error: FS Access API
+        const handle: FileSystemDirectoryHandle = await window.showDirectoryPicker();
+
+        // Ask for (and cache) read permission so we can re-read at runtime
+        // @ts-expect-error request perms
+        const perm = await handle.requestPermission?.({ mode: "read" });
+        if (perm === "denied") {
+            return null;
+        }
+
+        const files: Array<{ path: string; content: string }> = [];
+        const skipDir = /^(node_modules|\.git|\.hg|\.svn|\.idea|\.vscode)$/i;
+
+        const walkAsync = async (dir: FileSystemDirectoryHandle, prefix = "") => {
+            // @ts-expect-error: .values() is not in TS lib yet
+            for await (const entry of dir.values()) {
+                if (entry.kind === "directory") {
+                    if (skipDir.test(entry.name)) {
+                        continue;
+                    }
+                    await walkAsync(entry as FileSystemDirectoryHandle, `${prefix}${entry.name}/`);
+                } else {
+                    const lower = entry.name.toLowerCase();
+                    if (!(lower.endsWith(".d.ts") || entry.name === "package.json")) {
+                        continue;
+                    }
+                    const file = await (entry as FileSystemFileHandle).getFile();
+                    files.push({ path: `${prefix}${entry.name}`, content: await file.text() });
+                }
+            }
+        };
+
+        await walkAsync(handle, "");
+        return { dirName: handle.name, handle, files };
+    }
+
+    private _publishLocalHandlesToWindow() {
+        (window as any).__PG_LOCAL_PKG_HANDLES__ = Object.fromEntries(this._localPkgHandles);
+    }
+
+    private _onRequestLocalResolve = (fullSpec: RequestLocalResolve) => {
+        Logger.Log("Requesting local package for: " + fullSpec.fullSpec);
+    };
 }

@@ -4,98 +4,9 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 import { setupTypeAcquisition } from "@typescript/ata";
 import { CreateTsShim } from "./tsService";
-
-type AddPathsFn = (spec: string, target: string) => void;
-
-// --- NEW: built-ins + blocklist ------------------------------------------------
-const NodeBuiltins = new Set([
-    "assert",
-    "buffer",
-    "console",
-    "constants",
-    "crypto",
-    "dns",
-    "domain",
-    "events",
-    "fs",
-    "http",
-    "http2",
-    "https",
-    "inspector",
-    "module",
-    "net",
-    "os",
-    "path",
-    "perf_hooks",
-    "process",
-    "punycode",
-    "querystring",
-    "readline",
-    "repl",
-    "stream",
-    "string_decoder",
-    "timers",
-    "tls",
-    "tty",
-    "url",
-    "util",
-    "v8",
-    "vm",
-    "worker_threads",
-    "zlib",
-]);
-
-// Packages that drag a Node-only tree or are pointless to ATA in-browser
-// Or pollute the namespace with non-modules
-const BlocklistBase = new Set([
-    "node",
-    "nodetypes",
-    "npm",
-    "npx",
-    "ts-node",
-    "typescript",
-    "ws",
-    "yargs",
-    "yargs-parser",
-    "@types/node",
-    "@types/node-globals",
-    "@types/node-fetch",
-    "@types/webpack-env",
-    "envify",
-    "source-map-support",
-    "source-map",
-    "bufferutil",
-    "utf-8-validate",
-    "fsevents",
-    "original-fs",
-    "graceful-fs",
-    "mock-fs",
-    "enhanced-resolve",
-    "memory-fs",
-    "pnpapi",
-    "jest-haste-map",
-    "metro-resolver",
-    "metro-source-map",
-    "react-native/Libraries/Core/InitializeCore",
-    "aws-sdk",
-    "firebase-admin",
-    "firebase-functions",
-    "assemblyscript",
-    "assemblyscript/asc",
-]);
-
-function IsNodeish(spec: string) {
-    return spec.startsWith("node:") || NodeBuiltins.has(spec);
-}
-function SanitizeSpecifier(s: string) {
-    s = s.replace(/^['"]|['"]$/g, "");
-    try {
-        s = decodeURIComponent(s);
-    } catch {
-        /* noop */
-    }
-    return s;
-}
+import { BlocklistBase } from "./constants";
+import type { AddPathsFn, RequestLocalResolve } from "./types";
+import { BasePackage, BuildSyntheticAtaEntry, CanonicalSpec, IsBare, IsNodeish, NormalizeVirtualPath, ParseSpec, SanitizeSpecifier } from "./utils";
 
 export class TypingsService {
     private _acquired = new Set<string>();
@@ -105,6 +16,12 @@ export class TypingsService {
     private _bareStubBySpec = new Map<string, { ts: monaco.IDisposable; js: monaco.IDisposable }>();
     private _currentBare = new Set<string>();
     private _entryMapped = new Set<string>();
+    private _versionsByBase = new Map<string, Set<string>>();
+    private _pinnedByBase = new Map<string, string>(); // base -> version
+    private _requestedNamesBySpec = new Map<string, Set<string>>();
+
+    // Local resolution support
+    private _pendingLocal = new Set<string>(); // fullSpec waiting to be mapped
 
     // ATA runner
     private _ata: ReturnType<typeof setupTypeAcquisition>;
@@ -112,32 +29,21 @@ export class TypingsService {
     private _ataSafetyTimer: number | undefined;
     private _ata404s = 0;
 
-    constructor(private _addPaths: AddPathsFn) {
+    constructor(
+        private _addPaths: AddPathsFn,
+        private _onRequestLocalResolve?: (req: RequestLocalResolve) => void
+    ) {
         function toVfsUriFromAtaPath(path: string) {
-            // put everything under file:///node_modules/...
+            // put everything under file:///...
             const clean = NormalizeVirtualPath(path); // you already have this
-            return `file:///node_modules/${clean}`;
+            return `file:///${clean}`;
         }
-        function isEntryForSpec(path: string, spec: string) {
+        function isEntryDts(path: string) {
             const p = NormalizeVirtualPath(path);
-            if (/\/@types\/[^/]+\/index\.d\.ts$/i.test(p)) {
-                return true;
+            if (/\/@types\/node\//i.test(p)) {
+                return false;
             }
-            if (/\/dist\/index\.d\.ts$/i.test(p)) {
-                return true;
-            }
-            if (/\/index\.d\.ts$/i.test(p)) {
-                return true;
-            }
-            if (spec.includes("@types/node/")) {
-                return false; // never map node types as entry
-            }
-            // scoped/unscoped "<spec>@<ver>/index.d.ts"
-            const esc = spec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            if (new RegExp(`^node_modules/(?:@types/)?${esc}(?:@[^/]+)?/index\\.d\\.ts$`, "i").test(p)) {
-                return true;
-            }
-            return false;
+            return /\/index\.d\.ts$/i.test(p);
         }
 
         const ts = CreateTsShim({
@@ -146,6 +52,40 @@ export class TypingsService {
 
         const fetcherAsync: (input: RequestInfo, init?: RequestInit) => Promise<Response> = async (input, init) => {
             let url = typeof input === "string" ? input : input.url;
+
+            if (url.includes("/npm/")) {
+                // scoped or unscoped, any version token
+                url = url.replace(/\/npm\/((?:@[^/]+\/)?[^@/]+)@([^/]+)@latest(?=\/|$)/, "/npm/$1@$2");
+            }
+
+            const pinVersionInUrl = (u: string) => {
+                // jsDelivr metadata endpoint
+                u = u.replace(/(\/v1\/package\/npm\/)((?:@[^/]+\/)?[^@/]+)@latest\b/gi, (m, pre, base) => {
+                    if (base.startsWith("@types/")) {
+                        return m;
+                    }
+                    const v = this._pinnedByBase.get(base);
+                    return v ? `${pre}${base}@${v}` : m;
+                });
+                // generic /npm/<pkg>[@ver]/...
+                u = u.replace(/(\/npm\/)((?:@[^/]+\/)?[^@/]+)(?:@([^/]+))?(?=\/|$)/gi, (m, pre, base, ver) => {
+                    if (base.startsWith("@types/")) {
+                        return m;
+                    }
+                    const v = this._pinnedByBase.get(base);
+                    if (!v) {
+                        return m;
+                    }
+                    // If no version or "latest", insert the pinned version
+                    if (!ver || ver.toLowerCase() === "latest") {
+                        return `${pre}${base}@${v}`;
+                    }
+                    return m;
+                });
+                return u;
+            };
+
+            url = pinVersionInUrl(url);
 
             // jsDelivr resolve endpoint often sees quoted specs from upstream — strip them:
             url = url.replace(/%22/g, ""); // remove encoded quotes
@@ -188,14 +128,10 @@ export class TypingsService {
                 started: () => {
                     this._ataInFlight = true;
                     this._ata404s = 0;
-                    // safety: ensure UI can recover even if finished never fires
                     clearTimeout(this._ataSafetyTimer);
                     this._ataSafetyTimer = window.setTimeout(() => {
                         this._ataInFlight = false;
-                    }, 15000);
-                },
-                progress: () => {
-                    /* optional UI hook */
+                    }, 10_000);
                 },
                 finished: () => {
                     this._ataInFlight = false;
@@ -203,15 +139,9 @@ export class TypingsService {
                 },
 
                 receivedFile: (code: string, path: string) => {
-                    const spec = GuessSpecFromTypesPath(path);
-                    if (!spec || /\.json$/i.test(path) || path.includes("@types/node/")) {
+                    // Ignore JSON and Node types
+                    if (!path || /\.json$/i.test(path) || path.includes("@types/node/")) {
                         return;
-                    }
-
-                    if (!this._acquired.has(spec)) {
-                        this._removeBareStub(spec);
-                        this._removeBareStub(spec + "/*");
-                        this._removeBareStubsForBase(spec);
                     }
 
                     const vuri = toVfsUriFromAtaPath(path);
@@ -219,12 +149,59 @@ export class TypingsService {
                     const d2 = monaco.languages.typescript.javascriptDefaults.addExtraLib(code, vuri);
                     this._typeLibDisposables.push(d1, d2);
 
-                    if (isEntryForSpec(path, spec) && !this._entryMapped.has(spec)) {
-                        const vdir = vuri.replace(/\/index\.d\.ts$/i, "");
-                        this._addPaths(spec, `${vdir}/index.d.ts`);
-                        this._addPaths(spec + "/*", `${vdir}/*`);
-                        this._entryMapped.add(spec);
-                        this._acquired.add(spec);
+                    if (!isEntryDts(path)) {
+                        return;
+                    }
+
+                    // Figure out which base package this file corresponds to:
+                    //   - If it's an @types package, map '@types/<name>' -> '<name>' base.
+                    //   - Else if path looks like '<name>@<ver>/index.d.ts', use that base.
+                    const clean = NormalizeVirtualPath(path);
+                    let base: string | null = null;
+
+                    // @types/foo[/...]/index.d.ts
+                    const typesMatch = clean.match(/(?:^|\/)@types\/([^/]+)\/index\.d\.ts$/i);
+                    if (typesMatch) {
+                        const name = typesMatch[1];
+                        // scoped dts publish as @types/<scope>__<name>
+                        if (name.includes("__")) {
+                            const [scope, pkg] = name.split("__");
+                            base = `@${scope}/${pkg}`;
+                        } else {
+                            base = name;
+                        }
+                    } else {
+                        // foo@1.2.3/index.d.ts or @scope/foo@1.2.3/index.d.ts or foo/index.d.ts
+                        const m = clean.match(/(?:^|\/)((?:@[^/]+\/)?[^/@]+)(?:@[^/]+)?\/index\.d\.ts$/i);
+                        if (m) {
+                            base = m[1];
+                        }
+                    }
+                    if (!base) {
+                        return;
+                    }
+
+                    const vers = this._versionsByBase.get(base);
+                    const vdir = vuri.replace(/\/index\.d\.ts$/i, "");
+
+                    if (vers && vers.size) {
+                        for (const fullSpec of vers) {
+                            this._removeBareStub(fullSpec);
+                            this._removeBareStub(fullSpec + "/*");
+
+                            this._addPaths(fullSpec, `${vdir}/index.d.ts`);
+                            this._addPaths(fullSpec + "/*", `${vdir}/*`);
+
+                            this._entryMapped.add(fullSpec);
+                            this._acquired.add(fullSpec);
+                        }
+                    } else {
+                        if (!this._entryMapped.has(base)) {
+                            this._addPaths(base, `${vdir}/index.d.ts`);
+                            this._addPaths(base + "/*", `${vdir}/*`);
+                            this._entryMapped.add(base);
+                            this._acquired.add(base);
+                        }
                     }
                 },
             },
@@ -244,46 +221,100 @@ export class TypingsService {
         this._currentBare.clear();
     }
 
-    private _removeBareStubsForBase(base: string) {
-        for (const key of Array.from(this._bareStubBySpec.keys())) {
-            if (key === base || key === base + "/*" || key.startsWith(base + "/")) {
-                this._removeBareStub(key);
-            }
+    private _rememberVersionedSpec(raw: string) {
+        const p = ParseSpec(raw);
+        const base = BasePackage(p);
+        if (!this._versionsByBase.has(base)) {
+            this._versionsByBase.set(base, new Set());
         }
+        this._versionsByBase.get(base)!.add(CanonicalSpec(p)); // store full (maybe versioned) spec
     }
 
     discoverBareImports(sourceTexts: string[]): Set<string> {
-        const fromRe = /\bfrom\s+['"]([^'"]+)['"]/g; // import ... from 'x'  | export ... from 'x'
-        const dynRe = /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g; // import('x')
-        const bareRe = /^\s*import\s+['"]([^'"]+)['"]/gm; // import 'x'
+        this._requestedNamesBySpec.clear();
 
         const specs = new Set<string>();
+
+        // import { A, B as C } from 'x'
+        const namedRe = /import\s*\{\s*([^}]+)\s*\}\s*from\s*['"]([^'"]+)['"]/g;
+        // import Default, { A } from 'x'
+        const mixedRe = /import\s+([A-Za-z_$][\w$]*)\s*,\s*\{\s*([^}]+)\s*\}\s*from\s*['"]([^'"]+)['"]/g;
+        // import Default from 'x'
+        const defRe = /import\s+([A-Za-z_$][\w$]*)\s*from\s*['"]([^'"]+)['"]/g;
+
+        // import ... from 'x'  | export ... from 'x'
+        const fromRe = /\bfrom\s+['"]([^'"]+)['"]/g;
+        // import('x')
+        const dynRe = /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
+        // import 'x'
+        const bareRe = /^\s*import\s+['"]([^'"]+)['"]/gm;
+
+        const remember = (specRaw: string, names: string[] = []) => {
+            const spec = specRaw.split(/[?#]/)[0].trim();
+            if (!IsBare(spec)) {
+                return;
+            }
+            specs.add(spec);
+
+            const key = CanonicalSpec(ParseSpec(spec)); // keep version if present
+            if (!names.length) {
+                return;
+            }
+            const set = this._requestedNamesBySpec.get(key) ?? new Set<string>();
+            for (const n of names) {
+                set.add(n);
+            }
+            this._requestedNamesBySpec.set(key, set);
+        };
+
+        const parseNamedList = (s: string) =>
+            s
+                .split(",")
+                .map((x) => x.trim())
+                .flatMap((x) => {
+                    // handle "X as Y" — add both X and Y (safe)
+                    const m = x.match(/^([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?$/i);
+                    return m ? (m[2] ? [m[1], m[2]] : [m[1]]) : [];
+                });
+
         for (const code of sourceTexts) {
             if (!code) {
                 continue;
             }
+
+            // collect specifiers first (for names)
+            for (const m of code.matchAll(mixedRe)) {
+                const def = m[1],
+                    list = m[2],
+                    spec = m[3];
+                remember.call(this, spec, [def, ...parseNamedList(list)]);
+            }
+            for (const m of code.matchAll(namedRe)) {
+                remember.call(this, m[2], parseNamedList(m[1]));
+            }
+            for (const m of code.matchAll(defRe)) {
+                remember.call(this, m[2], [m[1]]);
+            }
+
+            // also keep plain/bare specs
             for (const re of [fromRe, dynRe, bareRe]) {
                 re.lastIndex = 0;
                 for (const m of code.matchAll(re)) {
-                    const spec = (m[1] || "").trim();
-                    if (!IsBare(spec)) {
-                        continue;
-                    }
-                    specs.add(spec.split(/[?#]/)[0]); // strip ? and #
+                    remember.call(this, m[1]);
                 }
             }
         }
+
         return specs;
     }
 
     installBareImportStubs(bareSpecs: Set<string>) {
-        // remember what’s current (to drop stubs when real types arrive)
         this._currentBare.clear();
-        for (const s of bareSpecs) {
-            this._currentBare.add(NormalizeBareSpec(s).basePkg);
-        }
 
-        // Clear all existing stubs, then re-add only what we need now
+        // Rebuild version map for the current source set
+        this._versionsByBase.clear();
+
+        // Clear existing stubs first
         for (const [, d] of this._bareStubBySpec) {
             d.ts.dispose();
             d.js.dispose();
@@ -294,13 +325,44 @@ export class TypingsService {
             if (!IsBare(raw)) {
                 continue;
             }
-            // If we already fetched real types, no stub
-            if (this._acquired.has(NormalizeBareSpec(raw).basePkg)) {
+
+            const p = ParseSpec(raw);
+            const base = BasePackage(p);
+            const full = CanonicalSpec(p); // keeps version
+
+            if (p.version === "local") {
+                // Emit stubs so code keeps compiling while we wait.
+                if (!this._acquired.has(full)) {
+                    this._addBareStub(full);
+                }
+                // mark as pending + notify UI once
+                if (!this._entryMapped.has(full) && !this._pendingLocal.has(full)) {
+                    this._pendingLocal.add(full);
+                    this._onRequestLocalResolve?.({ base, fullSpec: full });
+                }
+                // Don’t add a fake path here; we’ll map after user picks a folder.
                 continue;
             }
-            this._addBareStub(raw);
-            const { canonical } = NormalizeBareSpec(raw);
-            this._addPaths(raw, canonical);
+
+            this._currentBare.add(base);
+            if (p.version) {
+                this._pinnedByBase.set(base, p.version);
+            }
+
+            this._rememberVersionedSpec(raw);
+
+            // If real types already arrived for this *exact* spec, skip stub
+            if (this._acquired.has(full)) {
+                continue;
+            }
+
+            // Add stub for the exact spec + wildcard
+            this._addBareStub(full);
+
+            // Map the exact spec to a versioned "virtual" entry (so TS can resolve imports immediately)
+            const vdir = `file:///${p.name}${p.version ? `@${p.version}` : ""}`;
+            this._addPaths(full, `${vdir}/index.d.ts`);
+            this._addPaths(full + "/*", `${vdir}/*`);
         }
     }
 
@@ -314,17 +376,111 @@ export class TypingsService {
                 .map(SanitizeSpecifier)
                 .filter((s) => IsBare(s))
                 .filter((s) => !IsNodeish(s))
-                .filter((s) => !BlocklistBase.has(NormalizeBareSpec(s).basePkg))
+                .filter((s) => !BlocklistBase.has(BasePackage(ParseSpec(s))))
         );
         if (candidates.size === 0) {
             return;
         }
-        await this._ata(BuildSyntheticAtaEntry(candidates));
+
+        const ataCandidates = new Set<string>();
+        for (const s of candidates) {
+            ataCandidates.add(BasePackage(ParseSpec(s))); // drop @version + subpath
+        }
+
+        await this._ata(BuildSyntheticAtaEntry(ataCandidates));
+    }
+
+    public async mapLocalTypingsAsync(fullSpec: string, dirName: string, files: Array<{ path: string; content: string }>) {
+        // Add each .d.ts file to Monaco
+        const disposables: monaco.IDisposable[] = [];
+        for (const f of files) {
+            // Normalize + build a stable virtual URI under file:///local/<pkg>@local/...
+            const clean = f.path.replace(/^\/+/, "").replace(/\\/g, "/");
+            const vuri = `file:///local/${dirName}/${clean}`;
+            disposables.push(monaco.languages.typescript.typescriptDefaults.addExtraLib(f.content, vuri));
+            disposables.push(monaco.languages.typescript.javascriptDefaults.addExtraLib(f.content, vuri));
+            this._typeLibDisposables.push(...disposables);
+        }
+
+        // Pick an entry d.ts: prefer package.json "types", else /index.d.ts at root, else first index.d.ts found
+        const pickEntry = () => {
+            const has = (p: string) => files.some((f) => f.path.replace(/\\/g, "/") === p);
+            // try root index
+            if (has("index.d.ts")) {
+                return "file:///local/" + dirName + "/index.d.ts";
+            }
+
+            // try package.json "types"
+            const pkgJson = files.find((f) => f.path.replace(/\\/g, "/") === "package.json");
+            if (pkgJson) {
+                try {
+                    const pkg = JSON.parse(pkgJson.content);
+                    if (typeof pkg.types === "string") {
+                        const t = ("file:///local/" + dirName + "/" + pkg.types.replace(/^\.\//, "")).replace(/\\/g, "/");
+                        return t;
+                    }
+                    if (typeof pkg.typings === "string") {
+                        const t = ("file:///local/" + dirName + "/" + pkg.typings.replace(/^\.\//, "")).replace(/\\/g, "/");
+                        return t;
+                    }
+                } catch {}
+            }
+
+            // fallback: first index.d.ts anywhere
+            const idx = files.find((f) => /(?:^|\/)index\.d\.ts$/i.test(f.path.replace(/\\/g, "/")));
+            if (idx) {
+                return "file:///local/" + dirName + "/" + idx.path.replace(/\\/g, "/");
+            }
+
+            // last resort: first .d.ts file
+            const any = files.find((f) => f.path.toLowerCase().endsWith(".d.ts"));
+            if (any) {
+                return "file:///local/" + dirName + "/" + any.path.replace(/\\/g, "/");
+            }
+
+            return null;
+        };
+
+        const entry = pickEntry();
+        if (!entry) {
+            throw new Error("Could not find any .d.ts to use as an entry.");
+        }
+
+        // Wire paths for both the base and the fullSpec, plus wildcards
+        const p = ParseSpec(fullSpec);
+        const base = BasePackage(p);
+        const vdir = entry.replace(/\/index\.d\.ts$/i, "").replace(/\.d\.ts$/i, ""); // if entry isn't index.d.ts we still map wildcard
+
+        this._removeBareStub(fullSpec);
+        this._removeBareStub(fullSpec + "/*");
+
+        this._addPaths(base, entry);
+        this._addPaths(base + "/*", vdir + "/*");
+
+        this._addPaths(fullSpec, entry);
+        this._addPaths(fullSpec + "/*", vdir + "/*");
+
+        this._entryMapped.add(base);
+        this._entryMapped.add(fullSpec);
+        this._acquired.add(base);
+        this._acquired.add(fullSpec);
+
+        this._pendingLocal.delete(fullSpec);
     }
 
     private _addBareStub(spec: string) {
-        // Allow both CJS/ESM syntaxes; also add a wildcard form for subpath imports
-        const text = `declare module "${spec}" { const _m: any; export = _m; }\n` + (spec.endsWith("/*") ? "" : `declare module "${spec}/*" { const _m: any; export = _m; }\n`);
+        const names = this._requestedNamesBySpec.get(spec) ?? this._requestedNamesBySpec.get(BasePackage(ParseSpec(spec))) ?? new Set<string>();
+
+        // ESM-friendly: default + requested names as `any`
+        let text = `declare module "${spec}" {\n  const __def: any;\n  export default __def;\n`;
+        for (const n of names) {
+            if (!n || !/^[A-Za-z_$][\w$]*$/.test(n)) {
+                continue;
+            }
+            text += `  export const ${n}: any;\n`;
+        }
+        text += `}\n`;
+
         const fname = `pg-bare/${spec.replace(/[^\w@/.-]/g, "_")}.d.ts`;
         const tsDisp = monaco.languages.typescript.typescriptDefaults.addExtraLib(text, fname);
         const jsDisp = monaco.languages.typescript.javascriptDefaults.addExtraLib(text, fname);
@@ -332,7 +488,7 @@ export class TypingsService {
 
         if (!spec.endsWith("/*")) {
             const w = `${spec}/*`;
-            const wText = `declare module "${w}" { const _m: any; export = _m; }\n`;
+            const wText = `declare module "${w}" { const __any: any; export default __any; }\n`;
             const wFname = `pg-bare/${w.replace(/[^\w@/.-]/g, "_")}.d.ts`;
             const wTs = monaco.languages.typescript.typescriptDefaults.addExtraLib(wText, wFname);
             const wJs = monaco.languages.typescript.javascriptDefaults.addExtraLib(wText, wFname);
@@ -348,103 +504,4 @@ export class TypingsService {
             this._bareStubBySpec.delete(spec);
         }
     }
-}
-
-// ---- helpers --------------------------------------------------------------
-
-function IsBare(spec: string) {
-    if (!spec) {
-        return false;
-    }
-    if (spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/") || spec.startsWith("__pg__/") || spec.startsWith("data:")) {
-        return false;
-    }
-    return true;
-}
-
-function NormalizeBareSpec(spec: string): { raw: string; canonical: string; basePkg: string } {
-    const raw = spec;
-    let s = spec.replace(/^npm:|^pkg:/, "");
-
-    // If a full URL, keep just the path (drop host) and strip query/hash
-    if (/^https?:\/\//i.test(s)) {
-        try {
-            const u = new URL(s);
-            s = u.pathname.replace(/^\/+/, "");
-        } catch {
-            /* noop */
-        }
-    }
-
-    // Drop version on the first pkg segment but keep subpath
-    const scoped = s.startsWith("@");
-    const parts = s.split("/");
-    const pkg = scoped ? parts.slice(0, 2).join("/") : parts[0];
-    const rest = scoped ? parts.slice(2) : parts.slice(1);
-    const pkgNoVer = pkg.replace(/@[^/]+$/, ""); // trailing @version → ""
-    const canonical = [pkgNoVer, ...rest].filter(Boolean).join("/");
-    const basePkg = pkgNoVer;
-    return { raw, canonical, basePkg };
-}
-
-function NormalizeVirtualPath(path: string) {
-    return path
-        .replace(/^\/node_modules\//, "")
-        .replace(/^\/+/, "")
-        .replace(/\?[^#]*$/, "")
-        .replace(/#[\s\S]*$/, "");
-}
-
-function GuessSpecFromTypesPath(p: string): string | null {
-    // Examples of p:
-    //   "@types/lodash/index.d.ts"
-    //   "lodash@4.17.21/index.d.ts"
-    //   "lodash-es@4.17.21/index.d.ts"
-    //   "@types/react/index.d.ts"
-    //   "@types/react-dom/client.d.ts"
-    //   "react@18.3.1/index.d.ts"
-    if (!p) {
-        return null;
-    }
-    p = p.replace(/^\/node_modules\//, "");
-    const clean = p.replace(/^\/+/, "");
-    const seg0 = clean.split("/")[0] || "";
-
-    if (seg0 === "@types") {
-        // @types/<name>[/...]
-        const after = clean.split("/").slice(1);
-        if (after.length === 0) {
-            return null;
-        }
-        const name = after[0];
-        // scoped dts are published as @types/<scope>__<name>
-        if (name.includes("__")) {
-            const [scope, pkg] = name.split("__");
-            return `@${scope}/${pkg}`;
-        }
-        return name;
-    }
-
-    // non-@types: "<pkg>@<ver>/..."
-    const first = seg0;
-    if (!first) {
-        return null;
-    }
-
-    if (first.startsWith("@")) {
-        // scoped: "@scope/name@x.y.z"
-        const m = first.match(/^(@[^/]+\/[^@/]+)(?:@[^/]+)?$/);
-        return m ? m[1] : null;
-    }
-    // unscoped: "name@x.y.z"
-    const m = first.match(/^([^@/]+)(?:@[^/]+)?$/);
-    return m ? m[1] : null;
-}
-
-function BuildSyntheticAtaEntry(bare: Set<string>) {
-    // ATA only needs to see bare specifiers; a tiny file is enough.
-    // Use side-effect imports to keep it minimal and order-stable.
-    return Array.from(bare)
-        .map((s) => `import "${s}";`)
-        .join("\n");
 }

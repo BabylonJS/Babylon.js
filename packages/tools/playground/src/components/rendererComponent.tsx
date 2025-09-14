@@ -271,6 +271,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             } catch (err) {
                 (window as any).handleException(err as Error);
                 this._preventReentrancy = false;
+                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
                 return;
             }
             if (!sceneResult) {
