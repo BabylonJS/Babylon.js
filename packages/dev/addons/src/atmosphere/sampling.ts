@@ -40,6 +40,15 @@ export const Sample2DRgbaToRef = <T extends IColor4Like>(
     result: T,
     normalizeFunc = (value: number) => value / 255.0
 ): T => {
+    if (widthPx <= 0 || heightPx <= 0) {
+        throw new Error("Sample2DRgbaToRef: widthPx and heightPx must be positive.");
+    }
+
+    const expectedLength = widthPx * heightPx * 4;
+    if (data.length < expectedLength) {
+        throw new Error(`Sample2DRgbaToRef: data length (${data.length}) is less than required (${expectedLength}).`);
+    }
+
     // Default to clamping behavior, but could support others.
     u = Clamp(u);
     v = Clamp(v);
