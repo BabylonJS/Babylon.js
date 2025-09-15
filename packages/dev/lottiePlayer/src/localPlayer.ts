@@ -1,3 +1,4 @@
+import type { Nullable } from "core/types";
 import type { AnimationConfiguration } from "./animationConfiguration";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
 import { DefaultConfiguration } from "./animationConfiguration";
@@ -11,10 +12,10 @@ import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
  * Once instance of this class can only be used to play a single animation. If you want to play multiple animations, create a new instance for each animation.
  */
 export class LocalPlayer {
-    private readonly _container: HTMLDivElement;
-    private readonly _animationSource: string | RawLottieAnimation;
-    private readonly _variables: Map<string, string>;
-    private readonly _configuration: Partial<AnimationConfiguration>;
+    private _container: Nullable<HTMLDivElement> = null;
+    private _animationSource: Nullable<string> | Nullable<RawLottieAnimation> = null;
+    private _variables: Nullable<Map<string, string>> = null;
+    private _configuration: Nullable<Partial<AnimationConfiguration>> = null;
 
     private _rawAnimation: RawLottieAnimation | undefined = undefined;
     private _scaleFactor: number = 1;
@@ -28,26 +29,31 @@ export class LocalPlayer {
 
     /**
      * Creates a new instance of the LottiePlayer.
+     */
+    public constructor() {}
+
+    /**
+     * Loads and plays a lottie animation.
      * @param container The HTMLDivElement to create the canvas in and render the animation on.
      * @param animationSource The URL of the Lottie animation file to be played, or a parsed Lottie JSON object.
      * @param variables Optional map of variables to replace in the animation file.
      * @param configuration Optional configuration object to customize the animation playback.
+     * @returns True if the animation is successfully set up to play, false if the animation couldn't play.
      */
-    public constructor(container: HTMLDivElement, animationSource: string | RawLottieAnimation, variables?: Map<string, string>, configuration?: Partial<AnimationConfiguration>) {
+    public async playAnimationAsync(
+        container: HTMLDivElement,
+        animationSource: string | RawLottieAnimation,
+        variables?: Map<string, string>,
+        configuration?: Partial<AnimationConfiguration>
+    ): Promise<boolean> {
+        if (this._playing || this._disposed) {
+            return false;
+        }
+
         this._container = container;
         this._animationSource = animationSource;
         this._variables = variables ?? new Map<string, string>();
         this._configuration = configuration ?? {};
-    }
-
-    /**
-     * Loads and plays a lottie animation.
-     * @returns True if the animation is successfully set up to play, false if the animation couldn't play.
-     */
-    public async playAnimationAsync(): Promise<boolean> {
-        if (this._playing || this._disposed) {
-            return false;
-        }
 
         // Load the animation from URL or use the provided parsed JSON
         if (typeof this._animationSource === "string") {
@@ -108,7 +114,7 @@ export class LocalPlayer {
             this._resizeDebounceHandle = null;
         }
 
-        if (this._canvas) {
+        if (this._container && this._canvas) {
             this._container.removeChild(this._canvas);
             this._canvas = null;
         }
@@ -117,7 +123,7 @@ export class LocalPlayer {
     }
 
     private _scheduleResizeUpdate(): void {
-        if (this._disposed || !this._canvas || !this._rawAnimation || this._animationController === null) {
+        if (this._disposed || !this._container || !this._canvas || !this._rawAnimation || this._animationController === null) {
             return;
         }
 
@@ -127,7 +133,7 @@ export class LocalPlayer {
 
         this._resizeDebounceHandle = window.setTimeout(() => {
             this._resizeDebounceHandle = null;
-            if (this._disposed || !this._canvas || !this._rawAnimation || this._animationController === null) {
+            if (this._disposed || !this._container || !this._canvas || !this._rawAnimation || this._animationController === null) {
                 return;
             }
 

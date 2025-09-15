@@ -2,13 +2,23 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
-            "title": "Lottie - Unparented Triangles (Web Worker, URL)",
-            "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=true",
+            "title": "Lottie - Unparented Triangles (Web Worker, URL, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=true&usePreWarm=false",
             "referenceImage": "triangles-noParents-worker-url.png"
         },
         {
-            "title": "Lottie - Unparented Triangles (Web Worker, JSON)",
-            "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=false",
+            "title": "Lottie - Unparented Triangles (Web Worker, URL, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=true&usePreWarm=true",
+            "referenceImage": "triangles-noParents-worker-url.png"
+        },
+        {
+            "title": "Lottie - Unparented Triangles (Web Worker, JSON, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=false&usePreWarm=false",
+            "referenceImage": "triangles-noParents-worker-json.png"
+        },
+        {
+            "title": "Lottie - Unparented Triangles (Web Worker, JSON, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_noParents_noCross.json&useWorker=true&useUrl=false&usePreWarm=true",
             "referenceImage": "triangles-noParents-worker-json.png"
         },
         {
@@ -22,13 +32,23 @@
             "referenceImage": "triangles-noParents-main-json.png"
         },
         {
-            "title": "Lottie - Unparented Triangles with Cross (Web Worker, URL)",
-            "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=true",
+            "title": "Lottie - Unparented Triangles with Cross (Web Worker, URL, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=true&usePreWarm=false",
             "referenceImage": "triangles-noParents-cross-worker-url.png"
         },
         {
-            "title": "Lottie - Unparented Triangles with Cross (Web Worker, JSON)",
-            "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=false",
+            "title": "Lottie - Unparented Triangles with Cross (Web Worker, URL, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=true&usePreWarm=true",
+            "referenceImage": "triangles-noParents-cross-worker-url.png"
+        },
+        {
+            "title": "Lottie - Unparented Triangles with Cross (Web Worker, JSON, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=false&usePreWarm=false",
+            "referenceImage": "triangles-noParents-cross-worker-json.png"
+        },
+        {
+            "title": "Lottie - Unparented Triangles with Cross (Web Worker, JSON, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_noParents.json&useWorker=true&useUrl=false&usePreWarm=true",
             "referenceImage": "triangles-noParents-cross-worker-json.png"
         },
         {
@@ -42,13 +62,23 @@
             "referenceImage": "triangles-noParents-cross-main-json.png"
         },
         {
-            "title": "Lottie - Parented Triangles with Cross (Web Worker, URL)",
-            "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=true",
+            "title": "Lottie - Parented Triangles with Cross (Web Worker, URL, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=true&usePreWarm=false",
             "referenceImage": "triangles-redParent-cross-worker-url.png"
         },
         {
-            "title": "Lottie - Parented Triangles with Cross (Web Worker, JSON)",
-            "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=false",
+            "title": "Lottie - Parented Triangles with Cross (Web Worker, URL, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=true&usePreWarm=true",
+            "referenceImage": "triangles-redParent-cross-worker-url.png"
+        },
+        {
+            "title": "Lottie - Parented Triangles with Cross (Web Worker, JSON, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=false&usePreWarm=false",
+            "referenceImage": "triangles-redParent-cross-worker-json.png"
+        },
+        {
+            "title": "Lottie - Parented Triangles with Cross (Web Worker, JSON, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=triangles_redParent.json&useWorker=true&useUrl=false&usePreWarm=true",
             "referenceImage": "triangles-redParent-cross-worker-json.png"
         },
         {
@@ -62,13 +92,23 @@
             "referenceImage": "triangles-redParent-cross-main-json.png"
         },
         {
-            "title": "Lottie - Single Text (Web Worker, URL)",
-            "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=true",
+            "title": "Lottie - Single Text (Web Worker, URL, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=true&usePreWarm=false",
             "referenceImage": "text-worker-url.png"
         },
         {
-            "title": "Lottie - Single Text (Web Worker, JSON)",
-            "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=false",
+            "title": "Lottie - Single Text (Web Worker, URL, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=true&usePreWarm=true",
+            "referenceImage": "text-worker-url.png"
+        },
+        {
+            "title": "Lottie - Single Text (Web Worker, JSON, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=false&usePreWarm=false",
+            "referenceImage": "text-worker-json.png"
+        },
+        {
+            "title": "Lottie - Single Text (Web Worker, JSON, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=textTestFile.json&useWorker=true&useUrl=false&usePreWarm=true",
             "referenceImage": "text-worker-json.png"
         },
         {
@@ -82,13 +122,23 @@
             "referenceImage": "text-main-json.png"
         },
         {
-            "title": "Lottie - Triangles and Text (Web Worker, URL)",
-            "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=true",
+            "title": "Lottie - Triangles and Text (Web Worker, URL, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=true&usePreWarm=false",
             "referenceImage": "triangles-text-worker-url.png"
         },
         {
-            "title": "Lottie - Triangles and Text (Web Worker, JSON)",
-            "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=false",
+            "title": "Lottie - Triangles and Text (Web Worker, URL, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=true&usePreWarm=true",
+            "referenceImage": "triangles-text-worker-url.png"
+        },
+        {
+            "title": "Lottie - Triangles and Text (Web Worker, JSON, No Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=false&usePreWarm=false",
+            "referenceImage": "triangles-text-worker-json.png"
+        },
+        {
+            "title": "Lottie - Triangles and Text (Web Worker, JSON, Pre-Warm)",
+            "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=false&usePreWarm=true",
             "referenceImage": "triangles-text-worker-json.png"
         },
         {

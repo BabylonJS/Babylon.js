@@ -22,6 +22,10 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     const useUrlParam = searchParams.get("useurl");
     const useUrl = useUrlParam !== "false"; // Default to true if not specified
 
+    // Whether to use the file URL for the data or to parse the data in the devhost, defaults to true (use the file URL)
+    const usePreWarmParam = searchParams.get("useprewarm");
+    const usePrewarm = usePreWarmParam === "true"; // Default to false if not specified
+
     let animationData: RawLottieAnimation | undefined = undefined;
     if (!useUrl) {
         const data = await (await fetch(fileUrl)).text();
@@ -47,10 +51,15 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     // Create the player and play the animation
     if (useWorker) {
-        const player = new Player(div, useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration);
-        player.playAnimation();
+        const player = new Player();
+
+        if (usePrewarm) {
+            await player.preWarmPlayerAsync();
+        }
+
+        await player.playAnimationAsync(div, useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration);
     } else {
-        const player = new LocalPlayer(div, useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration);
-        await player.playAnimationAsync();
+        const player = new LocalPlayer();
+        await player.playAnimationAsync(div, useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration);
     }
 }
