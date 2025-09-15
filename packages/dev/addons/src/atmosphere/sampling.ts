@@ -31,7 +31,7 @@ const TmpColor4 = MakeTempColor4Like();
  * @param normalizeFunc - The function to normalize the texel values. Default is to divide by 255.
  * @returns The result color.
  */
-export const Sample2DRgbaToRef = <T extends IColor4Like>(
+export function Sample2DRgbaToRef<T extends IColor4Like>(
     u: number,
     v: number,
     widthPx: number,
@@ -39,7 +39,7 @@ export const Sample2DRgbaToRef = <T extends IColor4Like>(
     data: Uint8Array | Uint16Array | Float32Array,
     result: T,
     normalizeFunc = (value: number) => value / 255.0
-): T => {
+): T {
     if (widthPx <= 0 || heightPx <= 0) {
         throw new Error("Sample2DRgbaToRef: widthPx and heightPx must be positive.");
     }
@@ -83,7 +83,7 @@ export const Sample2DRgbaToRef = <T extends IColor4Like>(
     result.b = lowerLeftColor.b * w0 + lowerRightColor.b * w1 + upperLeftColor.b * w2 + upperRightColor.b * w3;
     result.a = lowerLeftColor.a * w0 + lowerRightColor.a * w1 + upperLeftColor.a * w2 + upperRightColor.a * w3;
     return result;
-};
+}
 
 /**
  * Fetches a texel from a 2D texture and stores the result in the given color.
