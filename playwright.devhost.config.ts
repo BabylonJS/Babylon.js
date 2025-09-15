@@ -25,10 +25,23 @@ export default defineConfig({
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: "on-first-retry",
         ignoreHTTPSErrors: true,
+        // Provide a baseURL so tests can use page.goto("/path") without hardcoding the host.
+        baseURL: process.env.BASE_URL || "http://localhost:1338",
     },
 
     globalSetup: browserType === "BrowserStack" ? require.resolve("./packages/tools/tests/globalSetup.ts") : undefined,
     globalTeardown: browserType === "BrowserStack" ? require.resolve("./packages/tools/tests/globalTeardown.ts") : undefined,
+
+    /* Start the dev host automatically before the tests.
+       Playwright will wait until the URL responds (HTTP 200/302) before executing tests. */
+    webServer: {
+        command: process.env.PW_DEVHOST_CMD || "npm run serve -w @tools/dev-host",
+        url: process.env.BASE_URL || "http://localhost:1338",
+        reuseExistingServer: !isCI,
+        timeout: 90_000,
+        stdout: "pipe",
+        stderr: "pipe",
+    },
 
     /* Project configuration */
     projects: getDevHostTestsList(),

@@ -2,7 +2,7 @@ import type { Nullable } from "core/types";
 import type { AnimationConfiguration } from "./animationConfiguration";
 import type { AnimationSizeMessagePayload, AnimationUrlMessage, ContainerResizeMessage, Message, StartAnimationMessage } from "./messageTypes";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
-import { CalculateScaleFactor } from "./rendering/animationController";
+import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
 import { BlobWorkerWrapper as Worker } from "./blobWorkerWrapper";
 
 /**
@@ -24,6 +24,8 @@ export class Player {
     private _animationHeight: number = 0;
     private _scaleFactor: number = 1;
     private _resizeObserver: Nullable<ResizeObserver> = null;
+    private _resizeDebounceHandle: number | null = null;
+    private _resizeDebounceMs: number = 1000 / 60; // Debounce resize updates to approximately 60 FPS
 
     /**
      * Creates a new instance of the LottiePlayer.
@@ -89,29 +91,12 @@ export class Player {
                 this._createPlayerAndStartAnimation(this._animationSource);
             }
 
-            window.addEventListener("resize", this._onWindowResize);
             window.addEventListener("beforeunload", this._onBeforeUnload);
 
             if ("ResizeObserver" in window) {
                 this._resizeObserver = new ResizeObserver(() => {
-                    if (this._disposed || !this._canvas || !this._worker) {
-                        return;
-                    }
-
-                    // The size of the canvas is the relation between the size of the container div and the size of the animation
-                    this._scaleFactor = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._container);
-                    this._canvas.style.width = `${this._animationWidth * this._scaleFactor}px`;
-                    this._canvas.style.height = `${this._animationHeight * this._scaleFactor}px`;
-
-                    const containerResizeMessage: ContainerResizeMessage = {
-                        type: "containerResize",
-                        payload: {
-                            scaleFactor: this._scaleFactor,
-                        },
-                    };
-                    this._worker.postMessage(containerResizeMessage);
+                    this._scheduleResizeUpdate();
                 });
-
                 this._resizeObserver.observe(this._container);
             }
 
@@ -125,12 +110,16 @@ export class Player {
      * Disposes the LottiePlayer instance, cleaning up resources and event listeners.
      */
     public dispose(): void {
-        window.removeEventListener("resize", this._onWindowResize);
         window.removeEventListener("beforeunload", this._onBeforeUnload);
 
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
             this._resizeObserver = null;
+        }
+
+        if (this._resizeDebounceHandle !== null) {
+            clearTimeout(this._resizeDebounceHandle);
+            this._resizeDebounceHandle = null;
         }
 
         this._onBeforeUnload();
@@ -190,21 +179,45 @@ export class Player {
         this._worker.postMessage(startAnimationMessage, [offscreen]);
     }
 
-    private _onWindowResize = () => {
-        if (this._disposed || !this._canvas || !this._worker) {
-            return;
-        }
-
-        const w = this._canvas.clientWidth;
-        const h = this._canvas.clientHeight;
-
-        this._worker.postMessage({ width: w, height: h });
-    };
-
     private _onBeforeUnload = () => {
         this._worker?.terminate();
         this._worker = null;
     };
+
+    private _scheduleResizeUpdate(): void {
+        if (this._disposed || !this._canvas || !this._worker) {
+            return;
+        }
+
+        if (this._animationWidth === 0 || this._animationHeight === 0) {
+            return; // Not initialized yet
+        }
+
+        if (this._resizeDebounceHandle !== null) {
+            clearTimeout(this._resizeDebounceHandle);
+        }
+
+        this._resizeDebounceHandle = window.setTimeout(() => {
+            this._resizeDebounceHandle = null;
+            if (this._disposed || !this._canvas || !this._worker) {
+                return;
+            }
+
+            const newScale = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._container);
+            if (this._scaleFactor !== newScale) {
+                this._scaleFactor = newScale;
+
+                this._canvas.style.width = `${this._animationWidth * newScale}px`;
+                this._canvas.style.height = `${this._animationHeight * newScale}px`;
+
+                const containerResizeMessage: ContainerResizeMessage = {
+                    type: "containerResize",
+                    payload: { scaleFactor: newScale },
+                };
+                this._worker.postMessage(containerResizeMessage);
+            }
+        }, this._resizeDebounceMs);
+    }
 }
 
 function IsRawLottieAnimation(x: unknown): x is RawLottieAnimation {
