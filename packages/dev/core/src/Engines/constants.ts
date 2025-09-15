@@ -266,9 +266,9 @@ export class Constants {
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37494;
     /** Compressed ETC2 (SRGB+A1)*/
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37495;
-    /** Compressed ETC2 (RGB+A) */
+    /** Compressed ETC2 (RGBA) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC = 37496;
-    /** Compressed ETC2 (SRGB+1) */
+    /** Compressed ETC2 (SRGB+A) */
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 37497;
 
     /** UNSIGNED_BYTE */
