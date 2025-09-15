@@ -3,7 +3,7 @@ import type { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { INode } from "../glTFLoaderInterfaces";
-import { AddObjectAccessorToKey } from "./objectModelMapping";
+import { AddObjectAccessor } from "./objectModelMapping";
 
 const NAME = "KHR_node_visibility";
 
@@ -19,7 +19,7 @@ declare module "../../glTFFileLoader" {
 }
 
 // object model extension for visibility
-AddObjectAccessorToKey("/nodes/{}/extensions/KHR_node_visibility/visible", {
+AddObjectAccessor("/nodes/{}/extensions/KHR_node_visibility/visible", {
     get: (node: INode) => {
         const tn = node._babylonTransformNode as any;
         if (tn && tn.isVisible !== undefined) {
@@ -59,16 +59,14 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
 
     private _loader: GLTFLoader;
 
-    /**
-     * @internal
-     */
+    /** @internal */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
-    public async onReady(): Promise<void> {
+    /** @internal */
+    public onReady(): void {
         this._loader.gltf.nodes?.forEach((node) => {
             node._primitiveBabylonMeshes?.forEach((mesh) => {
                 mesh.inheritVisibility = true;
