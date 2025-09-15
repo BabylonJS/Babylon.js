@@ -213,6 +213,14 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => (this.exposure = details.viewer.postProcessing.exposure)
         ),
         this._createPropertyBinding(
+            "ssao",
+            (details) => details.viewer.onPostProcessingChanged,
+            (details) => {
+                details.viewer.postProcessing = { ssao: this.ssao !== false };
+            },
+            (details) => (this.ssao = details.viewer.postProcessing.ssao)
+        ),
+        this._createPropertyBinding(
             "cameraAutoOrbit",
             (details) => details.viewer.onCameraAutoOrbitChanged,
             (details) => (details.viewer.cameraAutoOrbit = { enabled: this.cameraAutoOrbit }),
@@ -724,6 +732,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     @property()
     public exposure: Nullable<number> = this._options.postProcessing?.exposure ?? null;
+
+    /**
+     * Enables or disables screen space ambient occlusion (SSAO).
+     */
+    @property()
+    public ssao: boolean = this._options.postProcessing?.ssao ?? false;
 
     /**
      * The clear color (e.g. background color) for the viewer.
@@ -1350,6 +1364,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                             toneMapping: coerceToneMapping(viewerElement.getAttribute("tone-mapping")) ?? target.postProcessing?.toneMapping,
                                             contrast: coerceNumericAttribute(viewerElement.getAttribute("contrast")) ?? target.postProcessing?.contrast,
                                             exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? target.postProcessing?.exposure,
+                                            ssao: viewerElement.hasAttribute("ssao") || target.postProcessing?.ssao,
                                         };
                                     case "selectedMaterialVariant":
                                         return viewerElement.getAttribute("material-variant") ?? target.selectedMaterialVariant;
