@@ -3415,7 +3415,10 @@ export class ThinEngine extends AbstractEngine {
             }
         }
 
-        this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
+        if (texture.generateMipMaps && width === texture.width && height === texture.height) {
+            gl.texStorage2D(gl.TEXTURE_2D, Math.log2(width), internalFormat, width, height);
+        }
+        this._gl.compressedTexSubImage2D(target, lod, 0, 0, width, height, internalFormat, data);
     }
 
     /**
