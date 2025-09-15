@@ -116,8 +116,9 @@ export class LocalPlayer {
 
         if (this._container && this._canvas) {
             this._container.removeChild(this._canvas);
-            this._canvas = null;
         }
+
+        this._canvas = null;
 
         this._disposed = true;
     }
