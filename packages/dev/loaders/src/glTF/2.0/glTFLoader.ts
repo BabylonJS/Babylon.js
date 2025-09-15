@@ -18,6 +18,8 @@ import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { OpenPBRMaterialLoadingAdapter } from "./openPbrMaterialLoadingAdapter";
+import type { PBRMaterialLoadingAdapter } from "./pbrMaterialLoadingAdapter";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ITextureCreationOptions } from "core/Materials/Textures/texture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -229,6 +231,8 @@ export class GLTFLoader implements IGLTFLoader {
 
     /** @internal */
     public _pbrMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial | null = null;
+    /** @internal */
+    public _pbrMaterialAdapterClass: typeof OpenPBRMaterialLoadingAdapter | typeof PBRMaterialLoadingAdapter | null = null;
 
     /**
      * The default glTF sampler.
@@ -318,10 +322,10 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns Promise that resolves to the appropriate adapter
      * @internal
      */
-    public async _getOrCreateMaterialAdapterAsync(material: Material): Promise<IMaterialLoadingAdapter> {
+    public _getOrCreateMaterialAdapter(material: Material): IMaterialLoadingAdapter {
         let adapter = this._materialAdapterCache.get(material);
         if (!adapter) {
-            adapter = await this._createMaterialAdapterAsync(material);
+            adapter = this._createMaterialAdapter(material);
             this._materialAdapterCache.set(material, adapter);
         }
         return adapter;
@@ -343,18 +347,11 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns Promise that resolves to the appropriate adapter
      * @internal
      */
-    private async _createMaterialAdapterAsync(material: Material): Promise<IMaterialLoadingAdapter> {
-        const materialClassName = material.getClassName();
-        if (materialClassName === "OpenPBRMaterial") {
-            // Dynamically import OpenPBR adapter only when needed
-            const { OpenPBRMaterialLoadingAdapter } = await import("./openPbrMaterialLoadingAdapter");
-            return new OpenPBRMaterialLoadingAdapter(material);
-        } else if (materialClassName === "PBRMaterial") {
-            // Dynamically import PBR adapter only when needed
-            const { PBRMaterialLoadingAdapter } = await import("./pbrMaterialLoadingAdapter");
-            return new PBRMaterialLoadingAdapter(material);
+    private _createMaterialAdapter(material: Material): IMaterialLoadingAdapter {
+        if (this._pbrMaterialAdapterClass) {
+            return new this._pbrMaterialAdapterClass(material);
         } else {
-            throw new Error(`Unsupported material type: ${materialClassName}`);
+            throw new Error(`Appropriate material adapter class not found`);
         }
     }
 
@@ -457,11 +454,15 @@ export class GLTFLoader implements IGLTFLoader {
                 await this._loadExtensionsAsync();
 
                 if (this.parent.useOpenPBR) {
-                    const mod = await import("core/Materials/PBR/openPbrMaterial");
-                    this._pbrMaterialClass = mod.OpenPBRMaterial;
+                    const materialAdapterModule = await import("./openPbrMaterialLoadingAdapter");
+                    this._pbrMaterialAdapterClass = materialAdapterModule.OpenPBRMaterialLoadingAdapter;
+                    const materialModule = await import("core/Materials/PBR/openPbrMaterial");
+                    this._pbrMaterialClass = materialModule.OpenPBRMaterial;
                 } else {
-                    const mod = await import("core/Materials/PBR/pbrMaterial");
-                    this._pbrMaterialClass = mod.PBRMaterial;
+                    const materialAdapterModule = await import("./pbrMaterialLoadingAdapter");
+                    this._pbrMaterialAdapterClass = materialAdapterModule.PBRMaterialLoadingAdapter;
+                    const materialModule = await import("core/Materials/PBR/pbrMaterial");
+                    this._pbrMaterialClass = materialModule.PBRMaterial;
                 }
 
                 const loadingToReadyCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.READY]}`;
@@ -2272,12 +2273,12 @@ export class GLTFLoader implements IGLTFLoader {
             const babylonMaterial = this.createMaterial(context, material, babylonDrawMode);
 
             // Create the adapter for this material immediately after creation
-            const adapterPromise = this._getOrCreateMaterialAdapterAsync(babylonMaterial);
+            this._getOrCreateMaterialAdapter(babylonMaterial);
 
             babylonData = {
                 babylonMaterial: babylonMaterial,
                 babylonMeshes: [],
-                promise: adapterPromise.then(() => this.loadMaterialPropertiesAsync(context, material, babylonMaterial)),
+                promise: this.loadMaterialPropertiesAsync(context, material, babylonMaterial),
             };
 
             material._data[babylonDrawMode] = babylonData;
@@ -2318,14 +2319,13 @@ export class GLTFLoader implements IGLTFLoader {
         babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_OPAQUE;
         // Create the material adapter and set some default properties.
         // We don't need to wait for the promise to resolve here.
-        void this._getOrCreateMaterialAdapterAsync(babylonMaterial).then((adapter) => {
-            adapter.transparencyAsAlphaCoverage = this._parent.transparencyAsCoverage;
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
+        adapter.transparencyAsAlphaCoverage = this._parent.transparencyAsCoverage;
 
-            // Set default metallic and roughness values
-            adapter.baseMetalness = 1.0;
-            adapter.specularRoughness = 1.0;
-            return adapter;
-        });
+        // Set default metallic and roughness values
+        adapter.baseMetalness = 1.0;
+        adapter.specularRoughness = 1.0;
+
         return babylonMaterial;
     }
 
