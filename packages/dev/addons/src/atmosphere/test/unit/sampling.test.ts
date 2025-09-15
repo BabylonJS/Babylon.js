@@ -12,19 +12,6 @@ const Red = { r: 1.0, g: 0.0, b: 0.0, a: 1.0 };
 const Green = { r: 0.0, g: 1.0, b: 0.0, a: 1.0 };
 const Blue = { r: 0.0, g: 0.0, b: 1.0, a: 1.0 };
 
-declare global {
-    namespace jest {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        interface Matchers<R> {
-            toBeApproxColor4Like(expected: IColor4Like, epsilon?: number): R;
-        }
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        interface Expect {
-            toBeApproxColor4Like(expected: IColor4Like, epsilon?: number): any;
-        }
-    }
-}
-
 expect.extend({
     toBeApproxColor4Like(received: IColor4Like, expected: IColor4Like) {
         const isEqual =
@@ -45,69 +32,69 @@ describe("textureSampler", () => {
 
         const result = { r: 0, g: 0, b: 0, a: 0 };
         Sample2DRgbaToRef(0.0, 0.0, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(Black);
+        (expect(result) as any).toBeApproxColor4Like(Black);
 
         Sample2DRgbaToRef(1.0, 0.25, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(Black);
+        (expect(result) as any).toBeApproxColor4Like(Black);
 
         Sample2DRgbaToRef(1.0, 0.375, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(DarkGrey);
+        (expect(result) as any).toBeApproxColor4Like(DarkGrey);
 
         Sample2DRgbaToRef(1.0, 0.5, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(Grey);
+        (expect(result) as any).toBeApproxColor4Like(Grey);
 
         Sample2DRgbaToRef(0.5, 0.5, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(Grey);
+        (expect(result) as any).toBeApproxColor4Like(Grey);
 
         Sample2DRgbaToRef(1.0, 1.0, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(White);
+        (expect(result) as any).toBeApproxColor4Like(White);
     });
     test("testVertical3x3", () => {
         const testData2x2 = new Float32Array([Black, Black, White, White, White, White, White, White, White].flatMap((x) => [x.r, x.g, x.b, x.a]));
 
         const result = { r: 0, g: 0, b: 0, a: 0 };
         Sample2DRgbaToRef(0.33333333333, 0.33333333333, 3, 3, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(Grey);
+        (expect(result) as any).toBeApproxColor4Like(Grey);
     });
     test("testHorizontal2x2", () => {
         const testData2x2 = new Float32Array([Black, White, Black, White].flatMap((x) => [x.r, x.g, x.b, x.a]));
 
         const result = { r: 0, g: 0, b: 0, a: 0 };
         Sample2DRgbaToRef(0.0, 0.0, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(Black);
+        (expect(result) as any).toBeApproxColor4Like(Black);
 
         Sample2DRgbaToRef(0.5, 1.0, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(Grey);
+        (expect(result) as any).toBeApproxColor4Like(Grey);
 
         Sample2DRgbaToRef(0.5, 0.5, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(Grey);
+        (expect(result) as any).toBeApproxColor4Like(Grey);
 
         Sample2DRgbaToRef(1.0, 1.0, 2, 2, testData2x2, result, (value) => value);
-        expect(result).toBeApproxColor4Like(White);
+        (expect(result) as any).toBeApproxColor4Like(White);
     });
     test("testDistinct2x2", () => {
         const data = new Float32Array([Red, Green, Blue, White].flatMap((x) => [x.r, x.g, x.b, x.a]));
 
         const result = { r: 0, g: 0, b: 0, a: 0 };
         Sample2DRgbaToRef(0.25, 0.25, 2, 2, data, result, (v) => v);
-        expect(result).toBeApproxColor4Like({ r: 1.0, g: 0.0, b: 0.0, a: 1 });
+        (expect(result) as any).toBeApproxColor4Like({ r: 1.0, g: 0.0, b: 0.0, a: 1 });
 
         Sample2DRgbaToRef(0.25, 0.75, 2, 2, data, result, (v) => v);
-        expect(result).toBeApproxColor4Like({ r: 0.0, g: 0.0, b: 1.0, a: 1 });
+        (expect(result) as any).toBeApproxColor4Like({ r: 0.0, g: 0.0, b: 1.0, a: 1 });
 
         Sample2DRgbaToRef(0.75, 0.25, 2, 2, data, result, (v) => v);
-        expect(result).toBeApproxColor4Like({ r: 0.0, g: 1.0, b: 0.0, a: 1 });
+        (expect(result) as any).toBeApproxColor4Like({ r: 0.0, g: 1.0, b: 0.0, a: 1 });
 
         Sample2DRgbaToRef(0.75, 0.75, 2, 2, data, result, (v) => v);
-        expect(result).toBeApproxColor4Like({ r: 1.0, g: 1.0, b: 1.0, a: 1 });
+        (expect(result) as any).toBeApproxColor4Like({ r: 1.0, g: 1.0, b: 1.0, a: 1 });
 
         Sample2DRgbaToRef(0.5, 0.5, 2, 2, data, result, (v) => v);
-        expect(result).toBeApproxColor4Like({ r: 0.5, g: 0.5, b: 0.5, a: 1 });
+        (expect(result) as any).toBeApproxColor4Like({ r: 0.5, g: 0.5, b: 0.5, a: 1 });
 
         Sample2DRgbaToRef(0.5, 0.0, 2, 2, data, result, (v) => v);
-        expect(result).toBeApproxColor4Like({ r: 0.5, g: 0.5, b: 0.0, a: 1 });
+        (expect(result) as any).toBeApproxColor4Like({ r: 0.5, g: 0.5, b: 0.0, a: 1 });
 
         Sample2DRgbaToRef(0.0, 0.5, 2, 2, data, result, (v) => v);
-        expect(result).toBeApproxColor4Like({ r: 0.5, g: 0.0, b: 0.5, a: 1 });
+        (expect(result) as any).toBeApproxColor4Like({ r: 0.5, g: 0.0, b: 0.5, a: 1 });
     });
 });
