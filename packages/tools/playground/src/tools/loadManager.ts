@@ -1,4 +1,4 @@
-import { DecodeBase64ToBinary } from "@dev/core";
+import { DecodeBase64ToBinary, Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 
@@ -38,6 +38,48 @@ export class LoadManager {
                 this._loadPlayground(id);
             }
         });
+
+        globalState.onLocalLoadRequiredObservable.add(async () => {
+            globalState.onDisplayWaitRingObservable.notifyObservers(true);
+            const json = await this._pickJsonFileAsync();
+            if (json) {
+                location.hash = "";
+                this._processJsonPayload(json);
+            } else {
+                globalState.onDisplayWaitRingObservable.notifyObservers(false);
+            }
+        });
+    }
+
+    private async _pickJsonFileAsync() {
+        try {
+            // Show native file picker
+            const [handle] = await (window as any).showOpenFilePicker({
+                types: [
+                    {
+                        description: "Playground JSON Files",
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        accept: { "application/json": [".json"] },
+                    },
+                ],
+                multiple: false,
+            });
+
+            // Get the file from the handle
+            const file = await handle.getFile();
+
+            // Read the file as text
+            const text = await file.text();
+
+            return text; // This is the raw JSON string
+        } catch (err) {
+            if (err.name === "AbortError") {
+                Logger.Warn("User canceled file selection");
+            } else {
+                Logger.Error("Error reading file:", err);
+            }
+            return null;
+        }
     }
 
     private _cleanHash() {
@@ -92,6 +134,77 @@ export class LoadManager {
         }
     }
 
+    private _processJsonPayload(data: string) {
+        if (data.indexOf("class Playground") !== -1) {
+            if (this.globalState.language === "JS") {
+                Utilities.SwitchLanguage("TS", this.globalState, true);
+            }
+        } else {
+            // If we're loading JS content and it's TS page
+            if (this.globalState.language === "TS") {
+                Utilities.SwitchLanguage("JS", this.globalState, true);
+            }
+        }
+
+        const snippet = JSON.parse(data);
+
+        // Check if title / descr / tags are already set
+        if (snippet.name != null && snippet.name != "") {
+            this.globalState.currentSnippetTitle = snippet.name;
+        } else {
+            this.globalState.currentSnippetTitle = "";
+        }
+
+        if (snippet.description != null && snippet.description != "") {
+            this.globalState.currentSnippetDescription = snippet.description;
+        } else {
+            this.globalState.currentSnippetDescription = "";
+        }
+
+        if (snippet.tags != null && snippet.tags != "") {
+            this.globalState.currentSnippetTags = snippet.tags;
+        } else {
+            this.globalState.currentSnippetTags = "";
+        }
+
+        // Extract code
+        const payload = JSON.parse(snippet.jsonPayload || snippet.payload);
+        let code: string = payload.code.toString();
+
+        if (payload.unicode) {
+            // Need to decode
+            const encodedData = payload.unicode;
+            const decoder = new TextDecoder("utf8");
+
+            code = decoder.decode((DecodeBase64ToBinary || DecodeBase64ToBinaryReproduced)(encodedData));
+        }
+
+        // check the engine
+        if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
+            // check if an engine is forced in the URL
+            const url = new URL(window.location.href);
+            const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
+            // get the current engine
+            const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
+            if (!engineInURL && currentEngine !== payload.engine) {
+                if (
+                    window.confirm(
+                        `The engine version in this playground (${payload.engine}) is different from the one you are currently using (${currentEngine}).
+Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
+                    )
+                ) {
+                    // we need to change the engine
+                    Utilities.StoreStringToStore("engineVersion", payload.engine, true);
+                    window.location.reload();
+                }
+            }
+        }
+
+        this.globalState.onCodeLoaded.notifyObservers(code);
+
+        this.globalState.onMetadataUpdatedObservable.notifyObservers();
+    }
+
     private _loadPlayground(id: string) {
         this.globalState.loadingCodeInProgress = true;
         try {
@@ -99,74 +212,7 @@ export class LoadManager {
             xmlHttp.onreadystatechange = () => {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
-                        if (xmlHttp.responseText.indexOf("class Playground") !== -1) {
-                            if (this.globalState.language === "JS") {
-                                Utilities.SwitchLanguage("TS", this.globalState, true);
-                            }
-                        } else {
-                            // If we're loading JS content and it's TS page
-                            if (this.globalState.language === "TS") {
-                                Utilities.SwitchLanguage("JS", this.globalState, true);
-                            }
-                        }
-
-                        const snippet = JSON.parse(xmlHttp.responseText);
-
-                        // Check if title / descr / tags are already set
-                        if (snippet.name != null && snippet.name != "") {
-                            this.globalState.currentSnippetTitle = snippet.name;
-                        } else {
-                            this.globalState.currentSnippetTitle = "";
-                        }
-
-                        if (snippet.description != null && snippet.description != "") {
-                            this.globalState.currentSnippetDescription = snippet.description;
-                        } else {
-                            this.globalState.currentSnippetDescription = "";
-                        }
-
-                        if (snippet.tags != null && snippet.tags != "") {
-                            this.globalState.currentSnippetTags = snippet.tags;
-                        } else {
-                            this.globalState.currentSnippetTags = "";
-                        }
-
-                        // Extract code
-                        const payload = JSON.parse(snippet.jsonPayload);
-                        let code: string = payload.code.toString();
-
-                        if (payload.unicode) {
-                            // Need to decode
-                            const encodedData = payload.unicode;
-                            const decoder = new TextDecoder("utf8");
-
-                            code = decoder.decode((DecodeBase64ToBinary || DecodeBase64ToBinaryReproduced)(encodedData));
-                        }
-
-                        // check the engine
-                        if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
-                            // check if an engine is forced in the URL
-                            const url = new URL(window.location.href);
-                            const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
-                            // get the current engine
-                            const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-                            if (!engineInURL && currentEngine !== payload.engine) {
-                                if (
-                                    window.confirm(
-                                        `The engine version in this playground (${payload.engine}) is different from the one you are currently using (${currentEngine}).
-Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
-                                    )
-                                ) {
-                                    // we need to change the engine
-                                    Utilities.StoreStringToStore("engineVersion", payload.engine, true);
-                                    window.location.reload();
-                                }
-                            }
-                        }
-
-                        this.globalState.onCodeLoaded.notifyObservers(code);
-
-                        this.globalState.onMetadataUpdatedObservable.notifyObservers();
+                        this._processJsonPayload(xmlHttp.responseText);
                     }
                 }
             };

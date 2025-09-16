@@ -850,18 +850,30 @@ export class Atmosphere implements IDisposable {
 
         {
             const renderingManager = scene.renderingManager;
-            renderingManager.getRenderingGroup(this._skyRenderingGroup);
-            renderingManager.getRenderingGroup(this._aerialPerspectiveRenderingGroup);
-            renderingManager.getRenderingGroup(this._globeAtmosphereRenderingGroup);
+            if (this._skyRenderingGroup >= 0) {
+                renderingManager.getRenderingGroup(this._skyRenderingGroup);
+            }
+            if (this._aerialPerspectiveRenderingGroup >= 0) {
+                renderingManager.getRenderingGroup(this._aerialPerspectiveRenderingGroup);
+            }
+            if (this._globeAtmosphereRenderingGroup >= 0) {
+                renderingManager.getRenderingGroup(this._globeAtmosphereRenderingGroup);
+            }
 
             // Mark all rendering groups as being "not empty" before rendering the corresponding targets.
             // This ensures onAfterRenderTargetsRenderObservable is called for empty groups,
             // which allows the atmosphere to be rendered even when the groups are otherwise empty e.g.,
             // a scene with only the atmosphere in it, and no other Meshes.
             this._onBeforeDrawPhaseObserver = scene.onBeforeDrawPhaseObservable.add(() => {
-                renderingManager.getRenderingGroup(this._skyRenderingGroup)._empty = false;
-                renderingManager.getRenderingGroup(this._aerialPerspectiveRenderingGroup)._empty = false;
-                renderingManager.getRenderingGroup(this._globeAtmosphereRenderingGroup)._empty = false;
+                if (this._skyRenderingGroup >= 0) {
+                    renderingManager.getRenderingGroup(this._skyRenderingGroup)._empty = false;
+                }
+                if (this._aerialPerspectiveRenderingGroup >= 0) {
+                    renderingManager.getRenderingGroup(this._aerialPerspectiveRenderingGroup)._empty = false;
+                }
+                if (this._globeAtmosphereRenderingGroup >= 0) {
+                    renderingManager.getRenderingGroup(this._globeAtmosphereRenderingGroup)._empty = false;
+                }
             });
 
             // Draw compositors after the respective rendering group.
@@ -873,15 +885,15 @@ export class Atmosphere implements IDisposable {
                 const groupId = group.renderingGroupId;
 
                 if (this._skyRenderingGroup === groupId) {
-                    this._drawSkyCompositor();
+                    this.drawSkyCompositor();
                 }
 
                 if (this._aerialPerspectiveRenderingGroup === groupId) {
-                    this._drawAerialPerspectiveCompositor();
+                    this.drawAerialPerspectiveCompositor();
                 }
 
                 if (this._globeAtmosphereRenderingGroup === groupId) {
-                    this._drawGlobeAtmosphereCompositor();
+                    this.drawGlobeAtmosphereCompositor();
                 }
             });
         }
@@ -1055,7 +1067,7 @@ export class Atmosphere implements IDisposable {
     /**
      * Draws the aerial perspective compositor using {@link EffectWrapper} and {@link EffectRenderer}.
      */
-    private _drawAerialPerspectiveCompositor(): void {
+    public drawAerialPerspectiveCompositor(): void {
         // Only works if we have a depth texture.
         if (this.depthTexture === null) {
             return;
@@ -1133,7 +1145,7 @@ export class Atmosphere implements IDisposable {
     /**
      * Draws the sky compositor using {@link EffectWrapper} and {@link EffectRenderer}.
      */
-    private _drawSkyCompositor(): void {
+    public drawSkyCompositor(): void {
         const isEnabled = this.isEnabled();
         if (!isEnabled) {
             return;
@@ -1192,7 +1204,7 @@ export class Atmosphere implements IDisposable {
     /**
      * Draws the globe atmosphere compositor using {@link EffectWrapper} and {@link EffectRenderer}.
      */
-    private _drawGlobeAtmosphereCompositor(): void {
+    public drawGlobeAtmosphereCompositor(): void {
         const isEnabled = this.isEnabled();
         if (!isEnabled) {
             return;
@@ -1319,7 +1331,7 @@ export class Atmosphere implements IDisposable {
         }
 
         if (this.uniformBuffer.useUbo) {
-            this._updateUniformBuffer();
+            this.updateUniformBuffer();
         }
 
         // Render the LUTs.
@@ -1379,17 +1391,16 @@ export class Atmosphere implements IDisposable {
         const name = uniformBuffer.name;
         uniformBuffer.bindToEffect(effect, name);
         if (uniformBuffer.useUbo) {
-            const engine = this.scene.getEngine();
-            engine.bindUniformBufferBase(uniformBuffer.getBuffer()!, effect._uniformBuffersNames[name], name);
+            uniformBuffer.bindUniformBuffer();
         } else {
-            this._updateUniformBuffer();
+            this.updateUniformBuffer();
         }
     }
 
     /**
      * Updates the atmosphere's uniform buffer.
      */
-    private _updateUniformBuffer(): void {
+    public updateUniformBuffer(): void {
         const physicalProperties = this._physicalProperties;
         const cameraAtmosphereVariables = this._cameraAtmosphereVariables;
         const ubo = this.uniformBuffer;

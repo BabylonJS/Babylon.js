@@ -646,8 +646,6 @@ vec4 renderMultiScattering(vec2 uv, sampler2D transmittanceLut) {
 
 #endif
 
-#if RENDER_SKY_VIEW
-
 float computeCosHorizonAngleFromZenith(float radius) {
 
     float sinAngleBetweenHorizonAndNadir = min(1., planetRadius / radius);
@@ -656,6 +654,8 @@ float computeCosHorizonAngleFromZenith(float radius) {
     return cosHorizonAngleFromZenith;
 
 }
+
+#if RENDER_SKY_VIEW
 
 void getSkyViewParametersFromUV(
     float radius,

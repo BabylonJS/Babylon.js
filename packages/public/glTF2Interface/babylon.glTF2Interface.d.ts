@@ -1389,6 +1389,37 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the EXT_lights_area extension
+     */
+
+    /** @internal */
+    const enum EXTLightsArea_LightShape {
+        RECT = "rect",
+        DISK = "disk"
+    }
+
+    /** @internal */
+    interface IEXTLightsArea_LightReference {
+        light: number;
+    }
+
+    /** @internal */
+    interface IEXTLightsArea_Light extends IChildRootProperty {
+        shape: EXTLightsArea_LightShape;
+        color?: number[];
+        intensity?: number;
+        type?: "area";
+        width?: number;
+        height?: number;
+        radius?: number;
+    }
+
+    /** @internal */
+    interface IEXTLightsArea {
+        lights: IEXTLightsArea_Light[];
+    }
+
+    /**
      * Interfaces for the KHR_interactivity extension
      */
     interface IKHRInteractivity {

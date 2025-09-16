@@ -56,6 +56,28 @@ export type ContainerResizeMessage = {
     payload: ContainerResizeMessagePayload;
 };
 
+/**
+ * Message that requests the worker to pre-warm (load necessary code).
+ * Main thread sends to Worker
+ */
+export type PreWarmMessage = {
+    /** The type of the message. */
+    type: "preWarm";
+    /** The payload of the message. */
+    payload: PreWarmMessagePayload;
+};
+
+/**
+ * Message that indicates the worker has finished loading and is ready.
+ * Worker sends to Main thread
+ */
+export type WorkerLoadedMessage = {
+    /** The type of the message. */
+    type: "workerLoaded";
+    /** The payload of the message. */
+    payload: WorkerLoadedMessagePayload;
+};
+
 /** Payload for the "animationUrl" message type. */
 export type AnimationUrlMessagePayload = {
     /** The URL of the animation to be loaded. */
@@ -90,12 +112,29 @@ export type ContainerResizeMessagePayload = {
     scaleFactor: number;
 };
 
+/** Payload for the "preWarm" message type */
+export type PreWarmMessagePayload = {};
+
+/** Payload for the "workerLoaded" message type */
+export type WorkerLoadedMessagePayload = {
+    /** Indicates whether the loading was successful */
+    success: boolean;
+    /** Optional error message if loading failed */
+    error?: string;
+};
+
 /**
  * Valid message types that can be sent between the main thread and the worker.
  */
-export type MessageType = "animationUrl" | "animationSize" | "startAnimation" | "containerResize";
+export type MessageType = "animationUrl" | "animationSize" | "startAnimation" | "containerResize" | "preWarm" | "workerLoaded";
 
 /**
  * Valid payload types that can be sent between the main thread and the worker.
  */
-export type MessagePayload = AnimationUrlMessagePayload | AnimationSizeMessagePayload | StartAnimationMessagePayload | ContainerResizeMessagePayload;
+export type MessagePayload =
+    | AnimationUrlMessagePayload
+    | AnimationSizeMessagePayload
+    | StartAnimationMessagePayload
+    | ContainerResizeMessagePayload
+    | PreWarmMessagePayload
+    | WorkerLoadedMessagePayload;
