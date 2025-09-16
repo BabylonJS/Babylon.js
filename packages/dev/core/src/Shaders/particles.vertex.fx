@@ -89,6 +89,7 @@ void main(void) {
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
 	vec2 cornerPos;
+	vec3 vPositionW;
 
 	cornerPos = (vec2(offset.x - 0.5, offset.y  - 0.5) - translationPivot) * size;
 
@@ -105,7 +106,7 @@ void main(void) {
 	vec3 yaxis = position - eyePosition;
 	yaxis.y = 0.;
 
-	vec3 vPositionW = rotate(normalize(yaxis), rotatedCorner);
+	vPositionW = rotate(normalize(yaxis), rotatedCorner);
 
 	vec3 viewPos = (view * vec4(vPositionW, 1.0)).xyz;
 #elif defined(BILLBOARDSTRETCHED)

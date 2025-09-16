@@ -90,6 +90,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
 	var cornerPos: vec2f;
+	var vPositionW: vec3f;
 
 	cornerPos = ( vec2f(input.offset.x - 0.5, input.offset.y  - 0.5) - uniforms.translationPivot) * input.size;
 
@@ -105,7 +106,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	var yaxis: vec3f = input.position - uniforms.eyePosition;
 	yaxis.y = 0.;
 
-	var vPositionW: vec3f = rotate(normalize(yaxis), rotatedCorner);
+	vPositionW = rotate(normalize(yaxis), rotatedCorner);
 
 	var viewPos: vec3f = (uniforms.view *  vec4f(vPositionW, 1.0)).xyz;
 #elif defined(BILLBOARDSTRETCHED)
