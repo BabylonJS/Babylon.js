@@ -2,7 +2,6 @@ import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { Color3 } from "core/Maths/math.color";
-import type { Vector2 } from "core/Maths/math.vector";
 
 /**
  * Interface for material loading adapters that provides a unified OpenPBR-like interface
@@ -13,6 +12,39 @@ export interface IMaterialLoadingAdapter {
      * Gets the underlying material
      */
     readonly material: Material;
+
+    /**
+     * Whether the material should be treated as unlit
+     */
+    isUnlit: boolean;
+
+    // ========================================
+    // CULLING PROPERTIES
+    // ========================================
+
+    /**
+     * Sets/gets the back face culling
+     */
+    backFaceCulling: boolean;
+
+    /**
+     * Sets/gets the two sided lighting
+     */
+    twoSidedLighting: boolean;
+
+    // ========================================
+    // ALPHA PROPERTIES
+    // ========================================
+
+    /**
+     * Sets/gets the alpha cutoff value (used for alpha test mode)
+     */
+    alphaCutOff: number;
+
+    /**
+     * Sets/gets whether to use alpha from albedo/base color texture
+     */
+    useAlphaFromAlbedoTexture: boolean;
 
     /**
      * Sets/Gets whether the transparency is treated as alpha coverage
@@ -109,34 +141,6 @@ export interface IMaterialLoadingAdapter {
     specularIor: number;
 
     // ========================================
-    // CULLING PROPERTIES
-    // ========================================
-
-    /**
-     * Sets/gets the back face culling
-     */
-    backFaceCulling: boolean;
-
-    /**
-     * Sets/gets the two sided lighting
-     */
-    twoSidedLighting: boolean;
-
-    // ========================================
-    // ALPHA PROPERTIES
-    // ========================================
-
-    /**
-     * Sets/gets the alpha cutoff value (used for alpha test mode)
-     */
-    alphaCutOff: number;
-
-    /**
-     * Sets/gets whether to use alpha from albedo/base color texture
-     */
-    useAlphaFromAlbedoTexture: boolean;
-
-    // ========================================
     // EMISSION PARAMETERS
     // ========================================
 
@@ -214,24 +218,19 @@ export interface IMaterialLoadingAdapter {
     coatDarkening: number;
 
     /**
+     * Sets the coat darkening texture (OpenPBR: coatDarkeningTexture, no PBR equivalent)
+     */
+    coatDarkeningTexture: Nullable<BaseTexture>;
+
+    /**
      * Sets/gets the coat roughness anisotropy (OpenPBR: coatRoughnessAnisotropy, PBR: clearCoat.anisotropy.intensity)
      */
     coatRoughnessAnisotropy: number;
 
     /**
-     * Sets/gets the coat roughness anisotropy texture (OpenPBR: coatRoughnessAnisotropyTexture, PBR: clearCoat.anisotropy.texture)
-     */
-    coatRoughnessAnisotropyTexture: Nullable<BaseTexture>;
-
-    /**
      * Sets the coat tangent angle for anisotropy (OpenPBR: geometryCoatTangentAngle, PBR: clearCoat.anisotropy.angle)
      */
     geometryCoatTangentAngle: number;
-
-    /**
-     * Sets the coat tangent vector for anisotropy (OpenPBR: geometryCoatTangent, calculated from coat anisotropy angle)
-     */
-    geometryCoatTangent: Vector2;
 
     /**
      * Sets the coat tangent texture for anisotropy (OpenPBR: geometryCoatTangentTexture, PBR: clearCoat.anisotropy.texture)
@@ -343,11 +342,6 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the anisotropy texture (OpenPBR: geometryTangentTexture, PBR: anisotropy.texture)
      */
     geometryTangentTexture: Nullable<BaseTexture>;
-
-    /**
-     * Sets the geometry tangent (OpenPBR: geometryTangent, calculated from anisotropy angle)
-     */
-    geometryTangent: Vector2;
 
     /**
      * Configures glTF-style anisotropy for OpenPBR materials

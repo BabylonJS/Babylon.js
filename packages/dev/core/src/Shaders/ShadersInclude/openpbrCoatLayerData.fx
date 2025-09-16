@@ -62,7 +62,9 @@ geometry_coat_tangent = vGeometryCoatTangent.rg;
     coat_roughness *= coatRoughnessFromTexture.r;
 #endif
 
-#ifdef COAT_ROUGHNESS_ANISOTROPY
+#if defined(GEOMETRY_COAT_TANGENT) && defined(COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE)
+    coat_roughness_anisotropy *= geometryCoatTangentFromTexture.b;
+#elif defined(COAT_ROUGHNESS_ANISOTROPY)
     coat_roughness_anisotropy *= coatRoughnessAnisotropyFromTexture;
 #endif
 
@@ -81,11 +83,11 @@ geometry_coat_tangent = vGeometryCoatTangent.rg;
 #endif
 
 #ifdef USE_GLTF_STYLE_ANISOTROPY
-    float baseAlpha = coat_roughness * coat_roughness;
+    float coatAlpha = coat_roughness * coat_roughness;
 
     // From glTF to OpenPBR
-    float roughnessT = mix(baseAlpha, 1.0, coat_roughness_anisotropy * coat_roughness_anisotropy);
-    float roughnessB = baseAlpha;
-    coat_roughness_anisotropy = 1.0 - roughnessB / max(roughnessT, 0.00001);
-    coat_roughness = sqrt(roughnessT / sqrt(2.0 / (1.0 + (1.0 - coat_roughness_anisotropy) * (1.0 - coat_roughness_anisotropy))));
+    float coatRoughnessT = mix(coatAlpha, 1.0, coat_roughness_anisotropy * coat_roughness_anisotropy);
+    float coatRoughnessB = coatAlpha;
+    coat_roughness_anisotropy = 1.0 - coatRoughnessB / max(coatRoughnessT, 0.00001);
+    coat_roughness = sqrt(coatRoughnessT / sqrt(2.0 / (1.0 + (1.0 - coat_roughness_anisotropy) * (1.0 - coat_roughness_anisotropy))));
 #endif

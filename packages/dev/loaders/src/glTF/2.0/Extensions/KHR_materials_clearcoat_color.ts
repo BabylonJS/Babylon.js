@@ -1,7 +1,5 @@
 /* eslint-disable github/no-then */
 import type { Nullable } from "core/types";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Color3 } from "core/Maths/math.color";
@@ -10,6 +8,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoatColor } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat_color";
 
@@ -78,12 +77,15 @@ export class KHR_materials_clearcoat_color implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
+
         const colorFactor = Color3.White();
-        let colorFactorTexture: Nullable<BaseTexture>;
 
         if (extension.clearcoatColorFactor !== undefined) {
             colorFactor.fromArray(extension.clearcoatColorFactor);
         }
+
+        adapter.coatColor = colorFactor;
 
         let texturePromise = Promise.resolve();
 
@@ -91,25 +93,11 @@ export class KHR_materials_clearcoat_color implements IGLTFLoaderExtension {
             (extension.clearcoatColorTexture as ITextureInfo).nonColorData = true;
             texturePromise = this._loader.loadTextureInfoAsync(`${context}/clearcoatColorTexture`, extension.clearcoatColorTexture).then((texture: BaseTexture) => {
                 texture.name = `${babylonMaterial.name} (Clearcoat Color)`;
-                colorFactorTexture = texture;
+                adapter.coatColorTexture = texture;
             });
         }
 
-        return texturePromise.then(() => {
-            if (this._loader.parent.useOpenPBR) {
-                const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
-                openpbrMaterial.coatColor = colorFactor;
-                if (colorFactorTexture) {
-                    openpbrMaterial.coatColorTexture = colorFactorTexture;
-                }
-            } else {
-                const pbrMaterial = babylonMaterial as PBRMaterial;
-                pbrMaterial.clearCoat.tintColor = colorFactor;
-                if (colorFactorTexture) {
-                    pbrMaterial.clearCoat.tintTexture = colorFactorTexture;
-                }
-            }
-        });
+        return texturePromise.then(() => {});
     }
 }
 

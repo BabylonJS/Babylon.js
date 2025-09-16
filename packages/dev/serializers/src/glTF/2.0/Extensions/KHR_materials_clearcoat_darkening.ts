@@ -61,19 +61,17 @@ export class KHR_materials_clearcoat_darkening implements IGLTFExporterExtension
                 coatDarkeningTexture = babylonMaterial.coatDarkeningTexture;
             }
             if (coatDarkeningFactor === null || (coatDarkeningFactor === 1.0 && coatDarkeningTexture === null)) {
-                resolve(node);
-                return;
+                return resolve(node);
             }
-
-            this._wasUsed = true;
 
             // This material must have the clearcoat extension already before
             // we can add the clearcoat darkening sub-extension
             const parentExt = node.extensions ? node.extensions["KHR_materials_clearcoat"] : null;
             if (!parentExt) {
-                resolve(node);
-                return;
+                return resolve(node);
             }
+
+            this._wasUsed = true;
 
             const coatDarkeningTextureInfo = this._exporter._materialExporter.getTextureInfo(coatDarkeningTexture);
 
@@ -89,7 +87,7 @@ export class KHR_materials_clearcoat_darkening implements IGLTFExporterExtension
             parentExt.extensions = parentExt.extensions || {};
             parentExt.extensions[NAME] = coatDarkeningInfo;
 
-            resolve(node);
+            return resolve(node);
         });
     }
 }

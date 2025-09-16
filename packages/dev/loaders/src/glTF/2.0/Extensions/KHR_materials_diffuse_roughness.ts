@@ -1,6 +1,4 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -8,7 +6,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Constants } from "core/Engines/constants";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_diffuse_roughness";
 
@@ -75,27 +73,20 @@ export class KHR_materials_diffuse_roughness implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadDiffuseRoughnessPropertiesAsync(context: string, properties: IKHRMaterialsDiffuseRoughness, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial) && !(babylonMaterial instanceof OpenPBRMaterial)) {
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
+        if (!adapter) {
             throw new Error(`${context}: Material type not supported`);
         }
 
         const promises = new Array<Promise<any>>();
 
-        if (babylonMaterial instanceof PBRMaterial) {
-            babylonMaterial.brdf.baseDiffuseModel = Constants.MATERIAL_DIFFUSE_MODEL_E_OREN_NAYAR;
-        }
-
-        if (properties.diffuseRoughnessFactor != undefined) {
-            babylonMaterial.baseDiffuseRoughness = properties.diffuseRoughnessFactor;
-        } else {
-            babylonMaterial.baseDiffuseRoughness = 0;
-        }
+        adapter.baseDiffuseRoughness = properties.diffuseRoughnessFactor ?? 0;
 
         if (properties.diffuseRoughnessTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseRoughnessTexture`, properties.diffuseRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse Roughness)`;
-                    babylonMaterial.baseDiffuseRoughnessTexture = texture;
+                    adapter.baseDiffuseRoughnessTexture = texture;
                 })
             );
         }

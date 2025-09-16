@@ -217,7 +217,7 @@
         // Calculate alpha along tangent and bitangent according to equation 21 in the OpenPBR spec.
         let alphaT = alphaG * sqrt(2.0f / (1.0f + (1.0f - geoInfo.anisotropy) * (1.0f - geoInfo.anisotropy)));
         let alphaB = (1.0f - geoInfo.anisotropy) * alphaT;
-        let modifiedAlphaG = mix(alphaG, alphaB, 0.95);
+        let modifiedAlphaG = alphaB;
         // _____________________________ 2D vs 3D Maps ________________________________
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
             var reflectionLOD: f32 = getLodFromAlphaG(reflectionMicrosurfaceInfos.x, modifiedAlphaG, geoInfo.NdotVUnclamped);

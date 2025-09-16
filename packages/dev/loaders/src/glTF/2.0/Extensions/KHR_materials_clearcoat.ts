@@ -7,6 +7,7 @@ import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { KHR_materials_clearcoat_darkening } from "./KHR_materials_clearcoat_darkening";
 import type { KHR_materials_clearcoat_color } from "./KHR_materials_clearcoat_color";
+import type { KHR_materials_clearcoat_anisotropy } from "./KHR_materials_clearcoat_anisotropy";
 import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat";
@@ -70,7 +71,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
                 throw new Error(`${context}: Material type not supported`);
             }
             promises.push(this._loadClearCoatPropertiesAsync(extensionContext, extension, babylonMaterial));
-            if (this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.KHR_materials_clearcoat_darkening) {
+            if (extension.extensions && extension.extensions.KHR_materials_clearcoat_darkening) {
                 let darkeningExtension = await registeredGLTFExtensions.get("KHR_materials_clearcoat_darkening")?.factory(this._loader);
                 darkeningExtension = darkeningExtension as KHR_materials_clearcoat_darkening;
                 if (darkeningExtension && darkeningExtension.enabled && darkeningExtension.loadMaterialPropertiesAsync) {
@@ -80,7 +81,17 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
                     }
                 }
             }
-            if (this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.KHR_materials_clearcoat_color) {
+            if (extension.extensions && extension.extensions.KHR_materials_clearcoat_anisotropy) {
+                let anisotropyExtension = await registeredGLTFExtensions.get("KHR_materials_clearcoat_anisotropy")?.factory(this._loader);
+                anisotropyExtension = anisotropyExtension as KHR_materials_clearcoat_anisotropy;
+                if (anisotropyExtension && anisotropyExtension.enabled && anisotropyExtension.loadMaterialPropertiesAsync) {
+                    const promise = anisotropyExtension.loadMaterialPropertiesAsync(extensionContext, extension as any, babylonMaterial);
+                    if (promise) {
+                        promises.push(promise);
+                    }
+                }
+            }
+            if (extension.extensions && extension.extensions.KHR_materials_clearcoat_color) {
                 let colorExtension = await registeredGLTFExtensions.get("KHR_materials_clearcoat_color")?.factory(this._loader);
                 colorExtension = colorExtension as KHR_materials_clearcoat_color;
                 if (colorExtension && colorExtension.enabled && colorExtension.loadMaterialPropertiesAsync) {

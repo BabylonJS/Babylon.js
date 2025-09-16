@@ -230,6 +230,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public SPECULAR_WEIGHT_IN_ALPHA = false;
     public SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = false;
     public SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
+    public COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
     public USE_GLTF_STYLE_ANISOTROPY = false;
 
     public ENVIRONMENTBRDF = false;
@@ -1090,6 +1091,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _useSpecularRoughnessAnisotropyFromTangentTexture = false;
+
+    /**
+     * Specifies if the material uses coat anisotropy weight read from the coat's geometry tangent texture's blue channel.
+     * This is for compatibility with glTF's clearcoat_anisotropy extension.
+     * @internal
+     */
+    public _useCoatRoughnessAnisotropyFromTangentTexture = false;
 
     /**
      * Assume the anisotropy data is stored in the format specified by
@@ -2417,6 +2425,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.SPECULAR_WEIGHT_IN_ALPHA = this._useSpecularWeightFromAlpha;
                 defines.SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = this._useSpecularWeightFromSpecularColorTexture;
                 defines.SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useSpecularRoughnessAnisotropyFromTangentTexture;
+                defines.COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useCoatRoughnessAnisotropyFromTangentTexture;
                 defines.ROUGHNESSSTOREINMETALMAPGREEN = this._useRoughnessFromMetallicTextureGreen;
                 defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallicFromMetallicTextureBlue;
 

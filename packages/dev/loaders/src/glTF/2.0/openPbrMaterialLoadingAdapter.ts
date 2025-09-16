@@ -3,7 +3,6 @@ import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { Color3 } from "core/Maths/math.color";
-import type { Vector2 } from "core/Maths/math.vector";
 import type { IMaterialLoadingAdapter } from "./iMaterialLoadingAdapter";
 
 /**
@@ -28,11 +27,106 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Whether the material should be treated as unlit
+     */
+    public get isUnlit(): boolean {
+        return this._material.unlit;
+    }
+
+    /**
+     * Sets whether the material should be treated as unlit
+     */
+    public set isUnlit(value: boolean) {
+        this._material.unlit = value;
+    }
+
+    // ========================================
+    // CULLING PROPERTIES
+    // ========================================
+
+    /**
+     * Sets whether back face culling is enabled.
+     * @param value True to enable back face culling
+     */
+    public set backFaceCulling(value: boolean) {
+        this._material.backFaceCulling = value;
+    }
+
+    /**
+     * Gets whether back face culling is enabled.
+     * @returns True if back face culling is enabled
+     */
+    public get backFaceCulling(): boolean {
+        return this._material.backFaceCulling;
+    }
+
+    /**
+     * Sets whether two-sided lighting is enabled.
+     * @param value True to enable two-sided lighting
+     */
+    public set twoSidedLighting(value: boolean) {
+        this._material.twoSidedLighting = value;
+    }
+
+    /**
+     * Gets whether two-sided lighting is enabled.
+     * @returns True if two-sided lighting is enabled
+     */
+    public get twoSidedLighting(): boolean {
+        return this._material.twoSidedLighting;
+    }
+
+    // ========================================
+    // ALPHA PROPERTIES
+    // ========================================
+
+    /**
+     * Sets the alpha cutoff value for alpha testing.
+     * Note: OpenPBR doesn't have a direct equivalent, so this is a no-op.
+     * @param value The alpha cutoff threshold (ignored for OpenPBR)
+     */
+    public set alphaCutOff(value: number) {
+        // OpenPBR doesn't have a direct equivalent, but could be implemented if needed
+    }
+
+    /**
+     * Gets the alpha cutoff value.
+     * @returns Default value of 0.5 (OpenPBR doesn't support this directly)
+     */
+    public get alphaCutOff(): number {
+        return 0.5; // Default value
+    }
+
+    /**
+     * Sets whether to use alpha from the base color texture.
+     * Note: OpenPBR handles this differently through the baseColorTexture alpha channel.
+     * @param value True to use alpha from albedo texture (handled automatically in OpenPBR)
+     */
+    public set useAlphaFromAlbedoTexture(value: boolean) {
+        // For OpenPBR this is handled differently via baseColorTexture alpha channel
+    }
+
+    /**
+     * Gets whether alpha is used from the albedo texture.
+     * @returns Always false for OpenPBR as it's handled automatically
+     */
+    public get useAlphaFromAlbedoTexture(): boolean {
+        return false;
+    }
+
+    /**
      * Gets whether the transparency is treated as alpha coverage.
      */
     public get transparencyAsAlphaCoverage(): boolean {
         // OpenPBR doesn't support treating transparency as alpha coverage.
         return false;
+    }
+
+    /**
+     * Sets/Gets whether the transparency is treated as alpha coverage
+     */
+    public set transparencyAsAlphaCoverage(value: boolean) {
+        // OpenPBR doesn't support treating transparency as alpha coverage.
     }
 
     // ========================================
@@ -289,80 +383,6 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     // ========================================
-    // CULLING PROPERTIES
-    // ========================================
-
-    /**
-     * Sets whether back face culling is enabled.
-     * @param value True to enable back face culling
-     */
-    public set backFaceCulling(value: boolean) {
-        this._material.backFaceCulling = value;
-    }
-
-    /**
-     * Gets whether back face culling is enabled.
-     * @returns True if back face culling is enabled
-     */
-    public get backFaceCulling(): boolean {
-        return this._material.backFaceCulling;
-    }
-
-    /**
-     * Sets whether two-sided lighting is enabled.
-     * @param value True to enable two-sided lighting
-     */
-    public set twoSidedLighting(value: boolean) {
-        this._material.twoSidedLighting = value;
-    }
-
-    /**
-     * Gets whether two-sided lighting is enabled.
-     * @returns True if two-sided lighting is enabled
-     */
-    public get twoSidedLighting(): boolean {
-        return this._material.twoSidedLighting;
-    }
-
-    // ========================================
-    // ALPHA PROPERTIES
-    // ========================================
-
-    /**
-     * Sets the alpha cutoff value for alpha testing.
-     * Note: OpenPBR doesn't have a direct equivalent, so this is a no-op.
-     * @param value The alpha cutoff threshold (ignored for OpenPBR)
-     */
-    public set alphaCutOff(value: number) {
-        // OpenPBR doesn't have a direct equivalent, but could be implemented if needed
-    }
-
-    /**
-     * Gets the alpha cutoff value.
-     * @returns Default value of 0.5 (OpenPBR doesn't support this directly)
-     */
-    public get alphaCutOff(): number {
-        return 0.5; // Default value
-    }
-
-    /**
-     * Sets whether to use alpha from the base color texture.
-     * Note: OpenPBR handles this differently through the baseColorTexture alpha channel.
-     * @param value True to use alpha from albedo texture (handled automatically in OpenPBR)
-     */
-    public set useAlphaFromAlbedoTexture(value: boolean) {
-        // For OpenPBR this is handled differently via baseColorTexture alpha channel
-    }
-
-    /**
-     * Gets whether alpha is used from the albedo texture.
-     * @returns Always false for OpenPBR as it's handled automatically
-     */
-    public get useAlphaFromAlbedoTexture(): boolean {
-        return false;
-    }
-
-    // ========================================
     // EMISSION PARAMETERS
     // ========================================
 
@@ -555,13 +575,19 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the coat darkening texture (OpenPBR: coatDarkeningTexture, no PBR equivalent)
+     */
+    public set coatDarkeningTexture(value: Nullable<BaseTexture>) {
+        this._material.coatDarkeningTexture = value;
+    }
+
+    /**
      * Sets the coat roughness anisotropy.
      * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
      * @param value The coat anisotropy intensity value
      */
     public set coatRoughnessAnisotropy(value: number) {
-        // TODO: Implement when OpenPBR coat anisotropy is available
-        // this._material.coatRoughnessAnisotropy = value;
+        this._material.coatRoughnessAnisotropy = value;
     }
 
     /**
@@ -570,30 +596,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns Currently returns 0 as coat anisotropy is not yet available
      */
     public get coatRoughnessAnisotropy(): number {
-        // TODO: Implement when OpenPBR coat anisotropy is available
-        // return this._material.coatRoughnessAnisotropy;
-        return 0;
-    }
-
-    /**
-     * Sets the coat roughness anisotropy texture.
-     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
-     * @param value The coat anisotropy texture or null
-     */
-    public set coatRoughnessAnisotropyTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR coat anisotropy is available
-        // this._material.coatRoughnessAnisotropyTexture = value;
-    }
-
-    /**
-     * Gets the coat roughness anisotropy texture.
-     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
-     * @returns Currently returns null as coat anisotropy is not yet available
-     */
-    public get coatRoughnessAnisotropyTexture(): Nullable<BaseTexture> {
-        // TODO: Implement when OpenPBR coat anisotropy is available
-        // return this._material.coatRoughnessAnisotropyTexture;
-        return null;
+        return this._material.coatRoughnessAnisotropy;
     }
 
     /**
@@ -602,18 +605,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The coat anisotropy rotation angle in radians
      */
     public set geometryCoatTangentAngle(value: number) {
-        // TODO: Implement when OpenPBR coat anisotropy is available
-        // this._material.geometryCoatTangentAngle = value;
-    }
-
-    /**
-     * Sets the coat tangent vector for anisotropy.
-     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
-     * @param value The coat tangent vector as a Vector2
-     */
-    public set geometryCoatTangent(value: Vector2) {
-        // TODO: Implement when OpenPBR coat anisotropy is available
-        // this._material.geometryCoatTangent = value;
+        this._material.geometryCoatTangentAngle = value;
     }
 
     /**
@@ -622,8 +614,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The coat anisotropy texture or null
      */
     public set geometryCoatTangentTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR coat anisotropy is available
-        // this._material.geometryCoatTangentTexture = value;
+        this._material.geometryCoatTangentTexture = value;
+        if (value) {
+            this._material._useCoatRoughnessAnisotropyFromTangentTexture = true;
+        }
     }
 
     /**
@@ -632,9 +626,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @returns Currently returns null as coat anisotropy is not yet available
      */
     public get geometryCoatTangentTexture(): Nullable<BaseTexture> {
-        // TODO: Implement when OpenPBR coat anisotropy is available
-        // return this._material.geometryCoatTangentTexture;
-        return null;
+        return this._material.geometryCoatTangentTexture;
     }
 
     // ========================================
@@ -852,14 +844,6 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public get geometryTangentTexture(): Nullable<BaseTexture> {
         return this._material.geometryTangentTexture;
-    }
-
-    /**
-     * Sets the geometry tangent vector directly.
-     * @param value The tangent vector as a Vector2
-     */
-    public set geometryTangent(value: Vector2) {
-        this._material.geometryTangent = value;
     }
 
     /**

@@ -3,11 +3,11 @@ import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoatDarkening } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat_darkening";
 
@@ -77,12 +77,15 @@ export class KHR_materials_clearcoat_darkening implements IGLTFLoaderExtension {
             throw new Error(`${context}: Material type not supported`);
         }
 
+        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
+
         let darkeningFactor = 1.0;
-        let darkeningFactorTexture: Nullable<BaseTexture>;
 
         if (extension.clearcoatDarkeningFactor !== undefined) {
             darkeningFactor = extension.clearcoatDarkeningFactor;
         }
+
+        adapter.coatDarkening = darkeningFactor;
 
         let texturePromise = Promise.resolve();
 
@@ -90,17 +93,11 @@ export class KHR_materials_clearcoat_darkening implements IGLTFLoaderExtension {
             (extension.clearcoatDarkeningTexture as ITextureInfo).nonColorData = true;
             texturePromise = this._loader.loadTextureInfoAsync(`${context}/clearcoatDarkeningTexture`, extension.clearcoatDarkeningTexture).then((texture: BaseTexture) => {
                 texture.name = `${babylonMaterial.name} (Clearcoat Darkening)`;
-                darkeningFactorTexture = texture;
+                adapter.coatDarkeningTexture = texture;
             });
         }
 
-        return texturePromise.then(() => {
-            const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
-            openpbrMaterial.coatDarkening = darkeningFactor;
-            if (darkeningFactorTexture) {
-                openpbrMaterial.coatDarkeningTexture = darkeningFactorTexture;
-            }
-        });
+        return texturePromise.then(() => {});
     }
 }
 

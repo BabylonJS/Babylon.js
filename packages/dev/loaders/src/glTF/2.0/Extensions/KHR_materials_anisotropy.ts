@@ -6,7 +6,6 @@ import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
-import { Vector2 } from "core/Maths/math.vector";
 
 const NAME = "KHR_materials_anisotropy";
 
@@ -83,11 +82,10 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
 
         adapter.specularRoughnessAnisotropy = anisotropyWeight;
         adapter.geometryTangentAngle = anisotropyAngle;
-        adapter.geometryTangent = new Vector2(Math.cos(anisotropyAngle), Math.sin(anisotropyAngle));
 
         // Check if this is glTF-style anisotropy
         const extensions = properties.extensions ?? {};
-        if (!extensions.EXT_materials_anisotropy_openpbr?.extensions.EXT_materials_anisotropy_openpbr) {
+        if (!extensions.EXT_materials_anisotropy_openpbr || !extensions.EXT_materials_anisotropy_openpbr.openPbrAnisotropyEnabled) {
             adapter.configureGltfStyleAnisotropy(true);
         }
 

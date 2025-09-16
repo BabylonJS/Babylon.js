@@ -13,6 +13,7 @@ export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_clearcoat";
 export * from "./KHR_materials_clearcoat_darkening";
 export * from "./KHR_materials_clearcoat_color";
+export * from "./KHR_materials_clearcoat_anisotropy";
 export * from "./KHR_materials_iridescence";
 export * from "./KHR_materials_anisotropy";
 export * from "./KHR_materials_emissive_strength";

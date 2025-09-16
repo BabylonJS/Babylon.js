@@ -126,7 +126,7 @@ async function CreateMergedAnisotropyTexture(babylonMaterial: OpenPBRMaterial): 
         rtTexture.setTexture("anisotropyTexture", anisoStrengthTexture);
         CopyTextureTransform(anisoStrengthTexture as Texture, rtTexture);
     }
-    // rtTexture.setInt("useAnisotropyFromTangentBlue", babylonMaterial._useCoatRoughnessAnisotropyFromTangentTexture ? 1 : 0);
+    rtTexture.setInt("useAnisotropyFromTangentBlue", babylonMaterial._useCoatRoughnessAnisotropyFromTangentTexture ? 1 : 0);
     rtTexture.defines = defines;
 
     return await new Promise<ProceduralTexture>((resolve, reject) => {
@@ -201,9 +201,14 @@ export class KHR_materials_clearcoat_anisotropy implements IGLTFExporterExtensio
         return new Promise((resolve) => {
             if (babylonMaterial instanceof OpenPBRMaterial) {
                 if (babylonMaterial.coatRoughnessAnisotropy > 0) {
-                    this._wasUsed = true;
-
+                    // This material must have the clearcoat extension already before
+                    // we can add the clearcoat anisotropy sub-extension
                     node.extensions = node.extensions || {};
+                    const parentExt = node.extensions ? node.extensions["KHR_materials_clearcoat"] : null;
+                    if (!parentExt) {
+                        return resolve(node);
+                    }
+                    this._wasUsed = true;
 
                     // Check if we can convert from OpenPBR anisotropy to glTF anisotropy
                     // Conversion involves both specular roughness and anisotropic roughness changes so,
@@ -231,14 +236,15 @@ export class KHR_materials_clearcoat_anisotropy implements IGLTFExporterExtensio
                             clearcoatAnisotropyRotation: babylonMaterial.geometryCoatTangentAngle + Math.PI * 0.5,
                             clearcoatAnisotropyTexture: undefined,
                         };
-                        node.extensions[NAME] = anisotropyInfo;
+                        parentExt.extensions = parentExt.extensions || {};
+                        parentExt.extensions[NAME] = anisotropyInfo;
                         return resolve(node);
                     }
 
                     const mergedAnisoTextureInfo = mergedAnisoTexture ? this._exporter._materialExporter.getTextureInfo(mergedAnisoTexture) : null;
 
                     const anisotropyInfo: IKHRMaterialsClearcoatAnisotropy = {
-                        clearcoatAnisotropyStrength: babylonMaterial.specularRoughnessAnisotropy,
+                        clearcoatAnisotropyStrength: babylonMaterial.coatRoughnessAnisotropy,
                         clearcoatAnisotropyRotation: babylonMaterial.geometryCoatTangentAngle,
                         clearcoatAnisotropyTexture: mergedAnisoTextureInfo ? mergedAnisoTextureInfo : undefined,
                         extensions: {},
@@ -256,7 +262,8 @@ export class KHR_materials_clearcoat_anisotropy implements IGLTFExporterExtensio
 
                     this._exporter._materialNeedsUVsSet.add(babylonMaterial);
 
-                    node.extensions[NAME] = anisotropyInfo;
+                    parentExt.extensions = parentExt.extensions || {};
+                    parentExt.extensions[NAME] = anisotropyInfo;
                 }
             }
             resolve(node);

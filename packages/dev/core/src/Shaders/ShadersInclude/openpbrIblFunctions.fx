@@ -219,7 +219,7 @@
         // Calculate alpha along tangent and bitangent according to equation 21 in the OpenPBR spec.
         float alphaT = alphaG * sqrt(2.0 / (1.0 + (1.0 - geoInfo.anisotropy) * (1.0 - geoInfo.anisotropy)));
         float alphaB = (1.0 - geoInfo.anisotropy) * alphaT;
-        alphaG = mix(alphaG, alphaB, 0.95);
+        alphaG = alphaB;
 
         // _____________________________ 2D vs 3D Maps ________________________________
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
