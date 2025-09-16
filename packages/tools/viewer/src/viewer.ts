@@ -1203,19 +1203,11 @@ export class Viewer implements IDisposable {
         if (value.exposure !== undefined) {
             this._scene.imageProcessingConfiguration.exposure = value.exposure;
         }
+
         if (value.ssao && !this._ssaoEnabled && SSAO2RenderingPipeline.IsSupported) {
-            const ssaoRatio = {
-                ssaoRatio: 0.5,
-                blurRatio: 1,
-            };
-            const ssao = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio, undefined, false);
-            ssao.radius = 1;
-            ssao.totalStrength = 0.25;
-            ssao.expensiveBlur = true;
-            ssao.samples = 16;
-            this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+            observePromise(this._enableSSAOPipeline());
         } else if (value.ssao === false && this._ssaoEnabled) {
-            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", this._camera);
+            this._disableSSAOPipeline();
         }
 
         this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoEnabled;
@@ -1267,6 +1259,25 @@ export class Viewer implements IDisposable {
             this._reframeCamera(true, model ? [model] : undefined);
             this.onModelChanged.notifyObservers(options?.source ?? null);
         }
+    }
+
+    private async _enableSSAOPipeline() {
+        const ssaoRatio = {
+            ssaoRatio: 1,
+            blurRatio: 0.5,
+        };
+        await Promise.all([import("core/Rendering/prePassRendererSceneComponent"), import("core/Rendering/geometryBufferRendererSceneComponent")]);
+        const ssao = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
+        ssao.radius = 13;
+        ssao.totalStrength = 1;
+        ssao.expensiveBlur = true;
+        ssao.samples = 64;
+        this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+    }
+
+    private _disableSSAOPipeline() {
+        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", this._camera);
+        this._scene.postProcessRenderPipelineManager.removePipeline("ssao");
     }
 
     /**

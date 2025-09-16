@@ -215,9 +215,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this._createPropertyBinding(
             "ssao",
             (details) => details.viewer.onPostProcessingChanged,
-            (details) => {
-                details.viewer.postProcessing = { ssao: this.ssao !== false };
-            },
+            (details) => (details.viewer.postProcessing = { ssao: this.ssao }),
             (details) => (this.ssao = details.viewer.postProcessing.ssao)
         ),
         this._createPropertyBinding(
@@ -736,7 +734,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /**
      * Enables or disables screen space ambient occlusion (SSAO).
      */
-    @property()
+    @property({ type: Boolean })
     public ssao: boolean = this._options.postProcessing?.ssao ?? false;
 
     /**

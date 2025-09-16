@@ -162,6 +162,10 @@
                 <input type="checkbox" id="environmentVisibilityInput" oninput="onEnvironmentVisibility()" />
             </div>
             <div>
+                <span>SSAO</span>
+                <input type="checkbox" id="ssaoInput" oninput="onSSAO()" />
+            </div>
+            <div>
                 <span>Shadows Quality</span>
                 <select id="shadowQualityInput" checked oninput="onShadowQuality()">
                     <option value="none">None</option>
@@ -374,6 +378,11 @@
                 const checked = document.querySelector("#environmentVisibilityInput").checked;
                 const viewer = viewerElement.viewerDetails.viewer;
                 checked ? viewer.loadEnvironment("auto", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
+            };
+            globalThis.onSSAO = () => {
+                const checked = document.querySelector("#ssaoInput").checked;
+                const viewer = viewerElement.viewerDetails.viewer;
+                viewer.postProcessing = { ssao: checked };
             };
             globalThis.onShadowQuality = () => {
                 const value = document.querySelector("#shadowQualityInput").value;
