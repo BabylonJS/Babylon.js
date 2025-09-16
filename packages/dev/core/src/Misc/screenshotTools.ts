@@ -34,6 +34,7 @@ let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
  * @param forceDownload force the system to download the image even if a successCallback is provided
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
+ * @param clearWithSceneColor If true, the screenshot canvas will be cleared with the scene clear color before copying the render.
  */
 export function CreateScreenshot(
     engine: AbstractEngine,
@@ -43,7 +44,8 @@ export function CreateScreenshot(
     mimeType = "image/png",
     forceDownload = false,
     quality?: number,
-    useFill = false
+    useFill = false,
+    clearWithSceneColor = false
 ): void {
     const { height, width } = GetScreenshotSize(engine, camera, size);
 
@@ -112,6 +114,11 @@ export function CreateScreenshot(
         const offsetX = (destWidth - newWidth) / 2;
         const offsetY = (destHeight - newHeight) / 2;
 
+        renderContext.save();
+        renderContext.fillStyle = clearWithSceneColor ? scene.clearColor.toHexString() : "rgba(0, 0, 0, 0)";
+        renderContext.fillRect(0, 0, width, height);
+        renderContext.restore();
+
         renderContext.drawImage(renderingCanvas, 0, 0, srcWidth, srcHeight, offsetX, offsetY, newWidth, newHeight);
 
         if (forceDownload) {
@@ -139,6 +146,7 @@ export function CreateScreenshot(
  * Check your browser for supported MIME types
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
+ * @param clearWithSceneColor If true, the screenshot canvas will be cleared with the scene clear color before copying the render.
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
@@ -148,7 +156,8 @@ export async function CreateScreenshotAsync(
     size: IScreenshotSize | number,
     mimeType = "image/png",
     quality?: number,
-    useFill = false
+    useFill = false,
+    clearWithSceneColor = false
 ): Promise<string> {
     return await new Promise((resolve, reject) => {
         CreateScreenshot(
@@ -165,7 +174,8 @@ export async function CreateScreenshotAsync(
             mimeType,
             undefined,
             quality,
-            useFill
+            useFill,
+            clearWithSceneColor
         );
     });
 }
