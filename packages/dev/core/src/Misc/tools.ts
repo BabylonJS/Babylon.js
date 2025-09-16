@@ -539,7 +539,7 @@ export class Tools {
         // run the preprocessor
         scriptUrl = Tools.ScriptPreprocessUrl(scriptUrl);
 
-        if (forceAbsoluteUrl) {
+        if (forceAbsoluteUrl && !Tools.IsAbsoluteUrl(scriptUrl)) {
             scriptUrl = Tools.GetAbsoluteUrl(scriptUrl);
         }
 
@@ -1207,7 +1207,6 @@ export class Tools {
         return DecodeBase64UrlToBinary(uri);
     }
 
-    // eslint-disable-next-line jsdoc/require-returns-check, jsdoc/require-param
     /**
      * @returns the absolute URL of a given (relative) url
      */
