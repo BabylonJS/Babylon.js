@@ -1,4 +1,5 @@
 import type { Nullable } from "core/types";
+import type { AnimationInput } from "./types";
 import type { AnimationConfiguration } from "./animationConfiguration";
 import type { RawLottieAnimation } from "./parsing/rawTypes";
 import { DefaultConfiguration } from "./animationConfiguration";
@@ -12,11 +13,7 @@ import { CalculateScaleFactor } from "./rendering/calculateScaleFactor";
  * Once instance of this class can only be used to play a single animation. If you want to play multiple animations, create a new instance for each animation.
  */
 export class LocalPlayer {
-    private _container: Nullable<HTMLDivElement> = null;
-    private _animationSource: Nullable<string> | Nullable<RawLottieAnimation> = null;
-    private _variables: Nullable<Map<string, string>> = null;
-    private _configuration: Nullable<Partial<AnimationConfiguration>> = null;
-
+    private _input: Nullable<AnimationInput> = null;
     private _rawAnimation: RawLottieAnimation | undefined = undefined;
     private _scaleFactor: number = 1;
     private _playing = false;
@@ -34,32 +31,21 @@ export class LocalPlayer {
 
     /**
      * Loads and plays a lottie animation.
-     * @param container The HTMLDivElement to create the canvas in and render the animation on.
-     * @param animationSource The URL of the Lottie animation file to be played, or a parsed Lottie JSON object.
-     * @param variables Optional map of variables to replace in the animation file.
-     * @param configuration Optional configuration object to customize the animation playback.
+     * @param input Input parameters required to load and play the animation.
      * @returns True if the animation is successfully set up to play, false if the animation couldn't play.
      */
-    public async playAnimationAsync(
-        container: HTMLDivElement,
-        animationSource: string | RawLottieAnimation,
-        variables?: Map<string, string>,
-        configuration?: Partial<AnimationConfiguration>
-    ): Promise<boolean> {
+    public async playAnimationAsync(input: AnimationInput): Promise<boolean> {
         if (this._playing || this._disposed) {
             return false;
         }
 
-        this._container = container;
-        this._animationSource = animationSource;
-        this._variables = variables ?? new Map<string, string>();
-        this._configuration = configuration ?? {};
+        this._input = input;
 
         // Load the animation from URL or use the provided parsed JSON
-        if (typeof this._animationSource === "string") {
-            this._rawAnimation = await GetRawAnimationDataAsync(this._animationSource);
+        if (typeof this._input.animationSource === "string") {
+            this._rawAnimation = await GetRawAnimationDataAsync(this._input.animationSource);
         } else {
-            this._rawAnimation = this._animationSource;
+            this._rawAnimation = this._input.animationSource;
         }
 
         // Create the canvas element
@@ -74,19 +60,19 @@ export class LocalPlayer {
         this._canvas.style.display = "block";
 
         // The size of the canvas is the relation between the size of the container div and the size of the animation
-        this._scaleFactor = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._container);
+        this._scaleFactor = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
         this._canvas.style.width = `${this._rawAnimation.w * this._scaleFactor}px`;
         this._canvas.style.height = `${this._rawAnimation.h * this._scaleFactor}px`;
 
         // Append the canvas to the container
-        this._container.appendChild(this._canvas);
+        this._input.container.appendChild(this._canvas);
 
         const finalConfig: AnimationConfiguration = {
             ...DefaultConfiguration,
-            ...this._configuration,
+            ...this._input.configuration,
         };
 
-        this._animationController = new AnimationController(this._canvas, this._rawAnimation, this._scaleFactor, this._variables, finalConfig);
+        this._animationController = new AnimationController(this._canvas, this._rawAnimation, this._scaleFactor, this._input.variables ?? new Map<string, string>(), finalConfig);
         this._animationController.playAnimation();
         this._playing = true;
 
@@ -94,7 +80,7 @@ export class LocalPlayer {
             this._resizeObserver = new ResizeObserver(() => {
                 this._scheduleResizeUpdate();
             });
-            this._resizeObserver.observe(this._container);
+            this._resizeObserver.observe(this._input.container);
         }
 
         return true;
@@ -114,8 +100,8 @@ export class LocalPlayer {
             this._resizeDebounceHandle = null;
         }
 
-        if (this._container && this._canvas) {
-            this._container.removeChild(this._canvas);
+        if (this._input && this._canvas) {
+            this._input.container.removeChild(this._canvas);
         }
 
         this._canvas = null;
@@ -124,7 +110,7 @@ export class LocalPlayer {
     }
 
     private _scheduleResizeUpdate(): void {
-        if (this._disposed || !this._container || !this._canvas || !this._rawAnimation || this._animationController === null) {
+        if (this._disposed || !this._input || !this._canvas || !this._rawAnimation || this._animationController === null) {
             return;
         }
 
@@ -134,11 +120,11 @@ export class LocalPlayer {
 
         this._resizeDebounceHandle = window.setTimeout(() => {
             this._resizeDebounceHandle = null;
-            if (this._disposed || !this._container || !this._canvas || !this._rawAnimation || this._animationController === null) {
+            if (this._disposed || !this._input || !this._canvas || !this._rawAnimation || this._animationController === null) {
                 return;
             }
 
-            const newScale = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._container);
+            const newScale = CalculateScaleFactor(this._rawAnimation.w, this._rawAnimation.h, this._input.container);
             if (this._scaleFactor !== newScale) {
                 this._scaleFactor = newScale;
 
