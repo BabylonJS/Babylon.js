@@ -29,7 +29,6 @@ uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSiz
 // Output
 varying vec2 vUV;
 varying vec4 vColor;
-varying vec3 vPositionW;
 
 #ifdef RAMPGRADIENT
 varying vec4 remapRanges;
@@ -106,7 +105,7 @@ void main(void) {
 	vec3 yaxis = position - eyePosition;
 	yaxis.y = 0.;
 
-	vPositionW = rotate(normalize(yaxis), rotatedCorner);
+	vec3 vPositionW = rotate(normalize(yaxis), rotatedCorner);
 
 	vec3 viewPos = (view * vec4(vPositionW, 1.0)).xyz;
 #elif defined(BILLBOARDSTRETCHED)
