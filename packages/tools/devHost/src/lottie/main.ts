@@ -57,9 +57,9 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
             await player.preWarmPlayerAsync();
         }
 
-        await player.playAnimationAsync(div, useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration);
+        await player.playAnimationAsync({ container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration });
     } else {
         const player = new LocalPlayer();
-        await player.playAnimationAsync(div, useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration);
+        await player.playAnimationAsync({ container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration });
     }
 }
