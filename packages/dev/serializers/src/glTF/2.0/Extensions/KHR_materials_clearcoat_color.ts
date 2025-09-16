@@ -1,4 +1,4 @@
-import type { IMaterial, IEXTMaterialsClearcoatColor } from "babylonjs-gltf2interface";
+import type { IMaterial, IKHRMaterialsClearcoatColor } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
@@ -7,13 +7,13 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
-const NAME = "EXT_materials_clearcoat_color";
+const NAME = "KHR_materials_clearcoat_color";
 
 /**
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class EXT_materials_clearcoat_color implements IGLTFExporterExtensionV2 {
+export class KHR_materials_clearcoat_color implements IGLTFExporterExtensionV2 {
     /** Name of this extension */
     public readonly name = NAME;
 
@@ -80,7 +80,7 @@ export class EXT_materials_clearcoat_color implements IGLTFExporterExtensionV2 {
 
                 const coatColorTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.clearCoat.tintTexture);
 
-                const clearCoatInfo: IEXTMaterialsClearcoatColor = {
+                const clearCoatInfo: IKHRMaterialsClearcoatColor = {
                     clearcoatColorFactor: babylonMaterial.clearCoat.tintColor.asArray(),
                     clearcoatColorTexture: coatColorTextureInfo ?? undefined,
                 };
@@ -108,7 +108,7 @@ export class EXT_materials_clearcoat_color implements IGLTFExporterExtensionV2 {
                 }
 
                 const coatColorTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.coatWeightTexture);
-                const clearCoatInfo: IEXTMaterialsClearcoatColor = {
+                const clearCoatInfo: IKHRMaterialsClearcoatColor = {
                     clearcoatColorFactor: babylonMaterial.coatColor.asArray(),
                     clearcoatColorTexture: coatColorTextureInfo ?? undefined,
                 };
@@ -124,4 +124,4 @@ export class EXT_materials_clearcoat_color implements IGLTFExporterExtensionV2 {
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new EXT_materials_clearcoat_color(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_color(exporter));

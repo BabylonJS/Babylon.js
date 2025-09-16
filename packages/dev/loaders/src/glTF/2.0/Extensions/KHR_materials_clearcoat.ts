@@ -5,8 +5,8 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { EXT_materials_clearcoat_darkening } from "./EXT_materials_clearcoat_darkening";
-import type { EXT_materials_clearcoat_color } from "./EXT_materials_clearcoat_color";
+import type { KHR_materials_clearcoat_darkening } from "./KHR_materials_clearcoat_darkening";
+import type { KHR_materials_clearcoat_color } from "./KHR_materials_clearcoat_color";
 import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat";
@@ -70,9 +70,9 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
                 throw new Error(`${context}: Material type not supported`);
             }
             promises.push(this._loadClearCoatPropertiesAsync(extensionContext, extension, babylonMaterial));
-            if (this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.EXT_materials_clearcoat_darkening) {
-                let darkeningExtension = await registeredGLTFExtensions.get("EXT_materials_clearcoat_darkening")?.factory(this._loader);
-                darkeningExtension = darkeningExtension as EXT_materials_clearcoat_darkening;
+            if (this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.KHR_materials_clearcoat_darkening) {
+                let darkeningExtension = await registeredGLTFExtensions.get("KHR_materials_clearcoat_darkening")?.factory(this._loader);
+                darkeningExtension = darkeningExtension as KHR_materials_clearcoat_darkening;
                 if (darkeningExtension && darkeningExtension.enabled && darkeningExtension.loadMaterialPropertiesAsync) {
                     const promise = darkeningExtension.loadMaterialPropertiesAsync(extensionContext, extension as any, babylonMaterial);
                     if (promise) {
@@ -80,9 +80,9 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
                     }
                 }
             }
-            if (this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.EXT_materials_clearcoat_color) {
-                let colorExtension = await registeredGLTFExtensions.get("EXT_materials_clearcoat_color")?.factory(this._loader);
-                colorExtension = colorExtension as EXT_materials_clearcoat_color;
+            if (this._loader.parent.useOpenPBR && extension.extensions && extension.extensions.KHR_materials_clearcoat_color) {
+                let colorExtension = await registeredGLTFExtensions.get("KHR_materials_clearcoat_color")?.factory(this._loader);
+                colorExtension = colorExtension as KHR_materials_clearcoat_color;
                 if (colorExtension && colorExtension.enabled && colorExtension.loadMaterialPropertiesAsync) {
                     const promise = colorExtension.loadMaterialPropertiesAsync(extensionContext, extension as any, babylonMaterial);
                     if (promise) {

@@ -1,4 +1,4 @@
-import type { IMaterial, IEXTMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
+import type { IMaterial, IKHRMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
@@ -7,13 +7,13 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Nullable } from "core/types";
 
-const NAME = "EXT_materials_diffuse_roughness";
+const NAME = "KHR_materials_diffuse_roughness";
 
 /**
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class EXT_materials_diffuse_roughness implements IGLTFExporterExtensionV2 {
+export class KHR_materials_diffuse_roughness implements IGLTFExporterExtensionV2 {
     /** Name of this extension */
     public readonly name = NAME;
 
@@ -82,7 +82,7 @@ export class EXT_materials_diffuse_roughness implements IGLTFExporterExtensionV2
 
             const diffuseRoughnessTextureInfo = this._exporter._materialExporter.getTextureInfo(diffuseRoughnessTexture);
 
-            const diffuseRoughnessInfo: IEXTMaterialsDiffuseRoughness = {
+            const diffuseRoughnessInfo: IKHRMaterialsDiffuseRoughness = {
                 diffuseRoughnessFactor: diffuseRoughnessFactor,
                 diffuseRoughnessTexture: diffuseRoughnessTextureInfo ?? undefined,
             };
@@ -98,4 +98,4 @@ export class EXT_materials_diffuse_roughness implements IGLTFExporterExtensionV2
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new EXT_materials_diffuse_roughness(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_diffuse_roughness(exporter));

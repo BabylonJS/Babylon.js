@@ -196,7 +196,7 @@
         alphaG: f32
         , reflectionMicrosurfaceInfos: vec3f
         , reflectionInfos: vec2f
-        , geoInfo: geometryInfoOutParams
+        , geoInfo: geometryInfoAnisoOutParams
         , normalW: vec3f
         , viewDirectionW: vec3f
         , positionW: vec3f

@@ -40,7 +40,7 @@
     
     let specularAlphaG: f32 = specular_roughness * specular_roughness;
 
-    #ifdef ANISOTROPIC
+    #ifdef ANISOTROPIC_BASE
         var baseSpecularEnvironmentLight: vec3f = sampleRadianceAnisotropic(specularAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
             , baseGeoInfo
             , normalW
@@ -67,7 +67,7 @@
     #endif
 
     // Purely empirical blend between diffuse and specular lobes when roughness gets very high.
-    #ifdef ANISOTROPIC
+    #ifdef ANISOTROPIC_BASE
         baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG * specularAlphaG  * max(1.0f - baseGeoInfo.anisotropy, 0.3f));
     #else
         baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
@@ -82,15 +82,30 @@
         #endif
         reflectionCoords = createReflectionCoords(fragmentInputs.vPositionW, coatNormalW);
         var coatAlphaG: f32 = coat_roughness * coat_roughness;
-        coatEnvironmentLight = sampleRadiance(coatAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
-            , baseGeoInfo
-            , reflectionSampler
-            , reflectionSamplerSampler
-            , reflectionCoords
-            #ifdef REALTIME_FILTERING
-                , uniforms.vReflectionFilteringInfo
-            #endif
-        );
+        #ifdef ANISOTROPIC_COAT
+            coatEnvironmentLight = sampleRadianceAnisotropic(coatAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                , coatGeoInfo
+                , coatNormalW
+                , viewDirectionW
+                , fragmentInputs.vPositionW
+                , noise
+                , reflectionSampler
+                , reflectionSamplerSampler
+                #ifdef REALTIME_FILTERING
+                    , uniforms.vReflectionFilteringInfo
+                #endif
+            );
+        #else
+            coatEnvironmentLight = sampleRadiance(coatAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                , coatGeoInfo
+                , reflectionSampler
+                , reflectionSamplerSampler
+                , reflectionCoords
+                #ifdef REALTIME_FILTERING
+                    , uniforms.vReflectionFilteringInfo
+                #endif
+            );
+        #endif
     }
     
     // ______________________________ IBL Fresnel Reflectance ____________________________

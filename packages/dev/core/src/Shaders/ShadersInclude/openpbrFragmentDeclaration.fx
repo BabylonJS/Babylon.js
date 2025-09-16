@@ -104,6 +104,10 @@ uniform vec2 vCoatIorInfos;
 uniform vec2 vCoatDarkeningInfos;
 #endif
 
+#ifdef GEOMETRY_COAT_TANGENT
+uniform vec2 vGeometryCoatTangentInfos;
+#endif
+
 // Refraction Reflection
 #if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION) || defined(PREPASS)
 uniform mat4 view;

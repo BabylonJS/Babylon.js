@@ -1081,15 +1081,25 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @internal */
-    interface IEXTMaterialsClearcoatDarkening {
+    interface IKHRMaterialsClearcoatDarkening {
         clearcoatDarkeningFactor?: number;
         clearcoatDarkeningTexture?: ITextureInfo;
     }
 
     /** @internal */
-    interface IEXTMaterialsClearcoatColor {
+    interface IKHRMaterialsClearcoatColor {
         clearcoatColorFactor?: number[];
         clearcoatColorTexture?: ITextureInfo;
+    }
+
+    /** @internal */
+    interface IKHRMaterialsClearcoatAnisotropy {
+        clearcoatAnisotropyStrength?: number;
+        clearcoatAnisotropyRotation?: number;
+        clearcoatAnisotropyTexture?: ITextureInfo;
+        extensions?: {
+            [key: string]: any;
+        };
     }
 
     /** @internal */
@@ -1235,7 +1245,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the EXT_materials_diffuse_roughness extension
      */
     /** @internal */
-    interface IEXTMaterialsDiffuseRoughness {
+    interface IKHRMaterialsDiffuseRoughness {
         diffuseRoughnessFactor?: number;
         diffuseRoughnessTexture?: ITextureInfo;
     }

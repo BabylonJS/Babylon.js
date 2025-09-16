@@ -3,29 +3,29 @@ import type { Material } from "core/Materials/material";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsAnisotropy } from "babylonjs-gltf2interface";
+import type { IKHRMaterialsClearcoatAnisotropy } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
 import { Vector2 } from "core/Maths/math.vector";
 
-const NAME = "KHR_materials_anisotropy";
+const NAME = "KHR_materials_clearcoat_anisotropy";
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
-         * Defines options for the KHR_materials_anisotropy extension.
+         * Defines options for the KHR_materials_clearcoat_anisotropy extension.
          */
         // NOTE: Don't use NAME here as it will break the UMD type declarations.
-        ["KHR_materials_anisotropy"]: {};
+        ["KHR_materials_clearcoat_anisotropy"]: {};
     }
 }
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_anisotropy)
+ * [Specification](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_clearcoat_anisotropy)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
+export class KHR_materials_clearcoat_anisotropy implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
      */
@@ -61,7 +61,7 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
      */
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsAnisotropy>(context, material, this.name, async (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsClearcoatAnisotropy>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loadAnisotropyPropertiesAsync(extensionContext, extension, babylonMaterial));
@@ -69,7 +69,7 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
         });
     }
 
-    private async _loadAnisotropyPropertiesAsync(context: string, properties: IKHRMaterialsAnisotropy, babylonMaterial: Material): Promise<void> {
+    private async _loadAnisotropyPropertiesAsync(context: string, properties: IKHRMaterialsClearcoatAnisotropy, babylonMaterial: Material): Promise<void> {
         if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: PBR Material class not loaded`);
         }
@@ -78,12 +78,12 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately
-        const anisotropyWeight = properties.anisotropyStrength ?? 0;
-        const anisotropyAngle = properties.anisotropyRotation ?? 0;
+        const clearcoatAnisotropyWeight = properties.clearcoatAnisotropyStrength ?? 0;
+        const clearcoatAnisotropyAngle = properties.clearcoatAnisotropyRotation ?? 0;
 
-        adapter.specularRoughnessAnisotropy = anisotropyWeight;
-        adapter.geometryTangentAngle = anisotropyAngle;
-        adapter.geometryTangent = new Vector2(Math.cos(anisotropyAngle), Math.sin(anisotropyAngle));
+        adapter.coatRoughnessAnisotropy = clearcoatAnisotropyWeight;
+        adapter.geometryCoatTangentAngle = clearcoatAnisotropyAngle;
+        adapter.geometryCoatTangent = new Vector2(Math.cos(clearcoatAnisotropyAngle), Math.sin(clearcoatAnisotropyAngle));
 
         // Check if this is glTF-style anisotropy
         const extensions = properties.extensions ?? {};
@@ -92,12 +92,12 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
         }
 
         // Load texture if present
-        if (properties.anisotropyTexture) {
-            (properties.anisotropyTexture as ITextureInfo).nonColorData = true;
+        if (properties.clearcoatAnisotropyTexture) {
+            (properties.clearcoatAnisotropyTexture as ITextureInfo).nonColorData = true;
             promises.push(
-                this._loader.loadTextureInfoAsync(`${context}/anisotropyTexture`, properties.anisotropyTexture, (texture) => {
-                    texture.name = `${babylonMaterial.name} (Anisotropy Intensity)`;
-                    adapter.geometryTangentTexture = texture;
+                this._loader.loadTextureInfoAsync(`${context}/clearcoatAnisotropyTexture`, properties.clearcoatAnisotropyTexture, (texture) => {
+                    texture.name = `${babylonMaterial.name} (Clearcoat Anisotropy)`;
+                    adapter.geometryCoatTangentTexture = texture;
                 })
             );
         }
@@ -107,4 +107,4 @@ export class KHR_materials_anisotropy implements IGLTFLoaderExtension {
 }
 
 unregisterGLTFExtension(NAME);
-registerGLTFExtension(NAME, true, (loader) => new KHR_materials_anisotropy(loader));
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_clearcoat_anisotropy(loader));

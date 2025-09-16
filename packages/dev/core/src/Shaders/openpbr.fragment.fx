@@ -120,22 +120,31 @@ void main(void) {
     );
 
     // _____________________________ Compute Geometry info for coat layer _________________________
-    geometryInfoOutParams coatGeoInfo = geometryInfo(
-        coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
-        #ifdef ANISOTROPIC
-        , vec3(1.0, 0.0, specular_roughness_anisotropy), TBN
-        #endif
-    );
+    #ifdef ANISOTROPIC_COAT
+        geometryInfoAnisoOutParams coatGeoInfo = geometryInfoAniso(
+            coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
+            , vec3(geometry_coat_tangent.x, geometry_coat_tangent.y, coat_roughness_anisotropy), TBN
+        );
+    #else
+        geometryInfoOutParams coatGeoInfo = geometryInfo(
+            coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
+        );
+    #endif
 
     // _____________________________ Compute Geometry info for base layer _________________________
     // Adjust the base roughness to account for the coat layer. Equation 61 in OpenPBR spec.
     specular_roughness = mix(specular_roughness, pow(min(1.0, pow(specular_roughness, 4.0) + 2.0 * pow(coat_roughness, 4.0)), 0.25), coat_weight);
-    geometryInfoOutParams baseGeoInfo = geometryInfo(
-        normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
-        #ifdef ANISOTROPIC
-        , vec3(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy), TBN
-        #endif
-    );
+
+    #ifdef ANISOTROPIC_BASE
+        geometryInfoAnisoOutParams baseGeoInfo = geometryInfoAniso(
+            normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+            , vec3(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy), TBN
+        );
+    #else
+        geometryInfoOutParams baseGeoInfo = geometryInfo(
+            normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+        );
+    #endif
 
     // _______________________ F0 and F90 Reflectance _______________________________
     

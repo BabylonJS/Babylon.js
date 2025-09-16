@@ -554,6 +554,89 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._material.coatDarkening = value;
     }
 
+    /**
+     * Sets the coat roughness anisotropy.
+     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
+     * @param value The coat anisotropy intensity value
+     */
+    public set coatRoughnessAnisotropy(value: number) {
+        // TODO: Implement when OpenPBR coat anisotropy is available
+        // this._material.coatRoughnessAnisotropy = value;
+    }
+
+    /**
+     * Gets the coat roughness anisotropy.
+     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
+     * @returns Currently returns 0 as coat anisotropy is not yet available
+     */
+    public get coatRoughnessAnisotropy(): number {
+        // TODO: Implement when OpenPBR coat anisotropy is available
+        // return this._material.coatRoughnessAnisotropy;
+        return 0;
+    }
+
+    /**
+     * Sets the coat roughness anisotropy texture.
+     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
+     * @param value The coat anisotropy texture or null
+     */
+    public set coatRoughnessAnisotropyTexture(value: Nullable<BaseTexture>) {
+        // TODO: Implement when OpenPBR coat anisotropy is available
+        // this._material.coatRoughnessAnisotropyTexture = value;
+    }
+
+    /**
+     * Gets the coat roughness anisotropy texture.
+     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
+     * @returns Currently returns null as coat anisotropy is not yet available
+     */
+    public get coatRoughnessAnisotropyTexture(): Nullable<BaseTexture> {
+        // TODO: Implement when OpenPBR coat anisotropy is available
+        // return this._material.coatRoughnessAnisotropyTexture;
+        return null;
+    }
+
+    /**
+     * Sets the coat tangent angle for anisotropy.
+     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
+     * @param value The coat anisotropy rotation angle in radians
+     */
+    public set geometryCoatTangentAngle(value: number) {
+        // TODO: Implement when OpenPBR coat anisotropy is available
+        // this._material.geometryCoatTangentAngle = value;
+    }
+
+    /**
+     * Sets the coat tangent vector for anisotropy.
+     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
+     * @param value The coat tangent vector as a Vector2
+     */
+    public set geometryCoatTangent(value: Vector2) {
+        // TODO: Implement when OpenPBR coat anisotropy is available
+        // this._material.geometryCoatTangent = value;
+    }
+
+    /**
+     * Sets the coat tangent texture for anisotropy.
+     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
+     * @param value The coat anisotropy texture or null
+     */
+    public set geometryCoatTangentTexture(value: Nullable<BaseTexture>) {
+        // TODO: Implement when OpenPBR coat anisotropy is available
+        // this._material.geometryCoatTangentTexture = value;
+    }
+
+    /**
+     * Gets the coat tangent texture for anisotropy.
+     * TODO: Implementation pending OpenPBR coat anisotropy feature availability.
+     * @returns Currently returns null as coat anisotropy is not yet available
+     */
+    public get geometryCoatTangentTexture(): Nullable<BaseTexture> {
+        // TODO: Implement when OpenPBR coat anisotropy is available
+        // return this._material.geometryCoatTangentTexture;
+        return null;
+    }
+
     // ========================================
     // TRANSMISSION LAYER
     // ========================================
@@ -749,7 +832,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Sets the anisotropy rotation angle.
      * @param value The anisotropy rotation angle in radians
      */
-    public set anisotropyRotation(value: number) {
+    public set geometryTangentAngle(value: number) {
         this._material.geometryTangentAngle = value;
     }
 

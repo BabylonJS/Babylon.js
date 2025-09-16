@@ -1,4 +1,4 @@
-import type { IMaterial, IEXTMaterialsClearcoatDarkening } from "babylonjs-gltf2interface";
+import type { IMaterial, IKHRMaterialsClearcoatDarkening } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
@@ -6,13 +6,13 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Nullable } from "core/types";
 
-const NAME = "EXT_materials_clearcoat_darkening";
+const NAME = "KHR_materials_clearcoat_darkening";
 
 /**
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class EXT_materials_clearcoat_darkening implements IGLTFExporterExtensionV2 {
+export class KHR_materials_clearcoat_darkening implements IGLTFExporterExtensionV2 {
     /** Name of this extension */
     public readonly name = NAME;
 
@@ -77,7 +77,7 @@ export class EXT_materials_clearcoat_darkening implements IGLTFExporterExtension
 
             const coatDarkeningTextureInfo = this._exporter._materialExporter.getTextureInfo(coatDarkeningTexture);
 
-            const coatDarkeningInfo: IEXTMaterialsClearcoatDarkening = {
+            const coatDarkeningInfo: IKHRMaterialsClearcoatDarkening = {
                 clearcoatDarkeningFactor: coatDarkeningFactor,
                 clearcoatDarkeningTexture: coatDarkeningTextureInfo ?? undefined,
             };
@@ -94,4 +94,4 @@ export class EXT_materials_clearcoat_darkening implements IGLTFExporterExtension
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new EXT_materials_clearcoat_darkening(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_darkening(exporter));

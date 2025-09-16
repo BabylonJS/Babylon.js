@@ -7,6 +7,7 @@ float coat_roughness = 0.0;
 float coat_roughness_anisotropy = 0.0;
 float coat_ior = 1.6;
 float coat_darkening = 1.0;
+vec2 geometry_coat_tangent = vec2(1.0, 0.0);
 
 // Sample Coat Layer properties from textures
 #ifdef COAT_WEIGHT
@@ -29,13 +30,18 @@ float coat_darkening = 1.0;
     vec4 coatDarkeningFromTexture = texture2D(coatDarkeningSampler, vCoatDarkeningUV + uvOffset);
 #endif
 
+#ifdef GEOMETRY_COAT_TANGENT
+    vec3 geometryCoatTangentFromTexture = texture2D(geometryCoatTangentSampler, vGeometryCoatTangentUV + uvOffset).rgb;
+#endif
+
 // Initalize coat layer properties from uniforms
 coat_color = vCoatColor.rgb;
 coat_weight = vCoatWeight;
 coat_roughness = vCoatRoughness;
-// coat_roughness_anisotropy = vCoatRoughnessAnisotropy;
+coat_roughness_anisotropy = vCoatRoughnessAnisotropy;
 coat_ior = vCoatIor;
 coat_darkening = vCoatDarkening;
+geometry_coat_tangent = vGeometryCoatTangent.rg;
 
 // Apply texture values to coat layer properties
 #ifdef COAT_WEIGHT
@@ -62,4 +68,24 @@ coat_darkening = vCoatDarkening;
 
 #ifdef COAT_DARKENING
     coat_darkening *= coatDarkeningFromTexture.r;
+#endif
+
+#ifdef GEOMETRY_COAT_TANGENT
+{
+    vec2 tangentFromTexture = normalize(geometryCoatTangentFromTexture.xy * 2.0 - 1.0);
+    float tangent_angle_texture = atan(tangentFromTexture.y, tangentFromTexture.x);
+    float tangent_angle_uniform = atan(geometry_coat_tangent.y, geometry_coat_tangent.x);
+    float tangent_angle = tangent_angle_texture + tangent_angle_uniform;
+    geometry_coat_tangent = vec2(cos(tangent_angle), sin(tangent_angle));
+}
+#endif
+
+#ifdef USE_GLTF_STYLE_ANISOTROPY
+    float baseAlpha = coat_roughness * coat_roughness;
+
+    // From glTF to OpenPBR
+    float roughnessT = mix(baseAlpha, 1.0, coat_roughness_anisotropy * coat_roughness_anisotropy);
+    float roughnessB = baseAlpha;
+    coat_roughness_anisotropy = 1.0 - roughnessB / max(roughnessT, 0.00001);
+    coat_roughness = sqrt(roughnessT / sqrt(2.0 / (1.0 + (1.0 - coat_roughness_anisotropy) * (1.0 - coat_roughness_anisotropy))));
 #endif

@@ -105,22 +105,31 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     );
 
     // _____________________________ Compute Geometry info for coat layer _________________________
-    let coatGeoInfo: geometryInfoOutParams = geometryInfo(
-        coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
-        #ifdef ANISOTROPIC
-        , vec3f(1.0f, 0.0f, specular_roughness_anisotropy), TBN
-        #endif
-    );
+    #ifdef ANISOTROPIC_COAT
+        let coatGeoInfo: geometryInfoAnisoOutParams = geometryInfoAniso(
+            coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
+            , vec3f(geometry_coat_tangent.x, geometry_coat_tangent.y, coat_roughness_anisotropy), TBN
+        );
+    #else
+        let coatGeoInfo: geometryInfoOutParams = geometryInfo(
+            coatNormalW, viewDirectionW.xyz, coat_roughness, geometricNormalW
+        );
+    #endif
 
     // _____________________________ Compute Geometry info for base layer _________________________
     // Adjust the base roughness to account for the coat layer. Equation 61 in OpenPBR spec.
     specular_roughness = mix(specular_roughness, pow(min(1.0f, pow(specular_roughness, 4.0f) + 2.0f * pow(coat_roughness, 4.0f)), 0.25f), coat_weight);
-    let baseGeoInfo: geometryInfoOutParams = geometryInfo(
-        normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
-        #ifdef ANISOTROPIC
-        , vec3f(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy), TBN
-        #endif
-    );
+
+    #ifdef ANISOTROPIC_BASE
+        let baseGeoInfo: geometryInfoAnisoOutParams = geometryInfoAniso(
+            normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+            , vec3f(geometry_tangent.x, geometry_tangent.y, specular_roughness_anisotropy), TBN
+        );
+    #else
+        let baseGeoInfo: geometryInfoOutParams = geometryInfo(
+            normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+        );
+    #endif
 
     // _______________________ F0 and F90 Reflectance _______________________________
     

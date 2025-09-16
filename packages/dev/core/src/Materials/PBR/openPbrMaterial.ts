@@ -244,6 +244,8 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public NORMALXYSCALE = true;
     public ANISOTROPIC = false; // Enables anisotropic logic. Still needed because it's used in pbrHelperFunctions
     public ANISOTROPIC_OPENPBR = true; // Tells the shader to use OpenPBR's anisotropic roughness remapping
+    public ANISOTROPIC_BASE = false; // Tells the shader to apply anisotropy to the base layer
+    public ANISOTROPIC_COAT = false; // Tells the shader to apply anisotropy to the coat layer
 
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -602,6 +604,24 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _coatRoughnessTexture: Sampler = new Sampler("coat_roughness", "coatRoughness", "COAT_ROUGHNESS");
 
     /**
+     * Defines the anisotropy of the clear coat on the surface.
+     * See OpenPBR's specs for coat_roughness_anisotropy
+     */
+    public coatRoughnessAnisotropy: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatRoughnessAnisotropy")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatRoughnessAnisotropy: Property<number> = new Property<number>("coat_roughness_anisotropy", 0, "vCoatRoughnessAnisotropy", 1);
+
+    /**
+     * Anisotropic Roughness texture of the clear coat.
+     * See OpenPBR's specs for coat_roughness_anisotropy
+     */
+    public coatRoughnessAnisotropyTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "coatRoughnessAnisotropyTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _coatRoughnessAnisotropyTexture: Sampler = new Sampler("coat_roughness_anisotropy", "coatRoughnessAnisotropy", "COAT_ROUGHNESS_ANISOTROPY");
+
+    /**
      * Defines the IOR of the clear coat on the surface.
      * See OpenPBR's specs for coat_ior
      */
@@ -685,6 +705,38 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryCoatNormalTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _geometryCoatNormalTexture: Sampler = new Sampler("geometry_coat_normal", "geometryCoatNormal", "GEOMETRY_COAT_NORMAL");
+
+    /**
+     * Defines the tangent of the material's coat layer. Used only for anisotropic reflections.
+     * See OpenPBR's specs for geometry_coat_tangent
+     */
+    public geometryCoatTangent: Vector2;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryCoatTangent")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryCoatTangent: Property<Vector2> = new Property<Vector2>("geometry_coat_tangent", new Vector2(1, 0), "vGeometryCoatTangent", 2, 0);
+
+    /**
+     * Defines the angle of the tangent of the material's coat layer.
+     */
+    public get geometryCoatTangentAngle(): number {
+        return Math.atan2(this.geometryCoatTangent.y, this.geometryCoatTangent.x);
+    }
+
+    /**
+     * Defines the angle of the tangent of the material's coat layer.
+     */
+    public set geometryCoatTangentAngle(value: number) {
+        this.geometryCoatTangent = new Vector2(Math.cos(value), Math.sin(value));
+    }
+
+    /**
+     * Defines the tangent of the material's coat layer. Used only for anisotropic reflections.
+     * See OpenPBR's specs for geometry_coat_tangent
+     */
+    public geometryCoatTangentTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "geometryCoatTangentTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _geometryCoatTangentTexture: Sampler = new Sampler("geometry_coat_tangent", "geometryCoatTangent", "GEOMETRY_COAT_TANGENT");
 
     /**
      * Defines the opacity of the material's geometry.
@@ -1394,6 +1446,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._coatColorTexture;
         this._coatRoughness;
         this._coatRoughnessTexture;
+        this._coatRoughnessAnisotropy;
+        this._coatRoughnessAnisotropyTexture;
         this._coatIor;
         this._coatDarkening;
         this._coatDarkeningTexture;
@@ -1401,6 +1455,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._geometryTangent;
         this._geometryTangentTexture;
         this._geometryCoatNormalTexture;
+        this._geometryCoatTangent;
+        this._geometryCoatTangentTexture;
         this._geometryOpacity;
         this._geometryOpacityTexture;
         this._emissionLuminance;
@@ -2434,7 +2490,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
-        if (this.specularRoughnessAnisotropy > 0.0 && OpenPBRMaterial._noiseTextures[scene.uniqueId] && MaterialFlags.ReflectionTextureEnabled) {
+        if (
+            (this.specularRoughnessAnisotropy > 0.0 || this.coatRoughnessAnisotropy > 0.0) &&
+            OpenPBRMaterial._noiseTextures[scene.uniqueId] &&
+            MaterialFlags.ReflectionTextureEnabled
+        ) {
+            // ANISOTROPIC is used to include common shader functions needed for anisotropy
+            // ANISOTROPIC_BASE is used to process anisotropy for the base layer
+            // ANISOTROPIC_COAT is used to process anisotropy for the coat layer
             defines.ANISOTROPIC = true;
             if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
                 defines._needUVs = true;
@@ -2443,8 +2506,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             if (this._useGltfStyleAnisotropy) {
                 defines.USE_GLTF_STYLE_ANISOTROPY = true;
             }
+            defines.ANISOTROPIC_BASE = this.specularRoughnessAnisotropy > 0.0;
+            defines.ANISOTROPIC_COAT = this.coatRoughnessAnisotropy > 0.0;
         } else {
             defines.ANISOTROPIC = false;
+            defines.USE_GLTF_STYLE_ANISOTROPY = false;
+            defines.ANISOTROPIC_BASE = false;
+            defines.ANISOTROPIC_COAT = false;
         }
 
         // Misc.

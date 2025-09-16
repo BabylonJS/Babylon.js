@@ -199,7 +199,7 @@
         in float alphaG
         , in vec3 vReflectionMicrosurfaceInfos
         , in vec2 vReflectionInfos
-        , in geometryInfoOutParams geoInfo
+        , in geometryInfoAnisoOutParams geoInfo
         , const vec3 normalW
         , const vec3 viewDirectionW
         , const vec3 positionW

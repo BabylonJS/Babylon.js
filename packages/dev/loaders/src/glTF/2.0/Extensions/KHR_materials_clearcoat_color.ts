@@ -1,33 +1,34 @@
 /* eslint-disable github/no-then */
 import type { Nullable } from "core/types";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { Color3 } from "core/Maths/math.color";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IEXTMaterialsClearcoatDarkening } from "babylonjs-gltf2interface";
+import type { IKHRMaterialsClearcoatColor } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
-const NAME = "EXT_materials_clearcoat_darkening";
+const NAME = "KHR_materials_clearcoat_color";
 
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
     export interface GLTFLoaderExtensionOptions {
         /**
-         * Defines options for the EXT_materials_clearcoat_darkening extension.
+         * Defines options for the KHR_materials_clearcoat_color extension.
          */
         // NOTE: Don't use NAME here as it will break the UMD type declarations.
-        ["EXT_materials_clearcoat_darkening"]: {};
+        ["KHR_materials_clearcoat_color"]: {};
     }
 }
 
 /**
- * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/2518)
  * !!! Experimental Extension Subject to Changes !!!
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class EXT_materials_clearcoat_darkening implements IGLTFLoaderExtension {
+export class KHR_materials_clearcoat_color implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
      */
@@ -63,46 +64,54 @@ export class EXT_materials_clearcoat_darkening implements IGLTFLoaderExtension {
      */
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTMaterialsClearcoatDarkening>(context, material, this.name, async (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsClearcoatColor>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            promises.push(this._loadDarkeningPropertiesAsync(extensionContext, material, babylonMaterial, extension));
+            promises.push(this._loadColorPropertiesAsync(extensionContext, material, babylonMaterial, extension));
             return await Promise.all(promises).then(() => {});
         });
     }
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
-    private _loadDarkeningPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IEXTMaterialsClearcoatDarkening): Promise<void> {
+    private _loadColorPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsClearcoatColor): Promise<void> {
         if (!this._loader._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        let darkeningFactor = 1.0;
-        let darkeningFactorTexture: Nullable<BaseTexture>;
+        const colorFactor = Color3.White();
+        let colorFactorTexture: Nullable<BaseTexture>;
 
-        if (extension.clearcoatDarkeningFactor !== undefined) {
-            darkeningFactor = extension.clearcoatDarkeningFactor;
+        if (extension.clearcoatColorFactor !== undefined) {
+            colorFactor.fromArray(extension.clearcoatColorFactor);
         }
 
         let texturePromise = Promise.resolve();
 
-        if (extension.clearcoatDarkeningTexture) {
-            (extension.clearcoatDarkeningTexture as ITextureInfo).nonColorData = true;
-            texturePromise = this._loader.loadTextureInfoAsync(`${context}/clearcoatDarkeningTexture`, extension.clearcoatDarkeningTexture).then((texture: BaseTexture) => {
-                texture.name = `${babylonMaterial.name} (Clearcoat Darkening)`;
-                darkeningFactorTexture = texture;
+        if (extension.clearcoatColorTexture) {
+            (extension.clearcoatColorTexture as ITextureInfo).nonColorData = true;
+            texturePromise = this._loader.loadTextureInfoAsync(`${context}/clearcoatColorTexture`, extension.clearcoatColorTexture).then((texture: BaseTexture) => {
+                texture.name = `${babylonMaterial.name} (Clearcoat Color)`;
+                colorFactorTexture = texture;
             });
         }
 
         return texturePromise.then(() => {
-            const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
-            openpbrMaterial.coatDarkening = darkeningFactor;
-            if (darkeningFactorTexture) {
-                openpbrMaterial.coatDarkeningTexture = darkeningFactorTexture;
+            if (this._loader.parent.useOpenPBR) {
+                const openpbrMaterial = babylonMaterial as OpenPBRMaterial;
+                openpbrMaterial.coatColor = colorFactor;
+                if (colorFactorTexture) {
+                    openpbrMaterial.coatColorTexture = colorFactorTexture;
+                }
+            } else {
+                const pbrMaterial = babylonMaterial as PBRMaterial;
+                pbrMaterial.clearCoat.tintColor = colorFactor;
+                if (colorFactorTexture) {
+                    pbrMaterial.clearCoat.tintTexture = colorFactorTexture;
+                }
             }
         });
     }
 }
 
 unregisterGLTFExtension(NAME);
-registerGLTFExtension(NAME, true, (loader) => new EXT_materials_clearcoat_darkening(loader));
+registerGLTFExtension(NAME, true, (loader) => new KHR_materials_clearcoat_color(loader));

@@ -142,6 +142,14 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
                 <TextureLinkLineComponent
+                    label="Geometry Coat Tangent"
+                    texture={material.geometryCoatTangentTexture}
+                    propertyName="geometryCoatTangentTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
                     label="Geometry Opacity"
                     texture={material.geometryOpacityTexture}
                     propertyName="geometryOpacityTexture"
@@ -484,6 +492,24 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
+                        label="Roughness Anisotropy"
+                        target={material}
+                        propertyName="coatRoughnessAnisotropy"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Roughness Anisotropy Texture"
+                        texture={material.coatRoughnessAnisotropyTexture}
+                        propertyName="coatRoughnessAnisotropyTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
                         label="Darkening"
                         target={material}
                         propertyName="coatDarkening"
@@ -565,6 +591,32 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         maximum={Math.PI}
                         step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Coat Tangent Angle"
+                        target={material}
+                        propertyName="geometryCoatTangentAngle"
+                        minimum={0}
+                        maximum={Math.PI}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Tangent"
+                        texture={material.geometryTangentTexture}
+                        propertyName="geometryTangentTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Coat Tangent"
+                        texture={material.geometryCoatTangentTexture}
+                        propertyName="geometryCoatTangentTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
                     />
                 </LineContainerComponent>
                 <LineContainerComponent title="LEVELS" closed={true} selection={this.props.globalState}>

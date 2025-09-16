@@ -7,6 +7,7 @@ var coat_roughness: f32 = 0.0f;
 var coat_roughness_anisotropy: f32 = 0.0f;
 var coat_ior: f32 = 1.6f;
 var coat_darkening: f32 = 1.0f;
+var geometry_coat_tangent: vec2f = vec2f(1.0f, 0.0f);
 
 // Sample Coat Layer properties from textures
 #ifdef COAT_WEIGHT
@@ -29,13 +30,18 @@ var coat_darkening: f32 = 1.0f;
     var coatDarkeningFromTexture: vec4f = textureSample(coatDarkeningSampler, coatDarkeningSamplerSampler, fragmentInputs.vCoatDarkeningUV + uvOffset);
 #endif
 
+#ifdef GEOMETRY_COAT_TANGENT
+    var geometryCoatTangentFromTexture: vec3f = textureSample(geometryCoatTangentSampler, geometryCoatTangentSamplerSampler, fragmentInputs.vGeometryCoatTangentUV + uvOffset).rgb;
+#endif
+
 // Initalize coat layer properties from uniforms
 coat_color = uniforms.vCoatColor.rgb;
 coat_weight = uniforms.vCoatWeight;
 coat_roughness = uniforms.vCoatRoughness;
-// coat_roughness_anisotropy = uniforms.vCoatRoughnessAnisotropy;
+coat_roughness_anisotropy = uniforms.vCoatRoughnessAnisotropy;
 coat_ior = uniforms.vCoatIor;
 coat_darkening = uniforms.vCoatDarkening;
+geometry_coat_tangent = uniforms.vGeometryCoatTangent.rg;
 
 // Apply texture values to coat layer properties
 #ifdef COAT_WEIGHT
@@ -62,4 +68,24 @@ coat_darkening = uniforms.vCoatDarkening;
 
 #ifdef COAT_DARKENING
     coat_darkening *= coatDarkeningFromTexture.r;
+#endif
+
+#ifdef GEOMETRY_COAT_TANGENT
+{
+    let tangentFromTexture: vec2f = normalize(geometryCoatTangentFromTexture.xy * vec2f(2.0f) - vec2f(1.0f));
+    let tangent_angle_texture: f32 = atan2(tangentFromTexture.y, tangentFromTexture.x);
+    let tangent_angle_uniform: f32 = atan2(geometry_coat_tangent.y, geometry_coat_tangent.x);
+    let tangent_angle: f32 = tangent_angle_texture + tangent_angle_uniform;
+    geometry_coat_tangent = vec2f(cos(tangent_angle), sin(tangent_angle));
+}
+#endif
+
+#ifdef USE_GLTF_STYLE_ANISOTROPY
+    let baseAlpha: f32 = coat_roughness * coat_roughness;
+
+    // From glTF to OpenPBR
+    let roughnessT: f32 = mix(baseAlpha, 1.0f, coat_roughness_anisotropy * coat_roughness_anisotropy);
+    let roughnessB: f32 = baseAlpha;
+    coat_roughness_anisotropy = 1.0f - roughnessB / max(roughnessT, 0.00001f);
+    coat_roughness = sqrt(roughnessT / sqrt(2.0f / (1.0f + (1.0f - coat_roughness_anisotropy) * (1.0f - coat_roughness_anisotropy))));
 #endif

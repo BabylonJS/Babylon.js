@@ -105,7 +105,7 @@ fn hemisphereImportanceSampleDggxAnisotropic(Xi: vec2f, alphaTangent: f32, alpha
     let sinPhi: f32 = sin(phi);
 
     let alpha2: f32 = (cosPhi*cosPhi) / (alphaTangent*alphaTangent) +
-                   (sinPhi*sinPhi) / (alphaBitangent*alphaBitangent);
+                   (sinPhi*sinPhi) / (alphaB*alphaB);
     let tanTheta2: f32 = Xi.y / (1.0f - Xi.y) / alpha2;
 
     let cosTheta: f32 = 1.0f / sqrt(1.0f + tanTheta2);

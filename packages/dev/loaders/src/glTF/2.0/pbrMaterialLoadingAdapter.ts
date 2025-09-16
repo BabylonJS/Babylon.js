@@ -570,6 +570,89 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         // PBR doesn't have a coat darkening property
     }
 
+    /**
+     * Sets the coat roughness anisotropy.
+     * Note: PBR clearCoat doesn't support anisotropy yet, so this is a placeholder.
+     * @param value The coat anisotropy intensity value (currently ignored)
+     */
+    public set coatRoughnessAnisotropy(value: number) {
+        // TODO: Implement when PBR clearCoat anisotropy becomes available
+        // this._material.clearCoat.anisotropy = value;
+    }
+
+    /**
+     * Gets the coat roughness anisotropy.
+     * Note: PBR clearCoat doesn't support anisotropy yet, so this returns 0.
+     * @returns Currently returns 0 as clearCoat anisotropy is not yet available
+     */
+    public get coatRoughnessAnisotropy(): number {
+        // TODO: Implement when PBR clearCoat anisotropy becomes available
+        // return this._material.clearCoat.anisotropy ?? 0;
+        return 0;
+    }
+
+    /**
+     * Sets the coat roughness anisotropy texture.
+     * Note: PBR clearCoat doesn't support anisotropy textures yet, so this is a placeholder.
+     * @param value The coat anisotropy texture (currently ignored)
+     */
+    public set coatRoughnessAnisotropyTexture(value: Nullable<BaseTexture>) {
+        // TODO: Implement when PBR clearCoat anisotropy becomes available
+        // this._material.clearCoat.anisotropyTexture = value;
+    }
+
+    /**
+     * Gets the coat roughness anisotropy texture.
+     * Note: PBR clearCoat doesn't support anisotropy textures yet, so this returns null.
+     * @returns Currently returns null as clearCoat anisotropy is not yet available
+     */
+    public get coatRoughnessAnisotropyTexture(): Nullable<BaseTexture> {
+        // TODO: Implement when PBR clearCoat anisotropy becomes available
+        // return this._material.clearCoat.anisotropyTexture;
+        return null;
+    }
+
+    /**
+     * Sets the coat tangent angle for anisotropy.
+     * Note: PBR clearCoat doesn't support anisotropy yet, so this is a placeholder.
+     * @param value The coat anisotropy rotation angle in radians (currently ignored)
+     */
+    public set geometryCoatTangentAngle(value: number) {
+        // TODO: Implement when PBR clearCoat anisotropy becomes available
+        // this._material.clearCoat.anisotropyAngle = value;
+    }
+
+    /**
+     * Sets the coat tangent vector for anisotropy.
+     * Note: PBR clearCoat doesn't support anisotropy yet, so this is a placeholder.
+     * @param value The coat tangent vector (currently ignored)
+     */
+    public set geometryCoatTangent(value: Vector2) {
+        // TODO: Implement when PBR clearCoat anisotropy becomes available
+        // this._material.clearCoat.anisotropyTangent = value;
+    }
+
+    /**
+     * Sets the coat tangent texture for anisotropy.
+     * Note: PBR clearCoat doesn't support anisotropy textures yet, so this is a placeholder.
+     * @param value The coat anisotropy texture (currently ignored)
+     */
+    public set geometryCoatTangentTexture(value: Nullable<BaseTexture>) {
+        // TODO: Implement when PBR clearCoat anisotropy becomes available
+        // this._material.clearCoat.anisotropyTangentTexture = value;
+    }
+
+    /**
+     * Gets the coat tangent texture for anisotropy.
+     * Note: PBR clearCoat doesn't support anisotropy textures yet, so this returns null.
+     * @returns Currently returns null as clearCoat anisotropy is not yet available
+     */
+    public get geometryCoatTangentTexture(): Nullable<BaseTexture> {
+        // TODO: Implement when PBR clearCoat anisotropy becomes available
+        // return this._material.clearCoat.anisotropyTangentTexture;
+        return null;
+    }
+
     // ========================================
     // TRANSMISSION LAYER
     // ========================================
@@ -773,7 +856,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Automatically enables anisotropy.
      * @param value The anisotropy rotation angle in radians
      */
-    public set anisotropyRotation(value: number) {
+    public set geometryTangentAngle(value: number) {
         this._material.anisotropy.isEnabled = true;
         this._material.anisotropy.angle = value;
     }

@@ -2943,6 +2943,21 @@
             "title": "OpenPBR Anisotropy - Realtime Filtered IBL",
             "playgroundId": "#GRQHVV#71",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Coat Anisotropy - IBL",
+            "playgroundId": "#GRQHVV#74",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Coat Anisotropy - Realtime Filtered IBL",
+            "playgroundId": "#GRQHVV#76",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Coat Anisotropy - Analytic Lights",
+            "playgroundId": "#GRQHVV#78",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

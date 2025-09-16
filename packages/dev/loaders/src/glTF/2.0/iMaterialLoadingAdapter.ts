@@ -213,6 +213,31 @@ export interface IMaterialLoadingAdapter {
      */
     coatDarkening: number;
 
+    /**
+     * Sets/gets the coat roughness anisotropy (OpenPBR: coatRoughnessAnisotropy, PBR: clearCoat.anisotropy.intensity)
+     */
+    coatRoughnessAnisotropy: number;
+
+    /**
+     * Sets/gets the coat roughness anisotropy texture (OpenPBR: coatRoughnessAnisotropyTexture, PBR: clearCoat.anisotropy.texture)
+     */
+    coatRoughnessAnisotropyTexture: Nullable<BaseTexture>;
+
+    /**
+     * Sets the coat tangent angle for anisotropy (OpenPBR: geometryCoatTangentAngle, PBR: clearCoat.anisotropy.angle)
+     */
+    geometryCoatTangentAngle: number;
+
+    /**
+     * Sets the coat tangent vector for anisotropy (OpenPBR: geometryCoatTangent, calculated from coat anisotropy angle)
+     */
+    geometryCoatTangent: Vector2;
+
+    /**
+     * Sets the coat tangent texture for anisotropy (OpenPBR: geometryCoatTangentTexture, PBR: clearCoat.anisotropy.texture)
+     */
+    geometryCoatTangentTexture: Nullable<BaseTexture>;
+
     // ========================================
     // TRANSMISSION LAYER
     // ========================================
@@ -312,7 +337,7 @@ export interface IMaterialLoadingAdapter {
     /**
      * Sets the anisotropy rotation (OpenPBR: anisotropyRotation, PBR: anisotropy.angle)
      */
-    anisotropyRotation: number;
+    geometryTangentAngle: number;
 
     /**
      * Sets/gets the anisotropy texture (OpenPBR: geometryTangentTexture, PBR: anisotropy.texture)

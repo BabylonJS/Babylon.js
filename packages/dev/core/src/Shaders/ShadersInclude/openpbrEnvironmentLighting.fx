@@ -37,7 +37,7 @@
     #endif
 
     float specularAlphaG = specular_roughness * specular_roughness;
-    #ifdef ANISOTROPIC
+    #ifdef ANISOTROPIC_BASE
         vec3 baseSpecularEnvironmentLight = sampleRadianceAnisotropic(specularAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
             , baseGeoInfo
             , normalW
@@ -62,7 +62,7 @@
     #endif
 
     // Purely empirical blend between diffuse and specular lobes when roughness gets very high.
-    #ifdef ANISOTROPIC
+    #ifdef ANISOTROPIC_BASE
         baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG * specularAlphaG * max(1.0 - baseGeoInfo.anisotropy, 0.3));
     #else
         baseSpecularEnvironmentLight = mix(baseSpecularEnvironmentLight.rgb, baseDiffuseEnvironmentLight, specularAlphaG);
@@ -77,14 +77,28 @@
         #endif
         reflectionCoords = createReflectionCoords(vPositionW, coatNormalW);
         float coatAlphaG = coat_roughness * coat_roughness;
-        coatEnvironmentLight = sampleRadiance(coatAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
-            , coatGeoInfo
-            , reflectionSampler
-            , reflectionCoords
-            #ifdef REALTIME_FILTERING
-                , vReflectionFilteringInfo
-            #endif
-        );
+        #ifdef ANISOTROPIC_COAT
+            coatEnvironmentLight = sampleRadianceAnisotropic(coatAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                , coatGeoInfo
+                , coatNormalW
+                , viewDirectionW
+                , vPositionW
+                , noise
+                , reflectionSampler
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+        #else
+            coatEnvironmentLight = sampleRadiance(coatAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                , coatGeoInfo
+                , reflectionSampler
+                , reflectionCoords
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+        #endif
     }
     
     // ______________________________ IBL Fresnel Reflectance ____________________________
