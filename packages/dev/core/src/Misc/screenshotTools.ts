@@ -18,6 +18,7 @@ let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
 /**
  * Captures a screenshot of the current rendering
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -127,6 +128,7 @@ export function CreateScreenshot(
 
 /**
  * Captures a screenshot of the current rendering
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -173,6 +175,7 @@ export async function CreateScreenshotAsync(
 /**
  * Captures and automatically downloads a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
  * If screenshot image data is needed, use {@link CreateScreenshotAsync} instead.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -211,6 +214,7 @@ export async function CreateScreenshotWithResizeAsync(
 
 /**
  * Generates an image screenshot from the specified camera.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
@@ -448,6 +452,7 @@ export function CreateScreenshotUsingRenderTarget(
 
 /**
  * Generates an image screenshot from the specified camera.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
