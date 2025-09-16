@@ -38,6 +38,10 @@ export const NodeBuiltins = new Set([
 // Packages that drag a Node-only tree or are pointless to ATA in-browser
 // Or pollute the namespace with non-modules
 export const BlocklistBase = new Set([
+    // We pull these in already to the global namespace for typing
+    "@babylonjs/core",
+    "babylonjs",
+
     "node",
     "nodetypes",
     "npm",

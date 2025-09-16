@@ -46,6 +46,21 @@ export class TypingsService {
             return /\/index\.d\.ts$/i.test(p);
         }
 
+        const baseFromUrl = (u: string): string | null => {
+            try {
+                const m = u.match(/\/npm\/((?:@[^/]+\/)?[^@/]+)(?:@[^/]+)?\//i);
+                return m ? decodeURIComponent(m[1]) : null;
+            } catch {
+                return null;
+            }
+        };
+
+        // helper: true if this URL targets a blocked package
+        const isBlockedPkgUrl = (u: string): boolean => {
+            const base = baseFromUrl(u);
+            return !!(base && BlocklistBase.has(base));
+        };
+
         const ts = CreateTsShim({
             libNames: monaco.languages.typescript.typescriptDefaults.getCompilerOptions().lib ?? undefined,
         });
@@ -56,6 +71,11 @@ export class TypingsService {
             if (url.includes("/npm/")) {
                 // scoped or unscoped, any version token
                 url = url.replace(/\/npm\/((?:@[^/]+\/)?[^@/]+)@([^/]+)@latest(?=\/|$)/, "/npm/$1@$2");
+            }
+
+            if (isBlockedPkgUrl(url)) {
+                this._ata404s++;
+                return new Response("blocked-by-policy", { status: 404 });
             }
 
             const pinVersionInUrl = (u: string) => {
@@ -107,11 +127,38 @@ export class TypingsService {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 8000);
             try {
-                const res = await fetch(url, { ...(init ?? {}), signal: controller.signal });
-                if (res.status === 404) {
-                    this._ata404s++;
+                if (/\/npm\/.+\/package\.json(?:$|\?)/i.test(url)) {
+                    const res2 = await fetch(url, { ...(init ?? {}), signal: controller.signal });
+                    if (!res2.ok) {
+                        return res2;
+                    }
+                    // eslint-disable-next-line
+                    const pkg = await res2.json().catch(() => null);
+                    if (pkg && typeof pkg === "object") {
+                        const stripped = {
+                            ...pkg,
+                            dependencies: {},
+                            devDependencies: {},
+                            optionalDependencies: {},
+                            peerDependencies: {},
+                            // Also neuter "exports" that sometimes point to deep trees, but keep "types".
+                            // eslint-disable-next-line
+                            exports: pkg.types ? { ".": { types: pkg.types } } : undefined,
+                        };
+                        return new Response(JSON.stringify(stripped), {
+                            status: 200,
+                            // eslint-disable-next-line
+                            headers: { "content-type": "application/json" },
+                        });
+                    }
+                    return res2;
+                } else {
+                    const res = await fetch(url, { ...(init ?? {}), signal: controller.signal });
+                    if (res.status === 404) {
+                        this._ata404s++;
+                    }
+                    return res;
                 }
-                return res;
             } catch {
                 // treat network failures as ignorable to keep ATA moving
                 return new Response("fetch-failed", { status: 520 });

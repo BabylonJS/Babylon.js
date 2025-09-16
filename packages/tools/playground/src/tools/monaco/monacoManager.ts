@@ -134,10 +134,9 @@ export class MonacoManager {
         });
 
         this.globalState.onFilesChangedObservable.add(() => {
-            this._syncBareImportStubs();
             this._tsPipeline.forceSyncModels();
             this._tsPipeline.addWorkspaceFileDeclarations(this.globalState.files || {});
-            this.invalidateRunnerCache(); // Invalidate cache when files change
+            this.invalidateRunnerCache();
         });
 
         const pgConnect = { onRequestCodeChangeObservable: new Observable() };
@@ -644,7 +643,6 @@ export { Playground };`;
         this.globalState.onFilesChangedObservable.notifyObservers();
         this.globalState.onManifestChangedObservable.notifyObservers();
         this.globalState.onRunRequiredObservable.notifyObservers();
-        this._syncBareImportStubs();
     }
 
     private _setNewContent() {
