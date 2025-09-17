@@ -28,12 +28,6 @@ const ImportToolsExtensionMetadata = {
     keywords: ["import", "tools"],
 } as const;
 
-const AtmosphereExtensionMetadata = {
-    name: "Atmosphere Explorer",
-    description: "Explore the atmosphere in your scene.",
-    keywords: ["atmopshere", "explorer"],
-} as const;
-
 const Extensions: readonly ExtensionMetadata[] = [/*CreationToolsExtensionMetadata, */ ExportToolsExtensionMetadata, CaptureToolsExtensionMetadata, ImportToolsExtensionMetadata];
 
 /**
@@ -61,8 +55,6 @@ export class BuiltInsExtensionFeed implements IExtensionFeed {
             return await import("../services/panes/tools/captureService");
         } else if (name === ImportToolsExtensionMetadata.name) {
             return await import("../services/panes/tools/importService");
-        } else if (name === AtmosphereExtensionMetadata.name) {
-            return await import("../services/panes/scene/atmosphereExplorerService");
         }
         return undefined;
     }

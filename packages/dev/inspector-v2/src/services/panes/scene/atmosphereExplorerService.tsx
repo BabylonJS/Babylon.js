@@ -19,11 +19,10 @@ export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
         if (!scene) {
             return undefined;
         }
-
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Atmosphere",
             order: DefaultSectionsOrder.Atmosphere,
-            getRootEntities: () => (scene.getExternalData("atmosphere") as Atmosphere[]) ?? [],
+            getRootEntities: () => (scene.getExternalData("atmosphere") ? [scene.getExternalData("atmosphere") as Atmosphere] : []),
             getEntityDisplayInfo: (atmosphere) => {
                 const onChangeObservable = new Observable<void>();
 
@@ -45,6 +44,7 @@ export const AtmosphereExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
                 };
             },
             entityIcon: () => <WeatherSunnyLowFilled />,
+            // TODO in order for inspector UX to display atmosphere created after inspector is created
             getEntityAddedObservables: () => [],
             getEntityRemovedObservables: () => [],
         });

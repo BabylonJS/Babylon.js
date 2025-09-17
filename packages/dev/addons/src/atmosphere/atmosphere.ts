@@ -907,6 +907,7 @@ export class Atmosphere implements IDisposable {
             scene.removeExternalData("atmosphere");
             this.dispose();
         });
+        scene.addExternalData("atmosphere", this);
 
         // Registers a material plugin which will allow common materials to sample the atmosphere environment maps e.g.,
         // sky view LUT for glossy reflections and diffuse sky illiminance LUT for irradiance.
@@ -918,8 +919,6 @@ export class Atmosphere implements IDisposable {
             }
             return null;
         });
-
-        scene.addExternalData("atmosphere", [this]);
     }
 
     /**

@@ -44,7 +44,7 @@ export const AtmospherePropertiesServiceDefinition: ServiceDefinition<[], [IProp
                     component: ({ context }) => <AerialPerspectiveProperties entity={context} />,
                 },
                 {
-                    section: "Diffuse Irradiance",
+                    section: "Diffuse Sky Irradiance",
                     component: ({ context }) => <DiffuseIrradianceProperties entity={context} />,
                 },
                 {
