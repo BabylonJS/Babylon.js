@@ -8,7 +8,7 @@ import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtensio
 import type { KHR_materials_clearcoat_darkening } from "./KHR_materials_clearcoat_darkening";
 import type { KHR_materials_clearcoat_color } from "./KHR_materials_clearcoat_color";
 import type { KHR_materials_clearcoat_anisotropy } from "./KHR_materials_clearcoat_anisotropy";
-import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat";
 
@@ -67,9 +67,6 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsClearcoat>(context, material, this.name, async (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
-            if (!this._loader._pbrMaterialClass) {
-                throw new Error(`${context}: Material type not supported`);
-            }
             promises.push(this._loadClearCoatPropertiesAsync(extensionContext, extension, babylonMaterial));
             if (extension.extensions && extension.extensions.KHR_materials_clearcoat_darkening) {
                 let darkeningExtension = await registeredGLTFExtensions.get("KHR_materials_clearcoat_darkening")?.factory(this._loader);
@@ -107,11 +104,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadClearCoatPropertiesAsync(context: string, properties: IKHRMaterialsClearcoat, babylonMaterial: Material): Promise<void> {
-        if (!this._loader._pbrMaterialClass) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
-        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
+        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately

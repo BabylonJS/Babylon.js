@@ -212,7 +212,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public ALPHATEST = false;
     public DEPTHPREPASS = false;
     public ALPHABLEND = false;
-    public ALPHAFROMALBEDO = false;
+    public ALPHA_FROM_BASE_COLOR_TEXTURE = false;
     public ALPHATESTVALUE = "0.5";
     public PREMULTIPLYALPHA = false;
 
@@ -823,13 +823,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public useSpecularWeightFromTextureAlpha = false;
 
     /**
-     * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
-     */
-    @serialize()
-    @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
-    public useAlphaFromAlbedoTexture = false;
-
-    /**
      * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
      */
     @serialize()
@@ -1125,7 +1118,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * This is for compatibility with glTF.
      * @internal
      */
-    public _useAlphaFromAlbedoTexture = false;
+    public _useAlphaFromBaseColorTexture = false;
 
     /**
      * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
@@ -1518,15 +1511,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     /**
      * @returns whether or not the alpha value of the albedo texture should be used for alpha blending.
      */
-    protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-        return this.baseColorTexture != null && this.baseColorTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
+    protected _shouldUseAlphaFromBaseColorTexture(): boolean {
+        return this._hasAlphaChannel() && this._transparencyMode !== Material.MATERIAL_OPAQUE && !this.geometryOpacityTexture;
     }
 
     /**
      * @returns whether or not there is a usable alpha channel for transparency.
      */
     protected _hasAlphaChannel(): boolean {
-        return this.geometryOpacityTexture != null;
+        return this.baseColorTexture != null && this.baseColorTexture.hasAlpha && this._useAlphaFromBaseColorTexture || this.geometryOpacityTexture != null;
     }
 
     /**
@@ -2453,10 +2446,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.ENVIRONMENTBRDF_RGBD = false;
                 }
 
-                if (this._shouldUseAlphaFromAlbedoTexture()) {
-                    defines.ALPHAFROMALBEDO = true;
+                if (this._shouldUseAlphaFromBaseColorTexture()) {
+                    defines.ALPHA_FROM_BASE_COLOR_TEXTURE = true;
                 } else {
-                    defines.ALPHAFROMALBEDO = false;
+                    defines.ALPHA_FROM_BASE_COLOR_TEXTURE = false;
                 }
             }
 

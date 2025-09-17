@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsDispersion } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
+import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_dispersion";
 
@@ -73,19 +73,16 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadDispersionPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsDispersion): Promise<void> {
-        if (!this._loader._pbrMaterialClass) {
-            throw new Error(`${context}: Material type not supported`);
-        }
+        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
 
-        if (!this._loader.parent.useOpenPBR) {
-            // If transparency isn't enabled already, this extension shouldn't do anything.
-            // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
-            if (!(babylonMaterial as PBRMaterial).subSurface.isRefractionEnabled || !extension.dispersion) {
-                return Promise.resolve();
-            }
-            (babylonMaterial as PBRMaterial).subSurface.isDispersionEnabled = true;
-            (babylonMaterial as PBRMaterial).subSurface.dispersion = extension.dispersion;
+        // If transparency isn't enabled already, this extension shouldn't do anything.
+        // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
+        if (adapter.transmissionWeight > 0 || !extension.dispersion) {
+            return Promise.resolve();
         }
+        
+        adapter.transmissionDispersionAbbeNumber = 20.0 / extension.dispersion;
+        
         return Promise.resolve();
     }
 }

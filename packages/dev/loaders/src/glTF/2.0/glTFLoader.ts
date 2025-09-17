@@ -87,7 +87,7 @@ import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import { Lazy } from "core/Misc/lazy";
-import type { IMaterialLoadingAdapter } from "./iMaterialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
 const LazyAnimationGroupModulePromise = new Lazy(() => import("core/Animations/animationGroup"));
@@ -329,16 +329,6 @@ export class GLTFLoader implements IGLTFLoader {
             this._materialAdapterCache.set(material, adapter);
         }
         return adapter;
-    }
-
-    /**
-     * Gets a cached material loading adapter (must be created first with _getOrCreateMaterialAdapterAsync)
-     * @param material The material to get adapter for
-     * @returns The cached adapter or null if not found
-     * @internal
-     */
-    public _getMaterialAdapter(material: Material): Nullable<IMaterialLoadingAdapter> {
-        return this._materialAdapterCache.get(material) ?? null;
     }
 
     /**
@@ -2202,12 +2192,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, properties: IMaterialPbrMetallicRoughness, babylonMaterial: Material): Promise<void> {
-        if (!this._pbrMaterialClass) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
         const promises = new Array<Promise<unknown>>();
-        const adapter: IMaterialLoadingAdapter = this._getMaterialAdapter(babylonMaterial)!;
+        const adapter: IMaterialLoadingAdapter = this._getOrCreateMaterialAdapter(babylonMaterial);
 
         if (properties) {
             // Set base color and alpha using adapter
@@ -2382,12 +2368,8 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves when the load is complete
      */
     public loadMaterialBasePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        if (!this._pbrMaterialClass) {
-            throw new Error("PBR Material class not loaded");
-        }
-
         const promises = new Array<Promise<unknown>>();
-        const adapter = this._getMaterialAdapter(babylonMaterial)!;
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
 
         // Set emission color using adapter
         adapter.emissionColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
@@ -2466,7 +2448,7 @@ export class GLTFLoader implements IGLTFLoader {
             throw new Error(`${context}: Material type not supported`);
         }
 
-        const adapter = this._getMaterialAdapter(babylonMaterial)!;
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
         const baseColorTexture = adapter.baseColorTexture;
 
         const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
@@ -2488,7 +2470,7 @@ export class GLTFLoader implements IGLTFLoader {
                 babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_ALPHABLEND;
                 if (baseColorTexture) {
                     baseColorTexture.hasAlpha = true;
-                    adapter.useAlphaFromAlbedoTexture = true;
+                    adapter.useAlphaFromBaseColorTexture = true;
                 }
                 break;
             }

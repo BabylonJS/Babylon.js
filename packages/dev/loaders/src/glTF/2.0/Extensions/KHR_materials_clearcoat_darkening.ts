@@ -7,7 +7,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoatDarkening } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat_darkening";
 
@@ -73,11 +73,7 @@ export class KHR_materials_clearcoat_darkening implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadDarkeningPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsClearcoatDarkening): Promise<void> {
-        if (!this._loader._pbrMaterialClass) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
-        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
+        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
 
         let darkeningFactor = 1.0;
 

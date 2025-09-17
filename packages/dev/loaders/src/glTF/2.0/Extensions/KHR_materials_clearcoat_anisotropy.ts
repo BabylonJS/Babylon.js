@@ -5,7 +5,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoatAnisotropy } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { IMaterialLoadingAdapter } from "../iMaterialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat_anisotropy";
 
@@ -69,11 +69,7 @@ export class KHR_materials_clearcoat_anisotropy implements IGLTFLoaderExtension 
     }
 
     private async _loadAnisotropyPropertiesAsync(context: string, properties: IKHRMaterialsClearcoatAnisotropy, babylonMaterial: Material): Promise<void> {
-        if (!this._loader._pbrMaterialClass) {
-            throw new Error(`${context}: PBR Material class not loaded`);
-        }
-
-        const adapter: IMaterialLoadingAdapter = this._loader._getMaterialAdapter(babylonMaterial)!;
+        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately

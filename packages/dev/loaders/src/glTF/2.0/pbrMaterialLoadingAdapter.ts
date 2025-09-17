@@ -4,7 +4,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Constants } from "core/Engines/constants";
-import type { IMaterialLoadingAdapter } from "./iMaterialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 /**
  * Material Loading Adapter for PBR materials that provides a unified OpenPBR-like interface.
@@ -102,7 +102,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Sets whether to use alpha from the albedo texture.
      * @param value True to use alpha from albedo texture
      */
-    public set useAlphaFromAlbedoTexture(value: boolean) {
+    public set useAlphaFromBaseColorTexture(value: boolean) {
         this._material.useAlphaFromAlbedoTexture = value;
     }
 
@@ -110,7 +110,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Gets whether alpha is used from the albedo texture.
      * @returns True if using alpha from albedo texture
      */
-    public get useAlphaFromAlbedoTexture(): boolean {
+    public get useAlphaFromBaseColorTexture(): boolean {
         return this._material.useAlphaFromAlbedoTexture;
     }
 
@@ -669,6 +669,14 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Gets the transmission weight.
+     * @returns The transmission weight value
+     */
+    public get transmissionWeight(): number {
+        return this._material.subSurface.refractionIntensity;
+    }
+
+    /**
      * Sets the transmission weight texture (mapped to PBR subSurface.refractionIntensityTexture).
      * Automatically enables refraction and glTF-style textures.
      * @param value The transmission weight texture or null
@@ -680,27 +688,33 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Gets the transmission weight.
-     * @returns The transmission weight value
+     * Sets the attenuation distance for volume scattering.
+     * @param value The attenuation distance value
      */
-    public get transmissionWeight(): number {
-        return this._material.subSurface.refractionIntensity;
+    public set transmissionDepth(value: number) {
+        this._material.subSurface.tintColorAtDistance = value;
     }
 
     /**
-     * Gets whether transmission is enabled.
-     * @returns True if transmission is enabled
+     * Sets the attenuation color (mapped to PBR subSurface.tintColor).
+     * @param value The attenuation color as a Color3
      */
-    public get isTransmissionEnabled(): boolean {
-        return this._material.subSurface.isRefractionEnabled;
+    public set transmissionColor(value: Color3) {
+        this._material.subSurface.tintColor = value;
     }
 
     /**
-     * Gets whether subsurface scattering is enabled.
-     * @returns True if subsurface scattering is enabled
+     * Gets the transmission dispersion Abbe number.
+     * @returns The transmission dispersion Abbe number value
      */
-    public get isSubsurfaceEnabled(): boolean {
-        return this._material.subSurface.isTranslucencyEnabled;
+    public set transmissionDispersionAbbeNumber(value: number) {
+        if (value > 0) {
+            this._material.subSurface.isDispersionEnabled = true;
+            this._material.subSurface.dispersion = 20.0 / value;
+        } else {
+            this._material.subSurface.isDispersionEnabled = false;
+            this._material.subSurface.dispersion = 0;
+        }
     }
 
     /**
@@ -717,43 +731,17 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     // ========================================
-    // VOLUME PROPERTIES (Subsurface Scattering)
+    // VOLUME PROPERTIES
     // ========================================
-
-    /**
-     * Sets the attenuation distance for volume scattering.
-     * Note: PBR uses an inverted representation, so this converts the distance to a volume IOR approximation.
-     * @param value The attenuation distance value
-     */
-    public set attenuationDistance(value: number) {
-        this._material.subSurface.isRefractionEnabled = true;
-        // PBR uses an inverted representation for attenuation distance
-        if (value === Number.POSITIVE_INFINITY || value === 0) {
-            this._material.subSurface.volumeIndexOfRefraction = 1;
-        } else {
-            // This is an approximation to convert distance to a factor
-            this._material.subSurface.volumeIndexOfRefraction = 1 + 1 / value;
-        }
-    }
-
-    /**
-     * Sets the attenuation color (mapped to PBR subSurface.tintColor).
-     * Automatically enables refraction.
-     * @param value The attenuation color as a Color3
-     */
-    public set attenuationColor(value: Color3) {
-        this._material.subSurface.isRefractionEnabled = true;
-        this._material.subSurface.tintColor = value;
-    }
 
     /**
      * Sets the thickness texture (mapped to PBR subSurface.thicknessTexture).
      * Automatically enables refraction.
      * @param value The thickness texture or null
      */
-    public set thicknessTexture(value: Nullable<BaseTexture>) {
-        this._material.subSurface.isRefractionEnabled = true;
+    public set volumeThicknessTexture(value: Nullable<BaseTexture>) {
         this._material.subSurface.thicknessTexture = value;
+        this._material.subSurface.useGltfStyleTextures = true;
     }
 
     /**
@@ -761,9 +749,73 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Automatically enables refraction.
      * @param value The thickness value
      */
-    public set thickness(value: number) {
-        this._material.subSurface.isRefractionEnabled = true;
+    public set volumeThickness(value: number) {
+        this._material.subSurface.minimumThickness = 0.0;
         this._material.subSurface.maximumThickness = value;
+        this._material.subSurface.useThicknessAsDepth = true;
+        if (value > 0) {
+            this._material.subSurface.volumeIndexOfRefraction = this._material.indexOfRefraction;
+        }
+    }
+
+    // ========================================
+    // SUBSURFACE PROPERTIES (Subsurface Scattering)
+    // ========================================
+
+    /**
+     * Configures subsurface properties for PBR material
+     */
+    public configureSubsurface(): void {
+        this._material.subSurface.isTranslucencyEnabled = true;
+        this._material.subSurface.useGltfStyleTextures = true;
+
+        // Since this extension models thin-surface transmission only, we must make the
+        // internal IOR == 1.0 and set the thickness to 0.
+        this._material.subSurface.volumeIndexOfRefraction = 1.0;
+        this._material.subSurface.minimumThickness = 0.0;
+        this._material.subSurface.maximumThickness = 0.0;
+
+        // Tint color will be used for transmission.
+        this._material.subSurface.useAlbedoToTintTranslucency = false;
+    }
+
+    /**
+     * Sets the subsurface weight
+     */
+    public set subsurfaceWeight(value: number) {
+        this._material.subSurface.isTranslucencyEnabled = value > 0;
+        this._material.subSurface.translucencyIntensity = value;
+    }
+
+    /**
+     * Gets the subsurface weight
+     * @returns The subsurface weight value
+     */
+    public get subsurfaceWeight(): number {
+        return this._material.subSurface.isTranslucencyEnabled ? this._material.subSurface.translucencyIntensity : 0;
+    }
+
+    /**
+     * Sets the subsurface weight texture
+     */
+    public set subsurfaceWeightTexture(value: Nullable<BaseTexture>) {
+        this._material.subSurface.translucencyIntensityTexture = value;
+    }
+
+    /**
+     * Sets the subsurface color.
+     * @param value The subsurface tint color as a Color3
+     */
+    public set subsurfaceColor(value: Color3) {
+        this._material.subSurface.tintColor = value;
+    }
+
+    /**
+     * Sets the subsurface color texture.
+     * @param value The subsurface tint texture or null
+     */
+    public set subsurfaceColorTexture(value: Nullable<BaseTexture>) {
+        this._material.subSurface.translucencyColorTexture = value;
     }
 
     // ========================================

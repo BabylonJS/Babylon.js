@@ -96,12 +96,7 @@ specular_roughness_anisotropy = uniforms.vSpecularAnisotropy.b;
 geometry_tangent = uniforms.vSpecularAnisotropy.rg;
 
 // Apply texture values to base layer properties
-
 #ifdef BASE_COLOR
-    #if defined(ALPHAFROMALBEDO) || defined(ALPHATEST)
-        alpha *= baseColorFromTexture.a;
-    #endif
-
     #ifdef BASE_COLOR_GAMMA
         base_color *= toLinearSpace(baseColorFromTexture.rgb);
     #else
@@ -116,7 +111,9 @@ geometry_tangent = uniforms.vSpecularAnisotropy.rg;
 #endif
 
 // _____________________________ Alpha Information _______________________________
-#ifdef GEOMETRY_OPACITY
+#if defined(BASE_COLOR) && defined(ALPHA_FROM_BASE_COLOR_TEXTURE)
+    alpha *= baseColorFromTexture.a;
+#elif defined(GEOMETRY_OPACITY)
     alpha *= opacityFromTexture.a;
     alpha *= uniforms.vGeometryOpacityInfos.y;
 #endif

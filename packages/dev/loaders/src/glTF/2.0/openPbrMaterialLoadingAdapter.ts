@@ -3,7 +3,7 @@ import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { Color3 } from "core/Maths/math.color";
-import type { IMaterialLoadingAdapter } from "./iMaterialLoadingAdapter";
+import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 /**
  * Material Loading Adapter for OpenPBR materials that provides a unified OpenPBR-like interface.
@@ -100,17 +100,17 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     /**
      * Sets whether to use alpha from the base color texture.
      * Note: OpenPBR handles this differently through the baseColorTexture alpha channel.
-     * @param value True to use alpha from albedo texture (handled automatically in OpenPBR)
+     * @param value True to use alpha from base color texture (handled automatically in OpenPBR)
      */
-    public set useAlphaFromAlbedoTexture(value: boolean) {
-        // For OpenPBR this is handled differently via baseColorTexture alpha channel
+    public set useAlphaFromBaseColorTexture(value: boolean) {
+        this._material._useAlphaFromBaseColorTexture = value;
     }
 
     /**
-     * Gets whether alpha is used from the albedo texture.
+     * Gets whether alpha is used from the base color texture.
      * @returns Always false for OpenPBR as it's handled automatically
      */
-    public get useAlphaFromAlbedoTexture(): boolean {
+    public get useAlphaFromBaseColorTexture(): boolean {
         return false;
     }
 
@@ -665,25 +665,11 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Gets whether transmission is enabled.
-     * TODO: Implementation pending OpenPBR transmission feature availability.
-     * @returns Currently returns false as transmission is not yet available
+     * Gets the transmission dispersion Abbe number.
+     * @returns The transmission dispersion Abbe number value
      */
-    public get isTransmissionEnabled(): boolean {
-        // TODO: Implement when OpenPBR transmission is available
-        // return this._material.transmissionWeight > 0;
-        return false;
-    }
-
-    /**
-     * Gets whether subsurface scattering is enabled.
-     * TODO: Implementation pending OpenPBR subsurface feature availability.
-     * @returns Currently returns false as subsurface is not yet available
-     */
-    public get isSubsurfaceEnabled(): boolean {
-        // TODO: Implement when OpenPBR subsurface is available
-        // return this._material.transmissionWeight > 0;
-        return false;
+    public set transmissionDispersionAbbeNumber(value: number) {
+        // TODO: Implement when OpenPBR transmission dispersion is available
     }
 
     /**
@@ -703,7 +689,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * TODO: Implementation pending OpenPBR volume feature availability.
      * @param value The attenuation distance value
      */
-    public set attenuationDistance(value: number) {
+    public set transmissionDepth(value: number) {
         // TODO: Implement when OpenPBR volume properties are available
         // this._material.attenuationDistance = value;
     }
@@ -713,7 +699,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * TODO: Implementation pending OpenPBR volume feature availability.
      * @param value The attenuation color as a Color3
      */
-    public set attenuationColor(value: Color3) {
+    public set transmissionColor(value: Color3) {
         // TODO: Implement when OpenPBR volume properties are available
         // this._material.attenuationColor = value;
     }
@@ -723,7 +709,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * TODO: Implementation pending OpenPBR volume feature availability.
      * @param value The thickness texture or null
      */
-    public set thicknessTexture(value: Nullable<BaseTexture>) {
+    public set volumeThicknessTexture(value: Nullable<BaseTexture>) {
         // TODO: Implement when OpenPBR volume properties are available
         // this._material.thicknessTexture = value;
     }
@@ -733,9 +719,55 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * TODO: Implementation pending OpenPBR volume feature availability.
      * @param value The thickness value
      */
-    public set thickness(value: number) {
+    public set volumeThickness(value: number) {
         // TODO: Implement when OpenPBR volume properties are available
         // this._material.thickness = value;
+    }
+
+    // ========================================
+    // SUBSURFACE PROPERTIES (Subsurface Scattering)
+    // ========================================
+
+    /**
+     * Configures subsurface properties for PBR material
+     */
+    public configureSubsurface(): void {
+        // TODO
+    }
+
+    /**
+     * Sets the subsurface weight
+     */
+    public set subsurfaceWeight(value: number) {
+        // TODO
+    }
+
+    public get subsurfaceWeight(): number {
+        // TODO
+        return 0;
+    }
+
+    /**
+     * Sets the subsurface weight texture
+     */
+    public set subsurfaceWeightTexture(value: Nullable<BaseTexture>) {
+        // TODO
+    }
+
+    /**
+     * Sets the subsurface color.
+     * @param value The subsurface tint color as a Color3
+     */
+    public set subsurfaceColor(value: Color3) {
+        // TODO
+    }
+
+    /**
+     * Sets the subsurface color texture.
+     * @param value The subsurface tint texture or null
+     */
+    public set subsurfaceColorTexture(value: Nullable<BaseTexture>) {
+        // TODO
     }
 
     // ========================================
@@ -916,20 +948,6 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     public set iridescenceThicknessTexture(value: Nullable<BaseTexture>) {
         // TODO: Implement when OpenPBR iridescence is available
         // this._material.iridescenceThicknessTexture = value;
-    }
-
-    // ========================================
-    // DISPERSION
-    // ========================================
-
-    /**
-     * Sets the transmission dispersion value.
-     * TODO: Implementation pending OpenPBR dispersion feature availability.
-     * @param value The dispersion value
-     */
-    public set transmissionDispersion(value: number) {
-        // TODO: Implement when OpenPBR dispersion is available
-        // this._material.transmissionDispersion = value;
     }
 
     // ========================================
