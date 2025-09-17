@@ -70,12 +70,14 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
  * @param spritesCanvasContext The OffscreenCanvasRenderingContext2D or CanvasRenderingContext2D to use for text measurement
  * @param textData The text to calculate the bounding box for
  * @param rawFonts A map of font names to their raw font data
+ * @param variables A map of variables to be used in the animation as text can be a variable which will affect its length
  * @returns The bounding box for the text
  */
 export function GetTextBoundingBox(
     spritesCanvasContext: OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D,
     textData: RawTextData,
-    rawFonts: Map<string, RawFont>
+    rawFonts: Map<string, RawFont>,
+    variables: Map<string, string>
 ): BoundingBox | undefined {
     spritesCanvasContext.save();
     let textInfo: RawTextDocument | undefined = undefined;
@@ -103,7 +105,13 @@ export function GetTextBoundingBox(
         spritesCanvasContext.lineWidth = textInfo.sw;
     }
 
-    const text = textInfo.t;
+    // Text is supported as a possible variable (for localization for example)
+    // Check if the text is a variable and replace it if it is
+    let text = textInfo.t;
+    const variableText = variables.get(text);
+    if (variableText !== undefined) {
+        text = variableText;
+    }
     const metrics = spritesCanvasContext.measureText(text);
 
     const widthPx = Math.ceil(metrics.width);
