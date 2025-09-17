@@ -1,9 +1,9 @@
 /**
- * Encodes an object as a base64 string suitable for URL parameters
+ * Encodes an object to a string suitable for a QSP parameter
  * @param obj Object with string key-value pairs
- * @returns Base64 encoded string
+ * @returns The encoded string that can be used as a QSP parameter
  */
-export function EncodeObjectToBase64(obj: Record<string, string>): string {
+export function EncodeObjectToQspString(obj: Record<string, string>): string {
     const jsonString = JSON.stringify(obj);
     const base64String = btoa(jsonString);
 
@@ -15,13 +15,13 @@ export function EncodeObjectToBase64(obj: Record<string, string>): string {
 }
 
 /**
- * Decodes a base64 string into an object
- * @param base64String Base64 encoded string
+ * Decodes a QSP string encoded with EncodeObjectToQspString back to an object
+ * @param qspString The encoded string
  * @returns Decoded object
  */
-export function DecodeBase64ToObject(base64String: string): Record<string, string> {
+export function DecodeQspStringToObject(qspString: string): Record<string, string> {
     // Restore URL-safe characters back to standard base64
-    let standardBase64 = base64String
+    let standardBase64 = qspString
         .replace(/-/g, "+") // Replace - with +
         .replace(/_/g, "/"); // Replace _ with /
 

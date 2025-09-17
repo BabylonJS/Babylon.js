@@ -2,7 +2,7 @@ import type { AnimationConfiguration } from "lottie-player/animationConfiguratio
 import type { RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 import { Player } from "lottie-player/player";
 import { LocalPlayer } from "lottie-player/localPlayer";
-import { DecodeBase64ToObject } from "./utils";
+import { DecodeQspStringToObject } from "./utils";
 
 /**
  * Main entry point for the default scene for lottie-player
@@ -31,7 +31,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     const urlVariables = searchParams.get("variables");
     const variables = new Map<string, string>();
     if (urlVariables) {
-        const parsedVariables = DecodeBase64ToObject(urlVariables);
+        const parsedVariables = DecodeQspStringToObject(urlVariables);
         for (const [key, value] of Object.entries(parsedVariables)) {
             variables.set(key, value);
         }
