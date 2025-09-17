@@ -666,7 +666,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Gets the transmission dispersion Abbe number.
-     * @returns The transmission dispersion Abbe number value
+     * @param value The Abbe number value
      */
     public set transmissionDispersionAbbeNumber(value: number) {
         // TODO: Implement when OpenPBR transmission dispersion is available
