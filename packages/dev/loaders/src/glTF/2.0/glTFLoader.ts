@@ -325,24 +325,14 @@ export class GLTFLoader implements IGLTFLoader {
     public _getOrCreateMaterialAdapter(material: Material): IMaterialLoadingAdapter {
         let adapter = this._materialAdapterCache.get(material);
         if (!adapter) {
-            adapter = this._createMaterialAdapter(material);
+            if (this._pbrMaterialAdapterClass) {
+                adapter = new this._pbrMaterialAdapterClass(material);
+            } else {
+                throw new Error(`Appropriate material adapter class not found`);
+            }
             this._materialAdapterCache.set(material, adapter);
         }
         return adapter;
-    }
-
-    /**
-     * Creates a material loading adapter with dynamic imports
-     * @param material The material to adapt
-     * @returns Promise that resolves to the appropriate adapter
-     * @internal
-     */
-    private _createMaterialAdapter(material: Material): IMaterialLoadingAdapter {
-        if (this._pbrMaterialAdapterClass) {
-            return new this._pbrMaterialAdapterClass(material);
-        } else {
-            throw new Error(`Appropriate material adapter class not found`);
-        }
     }
 
     /** @internal */
