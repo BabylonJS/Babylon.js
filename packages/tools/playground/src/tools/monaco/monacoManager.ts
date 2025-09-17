@@ -115,9 +115,10 @@ export class MonacoManager {
         });
 
         globalState.onLanguageChangedObservable.add(async () => {
-            await this.setupMonacoAsync(this._hostElement);
+            this._setNewContent();
             this._syncBareImportStubs();
-            this.invalidateRunnerCache(); // Invalidate cache when language changes
+            this.invalidateRunnerCache();
+            globalState.onFilesChangedObservable.notifyObservers();
         });
 
         globalState.onThemeChangedObservable.add(() => {

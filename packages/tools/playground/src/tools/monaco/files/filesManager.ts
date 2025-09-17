@@ -79,6 +79,15 @@ export class FilesManager {
         this._models.set(path, model);
     }
 
+    removeAllFiles() {
+        for (const m of this._models.values()) {
+            m.dispose();
+        }
+        this._models.clear();
+        this._viewStates.clear();
+        this._isDirty = false;
+    }
+
     removeFile(path: string) {
         const m = this._models.get(path);
         if (m) {

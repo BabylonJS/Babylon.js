@@ -203,8 +203,12 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
                         if (guessed !== this.globalState.language) {
                             Utilities.SwitchLanguage(guessed, this.globalState, true);
                         }
-
+                        // In this case we are loading a v1 playground snippet
+                        // And in all likelihood it didn't include export statements
+                        // Since that would not have run in the old playground
+                        // So we append to the end of the file to satisfy our module-based runner
                         const fileName = guessed === "TS" ? "index.ts" : "index.js";
+                        code += `\nexport { ${guessed === "TS" ? "Playground" : "createScene"} }\n`;
 
                         queueMicrotask(() => {
                             this.globalState.onV2HydrateRequiredObservable.notifyObservers({
@@ -216,8 +220,6 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
                         });
 
                         this.globalState.loadingCodeInProgress = false;
-                        this.globalState.onMetadataUpdatedObservable.notifyObservers();
-
                         this.globalState.onMetadataUpdatedObservable.notifyObservers();
                     }
                 }

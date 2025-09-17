@@ -219,36 +219,15 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
 
     const compiled: Record<string, string> = {};
 
-    function hasCreateSceneDecl(code: string) {
-        const fnDecl = /\bfunction\s+createScene\s*\(/;
-        const fnExpr = /\b(?:var|let|const)\s+createScene\s*=\s*(?:async\s*)?function\b/;
-        const arrow = /\b(?:var|let|const)\s+createScene\s*=\s*[^=]*=>/;
-        return fnDecl.test(code) || fnExpr.test(code) || arrow.test(code);
-    }
-    function ensureExports(path: string, code: string) {
-        if (path === manifest.entry) {
-            const hasExportedCreate =
-                /\bexport\s+function\s+createScene\b/.test(code) || /\bexport\s*\{[^}]*\bcreateScene\b[^}]*\}/.test(code) || /\bexport\s+default\b/.test(code);
-            if (hasCreateSceneDecl(code) && !hasExportedCreate) {
-                code += " export { createScene };";
-            }
-            const hasPlay = /\bclass\s+Playground\b/.test(code);
-            const hasExportedPlay = /\bexport\s+class\s+Playground\b/.test(code) || /\bexport\s*\{[^}]*\bPlayground\b[^}]*\}/.test(code);
-            if (hasPlay && !hasExportedPlay) {
-                code += " export { Playground };";
-            }
-        }
-        return code;
-    }
-
     // Phase 1: per-file transpile (TS->JS) and shader wrapping
     for (const [path, rawSrc] of Object.entries(manifest.files)) {
         const src = SanitizeCode(rawSrc);
+        // Shader wrap as raw string
         if (/[.](wgsl|glsl|fx)$/i.test(path)) {
             compiled[path] = `export default ${JSON.stringify(src)};`;
             continue;
         }
-        let code = ensureExports(path, src);
+        let code = src;
         if (/[.]tsx?$/i.test(path) && ts) {
             code = (await pipeline.emitOneAsync(path)).js;
         } else {
