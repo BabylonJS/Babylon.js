@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-param */
 /* eslint-disable no-console */
 import { globSync } from "glob";
 import * as fs from "fs";
@@ -199,7 +200,14 @@ function GetModuleDeclaration(
         // TODO - make a list of dependencies that are accepted by each package
         if (!devPackageName) {
             if (externalName) {
-                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
+                if (
+                    externalName === "@fortawesome" ||
+                    externalName === "react-contextmenu" ||
+                    externalName === "@fluentui" ||
+                    externalName === "@recast-navigation/generators" ||
+                    externalName === "@recast-navigation/core" ||
+                    externalName === "@recast-navigation/wasm"
+                ) {
                     // replace with any
                     const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
@@ -535,9 +543,6 @@ ${linesToDefaultNamespace.join("\n")}
 // }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-/**
- *
- */
 export function generateCombinedDeclaration(declarationFiles: string[], config: IGenerateDeclarationConfig, looseDeclarations: string[] = [], buildType: BuildType = "umd") {
     let declarations = "";
     let moduleDeclaration = "";
@@ -595,9 +600,6 @@ ${looseDeclarationsString}
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-/**
- *
- */
 export function generateDeclaration() {
     const configFilePath = checkArgs("--config") as string;
     if (!configFilePath) {
