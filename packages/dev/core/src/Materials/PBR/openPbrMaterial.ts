@@ -1519,7 +1519,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @returns whether or not there is a usable alpha channel for transparency.
      */
     protected _hasAlphaChannel(): boolean {
-        return this.baseColorTexture != null && this.baseColorTexture.hasAlpha && this._useAlphaFromBaseColorTexture || this.geometryOpacityTexture != null;
+        return (this.baseColorTexture != null && this.baseColorTexture.hasAlpha && this._useAlphaFromBaseColorTexture) || this.geometryOpacityTexture != null;
     }
 
     /**
