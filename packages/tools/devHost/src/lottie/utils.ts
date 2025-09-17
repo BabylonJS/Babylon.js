@@ -4,10 +4,7 @@
  * @returns Base64 encoded string
  */
 export function EncodeObjectToBase64(obj: Record<string, string>): string {
-    // Convert object to JSON string
     const jsonString = JSON.stringify(obj);
-
-    // Convert to base64
     const base64String = btoa(jsonString);
 
     // Make it URL-safe by replacing characters that can cause issues in URLs
@@ -33,9 +30,6 @@ export function DecodeBase64ToObject(base64String: string): Record<string, strin
         standardBase64 += "=";
     }
 
-    // Decode from base64
     const jsonString = atob(standardBase64);
-
-    // Parse JSON back to object
     return JSON.parse(jsonString);
 }
