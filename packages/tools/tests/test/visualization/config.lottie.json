@@ -122,6 +122,16 @@
             "referenceImage": "text.png"
         },
         {
+            "title": "Lottie - Single Text (Web Worker, URL, No Pre-Warm, With Variables)",
+            "devHostQsps": "exp=lottie&file=textTestFileWithVariable.json&useWorker=true&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
+            "referenceImage": "text.png"
+        },
+        {
+            "title": "Lottie - Single Text (Main Thread, URL, No Pre-Warm, With Variables)",
+            "devHostQsps": "exp=lottie&file=textTestFileWithVariable.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
+            "referenceImage": "text.png"
+        },
+        {
             "title": "Lottie - Triangles and Text (Web Worker, URL, No Pre-Warm)",
             "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=true&useUrl=true&usePreWarm=false",
             "referenceImage": "triangles-text.png"
@@ -149,6 +159,16 @@
         {
             "title": "Lottie - Triangles and Text (Main Thread, JSON)",
             "devHostQsps": "exp=lottie&file=trianglesAndText.json&useWorker=false&useUrl=false",
+            "referenceImage": "triangles-text.png"
+        },
+        {
+            "title": "Lottie - Triangles and Text (Web Worker, URL, No Pre-Warm, With Variables)",
+            "devHostQsps": "exp=lottie&file=trianglesAndTextWithVariable.json&useWorker=true&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
+            "referenceImage": "triangles-text.png"
+        },
+        {
+            "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, With Variables)",
+            "devHostQsps": "exp=lottie&file=trianglesAndTextWithVariable.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
             "referenceImage": "triangles-text.png"
         }
     ]
