@@ -202,7 +202,6 @@ export class MonacoManager {
         }
         this.globalState.entryFilePath = entry;
         this.globalState.activeFilePath = activePath;
-        this.globalState.isMultiFile = true;
 
         this.globalState.onFilesChangedObservable.notifyObservers();
         this.globalState.onManifestChangedObservable.notifyObservers();
@@ -241,20 +240,6 @@ export class MonacoManager {
     }
 
     public addFile(path: string, initial = "") {
-        if (!this.globalState.isMultiFile) {
-            const entry = this.globalState.entryFilePath || (this.globalState.language === "JS" ? "index.js" : "index.ts");
-            if (!this._files.has(entry)) {
-                const existingCode = this._editorHost.editor?.getValue() || this.globalState.currentCode || initial;
-                this._files.addFile(entry, existingCode, (p, code) => {
-                    this.globalState.files[p] = code;
-                    this._files.setDirty(true);
-                });
-                this.globalState.files[entry] = existingCode;
-                this.globalState.activeFilePath = entry;
-                this.globalState.entryFilePath = entry;
-            }
-            this.globalState.isMultiFile = true;
-        }
         if (this._files.has(path)) {
             return;
         }
@@ -296,25 +281,22 @@ export class MonacoManager {
         });
 
         if (success) {
-            // Update global state
+            const content = this.globalState.files[oldPath];
             delete this.globalState.files[oldPath];
+            this.globalState.files[newPath] = content;
 
-            // Update entry path if needed
             if (this.globalState.entryFilePath === oldPath) {
                 this.globalState.entryFilePath = newPath;
             }
 
-            // Update active file if needed
             if (this.globalState.activeFilePath === oldPath) {
                 this.globalState.activeFilePath = newPath;
             }
 
-            // Notify observers
             this.globalState.onFilesChangedObservable.notifyObservers();
             this.globalState.onManifestChangedObservable.notifyObservers();
             this.globalState.onActiveFileChangedObservable.notifyObservers();
 
-            // Update bare import stubs
             this._syncBareImportStubsAsync();
         }
 
@@ -652,7 +634,6 @@ declare var canvas: HTMLCanvasElement;
 export { Playground };`;
         const defaultCode = this.globalState.language === "JS" ? defaultJs : defaultTs;
 
-        this.globalState.isMultiFile = true;
         this.globalState.entryFilePath = entry;
         this.globalState.activeFilePath = entry;
 
@@ -700,7 +681,6 @@ export { Playground };`;
         this.globalState.importsMap = {};
         this.globalState.entryFilePath = undefined as any;
         this.globalState.activeFilePath = undefined as any;
-        this.globalState.isMultiFile = false;
         this.globalState.currentSnippetToken = "";
 
         this.globalState.onFilesChangedObservable.notifyObservers();
@@ -729,10 +709,7 @@ export { Playground };`;
 
     // ---------------- Typings / bare import stubs ----------------
     private _collectAllSourceTexts(): string[] {
-        if (this.globalState.isMultiFile) {
-            return Object.values(this.globalState.files || {});
-        }
-        return [this._editorHost.editor?.getValue() || this.globalState.currentCode || ""];
+        return Object.values(this.globalState.files || {});
     }
 
     private async _syncBareImportStubsAsync() {

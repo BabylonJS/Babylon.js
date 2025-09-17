@@ -38,29 +38,26 @@ export class SaveManager {
         });
     }
 
-    private _getSnippetData() {
-        const isMulti = this.globalState.isMultiFile === true;
+    /**
+     *
+     * @returns The snippet data as a JSON string.
+     */
+    public getSnippetData() {
         const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
-        let codeToSave: string;
+        const entry = this.globalState.entryFilePath || (this.globalState.language === "JS" ? "index.js" : "index.ts");
 
-        if (isMulti) {
-            const entry = this.globalState.entryFilePath || (this.globalState.language === "JS" ? "index.js" : "index.ts");
+        const files = Object.keys(this.globalState.files || {}).length ? this.globalState.files : { [entry]: this.globalState.currentCode || "" };
 
-            const files = Object.keys(this.globalState.files || {}).length ? this.globalState.files : { [entry]: this.globalState.currentCode || "" };
+        const v2 = {
+            v: 2,
+            language: (this.globalState.language === "JS" ? "JS" : "TS") as "JS" | "TS",
+            entry,
+            imports: this.globalState.importsMap || {},
+            files,
+        };
 
-            const v2 = {
-                v: 2,
-                language: (this.globalState.language === "JS" ? "JS" : "TS") as "JS" | "TS",
-                entry,
-                imports: this.globalState.importsMap || {},
-                files,
-            };
-
-            codeToSave = JSON.stringify(v2);
-        } else {
-            codeToSave = this.globalState.currentCode;
-        }
+        const codeToSave = JSON.stringify(v2);
 
         const encoder = new TextEncoder();
         const buffer = encoder.encode(codeToSave);
@@ -118,7 +115,7 @@ export class SaveManager {
     }
 
     private _localSaveSnippet() {
-        void this._saveJsonFileAsync(this._getSnippetData());
+        void this._saveJsonFileAsync(this.getSnippetData());
     }
 
     private _saveSnippet() {
@@ -167,6 +164,6 @@ export class SaveManager {
         xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        xmlHttp.send(this._getSnippetData());
+        xmlHttp.send(this.getSnippetData());
     }
 }

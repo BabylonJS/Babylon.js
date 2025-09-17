@@ -44,8 +44,6 @@ export class GlobalState {
     public activeFilePath: string = Utilities.ReadStringFromStore("language", "JS") === "JS" ? "index.js" : "index.ts";
     /** Import map for V2 multi-file */
     public importsMap: Record<string, string> = {};
-    /** Flag indicating multi-file (V2) mode */
-    public isMultiFile: boolean = false;
     /** Entry file for execution */
     public entryFilePath: string = Utilities.ReadStringFromStore("language", "JS") === "JS" ? "index.js" : "index.ts";
     /** Manual tab order */

@@ -172,7 +172,7 @@ export class LoadManager {
         }
 
         // Extract code
-        const payload = JSON.parse(snippet.jsonPayload);
+        const payload = JSON.parse(snippet.jsonPayload || snippet.payload);
         let code: string = payload.code.toString();
 
         if (payload.unicode) {
