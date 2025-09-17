@@ -70,4 +70,10 @@ export class EditorHost {
     updateOptions(opts: editor.IStandaloneEditorConstructionOptions) {
         this._editor?.updateOptions(opts);
     }
+
+    dispose() {
+        this.editor?.dispose();
+        this._editor?.dispose();
+        this._onScroll = undefined;
+    }
 }

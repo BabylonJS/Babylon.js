@@ -1,6 +1,7 @@
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import type { TemplateItem } from "./templatesService";
 import type { TagCandidate } from "../analysis/codeAnalysisService";
+import { GetWorkerForModel } from "../worker/worker";
 
 /**
  *
@@ -55,13 +56,11 @@ export class CompletionService {
     register(lang: "JS" | "TS", templates: TemplateItem[]) {
         this._disposable?.dispose();
         const language = this._langId(lang);
-
         this._disposable = monaco.languages.registerCompletionItemProvider(language, {
             triggerCharacters: [".", '"', "'", "/", "@"],
             // eslint-disable-next-line
             provideCompletionItems: async (model, position, context) => {
-                const getSvc = lang === "JS" ? await monaco.languages.typescript.getJavaScriptWorker() : await monaco.languages.typescript.getTypeScriptWorker();
-                const svc = await getSvc(model.uri);
+                const svc = await GetWorkerForModel(model);
                 const offset = model.getOffsetAt(position);
                 const info = await svc.getCompletionsAtPosition(model.uri.toString(), offset);
 
@@ -95,12 +94,15 @@ export class CompletionService {
             // eslint-disable-next-line
             resolveCompletionItem: async (item) => {
                 try {
-                    const uriStr = (item as any).__uri ?? monaco.editor.getModels()[0]?.uri.toString();
+                    const model = monaco.editor.getModels()[0];
+                    if (!model) {
+                        return item;
+                    }
+                    const uriStr = (item as any).__uri ?? model.uri.toString();
                     if (!uriStr) {
                         return item;
                     }
-                    const getSvc = lang === "JS" ? await monaco.languages.typescript.getJavaScriptWorker() : await monaco.languages.typescript.getTypeScriptWorker();
-                    const svc = await getSvc(monaco.Uri.parse(uriStr));
+                    const svc = await GetWorkerForModel(model);
                     let offset: number | undefined = (item as any).__offset;
                     if (offset == null && item.range) {
                         const m = monaco.editor.getModel(monaco.Uri.parse(uriStr));

@@ -1,4 +1,4 @@
-import { DecodeBase64ToBinary } from "@dev/core";
+import { DecodeBase64ToBinary, Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 
@@ -45,6 +45,48 @@ export class LoadManager {
                 this._loadPlayground(id);
             }
         });
+
+        globalState.onLocalLoadRequiredObservable.add(async () => {
+            globalState.onDisplayWaitRingObservable.notifyObservers(true);
+            const json = await this._pickJsonFileAsync();
+            if (json) {
+                location.hash = "";
+                this._processJsonPayload(json);
+            } else {
+                globalState.onDisplayWaitRingObservable.notifyObservers(false);
+            }
+        });
+    }
+
+    private async _pickJsonFileAsync() {
+        try {
+            // Show native file picker
+            const [handle] = await (window as any).showOpenFilePicker({
+                types: [
+                    {
+                        description: "Playground JSON Files",
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        accept: { "application/json": [".json"] },
+                    },
+                ],
+                multiple: false,
+            });
+
+            // Get the file from the handle
+            const file = await handle.getFile();
+
+            // Read the file as text
+            const text = await file.text();
+
+            return text; // This is the raw JSON string
+        } catch (err: any) {
+            if (err.name === "AbortError") {
+                Logger.Warn("User canceled file selection");
+            } else {
+                Logger.Error("Error reading file:", err);
+            }
+            return null;
+        }
     }
 
     private _cleanHash() {
@@ -108,6 +150,125 @@ export class LoadManager {
         // Engine
         "createEngine",
     ];
+    private _processJsonPayload(data: string) {
+        const snippet = JSON.parse(data);
+        // Check if title / descr / tags are already set
+        if (snippet.name != null && snippet.name != "") {
+            this.globalState.currentSnippetTitle = snippet.name;
+        } else {
+            this.globalState.currentSnippetTitle = "";
+        }
+
+        if (snippet.description != null && snippet.description != "") {
+            this.globalState.currentSnippetDescription = snippet.description;
+        } else {
+            this.globalState.currentSnippetDescription = "";
+        }
+
+        if (snippet.tags != null && snippet.tags != "") {
+            this.globalState.currentSnippetTags = snippet.tags;
+        } else {
+            this.globalState.currentSnippetTags = "";
+        }
+
+        // Extract code
+        const payload = JSON.parse(snippet.jsonPayload);
+        let code: string = payload.code.toString();
+
+        if (payload.unicode) {
+            // Need to decode
+            const encodedData = payload.unicode;
+            const decoder = new TextDecoder("utf8");
+
+            code = decoder.decode((DecodeBase64ToBinary || DecodeBase64ToBinaryReproduced)(encodedData));
+        }
+
+        try {
+            const maybeV2 = JSON.parse(code);
+            if (maybeV2 && maybeV2.v === 2 && maybeV2.files && typeof maybeV2.files === "object") {
+                const v2 = maybeV2 as {
+                    v: 2;
+                    language: "JS" | "TS";
+                    entry: string;
+                    imports?: Record<string, string>;
+                    files: Record<string, string>;
+                    meta?: { title?: string; description?: string; tags?: string[] };
+                };
+
+                if (v2.language !== this.globalState.language) {
+                    Utilities.SwitchLanguage(v2.language, this.globalState, true);
+                }
+
+                if (!this.globalState.currentSnippetTitle && v2.meta?.title) {
+                    this.globalState.currentSnippetTitle = v2.meta.title;
+                }
+                if (!this.globalState.currentSnippetDescription && v2.meta?.description) {
+                    this.globalState.currentSnippetDescription = v2.meta.description;
+                }
+                if (!this.globalState.currentSnippetTags && v2.meta?.tags?.length) {
+                    this.globalState.currentSnippetTags = v2.meta.tags.join(",");
+                }
+
+                this.globalState.onV2HydrateRequiredObservable.notifyObservers({
+                    files: v2.files,
+                    entry: v2.entry || (v2.language === "JS" ? "index.js" : "index.ts"),
+                    imports: v2.imports || {},
+                    language: v2.language,
+                });
+
+                this.globalState.loadingCodeInProgress = false;
+                this.globalState.onMetadataUpdatedObservable.notifyObservers();
+
+                return;
+            }
+        } catch {}
+
+        // check the engine
+        if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
+            // check if an engine is forced in the URL
+            const url = new URL(window.location.href);
+            const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
+            // get the current engine
+            const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
+            if (!engineInURL && currentEngine !== payload.engine) {
+                if (
+                    window.confirm(
+                        `The engine version in this playground (${payload.engine}) is different from the one you are currently using (${currentEngine}).
+Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
+                    )
+                ) {
+                    // we need to change the engine
+                    Utilities.StoreStringToStore("engineVersion", payload.engine, true);
+                    window.location.reload();
+                }
+            }
+        }
+
+        const guessed = this._guessLanguageFromCode(code); // "TS" | "JS"
+        if (guessed !== this.globalState.language) {
+            Utilities.SwitchLanguage(guessed, this.globalState, true);
+        }
+        // In this case we are loading a v1 playground snippet
+        // And in all likelihood it didn't include export statements
+        // Since that would not have run in the old playground
+        // So we append to the end of the file to satisfy our module-based runner
+        const fileName = guessed === "TS" ? "index.ts" : "index.js";
+        code += `\nexport default ${guessed === "TS" ? "Playground" : (this._jsFunctions.find((fn) => code.includes(fn)) ?? "createScene")}\n`;
+        if (guessed === "JS" && code.includes("createEngine")) {
+            code += `\nexport { createEngine }\n`;
+        }
+        queueMicrotask(() => {
+            this.globalState.onV2HydrateRequiredObservable.notifyObservers({
+                files: { [fileName]: code },
+                entry: fileName,
+                imports: {},
+                language: guessed,
+            });
+        });
+
+        this.globalState.loadingCodeInProgress = false;
+        this.globalState.onMetadataUpdatedObservable.notifyObservers();
+    }
 
     private _loadPlayground(id: string) {
         this.globalState.loadingCodeInProgress = true;
@@ -116,123 +277,7 @@ export class LoadManager {
             xmlHttp.onreadystatechange = () => {
                 if (xmlHttp.readyState === 4) {
                     if (xmlHttp.status === 200) {
-                        const snippet = JSON.parse(xmlHttp.responseText);
-                        // Check if title / descr / tags are already set
-                        if (snippet.name != null && snippet.name != "") {
-                            this.globalState.currentSnippetTitle = snippet.name;
-                        } else {
-                            this.globalState.currentSnippetTitle = "";
-                        }
-
-                        if (snippet.description != null && snippet.description != "") {
-                            this.globalState.currentSnippetDescription = snippet.description;
-                        } else {
-                            this.globalState.currentSnippetDescription = "";
-                        }
-
-                        if (snippet.tags != null && snippet.tags != "") {
-                            this.globalState.currentSnippetTags = snippet.tags;
-                        } else {
-                            this.globalState.currentSnippetTags = "";
-                        }
-
-                        // Extract code
-                        const payload = JSON.parse(snippet.jsonPayload);
-                        let code: string = payload.code.toString();
-
-                        if (payload.unicode) {
-                            // Need to decode
-                            const encodedData = payload.unicode;
-                            const decoder = new TextDecoder("utf8");
-
-                            code = decoder.decode((DecodeBase64ToBinary || DecodeBase64ToBinaryReproduced)(encodedData));
-                        }
-
-                        try {
-                            const maybeV2 = JSON.parse(code);
-                            if (maybeV2 && maybeV2.v === 2 && maybeV2.files && typeof maybeV2.files === "object") {
-                                const v2 = maybeV2 as {
-                                    v: 2;
-                                    language: "JS" | "TS";
-                                    entry: string;
-                                    imports?: Record<string, string>;
-                                    files: Record<string, string>;
-                                    meta?: { title?: string; description?: string; tags?: string[] };
-                                };
-
-                                if (v2.language !== this.globalState.language) {
-                                    Utilities.SwitchLanguage(v2.language, this.globalState, true);
-                                }
-
-                                if (!this.globalState.currentSnippetTitle && v2.meta?.title) {
-                                    this.globalState.currentSnippetTitle = v2.meta.title;
-                                }
-                                if (!this.globalState.currentSnippetDescription && v2.meta?.description) {
-                                    this.globalState.currentSnippetDescription = v2.meta.description;
-                                }
-                                if (!this.globalState.currentSnippetTags && v2.meta?.tags?.length) {
-                                    this.globalState.currentSnippetTags = v2.meta.tags.join(",");
-                                }
-
-                                this.globalState.onV2HydrateRequiredObservable.notifyObservers({
-                                    files: v2.files,
-                                    entry: v2.entry || (v2.language === "JS" ? "index.js" : "index.ts"),
-                                    imports: v2.imports || {},
-                                    language: v2.language,
-                                });
-
-                                this.globalState.loadingCodeInProgress = false;
-                                this.globalState.onMetadataUpdatedObservable.notifyObservers();
-
-                                return;
-                            }
-                        } catch {}
-
-                        // check the engine
-                        if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
-                            // check if an engine is forced in the URL
-                            const url = new URL(window.location.href);
-                            const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
-                            // get the current engine
-                            const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-                            if (!engineInURL && currentEngine !== payload.engine) {
-                                if (
-                                    window.confirm(
-                                        `The engine version in this playground (${payload.engine}) is different from the one you are currently using (${currentEngine}).
-Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
-                                    )
-                                ) {
-                                    // we need to change the engine
-                                    Utilities.StoreStringToStore("engineVersion", payload.engine, true);
-                                    window.location.reload();
-                                }
-                            }
-                        }
-
-                        const guessed = this._guessLanguageFromCode(code); // "TS" | "JS"
-                        if (guessed !== this.globalState.language) {
-                            Utilities.SwitchLanguage(guessed, this.globalState, true);
-                        }
-                        // In this case we are loading a v1 playground snippet
-                        // And in all likelihood it didn't include export statements
-                        // Since that would not have run in the old playground
-                        // So we append to the end of the file to satisfy our module-based runner
-                        const fileName = guessed === "TS" ? "index.ts" : "index.js";
-                        code += `\nexport default ${guessed === "TS" ? "Playground" : (this._jsFunctions.find((fn) => code.includes(fn)) ?? "createScene")}\n`;
-                        if (guessed === "JS" && code.includes("createEngine")) {
-                            code += `\nexport { createEngine }\n`;
-                        }
-                        queueMicrotask(() => {
-                            this.globalState.onV2HydrateRequiredObservable.notifyObservers({
-                                files: { [fileName]: code },
-                                entry: fileName,
-                                imports: {},
-                                language: guessed,
-                            });
-                        });
-
-                        this.globalState.loadingCodeInProgress = false;
-                        this.globalState.onMetadataUpdatedObservable.notifyObservers();
+                        this._processJsonPayload(xmlHttp.responseText);
                     }
                 }
             };

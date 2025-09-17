@@ -1,5 +1,6 @@
 // ts/tsPipeline.ts
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import { GetWorkerForModel } from "../worker/worker";
 
 /**
  *
@@ -40,6 +41,7 @@ const JsOptions: monaco.languages.typescript.CompilerOptions = {
 export class TsPipeline {
     private _paths: Record<string, string[]> = {};
     private _extraLibUris = new Set<string>();
+    private _extraLibDisposables: monaco.IDisposable[] = [];
     private _setupDone = false;
 
     setup(libContent: string) {
@@ -57,16 +59,18 @@ export class TsPipeline {
         }
 
         if (libContent) {
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(libContent, "file:///external/babylon.globals.d.ts");
-            monaco.languages.typescript.javascriptDefaults.addExtraLib(libContent, "file:///external/babylon.globals.d.ts");
+            const tsDisposable = monaco.languages.typescript.typescriptDefaults.addExtraLib(libContent, "file:///external/babylon.globals.d.ts");
+            const jsDisposable = monaco.languages.typescript.javascriptDefaults.addExtraLib(libContent, "file:///external/babylon.globals.d.ts");
+            this._extraLibDisposables.push(tsDisposable, jsDisposable);
         }
 
         const shaderDts = `
 declare module "*.wgsl" { const content: string; export default content; }
 declare module "*.glsl" { const content: string; export default content; }
 declare module "*.fx"   { const content: string; export default content; }`;
-        monaco.languages.typescript.typescriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
-        monaco.languages.typescript.javascriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
+        const shaderTsDisposable = monaco.languages.typescript.typescriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
+        const shaderJsDisposable = monaco.languages.typescript.javascriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
+        this._extraLibDisposables.push(shaderTsDisposable, shaderJsDisposable);
     }
     addPathsFor(raw: string, canonical: string) {
         if (!raw || raw === canonical) {
@@ -128,8 +132,7 @@ declare module "*.fx"   { const content: string; export default content; }`;
     }> {
         const clean = path.replace(/^\//, "");
         const uri = monaco.Uri.parse(`file:///pg/${clean}`);
-        const wf = await monaco.languages.typescript.getTypeScriptWorker();
-        const svc = await wf(uri);
+        const svc = await GetWorkerForModel(monaco.editor.getModels()[0]);
         const out = await svc.getEmitOutput(uri.toString());
 
         if (out.emitSkipped) {
@@ -144,25 +147,6 @@ declare module "*.fx"   { const content: string; export default content; }`;
 
         const mapFile = out.outputFiles.find((f) => f.name.endsWith(".js.map"));
         return { js: jsFile.text, map: mapFile?.text };
-    }
-
-    async emitManyAsync(paths: string[]) {
-        const uris = paths.map((p) => monaco.Uri.parse(`file:///pg/${p.replace(/^\//, "")}`));
-        const wf = await monaco.languages.typescript.getTypeScriptWorker();
-        const svcs = await Promise.all(uris.map(async (u) => await wf(u)));
-
-        const outs = await Promise.all(svcs.map(async (svc, i) => await svc.getEmitOutput(uris[i].toString())));
-        return outs.map((o, i) => {
-            if (o.emitSkipped) {
-                throw new Error(`Emit skipped for ${paths[i]}`);
-            }
-            const js = o.outputFiles.find((f) => f.name.endsWith(".js"))?.text;
-            if (!js) {
-                throw new Error(`No JS output for ${paths[i]}`);
-            }
-            const map = o.outputFiles.find((f) => f.name.endsWith(".js.map"))?.text;
-            return { path: paths[i], js, map };
-        });
     }
 
     /**
@@ -215,8 +199,24 @@ declare module "*.fx"   { const content: string; export default content; }`;
 
         if (declarations) {
             const ts = monaco.languages.typescript;
-            ts.typescriptDefaults.addExtraLib(declarations, "file:///external/workspace-declarations.d.ts");
-            ts.javascriptDefaults.addExtraLib(declarations, "file:///external/workspace-declarations.d.ts");
+            const tsDisposable = ts.typescriptDefaults.addExtraLib(declarations, "file:///external/workspace-declarations.d.ts");
+            const jsDisposable = ts.javascriptDefaults.addExtraLib(declarations, "file:///external/workspace-declarations.d.ts");
+            this._extraLibDisposables.push(tsDisposable, jsDisposable);
         }
+    }
+
+    dispose() {
+        // Dispose all extra lib disposables
+        for (const disposable of this._extraLibDisposables) {
+            try {
+                disposable.dispose();
+            } catch (e) {
+                // Ignore errors during cleanup
+            }
+        }
+        this._extraLibDisposables = [];
+        this._extraLibUris.clear();
+        this._paths = {};
+        this._setupDone = false;
     }
 }

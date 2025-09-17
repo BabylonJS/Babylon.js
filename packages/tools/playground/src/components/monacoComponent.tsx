@@ -196,6 +196,9 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         this._ro?.disconnect();
         this._scrollable?.dispose();
         this._scrollable = null;
+
+        // Dispose Monaco manager to clean up TypeScript workers and services
+        this._monacoManager?.dispose();
     }
 
     private _onPtrDown = (e: PointerEvent) => {

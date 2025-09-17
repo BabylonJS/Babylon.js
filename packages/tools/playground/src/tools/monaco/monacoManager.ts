@@ -474,6 +474,7 @@ export class MonacoManager {
     }
 
     public async setupMonacoAsync(hostElement: HTMLDivElement, initialCall = false) {
+        this.dispose();
         this._hostElement = hostElement;
 
         if (initialCall) {
@@ -854,4 +855,20 @@ export { Playground };`;
     private _onRequestLocalResolve = (fullSpec: RequestLocalResolve) => {
         Logger.Log("Requesting local package for: " + fullSpec.fullSpec);
     };
+
+    public dispose() {
+        this._typings?.dispose();
+        this._files?.dispose();
+        this._tsPipeline?.dispose();
+        this._editorHost?.dispose();
+
+        // Clear any cached runners
+        this.globalState.currentRunner?.dispose?.();
+        this.globalState.currentRunner = undefined;
+
+        // Clear caches
+        this._lastRunConfig = null;
+        this._lastRunConfigHash = null;
+        this._localPkgHandles.clear();
+    }
 }

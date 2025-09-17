@@ -42,11 +42,12 @@ export function CreateDefaultValue<U extends ConnectionPointType>(type: U, engin
  * @param smartFilter - defines the smart filter to attach the input block to
  * @param type - defines the type of the input block
  * @param engine - defines the engine to use to create a texture (if relevant)
+ * @param name - if supplied, used as the name of the input block, otherwise it will be named after the data type
  * @returns
  */
-export function CreateDefaultInput<U extends ConnectionPointType>(smartFilter: SmartFilter, type: U, engine: Nullable<ThinEngine>): InputBlock<U> {
-    const name = ConnectionPointType[type] ?? "Unknown";
-    const inputBlock = new InputBlock(smartFilter, name, type, CreateDefaultValue(type, engine));
+export function CreateDefaultInput<U extends ConnectionPointType>(smartFilter: SmartFilter, type: U, engine: Nullable<ThinEngine>, name?: string): InputBlock<U> {
+    const blockName = name ?? ConnectionPointType[type] ?? "Unknown";
+    const inputBlock = new InputBlock(smartFilter, blockName, type, CreateDefaultValue(type, engine));
     return inputBlock;
 }
 

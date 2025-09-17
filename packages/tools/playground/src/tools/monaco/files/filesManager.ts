@@ -135,4 +135,9 @@ export class FilesManager {
             editor.setScrollTop(0);
         }
     }
+    dispose() {
+        this.removeAllFiles();
+        this._models.clear();
+        this._viewStates.clear();
+    }
 }

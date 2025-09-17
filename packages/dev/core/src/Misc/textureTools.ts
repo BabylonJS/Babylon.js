@@ -7,7 +7,7 @@ import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
-import { ShaderLanguage } from "core/Materials";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { Observable } from "./observable";
 import type { Nullable } from "../types";
 import { Clamp } from "../Maths/math.scalar.functions";

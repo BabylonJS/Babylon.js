@@ -8,6 +8,7 @@ import * as lexer from "es-module-lexer";
 import type { TsPipeline } from "../ts/tsPipeline";
 import type { DirHandle } from "./localPackage";
 import { BuildLocalPackageImportMap } from "./localPackage";
+import { GetWorkerForModel } from "../worker/worker";
 
 lexer.initSync();
 
@@ -151,10 +152,9 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
             ensureModel(p, manifest.files[p]);
         }
 
-        const worker = await monaco.languages.typescript.getTypeScriptWorker();
         // Map every ts/tsx model to diagnostics
         for (const model of monaco.editor.getModels().filter((m) => /[.]tsx?$/.test(m.uri.path))) {
-            const svc = await worker(model.uri);
+            const svc = await GetWorkerForModel(model);
             const uriStr = model.uri.toString();
             const [syn, sem] = await Promise.all([svc.getSyntacticDiagnostics(uriStr), svc.getSemanticDiagnostics(uriStr)]);
             const first = [...syn, ...sem][0];
