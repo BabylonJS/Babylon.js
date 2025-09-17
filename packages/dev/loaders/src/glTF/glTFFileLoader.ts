@@ -309,6 +309,7 @@ class GLTFLoaderBaseOptions {
 
     /**
      * Load the glTF files using the OpenPBR material.
+     * @experimental
      */
     public useOpenPBR = false;
 }

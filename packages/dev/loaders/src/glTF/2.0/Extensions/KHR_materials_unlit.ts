@@ -6,7 +6,6 @@ import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_unlit";
 
@@ -68,7 +67,7 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
 
         const promises = new Array<Promise<any>>();
 

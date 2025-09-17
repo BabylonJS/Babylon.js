@@ -2193,7 +2193,7 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, properties: IMaterialPbrMetallicRoughness, babylonMaterial: Material): Promise<void> {
         const promises = new Array<Promise<unknown>>();
-        const adapter: IMaterialLoadingAdapter = this._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
 
         if (properties) {
             // Set base color and alpha using adapter

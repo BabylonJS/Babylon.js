@@ -8,7 +8,6 @@ import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
 import { Color3 } from "core/Maths/math.color";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_diffuse_transmission";
 
@@ -77,7 +76,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadTranslucentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsDiffuseTransmission): Promise<void> {
-        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         adapter.subsurfaceWeight = extension.diffuseTransmissionFactor ?? 0;
         adapter.subsurfaceColor = extension.diffuseTransmissionColorFactor !== undefined ? Color3.FromArray(extension.diffuseTransmissionColorFactor) : Color3.White();
         

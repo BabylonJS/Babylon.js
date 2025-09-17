@@ -6,7 +6,6 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsDiffuseRoughness } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_diffuse_roughness";
 
@@ -73,7 +72,7 @@ export class KHR_materials_diffuse_roughness implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadDiffuseRoughnessPropertiesAsync(context: string, properties: IKHRMaterialsDiffuseRoughness, babylonMaterial: Material): Promise<void> {
-        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const promises = new Array<Promise<any>>();
 
         adapter.baseDiffuseRoughness = properties.diffuseRoughnessFactor ?? 0;

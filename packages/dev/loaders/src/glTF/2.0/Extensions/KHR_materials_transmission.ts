@@ -6,7 +6,6 @@ import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsTransmission } from "babylonjs-gltf2interface";
-import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 import type { Scene } from "core/scene";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Texture } from "core/Materials/Textures/texture";
@@ -379,7 +378,7 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadTransparentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsTransmission): Promise<void> {
-        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const transmissionWeight = extension.transmissionFactor !== undefined ? extension.transmissionFactor : 0.0;
 
         if (transmissionWeight === 0) {

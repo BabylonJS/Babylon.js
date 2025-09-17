@@ -6,7 +6,6 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsEmissiveStrength } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_emissive_strength";
 
@@ -70,7 +69,7 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
 
     private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
         if (properties.emissiveStrength !== undefined) {
-            const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+            const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
             adapter.emissionLuminance = properties.emissiveStrength;
         }
     }

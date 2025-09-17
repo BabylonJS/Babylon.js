@@ -8,7 +8,6 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoatColor } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import type { IMaterialLoadingAdapter } from "../materialLoadingAdapter";
 
 const NAME = "KHR_materials_clearcoat_color";
 
@@ -73,7 +72,7 @@ export class KHR_materials_clearcoat_color implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadColorPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsClearcoatColor): Promise<void> {
-        const adapter: IMaterialLoadingAdapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
 
         const colorFactor = Color3.White();
 
