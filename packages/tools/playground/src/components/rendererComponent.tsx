@@ -8,7 +8,7 @@ import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
 
-import type { Nullable, Scene } from "@dev/core";
+import type { Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 
@@ -240,34 +240,35 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 return;
             }
 
-            // Create engine (same as your existing engine selection logic)
-            let engine: Engine | null = null;
-            if (useWebGPU) {
-                try {
-                    const wgpu = new WebGPUEngine(this._canvasRef.current!, { enableAllFeatures: true, setMaximumLimits: true, enableGPUDebugMarkers: true });
-                    await wgpu.initAsync();
-                    engine = wgpu as any;
-                } catch (e) {
-                    Logger.Warn("WebGPU not supported. Falling back to WebGL.");
-                }
-            }
-            if (!engine) {
-                engine = new Engine(canvas, true, {
-                    disableWebGL2Support: forceWebGL1,
-                    preserveDrawingBuffer: true,
-                    stencil: true,
-                });
-            }
-
-            this._engine = engine as Engine;
             (window as any).engine = this._engine;
+
+            const createEngineAsync = async () => {
+                let engine: Engine | null = null;
+                if (useWebGPU) {
+                    try {
+                        const wgpu = new WebGPUEngine(this._canvasRef.current!, { enableAllFeatures: true, setMaximumLimits: true, enableGPUDebugMarkers: true });
+                        await wgpu.initAsync();
+                        engine = wgpu as any;
+                    } catch (e) {
+                        Logger.Warn("WebGPU not supported. Falling back to WebGL.");
+                    }
+                }
+                if (!engine) {
+                    engine = new Engine(canvas, true, {
+                        disableWebGL2Support: forceWebGL1,
+                        preserveDrawingBuffer: true,
+                        stencil: true,
+                    });
+                }
+                return engine;
+            };
             (window as any).canvas = canvas;
 
-            (window as any).startRenderLoop(this._engine, canvas);
-
-            let sceneResult: any = null;
+            let sceneResult: Scene | null = null;
+            let createdEngine: ThinEngine | null = null;
             try {
-                sceneResult = await runner.run(this._engine, canvas);
+                [sceneResult, createdEngine] = await runner.run(createEngineAsync, canvas);
+                this._engine = createdEngine as Engine;
             } catch (err) {
                 (window as any).handleException(err as Error);
                 this._preventReentrancy = false;
@@ -281,6 +282,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             this._scene = sceneResult as Scene;
             (window as any).scene = this._scene;
+            (window as any).startRenderLoop(this._engine, canvas);
 
             this._engine!.scenes[0]?.executeWhenReady(() => {
                 this.props.globalState.onRunExecutedObservable.notifyObservers();

@@ -41,7 +41,7 @@ export type V2RunnerOptions = {
 };
 
 export type V2Runner = {
-    run(engine: ThinEngine, canvas: HTMLCanvasElement): Promise<Scene>;
+    run(createEngine: () => Promise<ThinEngine | null>, canvas: HTMLCanvasElement): Promise<[Scene, ThinEngine]>;
     dispose(): void;
 };
 
@@ -435,14 +435,32 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
     }
 
     // ---------- 5) Runner ----------
-    async function run(engine: ThinEngine, canvas: HTMLCanvasElement): Promise<Scene> {
-        await initRuntime(engine);
-
+    async function run(createEngine: () => Promise<ThinEngine | null>, canvas: HTMLCanvasElement): Promise<[Scene, ThinEngine]> {
         await ensureImportShim();
         const importFn: (s: string) => Promise<any> = (window as any).importShim ?? (async (s: string) => await import(s));
 
         const entrySpec = specKey(entryPath);
         const mod = await importFn(entrySpec);
+        let engine: ThinEngine | null = null;
+        if (typeof mod.createEngine === "function") {
+            try {
+                engine = await mod.createEngine();
+                if (!engine) {
+                    throw new Error("createEngine() returned null.");
+                }
+            } catch (e) {
+                Logger.Warn("Failed to call user createEngine(): " + (e as Error).message);
+                Logger.Warn("Falling back to default engine creation.");
+            }
+        }
+        if (!engine) {
+            engine = await createEngine();
+        }
+        if (!engine) {
+            throw new Error("Failed to create engine.");
+        }
+        (window as any).engine = engine;
+        await initRuntime(engine);
 
         let createScene: any = null;
         if (typeof mod.createScene === "function") {
@@ -455,7 +473,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         if (!createScene) {
             throw new Error("No createScene export (createScene / default / Playground.CreateScene) found in entry module.");
         }
-        return await (createScene(engine, canvas) ?? createScene());
+        return [await (createScene(engine, canvas) ?? createScene()), engine];
     }
 
     function dispose() {

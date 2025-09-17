@@ -76,6 +76,10 @@ export class MonacoManager {
             }
         });
 
+        globalState.onInsertSnippetRequiredObservable.add((snippetKey) => {
+            this.insertSnippet(snippetKey);
+        });
+
         globalState.onNavigateRequiredObservable.add((position) => {
             this._editorHost.editor?.revealPositionInCenter(position, monaco.editor.ScrollType.Smooth);
             this._editorHost.editor?.setPosition(position);
@@ -122,7 +126,8 @@ export class MonacoManager {
         });
 
         globalState.onThemeChangedObservable.add(() => {
-            this._createEditor();
+            const theme = Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "vs-dark" : "vs-light";
+            (this.editorHost.editor as any)._themeService.setTheme(theme);
         });
 
         // V2 hydrate
@@ -132,6 +137,7 @@ export class MonacoManager {
             }
             const first = entry && files[entry] ? entry : Object.keys(files)[0];
             this.setFiles(files, first, entry, imports);
+            globalState.onRunRequiredObservable.notifyObservers();
         });
 
         this.globalState.onFilesChangedObservable.add(() => {

@@ -99,6 +99,16 @@ export class LoadManager {
         }
     }
 
+    private readonly _jsFunctions = [
+        "delayCreateScene",
+        "createScene",
+        "CreateScene",
+        "createscene",
+
+        // Engine
+        "createEngine",
+    ];
+
     private _loadPlayground(id: string) {
         this.globalState.loadingCodeInProgress = true;
         try {
@@ -208,8 +218,10 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
                         // Since that would not have run in the old playground
                         // So we append to the end of the file to satisfy our module-based runner
                         const fileName = guessed === "TS" ? "index.ts" : "index.js";
-                        code += `\nexport { ${guessed === "TS" ? "Playground" : "createScene"} }\n`;
-
+                        code += `\nexport default ${guessed === "TS" ? "Playground" : (this._jsFunctions.find((fn) => code.includes(fn)) ?? "createScene")}\n`;
+                        if (guessed === "JS" && code.includes("createEngine")) {
+                            code += `\nexport { createEngine }\n`;
+                        }
                         queueMicrotask(() => {
                             this.globalState.onV2HydrateRequiredObservable.notifyObservers({
                                 files: { [fileName]: code },
@@ -246,6 +258,12 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
         }
     }
     private _guessLanguageFromCode(code: string): "TS" | "JS" {
+        if (code.includes("class Playground")) {
+            return "TS";
+        }
+        if (this._jsFunctions.some((fn) => code.includes(fn))) {
+            return "JS";
+        }
         if (!code) {
             return this.globalState.language as "TS" | "JS";
         }
