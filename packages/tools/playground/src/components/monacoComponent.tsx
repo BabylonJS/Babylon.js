@@ -134,7 +134,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
     override componentDidMount() {
         const hostElement = this.props.refObject.current!;
         this._mutationObserver.observe(hostElement, { childList: true, subtree: true });
-        void this._monacoManager.setupMonacoAsync(hostElement, true);
+        void this._monacoManager.setupMonacoAsync(hostElement);
 
         const host = this._tabsHostRef.current!;
         const content = this._tabsContentRef.current!;

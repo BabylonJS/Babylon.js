@@ -433,8 +433,33 @@ export class TypingsService {
         for (const s of candidates) {
             ataCandidates.add(BasePackage(ParseSpec(s))); // drop @version + subpath
         }
-
+        this._ataInFlight = true;
         await this._ata(BuildSyntheticAtaEntry(ataCandidates));
+    }
+
+    /**
+     * Wait for any in-flight ATA requests to complete
+     * @param timeoutMs Maximum time to wait in milliseconds
+     * @returns Promise that resolves when ATA is complete or timeout is reached
+     */
+    async waitForAtaCompletionAsync(timeoutMs = 5000): Promise<boolean> {
+        if (!this._ataInFlight) {
+            return true;
+        }
+
+        const startTime = Date.now();
+        while (this._ataInFlight && Date.now() - startTime < timeoutMs) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        return !this._ataInFlight;
+    }
+
+    /**
+     * Check if ATA is currently in flight
+     */
+    get isAtaInFlight(): boolean {
+        return this._ataInFlight;
     }
 
     public async mapLocalTypingsAsync(fullSpec: string, dirName: string, files: Array<{ path: string; content: string }>) {

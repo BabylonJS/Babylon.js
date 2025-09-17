@@ -16,10 +16,7 @@ export class TemplatesService {
         return this._templates;
     }
 
-    async loadAsync(initialCall: boolean) {
-        if (!initialCall) {
-            return;
-        }
+    async loadAsync() {
         try {
             const templatesCodeUrl = "templates.json?uncacher=" + Date.now();
             this._templates = await (await fetch(templatesCodeUrl)).json();

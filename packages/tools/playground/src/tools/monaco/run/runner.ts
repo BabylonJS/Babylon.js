@@ -6,9 +6,10 @@ import type { ThinEngine, Scene } from "@dev/core";
 import type * as monacoNs from "monaco-editor/esm/vs/editor/editor.api";
 import * as lexer from "es-module-lexer";
 import type { TsPipeline } from "../ts/tsPipeline";
+import type { TypingsService } from "../typings/typingsService";
 import type { DirHandle } from "./localPackage";
 import { BuildLocalPackageImportMap } from "./localPackage";
-import { GetWorkerForModel } from "../worker/worker";
+import { TsWorkerManager } from "../ts/workerManager";
 
 lexer.initSync();
 
@@ -19,6 +20,15 @@ export type V2Manifest = {
     imports: Record<string, string>;
     files: Record<string, string>;
     cdnBase?: string;
+};
+
+export type V2PackSnapshot = {
+    manifest: V2Manifest;
+    cdnBase: string;
+    entryPathJs: string;
+    rewritten: Record<string, string>;
+    importMap: Record<string, string>;
+    usedBareImports: readonly string[];
 };
 
 export type RuntimeDeps = {
@@ -39,11 +49,13 @@ export type V2RunnerOptions = {
     onDiagnosticError?: (err: { path: string; message: string; line: number; column: number }) => void;
     importMapId?: string; // default: "pg-v2-import-map"
     runtime?: RuntimeDeps;
+    skipDiagnostics?: boolean; // Skip TypeScript diagnostics to avoid timeout issues
 };
 
 export type V2Runner = {
     run(createEngine: () => Promise<ThinEngine | null>, canvas: HTMLCanvasElement): Promise<[Scene, ThinEngine]>;
     dispose(): void;
+    getPackSnapshot?(): V2PackSnapshot | null;
 };
 
 /**
@@ -87,13 +99,13 @@ function SanitizeCode(code: string): string {
 }
 
 /**
- *
  * @param manifest
  * @param opts
  * @param pipeline
+ * @param typingsService Optional TypingsService to await ATA completion before diagnostics
  * @returns
  */
-export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions, pipeline: TsPipeline): Promise<V2Runner> {
+export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions, pipeline: TsPipeline, typingsService?: TypingsService): Promise<V2Runner> {
     const ts = {};
     const monaco = opts.monaco as typeof monacoNs;
     const importMapId = opts.importMapId || "pg-v2-import-map";
@@ -130,7 +142,8 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
     // ---------- 1) DIAGNOSTICS (Monaco TS worker) ----------
     // Ensure Monaco models exist for every TS/TSX file so diagnostics work.
     const tsPaths = Object.keys(manifest.files).filter((p) => /[.]tsx?$/i.test(p));
-    if (tsPaths.length) {
+    if (tsPaths.length && !opts.skipDiagnostics) {
+        Logger.Log(`Running TypeScript diagnostics for ${tsPaths.length} files...`);
         const ensureModel = (path: string, code: string) => {
             // Try to find an existing model by suffix match (path equality) first
             const existing = monaco.editor.getModels().find((m) => m.uri.path.endsWith("/" + path));
@@ -152,30 +165,69 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
             ensureModel(p, manifest.files[p]);
         }
 
-        // Map every ts/tsx model to diagnostics
-        for (const model of monaco.editor.getModels().filter((m) => /[.]tsx?$/.test(m.uri.path))) {
-            const svc = await GetWorkerForModel(model);
-            const uriStr = model.uri.toString();
-            const [syn, sem] = await Promise.all([svc.getSyntacticDiagnostics(uriStr), svc.getSemanticDiagnostics(uriStr)]);
-            const first = [...syn, ...sem][0];
-            if (first) {
-                const pos = model.getPositionAt(first.start ?? 0);
-                const errObj = {
-                    path: model.uri.path.split("/pg/")[1] || model.uri.path,
-                    message: String(first.messageText),
-                    line: pos.lineNumber,
-                    column: pos.column,
-                };
-                if (opts.onDiagnosticError) {
-                    opts.onDiagnosticError(errObj);
-                    // throw new Error("Aborted run due to diagnostics.");
-                } else {
-                    const e = new Error(`${errObj.path}:${errObj.line}:${errObj.column} ${errObj.message}`);
-                    (e as any).__pgDiag = errObj;
-                    throw e;
-                }
+        // Use the worker manager for coordinated access
+        const modelsToCheck = monaco.editor.getModels().filter((m) => /[.]tsx?$/.test(m.uri.path));
+
+        // Wait for ATA completion before running diagnostics to avoid race conditions
+        if (typingsService) {
+            Logger.Log("Waiting for ATA completion before running diagnostics...");
+            const ataCompleted = await typingsService.waitForAtaCompletionAsync(3000);
+            if (!ataCompleted) {
+                Logger.Warn("ATA did not complete within timeout, proceeding with diagnostics anyway");
+            } else {
+                Logger.Log("ATA completed, proceeding with diagnostics");
             }
         }
+
+        // Process models sequentially to avoid worker contention
+        for (let i = 0; i < modelsToCheck.length; i++) {
+            const model = modelsToCheck[i];
+
+            // Check if model still exists and is valid before processing
+            if (model.isDisposed()) {
+                Logger.Warn(`Skipping disposed model: ${model.uri.path}`);
+                continue;
+            }
+
+            try {
+                Logger.Log(`Processing diagnostics for model ${i + 1}/${modelsToCheck.length}: ${model.uri.path}`);
+
+                const result = await TsWorkerManager.executeDiagnosticsAsync(model);
+                if (!result) {
+                    Logger.Warn(`Diagnostics returned null for model: ${model.uri.path}`);
+                    continue;
+                }
+
+                const { syn, sem } = result;
+                const first = [...syn, ...sem][0];
+                if (first) {
+                    const pos = model.getPositionAt(first.start ?? 0);
+                    const errObj = {
+                        path: model.uri.path.split("/pg/")[1] || model.uri.path,
+                        message: String(first.messageText),
+                        line: pos.lineNumber,
+                        column: pos.column,
+                    };
+                    if (opts.onDiagnosticError) {
+                        opts.onDiagnosticError(errObj);
+                        // throw new Error("Aborted run due to diagnostics.");
+                    } else {
+                        const e = new Error(`${errObj.path}:${errObj.line}:${errObj.column} ${errObj.message}`);
+                        (e as any).__pgDiag = errObj;
+                        throw e;
+                    }
+                }
+            } catch (error) {
+                Logger.Warn(`Diagnostics failed for model ${model.uri.path}: ${error}`);
+                if (error instanceof Error && error.message.includes("timeout")) {
+                    Logger.Warn(`Diagnostics timeout for ${model.uri.path} - continuing without type checking for this file`);
+                    continue;
+                }
+                continue;
+            }
+        }
+    } else if (opts.skipDiagnostics && tsPaths.length) {
+        Logger.Log(`Skipping TypeScript diagnostics for ${tsPaths.length} files (skipDiagnostics=true)`);
     }
 
     const cdnBase = String(manifest.cdnBase || "https://esm.sh/");
@@ -246,7 +298,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         }
         try {
             Object.assign(localImports, await BuildLocalPackageImportMap(fullSpec, localHandles[fullSpec]));
-        } catch (e) {
+        } catch {
             Logger.Warn("Failed to build local package import map for " + fullSpec);
         }
     }
@@ -463,12 +515,14 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         await initRuntime(engine);
 
         let createScene: any = null;
-        if (typeof mod.createScene === "function") {
+        if (mod.default?.CreateScene) {
+            createScene = mod.default.CreateScene;
+        } else if (mod.Playground?.CreateScene) {
+            createScene = mod.Playground.CreateScene;
+        } else if (typeof mod.createScene === "function") {
             createScene = mod.createScene;
         } else if (typeof mod.default === "function") {
             createScene = mod.default;
-        } else if (mod.Playground?.CreateScene) {
-            createScene = (e: any, c: any) => mod.Playground.CreateScene(e, c);
         }
         if (!createScene) {
             throw new Error("No createScene export (createScene / default / Playground.CreateScene) found in entry module.");
@@ -488,5 +542,44 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         el?.remove();
     }
 
-    return { run, dispose };
+    // -------- 6) Pack snapshot for download --------
+    const bareImportsUsed = new Set<string>();
+    for (const code of Object.values(rewritten)) {
+        const [imps] = lexer.parse(code);
+        for (const im of imps) {
+            const spec = (im as any).n as string | undefined;
+            if (!spec) {
+                continue;
+            }
+            if (!(spec.startsWith("./") || spec.startsWith("../") || spec.startsWith("/"))) {
+                bareImportsUsed.add(spec.replace(/^npm:|^pkg:/, ""));
+            }
+        }
+    }
+    const bareImportMap: Record<string, string> = {};
+    for (const spec of bareImportsUsed) {
+        const pinned = manifest.imports?.[spec];
+        bareImportMap[spec] = pinned || cdnUrl(spec);
+    }
+
+    // normalize entry to .js (disk-friendly)
+    const normalizedEntryJs = (entryPath || "").replace(/[.]tsx?$/i, ".js") || (manifest.language === "TS" ? "index.js" : "index.js");
+
+    // keep a frozen copy for download later
+    const packSnapshot: V2PackSnapshot = {
+        manifest: JSON.parse(JSON.stringify(manifest)),
+        cdnBase,
+        entryPathJs: normalizedEntryJs,
+        rewritten: Object.freeze({ ...rewritten }),
+        importMap: Object.freeze({ ...bareImportMap }),
+        usedBareImports: Object.freeze(Array.from(bareImportsUsed)),
+    };
+
+    return {
+        run,
+        dispose,
+        getPackSnapshot() {
+            return packSnapshot;
+        },
+    };
 }

@@ -1,6 +1,5 @@
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import type { GlobalState } from "../../../globalState";
-import { GetWorkerForModel } from "../worker/worker";
 
 export type TagCandidate = {
     /**
@@ -29,7 +28,9 @@ export class CodeAnalysisService {
         }
 
         const uri = model.uri;
-        const languageService = await GetWorkerForModel(model);
+        const worker = globalState.language === "JS" ? await monaco.languages.typescript.getJavaScriptWorker() : await monaco.languages.typescript.getTypeScriptWorker();
+
+        const languageService = await worker(uri);
         const source = "[preview]";
         monaco.editor.setModelMarkers(model, source, []);
 

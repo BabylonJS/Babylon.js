@@ -23,6 +23,7 @@ import { CompilationError } from "../../components/errorDisplayComponent";
 import { ParseSpec } from "./typings/utils";
 import { CodeLensService } from "./codeLens/codeLensProvider";
 import type { RequestLocalResolve } from "./typings/types";
+import { TsWorkerManager } from "./ts/workerManager";
 
 interface IRunConfig {
     manifest: V2Manifest;
@@ -50,6 +51,9 @@ export class MonacoManager {
     private _hostElement!: HTMLDivElement;
     private _lastRunConfig: IRunConfig | null = null;
     private _lastRunConfigHash: string | null = null;
+
+    private _hydrating = false;
+    private _initialized = false;
 
     private _localPkgHandles = new Map<string, FileSystemDirectoryHandle>();
 
@@ -85,6 +89,11 @@ export class MonacoManager {
             this._editorHost.editor?.setPosition(position);
         });
 
+        globalState.onRunExecutedObservable.add(() => {
+            // ATA should complete before run, not after - this call is redundant
+            // this._syncBareImportStubsAsync();
+        });
+
         globalState.onSavedObservable.add(() => {
             this._files.setDirty(false);
         });
@@ -92,17 +101,17 @@ export class MonacoManager {
         globalState.onCodeLoaded.add((code) => {
             if (!code) {
                 this._setDefaultContent();
-                this._syncBareImportStubs();
+                this._syncBareImportStubsAsync();
                 return;
             }
             if (this._editorHost.editor) {
                 this._editorHost.editor.setValue(code);
                 this._files.setDirty(false);
                 this.globalState.onRunRequiredObservable.notifyObservers();
-                this._syncBareImportStubs();
+                this._syncBareImportStubsAsync();
             } else {
                 this.globalState.currentCode = code;
-                this._syncBareImportStubs();
+                this._syncBareImportStubsAsync();
             }
         });
 
@@ -120,7 +129,7 @@ export class MonacoManager {
 
         globalState.onLanguageChangedObservable.add(async () => {
             this._setNewContent();
-            this._syncBareImportStubs();
+            this._syncBareImportStubsAsync();
             this.invalidateRunnerCache();
             globalState.onFilesChangedObservable.notifyObservers();
         });
@@ -131,17 +140,32 @@ export class MonacoManager {
         });
 
         // V2 hydrate
-        this.globalState.onV2HydrateRequiredObservable.add(({ files, entry, imports, language }) => {
+        this.globalState.onV2HydrateRequiredObservable.add(async ({ files, entry, imports, language }) => {
+            this._hydrating = true;
+            while (!this._initialized) {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            }
             if (language !== this.globalState.language) {
                 Utilities.SwitchLanguage(language, this.globalState, true);
             }
             const first = entry && files[entry] ? entry : Object.keys(files)[0];
             this.setFiles(files, first, entry, imports);
+
+            // Force sync models after all files are loaded to avoid race conditions
+            this._tsPipeline.forceSyncModels();
+
+            // Sync ATA after hydration to ensure types are loaded
+            await this._syncBareImportStubsAsync();
+
             globalState.onRunRequiredObservable.notifyObservers();
+            this._hydrating = false;
         });
 
         this.globalState.onFilesChangedObservable.add(() => {
-            this._tsPipeline.forceSyncModels();
+            // Prevent worker restart during hydration to avoid race conditions
+            if (!this._hydrating) {
+                this._tsPipeline.forceSyncModels();
+            }
             this._tsPipeline.addWorkspaceFileDeclarations(this.globalState.files || {});
             this.invalidateRunnerCache();
         });
@@ -190,7 +214,7 @@ export class MonacoManager {
                 this._files.restoreViewState(activePath, this._editorHost.editor);
             }
         }
-        this._syncBareImportStubs();
+        this._syncBareImportStubsAsync();
     }
 
     public getFiles() {
@@ -291,7 +315,7 @@ export class MonacoManager {
             this.globalState.onActiveFileChangedObservable.notifyObservers();
 
             // Update bare import stubs
-            this._syncBareImportStubs();
+            this._syncBareImportStubsAsync();
         }
 
         return success;
@@ -334,6 +358,7 @@ export class MonacoManager {
             monaco,
             createModelsIfMissing: true,
             importMapId: "pg-v2-import-map",
+            skipDiagnostics: this._hydrating, // Skip diagnostics during hydration to avoid timeouts
             onDiagnosticError: ({ path, message, line, column }) => {
                 const err = new CompilationError();
                 err.message = `${path}:${line}:${column} ${message}`;
@@ -351,13 +376,24 @@ export class MonacoManager {
             return this.globalState.currentRunner;
         }
 
+        // Wait for any ongoing ATA operations before creating runner
+        if (this._typings.isAtaInFlight) {
+            Logger.Log("ATA is in flight, waiting for completion before creating runner...");
+            const ataCompleted = await this._typings.waitForAtaCompletionAsync(5000);
+            if (!ataCompleted) {
+                Logger.Warn("ATA did not complete within timeout, proceeding with runner creation anyway");
+            } else {
+                Logger.Log("ATA completed, proceeding with runner creation");
+            }
+        }
+
         // Dispose the previous runner if it exists
         try {
             this.globalState.currentRunner?.dispose?.();
         } catch {}
 
         // Create new runner and cache the configuration
-        this.globalState.currentRunner = await CreateV2Runner(manifest, options, this._tsPipeline);
+        this.globalState.currentRunner = await CreateV2Runner(manifest, options, this._tsPipeline, this._typings);
         this._lastRunConfig = config;
         this._lastRunConfigHash = configHash;
 
@@ -430,7 +466,7 @@ export class MonacoManager {
             }
         }, 500);
 
-        const refreshStubs = debounce(() => this._syncBareImportStubs(), 300);
+        const refreshStubs = debounce(async () => await this._syncBareImportStubsAsync(), 300);
         this._editorHost.editor.onDidChangeModelContent(() => {
             const newCode = this._editorHost.editor.getValue();
             if (this.globalState.currentCode !== newCode) {
@@ -470,123 +506,118 @@ export class MonacoManager {
             }
         });
 
-        this._syncBareImportStubs();
+        this._syncBareImportStubsAsync();
     }
 
-    public async setupMonacoAsync(hostElement: HTMLDivElement, initialCall = false) {
-        this.dispose();
+    public async setupMonacoAsync(hostElement: HTMLDivElement) {
         this._hostElement = hostElement;
 
-        if (initialCall) {
-            // Register shader languages
-            RegisterShaderLanguages();
+        // Register shader languages
+        RegisterShaderLanguages();
 
-            // Register color providers
-            RegisterColorProvider("javascript");
-            RegisterColorProvider("typescript");
+        // Register color providers
+        RegisterColorProvider("javascript");
+        RegisterColorProvider("typescript");
 
-            // Load templates
-            await this._templates.loadAsync(initialCall);
+        // Load templates
+        await this._templates.loadAsync();
 
-            const declarations = [
-                "https://preview.babylonjs.com/babylon.d.ts",
-                "https://preview.babylonjs.com/gui/babylon.gui.d.ts",
-                "https://preview.babylonjs.com/loaders/babylonjs.loaders.d.ts",
-                "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.d.ts",
-                "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.d.ts",
-                "https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.d.ts",
-                "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
-                "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
-                "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
-                "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
-                "https://preview.babylonjs.com/addons/babylonjs.addons.d.ts",
-                "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",
-                "https://assets.babylonjs.com/generated/Assets.d.ts",
-            ];
+        const declarations = [
+            "https://preview.babylonjs.com/babylon.d.ts",
+            "https://preview.babylonjs.com/gui/babylon.gui.d.ts",
+            "https://preview.babylonjs.com/loaders/babylonjs.loaders.d.ts",
+            "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.d.ts",
+            "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.d.ts",
+            "https://preview.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.d.ts",
+            "https://preview.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.d.ts",
+            "https://preview.babylonjs.com/serializers/babylonjs.serializers.d.ts",
+            "https://preview.babylonjs.com/inspector/babylon.inspector.d.ts",
+            "https://preview.babylonjs.com/accessibility/babylon.accessibility.d.ts",
+            "https://preview.babylonjs.com/addons/babylonjs.addons.d.ts",
+            "https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts",
+            "https://assets.babylonjs.com/generated/Assets.d.ts",
+        ];
 
-            // snapshot/version/local overrides
-            let snapshot = "";
-            if (window.location.search.indexOf("snapshot=") !== -1) {
-                snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
-                for (let i = 0; i < declarations.length; i++) {
-                    declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot);
+        // snapshot/version/local overrides
+        let snapshot = "";
+        if (window.location.search.indexOf("snapshot=") !== -1) {
+            snapshot = window.location.search.split("snapshot=")[1].split("&")[0];
+            for (let i = 0; i < declarations.length; i++) {
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot);
+            }
+        }
+
+        let version = "";
+        if (window.location.search.indexOf("version=") !== -1) {
+            version = window.location.search.split("version=")[1].split("&")[0];
+            for (let i = 0; i < declarations.length; i++) {
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version);
+            }
+        }
+
+        if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
+            for (let i = 0; i < declarations.length; i++) {
+                declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", "//localhost:1337/");
+            }
+        }
+
+        if (location.href.indexOf("BabylonToolkit") !== -1 || Utilities.ReadBoolFromStore("babylon-toolkit", false) || Utilities.ReadBoolFromStore("babylon-toolkit-used", false)) {
+            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
+            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
+        }
+
+        const timestamp = (typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__) || 0;
+        if (timestamp) {
+            for (let i = 0; i < declarations.length; i++) {
+                if (declarations[i].indexOf("preview.babylonjs.com") !== -1) {
+                    declarations[i] = declarations[i] + "?t=" + timestamp;
                 }
             }
+        }
 
-            let version = "";
-            if (window.location.search.indexOf("version=") !== -1) {
-                version = window.location.search.split("version=")[1].split("&")[0];
-                for (let i = 0; i < declarations.length; i++) {
-                    declarations[i] = declarations[i].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version);
-                }
-            }
-
-            if (location.hostname === "localhost" && location.search.indexOf("dist") === -1) {
-                for (let i = 0; i < declarations.length; i++) {
-                    declarations[i] = declarations[i].replace("https://preview.babylonjs.com/", "//localhost:1337/");
-                }
-            }
-
-            if (
-                location.href.indexOf("BabylonToolkit") !== -1 ||
-                Utilities.ReadBoolFromStore("babylon-toolkit", false) ||
-                Utilities.ReadBoolFromStore("babylon-toolkit-used", false)
-            ) {
-                declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
-                declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
-            }
-
-            const timestamp = (typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__) || 0;
-            if (timestamp) {
-                for (let i = 0; i < declarations.length; i++) {
-                    if (declarations[i].indexOf("preview.babylonjs.com") !== -1) {
-                        declarations[i] = declarations[i] + "?t=" + timestamp;
-                    }
-                }
-            }
-
-            let libContent = "";
-            const responses = await Promise.all(declarations.map(async (d) => await fetch(d)));
-            const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
-            for (const response of responses) {
-                if (!response.ok) {
-                    const fallbackResponse = await fetch(response.url.replace("https://preview.babylonjs.com", fallbackUrl));
-                    if (fallbackResponse.ok) {
-                        libContent += await fallbackResponse.text();
-                    } else {
-                        Logger.Log(`missing declaration: ${response.url}`);
-                    }
+        let libContent = "";
+        const responses = await Promise.all(declarations.map(async (d) => await fetch(d)));
+        const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
+        for (const response of responses) {
+            if (!response.ok) {
+                const fallbackResponse = await fetch(response.url.replace("https://preview.babylonjs.com", fallbackUrl));
+                if (fallbackResponse.ok) {
+                    libContent += await fallbackResponse.text();
                 } else {
-                    libContent += await response.text();
+                    Logger.Log(`missing declaration: ${response.url}`);
                 }
+            } else {
+                libContent += await response.text();
             }
-            libContent += `
+        }
+        libContent += `
 interface Window { engine: BABYLON.Engine; canvas: HTMLCanvasElement; }
 declare var engine: BABYLON.Engine;
 declare var canvas: HTMLCanvasElement;
         `;
 
-            this._tsPipeline.setup(libContent);
+        this._tsPipeline.setup(libContent);
 
-            // Register completion provider
-            this._completions.register(this.globalState.language as "JS" | "TS", this._templates.templates);
+        // Register completion provider
+        this._completions.register(this.globalState.language as "JS" | "TS", this._templates.templates);
 
-            // Register code lens
-            this._codeLens.register(this.globalState.language as "JS" | "TS");
+        // Register code lens
+        this._codeLens.register(this.globalState.language as "JS" | "TS");
 
-            // Install definition provider
-            this._definitions.installProvider();
+        // Install definition provider
+        this._definitions.installProvider();
 
-            // Force sync models for better import recognition
-            this._tsPipeline.forceSyncModels();
-        }
+        // Force sync models for better import recognition
+        this._tsPipeline.forceSyncModels();
 
         this._createEditor();
-        this._syncBareImportStubs();
+        await this._syncBareImportStubsAsync();
+        await this.typingsService.waitForAtaCompletionAsync();
 
-        if (!this.globalState.loadingCodeInProgress) {
+        if (!this.globalState.loadingCodeInProgress && !this._hydrating) {
             setTimeout(() => this._setDefaultContent(), 100);
         }
+        this._initialized = true;
     }
 
     // ---------------- Defaults ----------------
@@ -683,7 +714,7 @@ export { Playground };`;
             (window as any).location.pathname = "";
         }
 
-        this._syncBareImportStubs();
+        this._syncBareImportStubsAsync();
     }
 
     private _resetEditor(resetMetadata?: boolean) {
@@ -704,10 +735,10 @@ export { Playground };`;
         return [this._editorHost.editor?.getValue() || this.globalState.currentCode || ""];
     }
 
-    private _syncBareImportStubs() {
+    private async _syncBareImportStubsAsync() {
         const specs = this._typings.discoverBareImports(this._collectAllSourceTexts());
         this._typings.installBareImportStubs(specs);
-        this._typings.acquireForAsync(specs);
+        await this._typings.acquireForAsync(specs);
     }
 
     public setTagCandidates(candidates: { name: string; tagName: string }[] | undefined) {
@@ -727,6 +758,13 @@ export { Playground };`;
      */
     public get filesManager() {
         return this._files;
+    }
+
+    /**
+     * Get the current typings service instance
+     */
+    public get typingsService() {
+        return this._typings;
     }
 
     public insertSnippet(snippetKey: string) {
@@ -794,7 +832,7 @@ export { Playground };`;
 
         await this._typings.mapLocalTypingsAsync(fullSpec, `${ParseSpec(fullSpec).name}@local`, picked.files);
 
-        this._syncBareImportStubs();
+        this._syncBareImportStubsAsync();
     }
 
     private _hasFsAccessApi(): boolean {
@@ -857,10 +895,14 @@ export { Playground };`;
     };
 
     public dispose() {
+        Logger.Log("Disposing monaco manager");
         this._typings?.dispose();
         this._files?.dispose();
         this._tsPipeline?.dispose();
         this._editorHost?.dispose();
+
+        // Dispose the global worker manager
+        TsWorkerManager.dispose();
 
         // Clear any cached runners
         this.globalState.currentRunner?.dispose?.();

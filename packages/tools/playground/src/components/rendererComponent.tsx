@@ -57,7 +57,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (!this._engine) {
                 return;
             }
-            this._downloadManager.download(this._engine);
+            this._downloadManager.downloadAsync();
         });
 
         this.props.globalState.onInspectorRequiredObservable.add(async () => {
@@ -249,7 +249,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                         const wgpu = new WebGPUEngine(this._canvasRef.current!, { enableAllFeatures: true, setMaximumLimits: true, enableGPUDebugMarkers: true });
                         await wgpu.initAsync();
                         engine = wgpu as any;
-                    } catch (e) {
+                    } catch {
                         Logger.Warn("WebGPU not supported. Falling back to WebGL.");
                     }
                 }

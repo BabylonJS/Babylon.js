@@ -51,9 +51,6 @@ export class GlobalState {
     /** Manual tab order */
     public filesOrder: string[] = [];
 
-    /** Zipped code cache */
-    public zipCode = "";
-
     public onRunRequiredObservable = new Observable<void>();
     public onRunExecutedObservable = new Observable<void>();
     public onSavedObservable = new Observable<void>();

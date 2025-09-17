@@ -1,6 +1,6 @@
 // ts/tsPipeline.ts
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
-import { GetWorkerForModel } from "../worker/worker";
+import { TsWorkerManager } from "./workerManager";
 
 /**
  *
@@ -132,8 +132,8 @@ declare module "*.fx"   { const content: string; export default content; }`;
     }> {
         const clean = path.replace(/^\//, "");
         const uri = monaco.Uri.parse(`file:///pg/${clean}`);
-        const svc = await GetWorkerForModel(monaco.editor.getModels()[0]);
-        const out = await svc.getEmitOutput(uri.toString());
+        const wf = await TsWorkerManager.getWorkerAsync();
+        const out = await wf.getEmitOutput(uri.toString());
 
         if (out.emitSkipped) {
             // Usually means noEmit was true or TS could not emit for this file
@@ -168,6 +168,8 @@ declare module "*.fx"   { const content: string; export default content; }`;
             noSyntaxValidation: false,
             noSuggestionDiagnostics: false,
         });
+        // Invalidate worker cache since diagnostic options changed
+        TsWorkerManager.invalidateWorker();
     }
 
     addWorkspaceFileDeclarations(files: Record<string, string>) {
@@ -210,7 +212,7 @@ declare module "*.fx"   { const content: string; export default content; }`;
         for (const disposable of this._extraLibDisposables) {
             try {
                 disposable.dispose();
-            } catch (e) {
+            } catch {
                 // Ignore errors during cleanup
             }
         }

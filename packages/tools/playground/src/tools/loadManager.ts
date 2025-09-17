@@ -221,7 +221,9 @@ export class LoadManager {
 
                 return;
             }
-        } catch {}
+        } catch (e: any) {
+            Logger.Warn("Error loading V2 Snippet: " + e?.message);
+        }
 
         // check the engine
         if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
