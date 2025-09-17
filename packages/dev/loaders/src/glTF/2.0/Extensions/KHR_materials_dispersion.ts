@@ -79,9 +79,9 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
         if (adapter.transmissionWeight > 0 || !extension.dispersion) {
             return Promise.resolve();
         }
-        
+
         adapter.transmissionDispersionAbbeNumber = 20.0 / extension.dispersion;
-        
+
         return Promise.resolve();
     }
 }
