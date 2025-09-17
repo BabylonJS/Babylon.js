@@ -283,6 +283,7 @@ export class KhronosTextureContainer2 {
         }
 
         const urls = {
+            wasmBaseUrl: Tools.ScriptBaseUrl,
             jsDecoderModule: Tools.GetBabylonScriptURL(this.URLConfig.jsDecoderModule, true),
             wasmUASTCToASTC: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToASTC, true),
             wasmUASTCToBC7: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToBC7, true),
