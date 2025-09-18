@@ -34,6 +34,8 @@ export class CreateParticleBlock extends NodeParticleBlock {
         this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2, true, new Vector2(1, 1));
         this.registerInput("angle", NodeParticleBlockConnectionPointTypes.Float, true, 0);
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
+
+        this.scale.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -123,7 +125,16 @@ export class CreateParticleBlock extends NodeParticleBlock {
         system._sizeCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             particle.size = 1;
-            particle.scale.copyFrom(this.scale.getConnectedValue(state));
+
+            const scale = this.scale.getConnectedValue(state);
+
+            if (scale.x !== undefined) {
+                particle.scale.x = scale.x;
+                particle.scale.y = scale.y;
+            } else {
+                particle.scale.x = scale;
+                particle.scale.y = scale;
+            }
         };
 
         system._angleCreation.process = (particle: Particle) => {
