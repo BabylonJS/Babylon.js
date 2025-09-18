@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.28.0
+
+### Core
+
+- KTX2Container: Use ScriptBaseUrl for WasmBaseUrl - by [alexchuber](https://github.com/alexchuber) ([#17164](https://github.com/BabylonJS/Babylon.js/pull/17164))
+
 ## 8.27.2
 
 ### Core
