@@ -477,13 +477,16 @@ export class SolidParser {
             //Slice the array to avoid rewriting because of the fact this is the same var which be rewrited
             this._handledMesh.indices = this._indicesForBabylon.slice();
             this._handledMesh.positions = this._unwrappedPositionsForBabylon.slice();
-            this._handledMesh.normals = this._unwrappedNormalsForBabylon.slice();
-            this._handledMesh.uvs = this._unwrappedUVForBabylon.slice();
-            this._handledMesh.hasLines = this._hasLineData;
-
-            if (this._loadingOptions.importVertexColors) {
+            if (this._unwrappedNormalsForBabylon.length) {
+                this._handledMesh.normals = this._unwrappedNormalsForBabylon.slice();
+            }
+            if (this._unwrappedUVForBabylon.length) {
+                this._handledMesh.uvs = this._unwrappedUVForBabylon.slice();
+            }
+            if (this._unwrappedColorsForBabylon.length) {
                 this._handledMesh.colors = this._unwrappedColorsForBabylon.slice();
             }
+            this._handledMesh.hasLines = this._hasLineData;
 
             //Reset the array for the next mesh
             this._indicesForBabylon.length = 0;
@@ -864,12 +867,16 @@ export class SolidParser {
             //Set array
             this._handledMesh.indices = this._indicesForBabylon;
             this._handledMesh.positions = this._unwrappedPositionsForBabylon;
-            this._handledMesh.normals = this._unwrappedNormalsForBabylon;
-            this._handledMesh.uvs = this._unwrappedUVForBabylon;
-            this._handledMesh.hasLines = this._hasLineData;
-            if (this._loadingOptions.importVertexColors) {
+            if (this._unwrappedNormalsForBabylon.length) {
+                this._handledMesh.normals = this._unwrappedNormalsForBabylon;
+            }
+            if (this._unwrappedUVForBabylon.length) {
+                this._handledMesh.uvs = this._unwrappedUVForBabylon;
+            }
+            if (this._unwrappedColorsForBabylon.length) {
                 this._handledMesh.colors = this._unwrappedColorsForBabylon;
             }
+            this._handledMesh.hasLines = this._hasLineData;
         }
 
         // If any o or g keyword not found, create a mesh with a random id
@@ -995,17 +1002,20 @@ export class SolidParser {
 
             const vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
-            vertexData.uvs = this._handledMesh.uvs?.length ? this._handledMesh.uvs : null;
             vertexData.indices = this._handledMesh.indices;
             vertexData.positions = this._handledMesh.positions;
-            if (this._loadingOptions.computeNormals || !this._handledMesh.normals || this._handledMesh.normals.length === 0) {
+            if (this._loadingOptions.computeNormals || !this._handledMesh.normals) {
+                // Compute normals if requested or if normals are not defined
                 const normals: Array<number> = new Array<number>();
                 VertexData.ComputeNormals(this._handledMesh.positions, this._handledMesh.indices, normals);
                 vertexData.normals = normals;
             } else {
                 vertexData.normals = this._handledMesh.normals;
             }
-            if (this._loadingOptions.importVertexColors) {
+            if (this._handledMesh.uvs) {
+                vertexData.uvs = this._handledMesh.uvs;
+            }
+            if (this._handledMesh.colors) {
                 vertexData.colors = this._handledMesh.colors;
             }
             //Set the data from the VertexBuffer to the current Mesh
