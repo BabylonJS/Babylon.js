@@ -168,7 +168,6 @@ export class SolidParser {
         //Set default values if undefined
         data.indiceUvsFromObj ??= -1;
         data.indiceNormalFromObj ??= -1;
-        data.normalsVectorFromOBJ ??= Vector3.Up();
         data.textureVectorFromOBJ ??= Vector2.Zero(); //If the UVs are missing, set (u,v)=(0,0) for backcompat
 
         //Check if this tuple already exists in the list of tuples
@@ -191,9 +190,12 @@ export class SolidParser {
             //Push the uvs for Babylon
             //Each element is a Vector2(u,v)
             this._wrappedUvsForBabylon.push(data.textureVectorFromOBJ);
-            //Push the normals for Babylon
-            //Each element is a Vector3(x,y,z)
-            this._wrappedNormalsForBabylon.push(data.normalsVectorFromOBJ);
+
+            if (data.normalsVectorFromOBJ !== undefined) {
+                //Push the normals for Babylon
+                //Each element is a Vector3(x,y,z)
+                this._wrappedNormalsForBabylon.push(data.normalsVectorFromOBJ);
+            }
 
             if (data.positionColorsFromOBJ !== undefined) {
                 //Push the colors for Babylon
@@ -228,11 +230,13 @@ export class SolidParser {
                     this._wrappedPositionForBabylon[l].y,
                     this._wrappedPositionForBabylon[l].z
                 );
-                this._unwrappedNormalsForBabylon.push(
-                    this._wrappedNormalsForBabylon[l].x * this._handednessSign,
-                    this._wrappedNormalsForBabylon[l].y,
-                    this._wrappedNormalsForBabylon[l].z
-                );
+                if (this._wrappedNormalsForBabylon.length > 0) {
+                    this._unwrappedNormalsForBabylon.push(
+                        this._wrappedNormalsForBabylon[l].x * this._handednessSign,
+                        this._wrappedNormalsForBabylon[l].y,
+                        this._wrappedNormalsForBabylon[l].z
+                    );
+                }
 
                 this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
                 if (this._loadingOptions.importVertexColors) {
@@ -992,7 +996,7 @@ export class SolidParser {
             vertexData.uvs = this._handledMesh.uvs;
             vertexData.indices = this._handledMesh.indices;
             vertexData.positions = this._handledMesh.positions;
-            if (this._loadingOptions.computeNormals) {
+            if (this._loadingOptions.computeNormals || !this._handledMesh.normals || this._handledMesh.normals.length === 0) {
                 const normals: Array<number> = new Array<number>();
                 VertexData.ComputeNormals(this._handledMesh.positions, this._handledMesh.indices, normals);
                 vertexData.normals = normals;
