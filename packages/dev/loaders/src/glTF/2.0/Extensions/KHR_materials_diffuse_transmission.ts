@@ -77,6 +77,7 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadTranslucentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsDiffuseTransmission): Promise<void> {
         const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+        adapter.configureSubsurface();
         adapter.subsurfaceWeight = extension.diffuseTransmissionFactor ?? 0;
         adapter.subsurfaceColor = extension.diffuseTransmissionColorFactor !== undefined ? Color3.FromArray(extension.diffuseTransmissionColorFactor) : Color3.White();
 

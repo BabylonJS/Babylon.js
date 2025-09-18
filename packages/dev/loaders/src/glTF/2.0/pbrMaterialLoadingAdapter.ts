@@ -660,7 +660,7 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Sets the transmission weight (mapped to PBR subSurface.refractionIntensity).
-     * Enables refraction when value > 0.
+     * Enables refraction when value \> 0.
      * @param value The transmission weight value (0-1)
      */
     public set transmissionWeight(value: number) {
@@ -766,7 +766,6 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Configures subsurface properties for PBR material
      */
     public configureSubsurface(): void {
-        this._material.subSurface.isTranslucencyEnabled = true;
         this._material.subSurface.useGltfStyleTextures = true;
 
         // Since this extension models thin-surface transmission only, we must make the
