@@ -759,6 +759,8 @@ export class Atmosphere implements IDisposable {
         this._physicalProperties.peakOzoneAbsorption = this._peakOzoneAbsorptionKm;
     }
 
+    public uniqueId: number;
+
     /**
      * Constructs the {@link Atmosphere}.
      * @param name - The name of this instance.
@@ -773,6 +775,8 @@ export class Atmosphere implements IDisposable {
         options?: IAtmosphereOptions
     ) {
         const engine = (this._engine = scene.getEngine());
+        this.uniqueId = this.scene.getUniqueId();
+
         if (engine.isWebGPU) {
             throw new Error("Atmosphere is not supported on WebGPU.");
         }
@@ -900,8 +904,10 @@ export class Atmosphere implements IDisposable {
 
         // Ensure the atmosphere is disposed when the scene is disposed.
         scene.onDisposeObservable.addOnce(() => {
+            scene.removeExternalData("atmosphere");
             this.dispose();
         });
+        scene.addExternalData("atmosphere", this);
 
         // Registers a material plugin which will allow common materials to sample the atmosphere environment maps e.g.,
         // sky view LUT for glossy reflections and diffuse sky illiminance LUT for irradiance.

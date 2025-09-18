@@ -11,4 +11,5 @@ export const enum DefaultSectionsOrder {
     AnimationGroups = 1000,
     GUIs = 1100,
     FrameGraphs = 1200,
+    Atmosphere = 1300,
 }
