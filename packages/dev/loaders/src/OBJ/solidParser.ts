@@ -147,14 +147,14 @@ export class SolidParser {
      * If a tuple of (position, normal) is not set, add the data into the corresponding array
      * If the tuple already exist, add only their indice
      *
-     * @param data Object The vertex's data
-     * * indicesPositionFromObj: Integer The index in positions array
-     * * indicesUvsFromObj: Integer The index in uvs array
-     * * indicesNormalFromObj: Integer The index in normals array
-     * * positionVectorFromOBJ: Vector3 The value of position at index objIndice
-     * * textureVectorFromOBJ: Vector3 The value of uvs
-     * * normalsVectorFromOBJ: Vector3 The value of normals at index objNormale
-     * * positionColorsFromOBJ
+     * @param data The vertex's data
+     * * indicesPositionFromObj: The index in positions array
+     * * indicesUvsFromObj: The index in uvs array
+     * * indicesNormalFromObj: The index in normals array
+     * * positionVectorFromOBJ: The value of position at index objIndice
+     * * textureVectorFromOBJ: The value of uvs
+     * * normalsVectorFromOBJ: The value of normals at index objNormale
+     * * positionColorsFromOBJ: The value of color at index objIndice
      */
     private _setData(data: {
         indicePositionFromObj: number;
@@ -231,17 +231,17 @@ export class SolidParser {
                     this._wrappedPositionForBabylon[l].y,
                     this._wrappedPositionForBabylon[l].z
                 );
-                if (this._wrappedNormalsForBabylon.length > 0) {
+                if (this._wrappedNormalsForBabylon.length) {
                     this._unwrappedNormalsForBabylon.push(
                         this._wrappedNormalsForBabylon[l].x * this._handednessSign,
                         this._wrappedNormalsForBabylon[l].y,
                         this._wrappedNormalsForBabylon[l].z
                     );
                 }
-                if (this._wrappedUvsForBabylon.length > 0) {
+                if (this._wrappedUvsForBabylon.length) {
                     this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
                 }
-                if (this._loadingOptions.importVertexColors) {
+                if (this._unwrappedColorsForBabylon.length) {
                     //Push the r, g, b, a values of each element in the unwrapped array
                     this._unwrappedColorsForBabylon.push(
                         this._wrappedColorsForBabylon[l].r,
