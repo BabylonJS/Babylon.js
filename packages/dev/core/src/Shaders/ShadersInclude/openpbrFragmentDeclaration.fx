@@ -12,6 +12,7 @@ uniform float vCoatRoughness;
 uniform float vCoatRoughnessAnisotropy;
 uniform float vCoatIor;
 uniform float vCoatDarkening;
+uniform vec2 vGeometryCoatTangent;
 uniform vec3 vEmissionColor;
 
 // CUSTOM CONTROLS
