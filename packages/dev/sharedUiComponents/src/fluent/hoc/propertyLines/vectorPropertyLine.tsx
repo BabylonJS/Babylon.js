@@ -26,6 +26,10 @@ export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quat
          * Will be displayed in the input UI to indicate the unit of measurement
          */
         unit?: string;
+
+        /**
+         * Internal spinbutton's step
+         */
         step?: number;
         /**
          * If passed, the UX will use the conversion functions to display/update values

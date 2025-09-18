@@ -159,7 +159,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     return (
         <LineContainer ref={ref}>
             <div className={classes.line}>
-                <InfoLabel className={classes.label} info={<div className={classes.infoPopup}>{description}</div>} title={label}>
+                <InfoLabel className={classes.label} info={description ? <div className={classes.infoPopup}>{description}</div> : undefined} title={label}>
                     <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
