@@ -2,6 +2,7 @@ import type { IDecodedData } from "core/Materials/Textures/ktx2decoderTypes";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export type AllowedKeys =
+    | "wasmBaseUrl"
     | "wasmUASTCToASTC"
     | "wasmUASTCToBC7"
     | "wasmUASTCToRGBA_UNORM"
@@ -19,7 +20,12 @@ declare let KTX2DECODER: any;
 
 export function applyConfig(urls?: { [key in AllowedKeys]: string }, binariesAndModulesContainer?: { [key in AllowedKeys]: ArrayBuffer | any }): void {
     const KTX2DecoderModule = binariesAndModulesContainer?.jsDecoderModule || KTX2DECODER;
+
     if (urls) {
+        if (urls.wasmBaseUrl) {
+            KTX2DecoderModule.Transcoder.WasmBaseUrl = urls.wasmBaseUrl;
+        }
+
         if (urls.wasmUASTCToASTC) {
             KTX2DecoderModule.LiteTranscoder_UASTC_ASTC.WasmModuleURL = urls.wasmUASTCToASTC;
         }
