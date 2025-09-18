@@ -183,7 +183,6 @@ export class SolidParser {
             //The array of indices is only an array with his length equal to the number of triangles - 1.
             //We add vertices data in this order
             this._indicesForBabylon.push(this._wrappedPositionForBabylon.length);
-
             //Push the position of vertice for Babylon
             //Each element is a Vector3(x,y,z)
             this._wrappedPositionForBabylon.push(data.positionVectorFromOBJ);
