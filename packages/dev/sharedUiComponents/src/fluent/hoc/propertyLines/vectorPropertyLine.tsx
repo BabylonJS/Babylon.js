@@ -10,6 +10,7 @@ import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Quaternion, Vector2, Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
+import { CalculatePrecision } from "../../primitives/spinButton";
 
 export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quaternion> = PropertyLineProps<V> &
     PrimitiveProps<V> & {
@@ -25,6 +26,7 @@ export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quat
          * Will be displayed in the input UI to indicate the unit of measurement
          */
         unit?: string;
+        step?: number;
         /**
          * If passed, the UX will use the conversion functions to display/update values
          */
@@ -51,7 +53,7 @@ const HasW = (vector: Vector2 | Vector3 | Vector4 | Quaternion): vector is Vecto
  */
 const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Vector3 | Vector4 | Quaternion>> = (props) => {
     const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
-    const formatted = (val: number) => converted(val).toFixed(2);
+    const formatted = (val: number) => converted(val).toFixed(props.step !== undefined ? CalculatePrecision(props.step) : 2);
 
     const [vector, setVector] = useState(props.value);
     const { min, max } = props;
@@ -68,15 +70,48 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
     return (
         <PropertyLine
             {...props}
+            onCopy={() => `(${vector.x}, ${vector.y} ${HasZ(vector) ? `, ${vector.z}` : ""}${HasW(vector) ? `, ${vector.w}` : ""})`}
             expandedContent={
                 <>
-                    <SyncedSliderPropertyLine label="X" value={converted(vector.x)} min={min} max={max} onChange={(val) => onChange(val, "x")} unit={props.unit} />
-                    <SyncedSliderPropertyLine label="Y" value={converted(vector.y)} min={min} max={max} onChange={(val) => onChange(val, "y")} unit={props.unit} />
+                    <SyncedSliderPropertyLine
+                        label="X"
+                        value={converted(vector.x)}
+                        min={min}
+                        max={max}
+                        onChange={(val) => onChange(val, "x")}
+                        unit={props.unit}
+                        step={props.step}
+                    />
+                    <SyncedSliderPropertyLine
+                        label="Y"
+                        value={converted(vector.y)}
+                        min={min}
+                        max={max}
+                        onChange={(val) => onChange(val, "y")}
+                        unit={props.unit}
+                        step={props.step}
+                    />
                     {HasZ(vector) && (
-                        <SyncedSliderPropertyLine label="Z" value={converted(vector.z)} min={min} max={max} onChange={(val) => onChange(val, "z")} unit={props.unit} />
+                        <SyncedSliderPropertyLine
+                            label="Z"
+                            value={converted(vector.z)}
+                            min={min}
+                            max={max}
+                            onChange={(val) => onChange(val, "z")}
+                            unit={props.unit}
+                            step={props.step}
+                        />
                     )}
                     {HasW(vector) && (
-                        <SyncedSliderPropertyLine label="W" value={converted(vector.w)} min={min} max={max} onChange={(val) => onChange(val, "w")} unit={props.unit} />
+                        <SyncedSliderPropertyLine
+                            label="W"
+                            value={converted(vector.w)}
+                            min={min}
+                            max={max}
+                            onChange={(val) => onChange(val, "w")}
+                            unit={props.unit}
+                            step={props.step}
+                        />
                     )}
                 </>
             }
@@ -97,7 +132,16 @@ const ToDegreesConverter = { from: Tools.ToDegrees, to: Tools.ToRadians };
 export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropertyLineProps> = (props) => {
     const min = props.useDegrees ? 0 : undefined;
     const max = props.useDegrees ? 360 : undefined;
-    return <Vector3PropertyLine {...props} unit={props.useDegrees ? "deg" : "rad"} valueConverter={props.useDegrees ? ToDegreesConverter : undefined} min={min} max={max} />;
+    return (
+        <Vector3PropertyLine
+            {...props}
+            unit={props.useDegrees ? "deg" : "rad"}
+            valueConverter={props.useDegrees ? ToDegreesConverter : undefined}
+            min={min}
+            max={max}
+            step={0.001}
+        />
+    );
 };
 
 type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
