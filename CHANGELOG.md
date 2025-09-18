@@ -1,5 +1,15 @@
 # Changelog
 
+## 8.28.1
+
+### Core
+
+- Viewer3D: Fix shadows not displayed in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17166](https://github.com/BabylonJS/Babylon.js/pull/17166))
+
+### Viewer
+
+- Viewer3D: Fix shadows not displayed in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17166](https://github.com/BabylonJS/Babylon.js/pull/17166))
+
 ## 8.28.0
 
 ### Core
