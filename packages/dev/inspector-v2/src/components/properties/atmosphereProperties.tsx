@@ -40,10 +40,14 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
             <PropertyLine
                 label="Rayleigh Scattering"
                 expandByDefault
+                docLink="www.google.com"
+                description="Rayleigh scattering is the scattering of light off of the molecules of the atmosphere. It is the main reason why the sky is blue."
                 expandedContent={
                     <>
                         <BoundProperty
                             label="Scale"
+                            docLink="www.google.com"
+                            description="ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
                             component={SyncedSliderPropertyLine}
                             target={atmosphere.physicalProperties}
                             propertyKey="rayleighScatteringScale"
@@ -51,7 +55,16 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             max={5.0}
                             step={0.01}
                         />
-                        <BoundProperty label="Peak (Mm)" component={Vector3PropertyLine} target={atmosphere.physicalProperties} propertyKey="peakRayleighScattering" />
+                        <BoundProperty
+                            label="RGB (Mm)"
+                            component={Vector3PropertyLine}
+                            target={atmosphere.physicalProperties}
+                            propertyKey="peakRayleighScattering"
+                            convertTo={(value) => value.scale(1000)}
+                            convertFrom={(value) => value.scale(0.001)}
+                            min={0}
+                            step={0.01}
+                        />
                     </>
                 }
             />
@@ -69,7 +82,16 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             max={5.0}
                             step={0.01}
                         />
-                        <BoundProperty label="Scattering (Mm)" component={Vector3PropertyLine} target={atmosphere.physicalProperties} propertyKey="peakMieScattering" />
+                        <BoundProperty
+                            label="RGB (Mm)"
+                            component={Vector3PropertyLine}
+                            target={atmosphere.physicalProperties}
+                            propertyKey="peakMieScattering"
+                            convertTo={(value) => value.scale(1000)}
+                            convertFrom={(value) => value.scale(0.001)}
+                            min={0}
+                            step={0.01}
+                        />
                     </>
                 }
             />
@@ -87,7 +109,16 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             max={5.0}
                             step={0.01}
                         />
-                        <BoundProperty label="Peak (Mm)" component={Vector3PropertyLine} target={atmosphere.physicalProperties} propertyKey="peakMieAbsorption" />
+                        <BoundProperty
+                            label="RGB (Mm)"
+                            component={Vector3PropertyLine}
+                            target={atmosphere.physicalProperties}
+                            propertyKey="peakMieAbsorption"
+                            convertTo={(value) => value.scale(1000)}
+                            convertFrom={(value) => value.scale(0.001)}
+                            min={0}
+                            step={0.01}
+                        />
                     </>
                 }
             />
@@ -105,7 +136,16 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             max={5.0}
                             step={0.01}
                         />
-                        <BoundProperty label="Peak (Mm)" component={Vector3PropertyLine} target={atmosphere.physicalProperties} propertyKey="peakOzoneAbsorption" />
+                        <BoundProperty
+                            label="RGB (Mm)"
+                            component={Vector3PropertyLine}
+                            target={atmosphere.physicalProperties}
+                            propertyKey="peakOzoneAbsorption"
+                            convertTo={(value) => value.scale(1000)}
+                            convertFrom={(value) => value.scale(0.001)}
+                            min={0}
+                            step={0.01}
+                        />
                     </>
                 }
             />

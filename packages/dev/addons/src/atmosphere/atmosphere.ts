@@ -637,7 +637,7 @@ export class Atmosphere implements IDisposable {
         return this._cameraAtmosphereVariables;
     }
 
-    public uniqueId: number;
+    public readonly uniqueId: number;
 
     /**
      * Constructs the {@link Atmosphere}.
@@ -653,7 +653,6 @@ export class Atmosphere implements IDisposable {
         options?: IAtmosphereOptions
     ) {
         const engine = (this._engine = scene.getEngine());
-        this.uniqueId = this.scene.getUniqueId();
 
         if (engine.isWebGPU) {
             throw new Error("Atmosphere is not supported on WebGPU.");
