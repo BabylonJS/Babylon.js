@@ -40,7 +40,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
             <PropertyLine
                 label="Rayleigh Scattering"
                 expandByDefault
-                description="Rayleigh scattering is the scattering of light off of the molecules of the atmosphere. It is the main reason why the sky is blue."
+                description="Rayleigh scattering is the scattering of light off of the molecules of the atmosphere. It is the main reason why the sky is blue. Increasing the Rayleigh scattering coefficient will result in a bluer sky."
                 expandedContent={
                     <>
                         <BoundProperty
@@ -68,7 +68,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
             />
             <PropertyLine
                 label="Mie Scattering"
-                description="Mie scattering is the scattering of light off of the larger particles in the atmosphere, such as dust and water droplets. It is responsible for the white appearance of clouds and the haziness of the sky."
+                description="Mie scattering is the scattering of light off of the larger particles in the atmosphere, such as dust and water droplets. It is responsible for the white appearance of clouds and the haziness of the sky. Increasing the Mie scattering coefficient will result in a whiter sky."
                 expandByDefault
                 expandedContent={
                     <>
@@ -97,7 +97,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
             />
             <PropertyLine
                 label="Mie Absorption"
-                description="Mie absorption is the absorption of light by the larger particles in the atmosphere, such as dust and water droplets. It is responsible for the dimming of the sun during haze and fog."
+                description="Mie absorption is the absorption of light by the larger particles in the atmosphere, such as dust and water droplets. It is responsible for the dimming of the sun during haze and fog. Increasing mie absorption coefficient will result in visually darker skies."
                 expandByDefault
                 expandedContent={
                     <>
@@ -127,7 +127,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
             <PropertyLine
                 label="Ozone Absorption"
                 expandByDefault
-                description="Ozone absorption is the absorption of light by ozone molecules in the atmosphere. It is responsible for the absorption of harmful ultraviolet radiation from the sun."
+                description="Ozone absorption is the absorption of light by ozone molecules in the atmosphere. Increasing ozone absorption coefficient will result in visually darker skies."
                 expandedContent={
                     <>
                         <BoundProperty

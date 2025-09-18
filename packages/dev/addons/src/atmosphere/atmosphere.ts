@@ -653,6 +653,7 @@ export class Atmosphere implements IDisposable {
         options?: IAtmosphereOptions
     ) {
         const engine = (this._engine = scene.getEngine());
+        this.uniqueId = scene.getUniqueId();
 
         if (engine.isWebGPU) {
             throw new Error("Atmosphere is not supported on WebGPU.");
