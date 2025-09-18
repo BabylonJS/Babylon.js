@@ -165,10 +165,9 @@ export class SolidParser {
         normalsVectorFromOBJ?: Vector3;
         positionColorsFromOBJ?: Color4;
     }) {
-        //Set default values if undefined
+        //Use default values if undefined
         data.indiceUvsFromObj ??= -1;
         data.indiceNormalFromObj ??= -1;
-        data.textureVectorFromOBJ ??= Vector2.Zero(); //If the UVs are missing, set (u,v)=(0,0) for backcompat
 
         //Check if this tuple already exists in the list of tuples
         let _index: number;
@@ -184,19 +183,21 @@ export class SolidParser {
             //The array of indices is only an array with his length equal to the number of triangles - 1.
             //We add vertices data in this order
             this._indicesForBabylon.push(this._wrappedPositionForBabylon.length);
+
             //Push the position of vertice for Babylon
             //Each element is a Vector3(x,y,z)
             this._wrappedPositionForBabylon.push(data.positionVectorFromOBJ);
-            //Push the uvs for Babylon
-            //Each element is a Vector2(u,v)
-            this._wrappedUvsForBabylon.push(data.textureVectorFromOBJ);
 
+            if (data.textureVectorFromOBJ !== undefined) {
+                //Push the uvs for Babylon
+                //Each element is a Vector2(u,v)
+                this._wrappedUvsForBabylon.push(data.textureVectorFromOBJ);
+            }
             if (data.normalsVectorFromOBJ !== undefined) {
                 //Push the normals for Babylon
                 //Each element is a Vector3(x,y,z)
                 this._wrappedNormalsForBabylon.push(data.normalsVectorFromOBJ);
             }
-
             if (data.positionColorsFromOBJ !== undefined) {
                 //Push the colors for Babylon
                 //Each element is a BABYLON.Color4(r,g,b,a)
@@ -237,8 +238,9 @@ export class SolidParser {
                         this._wrappedNormalsForBabylon[l].z
                     );
                 }
-
-                this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
+                if (this._wrappedUvsForBabylon.length > 0) {
+                    this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
+                }
                 if (this._loadingOptions.importVertexColors) {
                     //Push the r, g, b, a values of each element in the unwrapped array
                     this._unwrappedColorsForBabylon.push(
@@ -993,7 +995,7 @@ export class SolidParser {
 
             const vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
-            vertexData.uvs = this._handledMesh.uvs;
+            vertexData.uvs = this._handledMesh.uvs?.length ? this._handledMesh.uvs : null;
             vertexData.indices = this._handledMesh.indices;
             vertexData.positions = this._handledMesh.positions;
             if (this._loadingOptions.computeNormals || !this._handledMesh.normals || this._handledMesh.normals.length === 0) {
