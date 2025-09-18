@@ -86,7 +86,7 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
         <FluentAccordion className={classes.accordion} collapsible multiple onToggle={onToggle} openItems={openItems} {...rest}>
             {validChildren.map((child) => {
                 return (
-                    <AccordionItem key={child.title} value={child.title}>
+                    <AccordionItem key={child.content.key} value={child.title}>
                         <AccordionHeader expandIconPosition="end">
                             <Subtitle1>{child.title}</Subtitle1>
                         </AccordionHeader>
