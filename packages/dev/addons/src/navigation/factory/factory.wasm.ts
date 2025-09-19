@@ -1,6 +1,6 @@
 import { InjectGenerators } from "../generator/injection";
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
-import { BjsRecast, InitRecast } from "./common";
+import { GetRecast, InitRecast } from "./common";
 
 /**
  * Creates a navigation plugin for the given scene using Recast WASM.
@@ -10,7 +10,7 @@ import { BjsRecast, InitRecast } from "./common";
 export async function CreateNavigationPluginWasmAsync() {
     await InitRecast();
 
-    const navigationPlugin = new RecastNavigationJSPluginV2(BjsRecast);
+    const navigationPlugin = new RecastNavigationJSPluginV2(GetRecast());
     InjectGenerators(navigationPlugin);
 
     return navigationPlugin;

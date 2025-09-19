@@ -28,7 +28,7 @@ import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import { Logger } from "core/Misc/logger";
 
 import type { GeneratorIntermediates } from "../types";
-import { BjsRecast } from "../factory/common";
+import { GetRecast } from "../factory/common";
 
 // TODO: Enum?
 export const DebugLayerOption = {
@@ -138,7 +138,7 @@ export class NavigationDebugger {
             };
         }
     ) {
-        this._debugDrawerUtils = new BjsRecast.DebugDrawerUtils();
+        this._debugDrawerUtils = new (GetRecast().DebugDrawerUtils)();
 
         this._primitiveTypes = options?.primitiveTypes ?? ["points", "lines", "tris", "quads"];
 

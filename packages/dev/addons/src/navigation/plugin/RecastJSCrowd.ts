@@ -14,7 +14,7 @@ import type { RecastNavigationJSPluginV2 } from "./RecastNavigationJSPlugin";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ToCrowdAgentParams } from "../common/config";
 import type { IAgentParametersV2 } from "../types";
-import { BjsRecast } from "../factory/common";
+import { GetRecast } from "../factory/common";
 
 /**
  * Recast Detour crowd implementation
@@ -113,7 +113,7 @@ export class RecastJSCrowd implements ICrowd {
             throw new Error("There is no NavMesh generated.");
         }
 
-        this._recastCrowd = new BjsRecast.Crowd(plugin.navMesh, {
+        this._recastCrowd = new (GetRecast().Crowd)(plugin.navMesh, {
             maxAgents,
             maxAgentRadius,
         });

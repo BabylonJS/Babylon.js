@@ -6,7 +6,7 @@ import { Vector3 } from "core/Maths/math.vector";
 import { ConvertNavPathPoints } from "./convert";
 import type { SteerTargetResult } from "../types";
 import { ComputePathError, type ComputePathResult } from "../types";
-import { BjsRecast } from "../factory/common";
+import { GetRecast } from "../factory/common";
 
 const _DELTA = new Vector3();
 const _MOVE_TARGET = new Vector3();
@@ -175,8 +175,8 @@ function ComputeSmoothPathImpl(
             break;
         }
 
-        const isEndOfPath = steerTarget.steerPosFlag & BjsRecast.Detour.DT_STRAIGHTPATH_END;
-        const isOffMeshConnection = steerTarget.steerPosFlag & BjsRecast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION;
+        const isEndOfPath = steerTarget.steerPosFlag & GetRecast().Detour.DT_STRAIGHTPATH_END;
+        const isOffMeshConnection = steerTarget.steerPosFlag & GetRecast().Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION;
 
         // Find movement delta.
         const steerPos = steerTarget.steerPos;
@@ -303,7 +303,7 @@ function getSteerTarget(navMeshQuery: NavMeshQuery, start: Vector3, end: Vector3
     let ns = 0;
     while (ns < outPoints.length) {
         // Stop at Off-Mesh link or when point is further than slop away
-        if (straightPath.straightPathFlags.get(ns) & BjsRecast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION) {
+        if (straightPath.straightPathFlags.get(ns) & GetRecast().Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION) {
             break;
         }
 
@@ -427,7 +427,7 @@ function fixupShortcuts(pathPolys: number[], navMesh: NavMesh) {
 
     const poly = tileAndPoly.poly;
     const tile = tileAndPoly.tile;
-    for (let k = poly.firstLink(); k !== BjsRecast.Detour.DT_NULL_LINK; k = tile.links(k).next()) {
+    for (let k = poly.firstLink(); k !== GetRecast().Detour.DT_NULL_LINK; k = tile.links(k).next()) {
         const link = tile.links(k);
 
         if (link.ref() !== 0) {
