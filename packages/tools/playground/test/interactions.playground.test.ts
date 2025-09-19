@@ -66,7 +66,7 @@ test("User can interact with the playground", async ({ page }) => {
         height: 1080,
     });
 
-    await page.locator(".view-lines > div:nth-child(16)").click();
+    await page.locator(".view-line:nth-of-type(7)").click();
     await page.keyboard.type("camera", { delay: 50 });
     await expect(page.locator(".editor-widget")).toBeVisible();
     await page.waitForTimeout(100);
