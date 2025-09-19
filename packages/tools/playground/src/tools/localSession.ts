@@ -55,16 +55,11 @@ const GetDefaultToken = (globalState: GlobalState) => {
 export const CompressJson = (jsonData: string): string => {
     const data = Encoder.encode(jsonData);
     const compressed = Compress(data);
-    return btoa(String.fromCharCode(...compressed));
+    return Uint8ToBase64(compressed);
 };
 
 export const DecompressJson = (base64Data: string): string => {
-    const binaryString = atob(base64Data);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-    }
+    const bytes = Base64ToUint8(base64Data);
     const decompressed = Decompress(bytes);
     return Decoder.decode(decompressed);
 };
@@ -363,3 +358,28 @@ const DiffFiles = (prev: V2Manifest | null, next: V2Manifest): FileChange[] => {
 
     return changes;
 };
+
+// Manual b64 helpers to avoid exhausting call stack
+
+function Uint8ToBase64(bytes: Uint8Array): string {
+    const chunk = 0x8000;
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += chunk) {
+        const slice = bytes.subarray(i, i + chunk);
+        let chunkStr = "";
+        for (let j = 0; j < slice.length; j++) {
+            chunkStr += String.fromCharCode(slice[j]);
+        }
+        binary += chunkStr;
+    }
+    return btoa(binary);
+}
+
+function Base64ToUint8(b64: string): Uint8Array {
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+}
