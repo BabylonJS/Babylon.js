@@ -22,9 +22,6 @@ import { GetRecast } from "../factory/common";
  */
 export function GenerateNavMesh(meshes: Array<Mesh>, parameters: INavMeshParametersV2) {
     const recast = GetRecast();
-    if (!recast) {
-        throw new Error("Recast module is not initialized.");
-    }
 
     if (meshes.length === 0) {
         throw new Error("At least one mesh is needed to create the nav mesh.");
