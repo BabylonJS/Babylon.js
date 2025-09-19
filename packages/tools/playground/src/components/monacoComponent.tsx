@@ -664,7 +664,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         const submitLabel = this.state.fileDialog.type === "rename" ? "Rename" : this.state.fileDialog.type === "duplicate" ? "Duplicate" : "Create";
         const entry = this.props.globalState.entryFilePath;
         return (
-            <div ref={this.props.refObject} className={`pg-monaco-wrapper ${this.props.className || ""} pg-theme-${theme}`}>
+            <div id="monacoHost" ref={this.props.refObject} className={`pg-monaco-wrapper ${this.props.className || ""} pg-theme-${theme}`}>
                 <div className="pg-tabs-bar">
                     <div className="pg-tabs-host" ref={this._tabsHostRef}>
                         <div className="pg-tabs" ref={this._tabsContentRef} aria-label="Files">
