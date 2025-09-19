@@ -1,6 +1,6 @@
 import type { NavMesh, OffMeshConnectionParams, TileCache } from "@recast-navigation/core";
 
-import { BjsRecast } from "../factory/common";
+import { GetRecast } from "../factory/common";
 
 /**
  * Creates a default tile cache mesh process function
@@ -10,7 +10,7 @@ import { BjsRecast } from "../factory/common";
  * @returns the tile cache mesh process function
  */
 export function CreateDefaultTileCacheMeshProcess(offMeshConnections: OffMeshConnectionParams[] = [], area = 0, flags = 1) {
-    return new BjsRecast.TileCacheMeshProcess((navMeshCreateParams, polyAreas, polyFlags) => {
+    return new (GetRecast().TileCacheMeshProcess)((navMeshCreateParams, polyAreas, polyFlags) => {
         for (let i = 0; i < navMeshCreateParams.polyCount(); ++i) {
             polyAreas.set(i, area);
             polyFlags.set(i, flags);

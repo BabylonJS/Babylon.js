@@ -4,9 +4,9 @@ import type { IVector3Like } from "core/Maths/math.like";
 import { Vector3 } from "core/Maths/math.vector";
 
 import { ConvertNavPathPoints } from "./convert";
-import type { SteerTargetResult } from "../types";
+import type { RecastInjection, SteerTargetResult } from "../types";
 import { ComputePathError, type ComputePathResult } from "../types";
-import { BjsRecast } from "../factory/common";
+import { GetRecast } from "../factory/common";
 
 const _DELTA = new Vector3();
 const _MOVE_TARGET = new Vector3();
@@ -67,6 +67,7 @@ function ComputeSmoothPathImpl(
         slop?: number;
     }
 ): ComputePathResult {
+    const recast = GetRecast();
     const filter = options?.filter ?? navMeshQuery.defaultFilter;
     const halfExtents = options?.halfExtents ?? navMeshQuery.defaultQueryHalfExtents;
     const maxSmoothPathPoints = options?.maxSmoothPathPoints ?? 2048;
@@ -169,14 +170,14 @@ function ComputeSmoothPathImpl(
 
     while (polys.length > 0 && smoothPath.length < maxSmoothPathPoints) {
         // Find location to steer towards
-        const steerTarget = getSteerTarget(navMeshQuery, iterPos, targetPos, slop, polys);
+        const steerTarget = getSteerTarget(navMeshQuery, iterPos, targetPos, slop, polys, recast);
 
         if (!steerTarget.success) {
             break;
         }
 
-        const isEndOfPath = steerTarget.steerPosFlag & BjsRecast.Detour.DT_STRAIGHTPATH_END;
-        const isOffMeshConnection = steerTarget.steerPosFlag & BjsRecast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION;
+        const isEndOfPath = steerTarget.steerPosFlag & recast.Detour.DT_STRAIGHTPATH_END;
+        const isOffMeshConnection = steerTarget.steerPosFlag & recast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION;
 
         // Find movement delta.
         const steerPos = steerTarget.steerPos;
@@ -202,7 +203,7 @@ function ComputeSmoothPathImpl(
         const result = moveAlongSurface.resultPosition;
 
         fixupCorridor(polys, maxPathPolys, moveAlongSurface.visited);
-        fixupShortcuts(polys, navMesh);
+        fixupShortcuts(polys, navMesh, recast);
 
         const polyHeightResult = navMeshQuery.getPolyHeight(polys[0], result);
 
@@ -280,7 +281,7 @@ function ComputeSmoothPathImpl(
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function getSteerTarget(navMeshQuery: NavMeshQuery, start: Vector3, end: Vector3, minTargetDist: number, pathPolys: number[]): SteerTargetResult {
+function getSteerTarget(navMeshQuery: NavMeshQuery, start: Vector3, end: Vector3, minTargetDist: number, pathPolys: number[], recast: RecastInjection): SteerTargetResult {
     const maxSteerPoints = 3;
     const straightPath = navMeshQuery.findStraightPath(start, end, pathPolys, {
         maxStraightPathPoints: maxSteerPoints,
@@ -303,7 +304,7 @@ function getSteerTarget(navMeshQuery: NavMeshQuery, start: Vector3, end: Vector3
     let ns = 0;
     while (ns < outPoints.length) {
         // Stop at Off-Mesh link or when point is further than slop away
-        if (straightPath.straightPathFlags.get(ns) & BjsRecast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION) {
+        if (straightPath.straightPathFlags.get(ns) & recast.Detour.DT_STRAIGHTPATH_OFFMESH_CONNECTION) {
             break;
         }
 
@@ -407,9 +408,10 @@ function fixupCorridor(pathPolys: number[], maxPath: number, visitedPolyRefs: nu
  *  +---+---+
  * @param pathPolys The path polygons to check for U-turns.
  * @param navMesh The navigation mesh used to check adjacency.
+ * @param recast The recast injection to use.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-function fixupShortcuts(pathPolys: number[], navMesh: NavMesh) {
+function fixupShortcuts(pathPolys: number[], navMesh: NavMesh, recast: RecastInjection) {
     if (pathPolys.length < 3) {
         return;
     }
@@ -427,7 +429,7 @@ function fixupShortcuts(pathPolys: number[], navMesh: NavMesh) {
 
     const poly = tileAndPoly.poly;
     const tile = tileAndPoly.tile;
-    for (let k = poly.firstLink(); k !== BjsRecast.Detour.DT_NULL_LINK; k = tile.links(k).next()) {
+    for (let k = poly.firstLink(); k !== recast.Detour.DT_NULL_LINK; k = tile.links(k).next()) {
         const link = tile.links(k);
 
         if (link.ref() !== 0) {

@@ -6,7 +6,7 @@ import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 
 import { GetReversedIndices } from "../common/getters";
-import { BjsRecast } from "../factory/common";
+import { GetRecast } from "../factory/common";
 
 /**
  * Creates a debug mesh for visualizing a NavMesh in the scene.
@@ -16,7 +16,7 @@ import { BjsRecast } from "../factory/common";
  * @returns The created debug mesh.
  */
 export function CreateDebugNavMesh(navMesh: NavMesh, scene: Scene, parent?: Node) {
-    const [positions, indices] = BjsRecast.getNavMeshPositionsAndIndices(navMesh);
+    const [positions, indices] = GetRecast().getNavMeshPositionsAndIndices(navMesh);
 
     const mesh = new Mesh("NavMeshDebug", scene);
     const vertexData = new VertexData();

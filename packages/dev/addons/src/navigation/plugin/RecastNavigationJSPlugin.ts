@@ -15,7 +15,8 @@ import { ComputeSmoothPath } from "../common/smooth-path";
 import { CreateDebugNavMesh } from "../debug/simple-debug";
 import { GetRecast } from "../factory/common";
 import { InjectGenerators } from "../generator/injection";
-import { DefaultMaxObstacles, WaitForFullTileCacheUpdate } from "../common";
+import { DefaultMaxObstacles } from "../common/config";
+import { WaitForFullTileCacheUpdate } from "../common/tile-cache";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
