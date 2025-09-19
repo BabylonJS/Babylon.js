@@ -13,7 +13,7 @@ import { RecastJSCrowd } from "./RecastJSCrowd";
 import { ConvertNavPathPoints } from "../common/convert";
 import { ComputeSmoothPath } from "../common/smooth-path";
 import { CreateDebugNavMesh } from "../debug/simple-debug";
-import { BjsRecast } from "../factory/common";
+import { GetRecast } from "../factory/common";
 import { InjectGenerators } from "../generator/injection";
 import { DefaultMaxObstacles, WaitForFullTileCacheUpdate } from "../common";
 
@@ -92,7 +92,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      */
     public constructor(recastInjection?: RecastInjection) {
         if (!recastInjection) {
-            recastInjection = BjsRecast;
+            recastInjection = GetRecast();
             InjectGenerators(this);
         }
 
@@ -552,7 +552,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns true if plugin is supported
      */
     public isSupported(): boolean {
-        return true;
+        return !!this.bjsRECAST;
     }
 
     /**

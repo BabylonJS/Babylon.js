@@ -3,12 +3,36 @@ import type { Nullable } from "core/types";
 
 import type { RecastInjection } from "../types";
 
-export let BjsRecast: RecastInjection;
+/**
+ * Gets the RecastInjection instance (reference to the recast-navigation-js library).
+ * @returns The RecastInjection instance
+ * @throws Error if Recast is not initialized
+ */
+export function GetRecast(): RecastInjection {
+    if (!_Recast) {
+        throw new Error("Recast is not initialized. Please call InitRecast first.");
+    }
+    return _Recast;
+}
+
+/**
+ * Sets the RecastInjection instance (reference to the recast-navigation-js library).
+ * @param recast The RecastInjection instance to set
+ */
+export function SetRecast(recast: RecastInjection) {
+    _Recast = recast;
+}
+
+/**
+ * Reference to the recast-navigation-js library
+ */
+let _Recast: RecastInjection;
+
 /**
  * Promise to wait for the recast-navigation-js library to be ready
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-let InitPromise: Nullable<Promise<{ core: any; generators: any }>> = null;
+let _InitPromise: Nullable<Promise<{ core: any; generators: any }>> = null;
 
 /**
  * Initialize the Manifold library
@@ -27,25 +51,25 @@ export async function InitRecast(
         ...options,
     };
 
-    if (BjsRecast) {
+    if (_Recast) {
         return; // Already initialized
     }
 
-    if (InitPromise) {
-        await InitPromise;
+    if (_InitPromise) {
+        await _InitPromise;
         return;
     }
 
     if (localOptions.instance) {
-        BjsRecast = localOptions.instance;
+        _Recast = localOptions.instance;
     } else {
-        InitPromise = ImportRecast(localOptions.url, localOptions.version);
+        _InitPromise = ImportRecast(localOptions.url, localOptions.version);
 
-        const result = await InitPromise;
+        const result = await _InitPromise;
         // eslint-disable-next-line require-atomic-updates
-        BjsRecast = { ...result.core, ...result.generators };
+        _Recast = { ...result.core, ...result.generators };
 
-        await BjsRecast.init();
+        await _Recast.init();
     }
 }
 
