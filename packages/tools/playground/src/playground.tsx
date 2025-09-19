@@ -25,18 +25,10 @@ interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
 }
 
-/**
- *
- */
 export class Playground extends React.Component<
     IPlaygroundProps,
     {
-        /**
-         *
-         */
-        errorMessage: string /**
-         *
-         */;
+        errorMessage: string;
         mode: EditionMode;
     }
 > {
@@ -47,17 +39,8 @@ export class Playground extends React.Component<
 
     private _globalState: GlobalState;
 
-    /**
-     *
-     */
     public saveManager: SaveManager;
-    /**
-     *
-     */
     public loadManager: LoadManager;
-    /**
-     *
-     */
     public shortcutManager: ShortcutManager;
 
     public constructor(props: IPlaygroundProps) {
