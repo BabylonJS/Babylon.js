@@ -36,7 +36,7 @@ export class TypingsService {
     ) {
         function toVfsUriFromAtaPath(path: string) {
             // put everything under file:///...
-            const clean = NormalizeVirtualPath(path); // you already have this
+            const clean = NormalizeVirtualPath(path);
             return `file:///${clean}`;
         }
         function isEntryDts(path: string) {

@@ -37,10 +37,17 @@ export type SnippetRevisionsBundle = {
 export type SnippetFileRevisions = {
     [snippetId: string]: string;
 };
+export type RevisionContext = {
+    token: string;
+    title: string;
+    count: number;
+    latestDate?: number;
+};
 
+// Storage key in localStorage
 const LocalRevisionKey = "snippetRevisions";
 
-// For unsaved Playground sessions we use a default token
+// For unsaved Playground sessions use a default token
 const GetDefaultToken = (globalState: GlobalState) => {
     return globalState.currentSnippetToken || "local-session";
 };
@@ -109,6 +116,9 @@ function StoreBundleForToken(token: string, bundle: SnippetRevisionsBundle) {
     try {
         WriteAll(all);
     } catch (e) {
+        // This is a potential rare case we want to handle with localStorage quota
+        // Which varies from browser to browser - no silent failures or undefined behavior
+        // But make this actionable
         const code = (e as any)?.code;
         const name = (e as any)?.name;
         if (code === 22 || name === "QuotaExceededError") {
@@ -122,9 +132,9 @@ function StoreBundleForToken(token: string, bundle: SnippetRevisionsBundle) {
     }
 }
 
-export function ListRevisionContexts(globalState: GlobalState): Array<{ token: string; title: string; count: number; latestDate?: number }> {
+export function ListRevisionContexts(globalState: GlobalState): Array<RevisionContext> {
     const all = ReadAll();
-    const entries: Array<{ token: string; title: string; count: number; latestDate?: number }> = [];
+    const entries: Array<RevisionContext> = [];
 
     for (const token of Object.keys(all)) {
         try {
@@ -148,7 +158,6 @@ export function ListRevisionContexts(globalState: GlobalState): Array<{ token: s
         }
     }
 
-    // Ensure current token appears even if empty/missing
     const current = GetDefaultToken(globalState);
     if (!entries.some((e) => e.token === current)) {
         entries.push({

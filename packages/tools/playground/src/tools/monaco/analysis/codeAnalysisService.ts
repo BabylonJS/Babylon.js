@@ -1,14 +1,9 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import type { GlobalState } from "../../../globalState";
 
 export type TagCandidate = {
-    /**
-     *
-     */
     name: string;
-    /**
-     *
-     */
     tagName: string;
 };
 

@@ -10,7 +10,7 @@
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
             "inspector-v2/*": ["dev/inspector-v2/dist/*"],
             "playground/*": ["tools/playground/src/*"]
-        },
+        }
     },
 
     "include": ["./src/**/*"]

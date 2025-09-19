@@ -37,7 +37,6 @@ export const FileDialog: React.FC<IFileDialogProps> = ({
     React.useEffect(() => {
         if (isOpen) {
             setFilename(initialValue);
-            // Focus input after dialog appears
             setTimeout(() => {
                 inputRef.current?.focus();
                 inputRef.current?.select();

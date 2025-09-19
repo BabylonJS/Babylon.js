@@ -1,4 +1,3 @@
-// workerManager.ts - Manages TypeScript worker access to prevent conflicts
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { Logger } from "@dev/core";
 
@@ -72,7 +71,6 @@ class TypeScriptWorkerManager {
             return { syn, sem };
         } catch (error) {
             Logger.Warn(`Diagnostics failed for model ${model.uri.path}: ${error}`);
-            // Return null instead of throwing to allow graceful handling
             return null;
         }
     }

@@ -228,10 +228,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 };
             }
             // Build the runnable (always V2)
+            // The architecture for runnables changed from text block source code in PG_V1 to a full module in PG_V2.
             let runner;
             try {
                 runner = await this.props.globalState.getRunnable!();
                 if (runner) {
+                    // Local file revision storage for #{snippetId}#local support
                     AddFileRevision(this.props.globalState, runner!.getPackSnapshot().manifest);
                 }
             } catch (e) {

@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import { DecodeBase64ToBinary, Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
@@ -20,17 +21,9 @@ const DecodeBase64ToBinaryReproduced = (base64Data: string): ArrayBuffer => {
 
     return bufferView.buffer;
 };
-
-/**
- *
- */
 export class LoadManager {
     private _previousHash = "";
 
-    /**
-     * Creates a new LoadManager.
-     * @param globalState Shared global state.
-     */
     public constructor(public globalState: GlobalState) {
         // Check the url to prepopulate data
         this._checkHash();
@@ -143,6 +136,8 @@ export class LoadManager {
         }
     }
 
+    // These are potential variables defined by existing Playgrounds
+    // That need to be exported in order to work in V2 format
     private readonly _jsFunctions = [
         "delayCreateScene",
         "createScene",
@@ -183,6 +178,27 @@ export class LoadManager {
             const decoder = new TextDecoder("utf8");
 
             code = decoder.decode((DecodeBase64ToBinary || DecodeBase64ToBinaryReproduced)(encodedData));
+        }
+
+        // check the engine
+        if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
+            // check if an engine is forced in the URL
+            const url = new URL(window.location.href);
+            const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
+            // get the current engine
+            const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
+            if (!engineInURL && currentEngine !== payload.engine) {
+                if (
+                    window.confirm(
+                        `The engine version in this playground (${payload.engine}) is different from the one you are currently using (${currentEngine}).
+Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
+                    )
+                ) {
+                    // we need to change the engine
+                    Utilities.StoreStringToStore("engineVersion", payload.engine, true);
+                    window.location.reload();
+                }
+            }
         }
 
         try {
@@ -234,27 +250,6 @@ export class LoadManager {
             }
         } catch (e: any) {
             Logger.Warn("Loading legacy snippet");
-        }
-
-        // check the engine
-        if (payload.engine && ["WebGL1", "WebGL2", "WebGPU"].includes(payload.engine)) {
-            // check if an engine is forced in the URL
-            const url = new URL(window.location.href);
-            const engineInURL = url.searchParams.get("engine") || url.search.includes("webgpu");
-            // get the current engine
-            const currentEngine = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-            if (!engineInURL && currentEngine !== payload.engine) {
-                if (
-                    window.confirm(
-                        `The engine version in this playground (${payload.engine}) is different from the one you are currently using (${currentEngine}).
-Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
-                    )
-                ) {
-                    // we need to change the engine
-                    Utilities.StoreStringToStore("engineVersion", payload.engine, true);
-                    window.location.reload();
-                }
-            }
         }
 
         const guessed = this._guessLanguageFromCode(code); // "TS" | "JS"

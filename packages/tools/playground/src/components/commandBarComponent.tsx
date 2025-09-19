@@ -15,27 +15,12 @@ interface ICommandBarComponentProps {
     globalState: GlobalState;
 }
 
-/**
- *
- */
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
     private _webGPUSupported: boolean = false;
     private _procedural: {
-        /**
-         *
-         */
         label: string;
-        /**
-         *
-         */
         tooltip: string;
-        /**
-         *
-         */
         subItems?: string[];
-        /**
-         *
-         */
         keepExpanded?: boolean;
     }[];
 

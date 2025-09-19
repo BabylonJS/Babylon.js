@@ -41,7 +41,7 @@ interface IComponentState {
 }
 
 /**
- * Monaco component with enhanced tabbed file interface
+ * Monaco component with tabs, context menu, and file operations.
  */
 export class MonacoComponent extends React.Component<IMonacoComponentProps, IComponentState> {
     private readonly _mutationObserver: MutationObserver;
@@ -79,7 +79,6 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         };
 
         this._monacoManager = new MonacoManager(gs);
-        (window as any).mm = this._monacoManager; // DEBUG
 
         gs.onEditorFullcreenRequiredObservable.add(() => {
             const editorDiv = this.props.refObject.current! as any;
@@ -315,14 +314,12 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
         const maxScrollLeft = Math.max(0, scrollWidth - width);
 
-        // 2) If no horizontal scroll is needed, hard reset
         if (maxScrollLeft === 0) {
             (this._scrollable as any).setScrollPositionNow?.({ scrollLeft: 0 });
             content.style.transform = "translateX(0)";
             return;
         }
 
-        // 3) Ensure active tab is visible (after measuring & pinning)
         const activeEl = content.querySelector<HTMLElement>(`.pg-tab[data-path="${CSS.escape(this.state.active)}"]`);
         const pos = (this._scrollable as any).getScrollPosition?.() || { scrollLeft: 0 };
         const curLeft = pos.scrollLeft ?? 0;
@@ -345,7 +342,6 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             (this._scrollable as any).setScrollPositionNow?.({ scrollLeft: nextLeft });
         }
 
-        // 4) Keep transform in lockstep with Monaco’s internal scrollLeft
         this._syncTabsTransformFromScrollable();
     };
 
@@ -390,7 +386,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         return path.replace(/^\/?src\//, "");
     }
     /**
-     * Convert a user entered filename to our internal representation (root‑relative, no /src/ prefix).
+     * Convert a user entered filename to our internal representation (root‑relative).
      * @param displayPath User supplied path.
      * @returns Normalized internal path.
      */
@@ -398,14 +394,11 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         if (!displayPath) {
             return displayPath;
         }
-        const trimmed = displayPath.startsWith("/") ? displayPath.slice(1) : displayPath;
-        // Legacy inputs may still include /src/; strip it.
-        return trimmed.replace(/^src\//, "");
+        return displayPath.startsWith("/") ? displayPath.slice(1) : displayPath;
     }
 
     // ---------- Utilities ----------
     private _getCurrentTheme(): "dark" | "light" {
-        // Use the same logic as MonacoManager
         return Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light";
     }
 
@@ -459,7 +452,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             i++;
             candidate = `${baseFull}.copy${i}${ext ? "." + ext : ""}`;
         }
-        return this._toDisplay(candidate); // show display form in fileDialog
+        return this._toDisplay(candidate);
     }
 
     private _openLocalSessionDialog = () => {
@@ -471,7 +464,6 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
     };
 
     private _openDialog(type: DialogKind, title: string, initialValue: string, targetPath?: string) {
-        // also close context menu to avoid overlap
         this._closeCtxMenu();
         this.setState({
             fileDialog: { open: true, type, title, initialValue, targetPath },
@@ -494,13 +486,12 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         if (type === "create") {
             if (exists) {
                 alert("A file with that name already exists.");
-                return; // keep fileDialog open
+                return;
             }
             this._monacoManager.addFile(internal, "");
             const next = this.state.order.slice();
             next.push(internal);
             this._commitOrder(next);
-            // (optional) switch to the new file
             this._monacoManager.switchActiveFile(internal);
         }
 
@@ -540,7 +531,6 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             const next = this.state.order.slice();
             next.splice(this._orderedFiles().indexOf(targetPath) + 1, 0, internal);
             this._commitOrder(next);
-            // (optional) focus the duplicate
             this._monacoManager.switchActiveFile(internal);
         }
 
@@ -606,8 +596,6 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         this._draggingPath = path;
         e.dataTransfer.setData("text/plain", path);
         e.dataTransfer.effectAllowed = "move";
-
-        // Create drag image that looks like the tab
         const target = e.target as HTMLElement;
         const rect = target.getBoundingClientRect();
         e.dataTransfer.setDragImage(target, rect.width / 2, rect.height / 2);

@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
 import * as React from "react";
 import type { GlobalState } from "../globalState";
-import type { FileChange, SnippetRevision } from "../tools/localSession";
+import type { FileChange, RevisionContext, SnippetRevision } from "../tools/localSession";
 import { ListRevisionContexts, LoadFileRevisionsForToken, MaxRevisions, RemoveFileRevisionForToken } from "../tools/localSession";
 import { Utilities } from "../tools/utilities";
-import "../scss/dialogs.scss";
 import type { V2Manifest } from "../tools/monaco/run/runner";
+import "../scss/dialogs.scss";
 
 interface ILocalSessionDialogProps {
     globalState: GlobalState;
@@ -13,37 +12,27 @@ interface ILocalSessionDialogProps {
     onCancel: () => void;
 }
 
-type RevisionContext = {
-    token: string;
-    title: string;
-    count: number;
-    latestDate?: number;
-};
-
 /**
  *
  * @param param0
  * @returns
  */
 export const LocalSessionDialog: React.FC<ILocalSessionDialogProps> = ({ globalState, isOpen, onCancel }) => {
-    const [fileRevisions, setFileRevisions] = useState<SnippetRevision[]>([]);
-    const [contexts, setContexts] = useState<RevisionContext[]>([]);
+    const [fileRevisions, setFileRevisions] = React.useState<SnippetRevision[]>([]);
+    const [contexts, setContexts] = React.useState<RevisionContext[]>([]);
 
-    const [selectedToken, setSelectedToken] = useState<string>("");
-    const [theme, setTheme] = useState<"dark" | "light">(() => {
+    const [selectedToken, setSelectedToken] = React.useState<string>("");
+    const [theme, setTheme] = React.useState<"dark" | "light">(() => {
         return Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light";
     });
 
-    // When dialog opens, load contexts, select the default token from globalState, and load its revisions
-    useEffect(() => {
+    React.useEffect(() => {
         if (!isOpen) {
             return;
         }
 
         const ctxs = ListRevisionContexts(globalState);
         setContexts(ctxs);
-
-        // default to the one in globalState
         const defaultToken = globalState.currentSnippetToken || "local-session";
         const effective = ctxs.find((c) => c.token === defaultToken)?.token ?? ctxs[0]?.token ?? defaultToken;
         setSelectedToken(effective);
@@ -52,8 +41,7 @@ export const LocalSessionDialog: React.FC<ILocalSessionDialogProps> = ({ globalS
         setFileRevisions(revs);
     }, [isOpen, globalState]);
 
-    // Respond to theme changes
-    useEffect(() => {
+    React.useEffect(() => {
         const updateTheme = () => {
             const newTheme = Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light";
             setTheme(newTheme);
@@ -68,8 +56,6 @@ export const LocalSessionDialog: React.FC<ILocalSessionDialogProps> = ({ globalS
         setSelectedToken(token);
         const revs = LoadFileRevisionsForToken(globalState, token);
         setFileRevisions(revs);
-        // If you DO want to “switch the app context”, uncomment the line below (only if supported in your app):
-        // globalState.currentSnippetToken = token;
     };
 
     const fileChangeBadge = (c: FileChange) => {
@@ -105,8 +91,6 @@ export const LocalSessionDialog: React.FC<ILocalSessionDialogProps> = ({ globalS
         RemoveFileRevisionForToken(globalState, selectedToken, index);
         const revs = LoadFileRevisionsForToken(globalState, selectedToken);
         setFileRevisions(revs);
-
-        // also refresh context counts if needed
         setContexts(ListRevisionContexts(globalState));
     };
 
@@ -132,7 +116,6 @@ export const LocalSessionDialog: React.FC<ILocalSessionDialogProps> = ({ globalS
                                 onChange={(e) => onSelectContext(e.target.value)}
                             >
                                 {contexts.map((c) => {
-                                    // Check if this is a snippet context (not "local-session")
                                     const isSnippetContext = c.token !== "local-session";
                                     const displayText = isSnippetContext ? `${c.title} (${c.token})` : c.title;
                                     const countText = c.count ? ` - ${c.count} revision${c.count === 1 ? "" : "s"}` : "";
