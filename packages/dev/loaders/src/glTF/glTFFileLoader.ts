@@ -306,6 +306,12 @@ class GLTFLoaderBaseOptions {
      * Defines if the loader should validate the asset.
      */
     public validate = false;
+
+    /**
+     * Load the glTF files using the OpenPBR material.
+     * @experimental
+     */
+    public useOpenPBR = false;
 }
 
 /**
@@ -348,6 +354,7 @@ abstract class GLTFLoaderOptions extends GLTFLoaderBaseOptions {
             this.transparencyAsCoverage = options.transparencyAsCoverage ?? this.transparencyAsCoverage;
             this.useClipPlane = options.useClipPlane ?? this.useClipPlane;
             this.useGltfTextureNames = options.useGltfTextureNames ?? this.useGltfTextureNames;
+            this.useOpenPBR = options.useOpenPBR ?? this.useOpenPBR;
             this.useRangeRequests = options.useRangeRequests ?? this.useRangeRequests;
             this.useSRGBBuffers = options.useSRGBBuffers ?? this.useSRGBBuffers;
             this.validate = options.validate ?? this.validate;

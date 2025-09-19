@@ -21,6 +21,7 @@ import { MaterialPropertyGridComponent } from "./propertyGrids/materials/materia
 import { StandardMaterialPropertyGridComponent } from "./propertyGrids/materials/standardMaterialPropertyGridComponent";
 import { TexturePropertyGridComponent } from "./propertyGrids/materials/texturePropertyGridComponent";
 import { PBRMaterialPropertyGridComponent } from "./propertyGrids/materials/pbrMaterialPropertyGridComponent";
+import { OpenPBRMaterialPropertyGridComponent } from "./propertyGrids/materials/openpbrMaterialPropertyGridComponent";
 import { ScenePropertyGridComponent } from "./propertyGrids/scenePropertyGridComponent";
 import { HemisphericLightPropertyGridComponent } from "./propertyGrids/lights/hemisphericLightPropertyGridComponent";
 import { PointLightPropertyGridComponent } from "./propertyGrids/lights/pointLightPropertyGridComponent";
@@ -117,6 +118,7 @@ import { Tags } from "core/Misc/tags";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { RectAreaLight } from "core/Lights/rectAreaLight";
 import { FluentToolWrapper } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 export class PropertyGridTabComponent extends PaneComponent {
     private _timerIntervalId: number;
@@ -389,6 +391,19 @@ export class PropertyGridTabComponent extends PaneComponent {
                 const material = entity as PBRMaterial;
                 return (
                     <PBRMaterialPropertyGridComponent
+                        globalState={this.props.globalState}
+                        material={material}
+                        lockObject={this._lockObject}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                );
+            }
+
+            if (className === "OpenPBRMaterial") {
+                const material = entity as OpenPBRMaterial;
+                return (
+                    <OpenPBRMaterialPropertyGridComponent
                         globalState={this.props.globalState}
                         material={material}
                         lockObject={this._lockObject}

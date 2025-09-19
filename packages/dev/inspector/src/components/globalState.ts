@@ -65,7 +65,7 @@ export class GlobalState {
         EXT_mesh_gpu_instancing: { enabled: true },
         EXT_texture_webp: { enabled: true },
         EXT_texture_avif: { enabled: true },
-        EXT_materials_diffuse_roughness: { enabled: true },
+        KHR_materials_diffuse_roughness: { enabled: true },
     };
 
     public glTFLoaderOverrideConfig = false;
