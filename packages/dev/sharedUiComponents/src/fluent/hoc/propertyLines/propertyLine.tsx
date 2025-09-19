@@ -58,6 +58,10 @@ const usePropertyLineStyles = makeStyles({
     expandedContent: {
         paddingLeft: "20px",
     },
+    infoPopup: {
+        whiteSpace: "normal",
+        wordBreak: "break-word",
+    },
 });
 
 type BasePropertyLineProps = {
@@ -139,7 +143,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
     const { disableCopy } = useContext(ToolContext);
 
-    const description = props.description ?? (props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description);
+    const description = props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
@@ -155,7 +159,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     return (
         <LineContainer ref={ref}>
             <div className={classes.line}>
-                <InfoLabel className={classes.label} info={description} title={label}>
+                <InfoLabel className={classes.label} info={description ? <div className={classes.infoPopup}>{description}</div> : undefined} title={label}>
                     <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>

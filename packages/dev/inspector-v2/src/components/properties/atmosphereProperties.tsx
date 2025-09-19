@@ -40,6 +40,7 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
             <PropertyLine
                 label="Rayleigh Scattering"
                 expandByDefault
+                description="Rayleigh scattering is the scattering of light off of the molecules of the atmosphere. It is the main reason why the sky is blue. Increasing the Rayleigh scattering coefficient will result in a bluer sky."
                 expandedContent={
                     <>
                         <BoundProperty
@@ -51,12 +52,23 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             max={5.0}
                             step={0.01}
                         />
-                        <BoundProperty label="Peak (Mm)" component={Vector3PropertyLine} target={atmosphere.physicalProperties} propertyKey="peakRayleighScattering" />
+                        <BoundProperty
+                            label="Coefficient"
+                            component={Vector3PropertyLine}
+                            target={atmosphere.physicalProperties}
+                            propertyKey="peakRayleighScattering"
+                            convertTo={(value) => value.scale(1000)}
+                            convertFrom={(value) => value.scale(0.001)}
+                            min={0}
+                            step={0.01}
+                            unit="Mm"
+                        />
                     </>
                 }
             />
             <PropertyLine
                 label="Mie Scattering"
+                description="Mie scattering is the scattering of light off of the larger particles in the atmosphere, such as dust and water droplets. It is responsible for the white appearance of clouds and the haziness of the sky. Increasing the Mie scattering coefficient will result in a whiter sky."
                 expandByDefault
                 expandedContent={
                     <>
@@ -69,12 +81,23 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             max={5.0}
                             step={0.01}
                         />
-                        <BoundProperty label="Scattering (Mm)" component={Vector3PropertyLine} target={atmosphere.physicalProperties} propertyKey="peakMieScattering" />
+                        <BoundProperty
+                            label="Coefficient"
+                            component={Vector3PropertyLine}
+                            target={atmosphere.physicalProperties}
+                            propertyKey="peakMieScattering"
+                            convertTo={(value) => value.scale(1000)}
+                            convertFrom={(value) => value.scale(0.001)}
+                            min={0}
+                            step={0.01}
+                            unit="Mm"
+                        />
                     </>
                 }
             />
             <PropertyLine
                 label="Mie Absorption"
+                description="Mie absorption is the absorption of light by the larger particles in the atmosphere, such as dust and water droplets. It is responsible for the dimming of the sun during haze and fog. Increasing mie absorption coefficient will result in visually darker skies."
                 expandByDefault
                 expandedContent={
                     <>
@@ -87,13 +110,24 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             max={5.0}
                             step={0.01}
                         />
-                        <BoundProperty label="Peak (Mm)" component={Vector3PropertyLine} target={atmosphere.physicalProperties} propertyKey="peakMieAbsorption" />
+                        <BoundProperty
+                            label="Coefficient"
+                            component={Vector3PropertyLine}
+                            target={atmosphere.physicalProperties}
+                            propertyKey="peakMieAbsorption"
+                            convertTo={(value) => value.scale(1000)}
+                            convertFrom={(value) => value.scale(0.001)}
+                            min={0}
+                            step={0.01}
+                            unit="Mm"
+                        />
                     </>
                 }
             />
             <PropertyLine
                 label="Ozone Absorption"
                 expandByDefault
+                description="Ozone absorption is the absorption of light by ozone molecules in the atmosphere. Increasing ozone absorption coefficient will result in visually darker skies."
                 expandedContent={
                     <>
                         <BoundProperty
@@ -105,7 +139,16 @@ export const ScatteringAndAbsorptionProperties: FunctionComponent<{ entity: Atmo
                             max={5.0}
                             step={0.01}
                         />
-                        <BoundProperty label="Peak (Mm)" component={Vector3PropertyLine} target={atmosphere.physicalProperties} propertyKey="peakOzoneAbsorption" />
+                        <BoundProperty
+                            label="Coefficient"
+                            component={Vector3PropertyLine}
+                            target={atmosphere.physicalProperties}
+                            propertyKey="peakOzoneAbsorption"
+                            convertTo={(value) => value.scale(1000)}
+                            convertFrom={(value) => value.scale(0.001)}
+                            min={0}
+                            step={0.01}
+                        />
                     </>
                 }
             />
