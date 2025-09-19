@@ -273,7 +273,7 @@
   }
 }
 
-.pg-tab__add {
+.pg-tab__add, .pg-tab__code {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -333,6 +333,64 @@
   color: var(--pg-text);
   &:hover { background: rgba(255, 255, 255, 0.05); }
   &:active { background: rgba(255, 255, 255, 0.1); }
+}
+
+.pg-monaco-wrapper.pg-theme-dark .pg-tab__code {
+  svg {
+    &:hover { background: rgba(255, 255, 255, 0.05); }
+    &:active { background: rgba(255, 255, 255, 0.1); }
+  }
+}
+
+.pg-tab__code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--pg-bar-height);
+  height: var(--pg-bar-height);
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--pg-muted);
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--pg-speed) ease;
+
+  svg {
+  transform: scale(0.9);
+    
+    path,
+    rect,
+    circle,
+    polygon,
+    line,
+    polyline {
+      fill: currentColor;
+    }
+    
+    *[stroke] {
+      stroke: currentColor;
+    }
+  }
+
+  &:hover { 
+    background: rgba(0, 0, 0, 0.05); 
+  }
+  &:active { 
+    background: rgba(0, 0, 0, 0.1); 
+  }
+}
+
+.pg-monaco-wrapper.pg-theme-dark .pg-tab__code {
+  color: var(--pg-text); // This will now inherit to the SVG fills
+  
+  &:hover { 
+    background: rgba(255, 255, 255, 0.05); 
+  }
+  &:active { 
+    background: rgba(255, 255, 255, 0.1); 
+  }
 }
 
 .pg-tab__entry {

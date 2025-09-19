@@ -23,7 +23,6 @@ import { CompilationError } from "../../components/errorDisplayComponent";
 import { ParseSpec } from "./typings/utils";
 import { CodeLensService } from "./codeLens/codeLensProvider";
 import type { RequestLocalResolve } from "./typings/types";
-import { TsWorkerManager } from "./ts/workerManager";
 
 interface IRunConfig {
     manifest: V2Manifest;
@@ -361,7 +360,7 @@ export class MonacoManager {
         // Wait for any ongoing ATA operations before creating runner
         if (this._typings.isAtaInFlight) {
             Logger.Log("ATA is in flight, waiting for completion before creating runner...");
-            const ataCompleted = await this._typings.waitForAtaCompletionAsync(5000);
+            const ataCompleted = await this._typings.waitForAtaCompletionAsync(1500);
             if (!ataCompleted) {
                 Logger.Warn("ATA did not complete within timeout, proceeding with runner creation anyway");
             } else {
@@ -877,9 +876,6 @@ export { Playground };`;
         this._files?.dispose();
         this._tsPipeline?.dispose();
         this._editorHost?.dispose();
-
-        // Dispose the global worker manager
-        TsWorkerManager.dispose();
 
         // Clear any cached runners
         this.globalState.currentRunner?.dispose?.();

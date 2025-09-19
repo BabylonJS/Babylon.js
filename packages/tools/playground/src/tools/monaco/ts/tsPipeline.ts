@@ -14,7 +14,7 @@ const TsOptions: monaco.languages.typescript.CompilerOptions = {
     moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
     resolvePackageJsonExports: true,
     resolvePackageJsonImports: true,
-    target: monaco.languages.typescript.ScriptTarget.ES2020,
+    target: monaco.languages.typescript.ScriptTarget.ESNext,
     noEmit: false,
     allowNonTsExtensions: true,
     skipLibCheck: true,
@@ -28,12 +28,18 @@ const TsOptions: monaco.languages.typescript.CompilerOptions = {
     inlineSourceMap: true,
     inlineSources: true,
     sourceRoot: "file:///pg/",
+    jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+    jsxFactory: "JSXAlone.createElement",
+    lib: ["es2020", "dom", "dom.iterable"],
 };
 
 const JsOptions: monaco.languages.typescript.CompilerOptions = {
     ...TsOptions,
     checkJs: false,
     noImplicitAny: false,
+    allowJs: true,
+    jsxFactory: "JSXAlone.createElement",
+    jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
 };
 /**
  *

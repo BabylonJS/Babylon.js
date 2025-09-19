@@ -5,9 +5,12 @@ import type { GlobalState } from "../globalState";
 import { FileDialog } from "./fileDialog";
 import { ScrollbarVisibility } from "monaco-editor/esm/vs/base/common/scrollable";
 import { ScrollableElement } from "monaco-editor/esm/vs/base/browser/ui/scrollbar/scrollableElement";
+import DiffIcon from "../../public/imgs/diff.svg";
+import NewIcon from "../../public/imgs/new.svg";
 
 import "../scss/monaco.scss";
 import "../scss/pgTabs.scss";
+import { LocalSessionDialog } from "./localSessionDialog";
 
 interface IMonacoComponentProps {
     className?: string;
@@ -30,7 +33,8 @@ interface IComponentState {
     active: string;
     order: string[];
     ctx: CtxMenuState;
-    dialog: DialogState;
+    fileDialog: DialogState;
+    sessionDialogOpen: boolean;
     theme: "dark" | "light";
     dragOverIndex: number;
 }
@@ -67,12 +71,14 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             active: gs.activeFilePath,
             order,
             ctx: { open: false, x: 0, y: 0, path: null },
-            dialog: { open: false, type: null, title: "", initialValue: "" },
+            sessionDialogOpen: false,
+            fileDialog: { open: false, type: null, title: "", initialValue: "" },
             theme: this._getCurrentTheme(),
             dragOverIndex: -1,
         };
 
         this._monacoManager = new MonacoManager(gs);
+        (window as any).mm = this._monacoManager; // DEBUG
 
         gs.onEditorFullcreenRequiredObservable.add(() => {
             const editorDiv = this.props.refObject.current! as any;
@@ -452,23 +458,31 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             i++;
             candidate = `${baseFull}.copy${i}${ext ? "." + ext : ""}`;
         }
-        return this._toDisplay(candidate); // show display form in dialog
+        return this._toDisplay(candidate); // show display form in fileDialog
     }
+
+    private _openLocalSessionDialog = () => {
+        this.setState({ sessionDialogOpen: true });
+    };
+
+    private _closeLocalSessionDialog = () => {
+        this.setState({ sessionDialogOpen: false });
+    };
 
     private _openDialog(type: DialogKind, title: string, initialValue: string, targetPath?: string) {
         // also close context menu to avoid overlap
         this._closeCtxMenu();
         this.setState({
-            dialog: { open: true, type, title, initialValue, targetPath },
+            fileDialog: { open: true, type, title, initialValue, targetPath },
         });
     }
 
-    private _closeDialog = () => {
-        this.setState({ dialog: { open: false, type: null, title: "", initialValue: "" } });
+    private _closeFileDialog = () => {
+        this.setState({ fileDialog: { open: false, type: null, title: "", initialValue: "" } });
     };
 
-    private _confirmDialog = (filename: string) => {
-        const { type, targetPath } = this.state.dialog;
+    private _confirmFileDialog = (filename: string) => {
+        const { type, targetPath } = this.state.fileDialog;
         if (!type) {
             return;
         }
@@ -479,7 +493,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         if (type === "create") {
             if (exists) {
                 alert("A file with that name already exists.");
-                return; // keep dialog open
+                return; // keep fileDialog open
             }
             this._monacoManager.addFile(internal, "");
             const next = this.state.order.slice();
@@ -491,7 +505,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
         if (type === "rename" && targetPath) {
             if (internal === targetPath || this._toDisplay(targetPath) === filename.trim()) {
-                this._closeDialog();
+                this._closeFileDialog();
                 return;
             }
             if (exists) {
@@ -529,7 +543,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             this._monacoManager.switchActiveFile(internal);
         }
 
-        this._closeDialog();
+        this._closeFileDialog();
     };
 
     // ---------- File ops ----------
@@ -658,7 +672,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
     public override render() {
         const { active, theme, dragOverIndex } = this.state;
         const files = this._orderedFiles();
-        const submitLabel = this.state.dialog.type === "rename" ? "Rename" : this.state.dialog.type === "duplicate" ? "Duplicate" : "Create";
+        const submitLabel = this.state.fileDialog.type === "rename" ? "Rename" : this.state.fileDialog.type === "duplicate" ? "Duplicate" : "Create";
         const entry = this.props.globalState.entryFilePath;
         return (
             <div ref={this.props.refObject} className={`pg-monaco-wrapper ${this.props.className || ""} pg-theme-${theme}`}>
@@ -728,8 +742,11 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                             })}
                         </div>
                     </div>
-                    <button type="button" className="pg-tab__add" onClick={this._addFile} aria-label="New file" title="New file">
-                        <span aria-hidden="true">＋</span>
+                    <button type="button" className="pg-tab__code" onClick={this._openLocalSessionDialog} aria-label="Open Session Dialog" title="Open Session Dialog">
+                        <DiffIcon />
+                    </button>
+                    <button type="button" className="pg-tab__code" onClick={this._addFile} aria-label="New file" title="New file">
+                        <NewIcon />
                     </button>
                 </div>
                 <div style={{ height: "2px", backgroundColor: "var(--pg-tab-active)" }} />
@@ -797,14 +814,18 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
                 {/* File Dialog (Create / Rename / Duplicate) */}
                 <FileDialog
-                    isOpen={this.state.dialog.open}
-                    title={this.state.dialog.title}
-                    initialValue={this.state.dialog.initialValue}
+                    globalState={this.props.globalState}
+                    isOpen={this.state.fileDialog.open}
+                    title={this.state.fileDialog.title}
+                    initialValue={this.state.fileDialog.initialValue}
                     placeholder="Enter filename..."
                     submitLabel={submitLabel}
-                    onConfirm={this._confirmDialog}
-                    onCancel={this._closeDialog}
+                    onConfirm={this._confirmFileDialog}
+                    onCancel={this._closeFileDialog}
                 />
+
+                {/* Local Session Dialog for Rehydration */}
+                <LocalSessionDialog onCancel={this._closeLocalSessionDialog} isOpen={this.state.sessionDialogOpen} globalState={this.props.globalState} />
             </div>
         );
     }

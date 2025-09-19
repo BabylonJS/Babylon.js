@@ -7,6 +7,7 @@ import { CreateTsShim } from "./tsService";
 import { BlocklistBase } from "./constants";
 import type { AddPathsFn, RequestLocalResolve } from "./types";
 import { BasePackage, BuildSyntheticAtaEntry, CanonicalSpec, IsBare, IsNodeish, NormalizeVirtualPath, ParseSpec, SanitizeSpecifier } from "./utils";
+import { TsWorkerManager } from "../ts/workerManager";
 
 export class TypingsService {
     private _acquired = new Set<string>();
@@ -159,9 +160,6 @@ export class TypingsService {
                     }
                     return res;
                 }
-            } catch {
-                // treat network failures as ignorable to keep ATA moving
-                return new Response("fetch-failed", { status: 520 });
             } finally {
                 clearTimeout(timer);
             }
@@ -182,6 +180,7 @@ export class TypingsService {
                 },
                 finished: () => {
                     this._ataInFlight = false;
+                    TsWorkerManager.invalidateWorker();
                     clearTimeout(this._ataSafetyTimer);
                 },
 
@@ -253,6 +252,10 @@ export class TypingsService {
                 },
             },
         });
+    }
+
+    public get bareImports(): Set<string> {
+        return this._currentBare;
     }
 
     dispose() {
@@ -412,7 +415,7 @@ export class TypingsService {
             this._addPaths(full + "/*", `${vdir}/*`);
         }
     }
-
+    private _firstFetch = true;
     async acquireForAsync(sourceTexts: Set<string>) {
         if (this._ataInFlight) {
             return;
@@ -423,6 +426,7 @@ export class TypingsService {
                 .map(SanitizeSpecifier)
                 .filter((s) => IsBare(s))
                 .filter((s) => !IsNodeish(s))
+                .filter((s) => !this._acquired.has(CanonicalSpec(ParseSpec(s))))
                 .filter((s) => !BlocklistBase.has(BasePackage(ParseSpec(s))))
         );
         if (candidates.size === 0) {
@@ -433,8 +437,28 @@ export class TypingsService {
         for (const s of candidates) {
             ataCandidates.add(BasePackage(ParseSpec(s))); // drop @version + subpath
         }
+        if (this._firstFetch) {
+            ataCandidates.add("react");
+            ataCandidates.add("react-dom");
+            ataCandidates.add("@types/react");
+            ataCandidates.add("@types/react-dom");
+            ataCandidates.add("react/jsx-runtime");
+            this._firstFetch = false;
+        }
         this._ataInFlight = true;
         await this._ata(BuildSyntheticAtaEntry(ataCandidates));
+    }
+
+    public collectBareFromSources(sourceTexts: string[]): Set<string> {
+        return this.discoverBareImports(sourceTexts);
+    }
+
+    public getBareImportsSnapshot(): Set<string> {
+        return new Set(this._currentBare);
+    }
+
+    public getPinnedVersion(base: string): string | undefined {
+        return this._pinnedByBase.get(base);
     }
 
     /**
@@ -542,8 +566,6 @@ export class TypingsService {
 
     private _addBareStub(spec: string) {
         const names = this._requestedNamesBySpec.get(spec) ?? this._requestedNamesBySpec.get(BasePackage(ParseSpec(spec))) ?? new Set<string>();
-
-        // ESM-friendly: default + requested names as `any`
         let text = `declare module "${spec}" {\n  const __def: any;\n  export default __def;\n`;
         for (const n of names) {
             if (!n || !/^[A-Za-z_$][\w$]*$/.test(n)) {

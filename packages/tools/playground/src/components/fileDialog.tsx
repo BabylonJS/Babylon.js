@@ -1,7 +1,10 @@
 import * as React from "react";
-import "../scss/fileDialog.scss";
+import type { GlobalState } from "../globalState";
+import { Utilities } from "../tools/utilities";
+import "../scss/dialogs.scss";
 
 interface IFileDialogProps {
+    globalState: GlobalState;
     isOpen: boolean;
     title: string;
     initialValue?: string;
@@ -15,8 +18,20 @@ interface IFileDialogProps {
  * @param param0  Props for the file dialog
  * @returns JSX.Element
  */
-export const FileDialog: React.FC<IFileDialogProps> = ({ isOpen, title, initialValue = "", placeholder = "Enter filename...", submitLabel = "Create", onConfirm, onCancel }) => {
+export const FileDialog: React.FC<IFileDialogProps> = ({
+    globalState,
+    isOpen,
+    title,
+    initialValue = "",
+    placeholder = "Enter filename...",
+    submitLabel = "Create",
+    onConfirm,
+    onCancel,
+}) => {
     const [filename, setFilename] = React.useState(initialValue);
+    const [theme, setTheme] = React.useState<"dark" | "light">(() => {
+        return Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light";
+    });
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
@@ -29,6 +44,18 @@ export const FileDialog: React.FC<IFileDialogProps> = ({ isOpen, title, initialV
             }, 0);
         }
     }, [isOpen, initialValue]);
+
+    React.useEffect(() => {
+        const updateTheme = () => {
+            const newTheme = Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light";
+            setTheme(newTheme);
+        };
+
+        globalState.onThemeChangedObservable.add(updateTheme);
+        return () => {
+            globalState.onThemeChangedObservable.removeCallback(updateTheme);
+        };
+    }, [globalState]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,34 +75,36 @@ export const FileDialog: React.FC<IFileDialogProps> = ({ isOpen, title, initialV
     }
 
     return (
-        <div className="file-dialog-overlay" onClick={onCancel}>
-            <div className="file-dialog" onClick={(e) => e.stopPropagation()}>
-                <div className="file-dialog__header">
+        <div className={`dialog-overlay${theme === "dark" ? " dialog-theme-dark" : ""}`} onClick={onCancel}>
+            <div className="dialog dialog--small" onClick={(e) => e.stopPropagation()}>
+                <div className="dialog__header">
                     <h3>{title}</h3>
-                    <button className="file-dialog__close" onClick={onCancel} aria-label="Close">
+                    <button className="dialog__close" onClick={onCancel} aria-label="Close">
                         ✕
                     </button>
                 </div>
-                <form onSubmit={handleSubmit} className="file-dialog__form">
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={filename}
-                        onChange={(e) => setFilename(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder={placeholder}
-                        className="file-dialog__input"
-                        autoComplete="off"
-                    />
-                    <div className="file-dialog__actions">
-                        <button type="button" onClick={onCancel} className="file-dialog__button file-dialog__button--secondary">
-                            Cancel
-                        </button>
-                        <button type="submit" disabled={!filename.trim()} className="file-dialog__button file-dialog__button--primary">
-                            {submitLabel}
-                        </button>
-                    </div>
-                </form>
+                <div className="dialog__content">
+                    <form onSubmit={handleSubmit}>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={filename}
+                            onChange={(e) => setFilename(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={placeholder}
+                            className="dialog__input"
+                            autoComplete="off"
+                        />
+                    </form>
+                </div>
+                <div className="dialog__actions">
+                    <button type="button" onClick={onCancel} className="dialog__button dialog__button--secondary">
+                        Cancel
+                    </button>
+                    <button type="submit" disabled={!filename.trim()} onClick={handleSubmit} className="dialog__button dialog__button--primary">
+                        {submitLabel}
+                    </button>
+                </div>
             </div>
         </div>
     );

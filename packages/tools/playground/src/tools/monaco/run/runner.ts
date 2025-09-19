@@ -55,7 +55,7 @@ export type V2RunnerOptions = {
 export type V2Runner = {
     run(createEngine: () => Promise<ThinEngine | null>, canvas: HTMLCanvasElement): Promise<[Scene, ThinEngine]>;
     dispose(): void;
-    getPackSnapshot?(): V2PackSnapshot | null;
+    getPackSnapshot(): V2PackSnapshot;
 };
 
 /**
@@ -143,9 +143,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
     // Ensure Monaco models exist for every TS/TSX file so diagnostics work.
     const tsPaths = Object.keys(manifest.files).filter((p) => /[.]tsx?$/i.test(p));
     if (tsPaths.length && !opts.skipDiagnostics) {
-        Logger.Log(`Running TypeScript diagnostics for ${tsPaths.length} files...`);
         const ensureModel = (path: string, code: string) => {
-            // Try to find an existing model by suffix match (path equality) first
             const existing = monaco.editor.getModels().find((m) => m.uri.path.endsWith("/" + path));
             if (existing) {
                 if (existing.getValue() !== code) {
@@ -170,13 +168,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
 
         // Wait for ATA completion before running diagnostics to avoid race conditions
         if (typingsService) {
-            Logger.Log("Waiting for ATA completion before running diagnostics...");
-            const ataCompleted = await typingsService.waitForAtaCompletionAsync(3000);
-            if (!ataCompleted) {
-                Logger.Warn("ATA did not complete within timeout, proceeding with diagnostics anyway");
-            } else {
-                Logger.Log("ATA completed, proceeding with diagnostics");
-            }
+            await typingsService.waitForAtaCompletionAsync(3000);
         }
 
         // Process models sequentially to avoid worker contention
@@ -190,8 +182,6 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
             }
 
             try {
-                Logger.Log(`Processing diagnostics for model ${i + 1}/${modelsToCheck.length}: ${model.uri.path}`);
-
                 const result = await TsWorkerManager.executeDiagnosticsAsync(model);
                 if (!result) {
                     Logger.Warn(`Diagnostics returned null for model: ${model.uri.path}`);
@@ -210,7 +200,6 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
                     };
                     if (opts.onDiagnosticError) {
                         opts.onDiagnosticError(errObj);
-                        // throw new Error("Aborted run due to diagnostics.");
                     } else {
                         const e = new Error(`${errObj.path}:${errObj.line}:${errObj.column} ${errObj.message}`);
                         (e as any).__pgDiag = errObj;
@@ -489,8 +478,11 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
     // ---------- 5) Runner ----------
     async function run(createEngine: () => Promise<ThinEngine | null>, canvas: HTMLCanvasElement): Promise<[Scene, ThinEngine]> {
         await ensureImportShim();
-        const importFn: (s: string) => Promise<any> = (window as any).importShim ?? (async (s: string) => await import(s));
-
+        const importFn: (s: string) => Promise<any> =
+            (window as any).importShim ??
+            (async (s: string) => {
+                return await import(/* webpackIgnore: true */ s);
+            });
         const entrySpec = specKey(entryPath);
         const mod = await importFn(entrySpec);
         let engine: ThinEngine | null = null;

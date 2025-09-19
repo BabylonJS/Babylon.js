@@ -123,6 +123,7 @@ export class SaveManager {
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState === 4) {
                 if (xmlHttp.status === 200) {
+                    Utilities.StoreStringToStore(this.globalState.currentSnippetToken, "");
                     const snippet = JSON.parse(xmlHttp.responseText);
                     if (location.pathname && location.pathname.indexOf("pg/") !== -1) {
                         if (location.pathname.indexOf("revision") !== -1) {

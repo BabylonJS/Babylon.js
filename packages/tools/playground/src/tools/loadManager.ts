@@ -222,7 +222,7 @@ export class LoadManager {
                 return;
             }
         } catch (e: any) {
-            Logger.Warn("Error loading V2 Snippet: " + e?.message);
+            Logger.Warn("Loading legacy snippet");
         }
 
         // check the engine

@@ -12,6 +12,7 @@ import type { Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 import type { SaveManager } from "../tools/saveManager";
+import { AddFileRevision } from "../tools/localSession";
 
 // If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
 const InspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
@@ -237,9 +238,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             let runner;
             try {
                 runner = await this.props.globalState.getRunnable!();
+                if (runner) {
+                    AddFileRevision(this.props.globalState, runner!.getPackSnapshot().manifest);
+                }
             } catch (e) {
                 (window as any).handleException(e as Error);
                 this._preventReentrancy = false;
+                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
                 return;
             }
 
@@ -297,9 +302,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         } catch (e) {
             (window as any).handleException(e as Error);
             this._preventReentrancy = false;
-        } finally {
-            // Clear out this value so we don't need to check on page reload
-            Utilities.StoreStringToStore(this.props.globalState.currentSnippetToken, "", true);
         }
     }
 
