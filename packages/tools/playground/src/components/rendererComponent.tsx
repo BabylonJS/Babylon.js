@@ -6,20 +6,18 @@ import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
+import { AddFileRevision } from "../tools/localSession";
 
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
 import type { Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
-import type { SaveManager } from "../tools/saveManager";
-import { AddFileRevision } from "../tools/localSession";
 
 // If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
 const InspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
 
 interface IRenderingComponentProps {
     globalState: GlobalState;
-    saveManager: SaveManager;
 }
 
 /**
@@ -33,7 +31,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
-    private _saveManager!: SaveManager;
 
     /**
      * Create the rendering component.
@@ -41,7 +38,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
      */
     public constructor(props: IRenderingComponentProps) {
         super(props);
-        this._saveManager = this.props.saveManager;
         this._canvasRef = React.createRef();
 
         // Create the global handleException
@@ -231,9 +227,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     });
                 };
             }
-            // Store off the snippet data before running execution
-            Utilities.StoreStringToStore(this.props.globalState.currentSnippetToken, this._saveManager.getSnippetData());
-
             // Build the runnable (always V2)
             let runner;
             try {

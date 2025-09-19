@@ -3,14 +3,15 @@ import { MonacoManager } from "../tools/monaco/monacoManager";
 import { Utilities } from "../tools/utilities";
 import type { GlobalState } from "../globalState";
 import { FileDialog } from "./fileDialog";
+// eslint-disable-next-line
 import { ScrollbarVisibility } from "monaco-editor/esm/vs/base/common/scrollable";
 import { ScrollableElement } from "monaco-editor/esm/vs/base/browser/ui/scrollbar/scrollableElement";
 import DiffIcon from "../../public/imgs/diff.svg";
 import NewIcon from "../../public/imgs/new.svg";
+import { LocalSessionDialog } from "./localSessionDialog";
 
 import "../scss/monaco.scss";
 import "../scss/pgTabs.scss";
-import { LocalSessionDialog } from "./localSessionDialog";
 
 interface IMonacoComponentProps {
     className?: string;

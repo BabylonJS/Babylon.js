@@ -1,6 +1,7 @@
-import { EncodeArrayBufferToBase64, Logger } from "@dev/core";
+import { Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
+import { PackSnippetData } from "./localSession";
 
 /**
  * Handles saving playground code and multi-file manifests.
@@ -38,51 +39,6 @@ export class SaveManager {
         });
     }
 
-    /**
-     *
-     * @returns The snippet data as a JSON string.
-     */
-    public getSnippetData() {
-        const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-
-        const entry = this.globalState.entryFilePath || (this.globalState.language === "JS" ? "index.js" : "index.ts");
-
-        const files = Object.keys(this.globalState.files || {}).length ? this.globalState.files : { [entry]: this.globalState.currentCode || "" };
-
-        const v2 = {
-            v: 2,
-            language: (this.globalState.language === "JS" ? "JS" : "TS") as "JS" | "TS",
-            entry,
-            imports: this.globalState.importsMap || {},
-            files,
-        };
-
-        const codeToSave = JSON.stringify(v2);
-
-        const encoder = new TextEncoder();
-        const buffer = encoder.encode(codeToSave);
-
-        let testData = "";
-        for (let i = 0; i < buffer.length; i++) {
-            testData += String.fromCharCode(buffer[i]);
-        }
-
-        const payLoad = JSON.stringify({
-            code: codeToSave,
-            unicode: testData !== codeToSave ? EncodeArrayBufferToBase64(buffer) : undefined,
-            engine: activeEngineVersion,
-        });
-
-        const dataToSend = {
-            payload: payLoad,
-            name: this.globalState.currentSnippetTitle,
-            description: this.globalState.currentSnippetDescription,
-            tags: this.globalState.currentSnippetTags,
-        };
-
-        return JSON.stringify(dataToSend);
-    }
-
     private async _saveJsonFileAsync(snippetData: string) {
         try {
             // Open "Save As" dialog
@@ -115,7 +71,7 @@ export class SaveManager {
     }
 
     private _localSaveSnippet() {
-        void this._saveJsonFileAsync(this.getSnippetData());
+        void this._saveJsonFileAsync(PackSnippetData(this.globalState));
     }
 
     private _saveSnippet() {
@@ -123,7 +79,6 @@ export class SaveManager {
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState === 4) {
                 if (xmlHttp.status === 200) {
-                    Utilities.StoreStringToStore(this.globalState.currentSnippetToken, "");
                     const snippet = JSON.parse(xmlHttp.responseText);
                     if (location.pathname && location.pathname.indexOf("pg/") !== -1) {
                         if (location.pathname.indexOf("revision") !== -1) {
@@ -152,6 +107,7 @@ export class SaveManager {
                         if (snippet.version && snippet.version !== "0") {
                             newUrl += "#" + snippet.version;
                         }
+                        this.globalState.currentSnippetRevision = `#${snippet.version}`;
                         location.href = newUrl;
                     }
 
@@ -165,6 +121,6 @@ export class SaveManager {
         xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        xmlHttp.send(this.getSnippetData());
+        xmlHttp.send(PackSnippetData(this.globalState));
     }
 }

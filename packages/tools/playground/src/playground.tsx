@@ -144,7 +144,7 @@ export class Playground extends React.Component<
                 <>
                     <MonacoComponent globalState={this._globalState} className="hidden" refObject={this._monacoRef} />
                     <div className="canvasZone" id="pg-root-full">
-                        <RenderingComponent saveManager={this.saveManager} globalState={this._globalState} />
+                        <RenderingComponent globalState={this._globalState} />
                         <ErrorDisplayComponent globalState={this._globalState} />
                         <WaitRingComponent globalState={this._globalState} />
                     </div>
@@ -157,7 +157,7 @@ export class Playground extends React.Component<
                 <>
                     <MonacoComponent globalState={this._globalState} className="hidden" refObject={this._monacoRef} />
                     <div className="canvasZone" id="pg-root-frame">
-                        <RenderingComponent saveManager={this.saveManager} globalState={this._globalState} />
+                        <RenderingComponent globalState={this._globalState} />
                         <FooterComponent globalState={this._globalState} />
                         <ErrorDisplayComponent globalState={this._globalState} />
                         <WaitRingComponent globalState={this._globalState} />
@@ -173,7 +173,7 @@ export class Playground extends React.Component<
                     <MonacoComponent globalState={this._globalState} refObject={this._monacoRef} />
                     <Splitter size={6} minSize={300} controlledSide={ControlledSize.First} refObject={this._splitterRef} />
                     <div ref={this._renderingRef} id="canvasZone" className="canvasZone">
-                        <RenderingComponent saveManager={this.saveManager} globalState={this._globalState} />
+                        <RenderingComponent globalState={this._globalState} />
                     </div>
                 </SplitContainer>
                 {window.innerWidth < 1140 && <HamburgerMenuComponent globalState={this._globalState} />}

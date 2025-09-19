@@ -4,7 +4,7 @@ import { Utilities } from "./tools/utilities";
 import type { CompilationError } from "./components/errorDisplayComponent";
 import { Observable } from "@dev/core";
 import type { Nullable } from "@dev/core";
-import type { V2Runner } from "./tools/monaco/run/runner";
+import type { V2Manifest, V2Runner } from "./tools/monaco/run/runner";
 
 export enum EditionMode {
     Desktop,
@@ -38,6 +38,7 @@ export class GlobalState {
     public currentSnippetDescription = "";
     public currentSnippetTags = "";
     public currentSnippetToken = "";
+    public currentSnippetRevision = "";
     public files: Record<string, string> = {};
 
     /** Active file path (internal) */
@@ -86,12 +87,7 @@ export class GlobalState {
     public onActiveFileChangedObservable = new Observable<void>();
     public onManifestChangedObservable = new Observable<void>();
     public onFilesOrderChangedObservable = new Observable<void>();
-    public onV2HydrateRequiredObservable = new Observable<{
-        files: Record<string, string>;
-        entry: string;
-        imports?: Record<string, string>;
-        language: "JS" | "TS";
-    }>();
+    public onV2HydrateRequiredObservable = new Observable<V2Manifest>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();

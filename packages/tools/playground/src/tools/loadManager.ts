@@ -1,6 +1,7 @@
 import { DecodeBase64ToBinary, Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
+import { ReadLastLocal } from "./localSession";
 
 const DecodeBase64ToString = (base64Data: string): string => {
     return atob(base64Data);
@@ -51,7 +52,8 @@ export class LoadManager {
             const json = await this._pickJsonFileAsync();
             if (json) {
                 location.hash = "";
-                this._processJsonPayload(json);
+                // eslint-disable-next-line
+                this._processJsonPayloadAsync(json);
             } else {
                 globalState.onDisplayWaitRingObservable.notifyObservers(false);
             }
@@ -150,7 +152,7 @@ export class LoadManager {
         // Engine
         "createEngine",
     ];
-    private _processJsonPayload(data: string) {
+    private async _processJsonPayloadAsync(data: string) {
         const snippet = JSON.parse(data);
         // Check if title / descr / tags are already set
         if (snippet.name != null && snippet.name != "") {
@@ -209,7 +211,16 @@ export class LoadManager {
                     this.globalState.currentSnippetTags = v2.meta.tags.join(",");
                 }
 
+                // In the case we're loading from a #local revision id,
+                // The execution flow reaches this block before MonacoManager has been instantiated
+                // And the observable attached. Instead of refactoring the instantiation flow
+                // We can handle this one-off case here
+                while (!this.globalState.onV2HydrateRequiredObservable.hasObservers()) {
+                    // eslint-disable-next-line
+                    await new Promise((res) => setTimeout(res, 10));
+                }
                 this.globalState.onV2HydrateRequiredObservable.notifyObservers({
+                    v: 2,
                     files: v2.files,
                     entry: v2.entry || (v2.language === "JS" ? "index.js" : "index.ts"),
                     imports: v2.imports || {},
@@ -261,6 +272,7 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
         }
         queueMicrotask(() => {
             this.globalState.onV2HydrateRequiredObservable.notifyObservers({
+                v: 2,
                 files: { [fileName]: code },
                 entry: fileName,
                 imports: {},
@@ -275,23 +287,33 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
     private _loadPlayground(id: string) {
         this.globalState.loadingCodeInProgress = true;
         try {
-            const xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = () => {
-                if (xmlHttp.readyState === 4) {
-                    if (xmlHttp.status === 200) {
-                        this._processJsonPayload(xmlHttp.responseText);
-                    }
-                }
-            };
-
             if (id[0] === "#") {
                 id = id.substring(1);
             }
 
             this.globalState.currentSnippetToken = id.split("#")[0];
+            this.globalState.currentSnippetRevision = id.split("#")[1] ?? "0";
             if (!id.split("#")[1]) {
                 id += "#0";
             }
+            if (this.globalState.currentSnippetRevision === "local") {
+                const localRevision = ReadLastLocal(this.globalState);
+                if (localRevision) {
+                    // eslint-disable-next-line
+                    this._processJsonPayloadAsync(localRevision);
+                    return;
+                }
+            }
+
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = () => {
+                if (xmlHttp.readyState === 4) {
+                    if (xmlHttp.status === 200) {
+                        // eslint-disable-next-line
+                        this._processJsonPayloadAsync(xmlHttp.responseText);
+                    }
+                }
+            };
 
             // defensive-handling a safari issue
             id.replace(/%23/g, "#");

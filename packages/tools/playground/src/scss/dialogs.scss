@@ -1,8 +1,7 @@
 /* Table styles for LocalSessionDialog */
 .dialog__table-container {
     overflow-x: auto;
-    border-radius: 8px;
-    border: 1px solid var(--dialog-border-light);
+    border-radius: 2px;
     background: var(--dialog-bg-light);
 }
 .dialog__table {
@@ -11,29 +10,27 @@
     border-collapse: collapse;
 }
 .dialog__table thead th {
-    padding: 12px 16px;
+    padding: 8px 16px;
     text-align: center;
     font-weight: 600;
     color: var(--dialog-fg-light);
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 2px solid var(--dialog-border-light);
+    // border-bottom: 2px solid var(--dialog-border-light);
     background: var(--dialog-bg-light);
 }
 .dialog__table tbody td {
-    padding: 16px;
-    border-bottom: 1px solid var(--dialog-border-light);
+    padding: 10px;
     vertical-align: middle;
 }
-.dialog__row:hover {
-    background: rgba(0, 0, 0, 0.04);
-}
+
 .dialog__title-text {
     font-weight: 500;
     color: var(--dialog-fg-light);
     font-size: 14px;
 }
+
 .dialog__date-text {
     color: var(--dialog-muted-light);
     font-size: 13px;
@@ -41,6 +38,8 @@
 .dialog__changes-wrap {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
     gap: 6px;
     max-height: 6.5em;
     overflow: hidden;
@@ -74,16 +73,13 @@
     font-weight: 700;
 }
 .lsd__change--added {
-    background: #1a7f37;
-    color: white;
+    color: #1a7f37;
 }
 .lsd__change--modified {
-    background: #0969da;
-    color: white;
+    color: #0969da;
 }
 .lsd__change--removed {
-    background: #cf222e;
-    color: white;
+    color: #cf222e;
 }
 .dialog__empty-state {
     display: flex;
@@ -122,14 +118,17 @@
     --dialog-accent-dark: #0e639c;
     --dialog-accent-hover-light: #005a9e;
     --dialog-accent-hover-dark: #1177bb;
-    --dialog-shadow-light: 0 8px 24px rgba(0,0,0,0.1);
-    --dialog-shadow-dark: 0 8px 24px rgba(0,0,0,0.3);
+    --dialog-shadow-light: 0 8px 24px rgba(0, 0, 0, 0.1);
+    --dialog-shadow-dark: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .dialog-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.3);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
     -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
     z-index: 1000;
@@ -143,16 +142,26 @@
     background: var(--dialog-bg-light);
     color: var(--dialog-fg-light);
     border: 1px solid var(--dialog-border-light);
-    border-radius: 12px;
+    border-radius: 2px;
     box-shadow: var(--dialog-shadow-light);
     min-width: 400px;
-    max-width: 1024px;
+    max-width: 800px;
     width: 92vw;
     max-height: 80vh;
     display: flex;
+    font-family: "acumin-pro-condensed";
     flex-direction: column;
     animation: dialog-appear 0.2s ease-out;
     overflow: hidden;
+}
+
+.dialog__link {
+    margin-left: 5px;
+    a {
+        color: var(--dialog-accent-light);
+        text-decoration: none;
+        font-size: 14px;
+    }
 }
 
 .dialog--small {
@@ -164,7 +173,13 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--dialog-border-light);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.dialog__header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .dialog__header h3 {
@@ -180,7 +195,7 @@
     color: var(--dialog-muted-light);
     cursor: pointer;
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 2px;
     font-size: 18px;
     line-height: 1;
     transition: all 0.1s ease;
@@ -196,11 +211,24 @@
     padding: 24px;
 }
 
+.dialog__footer {
+    padding: 12px 24px;
+    border-top: 1px solid var(--dialog-border-light);
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.dialog__footer-description {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--dialog-muted-light);
+    text-align: center;
+}
+
 .dialog__description {
     margin: 0 0 20px 0;
     padding: 12px 16px;
     background: var(--dialog-border-light);
-    border-radius: 6px;
     font-size: 13px;
     line-height: 1.5;
     color: var(--dialog-muted-light);
@@ -217,12 +245,14 @@
     width: 100%;
     padding: 12px 16px;
     border: 2px solid var(--dialog-border-light);
-    border-radius: 6px;
+    border-radius: 2px;
     font-size: 14px;
-    font-family: ui-monospace, Menlo, 'Cascadia Code', Consolas, monospace;
+font-family: "acumin-pro-condensed";
     background: var(--dialog-bg-light);
     color: var(--dialog-fg-light);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
     outline: none;
     box-sizing: border-box;
 }
@@ -238,7 +268,6 @@
 
 .dialog__actions {
     padding: 16px 24px;
-    border-top: 1px solid var(--dialog-border-light);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
@@ -246,12 +275,13 @@
 
 .dialog__button {
     padding: 6px 12px;
-    border-radius: 4px;
+    border-radius: 2px;
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.1s ease;
     border: 1px solid transparent;
+    font-family: "acumin-pro-condensed";
     outline: none;
 }
 .dialog__button--secondary {
@@ -277,21 +307,34 @@
 
 /* Animations */
 @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 @keyframes dialog-appear {
-    from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
-/* Dark theme support */
+/* Dark theme overrides */
 .dialog-overlay.dialog-theme-dark {
     .dialog {
         background: var(--dialog-bg-dark);
         color: var(--dialog-fg-dark);
         border: 1px solid var(--dialog-border-dark);
         box-shadow: var(--dialog-shadow-dark);
+    }
+    .dialog__header {
+        border-bottom-color: rgba(255, 255, 255, 0.08);
     }
     .dialog__header h3 {
         color: var(--dialog-fg-dark);
@@ -302,6 +345,27 @@
     .dialog__close:hover {
         background: var(--dialog-border-dark);
         color: var(--dialog-fg-dark);
+    }
+    .dialog__footer {
+        border-top-color: var(--dialog-border-dark);
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .dialog__footer-description {
+        color: var(--dialog-muted-dark);
+    }
+    .dialog__select {
+        border-color: var(--dialog-border-dark);
+        background: var(--dialog-bg-dark);
+        color: var(--dialog-fg-dark);
+        font-family: "acumin-pro-condensed";
+        font-size: 14px;
+    }
+    .dialog__select:focus {
+        border-color: var(--dialog-accent-dark);
+        box-shadow: 0 0 0 2px rgba(14, 99, 156, 0.2);
+    }
+    .dialog__select-caret {
+        color: var(--dialog-muted-dark);
     }
     .dialog__input {
         background: var(--dialog-bg-dark);
@@ -337,10 +401,9 @@
     .dialog__button--primary:hover:not(:disabled) {
         background: var(--dialog-accent-hover-dark);
     }
-    
+
     /* Table dark theme */
     .dialog__table-container {
-        border-color: var(--dialog-border-dark);
         background: var(--dialog-bg-dark);
     }
     .dialog__table thead th {
@@ -349,10 +412,9 @@
         background: var(--dialog-bg-dark);
     }
     .dialog__table tbody td {
-        border-bottom-color: var(--dialog-border-dark);
-    }
-    .dialog__row:hover {
-        background: rgba(255, 255, 255, 0.08);
+        display: table-cell;
+        vertical-align: middle;
+        text-align: center;
     }
     .dialog__title-text {
         color: var(--dialog-fg-dark);
@@ -366,19 +428,16 @@
     .dialog__empty-title {
         color: var(--dialog-fg-dark);
     }
-    
+
     /* File change badges dark theme */
     .lsd__change--added {
-        background: #238636;
-        color: white;
+        color: #238636;
     }
     .lsd__change--modified {
-        background: #1f6feb;
-        color: white;
+        color: #1f6feb;
     }
     .lsd__change--removed {
-        background: #da3633;
-        color: white;
+        color: #da3633;
     }
 }
 
@@ -401,3 +460,44 @@
         font-size: 13px;
     }
 }
+
+.dialog__context-select {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.dialog__select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 6px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--dialog-border-light);
+    background: var(--dialog-bg-light);
+    color: var(--dialog-fg-light);
+    font-size: 12px;
+    line-height: 1.2;
+    outline: none;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+    cursor: pointer;
+    min-width: 180px;
+    padding-right: 25px;
+}
+
+.dialog__select:focus {
+    border-color: var(--dialog-accent-light);
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.1);
+}
+
+.dialog__select-caret {
+    position: absolute;
+    right: 8px;
+    color: var(--dialog-muted-light);
+    font-size: 10px;
+    pointer-events: none;
+}
+
+

@@ -23,6 +23,7 @@ import { CompilationError } from "../../components/errorDisplayComponent";
 import { ParseSpec } from "./typings/utils";
 import { CodeLensService } from "./codeLens/codeLensProvider";
 import type { RequestLocalResolve } from "./typings/types";
+import { WriteLastLocal } from "../localSession";
 
 interface IRunConfig {
     manifest: V2Manifest;
@@ -53,6 +54,7 @@ export class MonacoManager {
 
     private _hydrating = false;
     private _initialized = false;
+    private _skipOnceLocal = false;
 
     private _localPkgHandles = new Map<string, FileSystemDirectoryHandle>();
 
@@ -318,22 +320,25 @@ export class MonacoManager {
         return uuidv5(manifestStr + optionsStr, NamespaceUUID);
     }
 
-    /**
-     * Get or create a V2 runner with caching based on configuration
-     * @returns Promise that resolves to a V2Runner instance
-     */
-    public async getRunnableAsync() {
+    public get manifest(): V2Manifest {
         const entry = this.globalState.entryFilePath || (this.globalState.language === "JS" ? "index.js" : "index.ts");
         const files = this._files.getFiles();
         const imports = this.globalState.importsMap || {};
-
-        const manifest: V2Manifest = {
+        return {
             v: 2,
             language: this.globalState.language as "JS" | "TS",
             entry,
             imports,
             files,
         };
+    }
+
+    /**
+     * Get or create a V2 runner with caching based on configuration
+     * @returns Promise that resolves to a V2Runner instance
+     */
+    public async getRunnableAsync() {
+        const manifest = this.manifest;
 
         const options: V2RunnerOptions = {
             monaco,
@@ -440,21 +445,34 @@ export class MonacoManager {
                 this.globalState.onRunRequiredObservable.notifyObservers();
             },
         });
+
         const analyzeCodeDebounced = debounce(async () => {
             const model = this._editorHost.editor.getModel();
             if (model) {
                 await this._codeAnalysis.analyzeCodeAsync(model, this.globalState);
             }
         }, 500);
+        const refreshStubsDebounced = debounce(async () => await this._syncBareImportStubsAsync(), 300);
+        const serializeSessionDebounced = debounce(() => {
+            WriteLastLocal(this.globalState);
+        }, 500);
 
-        const refreshStubs = debounce(async () => await this._syncBareImportStubsAsync(), 300);
         this._editorHost.editor.onDidChangeModelContent(() => {
             const newCode = this._editorHost.editor.getValue();
             if (this.globalState.currentCode !== newCode) {
                 this.globalState.currentCode = newCode;
                 this._files.setDirty(true);
                 analyzeCodeDebounced();
-                refreshStubs();
+                refreshStubsDebounced();
+
+                // After any user input we can serialize the snippet's session state
+                // Important this only is triggered when these are real user inputs and not from PG load itself
+                // But if we just hydrated from a local session, don't immediately overwrite it
+                if (this.globalState.currentSnippetRevision === "local" && !this._skipOnceLocal) {
+                    this._skipOnceLocal = true;
+                    return;
+                }
+                serializeSessionDebounced();
             }
         });
         if (this.globalState.currentCode) {
