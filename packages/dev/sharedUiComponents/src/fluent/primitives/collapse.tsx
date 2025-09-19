@@ -12,6 +12,12 @@ const useCollapseStyles = makeStyles({
         overflow: "hidden",
         display: "flex",
     },
+    horizontal: {
+        flexDirection: "row",
+    },
+    vertical: {
+        flexDirection: "column",
+    },
 });
 
 /**
@@ -24,7 +30,7 @@ export const Collapse: FunctionComponent<PropsWithChildren<CollapseProps>> = (pr
     const classes = useCollapseStyles();
     return (
         <FluentCollapse visible={props.visible} orientation={props.orientation}>
-            <div className={classes.collapseContent}>{props.children}</div>
+            <div className={`${classes.collapseContent} ${props.orientation === "horizontal" ? classes.horizontal : classes.vertical}`}>{props.children}</div>
         </FluentCollapse>
     );
 };
