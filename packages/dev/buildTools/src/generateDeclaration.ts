@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-param */
 /* eslint-disable no-console */
 import { globSync } from "glob";
 import * as fs from "fs";
@@ -8,17 +9,53 @@ import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, g
 import type { BuildType, DevPackageName } from "./packageMapping.js";
 import { getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
 
+/**
+ *
+ */
 export interface IGenerateDeclarationConfig {
+    /**
+     *
+     */
     devPackageName: DevPackageName;
+    /**
+     *
+     */
     outputDirectory?: string;
+    /**
+     *
+     */
     externals?: { [key: string]: string };
+    /**
+     *
+     */
     hiddenConsts?: string[];
+    /**
+     *
+     */
     namedExportPathsToExclude?: string;
+    /**
+     *
+     */
     filename?: string;
+    /**
+     *
+     */
     declarationLibs: string[];
+    /**
+     *
+     */
     buildType?: BuildType;
+    /**
+     *
+     */
     addToDocumentation?: boolean;
+    /**
+     *
+     */
     initDocumentation?: boolean;
+    /**
+     *
+     */
     fileFilterRegex?: string;
 }
 
@@ -163,7 +200,7 @@ function GetModuleDeclaration(
         // TODO - make a list of dependencies that are accepted by each package
         if (!devPackageName) {
             if (externalName) {
-                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
+                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                     // replace with any
                     const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
@@ -399,7 +436,7 @@ function GetPackageDeclaration(
             // TODO - make a list of dependencies that are accepted by each package
             if (!localDevPackageMap) {
                 if (externalName) {
-                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
+                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                         // replace with any
                         const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
                         processedSource = processedSource.replace(matchRegex, `$1any$3`);
