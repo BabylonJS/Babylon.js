@@ -127,12 +127,7 @@ declare module "*.fx"   { const content: string; export default content; }`;
     }
 
     async emitOneAsync(path: string): Promise<{
-        /**
-         *
-         */
-        js: string /**
-         *
-         */;
+        js: string;
         map?: string;
     }> {
         const clean = path.replace(/^\//, "");
