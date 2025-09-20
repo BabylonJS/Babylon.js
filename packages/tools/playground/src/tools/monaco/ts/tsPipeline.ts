@@ -135,7 +135,6 @@ declare module "*.fx"   { const content: string; export default content; }`;
         const wf = await monaco.languages.typescript.getTypeScriptWorker();
         const svc = await wf(uri);
         const out = await svc.getEmitOutput(uri.toString());
-
         if (out.emitSkipped) {
             throw new Error(`Emit skipped for ${clean}`);
         }
