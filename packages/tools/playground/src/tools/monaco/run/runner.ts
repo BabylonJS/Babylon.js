@@ -9,7 +9,6 @@ import type { TsPipeline } from "../ts/tsPipeline";
 import type { TypingsService } from "../typings/typingsService";
 import type { DirHandle } from "./localPackage";
 import { BuildLocalPackageImportMap } from "./localPackage";
-import { TsWorkerManager } from "../ts/workerManager";
 
 lexer.initSync();
 
@@ -167,9 +166,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         const modelsToCheck = monaco.editor.getModels().filter((m) => /[.]tsx?$/.test(m.uri.path));
 
         // Wait for ATA completion before running diagnostics to avoid race conditions
-        if (typingsService) {
-            await typingsService.waitForAtaCompletionAsync(3000);
-        }
+        const worker = await monaco.languages.typescript.getTypeScriptWorker();
 
         // Process models sequentially to avoid worker contention
         for (let i = 0; i < modelsToCheck.length; i++) {
@@ -180,15 +177,10 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
                 Logger.Warn(`Skipping disposed model: ${model.uri.path}`);
                 continue;
             }
-
-            try {
-                const result = await TsWorkerManager.executeDiagnosticsAsync(model);
-                if (!result) {
-                    Logger.Warn(`Diagnostics returned null for model: ${model.uri.path}`);
-                    continue;
-                }
-
-                const { syn, sem } = result;
+            for (const model of monaco.editor.getModels().filter((m) => /[.]tsx?$/.test(m.uri.path))) {
+                const svc = await worker(model.uri);
+                const uriStr = model.uri.toString();
+                const [syn, sem] = await Promise.all([svc.getSyntacticDiagnostics(uriStr), svc.getSemanticDiagnostics(uriStr)]);
                 const first = [...syn, ...sem][0];
                 if (first) {
                     const pos = model.getPositionAt(first.start ?? 0);
@@ -200,19 +192,13 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
                     };
                     if (opts.onDiagnosticError) {
                         opts.onDiagnosticError(errObj);
+                        // throw new Error("Aborted run due to diagnostics.");
                     } else {
                         const e = new Error(`${errObj.path}:${errObj.line}:${errObj.column} ${errObj.message}`);
                         (e as any).__pgDiag = errObj;
                         throw e;
                     }
                 }
-            } catch (error) {
-                Logger.Warn(`Diagnostics failed for model ${model.uri.path}: ${error}`);
-                if (error instanceof Error && error.message.includes("timeout")) {
-                    Logger.Warn(`Diagnostics timeout for ${model.uri.path} - continuing without type checking for this file`);
-                    continue;
-                }
-                continue;
             }
         }
     } else if (opts.skipDiagnostics && tsPaths.length) {

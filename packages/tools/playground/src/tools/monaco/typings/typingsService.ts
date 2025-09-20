@@ -7,7 +7,6 @@ import { CreateTsShim } from "./tsService";
 import { BlocklistBase } from "./constants";
 import type { AddPathsFn, RequestLocalResolve } from "./types";
 import { BasePackage, BuildSyntheticAtaEntry, CanonicalSpec, IsBare, IsNodeish, NormalizeVirtualPath, ParseSpec, SanitizeSpecifier } from "./utils";
-import { TsWorkerManager } from "../ts/workerManager";
 
 export class TypingsService {
     private _acquired = new Set<string>();
@@ -180,7 +179,6 @@ export class TypingsService {
                 },
                 finished: () => {
                     this._ataInFlight = false;
-                    TsWorkerManager.invalidateWorker();
                     clearTimeout(this._ataSafetyTimer);
                 },
 
