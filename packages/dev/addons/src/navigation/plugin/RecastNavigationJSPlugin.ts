@@ -63,7 +63,11 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * The navmesh query created from the navmesh
      * @remarks This is used to query the navmesh for pathfinding and other navigation tasks
      */
-    public navMeshQuery!: NavMeshQuery;
+    public get navMeshQuery(): NavMeshQuery {
+        return this._navMeshQuery;
+    }
+
+    private _navMeshQuery!: NavMeshQuery;
 
     /**
      * Intermediates generated during the navmesh creation
@@ -230,7 +234,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             halfExtents?: IVector3Like;
         }
     ): Vector3 {
-        const ret = this.navMeshQuery.findClosestPoint(position, options);
+        const ret = this._navMeshQuery.findClosestPoint(position, options);
         const pr = new Vector3(ret.point.x, ret.point.y, ret.point.z);
         return pr;
     }
@@ -254,7 +258,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             halfExtents?: IVector3Like;
         }
     ): void {
-        const ret = this.navMeshQuery.findClosestPoint(position, options);
+        const ret = this._navMeshQuery.findClosestPoint(position, options);
         result.set(ret.point.x, ret.point.y, ret.point.z);
     }
 
@@ -279,7 +283,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             halfExtents?: IVector3Like;
         }
     ): Vector3 {
-        const ret = this.navMeshQuery.findRandomPointAroundCircle(position, maxRadius, options);
+        const ret = this._navMeshQuery.findRandomPointAroundCircle(position, maxRadius, options);
         const pr = new Vector3(ret.randomPoint.x, ret.randomPoint.y, ret.randomPoint.z);
         return pr;
     }
@@ -306,7 +310,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             halfExtents?: IVector3Like;
         }
     ): void {
-        const ret = this.navMeshQuery.findRandomPointAroundCircle(position, maxRadius, options);
+        const ret = this._navMeshQuery.findRandomPointAroundCircle(position, maxRadius, options);
         result.set(ret.randomPoint.x, ret.randomPoint.y, ret.randomPoint.z);
     }
 
@@ -333,7 +337,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             maxVisitedSize?: number;
         }
     ): Vector3 {
-        const ret = this.navMeshQuery.moveAlongSurface(startRef, position, destination, options);
+        const ret = this._navMeshQuery.moveAlongSurface(startRef, position, destination, options);
         const pr = new Vector3(ret.resultPosition.x, ret.resultPosition.y, ret.resultPosition.z);
         return pr;
     }
@@ -359,7 +363,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             maxVisitedSize?: number;
         }
     ): void {
-        const ret = this.navMeshQuery.moveAlongSurface(startRef, position, destination, options);
+        const ret = this._navMeshQuery.moveAlongSurface(startRef, position, destination, options);
         result.set(ret.resultPosition.x, ret.resultPosition.y, ret.resultPosition.z);
     }
 
@@ -387,7 +391,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             maxStraightPathPoints?: number;
         }
     ): Vector3[] {
-        return ConvertNavPathPoints(this.navMeshQuery.computePath(start, end, options));
+        return ConvertNavPathPoints(this._navMeshQuery.computePath(start, end, options));
     }
 
     /**
@@ -419,7 +423,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             Logger.Error("No navmesh available. Cannot compute smooth path.");
             return [];
         }
-        return ComputeSmoothPath(this.navMesh, this.navMeshQuery, start, end, options);
+        return ComputeSmoothPath(this.navMesh, this._navMeshQuery, start, end, options);
     }
 
     /**
@@ -442,7 +446,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param extent x,y,z value that define the extent around the queries point of reference
      */
     public setDefaultQueryExtent(extent: IVector3Like): void {
-        this.navMeshQuery.defaultQueryHalfExtents = extent;
+        this._navMeshQuery.defaultQueryHalfExtents = extent;
     }
 
     /**
@@ -450,7 +454,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns the box extent values
      */
     public getDefaultQueryExtent(): Vector3 {
-        return new Vector3(this.navMeshQuery.defaultQueryHalfExtents.x, this.navMeshQuery.defaultQueryHalfExtents.y, this.navMeshQuery.defaultQueryHalfExtents.z);
+        return new Vector3(this._navMeshQuery.defaultQueryHalfExtents.x, this._navMeshQuery.defaultQueryHalfExtents.y, this._navMeshQuery.defaultQueryHalfExtents.z);
     }
 
     /**
@@ -458,7 +462,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @param result output the box extent values
      */
     public getDefaultQueryExtentToRef(result: Vector3): void {
-        result.set(this.navMeshQuery.defaultQueryHalfExtents.x, this.navMeshQuery.defaultQueryHalfExtents.y, this.navMeshQuery.defaultQueryHalfExtents.z);
+        result.set(this._navMeshQuery.defaultQueryHalfExtents.x, this._navMeshQuery.defaultQueryHalfExtents.y, this._navMeshQuery.defaultQueryHalfExtents.z);
     }
 
     /**
@@ -468,7 +472,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     public buildFromNavmeshData(data: Uint8Array): void {
         const result = this.bjsRECAST.importNavMesh(data);
         this.navMesh = result.navMesh;
-        this.navMeshQuery = new this.bjsRECAST.NavMeshQuery(this.navMesh);
+        this._navMeshQuery = new this.bjsRECAST.NavMeshQuery(this.navMesh);
     }
 
     /**
@@ -488,7 +492,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     public dispose() {
         this._crowd?.dispose();
         this.navMesh?.destroy();
-        this.navMeshQuery?.destroy();
+        this._navMeshQuery?.destroy();
         this.tileCache?.destroy();
     }
 
@@ -581,8 +585,8 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns if a direct path exists between start and end, and the hit point if any
      */
     public raycast(start: IVector3Like, end: IVector3Like) {
-        const nearestStartPoly = this.navMeshQuery.findNearestPoly(start);
-        const raycastResult = this.navMeshQuery.raycast(nearestStartPoly.nearestRef, start, end);
+        const nearestStartPoly = this._navMeshQuery.findNearestPoly(start);
+        const raycastResult = this._navMeshQuery.raycast(nearestStartPoly.nearestRef, start, end);
 
         const hit = 0 < raycastResult.t && raycastResult.t < 1.0;
         if (!hit) {
@@ -630,7 +634,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             maxVisitedSize?: number;
         }
     ) {
-        const { point, polyRef } = this.navMeshQuery.findClosestPoint(
+        const { point, polyRef } = this._navMeshQuery.findClosestPoint(
             {
                 x: position.x,
                 y: position.y,
@@ -639,7 +643,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             options
         );
 
-        const { resultPosition } = this.navMeshQuery.moveAlongSurface(
+        const { resultPosition } = this._navMeshQuery.moveAlongSurface(
             polyRef,
             point,
             {
@@ -649,7 +653,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             },
             options
         );
-        const polyHeightResult = this.navMeshQuery.getPolyHeight(polyRef, resultPosition);
+        const polyHeightResult = this._navMeshQuery.getPolyHeight(polyRef, resultPosition);
 
         return {
             position: { x: resultPosition.x, y: polyHeightResult.success ? polyHeightResult.height : resultPosition.y, z: resultPosition.z },
@@ -669,7 +673,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         }
 
         this.navMesh = result.navMesh;
-        this.navMeshQuery = result.navMeshQuery;
+        this._navMeshQuery = result.navMeshQuery;
         this.intermediates = result.intermediates;
         this.tileCache = result.tileCache;
 

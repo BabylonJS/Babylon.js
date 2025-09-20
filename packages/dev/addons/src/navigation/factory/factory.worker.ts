@@ -1,3 +1,9 @@
+/**
+ * IMPORTANT!
+ * This file is still under construction and will change in the future.
+ * Workers are not yet supported.
+ * For more info visit: https://forum.babylonjs.com/t/replacing-recastjs-with-recast-navigation-js/56003/46
+ */
 import type { NavMesh, NavMeshQuery, TileCache } from "@recast-navigation/core";
 import { init as initRecast } from "@recast-navigation/core";
 
