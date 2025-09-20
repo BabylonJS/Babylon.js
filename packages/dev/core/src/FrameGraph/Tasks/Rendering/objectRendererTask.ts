@@ -11,11 +11,15 @@ import type {
     Observer,
     FrameGraphShadowGeneratorTask,
     FrameGraphRenderPass,
+    AbstractEngine,
+    BoundingBoxRenderer,
+    ShadowLight,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ObjectRenderer } from "../../../Rendering/objectRenderer";
 import { FrameGraphCascadedShadowGeneratorTask } from "./csmShadowGeneratorTask";
+import { Constants } from "../../../Engines/constants";
 
 /**
  * Task used to render objects to a texture.
@@ -164,6 +168,23 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._renderer.enableBoundingBoxRendering = value;
     }
 
+    private _enableOutlineRendering = true;
+    /**
+     * Enables the rendering of outlines/overlays for meshes (still subject to Mesh.renderOutline/Mesh.renderOverlay). Default is true.
+     */
+    public get enableOutlineRendering() {
+        return this._enableOutlineRendering;
+    }
+
+    public set enableOutlineRendering(value: boolean) {
+        if (value === this._enableOutlineRendering) {
+            return;
+        }
+
+        this._enableOutlineRendering = value;
+        this._renderer.enableOutlineRendering = value;
+    }
+
     /**
      * The output texture.
      * This texture will point to the same texture than the targetTexture property if it is set.
@@ -196,6 +217,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         }
     }
 
+    protected readonly _engine: AbstractEngine;
     protected readonly _scene: Scene;
     protected readonly _renderer: ObjectRenderer;
     protected _textureWidth: number;
@@ -216,6 +238,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         super(name, frameGraph);
 
         this._scene = scene;
+        this._engine = scene.getEngine();
         this._externalObjectRenderer = !!existingObjectRenderer;
         this._renderer = existingObjectRenderer ?? new ObjectRenderer(name, scene, options);
         this.name = name;
@@ -295,10 +318,40 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
 
+            // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
+            const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
+
+            const currentBoundingBoxMeshList = boundingBoxRenderer && boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
+            if (boundingBoxRenderer) {
+                currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
+            }
+
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
-            context.render(this._renderer, this._textureWidth, this._textureHeight);
+
+            const camera = this._renderer.activeCamera;
+            if (camera && camera.cameraRigMode !== Constants.RIG_MODE_NONE && !camera._renderingMultiview) {
+                for (let index = 0; index < camera._rigCameras.length; index++) {
+                    const rigCamera = camera._rigCameras[index];
+
+                    rigCamera.rigParent = undefined; // for some reasons, ObjectRenderer uses the rigParent viewport if rigParent is defined (we want to use rigCamera.viewport instead)
+
+                    this._renderer.activeCamera = rigCamera;
+
+                    context.render(this._renderer, this._textureWidth, this._textureHeight);
+
+                    rigCamera.rigParent = camera;
+                }
+                this._renderer.activeCamera = camera;
+            } else {
+                context.render(this._renderer, this._textureWidth, this._textureHeight);
+            }
 
             additionalExecute?.(context);
+
+            if (boundingBoxRenderer) {
+                boundingBoxRenderer.renderList.data = currentBoundingBoxMeshList;
+                boundingBoxRenderer.renderList.length = currentBoundingBoxMeshList.length;
+            }
         });
 
         if (!skipCreationOfDisabledPasses) {
@@ -344,6 +397,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._onBeforeRenderObservable = this._renderer.onBeforeRenderObservable.add(() => {
             for (let i = 0; i < this._scene.lights.length; i++) {
                 const light = this._scene.lights[i];
+                if (!(light as ShadowLight).setShadowProjectionMatrix) {
+                    continue; // Ignore lights that cannot cast shadows
+                }
                 shadowEnabled.set(light, light.shadowEnabled);
                 light.shadowEnabled = !this.disableShadows && lightsForShadow.has(light);
             }
@@ -353,6 +409,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._onAfterRenderObservable = this._renderer.onAfterRenderObservable.add(() => {
             for (let i = 0; i < this._scene.lights.length; i++) {
                 const light = this._scene.lights[i];
+                if (!(light as ShadowLight).setShadowProjectionMatrix) {
+                    continue; // Ignore lights that cannot cast shadows
+                }
                 light.shadowEnabled = shadowEnabled.get(light)!;
             }
         });

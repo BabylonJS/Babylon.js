@@ -18,6 +18,7 @@ let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
 /**
  * Captures a screenshot of the current rendering
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -34,6 +35,7 @@ let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
  * @param forceDownload force the system to download the image even if a successCallback is provided
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
+ * @param clearWithSceneColor If true, the screenshot canvas will be cleared with the scene clear color before copying the render.
  */
 export function CreateScreenshot(
     engine: AbstractEngine,
@@ -43,7 +45,8 @@ export function CreateScreenshot(
     mimeType = "image/png",
     forceDownload = false,
     quality?: number,
-    useFill = false
+    useFill = false,
+    clearWithSceneColor = false
 ): void {
     const { height, width } = GetScreenshotSize(engine, camera, size);
 
@@ -53,7 +56,7 @@ export function CreateScreenshot(
     }
 
     const scene = camera.getScene();
-    if (scene.activeCamera !== camera) {
+    if (scene.activeCamera !== camera && !scene.frameGraph) {
         CreateScreenshotUsingRenderTarget(
             engine,
             camera,
@@ -112,6 +115,11 @@ export function CreateScreenshot(
         const offsetX = (destWidth - newWidth) / 2;
         const offsetY = (destHeight - newHeight) / 2;
 
+        renderContext.save();
+        renderContext.fillStyle = clearWithSceneColor ? scene.clearColor.toHexString() : "rgba(0, 0, 0, 0)";
+        renderContext.fillRect(0, 0, width, height);
+        renderContext.restore();
+
         renderContext.drawImage(renderingCanvas, 0, 0, srcWidth, srcHeight, offsetX, offsetY, newWidth, newHeight);
 
         if (forceDownload) {
@@ -127,6 +135,7 @@ export function CreateScreenshot(
 
 /**
  * Captures a screenshot of the current rendering
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -139,6 +148,7 @@ export function CreateScreenshot(
  * Check your browser for supported MIME types
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param useFill fill the screenshot dimensions with the render canvas and clip any overflow. If false, fit the canvas within the screenshot, as in letterboxing.
+ * @param clearWithSceneColor If true, the screenshot canvas will be cleared with the scene clear color before copying the render.
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
@@ -148,7 +158,8 @@ export async function CreateScreenshotAsync(
     size: IScreenshotSize | number,
     mimeType = "image/png",
     quality?: number,
-    useFill = false
+    useFill = false,
+    clearWithSceneColor = false
 ): Promise<string> {
     return await new Promise((resolve, reject) => {
         CreateScreenshot(
@@ -165,7 +176,8 @@ export async function CreateScreenshotAsync(
             mimeType,
             undefined,
             quality,
-            useFill
+            useFill,
+            clearWithSceneColor
         );
     });
 }
@@ -173,6 +185,7 @@ export async function CreateScreenshotAsync(
 /**
  * Captures and automatically downloads a screenshot of the current rendering for a specific size. This will render the entire canvas but will generate a blink (due to canvas resize)
  * If screenshot image data is needed, use {@link CreateScreenshotAsync} instead.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine defines the rendering engine
  * @param camera defines the source camera. If the camera is not the scene's active camera, {@link CreateScreenshotUsingRenderTarget} will be used instead, and `useFill` will be ignored
@@ -211,6 +224,7 @@ export async function CreateScreenshotWithResizeAsync(
 
 /**
  * Generates an image screenshot from the specified camera.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering
@@ -448,6 +462,7 @@ export function CreateScreenshotUsingRenderTarget(
 
 /**
  * Generates an image screenshot from the specified camera.
+ * Please note that simultaneous screenshots are not supported: you must wait until one screenshot is complete before taking another.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
  * @param engine The engine to use for rendering
  * @param camera The camera to use for rendering

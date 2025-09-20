@@ -38,6 +38,8 @@ import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlo
 import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
 import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlock";
 import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicColorUpdateBlock";
+import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
+import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 
 /**
  * Static class for BlockTools
@@ -45,6 +47,10 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "LocalVariableBlock":
+                return new ParticleLocalVariableBlock("Local variable");
+            case "VectorLengthBlock":
+                return new ParticleVectorLengthBlock("Vector length");
             case "AlignAngleBlock":
                 return new AlignAngleBlock("Align angle");
             case "CreateParticleBlock":

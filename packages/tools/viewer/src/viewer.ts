@@ -55,6 +55,7 @@ import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -1810,8 +1811,6 @@ export class Viewer implements IDisposable {
         high.pipeline.resetAccumulation();
         // shadow map
         this._shadowState.normal?.ground.setEnabled(false);
-        high.pipeline.toggleShadow(true);
-        high.ground.setEnabled(true);
         this._startIblShadowsRenderTime();
 
         this._shadowState.high = high;
@@ -1892,6 +1891,7 @@ export class Viewer implements IDisposable {
             const shadowMap = generator.getShadowMap();
             if (shadowMap) {
                 shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
+                shadowMap.renderList = this._scene.meshes.slice();
             }
 
             const shadowMaterial = new BackgroundMaterial("shadowMapGroundMaterial", this._scene);
@@ -1928,6 +1928,14 @@ export class Viewer implements IDisposable {
                     this.light.position = effectiveSourceDir.scale(this.iblDirection.positionFactor);
                     this.light.direction = adjustLightTargetDirection(effectiveSourceDir.negate());
                 },
+            });
+
+            await new Promise((resolve, reject) => {
+                _RetryWithInterval(
+                    () => shadowMap!.isReadyForRendering(),
+                    () => resolve(void 0),
+                    () => reject(new Error("Failed to get shadow map generator ready"))
+                );
             });
 
             // Since the light is not applied to the meshes of the model (we only want shadows, not lighting),
@@ -2086,7 +2094,6 @@ export class Viewer implements IDisposable {
             const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
                 await new Promise<void>((resolve, reject) => {
                     const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
-                        successObserver.remove();
                         errorObserver.remove();
                         resolve();
                     });
@@ -2756,7 +2763,7 @@ export class Viewer implements IDisposable {
         updateSkybox(this._skybox, this._camera);
     }
 
-    private _updateLight() {
+    protected _updateLight() {
         let shouldHaveDefaultLight: boolean;
         if (this._loadedModels.length === 0) {
             shouldHaveDefaultLight = false;

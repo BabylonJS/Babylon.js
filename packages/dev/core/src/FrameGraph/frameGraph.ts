@@ -1,4 +1,4 @@
-import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph } from "core/index";
+import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph, IDisposable } from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { FrameGraphCullPass } from "./Passes/cullPass";
@@ -23,7 +23,7 @@ enum FrameGraphPassType {
  * Class used to implement a frame graph
  * @experimental
  */
-export class FrameGraph {
+export class FrameGraph implements IDisposable {
     /**
      * Gets the texture manager used by the frame graph
      */

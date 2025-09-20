@@ -47,7 +47,9 @@ export class GlobalState {
     public onInsertSnippetRequiredObservable = new Observable<string>();
     public onClearRequiredObservable = new Observable<void>();
     public onSaveRequiredObservable = new Observable<void>();
+    public onLocalSaveRequiredObservable = new Observable<void>();
     public onLoadRequiredObservable = new Observable<string>();
+    public onLocalLoadRequiredObservable = new Observable<void>();
     public onErrorObservable = new Observable<Nullable<CompilationError>>();
     public onMobileDefaultModeChangedObservable = new Observable<void>();
     public onDisplayWaitRingObservable = new Observable<boolean>();
@@ -71,4 +73,6 @@ export class GlobalState {
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();
+
+    public doNotRun = false;
 }

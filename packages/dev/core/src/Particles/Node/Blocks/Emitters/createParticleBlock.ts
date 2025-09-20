@@ -14,6 +14,8 @@ import { Vector2 } from "core/Maths/math.vector";
 import { RegisterClass } from "core/Misc/typeStore";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 
+const ColorDiff = new Color4();
+
 /**
  * @internal
  */
@@ -32,6 +34,8 @@ export class CreateParticleBlock extends NodeParticleBlock {
         this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2, true, new Vector2(1, 1));
         this.registerInput("angle", NodeParticleBlockConnectionPointTypes.Float, true, 0);
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
+
+        this.scale.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -108,16 +112,29 @@ export class CreateParticleBlock extends NodeParticleBlock {
         system._colorCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             particle.color.copyFrom(this.color.getConnectedValue(state));
-            system.colorDead.copyFrom(this.colorDead.getConnectedValue(state));
+        };
+
+        system._colorDeadCreation.process = (particle: Particle) => {
+            state.particleContext = particle;
+            particle.colorDead.copyFrom(this.colorDead.getConnectedValue(state));
             particle.initialColor.copyFrom(particle.color);
-            system.colorDead.subtractToRef(particle.initialColor, system._colorDiff);
-            system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
+            particle.colorDead.subtractToRef(particle.initialColor, ColorDiff);
+            ColorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
         };
 
         system._sizeCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             particle.size = 1;
-            particle.scale.copyFrom(this.scale.getConnectedValue(state));
+
+            const scale = this.scale.getConnectedValue(state);
+
+            if (scale.x !== undefined) {
+                particle.scale.x = scale.x;
+                particle.scale.y = scale.y;
+            } else {
+                particle.scale.x = scale;
+                particle.scale.y = scale;
+            }
         };
 
         system._angleCreation.process = (particle: Particle) => {

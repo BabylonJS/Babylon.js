@@ -331,6 +331,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         code = this._convertDefinesToConst(preProcessors) + code;
 
+        if ("VERTEXOUTPUT_INVARIANT" in preProcessors) {
+            code = "#define VERTEXOUTPUT_INVARIANT\n" + code;
+        }
+
         return code;
     }
 
@@ -375,7 +379,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             vertexInputs += "\n};\nvar<private> vertexInputs : VertexInputs_;\n";
         }
 
-        let vertexOutputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n";
+        let vertexOutputs =
+            "struct FragmentInputs {\n  @builtin(position)" + (vertexCode.indexOf("#define VERTEXOUTPUT_INVARIANT") >= 0 ? " @invariant" : "") + " position : vec4<f32>,\n";
         if (this._varyingsWGSL.length > 0) {
             vertexOutputs += this._varyingsWGSL.join("\n");
         }

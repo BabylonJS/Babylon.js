@@ -4,7 +4,7 @@ import type { Scene } from "core/scene";
 import type { DropdownOption } from "shared-ui-components/fluent/primitives/dropdown";
 import { ImportAnimationsAsync, SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { FilesInput } from "core/Misc/filesInput";
-import { Logger } from "core/Misc";
+import { Logger } from "core/Misc/logger";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";

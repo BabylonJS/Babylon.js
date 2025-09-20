@@ -58,6 +58,8 @@ export class LinesMesh extends Mesh {
     /** Shader language used by the material */
     protected _shaderLanguage = ShaderLanguage.GLSL;
 
+    private _ownsMaterial: boolean = false;
+
     /**
      * Creates a new LinesMesh
      * @param name defines the name
@@ -140,8 +142,11 @@ export class LinesMesh extends Mesh {
                 }
             };
 
-            this.material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
-            this.material.doNotSerialize = true;
+            const material = new ShaderMaterial("colorShader", this.getScene(), "color", options, false);
+            material.doNotSerialize = true;
+
+            this._ownsMaterial = true;
+            this._setInternalMaterial(material);
         }
     }
 
@@ -163,9 +168,25 @@ export class LinesMesh extends Mesh {
      * @internal
      */
     public override set material(value: Nullable<Material>) {
-        this._setMaterial(value);
+        const currentMaterial = this.material;
+        if (currentMaterial === value) {
+            return;
+        }
+
+        const shouldDispose = currentMaterial && this._ownsMaterial;
+        this._ownsMaterial = false;
+        this._setInternalMaterial(value);
+
+        if (shouldDispose) {
+            currentMaterial?.dispose();
+        }
+    }
+
+    private _setInternalMaterial(material: Nullable<Material>) {
+        this._setMaterial(material);
         if (this.material) {
             this.material.fillMode = Material.LineListDrawMode;
+            (this.material as any).disableLighting = true;
         }
     }
 
@@ -227,16 +248,20 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * Disposes of the line mesh
+     * Disposes of the line mesh (this disposes of the automatically created material if not instructed otherwise).
      * @param doNotRecurse If children should be disposed
-     * @param disposeMaterialAndTextures This parameter is not used by the LineMesh class
-     * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material is disposed)
+     * @param disposeMaterialAndTextures This parameter is used to force disposing the material in case it is not the default one
+     * @param doNotDisposeMaterial If the material should not be disposed (default: false, meaning the material might be disposed)
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false, doNotDisposeMaterial?: boolean): void {
         if (!doNotDisposeMaterial) {
-            this.material?.dispose(false, false, true);
+            if (this._ownsMaterial) {
+                this.material?.dispose(false, false, true);
+            } else if (disposeMaterialAndTextures) {
+                this.material?.dispose(false, false, true);
+            }
         }
+
         super.dispose(doNotRecurse);
     }
 

@@ -5,7 +5,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 import { ImageEditRegular, ImageRegular } from "@fluentui/react-icons";
 
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -41,7 +41,7 @@ export const TextureExplorerServiceDefinition: ServiceDefinition<[], [ISceneExpl
 
                 return {
                     get name() {
-                        return texture.displayName || texture.name || `${texture.constructor?.name || "Unnamed Texture"} (${texture.uniqueId})`;
+                        return texture.displayName || texture.name || `${texture.getClassName() || "Unnamed Texture"} (${texture.uniqueId})`;
                     },
                     onChange: onChangeObservable,
                     dispose: () => {

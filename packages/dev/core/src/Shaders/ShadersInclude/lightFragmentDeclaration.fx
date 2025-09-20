@@ -91,7 +91,8 @@
 		uniform sampler2D projectionLightTexture{X};
 	#endif
     #ifdef CLUSTLIGHT{X}
-        uniform float vNumLights{X};
+        uniform vec2 vSliceData{X};
+        uniform vec2 vSliceRanges{X}[CLUSTLIGHT_SLICES];
         uniform sampler2D lightDataTexture{X};
         // Ensure the mask is sampled with high precision
 	    uniform highp sampler2D tileMaskTexture{X};

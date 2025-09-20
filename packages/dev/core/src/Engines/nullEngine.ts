@@ -772,6 +772,7 @@ export class NullEngine extends Engine {
             fullOptions.samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
         }
         const texture = new InternalTexture(this, InternalTextureSource.RenderTarget);
+        rtWrapper.setTexture(texture);
 
         const width = size.width || size;
         const height = size.height || size;

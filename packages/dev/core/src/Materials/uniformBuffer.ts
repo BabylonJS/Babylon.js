@@ -33,6 +33,7 @@ export class UniformBuffer {
     private _uniformLocations: { [key: string]: number };
     private _uniformSizes: { [key: string]: number };
     private _uniformArraySizes: { [key: string]: { strideSize: number; arraySize: number } };
+    private _uniformNames: string[] = [];
     private _uniformLocationPointer: number;
     private _needSync: boolean;
     private _noUBO: boolean;
@@ -40,6 +41,7 @@ export class UniformBuffer {
     private _currentEffectName: string;
     private _name: string;
     private _currentFrameId: number;
+    private _trackUBOsInFrame: boolean;
 
     // Pool for avoiding memory leaks
     private static _MAX_UNIFORM_SIZE = 256;
@@ -94,7 +96,7 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateFloatArray: (name: string, array: Float32Array) => void;
+    public updateFloatArray: (name: string, array: Float32Array, suffix?: string) => void;
 
     /**
      * Lambda to Update an array of number in a uniform buffer.
@@ -236,8 +238,9 @@ export class UniformBuffer {
      * @param dynamic Define if the buffer is updatable
      * @param name to assign to the buffer (debugging purpose)
      * @param forceNoUniformBuffer define that this object must not rely on UBO objects
+     * @param trackUBOsInFrame define if the UBOs should be tracked in the frame (default: undefined - will use the value from Engine._features.trackUbosInFrame)
      */
-    constructor(engine: AbstractEngine, data?: number[], dynamic = false, name?: string, forceNoUniformBuffer = false) {
+    constructor(engine: AbstractEngine, data?: number[], dynamic = false, name?: string, forceNoUniformBuffer = false, trackUBOsInFrame?: boolean) {
         this._engine = engine;
         this._noUBO = !engine.supportsUniformBuffers || forceNoUniformBuffer;
         this._dynamic = dynamic;
@@ -250,12 +253,14 @@ export class UniformBuffer {
         this._uniformArraySizes = {};
         this._uniformLocationPointer = 0;
         this._needSync = false;
+        this._trackUBOsInFrame = false;
 
-        if (this._engine._features.trackUbosInFrame) {
+        if ((trackUBOsInFrame === undefined && this._engine._features.trackUbosInFrame) || trackUBOsInFrame === true) {
             this._buffers = [];
             this._bufferIndex = -1;
             this._createBufferOnWrite = false;
             this._currentFrameId = 0;
+            this._trackUBOsInFrame = true;
         }
 
         if (this._noUBO) {
@@ -358,6 +363,14 @@ export class UniformBuffer {
     }
 
     /**
+     * The names of the uniforms in the buffer.
+     * @returns an array of uniform names
+     */
+    public getUniformNames(): string[] {
+        return this._uniformNames;
+    }
+
+    /**
      * std140 layout specifies how to align data within an UBO structure.
      * See https://khronos.org/registry/OpenGL/specs/gl/glspec45.core.pdf#page=159
      * for specs.
@@ -396,14 +409,22 @@ export class UniformBuffer {
      * @param arraySize The number of elements in the array, 0 if not an array.
      */
     public addUniform(name: string, size: number | number[], arraySize = 0) {
-        if (this._noUBO) {
-            return;
+        if (arraySize > 0 && typeof size === "number") {
+            // Keep track of stride for `updateFloatArray`
+            this._uniformArraySizes[name] = { strideSize: size, arraySize };
         }
 
         if (this._uniformLocations[name] !== undefined) {
             // Already existing uniform
             return;
         }
+
+        this._uniformNames.push(name);
+
+        if (this._noUBO) {
+            return;
+        }
+
         // This function must be called in the order of the shader layout !
         // size can be the size of the uniform, or data directly
         let data;
@@ -417,7 +438,6 @@ export class UniformBuffer {
 
             this._fillAlignment(4);
 
-            this._uniformArraySizes[name] = { strideSize: size, arraySize };
             if (size == 16) {
                 size = size * arraySize;
             } else {
@@ -560,7 +580,7 @@ export class UniformBuffer {
     // It is meant to more easily know what this buffer is about when debugging
     // Some buffers can have a lot of uniforms (several dozens), so the method only returns the first 10 of them
     // (should be enough to understand what the buffer is for)
-    private _getNames() {
+    private _getNamesDebug() {
         const names = [];
         let i = 0;
         for (const name in this._uniformLocations) {
@@ -579,12 +599,12 @@ export class UniformBuffer {
         }
 
         if (this._dynamic) {
-            this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
+            this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNamesDebug());
         } else {
-            this._buffer = this._engine.createUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
+            this._buffer = this._engine.createUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNamesDebug());
         }
 
-        if (this._engine._features.trackUbosInFrame) {
+        if (this._trackUBOsInFrame) {
             this._buffers.push([this._buffer, this._engine._features.checkUbosContentBeforeUpload ? this._bufferData.slice() : undefined]);
             this._bufferIndex = this._buffers.length - 1;
             this._createBufferOnWrite = false;
@@ -593,7 +613,7 @@ export class UniformBuffer {
 
     /** @internal */
     public _rebuildAfterContextLost(): void {
-        if (this._engine._features.trackUbosInFrame) {
+        if (this._trackUBOsInFrame) {
             this._buffers = [];
             this._currentFrameId = 0;
         }
@@ -610,9 +630,13 @@ export class UniformBuffer {
         return this._bufferIndex;
     }
 
-    /** Gets the name of this buffer */
+    /** Gets or sets the name of this buffer */
     public get name(): string {
         return this._name;
+    }
+
+    public set name(value: string) {
+        this._name = value;
     }
 
     /** Gets the current effect */
@@ -653,14 +677,14 @@ export class UniformBuffer {
         }
 
         if (!this._dynamic && !this._needSync) {
-            this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
+            this._createBufferOnWrite = this._trackUBOsInFrame;
             return;
         }
 
         if (this._buffers && this._buffers.length > 1 && this._buffers[this._bufferIndex][1]) {
             if (this._buffersEqual(this._bufferData, this._buffers[this._bufferIndex][1]!)) {
                 this._needSync = false;
-                this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
+                this._createBufferOnWrite = this._trackUBOsInFrame;
                 return;
             } else {
                 this._copyBuffer(this._bufferData, this._buffers[this._bufferIndex][1]!);
@@ -677,7 +701,7 @@ export class UniformBuffer {
         }
 
         this._needSync = false;
-        this._createBufferOnWrite = this._engine._features.trackUbosInFrame;
+        this._createBufferOnWrite = this._trackUBOsInFrame;
     }
 
     private _createNewBuffer() {
@@ -692,7 +716,7 @@ export class UniformBuffer {
     }
 
     private _checkNewFrame(): void {
-        if (this._engine._features.trackUbosInFrame && this._currentFrameId !== this._engine.frameId) {
+        if (this._trackUBOsInFrame && this._currentFrameId !== this._engine.frameId) {
             this._currentFrameId = this._engine.frameId;
             this._createBufferOnWrite = false;
             if (this._buffers && this._buffers.length > 0) {
@@ -898,8 +922,21 @@ export class UniformBuffer {
         this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
-    private _updateFloatArrayForEffect(name: string, array: Float32Array) {
-        this._currentEffect.setFloatArray(name, array);
+    private _updateFloatArrayForEffect(name: string, array: Float32Array, suffix = "") {
+        switch (this._uniformArraySizes[name]?.strideSize) {
+            case 2:
+                this._currentEffect.setFloatArray2(name + suffix, array);
+                break;
+            case 3:
+                this._currentEffect.setFloatArray3(name + suffix, array);
+                break;
+            case 4:
+                this._currentEffect.setFloatArray4(name + suffix, array);
+                break;
+            default:
+                this._currentEffect.setFloatArray(name + suffix, array);
+                break;
+        }
     }
 
     private _updateFloatArrayForUniform(name: string, array: Float32Array) {
@@ -1214,7 +1251,7 @@ export class UniformBuffer {
             uniformBuffers.pop();
         }
 
-        if (this._engine._features.trackUbosInFrame && this._buffers) {
+        if (this._trackUBOsInFrame && this._buffers) {
             for (let i = 0; i < this._buffers.length; ++i) {
                 const buffer = this._buffers[i][0];
                 this._engine._releaseBuffer(buffer);

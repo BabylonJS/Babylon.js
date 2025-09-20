@@ -1260,26 +1260,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /**
-     * Returns the mesh VertexBuffer object from the requested `kind`
-     * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
-     * - VertexBuffer.PositionKind
-     * - VertexBuffer.NormalKind
-     * - VertexBuffer.UVKind
-     * - VertexBuffer.UV2Kind
-     * - VertexBuffer.UV3Kind
-     * - VertexBuffer.UV4Kind
-     * - VertexBuffer.UV5Kind
-     * - VertexBuffer.UV6Kind
-     * - VertexBuffer.ColorKind
-     * - VertexBuffer.MatricesIndicesKind
-     * - VertexBuffer.MatricesIndicesExtraKind
-     * - VertexBuffer.MatricesWeightsKind
-     * - VertexBuffer.MatricesWeightsExtraKind
-     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
-     * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
-     */
-    public getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
+    public override getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer> {
         if (!this._geometry) {
             return null;
         }
@@ -5008,7 +4989,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const materialArray: Array<Material> = new Array<Material>();
         const materialIndexArray: Array<number> = new Array<number>();
         // Merge
-        const indiceArray: Array<number> = new Array<number>();
+        const indiceArray: Array<{ start: number; count: number }> = new Array<{ start: number; count: number }>();
         const currentsideOrientation = meshes[0].sideOrientation;
 
         for (index = 0; index < meshes.length; index++) {
@@ -5024,10 +5005,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
 
             if (subdivideWithSubMeshes) {
-                indiceArray.push(mesh.getTotalIndices());
+                indiceArray.push({ start: 0, count: mesh.getTotalIndices() });
             }
 
             if (multiMultiMaterials) {
+                const indexOffset = indiceArray.reduce((accumulator, currentValue) => {
+                    return Math.max(accumulator, currentValue.start + currentValue.count);
+                }, 0);
+
                 if (mesh.material) {
                     const material = mesh.material;
                     if (material instanceof MultiMaterial) {
@@ -5038,7 +5023,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         }
                         for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             materialIndexArray.push(materialArray.indexOf(<Material>material.subMaterials[mesh.subMeshes[subIndex].materialIndex]));
-                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                            indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                         }
                     } else {
                         if (materialArray.indexOf(material) < 0) {
@@ -5046,13 +5031,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         }
                         for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             materialIndexArray.push(materialArray.indexOf(material));
-                            indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                            indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                         }
                     }
                 } else {
                     for (let subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                         materialIndexArray.push(0);
-                        indiceArray.push(mesh.subMeshes[subIndex].indexCount);
+                        indiceArray.push({ start: indexOffset + mesh.subMeshes[subIndex].indexStart, count: mesh.subMeshes[subIndex].indexCount });
                     }
                 }
             }
@@ -5118,12 +5103,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             //-- removal of global submesh
             meshSubclass.releaseSubMeshes();
             index = 0;
-            let offset = 0;
 
             //-- apply subdivision according to index table
             while (index < indiceArray.length) {
-                SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass, undefined, false);
-                offset += indiceArray[index];
+                SubMesh.CreateFromIndices(0, indiceArray[index].start, indiceArray[index].count, meshSubclass, undefined, false);
                 index++;
             }
 

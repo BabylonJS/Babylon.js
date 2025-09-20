@@ -91,19 +91,19 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
     if (!buffer) {
         data = await Tools.LoadFileAsync(internalTexture.url);
         mimeType = GetMimeType(internalTexture.url) || mimeType;
-    } else if (typeof buffer === "string") {
-        data = await Tools.LoadFileAsync(buffer);
-        mimeType = GetMimeType(buffer) || mimeType;
-    } else if (buffer instanceof HTMLImageElement) {
-        data = await Tools.LoadFileAsync(buffer.src);
-        mimeType = GetMimeType(buffer.src) || mimeType;
-    } else if (buffer instanceof Blob) {
-        data = await buffer.arrayBuffer();
-        mimeType = buffer.type || mimeType;
     } else if (ArrayBuffer.isView(buffer)) {
         data = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
     } else if (buffer instanceof ArrayBuffer) {
         data = buffer;
+    } else if (buffer instanceof Blob) {
+        data = await buffer.arrayBuffer();
+        mimeType = buffer.type || mimeType;
+    } else if (typeof buffer === "string") {
+        data = await Tools.LoadFileAsync(buffer);
+        mimeType = GetMimeType(buffer) || mimeType;
+    } else if (typeof HTMLImageElement !== "undefined" && buffer instanceof HTMLImageElement) {
+        data = await Tools.LoadFileAsync(buffer.src);
+        mimeType = GetMimeType(buffer.src) || mimeType;
     }
 
     if (data && mimeType) {

@@ -4,11 +4,19 @@ import type { FunctionComponent, PropsWithChildren } from "react";
 
 type CollapseProps = {
     visible: boolean;
+    orientation?: "horizontal" | "vertical";
 };
 
 const useCollapseStyles = makeStyles({
     collapseContent: {
         overflow: "hidden",
+        display: "flex",
+    },
+    horizontal: {
+        flexDirection: "row",
+    },
+    vertical: {
+        flexDirection: "column",
     },
 });
 
@@ -21,8 +29,8 @@ const useCollapseStyles = makeStyles({
 export const Collapse: FunctionComponent<PropsWithChildren<CollapseProps>> = (props) => {
     const classes = useCollapseStyles();
     return (
-        <FluentCollapse visible={props.visible}>
-            <div className={classes.collapseContent}>{props.children}</div>
+        <FluentCollapse visible={props.visible} orientation={props.orientation}>
+            <div className={`${classes.collapseContent} ${props.orientation === "horizontal" ? classes.horizontal : classes.vertical}`}>{props.children}</div>
         </FluentCollapse>
     );
 };

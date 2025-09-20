@@ -86,6 +86,7 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
             (!point.value.equals || !point.value.equals(point.defaultValue))
         ) {
             pip.style.display = "";
+            pip.style.pointerEvents = "none";
         } else {
             pip.style.display = "none";
         }

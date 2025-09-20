@@ -70,8 +70,8 @@
         "build:umd:libs": "nx run-many --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-ktx2decoder,babylonjs-accessibility,babylonjs-addons",
         "build:umd:tools": "nx run-many --target=build --parallel --maxParallel=2 --projects=babylonjs-inspector,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-node-render-graph-editor,babylonjs-node-particle-editor,babylonjs-gui-editor",
         "build:es6": "npm run build:assets:smart-filters && npm run build:es6:libs && npm run build:es6:tools",
-        "build:es6:libs": "nx run-many --target=build --parallel --maxParallel=6 --projects=@babylonjs/core,@babylonjs/gui,@babylonjs/loaders,@babylonjs/materials,@babylonjs/serializers,@babylonjs/post-processes,@babylonjs/procedural-textures,@babylonjs/viewer,@babylonjs/shared-ui-components,@babylonjs/addons,@babylonjs/accessibility,@babylonjs/ktx2decoder,@babylonjs/smart-filters,@babylonjs/smart-filters-blocks",
-        "build:es6:tools": "nx run-many --target=build --parallel --maxParallel=2 --projects=@babylonjs/node-editor,@babylonjs/node-geometry-editor,@babylonjs/node-render-graph-editor,@babylonjs/node-particle-editor,@babylonjs/inspector,@babylonjs/gui-editor,@tools/smart-filters-editor-control,@tools/smart-filters-debugger,@tools/smart-filters-editor",
+        "build:es6:libs": "nx run-many --target=build --parallel --maxParallel=6 --projects=@babylonjs/core,@babylonjs/gui,@babylonjs/loaders,@babylonjs/materials,@babylonjs/serializers,@babylonjs/post-processes,@babylonjs/procedural-textures,@babylonjs/viewer,@babylonjs/shared-ui-components,@babylonjs/addons,@babylonjs/accessibility,@babylonjs/ktx2decoder,@babylonjs/smart-filters,@babylonjs/smart-filters-blocks,@babylonjs/lottie-player",
+        "build:es6:tools": "nx run-many --target=build --parallel --maxParallel=2 --projects=@babylonjs/node-editor,@babylonjs/node-geometry-editor,@babylonjs/node-render-graph-editor,@babylonjs/node-particle-editor,@babylonjs/inspector,@babylonjs/gui-editor,@tools/smart-filters-editor-control,@tools/smart-filters-debugger,@tools/smart-filters-editor,@babylonjs/inspector-v2",
         "watch:shaders": "build-tools -c build-shaders --global --watch",
         "watch:assets": "build-tools -c pa --global --watch",
         "watch:assets:smart-filters": "tsx ./packages/dev/smartFilters/src/utils/buildTools/watchShaders.ts ./packages/dev/smartFilterBlocks/src/blocks smart-filters core",
@@ -93,6 +93,8 @@
         "test:unit": "npm run build:assets:smart-filters && jest --selectProjects=unit",
         "test:visualization": "playwright test -c ./playwright.config.ts",
         "test:visualization:ui": "playwright test -c ./playwright.config.ts --ui",
+        "test:visualization:devhost": "playwright test -c ./playwright.devhost.config.ts",
+        "test:visualization:devhost:ui": "playwright test -c ./playwright.devhost.config.ts --ui",
         "test:integration": "jest --selectProjects=integration --runInBand && npm run test -w @tools/memory-leak-tests",
         "test:performance": "playwright test -c ./playwright.config.ts --project=performance",
         "test:interactions": "playwright test -c ./playwright.config.ts --project=interaction",
@@ -110,7 +112,8 @@
         "lint:check-ci": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet --format azure-devops",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
-        "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""
+        "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\"",
+        "start:devhost": "concurrently --kill-others -m 1 -n dev-host \"npm run serve -w @tools/dev-host\""
     },
     "engines": {
         "node": ">=20.11.0 <23.0.0",

@@ -28,6 +28,7 @@ class TAAEffectConfiguration implements PrePassEffectConfiguration {
 /**
  * Simple implementation of Temporal Anti-Aliasing (TAA).
  * This can be used to improve image quality for still pictures (screenshots for e.g.).
+ * Note that TAA post-process must be the first in the camera, so TAARenderingPipeline must be created before any other pipeline/post-processing.
  */
 export class TAARenderingPipeline extends PostProcessRenderPipeline {
     /**
@@ -397,6 +398,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
             } else {
                 // Use the projection matrix by default since it supports most materials
                 this._taaThinPostProcess.updateProjectionMatrix();
+                this._scene.updateTransformMatrix(); // make sure the scene ubo is updated with the updated matrices
             }
 
             if (this._passPostProcess) {

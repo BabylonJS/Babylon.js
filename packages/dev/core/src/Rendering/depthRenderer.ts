@@ -20,7 +20,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareDefinesAndAttributesForMorphTargets, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
-import type { IEffectCreationOptions } from "core/Materials";
+import type { IEffectCreationOptions } from "core/Materials/effect";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -99,6 +99,7 @@ export class DepthRenderer {
      * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...) (default: TRILINEAR_SAMPLINGMODE)
      * @param storeCameraSpaceZ Defines whether the depth stored is the Z coordinate in camera space. If true, storeNonLinearDepth has no effect. (Default: false)
      * @param name Name of the render target (default: DepthRenderer)
+     * @param existingRenderTargetTexture An existing render target texture to use (default: undefined). If not provided, a new render target texture will be created.
      */
     constructor(
         scene: Scene,
@@ -107,7 +108,8 @@ export class DepthRenderer {
         storeNonLinearDepth = false,
         samplingMode = Texture.TRILINEAR_SAMPLINGMODE,
         storeCameraSpaceZ = false,
-        name?: string
+        name?: string,
+        existingRenderTargetTexture?: RenderTargetTexture
     ) {
         this._scene = scene;
         this._storeNonLinearDepth = storeNonLinearDepth;
@@ -139,20 +141,22 @@ export class DepthRenderer {
 
         // Render target
         const format = this.isPacked || !engine._features.supportExtendedTextureFormats ? Constants.TEXTUREFORMAT_RGBA : Constants.TEXTUREFORMAT_R;
-        this._depthMap = new RenderTargetTexture(
-            name ?? "DepthRenderer",
-            { width: engine.getRenderWidth(), height: engine.getRenderHeight() },
-            this._scene,
-            false,
-            true,
-            type,
-            false,
-            samplingMode,
-            undefined,
-            undefined,
-            undefined,
-            format
-        );
+        this._depthMap =
+            existingRenderTargetTexture ??
+            new RenderTargetTexture(
+                name ?? "DepthRenderer",
+                { width: engine.getRenderWidth(), height: engine.getRenderHeight() },
+                this._scene,
+                false,
+                true,
+                type,
+                false,
+                samplingMode,
+                undefined,
+                undefined,
+                undefined,
+                format
+            );
         this._depthMap.wrapU = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.wrapV = Texture.CLAMP_ADDRESSMODE;
         this._depthMap.refreshRate = 1;

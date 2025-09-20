@@ -37,6 +37,7 @@ import {
     _CreateAngleData,
     _CreateAngleGradientsData,
     _CreateColorData,
+    _CreateColorDeadData,
     _CreateColorGradientsData,
     _CreateCustomDirectionData,
     _CreateCustomPositionData,
@@ -275,6 +276,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _dragCreation: _IExecutionQueueItem;
     /** @internal */
     public _colorCreation: _IExecutionQueueItem;
+    /** @internal */
+    public _colorDeadCreation: _IExecutionQueueItem;
     private _sheetCreation: _IExecutionQueueItem;
     private _rampCreation: _IExecutionQueueItem;
     private _noiseCreation: _IExecutionQueueItem;
@@ -317,7 +320,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            _ConnectAfter(this._rampCreation, this._colorCreation);
+            _ConnectAfter(this._rampCreation, this._colorDeadCreation);
             this._remapGradientProcessing = {
                 process: _ProcessRemapGradients,
                 previousItem: null,
@@ -398,7 +401,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 nextItem: null,
             };
 
-            _ConnectAfter(this._sheetCreation, this._colorCreation);
+            _ConnectAfter(this._sheetCreation, this._colorDeadCreation);
         } else {
             _RemoveFromQueue(this._sheetCreation);
         }
@@ -513,7 +516,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             previousItem: null,
             nextItem: null,
         };
-        _ConnectAfter(this._noiseCreation, this._colorCreation);
+        _ConnectAfter(this._noiseCreation, this._colorDeadCreation);
 
         this._noiseProcessing = {
             process: _ProcessNoise,
@@ -614,6 +617,13 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             nextItem: null,
         };
         _ConnectAfter(this._colorCreation, this._angleCreation);
+
+        this._colorDeadCreation = {
+            process: _CreateColorDeadData,
+            previousItem: null,
+            nextItem: null,
+        };
+        _ConnectAfter(this._colorDeadCreation, this._colorCreation);
 
         this._createQueueStart = this._lifeTimeCreation;
 
@@ -1128,7 +1138,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 previousItem: null,
                 nextItem: null,
             };
-            _ConnectBefore(this._dragCreation, this._colorCreation);
+            _ConnectBefore(this._dragCreation, this._colorDeadCreation);
 
             this._dragGradientProcessing = {
                 process: _ProcessDragGradients,
@@ -2235,10 +2245,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 engine.bindBuffers(this._vertexBuffers, this._linesIndexBufferUseInstancing, effect);
             } else {
                 if (!this._vertexArrayObject) {
-                    this._vertexArrayObject = (this._engine as ThinEngine).recordVertexArrayObject(this._vertexBuffers, null, effect);
+                    this._vertexArrayObject = (this._engine as ThinEngine).recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
                 }
 
-                (this._engine as ThinEngine).bindVertexArrayObject(this._vertexArrayObject, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : this._indexBuffer);
+                (this._engine as ThinEngine).bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
             }
         } else {
             if (!this._indexBuffer) {

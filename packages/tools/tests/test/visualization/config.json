@@ -2264,7 +2264,7 @@
         {
             "title": "show-bounding-box",
             "renderCount": 5,
-            "playgroundId": "#0LN1JD#0"
+            "playgroundId": "#0LN1JD#9"
         },
         {
             "title": "cube-reflection-with-probe-and-mirrors",
@@ -2643,6 +2643,15 @@
             "playgroundId": "#9SDNZF#32"
         },
         {
+            "title": "FrameGraph nrge TAA",
+            "playgroundId": "#IG8NRC#33",
+            "renderCount": 15
+        },
+        {
+            "title": "FrameGraph nrge rig camera",
+            "playgroundId": "#ATL1CS#16"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
@@ -2772,6 +2781,33 @@
             "title": "Sponza Clustered Lighting (2 viewports)",
             "playgroundId": "#CSCJO2#20",
             "referenceImage": "sponza-clustered-lighting-viewports.png"
+        },
+        {
+            "title": "Atmosphere Day",
+            "playgroundId": "#VO1Z0C#7",
+            "referenceImage": "atmosphere-day.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Sunset",
+            "playgroundId": "#VO1Z0C#9",
+            "referenceImage": "atmosphere-sunset.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Night",
+            "playgroundId": "#VO1Z0C#8",
+            "referenceImage": "atmosphere-night.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Space View",
+            "playgroundId": "#VO1Z0C#6",
+            "referenceImage": "atmosphere-space-view.png",
+            "excludedEngines": ["webgl1", "webgpu"]
         }
     ]
 }

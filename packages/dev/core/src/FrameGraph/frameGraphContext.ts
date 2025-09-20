@@ -18,14 +18,19 @@ export class FrameGraphContext {
      * Renders a component without managing the render target.
      * Use this method when you have a component that handles its own rendering logic which is not fully integrated into the frame graph system.
      * @param component The component to render.
+     * @param intermediateRendering If true, the scene's intermediate rendering flag will be set to true during the render call (default: true)
      */
-    public renderUnmanaged(component: { render: () => void }): void {
+    public renderUnmanaged(component: { render: () => void }, intermediateRendering = true): void {
         const currentRenderTarget = this._engine._currentRenderTarget;
 
         this._scene.incrementRenderId();
         this._scene.resetCachedMaterial();
 
+        this._scene._intermediateRendering = intermediateRendering;
+
         component.render();
+
+        this._scene._intermediateRendering = false;
 
         if (this._engine._currentRenderTarget !== currentRenderTarget) {
             if (!currentRenderTarget) {

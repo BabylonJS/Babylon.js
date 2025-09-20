@@ -111,6 +111,10 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
+
 #include<logDepthDeclaration>
 #define CUSTOM_VERTEX_DEFINITIONS
 
@@ -183,14 +187,6 @@ void main(void) {
             // Bend the normal towards the viewer based on the diffuse roughness
             vec3 viewDirectionW = normalize(vEyePosition.xyz - vPositionW);
 
-            #if !defined(NATIVE) && !defined(WEBGPU)
-                // Next two lines fixes a flickering that occurs on some specific circumstances on MacOS/iOS
-                // See https://forum.babylonjs.com/t/needdepthprepass-creates-flickering-in-8-6-2/58421/12
-                // Note that the variable passed to isnan doesn't matter...
-                bool bbb = any(isnan(position));
-                if (bbb) { }
-            #endif
-
             float NdotV = max(dot(vNormalW, viewDirectionW), 0.0);
             vec3 roughNormal = mix(vNormalW, viewDirectionW, (0.5 * (1.0 - NdotV)) * baseDiffuseRoughness);
             vec3 reflectionVector = vec3(reflectionMatrix * vec4(roughNormal, 0)).xyz;
@@ -222,6 +218,10 @@ void main(void) {
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
     vDirectionW = normalize(vec3(finalWorld * vec4(positionUpdated, 0.0)));
+#endif
+
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+    vViewDepth = (view * worldPos).z;
 #endif
 
     // Texture coordinates

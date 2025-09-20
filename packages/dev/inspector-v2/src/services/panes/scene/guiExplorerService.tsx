@@ -5,7 +5,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { AppGenericRegular } from "@fluentui/react-icons";
 
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -13,7 +13,7 @@ import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 // Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
 function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTexture {
-    return (entity as AdvancedDynamicTexture)?.constructor?.name === "AdvancedDynamicTexture";
+    return (entity as AdvancedDynamicTexture)?.getClassName() === "AdvancedDynamicTexture";
 }
 
 export const GuiExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {

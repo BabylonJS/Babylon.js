@@ -5,7 +5,7 @@ import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import { LayerDiagonalPersonRegular, PersonSquareRegular, PlayFilled, StopFilled } from "@fluentui/react-icons";
 
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 import { Sprite } from "core/Sprites/sprite";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";

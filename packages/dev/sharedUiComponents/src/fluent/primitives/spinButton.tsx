@@ -109,7 +109,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
  * @param value - the value to determine the precision of
  * @returns the calculated precision
  */
-function CalculatePrecision(value: number) {
+export function CalculatePrecision(value: number) {
     /**
      * Group 1:
      * [1-9]([0]+$) matches trailing zeros

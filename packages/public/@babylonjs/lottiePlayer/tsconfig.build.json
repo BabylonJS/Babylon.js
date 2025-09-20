@@ -1,0 +1,32 @@
+{
+    "extends": "../../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "outDir": "./",
+        "rootDir": "../../../dev/lottiePlayer/src",
+        "declaration": true,
+        "target": "ES2020",
+        "importHelpers": true,
+        "sourceMap": true,
+        "declarationMap": true,
+        "inlineSources": false,
+        "plugins": [
+            {
+                "transform": "@dev/build-tools/dist/pathTransform.js",
+                "after": true,
+                "buildType": "es6",
+                "basePackage": "@babylonjs/lottie-player",
+                "appendJS": true
+            },
+            {
+                "transform": "@dev/build-tools/dist/pathTransform.js",
+                "afterDeclarations": true,
+                "buildType": "es6",
+                "basePackage": "@babylonjs/lottie-player",
+                "appendJS": true
+            }
+        ]
+    },
+
+    "include": ["../../../dev/lottiePlayer/src/**/*"]
+}

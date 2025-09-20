@@ -5,15 +5,27 @@ import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateMan
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes";
-import type { NodeGeometryConnectionPoint } from "core/Meshes";
 import { GetListOfAcceptedTypes } from "shared-ui-components/nodeGraphSystem/tools";
+import type { NodeParticleConnectionPoint } from "core/Particles";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles";
 
+/**
+ *
+ */
 export interface IFrameNodePortPropertyTabComponentProps {
+    /**
+     *
+     */
     stateManager: StateManager;
+    /**
+     *
+     */
     nodePort: NodePort;
 }
 
+/**
+ *
+ */
 export class NodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps> {
     constructor(props: IFrameNodePortPropertyTabComponentProps) {
         super(props);
@@ -25,13 +37,13 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
     }
 
     override render() {
-        const port = this.props.nodePort.portData.data as NodeGeometryConnectionPoint;
+        const port = this.props.nodePort.portData.data as NodeParticleConnectionPoint;
         const acceptedConnectionPointTypes = GetListOfAcceptedTypes(
-            NodeGeometryBlockConnectionPointTypes,
-            NodeGeometryBlockConnectionPointTypes.All,
-            NodeGeometryBlockConnectionPointTypes.AutoDetect,
+            NodeParticleBlockConnectionPointTypes,
+            NodeParticleBlockConnectionPointTypes.All,
+            NodeParticleBlockConnectionPointTypes.AutoDetect,
             port,
-            [NodeGeometryBlockConnectionPointTypes.BasedOnInput]
+            [NodeParticleBlockConnectionPointTypes.BasedOnInput]
         );
 
         const info = this.props.nodePort.hasLabel() ? (
@@ -39,7 +51,7 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
                 {this.props.nodePort.hasLabel() && (
                     <TextInputLineComponent lockObject={this.props.stateManager.lockObject} label="Port Label" propertyName="portName" target={this.props.nodePort} />
                 )}
-                <TextLineComponent label="Type" value={NodeGeometryBlockConnectionPointTypes[port.type]} />
+                <TextLineComponent label="Type" value={NodeParticleBlockConnectionPointTypes[port.type]} />
                 {acceptedConnectionPointTypes.length > 0 && acceptedConnectionPointTypes.map((t, i) => <TextLineComponent label={i === 0 ? "Accepted Types" : ""} value={t} />)}
                 {this.props.nodePort.node.enclosingFrameId !== -1 && (
                     <CheckBoxLineComponent

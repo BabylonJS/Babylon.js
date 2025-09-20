@@ -186,6 +186,13 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 defaultValue: false,
                 onCheck: () => {},
             },
+            {
+                label: "Auto-run",
+                tooltip: "Playground code runs automatically after loading",
+                storeKey: "auto-run",
+                defaultValue: true,
+                onCheck: () => {},
+            },
         ];
 
         // Procedural Code Generator Options (build from procedural.json)
@@ -254,6 +261,23 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             },
         ];
 
+        const fileOptions = [
+            {
+                label: "Load",
+                tooltip: "Load a saved playground from a local file",
+                onClick: () => {
+                    this.props.globalState.onLocalLoadRequiredObservable.notifyObservers();
+                },
+            },
+            {
+                label: "Save",
+                tooltip: "Save the playground to a local file",
+                onClick: () => {
+                    this.props.globalState.onLocalSaveRequiredObservable.notifyObservers();
+                },
+            },
+        ];
+
         if (this._webGPUSupported) {
             engineOptions.splice(0, 0, {
                 label: "WebGPU",
@@ -273,6 +297,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 <div className="commands-left">
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" shortcut="Alt+Enter" isActive={true} onClick={() => this.onPlay()} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" shortcut="Ctrl+S" isActive={false} onClick={() => this.onSave()} />
+                    <CommandDropdownComponent globalState={this.props.globalState} icon="saveLocal" tooltip="Local file" items={fileOptions} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={() => this.onInspector()} />
                     <CommandButtonComponent
                         globalState={this.props.globalState}

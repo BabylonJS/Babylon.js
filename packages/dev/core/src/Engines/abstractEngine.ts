@@ -1907,14 +1907,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.24.0";
+        return "babylonjs@8.28.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.24.0";
+        return "8.28.1";
     }
 
     /**
@@ -2602,7 +2602,7 @@ export abstract class AbstractEngine {
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
         onProgress?: (data: any) => void,
-        offlineProvider?: IOfflineProvider,
+        offlineProvider?: Nullable<IOfflineProvider>,
         useArrayBuffer?: boolean,
         onError?: (request?: IWebRequest, exception?: any) => void
     ): IFileRequest {
