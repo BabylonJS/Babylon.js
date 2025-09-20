@@ -137,7 +137,6 @@ declare module "*.fx"   { const content: string; export default content; }`;
         const out = await svc.getEmitOutput(uri.toString());
 
         if (out.emitSkipped) {
-            // Usually means noEmit was true or TS could not emit for this file
             throw new Error(`Emit skipped for ${clean}`);
         }
 
