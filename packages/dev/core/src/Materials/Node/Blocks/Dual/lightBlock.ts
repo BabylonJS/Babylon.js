@@ -166,6 +166,8 @@ export class LightBlock extends NodeMaterialBlock {
     public override initialize(state: NodeMaterialBuildState) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
+
+        state._excludeVariableName("vViewDepth");
     }
 
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
@@ -252,7 +254,8 @@ export class LightBlock extends NodeMaterialBlock {
                 defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
                 uniformBuffers,
                 onlyUpdateBuffersList,
-                defines["IESLIGHTTEXTURE" + lightIndex]
+                defines["IESLIGHTTEXTURE" + lightIndex],
+                defines["CLUSTLIGHT" + lightIndex]
             );
         }
     }
@@ -316,6 +319,10 @@ export class LightBlock extends NodeMaterialBlock {
             state.compilationString += `${state._declareLocalVar("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${worldPos.associatedVariableName};\n`;
             if (this.view.isConnected) {
                 state.compilationString += `${state._declareLocalVar("view", NodeMaterialBlockConnectionPointTypes.Matrix)} = ${this.view.associatedVariableName};\n`;
+                state._emitVaryingFromString("vViewDepth", NodeMaterialBlockConnectionPointTypes.Float);
+                state.compilationString +=
+                    (state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "") +
+                    `vViewDepth = (${this.view.associatedVariableName} * ${worldPos.associatedVariableName}).z;\n`;
             }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
@@ -354,7 +361,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
-            this._injectVertexCode(state);
+            this._injectVertexCode(state); // won't be executed if this.generateOnlyFragmentCode is true
             return;
         }
 
@@ -370,12 +377,12 @@ export class LightBlock extends NodeMaterialBlock {
         let worldPosVariableName = worldPos.associatedVariableName;
         if (this.generateOnlyFragmentCode) {
             worldPosVariableName = state._getFreeVariableName("globalWorldPos");
-            state._emitFunction("light_globalworldpos", `${state._declareLocalVar(worldPosVariableName, NodeMaterialBlockConnectionPointTypes.Vector3)};\n`, comments);
+            state._emitFunction("light_globalworldpos", `${state._declareLocalVar(worldPosVariableName, NodeMaterialBlockConnectionPointTypes.Vector3, false, true)};\n`, comments);
             state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\n`;
 
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
-                substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${worldPos.associatedVariableName}` : undefined,
+                substitutionVars: `worldPos,${worldPos.associatedVariableName}`,
             });
         } else {
             worldPosVariableName = accessor + "v_" + worldPosVariableName + ".xyz";
@@ -404,6 +411,10 @@ export class LightBlock extends NodeMaterialBlock {
             if (state._registerTempVariable("viewDirectionW")) {
                 state.compilationString += `${state._declareLocalVar("viewDirectionW", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVariableName});\n`;
             }
+            if (this.generateOnlyFragmentCode && this.view.isConnected) {
+                state.compilationString += `${state._declareLocalVar("vViewDepth", NodeMaterialBlockConnectionPointTypes.Float)} = (${this.view.associatedVariableName} * ${worldPos.associatedVariableName}).z;\n`;
+            }
+
             state.compilationString += isWGSL ? `var info: lightingInfo;\n` : `lightingInfo info;\n`;
             state.compilationString += `${state._declareLocalVar("shadow", NodeMaterialBlockConnectionPointTypes.Float)} = 1.;\n`;
             state.compilationString += `${state._declareLocalVar("aggShadow", NodeMaterialBlockConnectionPointTypes.Float)} = 0.;\n`;
@@ -434,6 +445,9 @@ export class LightBlock extends NodeMaterialBlock {
 
             if (isWGSL) {
                 substitutionVars = `fragmentInputs.vPositionW,${worldPosVariableName}.xyz`;
+                if (this.generateOnlyFragmentCode) {
+                    substitutionVars += `,fragmentInputs.vViewDepth,vViewDepth`;
+                }
             }
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",

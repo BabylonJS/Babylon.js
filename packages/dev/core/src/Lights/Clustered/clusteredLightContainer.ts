@@ -543,8 +543,7 @@ export class ClusteredLightContainer extends Light {
         return this;
     }
 
-    public override transferToNodeMaterialEffect(): Light {
-        // TODO: ????
+    public override transferToNodeMaterialEffect(_effect: Effect): Light {
         return this;
     }
 
