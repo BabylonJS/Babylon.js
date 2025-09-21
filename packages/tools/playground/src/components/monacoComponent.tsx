@@ -336,7 +336,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             }
         }
 
-        nextLeft = Math.max(0, Math.min(nextLeft, maxScrollLeft));
+        nextLeft = this._clamp(nextLeft, 0, maxScrollLeft);
 
         if (Math.abs(nextLeft - curLeft) > 0.5) {
             (this._scrollable as any).setScrollPositionNow?.({ scrollLeft: nextLeft });
@@ -527,9 +527,14 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                 alert("A file with that name already exists.");
                 return;
             }
-            this._monacoManager.addFile(internal, this.props.globalState.files[targetPath] ?? "");
+            const content = this.props.globalState.files[targetPath] ?? "";
+            this._monacoManager.addFile(internal, content);
+
             const next = this.state.order.slice();
-            next.splice(this._orderedFiles().indexOf(targetPath) + 1, 0, internal);
+            const idxInOrder = next.indexOf(targetPath);
+            const insertAt = idxInOrder === -1 ? next.length : idxInOrder + 1;
+            next.splice(insertAt, 0, internal);
+
             this._commitOrder(next);
             this._monacoManager.switchActiveFile(internal);
         }

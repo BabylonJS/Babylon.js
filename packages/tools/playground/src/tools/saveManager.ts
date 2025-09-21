@@ -119,6 +119,7 @@ export class SaveManager {
         };
 
         xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
+        xmlHttp.withCredentials = false;
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
         xmlHttp.send(PackSnippetData(this.globalState));
