@@ -57,6 +57,18 @@
     }
 }
 
+.pg-monaco-wrapper {
+  --vscode-scrollbarSlider-background: rgba(121, 121, 121, 0.4);
+  --vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
+  --vscode-scrollbarSlider-activeBackground: rgba(100, 100, 100, 0.9);
+}
+
+.pg-monaco-wrapper.pg-theme-dark {
+  --vscode-scrollbarSlider-background: rgba(190, 190, 190, 0.35);
+  --vscode-scrollbarSlider-hoverBackground: rgba(190, 190, 190, 0.6);
+  --vscode-scrollbarSlider-activeBackground: rgba(190, 190, 190, 0.85);
+}
+
 .pg-monaco-wrapper__fullscreen {
     width: 100% !important;
 }
@@ -88,52 +100,67 @@
 }
 
 .pg-tabs {
-    display: inline-flex;
-    flex: none;
-    white-space: nowrap;
-    overflow: visible;
-    transform: translateX(0);
+  display: inline-flex;
+  flex: none;
+  white-space: nowrap;
+  max-width: 100%;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+
+  padding-bottom: 6px;
+  margin-bottom: -6px;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--vscode-scrollbarSlider-background) transparent;
+
+  &:hover {
+    scrollbar-color: var(--vscode-scrollbarSlider-hoverBackground) transparent;
+  }
+
+  &::-webkit-scrollbar {
+    height: 6px;
+    background: transparent;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    margin-inline: 2px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-scrollbarSlider-background);
+    border-radius: 6px;
+  }
+  &:hover::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-scrollbarSlider-hoverBackground);
+  }
+  &:active::-webkit-scrollbar-thumb {
+    background-color: var(--vscode-scrollbarSlider-activeBackground);
+  }
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+.pg-tabs-bar {
+    display: flex;
+    align-items: stretch;
+    height: var(--pg-bar-height);
+    flex: 0 0 auto;
+    background: var(--pg-bg);
+    border-bottom: 1px solid var(--pg-border);
+    position: relative;
+    z-index: 1;
 }
 
 .pg-tabs-host {
-    --vscode-scrollbarSlider-background: rgba(121, 121, 121, 0.4);
-    --vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
-    --vscode-scrollbarSlider-activeBackground: rgba(100, 100, 100, 0.9);
-    --vscode-scrollbar-shadow: rgba(0, 0, 0, 0.13);
-}
-
-.pg-tabs-host > .monaco-scrollable-element {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: var(--pg-bar-height);
     position: relative;
-    overflow: hidden;
-    width: 100%;
-    height: 100%;
-}
-
-.monaco-scrollable-element > .scrollbar {
-    position: absolute;
-    z-index: 11;
-}
-
-.monaco-scrollable-element > .scrollbar.horizontal {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 6px !important;
-    bottom: 0;
-}
-
-.monaco-scrollable-element > .scrollbar.vertical {
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 3px;
-}
-
-.monaco-scrollable-element > .scrollbar > .slider {
-    position: absolute;
-    border-radius: 3px;
-    height: 100%;
-    background: rgba(121, 121, 121, 0.45); /* make it visible */
+    overflow-y: hidden;
+    overflow-x: auto;
 }
 
 .pg-tab {
@@ -453,11 +480,6 @@
     height: var(--pg-bar-height);
     position: relative;
     overflow: hidden;
-}
-
-.pg-tabs-host > .monaco-scrollable-element {
-    width: 100%;
-    height: 100%;
 }
 
 @media screen and (max-width: 1140px) {
