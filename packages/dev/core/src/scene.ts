@@ -139,6 +139,12 @@ export interface SceneOptions {
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
 
+    /**
+     * @experimental
+     * FloatingOriginMode helps avoid floating point imprecision of rendering large worlds by
+     * 1. Forcing the engine to use doublePrecision mode
+     * 2. Offsetting uniform values before passing to shader so that camera is centered at origin and world is offset by camera position
+     */
     floatingOriginMode?: boolean;
 }
 
@@ -2703,22 +2709,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._transformMatrix;
     }
 
-    private _floatingOriginMode: boolean = false;
-    /**
-     * @experimental
-     */
-    public get floatingOriginMode(): boolean {
-        return this._floatingOriginMode;
-    }
-
-    private _floatingOriginOffsetDefault: Vector3 = Vector3.Zero();
-    /**
-     * @experimental
-     */
-    public get floatingOriginOffset(): Vector3 {
-        return this.floatingOriginMode && this.activeCamera ? this.activeCamera.position : this._floatingOriginOffsetDefault;
-    }
-
     /**
      * Sets the current transform matrix
      * @param viewL defines the View matrix to use
@@ -2791,6 +2781,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._sceneUbo = ubo;
         this._viewUpdateFlag = -1;
         this._projectionUpdateFlag = -1;
+    }
+
+    private _floatingOriginMode: boolean = false;
+    /**
+     * @experimental
+     * When true, enables floatingOriginMode which helps avoid floating point imprecision when using huge coordinate system by
+     * 1. Forcing the engine to use doublePrecision mode
+     * 2. Offsetting uniform values before passing to shader so that camera is centered at origin and world is offset by camera position
+     */
+    public get floatingOriginMode(): boolean {
+        return this._floatingOriginMode;
+    }
+
+    private _floatingOriginOffsetDefault: Vector3 = Vector3.Zero();
+    /**
+     * @experimental
+     * When floatingOriginMode is enabled, offset is equal to the active camera position. If no active camera or floatingOriginMode is disabled, offset is 0.
+     */
+    public get floatingOriginOffset(): Vector3 {
+        return this.floatingOriginMode && this.activeCamera ? this.activeCamera.position : this._floatingOriginOffsetDefault;
     }
 
     /**
