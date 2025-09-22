@@ -9,53 +9,17 @@ import { camelize, checkArgs, checkDirectorySync, debounce, findRootDirectory, g
 import type { BuildType, DevPackageName } from "./packageMapping.js";
 import { getAllPackageMappingsByDevNames, getPackageMappingByDevName, getPublicPackageName, isValidDevPackageName } from "./packageMapping.js";
 
-/**
- *
- */
 export interface IGenerateDeclarationConfig {
-    /**
-     *
-     */
     devPackageName: DevPackageName;
-    /**
-     *
-     */
     outputDirectory?: string;
-    /**
-     *
-     */
     externals?: { [key: string]: string };
-    /**
-     *
-     */
     hiddenConsts?: string[];
-    /**
-     *
-     */
     namedExportPathsToExclude?: string;
-    /**
-     *
-     */
     filename?: string;
-    /**
-     *
-     */
     declarationLibs: string[];
-    /**
-     *
-     */
     buildType?: BuildType;
-    /**
-     *
-     */
     addToDocumentation?: boolean;
-    /**
-     *
-     */
     initDocumentation?: boolean;
-    /**
-     *
-     */
     fileFilterRegex?: string;
 }
 
@@ -202,7 +166,7 @@ function GetModuleDeclaration(
             if (externalName) {
                 if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                     // replace with any
-                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
+                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
                     return;
                 }
@@ -438,7 +402,7 @@ function GetPackageDeclaration(
                 if (externalName) {
                     if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                         // replace with any
-                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
+                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                         processedSource = processedSource.replace(matchRegex, `$1any$3`);
                         return;
                     } else if (externalName === "react") {
