@@ -15,6 +15,7 @@
     --pg-tab-bg: #ececec;
     --pg-tab-hover: #f8f8f8;
     --pg-tab-active: #fffffe;
+    --pg-file-active: #fffffe;
 
     --pg-scroll-thumb: rgba(100, 100, 100, 0.4);
 
@@ -41,6 +42,7 @@
         --pg-tab-bg: #2d2d30;
         --pg-tab-hover: #2b2b2e;
         --pg-tab-active: #1e1e1e;
+        --pg-file-active: #3e3e42;
 
         --pg-scroll-thumb: rgba(190, 190, 190, 0.4);
 
@@ -58,15 +60,15 @@
 }
 
 .pg-monaco-wrapper {
-  --vscode-scrollbarSlider-background: rgba(121, 121, 121, 0.4);
-  --vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
-  --vscode-scrollbarSlider-activeBackground: rgba(100, 100, 100, 0.9);
+    --vscode-scrollbarSlider-background: rgba(121, 121, 121, 0.4);
+    --vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
+    --vscode-scrollbarSlider-activeBackground: rgba(100, 100, 100, 0.9);
 }
 
 .pg-monaco-wrapper.pg-theme-dark {
-  --vscode-scrollbarSlider-background: rgba(190, 190, 190, 0.35);
-  --vscode-scrollbarSlider-hoverBackground: rgba(190, 190, 190, 0.6);
-  --vscode-scrollbarSlider-activeBackground: rgba(190, 190, 190, 0.85);
+    --vscode-scrollbarSlider-background: rgba(190, 190, 190, 0.35);
+    --vscode-scrollbarSlider-hoverBackground: rgba(190, 190, 190, 0.6);
+    --vscode-scrollbarSlider-activeBackground: rgba(190, 190, 190, 0.85);
 }
 
 .pg-monaco-wrapper__fullscreen {
@@ -83,64 +85,550 @@
     font-family: var(--pg-font);
     position: relative;
     overflow: hidden;
+    & > div {
+        height: 100%;
+    }
+}
+
+.pg-main-fullwidth {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.pg-sidebar {
+    border-right: 1px solid var(--pg-border);
+    background: var(--pg-bg);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+
+    &.collapsed {
+        width: 0 !important;
+        overflow: hidden;
+        border-right: none;
+    }
+}
+
+.pg-sidebar-header {
+    padding: 8px 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--pg-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--pg-border);
+    flex-shrink: 0;
+}
+
+.pg-sidebar-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.pg-sidebar-add {
+    background: none;
+    border: none;
+    color: var(--pg-muted);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 14px;
+    font-weight: bold;
+    transition: color 0.1s ease;
+    border-radius: var(--pg-radius);
+
+    &:hover {
+        color: var(--pg-text);
+        background: var(--pg-elev-1);
+    }
+}
+
+.pg-sidebar-toggle {
+    background: none;
+    border: none;
+    color: var(--pg-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: 12px;
+    transition: color 0.1s ease;
+
+    &:hover {
+        color: var(--pg-text);
+    }
+}
+
+.pg-sidebar-toggle-collapsed {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: var(--pg-bg);
+    border: 1px solid var(--pg-border);
+    color: var(--pg-muted);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 12px;
+    border-radius: var(--pg-radius);
+    z-index: 10;
+    transition: all 0.1s ease;
+
+    &:hover {
+        color: var(--pg-text);
+        background: var(--pg-tab-hover);
+    }
+}
+
+.pg-explorer {
+    font-size: 13px;
+    flex: 1;
+    overflow: auto;
+    color: var(--pg-text);
+}
+
+.pg-splitter {
+    height: 2px !important;
+    background-color: var(--pg-tab-active) !important;
+}
+
+/* VS Code-like layout styles */
+.pg-vscode-layout {
+    display: flex;
+    height: 100%;
+    background: var(--pg-bg);
+}
+
+.pg-vscode-layout .split-container,
+.pg-vscode-layout .pg-split-main {
+    flex: 1;
+    height: 100%;
+}
+
+// Splitter bar
+.pg-split-main > div:nth-child(2) {
+    background: var(--pg-border);
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.2);
+    }
+}
+
+.pg-activity-bar {
+    width: 40px;
+    background: rgb(32, 25, 54);
+    border-right: 1px inset rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px 0;
+    flex-shrink: 0;
+    height: 100%;
+}
+
+.pg-activity-item {
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: var(--pg-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.1s ease;
+    overflow: visible;
+
+    &.active {
+        background: #3f3461;
+    }
+    &:hover {
+        background: lighten(#3f3461, 10%);
+    }
+
+    svg {
+        width: 24px;
+        height: 24px;
+        scale: 0.8;
+        display: block;
+        stroke-width: 0.5;
+        fill: white;
+    }
+    svg [fill]:not([fill="none"]) {
+        fill: white !important;
+    }
+    svg [stroke]:not([stroke="none"]) {
+        stroke: white !important;
+    }
+    svg path,
+    svg rect,
+    svg circle,
+    svg polygon,
+    svg line,
+    svg polyline {
+        fill: white;
+        stroke: white;
+    }
+}
+
+.pg-explorer-panel {
+    width: 280px;
+    background: var(--pg-bg);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--pg-border);
+    height: 100%;
+    min-width: 0; /* Allow collapsing to 0 */
+}
+
+.pg-explorer-panel-collapsed {
+    width: 0 !important;
+    min-width: 0;
+    background: var(--pg-bg);
+    height: 100%;
+}
+
+.pg-panel-header {
+    padding: 8px 5px 8px 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--pg-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--pg-border);
+    flex-shrink: 0;
+    background: var(--pg-bg);
+}
+
+.pg-panel-actions {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    height: 24px;
+    width: 24px;
+}
+
+.pg-panel-action {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--pg-muted);
+    cursor: pointer;
+    transition: color 0.1s ease;
+    border-radius: var(--pg-radius);
+
+    &:hover {
+        color: var(--pg-text);
+        background: var(--pg-elev-1);
+    }
+    color: currentColor;
+    svg {
+        width: 24px;
+        height: 24px;
+        scale: 0.8;
+        stroke-width: 0.5;
+        fill: currentColor;
+    }
+    svg [fill]:not([fill="none"]) {
+        fill: currentColor !important;
+    }
+    svg [stroke]:not([stroke="none"]) {
+        stroke: currentColor !important;
+    }
+    svg path,
+    svg rect,
+    svg circle,
+    svg polygon,
+    svg line,
+    svg polyline {
+        fill: currentColor;
+        stroke: currentColor;
+    }
+}
+
+.pg-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    background: var(--pg-bg);
+}
+
+.pg-expl-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px 8px;
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+    color: var(--pg-text);
+
+    // Dynamic padding based on depth
+    &[data-depth="0"] {
+        padding-left: 10px;
+    }
+    &[data-depth="1"] {
+        padding-left: 20px;
+    }
+    &[data-depth="2"] {
+        padding-left: 32px;
+    }
+    &[data-depth="3"] {
+        padding-left: 44px;
+    }
+    &[data-depth="4"] {
+        padding-left: 56px;
+    }
+    &[data-depth="5"] {
+        padding-left: 68px;
+    }
+
+    &.file {
+        cursor: pointer;
+        min-height: 22px;
+
+        &:hover {
+            background: var(--pg-tab-hover);
+        }
+
+        &.active {
+            background: var(--pg-file-active) !important;
+            font-weight: 500;
+            color: var(--pg-text);
+            font-style: italic;
+        }
+
+        &.entry {
+            .name::after {
+                left: 5px;
+                top: -1px;
+                font-size: 9px;
+                content: "★";
+                color: var(--pg-accent);
+                position: relative;
+            }
+        }
+    }
+
+    &.dir {
+        font-weight: 500;
+        color: var(--pg-text);
+        min-height: 22px;
+
+        .name {
+            flex: 1;
+        }
+
+        .new {
+            opacity: 0;
+        }
+
+        &:hover .new {
+            opacity: 1;
+        }
+    }
+
+    .name {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.pg-expl-item .actions {
+    display: flex;
+    gap: 2px;
+
+    .action-btn {
+        opacity: 0;
+        background: none;
+        border: none;
+        color: var(--pg-muted);
+        cursor: pointer;
+        padding: 2px 4px;
+        font-size: 12px;
+        transition: all 0.1s ease;
+        border-radius: var(--pg-radius);
+        min-width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            color: var(--pg-text);
+            background: var(--pg-elev-1);
+        }
+
+        &.close-btn {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        &.delete-btn:hover {
+            color: var(--pg-danger);
+            background: rgba(215, 58, 73, 0.1);
+        }
+    }
+}
+
+.pg-expl-item:hover .actions .action-btn {
+    opacity: 1;
+}
+
+.pg-expl-item.dir .action-btn.new {
+    background: none;
+    border: none;
+    color: var(--pg-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: 12px;
+    transition: all 0.1s ease;
+    border-radius: var(--pg-radius);
+
+    &:hover {
+        color: var(--pg-text);
+        background: var(--pg-elev-1);
+    }
+}
+.pg-main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+    flex: 1;
+}
+.pg-tabs-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--pg-border);
+}
+.pg-tabs-host {
+    overflow: auto;
+    flex: 1;
+}
+.pg-tabs {
+    display: flex;
+    gap: 2px;
+}
+.pg-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-bottom: none;
+}
+.pg-tab.active {
+    background: var(--pg-tab-active);
+    border-color: var(--pg-border);
+    border-bottom: 1px solid var(--pg-tab-active);
+}
+.pg-tab.entry .pg-tab__name {
+    position: relative;
+}
+.pg-tab__entry {
+    position: absolute;
+    top: 50%;
+    left: 2px;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    line-height: 1;
+    color: var(--pg-accent);
+    pointer-events: none;
+}
+.pg-tab__entry::before {
+    margin-left: 2px;
+    content: "★";
+}
+.pg-editor-host {
+    flex: 1;
+    min-height: 0;
 }
 
 .pg-tabs-bar {
     display: flex;
     align-items: stretch;
     height: var(--pg-bar-height);
-    min-height: var(--pg-bar-height); /* Prevent compression */
-    flex: 0 0 auto; /* Don't grow or shrink */
+    min-height: var(--pg-bar-height);
+    flex: 0 0 auto;
     background: var(--pg-bg);
     border-bottom: 1px solid var(--pg-border);
     padding: 0;
     margin: 0;
     position: relative;
+    &.entry > .name {
+        position: relative;
+        padding-right: 12px;
+    }
+    &.entry > .name .pg-expl-entry {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--pg-accent);
+    }
     z-index: 1;
 }
 
 .pg-tabs {
-  display: inline-flex;
-  flex: none;
-  white-space: nowrap;
-  max-width: 100%;
+    display: inline-flex;
+    flex: none;
+    white-space: nowrap;
+    max-width: 100%;
 
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
 
-  padding-bottom: 6px;
-  margin-bottom: -6px;
+    padding-bottom: 6px;
+    margin-bottom: -6px;
 
-  scrollbar-width: thin;
-  scrollbar-color: var(--vscode-scrollbarSlider-background) transparent;
+    scrollbar-width: thin;
+    scrollbar-color: var(--vscode-scrollbarSlider-background) transparent;
 
-  &:hover {
-    scrollbar-color: var(--vscode-scrollbarSlider-hoverBackground) transparent;
-  }
+    &:hover {
+        scrollbar-color: var(--vscode-scrollbarSlider-hoverBackground) transparent;
+    }
 
-  &::-webkit-scrollbar {
-    height: 6px;
-    background: transparent;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-    margin-inline: 2px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--vscode-scrollbarSlider-background);
-    border-radius: 6px;
-  }
-  &:hover::-webkit-scrollbar-thumb {
-    background-color: var(--vscode-scrollbarSlider-hoverBackground);
-  }
-  &:active::-webkit-scrollbar-thumb {
-    background-color: var(--vscode-scrollbarSlider-activeBackground);
-  }
-  &::-webkit-scrollbar-corner {
-    background: transparent;
-  }
+    &::-webkit-scrollbar {
+        height: 6px;
+        background: transparent;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+        margin-inline: 2px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--vscode-scrollbarSlider-background);
+        border-radius: 6px;
+    }
+    &:hover::-webkit-scrollbar-thumb {
+        background-color: var(--vscode-scrollbarSlider-hoverBackground);
+    }
+    &:active::-webkit-scrollbar-thumb {
+        background-color: var(--vscode-scrollbarSlider-activeBackground);
+    }
+    &::-webkit-scrollbar-corner {
+        background: transparent;
+    }
 }
 
 .pg-tabs-bar {
@@ -355,7 +843,7 @@
     padding: 4px 0;
     font-size: 13px;
     font-family: var(--pg-font);
-
+    height: initial !important;
     button {
         display: block;
         width: 100%;
@@ -455,13 +943,7 @@
     }
 }
 
-.pg-tab__entry {
-    font-size: 12px;
-    line-height: 1;
-    margin: 0 6px 0 2px;
-    opacity: 0.9;
-    color: var(--pg-accent, #0675fc);
-}
+// (Duplicate earlier refined) keep dark theme inheritance working
 
 .pg-tab .pg-tab__close[disabled] {
     opacity: 0.35;

@@ -50,6 +50,11 @@ export class GlobalState {
     /** Manual tab order */
     public filesOrder: string[] = [];
 
+    public openEditors: string[] = []; // paths that are open in tabs
+    public activeEditorPath: string | undefined; // current active tab
+    public onOpenEditorsChangedObservable: Observable<void> = new Observable<void>();
+    public onActiveEditorChangedObservable: Observable<void> = new Observable<void>();
+
     public onRunRequiredObservable = new Observable<void>();
     public onRunExecutedObservable = new Observable<void>();
     public onSavedObservable = new Observable<void>();

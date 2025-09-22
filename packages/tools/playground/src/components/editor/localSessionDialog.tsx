@@ -1,10 +1,10 @@
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import type { FileChange, RevisionContext, SnippetRevision } from "../tools/localSession";
-import { ListRevisionContexts, LoadFileRevisionsForToken, MaxRevisions, RemoveFileRevisionForToken } from "../tools/localSession";
-import { Utilities } from "../tools/utilities";
-import type { V2Manifest } from "../tools/monaco/run/runner";
-import "../scss/dialogs.scss";
+import type { GlobalState } from "../../globalState";
+import type { FileChange, RevisionContext, SnippetRevision } from "../../tools/localSession";
+import { ListRevisionContexts, LoadFileRevisionsForToken, MaxRevisions, RemoveFileRevisionForToken } from "../../tools/localSession";
+import { Utilities } from "../../tools/utilities";
+import type { V2Manifest } from "../../tools/monaco/run/runner";
+import "../../scss/dialogs.scss";
 
 interface ILocalSessionDialogProps {
     globalState: GlobalState;

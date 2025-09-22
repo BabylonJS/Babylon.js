@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { MonacoComponent } from "./components/monacoComponent";
+import { MonacoComponent } from "./components/editor/monacoComponent";
 import { RenderingComponent } from "./components/rendererComponent";
 import { GlobalState, EditionMode, RuntimeMode } from "./globalState";
 import { FooterComponent } from "./components/footerComponent";
@@ -25,10 +25,19 @@ interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
 }
 
+/**
+ *
+ */
 export class Playground extends React.Component<
     IPlaygroundProps,
     {
+        /**
+         *
+         */
         errorMessage: string;
+        /**
+         *
+         */
         mode: EditionMode;
     }
 > {
@@ -39,8 +48,17 @@ export class Playground extends React.Component<
 
     private _globalState: GlobalState;
 
+    /**
+     *
+     */
     public saveManager: SaveManager;
+    /**
+     *
+     */
     public loadManager: LoadManager;
+    /**
+     *
+     */
     public shortcutManager: ShortcutManager;
 
     public constructor(props: IPlaygroundProps) {

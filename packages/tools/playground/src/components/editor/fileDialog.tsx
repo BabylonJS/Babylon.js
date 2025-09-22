@@ -1,7 +1,7 @@
 import * as React from "react";
-import type { GlobalState } from "../globalState";
-import { Utilities } from "../tools/utilities";
-import "../scss/dialogs.scss";
+import type { GlobalState } from "../../globalState";
+import { Utilities } from "../../tools/utilities";
+import "../../scss/dialogs.scss";
 
 interface IFileDialogProps {
     globalState: GlobalState;

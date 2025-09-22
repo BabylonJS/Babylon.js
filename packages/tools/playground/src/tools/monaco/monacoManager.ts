@@ -152,6 +152,8 @@ export class MonacoManager {
             const first = entry && files[entry] ? entry : Object.keys(files)[0];
             this.setFiles(files, first, entry, imports);
 
+            this._initializeFileState(first);
+
             // Force sync models after all files are loaded to avoid race conditions
             this._tsPipeline.forceSyncModels();
 
@@ -183,6 +185,12 @@ export class MonacoManager {
         this.globalState.getRunnable = this.getRunnableAsync.bind(this);
     }
 
+    private _initializeFileState(entry: string) {
+        this.globalState.openEditors = [entry];
+        this.globalState.activeEditorPath = entry;
+        this.globalState.onOpenEditorsChangedObservable?.notifyObservers();
+        this.globalState.onActiveEditorChangedObservable?.notifyObservers();
+    }
     public setFiles(files: Record<string, string>, activePath: string, entryPath?: string, imports?: Record<string, string>) {
         const defaultEntry = this.globalState.language === "JS" ? "index.js" : "index.ts";
         const entry = entryPath || defaultEntry;
@@ -688,6 +696,7 @@ export { Playground };`;
 
         this.globalState.entryFilePath = entry;
         this.globalState.activeFilePath = entry;
+        this.globalState.openEditors = [entry];
 
         if (!this._files.has(entry)) {
             this._files.addFile(entry, defaultCode, (p, code) => {
@@ -712,6 +721,7 @@ export { Playground };`;
             this.globalState.onFilesOrderChangedObservable?.notifyObservers();
         }
         this._files.setDirty(false);
+        this._initializeFileState(entry);
         this.globalState.onFilesChangedObservable.notifyObservers();
         this.globalState.onManifestChangedObservable.notifyObservers();
         this.globalState.onRunRequiredObservable.notifyObservers();
