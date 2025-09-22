@@ -6,6 +6,7 @@ import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsClearcoat } from "babylonjs-gltf2interface";
 import { registeredGLTFExtensions, registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 import type { KHR_materials_clearcoat_darkening } from "./KHR_materials_clearcoat_darkening";
+import type { KHR_materials_clearcoat_ior } from "./KHR_materials_clearcoat_ior";
 import type { KHR_materials_clearcoat_color } from "./KHR_materials_clearcoat_color";
 import type { KHR_materials_clearcoat_anisotropy } from "./KHR_materials_clearcoat_anisotropy";
 
@@ -72,6 +73,16 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
                 darkeningExtension = darkeningExtension as KHR_materials_clearcoat_darkening;
                 if (darkeningExtension && darkeningExtension.enabled && darkeningExtension.loadMaterialPropertiesAsync) {
                     const promise = darkeningExtension.loadMaterialPropertiesAsync(extensionContext, extension as any, babylonMaterial);
+                    if (promise) {
+                        promises.push(promise);
+                    }
+                }
+            }
+            if (extension.extensions && extension.extensions.KHR_materials_clearcoat_ior) {
+                let iorExtension = await registeredGLTFExtensions.get("KHR_materials_clearcoat_ior")?.factory(this._loader);
+                iorExtension = iorExtension as KHR_materials_clearcoat_ior;
+                if (iorExtension && iorExtension.enabled && iorExtension.loadMaterialPropertiesAsync) {
+                    const promise = iorExtension.loadMaterialPropertiesAsync(extensionContext, extension as any, babylonMaterial);
                     if (promise) {
                         promises.push(promise);
                     }
