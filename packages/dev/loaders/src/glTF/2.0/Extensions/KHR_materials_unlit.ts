@@ -1,6 +1,5 @@
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -68,35 +67,30 @@ export class KHR_materials_unlit implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadUnlitPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
 
         const promises = new Array<Promise<any>>();
-        babylonMaterial.unlit = true;
 
         const properties = material.pbrMetallicRoughness;
         if (properties) {
             if (properties.baseColorFactor) {
-                babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
-                babylonMaterial.alpha = properties.baseColorFactor[3];
-            } else {
-                babylonMaterial.albedoColor = Color3.White();
+                adapter.baseColor = Color3.FromArray(properties.baseColorFactor);
+                adapter.geometryOpacity = properties.baseColorFactor[3];
             }
 
             if (properties.baseColorTexture) {
                 promises.push(
                     this._loader.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Base Color)`;
-                        babylonMaterial.albedoTexture = texture;
+                        adapter.baseColorTexture = texture;
                     })
                 );
             }
         }
-
+        adapter.isUnlit = true;
         if (material.doubleSided) {
-            babylonMaterial.backFaceCulling = false;
-            babylonMaterial.twoSidedLighting = true;
+            adapter.backFaceCulling = false;
+            adapter.twoSidedLighting = true;
         }
 
         this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);

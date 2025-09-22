@@ -27,6 +27,7 @@ import type { Material } from "core/Materials/material";
 import { Observable } from "core/Misc/observable";
 import "../geometryBufferRendererSceneComponent";
 import "../iblCdfGeneratorSceneComponent";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 interface IIblShadowsSettings {
     /**
@@ -1115,7 +1116,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     protected _addShadowSupportToMaterial(material: Material) {
-        if (!(material instanceof PBRBaseMaterial) && !(material instanceof StandardMaterial)) {
+        if (!(material instanceof PBRBaseMaterial) && !(material instanceof StandardMaterial) && !(material instanceof OpenPBRMaterial)) {
             return;
         }
         let plugin = material.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name);

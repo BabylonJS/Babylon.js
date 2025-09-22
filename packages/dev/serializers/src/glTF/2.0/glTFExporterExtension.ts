@@ -67,7 +67,7 @@ export interface IGLTFExporterExtensionV2 extends IGLTFExporterExtension, IDispo
      * @param babylonMaterial BabylonJS material
      * @returns List of textures
      */
-    postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[];
+    postExportMaterialAdditionalTexturesAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]>;
 
     /**
      * Define this method to modify the glTF buffer data before it is finalized and written
