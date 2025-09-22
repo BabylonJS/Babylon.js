@@ -16,13 +16,11 @@ function CreateInspectorGizmoManager(scene: Scene): GizmoManager {
 export function GetInspectorGizmoManager(scene: Nullable<Scene> | undefined, create: true): GizmoManager;
 export function GetInspectorGizmoManager(scene: Nullable<Scene> | undefined, create: false): Nullable<GizmoManager>;
 export function GetInspectorGizmoManager(scene: Nullable<Scene> | undefined, create: boolean): Nullable<GizmoManager> {
-    let gizmoManager = (
-        scene && scene.reservedDataStore && scene.reservedDataStore.gizmoManager
-        ? scene.reservedDataStore.gizmoManager as GizmoManager
-        : null
-    );
+    let gizmoManager = scene && scene.reservedDataStore && scene.reservedDataStore.gizmoManager ? (scene.reservedDataStore.gizmoManager as GizmoManager) : null;
     if (!gizmoManager && create) {
-        if (!scene) { throw new Error('Invalid scene provided to GetInspectorGizmoManager'); }
+        if (!scene) {
+            throw new Error("Invalid scene provided to GetInspectorGizmoManager");
+        }
         gizmoManager = CreateInspectorGizmoManager(scene);
     }
     return gizmoManager;
@@ -30,7 +28,9 @@ export function GetInspectorGizmoManager(scene: Nullable<Scene> | undefined, cre
 
 export function DisposeInspectorGizmoManager(scene: Nullable<Scene> | undefined): void {
     const gizmoManager = GetInspectorGizmoManager(scene, false);
-    if (!gizmoManager) { return; }
+    if (!gizmoManager) {
+        return;
+    }
     gizmoManager.dispose();
     scene!.reservedDataStore.gizmoManager = null;
 }
