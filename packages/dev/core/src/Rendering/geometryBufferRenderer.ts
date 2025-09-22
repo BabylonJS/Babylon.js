@@ -568,8 +568,8 @@ export class GeometryBufferRenderer {
             }
 
             // Normal map texture
-            if ((material.bumpTexture || material.normalTexture) && MaterialFlags.BumpTextureEnabled) {
-                const texture = material.bumpTexture || material.normalTexture;
+            if ((material.bumpTexture || material.normalTexture || material.geometryNormalTexture) && MaterialFlags.BumpTextureEnabled) {
+                const texture = material.bumpTexture || material.normalTexture || material.geometryNormalTexture;
                 defines.push("#define BUMP");
                 defines.push(`#define BUMP_UV${texture.coordinatesIndex + 1}`);
                 needUv = true;
@@ -1110,8 +1110,12 @@ export class GeometryBufferRenderer {
                 }
 
                 // Bump
-                if ((material.bumpTexture || material.normalTexture) && scene.getEngine().getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled) {
-                    const texture = material.bumpTexture || material.normalTexture;
+                if (
+                    (material.bumpTexture || material.normalTexture || material.geometryNormalTexture) &&
+                    scene.getEngine().getCaps().standardDerivatives &&
+                    MaterialFlags.BumpTextureEnabled
+                ) {
+                    const texture = material.bumpTexture || material.normalTexture || material.geometryNormalTexture;
                     effect.setFloat3("vBumpInfos", texture.coordinatesIndex, 1.0 / texture.level, material.parallaxScaleBias);
                     effect.setMatrix("bumpMatrix", texture.getTextureMatrix());
                     effect.setTexture("bumpSampler", texture);
