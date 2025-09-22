@@ -32,7 +32,7 @@ export const AtmospherePropertiesServiceDefinition: ServiceDefinition<[], [IProp
                     component: ({ context }) => <GeneralAtmosphereProperties entity={context} />,
                 },
                 {
-                    section: "Scattering And Absorption",
+                    section: "Scattering and Absorption",
                     component: ({ context }) => <ScatteringAndAbsorptionProperties entity={context} />,
                 },
                 {
