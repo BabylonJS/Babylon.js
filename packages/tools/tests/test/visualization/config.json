@@ -2652,6 +2652,10 @@
             "playgroundId": "#ATL1CS#16"
         },
         {
+            "title": "FrameGraph nrge clustered lights",
+            "playgroundId": "#1QCA2M#8"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2

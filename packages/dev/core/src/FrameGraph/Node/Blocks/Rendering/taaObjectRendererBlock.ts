@@ -32,36 +32,26 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
         this._frameGraphTask = new FrameGraphTAAObjectRendererTask(this.name, frameGraph, scene, { doNotChangeAspectRatio });
     }
 
-    /** True (default) to not change the aspect ratio of the scene in the RTT */
-    @editableInPropertyPage("Do not change aspect ratio", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get doNotChangeAspectRatio() {
-        return this._frameGraphTask.objectRenderer.options.doNotChangeAspectRatio;
+    protected override _createFrameGraphObject(): void {
+        this._frameGraphTask = new FrameGraphTAAObjectRendererTask(this.name, this._frameGraph, this._scene, {
+            doNotChangeAspectRatio: this._additionalConstructionParameters![0] as boolean,
+        });
     }
 
-    public set doNotChangeAspectRatio(value: boolean) {
-        const disabled = this._frameGraphTask.disabled;
-        const depthTest = this.depthTest;
-        const depthWrite = this.depthWrite;
-        const disableShadows = this.disableShadows;
-        const renderInLinearSpace = this.renderInLinearSpace;
-        const renderParticles = this.renderParticles;
-        const renderSprites = this.renderSprites;
-        const forceLayerMaskCheck = this.forceLayerMaskCheck;
-        const enableBoundingBoxRendering = this.enableBoundingBoxRendering;
+    protected override _saveState(state: { [key: string]: any }) {
+        super._saveState(state);
+        state.samples = this.samples;
+        state.factor = this.factor;
+        state.disableOnCameraMove = this.disableOnCameraMove;
+        state.disableTAA = this.disableTAA;
+    }
 
-        this._frameGraphTask.dispose();
-        this._frameGraphTask = new FrameGraphTAAObjectRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
-        this._additionalConstructionParameters = [value];
-
-        this.depthTest = depthTest;
-        this.depthWrite = depthWrite;
-        this.disableShadows = disableShadows;
-        this.renderInLinearSpace = renderInLinearSpace;
-        this.renderParticles = renderParticles;
-        this.renderSprites = renderSprites;
-        this.forceLayerMaskCheck = forceLayerMaskCheck;
-        this.enableBoundingBoxRendering = enableBoundingBoxRendering;
-        this._frameGraphTask.disabled = disabled;
+    protected override _restoreState(state: { [key: string]: any }) {
+        super._restoreState(state);
+        this.samples = state.samples;
+        this.factor = state.factor;
+        this.disableOnCameraMove = state.disableOnCameraMove;
+        this.disableTAA = state.disableTAA;
     }
 
     /** Number of accumulated samples */
@@ -114,7 +104,6 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
-        codes.push(`${this._codeVariableName}.doNotChangeAspectRatio = ${this.doNotChangeAspectRatio};`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
         codes.push(`${this._codeVariableName}.factor = ${this.factor};`);
         codes.push(`${this._codeVariableName}.disableOnCameraMove = ${this.disableOnCameraMove};`);
@@ -124,7 +113,6 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
 
     public override serialize(): any {
         const serializationObject = super.serialize();
-        serializationObject.doNotChangeAspectRatio = this.doNotChangeAspectRatio;
         serializationObject.samples = this.samples;
         serializationObject.factor = this.factor;
         serializationObject.disableOnCameraMove = this.disableOnCameraMove;
@@ -134,7 +122,6 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
-        this.doNotChangeAspectRatio = serializationObject.doNotChangeAspectRatio;
         this.samples = serializationObject.samples;
         this.factor = serializationObject.factor;
         this.disableOnCameraMove = serializationObject.disableOnCameraMove;
