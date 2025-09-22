@@ -1325,6 +1325,7 @@ export class GaussianSplattingMesh extends Mesh {
             (uBuffer[32 * index + 28 + 3] - 127.5) / 127.5,
             -(uBuffer[32 * index + 28 + 0] - 127.5) / 127.5
         );
+        quaternion.normalize();
         quaternion.toRotationMatrix(matrixRotation);
 
         Matrix.ScalingToRef(fBuffer[8 * index + 3 + 0] * 2, fBuffer[8 * index + 3 + 1] * 2, fBuffer[8 * index + 3 + 2] * 2, matrixScale);
