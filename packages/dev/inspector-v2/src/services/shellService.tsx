@@ -93,6 +93,12 @@ export type SidePane = Readonly<{
     horizontalLocation: "left" | "right";
 
     /**
+     * The vertical location of the side pane.
+     * Can be either "top" or "bottom".
+     */
+    verticalLocation: "top" | "bottom";
+
+    /**
      * An optional title for the side pane, displayed as a standardized header at the top of the pane.
      */
     title?: string;
@@ -202,15 +208,16 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "row",
         flex: "0 0 auto",
-        backgroundColor: tokens.colorNeutralBackground1,
+        backgroundColor: tokens.colorNeutralBackground2,
     },
     bar: {
         display: "flex",
         flex: "1",
         height: "32px",
         overflow: "hidden",
-        padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
+        padding: `0 ${tokens.spacingHorizontalSNudge}`,
         border: `1px solid ${tokens.colorNeutralStroke2}`,
+        backgroundColor: tokens.colorNeutralBackground1,
     },
     barTop: {
         borderTopWidth: 0,
@@ -267,7 +274,7 @@ const useStyles = makeStyles({
     },
     paneContent: {
         display: "flex",
-        flexGrow: 1,
+        flex: 1,
         flexDirection: "column",
         paddingTop: tokens.spacingVerticalS,
         overflow: "hidden",
@@ -424,14 +431,16 @@ function usePane(
     alignment: "left" | "right",
     defaultWidth: number,
     minWidth: number,
-    paneComponents: SidePane[],
+    topPaneComponents: SidePane[],
+    bottomPaneComponents: SidePane[],
     toolbarMode: ToolbarMode,
     topBarComponents: ToolbarItem[],
     bottomBarComponents: ToolbarItem[]
 ) {
     const classes = useStyles();
 
-    const [selectedTab, setSelectedTab] = useState<SidePane | undefined>();
+    const [topSelectedTab, setTopSelectedTab] = useState<SidePane>();
+    const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePane>();
     const [collapsed, setCollapsed] = useState(false);
 
     const onExpandCollapseClick = useCallback(() => {
@@ -444,12 +453,20 @@ function usePane(
     const [resizing, setResizing] = useState(false);
 
     useEffect(() => {
-        if ((selectedTab && !paneComponents.includes(selectedTab)) || (!selectedTab && paneComponents.length > 0)) {
-            setSelectedTab(paneComponents[0]);
-        } else if (selectedTab && paneComponents.length === 0) {
-            setSelectedTab(undefined);
+        if ((topSelectedTab && !topPaneComponents.includes(topSelectedTab)) || (!topSelectedTab && topPaneComponents.length > 0)) {
+            setTopSelectedTab(topPaneComponents[0]);
+        } else if (topSelectedTab && topPaneComponents.length === 0) {
+            setTopSelectedTab(undefined);
         }
-    }, [selectedTab, paneComponents]);
+    }, [topSelectedTab, topPaneComponents]);
+
+    useEffect(() => {
+        if ((bottomSelectedTab && !bottomPaneComponents.includes(bottomSelectedTab)) || (!bottomSelectedTab && bottomPaneComponents.length > 0)) {
+            setBottomSelectedTab(bottomPaneComponents[0]);
+        } else if (bottomSelectedTab && bottomPaneComponents.length === 0) {
+            setBottomSelectedTab(undefined);
+        }
+    }, [bottomSelectedTab, bottomPaneComponents]);
 
     const expandCollapseIcon = useMemo(() => {
         if (alignment === "left") {
@@ -497,83 +514,112 @@ function usePane(
         [resizing]
     );
 
-    // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
-    const paneTabList = useMemo(() => {
-        return (
-            <>
-                {paneComponents.length > 0 && (
-                    <div className={`${classes.paneTabListDiv} ${alignment === "left" || toolbarMode === "compact" ? classes.paneTabListDivLeft : classes.paneTabListDivRight}`}>
-                        {/* Only render the tab list if there is more than tab. It's kind of pointless to show a tab list with just one tab. */}
-                        {paneComponents.length > 1 && (
-                            <>
-                                <TabList
-                                    selectedValue={selectedTab?.key ?? ""}
-                                    onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
-                                        const tab = paneComponents.find((entry) => entry.key === data.value);
-                                        setSelectedTab(tab);
-                                        setCollapsed(false);
-                                    }}
-                                >
-                                    {paneComponents.map((entry) => (
-                                        <SidePaneTab
-                                            key={entry.key}
-                                            alignment={alignment}
-                                            id={entry.key}
-                                            title={entry.title}
-                                            icon={entry.icon}
-                                            suppressTeachingMoment={entry.suppressTeachingMoment}
-                                        />
-                                    ))}
-                                </TabList>
-                            </>
-                        )}
+    const createPaneTabList = useCallback(
+        (paneComponents: SidePane[], toolbarMode: "full" | "compact", selectedTab: SidePane | undefined, setSelectedTab: (tab: SidePane | undefined) => void) => {
+            return (
+                <>
+                    {paneComponents.length > 0 && (
+                        <div
+                            className={`${classes.paneTabListDiv} ${alignment === "left" || toolbarMode === "compact" ? classes.paneTabListDivLeft : classes.paneTabListDivRight}`}
+                        >
+                            {/* Only render the tab list if there is more than tab. It's kind of pointless to show a tab list with just one tab. */}
+                            {paneComponents.length > 1 && (
+                                <>
+                                    <TabList
+                                        selectedValue={selectedTab?.key ?? ""}
+                                        onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
+                                            const tab = paneComponents.find((entry) => entry.key === data.value);
+                                            setSelectedTab(tab);
+                                            setCollapsed(false);
+                                        }}
+                                    >
+                                        {paneComponents.map((entry) => (
+                                            <SidePaneTab
+                                                key={entry.key}
+                                                alignment={alignment}
+                                                id={entry.key}
+                                                title={entry.title}
+                                                icon={entry.icon}
+                                                suppressTeachingMoment={entry.suppressTeachingMoment}
+                                            />
+                                        ))}
+                                    </TabList>
+                                </>
+                            )}
 
-                        {/* When the toolbar mode is "full", we add an extra button that allows the side panes to be collapsed. */}
-                        {toolbarMode === "full" && (
-                            <>
-                                <Divider vertical inset />
-                                <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
-                                    <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
-                                </Tooltip>
-                            </>
-                        )}
-                    </div>
-                )}
-            </>
-        );
-    }, [paneComponents, selectedTab, collapsed]);
+                            {/* When the toolbar mode is "full", we add an extra button that allows the side panes to be collapsed. */}
+                            {toolbarMode === "full" && (
+                                <>
+                                    <Divider vertical inset />
+                                    <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
+                                        <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
+                                    </Tooltip>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </>
+            );
+        },
+        [alignment, collapsed]
+    );
+
+    // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
+    const topPaneTabList = useMemo(() => createPaneTabList(topPaneComponents, toolbarMode, topSelectedTab, setTopSelectedTab), [topPaneComponents, toolbarMode, topSelectedTab]);
+    const bottomPaneTabList = useMemo(() => createPaneTabList(bottomPaneComponents, "compact", bottomSelectedTab, setBottomSelectedTab), [bottomPaneComponents, bottomSelectedTab]);
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
     const pane = useMemo(() => {
         return (
             <>
-                {paneComponents.length > 0 && (
+                {(topPaneComponents.length > 0 || bottomPaneComponents.length > 0) && (
                     <div className={`${classes.pane} ${alignment === "left" ? classes.paneLeft : classes.paneRight}`}>
                         <Collapse orientation="horizontal" visible={!collapsed}>
-                            <div className={classes.paneContainer}>
+                            <div className={classes.paneContainer} style={{ width: `${width}px` }}>
                                 {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
-                                {toolbarMode === "compact" && (paneComponents.length > 1 || topBarComponents.length > 0) && (
+                                {toolbarMode === "compact" && (topPaneComponents.length > 1 || topBarComponents.length > 0) && (
                                     <>
                                         <div className={classes.barDiv}>
                                             {/* The tablist gets merged in with the toolbar. */}
-                                            {paneTabList}
+                                            {topPaneTabList}
                                             <Toolbar location="top" components={topBarComponents} />
                                         </div>
                                     </>
                                 )}
 
-                                {/* Render the actual pane content (with resizable width). */}
-                                <div className={classes.paneContent} style={{ width: `${width}px` }}>
-                                    {selectedTab?.title ? (
+                                {/* Render the top pane content. */}
+                                <div className={classes.paneContent}>
+                                    {topSelectedTab?.title ? (
                                         <>
-                                            <Title3 className={classes.paneHeader}>{selectedTab.title}</Title3>
+                                            <Title3 className={classes.paneHeader}>{topSelectedTab.title}</Title3>
                                             <Divider inset className={classes.headerDivider} appearance="brand" />
                                         </>
                                     ) : null}
-                                    {selectedTab?.content && <selectedTab.content />}
+                                    {topSelectedTab?.content && <topSelectedTab.content />}
                                 </div>
 
-                                {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the top of the pane. */}
+                                {/* If we have both top and bottom panes, show a divider. */}
+                                {topPaneComponents.length > 0 && bottomPaneComponents.length > 0 && <Divider className={classes.headerDivider} />}
+
+                                {/* Render the bottom pane tablist. */}
+                                {bottomPaneComponents.length > 1 && (
+                                    <>
+                                        <div className={classes.barDiv}>{bottomPaneTabList}</div>
+                                    </>
+                                )}
+
+                                {/* Render the bottom pane content. */}
+                                <div className={classes.paneContent}>
+                                    {bottomSelectedTab?.title ? (
+                                        <>
+                                            <Title3 className={classes.paneHeader}>{bottomSelectedTab.title}</Title3>
+                                            <Divider inset className={classes.headerDivider} appearance="brand" />
+                                        </>
+                                    ) : null}
+                                    {bottomSelectedTab?.content && <bottomSelectedTab.content />}
+                                </div>
+
+                                {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the bottom of the pane. */}
                                 {toolbarMode === "compact" && bottomBarComponents.length > 0 && (
                                     <>
                                         <div className={classes.barDiv}>
@@ -593,9 +639,9 @@ function usePane(
                 )}
             </>
         );
-    }, [paneComponents, selectedTab, collapsed, width, resizing]);
+    }, [topPaneComponents, topSelectedTab, bottomPaneComponents, bottomSelectedTab, collapsed, width, resizing]);
 
-    return [paneTabList, pane];
+    return [topPaneTabList, pane];
 }
 
 export function MakeShellServiceDefinition({
@@ -611,8 +657,10 @@ export function MakeShellServiceDefinition({
         factory: () => {
             const topBarComponentCollection = new ObservableCollection<ToolbarItem>();
             const bottomBarComponentCollection = new ObservableCollection<ToolbarItem>();
-            const leftPaneComponentCollection = new ObservableCollection<SidePane>();
-            const rightPaneComponentCollection = new ObservableCollection<SidePane>();
+            const topLeftPaneComponentCollection = new ObservableCollection<SidePane>();
+            const topRightPaneComponentCollection = new ObservableCollection<SidePane>();
+            const bottomLeftPaneComponentCollection = new ObservableCollection<SidePane>();
+            const bottomRightPaneComponentCollection = new ObservableCollection<SidePane>();
             const contentComponentCollection = new ObservableCollection<CentralContent>();
 
             const rootComponent: FunctionComponent = () => {
@@ -627,25 +675,30 @@ export function MakeShellServiceDefinition({
                 const bottomBarLeftComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.horizontalLocation === "left"), [bottomBarComponents]);
                 const bottomBarRightComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.horizontalLocation === "right"), [bottomBarComponents]);
 
-                const leftPaneComponents = useOrderedObservableCollection(leftPaneComponentCollection);
-                const rightPaneComponents = useOrderedObservableCollection(rightPaneComponentCollection);
+                const topLeftPaneComponents = useOrderedObservableCollection(topLeftPaneComponentCollection);
+                const topRightPaneComponents = useOrderedObservableCollection(topRightPaneComponentCollection);
+                const bottomLeftPaneComponents = useOrderedObservableCollection(bottomLeftPaneComponentCollection);
+                const bottomRightPaneComponents = useOrderedObservableCollection(bottomRightPaneComponentCollection);
+
                 const contentComponents = useOrderedObservableCollection(contentComponentCollection);
 
-                const [leftPaneTabList, leftPane] = usePane(
+                const [topLeftPaneTabList, topLeftPane] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
-                    leftPaneComponents,
+                    topLeftPaneComponents,
+                    bottomLeftPaneComponents,
                     toolbarMode,
                     topBarLeftComponents,
                     bottomBarLeftComponents
                 );
 
-                const [rightPaneTabList, rightPane] = usePane(
+                const [topRightPaneTabList, topRightPane] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
-                    rightPaneComponents,
+                    topRightPaneComponents,
+                    bottomRightPaneComponents,
                     toolbarMode,
                     topBarRightComponents,
                     bottomBarRightComponents
@@ -657,9 +710,9 @@ export function MakeShellServiceDefinition({
                         {toolbarMode === "full" && (
                             <>
                                 <div className={classes.barDiv}>
-                                    {leftPaneTabList}
+                                    {topLeftPaneTabList}
                                     <Toolbar location="top" components={topBarComponents} />
-                                    {rightPaneTabList}
+                                    {topRightPaneTabList}
                                 </div>
                             </>
                         )}
@@ -667,7 +720,7 @@ export function MakeShellServiceDefinition({
                         {/* This renders the side panes and the main/central content. */}
                         <div className={classes.verticallyCentralContent}>
                             {/* Render the left pane container. */}
-                            {leftPane}
+                            {topLeftPane}
 
                             {/* Render the main/central content. */}
                             <div className={classes.centralContent}>
@@ -677,7 +730,7 @@ export function MakeShellServiceDefinition({
                             </div>
 
                             {/* Render the right pane container. */}
-                            {rightPane}
+                            {topRightPane}
                         </div>
 
                         {/* Only render the bottom toolbar if the toolbar mode is "full". Otherwise it will be embedded at the bottom of the side panes. */}
@@ -711,9 +764,17 @@ export function MakeShellServiceDefinition({
                     }
 
                     if (entry.horizontalLocation === "left") {
-                        return leftPaneComponentCollection.add(entry);
+                        if (entry.verticalLocation === "top") {
+                            return topLeftPaneComponentCollection.add(entry);
+                        } else {
+                            return bottomLeftPaneComponentCollection.add(entry);
+                        }
                     } else {
-                        return rightPaneComponentCollection.add(entry);
+                        if (entry.verticalLocation === "top") {
+                            return topRightPaneComponentCollection.add(entry);
+                        } else {
+                            return bottomRightPaneComponentCollection.add(entry);
+                        }
                     }
                 },
                 addCentralContent: (entry) => contentComponentCollection.add(entry),
