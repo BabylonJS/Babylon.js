@@ -83,9 +83,11 @@ export class DiffuseSkyIrradianceLut {
         const engine = scene.getEngine();
 
         const name = "atmo-diffuseSkyIrradiance";
+        const caps = engine.getCaps();
+        const textureType = caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_BYTE;
         const renderTarget = (this._renderTarget = new RenderTargetTexture(name, { width: LutWidthPx, height: LutHeightPx }, scene, {
             generateMipMaps: false,
-            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            type: textureType,
             samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             generateDepthBuffer: false,
             gammaSpace: false,
@@ -93,7 +95,7 @@ export class DiffuseSkyIrradianceLut {
         renderTarget.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         renderTarget.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         renderTarget.anisotropicFilteringLevel = 1;
-        renderTarget.skipInitialClear = true;
+        //renderTarget.skipInitialClear = true;
 
         const useUbo = atmosphere.uniformBuffer.useUbo;
 

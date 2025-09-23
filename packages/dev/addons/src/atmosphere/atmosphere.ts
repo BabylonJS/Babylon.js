@@ -40,6 +40,8 @@ import "./Shaders/ShadersInclude/depthFunctions";
 
 const MaterialPlugin = "atmo-pbr";
 
+let UniqueId = 0;
+
 /**
  * Renders a physically based atmosphere.
  * Use {@link IsSupported} to check if the atmosphere is supported before creating an instance.
@@ -113,6 +115,11 @@ export class Atmosphere implements IDisposable {
     public static IsSupported(engine: AbstractEngine): boolean {
         return !engine._badOS && !engine.isWebGPU && engine.version >= 2;
     }
+
+    /**
+     * The unique ID of this atmosphere instance.
+     */
+    public readonly uniqueId = UniqueId++;
 
     /**
      * Called after the atmosphere variables have been updated for the specified camera.
@@ -637,8 +644,6 @@ export class Atmosphere implements IDisposable {
         return this._cameraAtmosphereVariables;
     }
 
-    public readonly uniqueId: number;
-
     /**
      * Constructs the {@link Atmosphere}.
      * @param name - The name of this instance.
@@ -653,7 +658,6 @@ export class Atmosphere implements IDisposable {
         options?: IAtmosphereOptions
     ) {
         const engine = (this._engine = scene.getEngine());
-        this.uniqueId = scene.getUniqueId();
 
         if (engine.isWebGPU) {
             throw new Error("Atmosphere is not supported on WebGPU.");
@@ -1422,13 +1426,15 @@ const CreateRenderTargetTexture = (
     scene: Scene,
     options?: RenderTargetTextureOptions
 ): RenderTargetTexture => {
+    const caps = scene.getEngine().getCaps();
+    const textureType = caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_BYTE;
     const rtOptions: RenderTargetTextureOptions = {
         generateMipMaps: false,
         generateDepthBuffer: false,
         generateStencilBuffer: false,
         gammaSpace: false,
         samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-        type: Constants.TEXTURETYPE_HALF_FLOAT,
+        type: textureType,
         format: Constants.TEXTUREFORMAT_RGBA,
         ...options,
     };
@@ -1437,7 +1443,7 @@ const CreateRenderTargetTexture = (
     renderTarget.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     renderTarget.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     renderTarget.anisotropicFilteringLevel = 1;
-    renderTarget.skipInitialClear = true;
+    //renderTarget.skipInitialClear = true;
     return renderTarget;
 };
 
