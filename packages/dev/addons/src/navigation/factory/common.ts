@@ -40,7 +40,7 @@ let _InitPromise: Nullable<Promise<{ core: any; generators: any }>> = null;
  * @param options defines the options to use to initialize the library
  */
 export async function InitRecast(
-    version = "0.42.0",
+    version = "0.42.1",
     options?: {
         instance: RecastInjection;
     }
