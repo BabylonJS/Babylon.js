@@ -2787,6 +2787,14 @@
             "referenceImage": "sponza-clustered-lighting-viewports.png"
         },
         {
+            "title": "Sponza Clustered Lighting (node material std)",
+            "playgroundId": "#QY98Z3#16"
+        },
+        {
+            "title": "Sponza Clustered Lighting (node material pbr)",
+            "playgroundId": "#QY98Z3#17"
+        },
+        {
             "title": "Atmosphere Day",
             "playgroundId": "#VO1Z0C#7",
             "referenceImage": "atmosphere-day.png",

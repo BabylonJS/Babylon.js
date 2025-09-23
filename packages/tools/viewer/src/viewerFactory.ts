@@ -25,18 +25,14 @@ const DefaultCanvasViewerOptions = {
  * @returns The default engine to use.
  */
 export function GetDefaultEngine(): NonNullable<CanvasViewerOptions["engine"]> {
-    // TODO: There are some difficult to repro timing issues with WebGPU + snapshot rendering.
-    //       We need to do deeper diagnosis to understand the issues and make this more reliable.
-    //       For now, we will default to WebGL.
-
-    // // First check for WebGPU support.
-    // if ("gpu" in navigator) {
-    //     // For now, only use WebGPU with chromium-based browsers.
-    //     // WebGPU can be enabled in other browsers once they are fully functional and the performance is at least as good as WebGL.
-    //     if ("chrome" in window) {
-    //         return "WebGPU";
-    //     }
-    // }
+    // First check for WebGPU support.
+    if ("gpu" in navigator) {
+        // For now, only use WebGPU with chromium-based browsers.
+        // WebGPU can be enabled in other browsers once they are fully functional and the performance is at least as good as WebGL.
+        if ("chrome" in window) {
+            return "WebGPU";
+        }
+    }
 
     return "WebGL";
 }
