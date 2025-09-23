@@ -204,6 +204,11 @@ const useStyles = makeStyles({
         flex: "0 0 auto",
         backgroundColor: tokens.colorNeutralBackground1,
     },
+    barContainer: {
+        display: "flex",
+        flexDirection: "column",
+        flex: "1",
+    },
     bar: {
         display: "flex",
         flex: "1",
@@ -230,6 +235,7 @@ const useStyles = makeStyles({
         display: "flex",
     },
     paneTabListDiv: {
+        backgroundColor: tokens.colorNeutralBackground2,
         flex: "0 0 auto",
         display: "flex",
         columnGap: tokens.spacingHorizontalSNudge,
@@ -344,33 +350,37 @@ const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: Toolb
     return (
         <>
             {components.length > 0 && (
-                <div className={classes.bar}>
-                    <div className={classes.barLeft}>
-                        {leftComponents.map((entry) => (
-                            <ToolbarItem
-                                key={entry.key}
-                                location={location}
-                                alignment={entry.horizontalLocation}
-                                id={entry.key}
-                                component={entry.component}
-                                displayName={entry.displayName}
-                                suppressTeachingMoment={entry.suppressTeachingMoment}
-                            />
-                        ))}
+                <div className={classes.barContainer}>
+                    {location === "bottom" && <Divider className={classes.barDivider} />}
+                    <div className={classes.bar}>
+                        <div className={classes.barLeft}>
+                            {leftComponents.map((entry) => (
+                                <ToolbarItem
+                                    key={entry.key}
+                                    location={location}
+                                    alignment={entry.horizontalLocation}
+                                    id={entry.key}
+                                    component={entry.component}
+                                    displayName={entry.displayName}
+                                    suppressTeachingMoment={entry.suppressTeachingMoment}
+                                />
+                            ))}
+                        </div>
+                        <div className={classes.barRight}>
+                            {rightComponents.map((entry) => (
+                                <ToolbarItem
+                                    key={entry.key}
+                                    location={location}
+                                    alignment={entry.horizontalLocation}
+                                    id={entry.key}
+                                    component={entry.component}
+                                    displayName={entry.displayName}
+                                    suppressTeachingMoment={entry.suppressTeachingMoment}
+                                />
+                            ))}
+                        </div>
                     </div>
-                    <div className={classes.barRight}>
-                        {rightComponents.map((entry) => (
-                            <ToolbarItem
-                                key={entry.key}
-                                location={location}
-                                alignment={entry.horizontalLocation}
-                                id={entry.key}
-                                component={entry.component}
-                                displayName={entry.displayName}
-                                suppressTeachingMoment={entry.suppressTeachingMoment}
-                            />
-                        ))}
-                    </div>
+                    {location === "top" && <Divider className={classes.barDivider} />}
                 </div>
             )}
         </>
@@ -502,7 +512,7 @@ function usePane(
                         {/* Only render the tab list if there is more than tab. It's kind of pointless to show a tab list with just one tab. */}
                         {paneComponents.length > 1 && (
                             <>
-                                <Divider vertical inset />
+                                <Divider vertical />
                                 <TabList
                                     selectedValue={selectedTab?.key ?? ""}
                                     onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
@@ -553,7 +563,7 @@ function usePane(
                                             {paneTabList}
                                             <Toolbar location="top" components={topBarComponents} />
                                         </div>
-                                        <Divider className={classes.barDivider} />
+                                        {/* <Divider className={classes.barDivider} /> */}
                                     </>
                                 )}
 
@@ -571,7 +581,7 @@ function usePane(
                                 {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the top of the pane. */}
                                 {toolbarMode === "compact" && bottomBarComponents.length > 0 && (
                                     <>
-                                        <Divider className={classes.barDivider} />
+                                        {/* <Divider className={classes.barDivider} /> */}
                                         <div className={classes.barDiv}>
                                             <Toolbar location="bottom" components={bottomBarComponents} />
                                         </div>
@@ -657,7 +667,7 @@ export function MakeShellServiceDefinition({
                                     <Toolbar location="top" components={topBarComponents} />
                                     {rightPaneTabList}
                                 </div>
-                                <Divider className={classes.barDivider} />
+                                {/* <Divider className={classes.barDivider} /> */}
                             </>
                         )}
 
@@ -680,7 +690,7 @@ export function MakeShellServiceDefinition({
                         {/* Only render the bottom toolbar if the toolbar mode is "full". Otherwise it will be embedded at the bottom of the side panes. */}
                         {toolbarMode === "full" && (
                             <>
-                                <Divider className={classes.barDivider} />
+                                {/* <Divider className={classes.barDivider} /> */}
                                 <div className={classes.barDiv}>
                                     <Toolbar location="bottom" components={bottomBarComponents} />
                                 </div>
