@@ -1426,8 +1426,8 @@ const CreateRenderTargetTexture = (
     scene: Scene,
     options?: RenderTargetTextureOptions
 ): RenderTargetTexture => {
-    const caps = scene.getEngine().getCaps();
-    const textureType = caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_BYTE;
+    //const caps = scene.getEngine().getCaps();
+    const textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE; // caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE;
     const rtOptions: RenderTargetTextureOptions = {
         generateMipMaps: false,
         generateDepthBuffer: false,

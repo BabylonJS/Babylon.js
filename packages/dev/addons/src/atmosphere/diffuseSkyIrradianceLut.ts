@@ -83,8 +83,8 @@ export class DiffuseSkyIrradianceLut {
         const engine = scene.getEngine();
 
         const name = "atmo-diffuseSkyIrradiance";
-        const caps = engine.getCaps();
-        const textureType = caps.textureHalfFloatRender ? Constants.TEXTURETYPE_HALF_FLOAT : caps.textureFloatRender ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_BYTE;
+        //const caps = engine.getCaps();
+        const textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         const renderTarget = (this._renderTarget = new RenderTargetTexture(name, { width: LutWidthPx, height: LutHeightPx }, scene, {
             generateMipMaps: false,
             type: textureType,
