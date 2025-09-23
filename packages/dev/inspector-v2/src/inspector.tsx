@@ -55,6 +55,8 @@ import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
+import { AtmospherePropertiesServiceDefinition } from "./services/panes/properties/atmospherePropertiesService";
+import { AtmosphereExplorerServiceDefinition } from "./services/panes/scene/atmosphereExplorerService";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
@@ -210,6 +212,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             AnimationGroupExplorerServiceDefinition,
             GuiExplorerServiceDefinition,
             FrameGraphExplorerServiceDefinition,
+            AtmosphereExplorerServiceDefinition,
 
             // Properties pane tab and related services.
             ScenePropertiesServiceDefinition,
@@ -232,6 +235,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             FrameGraphPropertiesServiceDefinition,
             AnimationGroupPropertiesServiceDefinition,
             MetadataPropertiesServiceDefinition,
+            AtmospherePropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,

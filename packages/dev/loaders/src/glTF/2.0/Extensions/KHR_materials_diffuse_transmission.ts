@@ -1,6 +1,5 @@
 /* eslint-disable github/no-then */
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -77,57 +76,28 @@ export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension 
 
     // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/promise-function-async
     private _loadTranslucentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsDiffuseTransmission): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
-        const pbrMaterial = babylonMaterial;
-
-        // Enables "translucency" texture which represents diffusely-transmitted light.
-        pbrMaterial.subSurface.isTranslucencyEnabled = true;
-
-        // Since this extension models thin-surface transmission only, we must make the
-        // internal IOR == 1.0 and set the thickness to 0.
-        pbrMaterial.subSurface.volumeIndexOfRefraction = 1.0;
-        pbrMaterial.subSurface.minimumThickness = 0.0;
-        pbrMaterial.subSurface.maximumThickness = 0.0;
-
-        // Tint color will be used for transmission.
-        pbrMaterial.subSurface.useAlbedoToTintTranslucency = false;
-
-        if (extension.diffuseTransmissionFactor !== undefined) {
-            pbrMaterial.subSurface.translucencyIntensity = extension.diffuseTransmissionFactor;
-        } else {
-            pbrMaterial.subSurface.translucencyIntensity = 0.0;
-            pbrMaterial.subSurface.isTranslucencyEnabled = false;
-            return Promise.resolve();
-        }
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+        adapter.configureSubsurface();
+        adapter.subsurfaceWeight = extension.diffuseTransmissionFactor ?? 0;
+        adapter.subsurfaceColor = extension.diffuseTransmissionColorFactor !== undefined ? Color3.FromArray(extension.diffuseTransmissionColorFactor) : Color3.White();
 
         const promises = new Array<Promise<any>>();
-
-        pbrMaterial.subSurface.useGltfStyleTextures = true;
 
         if (extension.diffuseTransmissionTexture) {
             (extension.diffuseTransmissionTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionTexture`, extension.diffuseTransmissionTexture).then((texture: BaseTexture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse Transmission)`;
-                    pbrMaterial.subSurface.translucencyIntensityTexture = texture;
+                    adapter.subsurfaceWeightTexture = texture;
                 })
             );
-        }
-
-        if (extension.diffuseTransmissionColorFactor !== undefined) {
-            pbrMaterial.subSurface.translucencyColor = Color3.FromArray(extension.diffuseTransmissionColorFactor);
-        } else {
-            pbrMaterial.subSurface.translucencyColor = Color3.White();
         }
 
         if (extension.diffuseTransmissionColorTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionColorTexture`, extension.diffuseTransmissionColorTexture).then((texture: BaseTexture) => {
                     texture.name = `${babylonMaterial.name} (Diffuse Transmission Color)`;
-                    pbrMaterial.subSurface.translucencyColorTexture = texture;
+                    adapter.subsurfaceColorTexture = texture;
                 })
             );
         }

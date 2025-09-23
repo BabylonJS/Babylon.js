@@ -13,6 +13,7 @@ import type {
     FrameGraphRenderPass,
     AbstractEngine,
     BoundingBoxRenderer,
+    ShadowLight,
 } from "core/index";
 import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphTask } from "../../frameGraphTask";
@@ -396,6 +397,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._onBeforeRenderObservable = this._renderer.onBeforeRenderObservable.add(() => {
             for (let i = 0; i < this._scene.lights.length; i++) {
                 const light = this._scene.lights[i];
+                if (!(light as ShadowLight).setShadowProjectionMatrix) {
+                    continue; // Ignore lights that cannot cast shadows
+                }
                 shadowEnabled.set(light, light.shadowEnabled);
                 light.shadowEnabled = !this.disableShadows && lightsForShadow.has(light);
             }
@@ -405,6 +409,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         this._onAfterRenderObservable = this._renderer.onAfterRenderObservable.add(() => {
             for (let i = 0; i < this._scene.lights.length; i++) {
                 const light = this._scene.lights[i];
+                if (!(light as ShadowLight).setShadowProjectionMatrix) {
+                    continue; // Ignore lights that cannot cast shadows
+                }
                 light.shadowEnabled = shadowEnabled.get(light)!;
             }
         });

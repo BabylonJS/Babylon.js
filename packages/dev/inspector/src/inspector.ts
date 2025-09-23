@@ -19,6 +19,7 @@ import type { IPopupComponentProps } from "./components/popupComponent";
 import { PopupComponent } from "./components/popupComponent";
 import { CopyStyles } from "shared-ui-components/styleHelper";
 import { CreatePopup } from "shared-ui-components/popupHelper";
+import { DisposeInspectorGizmoManager } from "./inspectorGizmoManager";
 
 interface IInternalInspectorOptions extends IInspectorOptions {
     popup: boolean;
@@ -538,10 +539,7 @@ export class Inspector {
                 this._GlobalState.enableCameraGizmo(g.camera, false);
             }
         }
-        if (this._Scene && this._Scene.reservedDataStore && this._Scene.reservedDataStore.gizmoManager) {
-            this._Scene.reservedDataStore.gizmoManager.dispose();
-            this._Scene.reservedDataStore.gizmoManager = null;
-        }
+        DisposeInspectorGizmoManager(this._Scene);
 
         if (this._NewCanvasContainer) {
             this._DestroyCanvasContainer();

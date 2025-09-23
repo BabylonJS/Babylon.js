@@ -9,6 +9,7 @@ import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
+import { GetInspectorGizmoManager } from "../../../inspectorGizmoManager";
 
 interface ILightTreeItemComponentProps {
     light: Light;
@@ -39,9 +40,7 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
     toggleGizmo(): void {
         const light = this.props.light;
         if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
-            if (light.getScene().reservedDataStore && light.getScene().reservedDataStore.gizmoManager) {
-                light.getScene().reservedDataStore.gizmoManager.attachToMesh(null);
-            }
+            GetInspectorGizmoManager(light.getScene(), false)?.attachToMesh(null);
             this.props.globalState.enableLightGizmo(light, false);
             this.setState({ isGizmoEnabled: false });
         } else {
