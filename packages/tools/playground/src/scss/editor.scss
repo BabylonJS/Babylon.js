@@ -209,10 +209,13 @@
 // Splitter bar
 .pg-split-main > div:nth-child(2) {
     background: var(--pg-border);
-
+    width: 3px !important;
     &:hover {
         background: rgba(0, 0, 0, 0.2);
     }
+}
+.pg-activity-bar-col {
+    width: 40px;
 }
 
 .pg-activity-bar {
@@ -248,29 +251,29 @@
         background: lighten(#3f3461, 10%);
     }
 
-    svg {
-        width: 24px;
-        height: 24px;
-        scale: 0.8;
-        display: block;
-        stroke-width: 0.5;
-        fill: white;
-    }
-    svg [fill]:not([fill="none"]) {
-        fill: white !important;
-    }
-    svg [stroke]:not([stroke="none"]) {
-        stroke: white !important;
-    }
-    svg path,
-    svg rect,
-    svg circle,
-    svg polygon,
-    svg line,
-    svg polyline {
-        fill: white;
-        stroke: white;
-    }
+    // svg {
+    //     width: 20px;
+    //     height: 20px;
+    //     display: block;
+    //     stroke-width: 0.5;
+    //     fill: white;
+    //     vector-effect: non-scaling-stroke;
+    // }
+    // svg [fill]:not([fill="none"]) {
+    //     fill: white !important;
+    // }
+    // svg [stroke]:not([stroke="none"]) {
+    //     stroke: white !important;
+    // }
+    // svg path,
+    // svg rect,
+    // svg circle,
+    // svg polygon,
+    // svg line,
+    // svg polyline {
+    //     fill: white;
+    //     stroke: white;
+    // }
 }
 
 .pg-explorer-panel {
@@ -329,9 +332,6 @@
     }
     color: currentColor;
     svg {
-        width: 24px;
-        height: 24px;
-        scale: 0.8;
         stroke-width: 0.5;
         fill: currentColor;
     }
@@ -534,26 +534,18 @@
     border-color: var(--pg-border);
     border-bottom: 1px solid var(--pg-tab-active);
 }
-.pg-tab.entry .pg-tab__name {
-    position: relative;
-}
+
 .pg-tab__entry {
-    position: absolute;
-    top: 50%;
-    left: 2px;
-    transform: translateY(-50%);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 9px;
     line-height: 1;
+    z-index: 2;
     color: var(--pg-accent);
     pointer-events: none;
 }
-.pg-tab__entry::before {
-    margin-left: 2px;
-    content: "★";
-}
+
 .pg-editor-host {
     flex: 1;
     min-height: 0;

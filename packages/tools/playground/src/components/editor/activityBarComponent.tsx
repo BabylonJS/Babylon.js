@@ -2,11 +2,12 @@
 // activityBarComponent.tsx
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
-import DiffIcon from "../../../public/imgs/diff.svg";
-import NewIcon from "../..//imgs/codeOnly.svg";
+import HistoryIcon from "./icons/history.svg";
+import FilesIcon from "./icons/files.svg";
 import { FileDialog } from "./fileDialog";
 import { LocalSessionDialog } from "./localSessionDialog";
 import { Utilities } from "../../tools/utilities";
+import { Icon } from "./iconComponent";
 
 type DialogKind = "create" | "rename" | "duplicate";
 type DialogState = {
@@ -133,10 +134,14 @@ export const ActivityBar = React.forwardRef<ActivityBarHandle, IActivityBarProps
             {/* Vertical Activity Bar (far left) */}
             <div className="pg-activity-bar">
                 <button className={`pg-activity-item ${explorerOpen ? "active" : ""}`} onClick={onToggleExplorer} title="Explorer">
-                    <NewIcon />
+                    <Icon size={20}>
+                        <FilesIcon />
+                    </Icon>
                 </button>
                 <button className={`pg-activity-item ${sessionOpen ? "active" : ""}`} onClick={onToggleSession} title="Session">
-                    <DiffIcon />
+                    <Icon size={24}>
+                        <HistoryIcon />
+                    </Icon>
                 </button>
             </div>
 

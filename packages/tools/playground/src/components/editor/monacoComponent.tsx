@@ -12,7 +12,7 @@ import { ControlledSize, SplitDirection } from "shared-ui-components/split/split
 import type { ActivityBarHandle } from "./activityBarComponent";
 import { ActivityBar } from "./activityBarComponent";
 import { FileExplorer } from "./fileExplorerComponent";
-import NewIcon from "../../../public/imgs/new.svg";
+import AddFileIcon from "./icons/newFile.svg";
 
 import "../../scss/monaco.scss";
 import "../../scss/editor.scss";
@@ -99,7 +99,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
         this._disposableObservers.push(
             gs.onEditorFullcreenRequiredObservable.add(async () => {
-                const editorDiv = this._monacoRef.current! as HTMLElement & {
+                const editorDiv = this.props.refObject.current! as HTMLElement & {
                     webkitRequestFullscreen?: (opts?: FullscreenOptions) => Promise<void> | void;
                     msRequestFullscreen?: () => Promise<void> | void;
                     mozRequestFullScreen?: () => Promise<void> | void;
@@ -553,10 +553,10 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                         {explorerOpen ? (
                             <div className="pg-explorer-panel">
                                 <div className="pg-panel-header">
-                                    <span>FILE EXPLORER</span>
+                                    <span>EXPLORER</span>
                                     <div className="pg-panel-actions">
                                         <button className="pg-panel-action" onClick={() => this._activityBarRef.current?.openCreateDialog()} title="New File">
-                                            <NewIcon />
+                                            <AddFileIcon />
                                         </button>
                                     </div>
                                 </div>
@@ -606,8 +606,12 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                                                         onDragEnd={this._onDragEnd}
                                                         title={`${display}${isEntry ? " (entry)" : ""}${isActive ? " (active)" : ""}`}
                                                     >
+                                                        {isEntry && (
+                                                            <span className="pg-tab__entry" aria-label="Entry file" title="Entry file">
+                                                                {"★"}
+                                                            </span>
+                                                        )}
                                                         <span className="pg-tab__name">{display}</span>
-                                                        {isEntry && <span className="pg-tab__entry" aria-label="Entry file" title="Entry file" />}
                                                         <button
                                                             type="button"
                                                             className="pg-tab__close"
