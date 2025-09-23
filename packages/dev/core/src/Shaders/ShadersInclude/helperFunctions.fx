@@ -236,6 +236,7 @@ float avg(vec3 value) {
     return dot(value, vec3(0.333333333));
 }
 
+#ifndef WEBGL1
 uint extractBits(uint value, int offset, int width) {
     return (value >> offset) & ((1u << width) - 1u);
 }
@@ -245,3 +246,4 @@ int onlyBitPosition(uint value) {
     // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightFloatCast
     return (floatBitsToInt(float(value)) >> 23) - 0x7f;
 }
+#endif
