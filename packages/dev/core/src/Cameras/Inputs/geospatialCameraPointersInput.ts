@@ -1,14 +1,12 @@
-import type { Nullable } from "../../types";
-import type { Observer } from "../../Misc/observable";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
-import type { PointerInfo } from "../../Events/pointerEvents";
-import { PointerEventTypes } from "../../Events/pointerEvents";
-import { TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
-import { Ray } from "../../Culling";
-import { Plane } from "../../Maths/math.plane";
-import type { Scene } from "../../scene";
 import type { PickingInfo } from "../../Collisions";
+import type { Ray } from "../../Culling";
+import type { IPointerEvent } from "../../Events";
+import type { PointerTouch } from "../../Events/pointerEvents";
+import { Plane } from "../../Maths/math.plane";
+import { TmpVectors, Vector3 } from "../../Maths/math.vector";
+import type { Nullable } from "../../types";
+import { BaseCameraPointersInput } from "./BaseCameraPointersInput";
 
 /**
  * @experimental
@@ -24,7 +22,7 @@ import type { PickingInfo } from "../../Collisions";
  *
  * TODO: Add configurable pitch/zoom limits
  */
-export class GeospatialCameraPointersInput implements ICameraInput<GeospatialCamera> {
+export class GeospatialCameraPointersInput extends BaseCameraPointersInput {
     public camera: GeospatialCamera;
 
     /**
@@ -32,115 +30,64 @@ export class GeospatialCameraPointersInput implements ICameraInput<GeospatialCam
      */
     public angularSensibility = 200.0;
 
-    /**
-     * Mouse button to use for camera control
-     * 0 = left, 1 = middle, 2 = right
-     */
-    public buttons = [0, 1, 2];
-
-    private _observer: Nullable<Observer<PointerInfo>>;
-    private _previousPosition: Nullable<Vector2> = null;
-    private _isDragging = false;
-    private _button: number = -1;
-
     private _dragPlane: Plane = new Plane(0, 0, 0, 0);
     private _dragPlaneNormal: Vector3 = Vector3.Zero();
     private _dragPlaneOriginPoint: Vector3 = Vector3.Zero();
     private _dragPlaneHitPoint: Vector3 = Vector3.Zero();
     private _dragPlaneOffsetVector: Vector3 = Vector3.Zero();
-    private _mouseDownRay: Ray = new Ray(this._dragPlaneHitPoint, this._dragPlaneOriginPoint, 0);
 
-    private _hitPointRadius: number;
+    private _hitPointRadius: number; // Distance between world origin (center of globe) and the hitPoint (where initial drag started)
 
-    public attachControl(noPreventDefault?: boolean): void {
+    public override getClassName(): string {
+        return "GeospatialCameraMouseInput";
+    }
+
+    public override onButtonDown(evt: IPointerEvent): void {
         const scene = this.camera.getScene();
+        let pickResult: Nullable<PickingInfo>;
+        switch (evt.button) {
+            case 0: // Left button - drag/pan globe under cursor
+                pickResult = scene.pick(scene.pointerX, scene.pointerY);
+                if (pickResult.pickedPoint && pickResult.ray) {
+                    // Store radius from earth center to pickedPoint, used when calculating drag plane
+                    this._hitPointRadius = pickResult.pickedPoint.length();
 
-        this._observer = scene.onPointerObservable.add((pointerInfo) => {
-            const evt = pointerInfo.event as PointerEvent;
+                    // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
+                    this._recalculateDragPlaneOffsetVectorToRef(pickResult.ray, this._dragPlaneOffsetVector);
+                }
+                break;
+            case 1: // Middle button - tilt camera around cursor
+                pickResult = scene.pick(scene.pointerX, scene.pointerY);
+                pickResult.pickedPoint && this.camera.pitchPoint.copyFrom(pickResult.pickedPoint);
+                break;
+            case 2: // Right button - tilt camera around center of screen
+                pickResult = scene.pick(scene.getEngine().getRenderWidth() / 2, scene.getEngine().getRenderHeight() / 2);
+                pickResult.pickedPoint && this.camera.pitchPoint.copyFrom(pickResult.pickedPoint);
+                break;
+            default:
+                return;
+        }
+    }
 
-            switch (pointerInfo.type) {
-                case PointerEventTypes.POINTERDOWN:
-                    if (this.buttons.includes(evt.button)) {
-                        let pickResult: Nullable<PickingInfo>;
-                        // Determine rayOrigin based off of mouse input. If left click or middle click, use pointer position to cast ray
-                        if (evt.button == 0 || evt.button == 1) {
-                            pickResult = scene.pick(scene.pointerX, scene.pointerY);
-                        } else {
-                            // Right mouse button we want to tilt around screen center, so cast ray into screen center
-                            const engine = scene.getEngine();
-                            const width = engine.getRenderWidth();
-                            const height = engine.getRenderHeight();
-                            pickResult = scene.pick(width / 2, height / 2);
-                        }
-                        pickResult.ray && (this._mouseDownRay = pickResult.ray.clone());
-
-                        if (pickResult.pickedPoint) {
-                            this._isDragging = true;
-
-                            if (evt.button == 0) {
-                                // drag
-                                // If left click, calculate radius from earth center to hitpoint to be used when calculating dragPlanes
-                                this._hitPointRadius = pickResult.pickedPoint.length();
-
-                                // This will later be recalculated when drag occurs, and the delta between these offset vectors is what will be applied to localTranslation
-                                this._recalculateDragPlaneOffsetVectorToRef(this._dragPlaneOffsetVector);
-                            } else {
-                                // tilt
-                                this.camera.pitchPoint.copyFrom(pickResult.pickedPoint);
-                            }
-                        } else {
-                            this._isDragging = false;
-                        }
-
-                        this._button = evt.button;
-                        this._previousPosition = new Vector2(evt.clientX, evt.clientY);
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                    break;
-
-                case PointerEventTypes.POINTERUP:
-                    this._isDragging = false;
-                    this._previousPosition = null;
-                    this._button = -1;
-                    break;
-
-                case PointerEventTypes.POINTERMOVE:
-                    if (this._isDragging && this._previousPosition) {
-                        const currentPosition = new Vector2(evt.clientX, evt.clientY);
-                        const deltaX = currentPosition.x - this._previousPosition.x;
-                        const deltaY = currentPosition.y - this._previousPosition.y;
-
-                        switch (this._button) {
-                            case 0: // Left button - drag/pan globe under cursor
-                                this._handleDrag(scene);
-                                break;
-                            case 1: // Middle button - tilt camera around cursor
-                                this._handleTilt(deltaX, deltaY);
-                                break;
-                            case 2: // Right button - tilt camera
-                                this._handleTilt(deltaX, deltaY);
-                                break;
-                        }
-
-                        this._previousPosition = currentPosition;
-
-                        if (!noPreventDefault) {
-                            evt.preventDefault();
-                        }
-                    }
-                    break;
-            }
-        });
+    public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
+        switch (point?.button) {
+            case 0: // Left button - drag/pan globe under cursor
+                this._handleDrag();
+                break;
+            case 1: // Middle button - tilt camera around cursor
+            case 2: // Right button - tilt camera
+                this._handleTilt(offsetX, offsetY);
+                break;
+        }
     }
 
     /**
      * The DragPlaneOffsetVector represents the vector between the dragPlane hit point and the dragPlane origin point.
      * As the drag movement occurs, we will continuously recalculate this vector. The delta between the offsetVectors is the delta we will apply to the camera's localtranslation
+     * @param ray The ray from the camera to the new cursor location
      * @param ref The offset vector between the drag plane's hitPoint and originPoint
      */
-    private _recalculateDragPlaneOffsetVectorToRef(ref: Vector3) {
+    private _recalculateDragPlaneOffsetVectorToRef(ray: Ray, ref: Vector3) {
         // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
         this.camera.position.normalizeToRef(this._dragPlaneNormal);
         this._dragPlaneNormal.scaleToRef(this._hitPointRadius, this._dragPlaneOriginPoint);
@@ -148,53 +95,31 @@ export class GeospatialCameraPointersInput implements ICameraInput<GeospatialCam
         // Now create a plane at that point, perpendicular to the camera's geocentric normal
         Plane.FromPositionAndNormalToRef(this._dragPlaneOriginPoint, this._dragPlaneNormal, this._dragPlane);
 
-        // Lastly, find the _dragPlaneHitPoint where the _mouseDownRay intersects the _dragPlane
-        IntersectRayWithPlaneToRef(this._mouseDownRay, this._dragPlane, this._dragPlaneHitPoint);
+        // Lastly, find the _dragPlaneHitPoint where the ray intersects the _dragPlane
+        IntersectRayWithPlaneToRef(ray, this._dragPlane, this._dragPlaneHitPoint);
 
         // Store the new offset between the drag plane's hitPoint and originPoint
         this._dragPlaneHitPoint.subtractToRef(this._dragPlaneOriginPoint, ref);
     }
 
-    private _handleDrag(scene: Scene): void {
-        // With new cursor location, identify where a ray from camera would intersect with the new drag plane, store in _mouseDownRay
+    private _handleDrag(): void {
+        const scene = this.camera.getScene();
         const pickResult = scene.pick(scene.pointerX, scene.pointerY);
-        pickResult.ray && (this._mouseDownRay = pickResult.ray.clone());
+        if (pickResult.ray) {
+            const newDragPlaneOffsetVector = TmpVectors.Vector3[5];
+            this._recalculateDragPlaneOffsetVectorToRef(pickResult.ray, newDragPlaneOffsetVector);
+            const delta = TmpVectors.Vector3[6];
+            newDragPlaneOffsetVector.subtractToRef(this._dragPlaneOffsetVector, delta);
 
-        const newDragPlaneOffsetVector = TmpVectors.Vector3[5];
-        this._recalculateDragPlaneOffsetVectorToRef(newDragPlaneOffsetVector);
-        const delta = TmpVectors.Vector3[6];
-        newDragPlaneOffsetVector.subtractToRef(this._dragPlaneOffsetVector, delta);
-        this.camera._perFrameTranslation.subtractInPlace(delta);
-        this._dragPlaneOffsetVector.copyFrom(newDragPlaneOffsetVector);
+            this._dragPlaneOffsetVector.copyFrom(newDragPlaneOffsetVector);
+
+            this.camera._perFrameTranslation.subtractInPlace(delta); // ???
+        }
     }
 
     private _handleTilt(deltaX: number, deltaY: number): void {
-        // Just rotate the view without moving
-        this.camera._perFrameRotation.y += -deltaX / this.angularSensibility; // yaw
-        this.camera._perFrameRotation.x += -deltaY / this.angularSensibility; // pitch - dragging up look towards sky
-    }
-
-    public detachControl(): void {
-        if (this._observer) {
-            this.camera.getScene().onPointerObservable.remove(this._observer);
-            this._observer = null;
-        }
-
-        this._isDragging = false;
-        this._previousPosition = null;
-        this._button = -1;
-    }
-
-    public getClassName(): string {
-        return "GeospatialCameraMouseInput";
-    }
-
-    public getSimpleName(): string {
-        return "mouse";
-    }
-
-    public checkInputs(): void {
-        // Mouse input is event-based, no per-frame updates needed
+        this.camera._perFrameRotation.y += -deltaX / this.angularSensibility; // yaw - looking side to side
+        this.camera._perFrameRotation.x += -deltaY / this.angularSensibility; // pitch - look up towards sky / down towards ground
     }
 }
 
