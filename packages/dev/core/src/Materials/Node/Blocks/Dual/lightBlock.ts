@@ -501,4 +501,3 @@ export class LightBlock extends NodeMaterialBlock {
 }
 
 RegisterClass("BABYLON.LightBlock", LightBlock);
-
