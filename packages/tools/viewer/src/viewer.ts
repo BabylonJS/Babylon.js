@@ -850,6 +850,7 @@ export class Viewer implements IDisposable {
     private _contrast: number;
     private _exposure: number;
     private _ssaoEnabled: boolean;
+    private _ssaoPipeline: Nullable<SSAO2RenderingPipeline> = null;
 
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
@@ -1253,6 +1254,7 @@ export class Viewer implements IDisposable {
             this._activeModelBacking = model;
             this._updateLight();
             observePromise(this._updateShadows());
+            this._updateSSAOPipeline();
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
@@ -1264,15 +1266,26 @@ export class Viewer implements IDisposable {
     private async _enableSSAOPipeline() {
         const ssaoRatio = {
             ssaoRatio: 1,
-            blurRatio: 0.5,
+            blurRatio: 1,
         };
         await Promise.all([import("core/Rendering/prePassRendererSceneComponent"), import("core/Rendering/geometryBufferRendererSceneComponent")]);
-        const ssao = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
-        ssao.radius = 13;
-        ssao.totalStrength = 1;
-        ssao.expensiveBlur = true;
-        ssao.samples = 64;
+        this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
+        this._updateSSAOPipeline();
         this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+    }
+
+    private _updateSSAOPipeline() {
+        const worldBounds = this._getWorldBounds(this._loadedModels);
+        if (this._ssaoPipeline && worldBounds) {
+            const size = Vector3.FromArray(worldBounds.size).length();
+            this._ssaoPipeline.expensiveBlur = true;
+            this._ssaoPipeline.maxZ = size * 2;
+            // arbitrary max size to cap SSAO settings
+            const maxSceneSize = 50;
+            this._ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
+            this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
+            this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+        }
     }
 
     private _disableSSAOPipeline() {
