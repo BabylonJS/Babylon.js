@@ -2698,6 +2698,10 @@
             "renderCount": 40
         },
         {
+            "title": "Render target texture with clustered lights",
+            "playgroundId": "#1QCA2M#11"
+        },
+        {
             "title": "IBL radiance roughness",
             "playgroundId": "#RNO672#10"
         },
