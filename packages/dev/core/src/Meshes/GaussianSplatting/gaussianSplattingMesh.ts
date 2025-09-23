@@ -19,6 +19,10 @@ import type { Material } from "core/Materials/material";
 import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
+import type { INative } from "core/Engines/Native/nativeInterfaces";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
@@ -445,7 +449,7 @@ export class GaussianSplattingMesh extends Mesh {
             return false;
         }
 
-        if (!this._readyToDisplay) {
+        if (!_native && !this._readyToDisplay) {
             // mesh is ready when worker has done at least 1 sorting
             this._postToWorker(true);
             return false;
@@ -468,10 +472,15 @@ export class GaussianSplattingMesh extends Mesh {
             if (forced || Math.abs(dot - 1) >= 0.01) {
                 this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
                 this._frameIdLastUpdate = frameId;
-                this._canPostToWorker = false;
-                this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
-                    this._depthMix.buffer,
-                ]);
+                if (_native) {
+                    // @ts-expect-error: sortGS is a native function not recognized by TypeScript
+                    sortGS(this._modelViewMatrix, this._splatPositions, this._splatIndex, this._scene.useRightHandedSystem);
+                } else {
+                    this._canPostToWorker = false;
+                    this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
+                        this._depthMix.buffer,
+                    ]);
+                }
             }
         }
     }
@@ -1386,7 +1395,9 @@ export class GaussianSplattingMesh extends Mesh {
             this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
 
             this._postToWorker(true);
         } else {
@@ -1474,7 +1485,9 @@ export class GaussianSplattingMesh extends Mesh {
             // sort will be dirty here as just finished filled positions will not be sorted
             const positions = Float32Array.from(this._splatPositions);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
             this._sortIsDirty = true;
         } else {
             for (let i = 0; i < vertexCount; i++) {
@@ -1564,51 +1577,54 @@ export class GaussianSplattingMesh extends Mesh {
 
         // Start the worker thread
         this._worker?.terminate();
-        this._worker = new Worker(
-            URL.createObjectURL(
-                new Blob(["(", GaussianSplattingMesh._CreateWorker.toString(), ")(self)"], {
-                    type: "application/javascript",
-                })
-            )
-        );
 
-        this._depthMix = new BigInt64Array(this._vertexCount);
-        const positions = Float32Array.from(this._splatPositions!);
-        const vertexCount = this._vertexCount;
+        if (!_native) {
+            this._worker = new Worker(
+                URL.createObjectURL(
+                    new Blob(["(", GaussianSplattingMesh._CreateWorker.toString(), ")(self)"], {
+                        type: "application/javascript",
+                    })
+                )
+            );
 
-        this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            this._depthMix = new BigInt64Array(this._vertexCount);
+            const positions = Float32Array.from(this._splatPositions!);
+            const vertexCount = this._vertexCount;
 
-        this._worker.onmessage = (e) => {
-            this._depthMix = e.data.depthMix;
-            const indexMix = new Uint32Array(e.data.depthMix.buffer);
-            if (this._splatIndex) {
-                for (let j = 0; j < this._vertexCount; j++) {
-                    this._splatIndex[j] = indexMix[2 * j];
+            this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+
+            this._worker.onmessage = (e) => {
+                this._depthMix = e.data.depthMix;
+                const indexMix = new Uint32Array(e.data.depthMix.buffer);
+                if (this._splatIndex) {
+                    for (let j = 0; j < this._vertexCount; j++) {
+                        this._splatIndex[j] = indexMix[2 * j];
+                    }
                 }
-            }
-            if (this._delayedTextureUpdate) {
-                const textureSize = this._getTextureSize(vertexCount);
-                this._updateSubTextures(
-                    this._delayedTextureUpdate.centers,
-                    this._delayedTextureUpdate.covA,
-                    this._delayedTextureUpdate.covB,
-                    this._delayedTextureUpdate.colors,
-                    0,
-                    textureSize.y,
-                    this._delayedTextureUpdate.sh
-                );
-                this._delayedTextureUpdate = null;
-            }
-            this.thinInstanceBufferUpdated("splatIndex");
-            this._canPostToWorker = true;
-            this._readyToDisplay = true;
-            // sort is dirty when GS is visible for progressive update with a this message arriving but positions were partially filled
-            // another update needs to be kicked. The kick can't happen just when the position buffer is ready because _canPostToWorker might be false.
-            if (this._sortIsDirty) {
-                this._postToWorker(true);
-                this._sortIsDirty = false;
-            }
-        };
+                if (this._delayedTextureUpdate) {
+                    const textureSize = this._getTextureSize(vertexCount);
+                    this._updateSubTextures(
+                        this._delayedTextureUpdate.centers,
+                        this._delayedTextureUpdate.covA,
+                        this._delayedTextureUpdate.covB,
+                        this._delayedTextureUpdate.colors,
+                        0,
+                        textureSize.y,
+                        this._delayedTextureUpdate.sh
+                    );
+                    this._delayedTextureUpdate = null;
+                }
+                this.thinInstanceBufferUpdated("splatIndex");
+                this._canPostToWorker = true;
+                this._readyToDisplay = true;
+                // sort is dirty when GS is visible for progressive update with a this message arriving but positions were partially filled
+                // another update needs to be kicked. The kick can't happen just when the position buffer is ready because _canPostToWorker might be false.
+                if (this._sortIsDirty) {
+                    this._postToWorker(true);
+                    this._sortIsDirty = false;
+                }
+            };
+        }
     }
 
     private _getTextureSize(length: number): Vector2 {
