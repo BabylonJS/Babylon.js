@@ -14,7 +14,6 @@ import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-
 import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
@@ -502,3 +501,4 @@ export class LightBlock extends NodeMaterialBlock {
 }
 
 RegisterClass("BABYLON.LightBlock", LightBlock);
+
