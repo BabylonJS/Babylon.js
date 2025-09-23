@@ -1917,7 +1917,6 @@ export class Control implements IAnimatable, IFocusableControl {
             );
 
             context.save();
-            this._applyStates(context);
 
             let rebuildCount = 0;
             do {
