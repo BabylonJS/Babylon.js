@@ -1120,11 +1120,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const normalShading = this.perturbedNormal;
 
         let worldPosVarName = this.worldPosition.associatedVariableName;
+        let worldPosVarName4 = this.worldPosition.associatedVariableName;
         let worldNormalVarName = this.worldNormal.associatedVariableName;
         if (this.generateOnlyFragmentCode) {
             worldPosVarName = state._getFreeVariableName("globalWorldPos");
             state._emitFunction("pbr_globalworldpos", `${state._declareLocalVar(worldPosVarName, NodeMaterialBlockConnectionPointTypes.Vector3, false, true)};\n`, comments);
             state.compilationString += `${worldPosVarName} = ${this.worldPosition.associatedVariableName}.xyz;\n`;
+
+            worldPosVarName4 = state._getFreeVariableName("globalWorldPos4");
+            state._emitFunction("pbr_globalworldpos4", `${state._declareLocalVar(worldPosVarName4, NodeMaterialBlockConnectionPointTypes.Vector4, false, true)};\n`, comments);
+            state.compilationString += `${worldPosVarName4} = ${this.worldPosition.associatedVariableName};\n`;
 
             worldNormalVarName = state._getFreeVariableName("globalWorldNormal");
             state._emitFunction("pbr_globalworldnorm", `${state._declareLocalVar(worldNormalVarName, NodeMaterialBlockConnectionPointTypes.Vector4, false, true)};\n`, comments);
@@ -1174,7 +1179,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         //
         if (!this.light) {
             if (this.generateOnlyFragmentCode && this.view.isConnected) {
-                state.compilationString += `${state._declareLocalVar("vViewDepth", NodeMaterialBlockConnectionPointTypes.Float)} = (${this.view.associatedVariableName} * ${worldPosVarName}).z;\n`;
+                state.compilationString += `${state._declareLocalVar("vViewDepth", NodeMaterialBlockConnectionPointTypes.Float)} = (${this.view.associatedVariableName} * ${worldPosVarName4}).z;\n`;
             }
 
             // Emit for all lights
