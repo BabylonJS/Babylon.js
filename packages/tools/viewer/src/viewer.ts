@@ -2858,7 +2858,6 @@ export class Viewer implements IDisposable {
         if (shouldHaveDefaultLight) {
             if (!this._light) {
                 this._light = new HemisphericLight("defaultLight", Vector3.Up(), this._scene);
-                this._light.intensity = 0.4;
             }
         } else {
             this._light?.dispose();
