@@ -689,5 +689,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         if ((parameters.tileSize ?? 0 > 0) && !!parameters.maxObstacles) {
             parameters.maxObstacles = DefaultMaxObstacles;
         }
+
+        parameters.walkableSlopeAngle = Math.max(0.1, parameters.walkableSlopeAngle ?? 60);
     }
 }

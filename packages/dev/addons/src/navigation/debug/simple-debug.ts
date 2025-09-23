@@ -13,10 +13,11 @@ import { GetRecast } from "../factory/common";
  * @param navMesh The NavMesh to visualize.
  * @param scene The scene in which to create the debug mesh.
  * @param parent Optional parent node for the debug mesh.
+ * @param flags Poly flags to filter by, defaults to undefined to include all polys
  * @returns The created debug mesh.
  */
-export function CreateDebugNavMesh(navMesh: NavMesh, scene: Scene, parent?: Node) {
-    const [positions, indices] = GetRecast().getNavMeshPositionsAndIndices(navMesh);
+export function CreateDebugNavMesh(navMesh: NavMesh, scene: Scene, parent?: Node, flags?: number) {
+    const [positions, indices] = GetRecast().getNavMeshPositionsAndIndices(navMesh, flags);
 
     const mesh = new Mesh("NavMeshDebug", scene);
     const vertexData = new VertexData();
