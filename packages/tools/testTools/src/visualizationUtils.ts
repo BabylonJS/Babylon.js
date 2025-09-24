@@ -1,8 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { SnippetPayload, V2Manifest } from "@tools/playground/src/tools/snippet";
-
 declare const BABYLON: typeof window.BABYLON;
 
 export const evaluateInitEngineForVisualization = async (engineName: string, useReverseDepthBuffer: string | number, useNonCompatibilityMode: string | number, baseUrl: string) => {
@@ -99,11 +97,11 @@ export const evaluatePrepareScene = async (
             const data = await fetch(globalConfig.snippetUrl + sceneMetadata.playgroundId!.replace(/#/g, "/"));
             const snippet = await data.json();
 
-            const payload = JSON.parse(snippet.jsonPayload) as SnippetPayload;
+            const payload = JSON.parse(snippet.jsonPayload);
             let code = "";
             // Definitely v2 manifest
             if (Object.prototype.hasOwnProperty.call(payload, "version")) {
-                const v2Manifest = JSON.parse(payload.code) as V2Manifest;
+                const v2Manifest = JSON.parse(payload.code);
                 code = v2Manifest.files[v2Manifest.entry];
                 // Sanitize two common export types for existing and migrated PGs and newly-created PGs.
                 code = code.replace(/export default \w+/g, "").replace("export const ", "const ");
