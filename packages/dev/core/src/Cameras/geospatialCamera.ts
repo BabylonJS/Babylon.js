@@ -5,6 +5,12 @@ import { Epsilon, Scalar, TmpVectors } from "../Maths";
 import { Camera } from "./camera";
 import { Ray } from "../Culling";
 
+type CameraOptions = {
+    planetRadius: number; // Radius of the planet in km
+    minHeight?: number; // Minimum height of the camera above the planet surface in km
+    maxHeight?: number; // Maximum height of the camera above the planet surface in km
+    restingHeight?: number; // The height the camera will return to when not being actively zoomed in or out
+};
 /**
  * @experimental
  * This camera's movements are limited to a camera orbiting a globe, and as the API evolves it will introduce conversions between cartesian coordinates and true lat/long/alt
@@ -19,13 +25,14 @@ export class GeospatialCamera extends Camera {
     // Changed by the inputs, reset on every frame
     public _perFrameTranslation: Vector3;
     public _perFrameRotation: Vector3;
+    public _perFrameZoom: number;
 
     // Temp vars
     private _tempNormal: Vector3;
     private _tempRotationAxis: Vector3;
     private _tempRotationMatrix: Matrix;
     private _tempPickingRay: Ray;
-    private _tempPosition: Vector3 = new Vector3(0, 0, 0);
+    private _tempPosition: Vector3;
 
     private _viewMatrix: Matrix;
     private _lookAtVector: Vector3;
@@ -34,17 +41,28 @@ export class GeospatialCamera extends Camera {
 
     public override inputs: GeospatialCameraInputsManager;
 
-    // Minimum distance the camera must be from the globe's surface. Will be configurable in future
-    private _minHeight: number = 1;
+    private _planetRadius: number;
+    private _minHeight: number;
+    private _maxHeight?: number;
+    private _maxCameraRadius?: number;
+    private _restingHeight: number; // When zooming to a specific point, or when initializing the camera, this is the height the camera will return to when not being actively zoomed in or out
 
-    constructor(name: string, position: Vector3, scene: Scene) {
+    constructor(name: string, scene: Scene, options: CameraOptions) {
+        const position = Vector3.Zero();
         super(name, position, scene);
-        this._resetToDefault();
+        this._resetToDefault(options);
         this.inputs = new GeospatialCameraInputsManager(this);
         this.inputs.addMouse().addMouseWheel();
     }
 
-    private _resetToDefault(): void {
+    private _resetToDefault(options: CameraOptions): void {
+        this._minHeight = options.minHeight ?? 5;
+        this._maxHeight = options.maxHeight;
+        this._planetRadius = options.planetRadius;
+        this._maxCameraRadius = this._maxHeight ? this._planetRadius + this._maxHeight : undefined;
+        this._restingHeight = options.restingHeight ?? this._maxCameraRadius ?? this._planetRadius * 4;
+        this.position.copyFromFloats(0, 0, -this._restingHeight);
+
         this._perFrameRotation = Vector3.Zero();
         this._perFrameTranslation = Vector3.Zero();
         this._tempPosition = Vector3.Zero();
@@ -54,6 +72,7 @@ export class GeospatialCamera extends Camera {
 
         // Rotation calculation vars
         this._tempPickingRay = new Ray(this.position, this._lookAtVector);
+        this._tempPickingRay.direction = Vector3.Zero();
         const firstPick = this._scene.pickWithRay(this._tempPickingRay); // What is the first point on geoWorld that a ray would hit if shot from camera in lookatDirection;
         this.pitchPoint = firstPick?.pickedPoint || Vector3.Zero();
         this.pitchPoint.normalizeToRef(this._tempNormal);
@@ -93,31 +112,6 @@ export class GeospatialCamera extends Camera {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Move the camera forward/back along the current look vector.
-     * @param distance positive = move forward (in direction of vector), negative = move backward
-     */
-    public zoomAlongLook(distance: number): void {
-        this._tempPickingRay.origin.copyFrom(this.position);
-        this._tempPickingRay.direction.copyFrom(this._lookAtVector);
-        const pickResult = this._scene.pickWithRay(this._tempPickingRay);
-        if (pickResult?.distance != undefined && pickResult.distance > distance + this._minHeight) {
-            this._moveCameraAlongVectorByDistance(this._lookAtVector, distance);
-        }
-    }
-
-    public zoomToCursor(distance: number): void {
-        const pickResult = this._scene.pick(this._scene.pointerX, this._scene.pointerY);
-        if (pickResult.ray && pickResult.distance > distance + this._minHeight) {
-            this._moveCameraAlongVectorByDistance(pickResult.ray.direction, distance);
-        }
-    }
-
-    private _moveCameraAlongVectorByDistance(vector: Vector3, distance: number) {
-        vector.scaleAndAddToRef(distance, this._tempPosition);
-        this._applyRotationCorrectionAndSetPos(this._tempPosition);
     }
 
     /**
@@ -200,6 +194,49 @@ export class GeospatialCamera extends Camera {
         this.position.addInPlace(this.pitchPoint);
     }
 
+    private _clampZoomDistance(requestedDistance: number, pickResultDistance: number | undefined): number {
+        // If pickResult is defined
+        if (requestedDistance > 0) {
+            if (pickResultDistance !== undefined) {
+                // If there is a pick, allow movement up to pick - minHeight
+                if (pickResultDistance - this._minHeight < 0) {
+                    // Shouldn't happen
+                    return 0;
+                }
+                return Math.min(requestedDistance, pickResultDistance - this._minHeight);
+            } else {
+                return requestedDistance;
+            }
+        }
+
+        if (requestedDistance < 0) {
+            const maxZoomOut = this._maxCameraRadius ? this._maxCameraRadius - this.position.length() : Number.POSITIVE_INFINITY;
+            return Math.max(requestedDistance, -maxZoomOut);
+        }
+        return 0;
+    }
+
+    private _applyZoom(distance: number) {
+        const pickResult = this._scene.pick(this._scene.pointerX, this._scene.pointerY);
+        if (pickResult.hit && pickResult.ray) {
+            // Zoom to cursor
+            this._moveCameraAlongVectorByDistance(pickResult.ray.direction, this._clampZoomDistance(distance, pickResult.distance));
+        } else {
+            // If no hit under cursor, zoom along lookVector instead
+            this._tempPickingRay.origin.copyFrom(this.position);
+            this._tempPickingRay.direction.copyFrom(this._lookAtVector);
+            const pickResult = this._scene.pickWithRay(this._tempPickingRay);
+            this._moveCameraAlongVectorByDistance(this._lookAtVector, this._clampZoomDistance(distance, pickResult?.distance));
+        }
+    }
+
+    private _moveCameraAlongVectorByDistance(vector: Vector3, distance: number) {
+        if (distance) {
+            vector.scaleAndAddToRef(distance, this._tempPosition);
+            this._applyRotationCorrectionAndSetPos(this._tempPosition);
+        }
+    }
+
     /** @internal */
     public override _checkInputs(): void {
         this.inputs.checkInputs();
@@ -211,6 +248,11 @@ export class GeospatialCamera extends Camera {
         if (this._perFrameRotation.lengthSquared() > 0) {
             this._applyRotation();
             this._perFrameRotation.setAll(0);
+            this._isViewMatrixDirty = true;
+        }
+        if (this._perFrameZoom !== 0) {
+            this._applyZoom(this._perFrameZoom);
+            this._perFrameZoom = 0;
             this._isViewMatrixDirty = true;
         }
         super._checkInputs();

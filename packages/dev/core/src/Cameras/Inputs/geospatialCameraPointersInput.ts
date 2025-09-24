@@ -20,7 +20,6 @@ import { BaseCameraPointersInput } from "./BaseCameraPointersInput";
  * Middle mouse button: tilt globe around cursor location
  * Right mouse button: tilt globe around center of screen
  *
- * TODO: Add configurable pitch/zoom limits
  */
 export class GeospatialCameraPointersInput extends BaseCameraPointersInput {
     public camera: GeospatialCamera;
