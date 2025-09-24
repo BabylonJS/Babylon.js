@@ -213,7 +213,7 @@ export class SpritePacker {
         }
 
         // If the text information is malformed and we can't get the bounding box, then just return
-        const boundingBox = GetTextBoundingBox(this._spritesCanvasContext, textData, this._rawFonts);
+        const boundingBox = GetTextBoundingBox(this._spritesCanvasContext, textData, this._rawFonts, this._variables);
         if (boundingBox === undefined) {
             return undefined;
         }

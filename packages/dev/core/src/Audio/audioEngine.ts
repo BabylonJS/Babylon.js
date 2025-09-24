@@ -5,6 +5,7 @@ import { Observable } from "../Misc/observable";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import { _WebAudioEngine } from "../AudioV2/webAudio/webAudioEngine";
+import type { _WebAudioMainBus } from "../AudioV2/webAudio/webAudioMainBus";
 
 // Sets the default audio engine to Babylon.js
 AbstractEngine.AudioEngineFactory = (
@@ -141,6 +142,12 @@ export class AudioEngine implements IAudioEngine {
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
         v2._initAsync({ resumeOnInteraction: false }).then(() => {
+            const mainBusOutNode = (v2.defaultMainBus as _WebAudioMainBus)._outNode;
+            if (mainBusOutNode) {
+                mainBusOutNode.disconnect(v2.mainOut._inNode);
+                mainBusOutNode.connect(this._masterGain);
+            }
+
             v2.mainOut._inNode = this._masterGain;
             v2.stateChangedObservable.notifyObservers(v2.state);
         });

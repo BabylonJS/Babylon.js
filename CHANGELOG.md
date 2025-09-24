@@ -1,5 +1,85 @@
 # Changelog
 
+## 8.28.2
+
+### Core
+
+- OpenPBRMaterial (including loading and exporting glTF) - by [MiiBond](https://github.com/MiiBond) ([#16773](https://github.com/BabylonJS/Babylon.js/pull/16773))
+- missing splat normalization - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17181](https://github.com/BabylonJS/Babylon.js/pull/17181))
+- FrameGraph: Fix shadows not disappearing when mesh disposed - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17176](https://github.com/BabylonJS/Babylon.js/pull/17176))
+
+### Inspector
+
+- OpenPBRMaterial (including loading and exporting glTF) - by [MiiBond](https://github.com/MiiBond) ([#16773](https://github.com/BabylonJS/Babylon.js/pull/16773))
+
+### Loaders
+
+- OpenPBRMaterial (including loading and exporting glTF) - by [MiiBond](https://github.com/MiiBond) ([#16773](https://github.com/BabylonJS/Babylon.js/pull/16773))
+- OBJFileLoader: Update defaults for missing mesh attributes - [_Breaking Change_] by [alexchuber](https://github.com/alexchuber) ([#17168](https://github.com/BabylonJS/Babylon.js/pull/17168))
+
+## 8.28.1
+
+### Core
+
+- Viewer3D: Fix shadows not displayed in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17166](https://github.com/BabylonJS/Babylon.js/pull/17166))
+
+### Viewer
+
+- Viewer3D: Fix shadows not displayed in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17166](https://github.com/BabylonJS/Babylon.js/pull/17166))
+
+## 8.28.0
+
+### Core
+
+- KTX2Container: Use ScriptBaseUrl for WasmBaseUrl - by [alexchuber](https://github.com/alexchuber) ([#17164](https://github.com/BabylonJS/Babylon.js/pull/17164))
+
+## 8.27.2
+
+### Core
+
+- Remove unused varyings in Particles shaders - by [sebavan](https://github.com/sebavan) ([#17161](https://github.com/BabylonJS/Babylon.js/pull/17161))
+- Avoid type error when updating WebXRCamera reference space - by [docEdub](https://github.com/docEdub) ([#17159](https://github.com/BabylonJS/Babylon.js/pull/17159))
+- Screenshots: Add a clearWithSceneColor parameter to CreateScreenshot - by [Popov72](https://github.com/Popov72) ([#17160](https://github.com/BabylonJS/Babylon.js/pull/17160))
+- WebGL: Fix empty mipmaps for compressed textures - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17151](https://github.com/BabylonJS/Babylon.js/pull/17151))
+
+## 8.27.1
+
+### Core
+
+- Fix non-instanced particles - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#17156](https://github.com/BabylonJS/Babylon.js/pull/17156))
+- Inspector: Add missing texture formats - by [alexchuber](https://github.com/alexchuber) ([#17153](https://github.com/BabylonJS/Babylon.js/pull/17153))
+- Fix legacy audio engine dispose issue - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#17150](https://github.com/BabylonJS/Babylon.js/pull/17150))
+- LineMesh: Disables lighting for line mesh materials - by [Popov72](https://github.com/Popov72) ([#17145](https://github.com/BabylonJS/Babylon.js/pull/17145))
+
+### Inspector
+
+- Inspector: Add missing texture formats - by [alexchuber](https://github.com/alexchuber) ([#17153](https://github.com/BabylonJS/Babylon.js/pull/17153))
+
+### Loaders
+
+- Add import support for EXT_lights_area - by [MiiBond](https://github.com/MiiBond) ([#17146](https://github.com/BabylonJS/Babylon.js/pull/17146))
+
+### Playground
+
+- Add support for local load and save in the PG - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#17152](https://github.com/BabylonJS/Babylon.js/pull/17152))
+
+## 8.27.0
+
+## 8.26.2
+
+### Core
+
+- Use Exr as an IBL texture - by [sebavan](https://github.com/sebavan) ([#17139](https://github.com/BabylonJS/Babylon.js/pull/17139))
+- Atmosphere add-on - [_New Feature_] by [kircher1](https://github.com/kircher1) ([#17107](https://github.com/BabylonJS/Babylon.js/pull/17107))
+
+### Inspector
+
+- Atmosphere add-on - [_New Feature_] by [kircher1](https://github.com/kircher1) ([#17107](https://github.com/BabylonJS/Babylon.js/pull/17107))
+
+### Viewer
+
+- now ibl shadow ground is only enabled when the voxelization is complete - by [alexandremottet](https://github.com/alexandremottet) ([#17141](https://github.com/BabylonJS/Babylon.js/pull/17141))
+
 ## 8.26.1
 
 ### Core

@@ -18,8 +18,11 @@ export class Transcoder {
     public static WasmBaseUrl = "";
 
     public static GetWasmUrl(wasmUrl: string) {
-        if (Transcoder.WasmBaseUrl && wasmUrl.startsWith("https://cdn.babylonjs.com/")) {
-            wasmUrl = wasmUrl.replace("https://cdn.babylonjs.com/", Transcoder.WasmBaseUrl);
+        if (Transcoder.WasmBaseUrl && wasmUrl.startsWith("https://cdn.babylonjs.com")) {
+            // Normalize the base url
+            const baseUrl =
+                Transcoder.WasmBaseUrl[Transcoder.WasmBaseUrl.length - 1] === "/" ? Transcoder.WasmBaseUrl.substring(0, Transcoder.WasmBaseUrl.length - 1) : Transcoder.WasmBaseUrl;
+            wasmUrl = wasmUrl.replace("https://cdn.babylonjs.com", baseUrl);
         }
         return wasmUrl;
     }

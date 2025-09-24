@@ -2,6 +2,7 @@ import type { AnimationConfiguration } from "lottie-player/animationConfiguratio
 import type { RawLottieAnimation } from "lottie-player/parsing/rawTypes";
 import { Player } from "lottie-player/player";
 import { LocalPlayer } from "lottie-player/localPlayer";
+import { DecodeQspStringToObject } from "./utils";
 
 /**
  * Main entry point for the default scene for lottie-player
@@ -22,14 +23,25 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
     const useUrlParam = searchParams.get("useurl");
     const useUrl = useUrlParam !== "false"; // Default to true if not specified
 
+    // Whether to use the file URL for the data or to parse the data in the devhost, defaults to true (use the file URL)
+    const usePreWarmParam = searchParams.get("useprewarm");
+    const usePrewarm = usePreWarmParam === "true"; // Default to false if not specified
+
+    // Whether variables are present in the URL to be used for the animation
+    const urlVariables = searchParams.get("variables");
+    const variables = new Map<string, string>();
+    if (urlVariables) {
+        const parsedVariables = DecodeQspStringToObject(urlVariables);
+        for (const [key, value] of Object.entries(parsedVariables)) {
+            variables.set(key, value);
+        }
+    }
+
     let animationData: RawLottieAnimation | undefined = undefined;
     if (!useUrl) {
         const data = await (await fetch(fileUrl)).text();
         animationData = JSON.parse(data) as RawLottieAnimation;
     }
-
-    // These are variables that will be replaced in the lottie file if it contains them. You can replace with them text strings and text fill colors
-    const variables = new Map<string, string>();
 
     // This is the configuration for the player, you can pass as much or as little as you want, the rest will be defaulted
     const configuration: AnimationConfiguration = {
@@ -47,10 +59,15 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     // Create the player and play the animation
     if (useWorker) {
-        const player = new Player(div, useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration);
-        player.playAnimation();
+        const player = new Player();
+
+        if (usePrewarm) {
+            await player.preWarmPlayerAsync();
+        }
+
+        await player.playAnimationAsync({ container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration });
     } else {
-        const player = new LocalPlayer(div, useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration);
-        await player.playAnimationAsync();
+        const player = new LocalPlayer();
+        await player.playAnimationAsync({ container: div, animationSource: useUrl ? fileUrl : (animationData as RawLottieAnimation), variables, configuration });
     }
 }

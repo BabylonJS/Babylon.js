@@ -262,8 +262,11 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 return state.getContextualValue(this._contextualSource);
             };
         } else {
-            this.output._storedFunction = null;
             this.output._storedValue = this.value;
+            // As a function to let the user dynamically change the value at runtime
+            this.output._storedFunction = () => {
+                return this.value;
+            };
         }
     }
 
