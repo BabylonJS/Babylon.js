@@ -40,6 +40,8 @@ import "./Shaders/ShadersInclude/depthFunctions";
 
 const MaterialPlugin = "atmo-pbr";
 
+const AerialPerspectiveLutLayers = 32;
+
 let UniqueId = 0;
 
 /**
@@ -86,6 +88,7 @@ export class Atmosphere implements IDisposable {
     private _aerialPerspectiveRenderingGroup: number;
     private _globeAtmosphereRenderingGroup: number;
     private _isEnabled = true;
+    private _aerialPerspectiveLutHasBeenRendered = false;
 
     private _hasRenderedMultiScatteringLut = false;
     private _multiScatteringEffectWrapper: Nullable<EffectWrapper> = null;
@@ -347,7 +350,7 @@ export class Atmosphere implements IDisposable {
 
         const scene = this.scene;
         const name = "atmo-aerialPerspective";
-        const renderTarget = (this._aerialPerspectiveLutRenderTarget = CreateRenderTargetTexture(name, { width: 16, height: 64, layers: 32 }, scene, {}));
+        const renderTarget = (this._aerialPerspectiveLutRenderTarget = CreateRenderTargetTexture(name, { width: 16, height: 64, layers: AerialPerspectiveLutLayers }, scene, {}));
         this._aerialPerspectiveLutEffectWrapper = CreateAerialPerspectiveEffectWrapper(this._engine, this.uniformBuffer);
 
         return renderTarget;
@@ -1237,9 +1240,19 @@ export class Atmosphere implements IDisposable {
                     this._drawSkyViewLut();
                 }
 
-                // Only need to render aerial perspective LUT when inside the atmosphere.
-                if (this._isAerialPerspectiveLutEnabled && this._cameraAtmosphereVariables.clampedCameraRadius <= this._physicalProperties.atmosphereRadius) {
-                    this._drawAerialPerspectiveLut();
+                if (this._isAerialPerspectiveLutEnabled) {
+                    // Only need to fully render aerial perspective LUT when inside the atmosphere,
+                    // otherwise it won't be used for rendering so is unnecessary overhead.
+                    if (this._cameraAtmosphereVariables.clampedCameraRadius <= this._physicalProperties.atmosphereRadius) {
+                        this._drawAerialPerspectiveLut();
+                    } else {
+                        // Make sure to clear the LUT to some initial value if this would have otherwise been the first time rendering it.
+                        // This prevents some GL warnings about uninitialized textures when the LUT is bound to a shader (even if it's not used).
+                        if (!this._aerialPerspectiveLutHasBeenRendered) {
+                            this._clearAerialPerspectiveLut();
+                        }
+                    }
+                    this._aerialPerspectiveLutHasBeenRendered = true;
                 }
             }
 
@@ -1354,10 +1367,9 @@ export class Atmosphere implements IDisposable {
             this._aerialPerspectiveLutRenderTarget,
             (effectRenderer, renderTarget, effect, engine) => {
                 this.bindUniformBufferToEffect(effect);
-                const layers = 32;
                 effect.setTexture("transmittanceLut", transmittanceLut);
                 effect.setTexture("multiScatteringLut", multiScatteringLut);
-                for (let layer = 0; layer < layers; layer++) {
+                for (let layer = 0; layer < AerialPerspectiveLutLayers; layer++) {
                     engine.bindFramebuffer(renderTarget!, undefined, undefined, undefined, true, undefined, layer);
                     effectRenderer.bindBuffers(effect);
                     effect.setFloat("layerIdx", layer);
@@ -1365,6 +1377,17 @@ export class Atmosphere implements IDisposable {
                 }
             }
         );
+    }
+
+    private _clearAerialPerspectiveLut(): void {
+        const renderTarget = this._aerialPerspectiveLutRenderTarget?.renderTarget;
+        if (renderTarget) {
+            const engine = this._engine;
+            for (let layer = 0; layer < AerialPerspectiveLutLayers; layer++) {
+                engine.bindFramebuffer(renderTarget, undefined, undefined, undefined, true, undefined, layer);
+                engine.clear({ r: 0, g: 0, b: 0, a: 0 }, true, false, false);
+            }
+        }
     }
 
     /**
@@ -1443,7 +1466,7 @@ const CreateRenderTargetTexture = (
     renderTarget.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     renderTarget.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     renderTarget.anisotropicFilteringLevel = 1;
-    //renderTarget.skipInitialClear = true;
+    renderTarget.skipInitialClear = true;
     return renderTarget;
 };
 
