@@ -889,6 +889,15 @@ export class Viewer implements IDisposable {
             const scene = new Scene(this._engine);
             scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? DefaultViewerOptions.useRightHandedSystem;
 
+            const defaultMaterial = new PBRMaterial("default Material", scene);
+            defaultMaterial.albedoColor = new Color3(0.4, 0.4, 0.4);
+            defaultMaterial.metallic = 0;
+            defaultMaterial.roughness = 1;
+            defaultMaterial.baseDiffuseRoughness = 1;
+            defaultMaterial.environmentIntensity = 1;
+            defaultMaterial.microSurface = 1;
+            scene.defaultMaterial = defaultMaterial;
+
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
             this._toneMappingType = scene.imageProcessingConfiguration.toneMappingType;
@@ -1415,17 +1424,6 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private get _defaultMaterial(): PBRMaterial {
-        const defaultMaterial = new PBRMaterial("default Material", this._scene);
-        defaultMaterial.albedoColor = new Color3(0.4, 0.4, 0.4);
-        defaultMaterial.metallic = 0;
-        defaultMaterial.roughness = 1;
-        defaultMaterial.baseDiffuseRoughness = 1;
-        defaultMaterial.environmentIntensity = 1;
-        defaultMaterial.microSurface = 1;
-        return defaultMaterial;
-    }
-
     /**
      * The set of defined hotspots.
      */
@@ -1549,16 +1547,6 @@ export class Viewer implements IDisposable {
             });
             assetContainer.addAllToScene();
             this._snapshotHelper.fixMeshes(assetContainer.meshes);
-
-            const hasMaterials = assetContainer.materials.length > 0;
-            if (!hasMaterials) {
-                const defaultMaterial = this._defaultMaterial;
-                assetContainer.meshes.forEach((mesh) => {
-                    if (!mesh.material) {
-                        mesh.material = defaultMaterial;
-                    }
-                });
-            }
 
             let selectedAnimation = -1;
             const cachedWorldBounds: ViewerBoundingInfo[] = [];
