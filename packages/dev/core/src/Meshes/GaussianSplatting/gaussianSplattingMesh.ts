@@ -460,7 +460,7 @@ export class GaussianSplattingMesh extends Mesh {
     /** @internal */
     public _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
-        if ((forced || frameId !== this._frameIdLastUpdate) && this._worker && this._scene.activeCamera && this._canPostToWorker) {
+        if ((forced || frameId !== this._frameIdLastUpdate) && ((this._worker && this._canPostToWorker) || _native) && this._scene.activeCamera) {
             const cameraMatrix = this._scene.activeCamera.getViewMatrix();
             this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
             cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
@@ -475,9 +475,12 @@ export class GaussianSplattingMesh extends Mesh {
                 if (_native) {
                     // @ts-expect-error: sortGS is a native function not recognized by TypeScript
                     sortGS(this._modelViewMatrix, this._splatPositions, this._splatIndex, this._scene.useRightHandedSystem);
+                    this.thinInstanceBufferUpdated("splatIndex");
+                    this._canPostToWorker = true;
+                    this._readyToDisplay = true;
                 } else {
                     this._canPostToWorker = false;
-                    this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
+                    this._worker!.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
                         this._depthMix.buffer,
                     ]);
                 }
@@ -1537,9 +1540,9 @@ export class GaussianSplattingMesh extends Mesh {
     // in case size is different
     private _updateSplatIndexBuffer(vertexCount: number): void {
         if (!this._splatIndex || vertexCount > this._splatIndex.length) {
-            this._splatIndex = new Float32Array(vertexCount);
+            this._splatIndex = new Float32Array(vertexCount * 4);
 
-            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 1, false);
+            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 4, false);
         }
         this.forcedInstanceCount = vertexCount;
     }
@@ -1598,7 +1601,7 @@ export class GaussianSplattingMesh extends Mesh {
                 const indexMix = new Uint32Array(e.data.depthMix.buffer);
                 if (this._splatIndex) {
                     for (let j = 0; j < this._vertexCount; j++) {
-                        this._splatIndex[j] = indexMix[2 * j];
+                        this._splatIndex[j * 4] = indexMix[2 * j];
                     }
                 }
                 if (this._delayedTextureUpdate) {

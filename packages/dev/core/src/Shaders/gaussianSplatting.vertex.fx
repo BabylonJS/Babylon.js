@@ -11,7 +11,7 @@
 #include<helperFunctions>
 
 // Attributes
-attribute float splatIndex;
+attribute vec4 splatIndex;
 
 // Uniforms
 uniform vec2 invViewport;
@@ -43,7 +43,7 @@ varying vec2 vPosition;
 #include<gaussianSplatting>
 
 void main () {
-    Splat splat = readSplat(splatIndex);
+    Splat splat = readSplat(splatIndex.x);
     vec3 covA = splat.covA.xyz;
     vec3 covB = vec3(splat.covA.w, splat.covB.xy);
 
