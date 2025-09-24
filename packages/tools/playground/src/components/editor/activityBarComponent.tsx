@@ -4,6 +4,7 @@ import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import HistoryIcon from "./icons/history.svg";
 import FilesIcon from "./icons/files.svg";
+import SearchIcon from "./icons/search.svg";
 import { FileDialog } from "./fileDialog";
 import { LocalSessionDialog } from "./localSessionDialog";
 import { Utilities } from "../../tools/utilities";
@@ -37,10 +38,13 @@ interface IActivityBarProps {
 
     sessionOpen: boolean;
     onToggleSession: () => void;
+
+    searchOpen: boolean;
+    onToggleSearch: () => void;
 }
 
 export const ActivityBar = React.forwardRef<ActivityBarHandle, IActivityBarProps>(function activityBar(
-    { globalState, onConfirmFileDialog, explorerOpen, onToggleExplorer, sessionOpen, onToggleSession },
+    { globalState, onConfirmFileDialog, explorerOpen, onToggleExplorer, sessionOpen, onToggleSession, searchOpen, onToggleSearch },
     ref
 ) {
     const [theme, setTheme] = React.useState<"dark" | "light">(() => (Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light"));
@@ -136,6 +140,11 @@ export const ActivityBar = React.forwardRef<ActivityBarHandle, IActivityBarProps
                 <button className={`pg-activity-item ${explorerOpen ? "active" : ""}`} onClick={onToggleExplorer} title="Explorer">
                     <Icon size={20}>
                         <FilesIcon />
+                    </Icon>
+                </button>
+                <button className={`pg-activity-item ${searchOpen ? "active" : ""}`} onClick={onToggleSearch} title="Search">
+                    <Icon size={20}>
+                        <SearchIcon />
                     </Icon>
                 </button>
                 <button className={`pg-activity-item ${sessionOpen ? "active" : ""}`} onClick={onToggleSession} title="Session">

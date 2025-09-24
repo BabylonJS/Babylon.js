@@ -13,6 +13,7 @@ import type { ActivityBarHandle } from "./activityBarComponent";
 import { ActivityBar } from "./activityBarComponent";
 import { FileExplorer } from "./fileExplorerComponent";
 import AddFileIcon from "./icons/newFile.svg";
+import { SearchPanel } from "./searchPanelComponent";
 
 import "../../scss/monaco.scss";
 import "../../scss/editor.scss";
@@ -36,6 +37,7 @@ interface IComponentState {
     theme: "dark" | "light";
     dragOverIndex: number;
     explorerOpen: boolean;
+    searchOpen: boolean;
     sessionOpen: boolean;
 }
 
@@ -77,6 +79,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             dragOverIndex: -1,
             explorerOpen: false,
             sessionOpen: false,
+            searchOpen: false,
         };
 
         this._monacoManager = new MonacoManager(gs);
@@ -530,7 +533,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
     };
 
     public override render() {
-        const { theme, explorerOpen, sessionOpen } = this.state;
+        const { theme, explorerOpen, searchOpen, sessionOpen } = this.state;
         const entry = this.props.globalState.entryFilePath;
 
         return (
@@ -541,10 +544,12 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                         ref={this._activityBarRef}
                         globalState={this.props.globalState}
                         onConfirmFileDialog={this._confirmFileDialog}
+                        searchOpen={searchOpen}
+                        onToggleSearch={() => this.setState((s) => ({ searchOpen: !s.searchOpen, explorerOpen: false, sessionOpen: false }))}
                         explorerOpen={explorerOpen}
-                        onToggleExplorer={() => this.setState((s) => ({ explorerOpen: !s.explorerOpen }))}
+                        onToggleExplorer={() => this.setState((s) => ({ explorerOpen: !s.explorerOpen, sessionOpen: false, searchOpen: false }))}
                         sessionOpen={sessionOpen}
-                        onToggleSession={() => this.setState((s) => ({ sessionOpen: !s.sessionOpen }))}
+                        onToggleSession={() => this.setState((s) => ({ sessionOpen: !s.sessionOpen, explorerOpen: false, searchOpen: false }))}
                     />
 
                     {/* Split between Explorer (left) and Main (right) */}
@@ -572,10 +577,29 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                                     onDelete={(p) => this._removeFile(p)}
                                 />
                             </div>
+                        ) : searchOpen ? (
+                            <div className="pg-explorer-panel">
+                                <div className="pg-panel-header">
+                                    <span>SEARCH</span>
+                                    <div className="pg-panel-actions"></div>
+                                </div>
+                                <SearchPanel
+                                    onOpenAt={(path, range) => {
+                                        const p = path;
+                                        this._openEditor(p);
+                                        const ed = this._monacoManager.editorHost.editor;
+                                        if (ed) {
+                                            ed.revealRangeInCenter(range, 0 /** ScrollType::Smooth */);
+                                            ed.setSelection(range);
+                                            ed.focus();
+                                        }
+                                    }}
+                                />
+                            </div>
                         ) : (
                             <div className="pg-explorer-panel-collapsed" />
                         )}
-                        {explorerOpen ? <Splitter size={3} minSize={20} initialSize={180} controlledSide={ControlledSize.First} /> : <div />}
+                        {explorerOpen || searchOpen ? <Splitter size={3} minSize={20} initialSize={180} controlledSide={ControlledSize.First} /> : <div />}
 
                         {/* Right: Tabs (top) + Monaco (below) */}
                         <div className="pg-main-content">
