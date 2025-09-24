@@ -317,9 +317,9 @@ const useStyles = makeStyles({
 
 const usePaneVerticalResizeStyle = makeResetStyles({
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    "--pane-height": "200px",
-    // TODO: Why do we have to subtract 8px here to avoid a small resize jump?
-    height: "calc(var(--pane-height) - 8px)",
+    "--pane-height": "0px",
+    // TODO: This is not exactly half the space because of toolbars. Revisit this after we make some more final decisions on high level UI layout.
+    height: "clamp(200px,calc(45% + var(--pane-height)), 100% - 300px)",
 });
 
 // This is a wrapper for an item in a toolbar that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
@@ -580,6 +580,7 @@ function usePane(
 
     const { elementRef, handleRef } = useResizeHandle({
         growDirection: "up",
+        relative: true,
         variableName: "--pane-height",
         variableTarget: "element",
     });
