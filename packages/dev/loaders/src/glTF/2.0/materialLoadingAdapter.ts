@@ -2,6 +2,7 @@ import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import type { Color3 } from "core/Maths/math.color";
+import type { Vector3 } from "core/Maths/math.vector";
 
 /**
  * Interface for material loading adapters that provides a unified OpenPBR-like interface
@@ -267,6 +268,16 @@ export interface IMaterialLoadingAdapter {
     transmissionColor: Color3;
 
     /**
+     * Sets the scattering coefficient
+     */
+    transmissionScatter: Color3;
+
+    /**
+     * Sets the scattering anisotropy (-1 to 1)
+     */
+    transmissionScatterAnisotropy: number;
+
+    /**
      * Sets the dispersion Abbe number
      */
     transmissionDispersionAbbeNumber: number;
@@ -300,9 +311,15 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Configures subsurface properties for PBR material
+     * Configures subsurface properties
      */
     configureSubsurface(): void;
+
+    /**
+     * @internal
+     * Sets/gets the extinction coefficient
+     */
+    extinctionCoefficient: Vector3;
 
     /**
      * Sets/gets the subsurface weight
@@ -323,6 +340,31 @@ export interface IMaterialLoadingAdapter {
      * Sets/gets the subsurface color texture
      */
     subsurfaceColorTexture: Nullable<BaseTexture>;
+
+    /**
+     * Sets/gets the surface tint of the material (when using subsurface scattering)
+     */
+    subsurfaceConstantTint: Color3;
+
+    /**
+     * Sets/gets the surface tint texture of the material (when using subsurface scattering)
+     */
+    subsurfaceConstantTintTexture: Nullable<BaseTexture>;
+
+    /**
+     * Sets/gets the subsurface radius (used for subsurface scattering)
+     */
+    subsurfaceRadius: number;
+
+    /**
+     * Sets/gets the subsurface radius scale (used for subsurface scattering)
+     */
+    subsurfaceRadiusScale: Color3;
+
+    /**
+     * Sets/gets the subsurface scattering anisotropy
+     */
+    subsurfaceScatterAnisotropy: number;
 
     // ========================================
     // FUZZ LAYER (Sheen)
