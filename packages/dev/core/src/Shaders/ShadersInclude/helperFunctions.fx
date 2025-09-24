@@ -236,7 +236,7 @@ float avg(vec3 value) {
     return dot(value, vec3(0.333333333));
 }
 
-#ifdef WEBGL2
+#if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE) 
 uint extractBits(uint value, int offset, int width) {
     return (value >> offset) & ((1u << width) - 1u);
 }
