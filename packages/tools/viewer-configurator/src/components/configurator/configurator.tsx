@@ -571,6 +571,16 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
+    const ssaoConfig = useConfiguration(
+        DefaultViewerOptions.postProcessing.ssao,
+        viewerOptions.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
+        () => viewer.postProcessing.ssao,
+        (ssao) => (viewer.postProcessing = { ssao }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+
     const autoOrbitConfig = useConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.enabled,
         viewerOptions.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
@@ -1485,6 +1495,11 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         />
                     </div>
                     <FontAwesomeIconButton title="Reset exposure" icon={faTrashCan} disabled={!exposureConfig.canReset} onClick={exposureConfig.reset} />
+                </div>
+                <div>
+                    <div style={{ flex: 1 }}>
+                        <CheckBoxLineComponent label="SSAO (Ambient Occlusion)" isSelected={ssaoConfig.configuredState} onSelect={ssaoConfig.update} />
+                    </div>
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
