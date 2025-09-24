@@ -11,7 +11,7 @@ import type {
     IKHRMaterialsClearcoatAnisotropy,
 } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Color3 } from "core/Maths";
+import { Color3 } from "core/Maths/math.color";
 
 const NAME = "KHR_materials_clearcoat";
 
