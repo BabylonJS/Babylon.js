@@ -189,7 +189,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         this._disposableObservers.push(gs.onThemeChangedObservable.add(() => this.setState({ theme: this._getCurrentTheme() })));
 
         window.addEventListener("click", this._closeCtxMenu, { capture: true });
-        window.addEventListener("keydown", this._handleKeyDown);
+        window.addEventListener("keydown", this._handleKeyDown, { capture: true });
 
         const hostElement = this._monacoRef.current!;
         this._mutationObserver.observe(hostElement, { childList: true, subtree: true });
@@ -200,7 +200,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
     override componentWillUnmount(): void {
         this._mutationObserver.disconnect();
         window.removeEventListener("click", this._closeCtxMenu, { capture: true });
-        window.removeEventListener("keydown", this._handleKeyDown);
+        window.removeEventListener("keydown", this._handleKeyDown, { capture: true });
         for (const d of this._disposableObservers) {
             d.remove();
         }
@@ -442,9 +442,45 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
 
     // ---------- Keyboard ----------
     private _handleKeyDown = (e: KeyboardEvent) => {
-        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "N") {
+        // New file
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "g") {
             e.preventDefault();
+            e.stopPropagation();
             this._activityBarRef.current?.openCreateDialog();
+            return;
+        }
+        // Open search
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({
+                searchOpen: true,
+                explorerOpen: false,
+                sessionOpen: false,
+            });
+            return;
+        }
+        // Open File Explorer
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "e") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState({
+                searchOpen: false,
+                explorerOpen: true,
+                sessionOpen: false,
+            });
+            return;
+        }
+        // Toggle Activity Bar
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.setState((s) => ({
+                searchOpen: false,
+                explorerOpen: !s.explorerOpen,
+                sessionOpen: false,
+            }));
+            return;
         }
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
             const handleSecondKey = (e2: KeyboardEvent) => {
@@ -605,7 +641,14 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                         <div className="pg-main-content">
                             {/* Tabs Bar */}
                             <div className="pg-tabs-bar">
-                                <div className="pg-tabs-host" ref={this._tabsHostRef}>
+                                <div
+                                    className="pg-tabs-host"
+                                    onDoubleClick={(e) => {
+                                        this._activityBarRef.current?.openCreateDialog();
+                                        e.stopPropagation();
+                                    }}
+                                    ref={this._tabsHostRef}
+                                >
                                     <div className="pg-tabs" ref={this._tabsContentRef}>
                                         {this.state.tabOrder
                                             .filter((p) => (this.props.globalState.openEditors || []).includes(p))

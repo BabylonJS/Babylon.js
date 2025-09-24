@@ -83,6 +83,7 @@
     min-height: 0;
     background: var(--pg-bg);
     font-family: var(--pg-font);
+    z-index: 1;
     position: relative;
     overflow: hidden;
     & > div {

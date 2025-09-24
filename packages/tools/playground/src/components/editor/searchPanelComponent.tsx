@@ -6,6 +6,9 @@ import { debounce } from "ts-debounce";
 import RegexIcon from "./icons/regex.svg";
 import WholeWordIcon from "./icons/wholeWord.svg";
 import CaseSensitiveIcon from "./icons/caseSensitive.svg";
+import ReplaceIcon from "./icons/replace.svg";
+import ReplaceAllIcon from "./icons/replaceAll.svg";
+import SearchIcon from "./icons/search.svg";
 import { Icon } from "./iconComponent";
 
 import "../../scss/search.scss";
@@ -88,6 +91,9 @@ export const SearchPanel: React.FC<{
 
         for (const model of models) {
             const uriStr = model.uri.toString();
+            if (!uriStr.startsWith("file:///pg/")) {
+                continue;
+            }
             let found: monaco.editor.FindMatch[] = [];
 
             if (rx) {
@@ -185,6 +191,10 @@ export const SearchPanel: React.FC<{
     );
 
     const replaceAll = React.useCallback(() => {
+        // Confirm with window.alert
+        if (!window.confirm(`Are you sure you want to replace all occurrences over ${Object.keys(results).length} files?`)) {
+            return;
+        }
         for (const file of Object.keys(results)) {
             replaceInFile(file);
         }
@@ -194,11 +204,12 @@ export const SearchPanel: React.FC<{
         <div className="pg-search-panel">
             <div className="pg-search-bar">
                 <div className="pg-search-row">
-                    <input
+                    <textarea
+                        id="pg-search-input"
                         className="pg-search-input"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search..."
+                        placeholder="Search"
                         spellCheck={false}
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
@@ -208,33 +219,36 @@ export const SearchPanel: React.FC<{
                     />
                     <div className="pg-search-row pg-search-row--options">
                         <button onClick={() => setUseRegex(!useRegex)} className={`pg-search-option ${useRegex ? "pg-search-option-enabled" : ""}`} title="Use Regular Expressions">
-                            <Icon size={20}>
+                            <Icon size={18}>
                                 <RegexIcon />
                             </Icon>
                         </button>
                         <button onClick={() => setMatchCase(!matchCase)} className={`pg-search-option ${matchCase ? "pg-search-option-enabled" : ""}`} title="Match Case">
-                            <Icon size={20}>
+                            <Icon size={18}>
                                 <CaseSensitiveIcon />
                             </Icon>
                         </button>
 
                         <button onClick={() => setWholeWord(!wholeWord)} className={`pg-search-option ${wholeWord ? "pg-search-option-enabled" : ""}`} title="Match Whole Word">
-                            <Icon size={20}>
+                            <Icon size={18}>
                                 <WholeWordIcon />
                             </Icon>
                         </button>
+                        <button className="pg-search-option pg-search-btn" onClick={runSearchNow} title="Search" aria-label="Search" disabled={!query.trim()}>
+                            <Icon size={16}>
+                                <SearchIcon />
+                            </Icon>
+                        </button>
                     </div>
-                    <button className="pg-search-btn" onClick={runSearchNow} title="Search" aria-label="Search" disabled={!query.trim()}>
-                        Search
-                    </button>
                 </div>
 
                 <div className="pg-search-row">
-                    <input
+                    <textarea
+                        id="pg-replace-input"
                         className="pg-search-input"
                         value={replacement}
                         onChange={(e) => setReplacement(e.target.value)}
-                        placeholder={useRegex || wholeWord ? "Replace (supports $1 backrefs)" : "Replace…"}
+                        placeholder={useRegex || wholeWord ? "Replace (supports $1 backrefs)" : "Replace"}
                         spellCheck={false}
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
@@ -242,13 +256,15 @@ export const SearchPanel: React.FC<{
                             }
                         }}
                     />
-                    <button className="pg-search-btn pg-search-btn--secondary" onClick={replaceAll} disabled={!query.trim()} title="Replace all in results">
-                        Replace All
+                    <button className="pg-search-option pg-search-btn pg-search-btn--secondary" onClick={replaceAll} disabled={!query.trim()} title="Replace all in results">
+                        <Icon size={20}>
+                            <ReplaceAllIcon />
+                        </Icon>
                     </button>
                 </div>
 
                 <div className="pg-search-meta">
-                    {isSearching ? "Searching…" : `${matchesCount} results in ${filesCount} file${filesCount === 1 ? "" : "s"}`}
+                    {isSearching ? "Searching" : `${matchesCount} results in ${filesCount} file${filesCount === 1 ? "" : "s"}`}
                     <div className="pg-search-meta__actions">
                         <button
                             className="pg-link-btn"
@@ -293,7 +309,9 @@ export const SearchPanel: React.FC<{
                                         }}
                                         title="Replace all in this file"
                                     >
-                                        Replace in file
+                                        <Icon size={24}>
+                                            <ReplaceIcon />
+                                        </Icon>
                                     </button>
                                 </div>
 
