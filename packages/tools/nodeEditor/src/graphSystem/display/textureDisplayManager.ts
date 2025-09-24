@@ -11,6 +11,7 @@ import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/inter
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import * as localStyles from "./textureDisplayManager.module.scss";
 import * as commonStyles from "./common.module.scss";
+import { SmartFilterTextureBlock } from "core/Materials";
 
 export class TextureDisplayManager implements IDisplayManager {
     private _previewCanvas: HTMLCanvasElement;
@@ -46,19 +47,18 @@ export class TextureDisplayManager implements IDisplayManager {
 
         if (!this._previewCanvas) {
             contentArea.classList.add(commonStyles["texture-block"]);
+
             if (block instanceof TextureBlock) {
                 contentArea.classList.add(localStyles["regular-texture-block"]);
-            }
-            if (block instanceof ReflectionTextureBlock || block instanceof ReflectionBlock) {
+            } else if (block instanceof ReflectionTextureBlock || block instanceof ReflectionBlock) {
                 contentArea.classList.add(localStyles["reflection-block"]);
-            }
-            if (block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
+            } else if (block instanceof SmartFilterTextureBlock) {
+                contentArea.classList.add(localStyles["smart-filter-texture-block"]);
+            } else if (block instanceof CurrentScreenBlock || block instanceof ParticleTextureBlock) {
                 contentArea.classList.add(localStyles["reduced-texture-block"]);
-            }
-            if (block instanceof TriPlanarBlock) {
+            } else if (block instanceof TriPlanarBlock) {
                 contentArea.classList.add(localStyles["triplanar-texture-block"]);
-            }
-            if (block instanceof RefractionBlock) {
+            } else if (block instanceof RefractionBlock) {
                 contentArea.classList.add(localStyles["refraction-texture-block"]);
             }
 
