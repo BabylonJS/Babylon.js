@@ -22,6 +22,7 @@ import type {
     ShaderMaterial,
     ShadowGenerator,
     IblCdfGenerator,
+    SSAO2RenderingPipeline,
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
@@ -56,7 +57,18 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { _RetryWithInterval } from "core/Misc/timingTools";
-import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
+import { Lazy } from "core/Misc/lazy";
+
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+const LazySSAODependenciesPromise = new Lazy(() =>
+    Promise.all([
+        import("core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline"),
+        import("core/Rendering/prePassRendererSceneComponent"),
+        import("core/Rendering/geometryBufferRendererSceneComponent"),
+        import("core/Engines/Extensions/engine.multiRender"),
+        import("core/Engines/WebGPU/Extensions/engine.multiRender"),
+    ])
+);
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -850,7 +862,7 @@ export class Viewer implements IDisposable {
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
-    private _ssaoEnabled: boolean;
+    private _ssaoEnabled: boolean = false;
     private _ssaoPipeline: Nullable<SSAO2RenderingPipeline> = null;
 
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
@@ -928,20 +940,6 @@ export class Viewer implements IDisposable {
                 }
 
                 if (hasChanged) {
-                    this.onPostProcessingChanged.notifyObservers();
-                }
-            });
-
-            this._ssaoEnabled = false;
-            scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
-                if (!this._ssaoEnabled && pipeline.name === "ssao") {
-                    this._ssaoEnabled = true;
-                    this.onPostProcessingChanged.notifyObservers();
-                }
-            });
-            scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
-                if (this._ssaoEnabled && pipeline.name === "ssao") {
-                    this._ssaoEnabled = false;
                     this.onPostProcessingChanged.notifyObservers();
                 }
             });
@@ -1215,7 +1213,7 @@ export class Viewer implements IDisposable {
             this._scene.imageProcessingConfiguration.exposure = value.exposure;
         }
 
-        if (value.ssao && !this._ssaoEnabled && SSAO2RenderingPipeline.IsSupported) {
+        if (value.ssao && !this._ssaoEnabled) {
             observePromise(this._enableSSAOPipeline());
         } else if (value.ssao === false && this._ssaoEnabled) {
             this._disableSSAOPipeline();
@@ -1274,11 +1272,27 @@ export class Viewer implements IDisposable {
     }
 
     private async _enableSSAOPipeline() {
+        const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
+
+        if (!this._ssaoPipeline) {
+            this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
+                if (!this._ssaoEnabled && pipeline.name === "ssao") {
+                    this._ssaoEnabled = true;
+                    this.onPostProcessingChanged.notifyObservers();
+                }
+            });
+            this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
+                if (this._ssaoEnabled && pipeline.name === "ssao") {
+                    this._ssaoEnabled = false;
+                    this.onPostProcessingChanged.notifyObservers();
+                }
+            });
+        }
+
         const ssaoRatio = {
             ssaoRatio: 1,
             blurRatio: 1,
         };
-        await Promise.all([import("core/Rendering/prePassRendererSceneComponent"), import("core/Rendering/geometryBufferRendererSceneComponent")]);
         this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
         this._updateSSAOPipeline();
         this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
