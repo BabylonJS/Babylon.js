@@ -2958,6 +2958,10 @@
             "title": "OpenPBR Coat Anisotropy - Analytic Lights",
             "playgroundId": "#GRQHVV#78",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "Specular Reflectance with IOR V2 Manifest",
+            "playgroundId": "#KQYNYS#49"
         }
     ]
 }

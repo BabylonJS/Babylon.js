@@ -3,6 +3,8 @@ import { DecodeBase64ToBinary, Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
 import { ReadLastLocal } from "./localSession";
+import type { SnippetData, SnippetPayload } from "./snippet";
+import { ManifestVersion, type V2Manifest } from "./snippet";
 
 const DecodeBase64ToString = (base64Data: string): string => {
     return atob(base64Data);
@@ -148,7 +150,7 @@ export class LoadManager {
         "createEngine",
     ];
     private async _processJsonPayloadAsync(data: string) {
-        const snippet = JSON.parse(data);
+        const snippet = JSON.parse(data) as SnippetData;
         // Check if title / descr / tags are already set
         if (snippet.name != null && snippet.name != "") {
             this.globalState.currentSnippetTitle = snippet.name;
@@ -169,7 +171,7 @@ export class LoadManager {
         }
 
         // Extract code
-        const payload = JSON.parse(snippet.jsonPayload || snippet.payload);
+        const payload = JSON.parse(snippet.jsonPayload ?? snippet.payload ?? "") as SnippetPayload;
         let code: string = payload.code.toString();
 
         if (payload.unicode) {
@@ -202,29 +204,12 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
         }
 
         try {
-            const maybeV2 = JSON.parse(code);
-            if (maybeV2 && maybeV2.v === 2 && maybeV2.files && typeof maybeV2.files === "object") {
-                const v2 = maybeV2 as {
-                    v: 2;
-                    language: "JS" | "TS";
-                    entry: string;
-                    imports?: Record<string, string>;
-                    files: Record<string, string>;
-                    meta?: { title?: string; description?: string; tags?: string[] };
-                };
+            const manifestPayload = JSON.parse(code);
+            if (manifestPayload && manifestPayload.files && typeof manifestPayload.files === "object") {
+                const v2 = manifestPayload as V2Manifest;
 
                 if (v2.language !== this.globalState.language) {
                     Utilities.SwitchLanguage(v2.language, this.globalState, true);
-                }
-
-                if (!this.globalState.currentSnippetTitle && v2.meta?.title) {
-                    this.globalState.currentSnippetTitle = v2.meta.title;
-                }
-                if (!this.globalState.currentSnippetDescription && v2.meta?.description) {
-                    this.globalState.currentSnippetDescription = v2.meta.description;
-                }
-                if (!this.globalState.currentSnippetTags && v2.meta?.tags?.length) {
-                    this.globalState.currentSnippetTags = v2.meta.tags.join(",");
                 }
 
                 // In the case we're loading from a #local revision id,
@@ -236,7 +221,7 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
                     await new Promise((res) => setTimeout(res, 10));
                 }
                 this.globalState.onV2HydrateRequiredObservable.notifyObservers({
-                    v: 2,
+                    v: ManifestVersion,
                     files: v2.files,
                     entry: v2.entry || (v2.language === "JS" ? "index.js" : "index.ts"),
                     imports: v2.imports || {},
@@ -267,7 +252,7 @@ Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
         }
         queueMicrotask(() => {
             this.globalState.onV2HydrateRequiredObservable.notifyObservers({
-                v: 2,
+                v: ManifestVersion,
                 files: { [fileName]: code },
                 entry: fileName,
                 imports: {},

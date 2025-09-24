@@ -6,20 +6,11 @@ import type { ThinEngine, Scene } from "@dev/core";
 import type * as monacoNs from "monaco-editor/esm/vs/editor/editor.api";
 import * as lexer from "es-module-lexer";
 import type { TsPipeline } from "../ts/tsPipeline";
-import type { TypingsService } from "../typings/typingsService";
 import type { DirHandle } from "./localPackage";
 import { BuildLocalPackageImportMap } from "./localPackage";
+import type { V2Manifest } from "../../snippet";
 
 lexer.initSync();
-
-export type V2Manifest = {
-    v: 2;
-    language: "JS" | "TS";
-    entry: string;
-    imports: Record<string, string>;
-    files: Record<string, string>;
-    cdnBase?: string;
-};
 
 export type V2PackSnapshot = {
     manifest: V2Manifest;
@@ -101,10 +92,9 @@ function SanitizeCode(code: string): string {
  * @param manifest
  * @param opts
  * @param pipeline
- * @param typingsService Optional TypingsService to await ATA completion before diagnostics
  * @returns
  */
-export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions, pipeline: TsPipeline, typingsService?: TypingsService): Promise<V2Runner> {
+export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions, pipeline: TsPipeline): Promise<V2Runner> {
     const ts = {};
     const monaco = opts.monaco as typeof monacoNs;
     const importMapId = opts.importMapId || "pg-v2-import-map";

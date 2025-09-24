@@ -17,7 +17,8 @@ import { TemplatesService } from "./completion/templatesService";
 import { CompletionService } from "./completion/completionService";
 import { CodeAnalysisService } from "./analysis/codeAnalysisService";
 import { DefinitionService } from "./navigation/definitionService";
-import type { V2Manifest, V2RunnerOptions } from "./run/runner";
+import type { V2RunnerOptions } from "./run/runner";
+import { ManifestVersion, type V2Manifest } from "../snippet";
 import { CreateV2Runner } from "./run/runner";
 import { CompilationError } from "../../components/errorDisplayComponent";
 import { ParseSpec } from "./typings/utils";
@@ -333,7 +334,7 @@ export class MonacoManager {
         const files = this._files.getFiles();
         const imports = this.globalState.importsMap || {};
         return {
-            v: 2,
+            v: ManifestVersion,
             language: this.globalState.language as "JS" | "TS",
             entry,
             imports,
@@ -387,7 +388,7 @@ export class MonacoManager {
         } catch {}
 
         // Create new runner and cache the configuration
-        this.globalState.currentRunner = await CreateV2Runner(manifest, options, this._tsPipeline, this._typings);
+        this.globalState.currentRunner = await CreateV2Runner(manifest, options, this._tsPipeline);
         this._lastRunConfig = config;
         this._lastRunConfigHash = configHash;
 

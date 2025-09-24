@@ -3,6 +3,7 @@
 
 import type { GlobalState } from "../globalState";
 import { Logger } from "@dev/core";
+import type { V2Manifest } from "./snippet";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let JSZip: any;
@@ -10,14 +11,7 @@ declare let JSZip: any;
 declare let saveAs: (blob: Blob, name: string) => void;
 
 type V2PackSnapshot = {
-    manifest: {
-        v: 2;
-        language: "JS" | "TS";
-        entry: string;
-        imports: Record<string, string>;
-        files: Record<string, string>;
-        cdnBase?: string;
-    };
+    manifest: V2Manifest;
     cdnBase: string;
     entryPathJs: string; // normalized to .js by the runner
     rewritten: Record<string, string>; // code as-run (imports currently __pg__/... blobs)

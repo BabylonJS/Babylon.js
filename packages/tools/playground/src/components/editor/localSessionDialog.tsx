@@ -3,7 +3,7 @@ import type { GlobalState } from "../../globalState";
 import type { FileChange, RevisionContext, SnippetRevision } from "../../tools/localSession";
 import { ListRevisionContexts, LoadFileRevisionsForToken, MaxRevisions, RemoveFileRevisionForToken } from "../../tools/localSession";
 import { Utilities } from "../../tools/utilities";
-import type { V2Manifest } from "../../tools/monaco/run/runner";
+import type { V2Manifest } from "../../tools/snippet";
 import "../../scss/dialogs.scss";
 
 interface ILocalSessionDialogProps {

@@ -1,7 +1,8 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import { EncodeArrayBufferToBase64, Logger } from "@dev/core";
+import { Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
-import type { V2Manifest } from "./monaco/run/runner";
+import { PackSnippetData } from "./snippet";
+import type { V2Manifest } from "./snippet";
 import { Utilities } from "./utilities";
 
 declare let JSZip: any;
@@ -185,39 +186,6 @@ export function LoadFileRevisionsForToken(globalState: GlobalState, token: strin
         Logger.Warn("Failed to load local revisions for token: " + token + " - " + (e as any)?.message);
         return [];
     }
-}
-
-export function PackSnippetData(globalState: GlobalState): string {
-    const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-    const entry = globalState.entryFilePath || (globalState.language === "JS" ? "index.js" : "index.ts");
-    const files = Object.keys(globalState.files || {}).length ? globalState.files : { [entry]: globalState.currentCode || "" };
-    const v2 = {
-        v: 2,
-        language: (globalState.language === "JS" ? "JS" : "TS") as "JS" | "TS",
-        entry,
-        imports: globalState.importsMap || {},
-        files,
-    };
-    const codeToSave = JSON.stringify(v2);
-    const encoder = new TextEncoder();
-    const buffer = encoder.encode(codeToSave);
-    let testData = "";
-    for (let i = 0; i < buffer.length; i++) {
-        testData += String.fromCharCode(buffer[i]);
-    }
-    const payload = JSON.stringify({
-        code: codeToSave,
-        unicode: testData !== codeToSave ? EncodeArrayBufferToBase64(buffer) : undefined,
-        engine: activeEngineVersion,
-    });
-    const snippetData = {
-        payload,
-        name: globalState.currentSnippetTitle,
-        description: globalState.currentSnippetDescription,
-        tags: globalState.currentSnippetTags,
-    };
-
-    return JSON.stringify(snippetData);
 }
 
 export function LoadFileRevisions(globalState: GlobalState): SnippetRevision[] {

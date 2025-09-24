@@ -1,7 +1,7 @@
 import { Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
-import { PackSnippetData } from "./localSession";
+import { PackSnippetData } from "./snippet";
 
 /**
  * Handles saving playground code and multi-file manifests.
