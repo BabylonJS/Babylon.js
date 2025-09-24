@@ -36,11 +36,11 @@ let _InitPromise: Nullable<Promise<{ core: any; generators: any }>> = null;
 
 /**
  * Initialize the Manifold library
- * @param version defines the version of the library to use, default is "0.42.0"
+ * @param version defines the version of the library to use, default is "0.43.0"
  * @param options defines the options to use to initialize the library
  */
 export async function InitRecast(
-    version = "0.42.1",
+    version = "0.43.0",
     options?: {
         instance: RecastInjection;
     }
