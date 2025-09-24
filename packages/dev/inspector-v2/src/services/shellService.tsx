@@ -4,7 +4,8 @@ import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
-import { Button, Divider, makeStyles, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
+import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
+import { Button, Divider, makeResetStyles, makeStyles, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -314,6 +315,13 @@ const useStyles = makeStyles({
     },
 });
 
+const usePaneVerticalResizeStyle = makeResetStyles({
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    "--pane-height": "200px",
+    // TODO: Why do we have to subtract 8px here to avoid a small resize jump?
+    height: "calc(var(--pane-height) - 8px)",
+});
+
 // This is a wrapper for an item in a toolbar that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
 const ToolbarItem: FunctionComponent<{
     location: "top" | "bottom";
@@ -568,6 +576,14 @@ function usePane(
     const topPaneTabList = useMemo(() => createPaneTabList(topPaneComponents, toolbarMode, topSelectedTab, setTopSelectedTab), [topPaneComponents, toolbarMode, topSelectedTab]);
     const bottomPaneTabList = useMemo(() => createPaneTabList(bottomPaneComponents, "compact", bottomSelectedTab, setBottomSelectedTab), [bottomPaneComponents, bottomSelectedTab]);
 
+    const paneVerticalResizeClass = usePaneVerticalResizeStyle();
+
+    const { elementRef, handleRef } = useResizeHandle({
+        growDirection: "up",
+        variableName: "--pane-height",
+        variableTarget: "element",
+    });
+
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
     const pane = useMemo(() => {
         return (
@@ -599,7 +615,9 @@ function usePane(
                                 </div>
 
                                 {/* If we have both top and bottom panes, show a divider. */}
-                                {topPaneComponents.length > 0 && bottomPaneComponents.length > 0 && <Divider className={classes.headerDivider} />}
+                                {topPaneComponents.length > 0 && bottomPaneComponents.length > 0 && (
+                                    <Divider ref={handleRef} className={classes.headerDivider} style={{ margin: "0", minHeight: tokens.spacingVerticalM, cursor: "ns-resize" }} />
+                                )}
 
                                 {/* Render the bottom pane tablist. */}
                                 {bottomPaneComponents.length > 1 && (
@@ -609,7 +627,7 @@ function usePane(
                                 )}
 
                                 {/* Render the bottom pane content. */}
-                                <div className={classes.paneContent}>
+                                <div ref={elementRef} className={`${classes.paneContent} ${paneVerticalResizeClass}`} style={{ flex: "0 0 auto" }}>
                                     {bottomSelectedTab?.title ? (
                                         <>
                                             <Title3 className={classes.paneHeader}>{bottomSelectedTab.title}</Title3>
