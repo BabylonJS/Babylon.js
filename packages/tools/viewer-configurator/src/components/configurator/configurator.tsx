@@ -795,6 +795,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             attributes.push(`exposure="${exposureConfig.configuredState.toFixed(1)}"`);
         }
 
+        if (ssaoConfig.canReset) {
+            attributes.push(`ssao`);
+        }
+
         if (cameraConfig.canReset) {
             const { alpha, beta, radius, target } = cameraConfig.configuredState;
             attributes.push(`camera-orbit="${alpha.toFixed(3)} ${beta.toFixed(3)} ${radius.toFixed(3)}"`);
@@ -847,6 +851,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.configuredState,
         contrastConfig.configuredState,
         exposureConfig.configuredState,
+        ssaoConfig.configuredState,
         cameraConfig.configuredState,
         autoOrbitConfig.configuredState,
         autoOrbitSpeedConfig.configuredState,
@@ -916,6 +921,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         if (exposureConfig.canReset) {
             postProcessingProperties.push(`"exposure": ${exposureConfig.configuredState.toFixed(1)}`);
         }
+        if (ssaoConfig.canReset) {
+            postProcessingProperties.push(`"ssao": ${ssaoConfig.configuredState}`);
+        }
         if (postProcessingProperties.length > 0) {
             properties.push(`"postProcessing": {${postProcessingProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
         }
@@ -984,6 +992,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.configuredState,
         contrastConfig.configuredState,
         exposureConfig.configuredState,
+        ssaoConfig.configuredState,
         shadowQualityConfig.configuredState,
         cameraConfig.configuredState,
         autoOrbitConfig.configuredState,

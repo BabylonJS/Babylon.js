@@ -1675,7 +1675,7 @@ export class Viewer implements IDisposable {
         });
 
         // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
-        if (!this._scene.environmentTexture && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+        if (!this._scene.environmentTexture && this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial))) {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
 
