@@ -1,4 +1,4 @@
-import type { NavMesh, OffMeshConnectionParams, TileCache } from "@recast-navigation/core";
+import type { NavMesh, NavMeshCreateParams, OffMeshConnectionParams, TileCache, UnsignedCharArray, UnsignedShortArray } from "@recast-navigation/core";
 
 import { GetRecast } from "../factory/common";
 
@@ -10,7 +10,7 @@ import { GetRecast } from "../factory/common";
  * @returns the tile cache mesh process function
  */
 export function CreateDefaultTileCacheMeshProcess(offMeshConnections: OffMeshConnectionParams[] = [], area = 0, flags = 1) {
-    return new (GetRecast().TileCacheMeshProcess)((navMeshCreateParams, polyAreas, polyFlags) => {
+    return new (GetRecast().TileCacheMeshProcess)((navMeshCreateParams: NavMeshCreateParams, polyAreas: UnsignedCharArray, polyFlags: UnsignedShortArray) => {
         for (let i = 0; i < navMeshCreateParams.polyCount(); ++i) {
             polyAreas.set(i, area);
             polyFlags.set(i, flags);
