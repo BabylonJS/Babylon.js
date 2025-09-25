@@ -209,8 +209,9 @@ textarea.pg-search-input {
 
     &__list {
         list-style: none;
-        margin: 0;
-        padding: 6px 4px 8px 4px;
+        margin: 0px 0px 0px 10px;
+        padding: 6px 4px 0px 0px;
+        border-left: 2px solid var(--pg-border, #e5e5e5);
     }
 }
 
@@ -248,26 +249,29 @@ textarea.pg-search-input {
 .pg-search-hit {
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    padding: 2px 12px 2px 0;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 3px 20px 3px 12px;
+    width: calc(100% - 32px);
     cursor: pointer;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 12px;
     &:hover {
         background: color-mix(in oklab, var(--pg-accent, #0675fc) 10%, transparent);
     }
 }
 
 .pg-search-hit__loc {
-    min-width: 56px;
-    text-align: right;
+    min-width: 26px;
     font-variant-numeric: tabular-nums;
     color: var(--pg-muted, #424242);
 }
 
 .pg-search-hit__preview {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    white-space: pre;
+    width: calc(100% - 26px);
+    text-align: left;
+    font-family: Menlo, Consolas, "Liberation Mono";
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }

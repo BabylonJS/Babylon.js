@@ -29,7 +29,7 @@ export class CodeLensService {
                             range: new monaco.Range(start.lineNumber, 1, start.lineNumber, 1),
                             command: {
                                 id: "pg.resolveLocalTypings.one",
-                                title: `Resolve local package for ${fullSpec}`,
+                                title: `Resolve and start FS watch for local package for ${fullSpec}`,
                                 tooltip: "Links a built local npm package to the Playground. Select the containing build/dist folder.",
                                 arguments: [fullSpec],
                             },

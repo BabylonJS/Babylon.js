@@ -22,6 +22,8 @@ export class TypingsService {
 
     // Local resolution support
     private _pendingLocal = new Set<string>(); // fullSpec waiting to be mapped
+    private _localLibsBySpec = new Map<string, monaco.IDisposable[]>();
+    private _localDirBySpec = new Map<string, string>();
 
     // ATA runner
     private _ata: ReturnType<typeof setupTypeAcquisition>;
@@ -423,6 +425,7 @@ export class TypingsService {
             Array.from(sourceTexts)
                 .map(SanitizeSpecifier)
                 .filter((s) => IsBare(s))
+                .filter((s) => !/@local$/.test(s))
                 .filter((s) => !IsNodeish(s))
                 .filter((s) => !this._acquired.has(CanonicalSpec(ParseSpec(s))))
                 .filter((s) => !BlocklistBase.has(BasePackage(ParseSpec(s))))
@@ -484,52 +487,64 @@ export class TypingsService {
         return this._ataInFlight;
     }
 
-    public async mapLocalTypingsAsync(fullSpec: string, dirName: string, files: Array<{ path: string; content: string }>) {
-        // Add each .d.ts file to Monaco
-        const disposables: monaco.IDisposable[] = [];
-        for (const f of files) {
-            // Normalize + build a stable virtual URI under file:///local/<pkg>@local/...
-            const clean = f.path.replace(/^\/+/, "").replace(/\\/g, "/");
-            const vuri = `file:///local/${dirName}/${clean}`;
-            disposables.push(monaco.languages.typescript.typescriptDefaults.addExtraLib(f.content, vuri));
-            disposables.push(monaco.languages.typescript.javascriptDefaults.addExtraLib(f.content, vuri));
-            this._typeLibDisposables.push(...disposables);
+    private _disposeLocalFor(fullSpec: string) {
+        const arr = this._localLibsBySpec.get(fullSpec);
+        if (arr && arr.length) {
+            for (const d of arr) {
+                try {
+                    d.dispose();
+                } catch {}
+            }
         }
+        this._localLibsBySpec.delete(fullSpec);
+        this._localDirBySpec.delete(fullSpec);
 
-        // Pick an entry d.ts: prefer package.json "types", else /index.d.ts at root, else first index.d.ts found
+        this._removeBareStub(fullSpec);
+        this._removeBareStub(fullSpec + "/*");
+    }
+
+    public async mapLocalTypingsAsync(fullSpec: string, dirName: string, files: Array<{ path: string; content: string; lastModified: number }>) {
+        this._disposeLocalFor(fullSpec);
+
+        const perSpecDisposables: monaco.IDisposable[] = [];
+        for (const f of files) {
+            const normPath = f.path.replace(/\\/g, "/");
+            const vuri = `file:///local/${dirName}/${normPath}`;
+            perSpecDisposables.push(
+                monaco.languages.typescript.typescriptDefaults.addExtraLib(f.content, vuri),
+                monaco.languages.typescript.javascriptDefaults.addExtraLib(f.content, vuri)
+            );
+        }
+        this._localLibsBySpec.set(fullSpec, perSpecDisposables);
+        this._localDirBySpec.set(fullSpec, dirName);
+
+        this._typeLibDisposables.push(...perSpecDisposables);
+
         const pickEntry = () => {
             const has = (p: string) => files.some((f) => f.path.replace(/\\/g, "/") === p);
-            // try root index
             if (has("index.d.ts")) {
-                return "file:///local/" + dirName + "/index.d.ts";
+                return `file:///local/${dirName}/index.d.ts`;
             }
 
-            // try package.json "types"
             const pkgJson = files.find((f) => f.path.replace(/\\/g, "/") === "package.json");
             if (pkgJson) {
                 try {
                     const pkg = JSON.parse(pkgJson.content);
-                    if (typeof pkg.types === "string") {
-                        const t = ("file:///local/" + dirName + "/" + pkg.types.replace(/^\.\//, "")).replace(/\\/g, "/");
-                        return t;
-                    }
-                    if (typeof pkg.typings === "string") {
-                        const t = ("file:///local/" + dirName + "/" + pkg.typings.replace(/^\.\//, "")).replace(/\\/g, "/");
-                        return t;
+                    const fromPkg = typeof pkg.types === "string" ? pkg.types : typeof pkg.typings === "string" ? pkg.typings : null;
+                    if (fromPkg) {
+                        return `file:///local/${dirName}/${fromPkg.replace(/^\.\//, "")}`.replace(/\\/g, "/");
                     }
                 } catch {}
             }
 
-            // fallback: first index.d.ts anywhere
             const idx = files.find((f) => /(?:^|\/)index\.d\.ts$/i.test(f.path.replace(/\\/g, "/")));
             if (idx) {
-                return "file:///local/" + dirName + "/" + idx.path.replace(/\\/g, "/");
+                return `file:///local/${dirName}/${idx.path.replace(/\\/g, "/")}`;
             }
 
-            // last resort: first .d.ts file
             const any = files.find((f) => f.path.toLowerCase().endsWith(".d.ts"));
             if (any) {
-                return "file:///local/" + dirName + "/" + any.path.replace(/\\/g, "/");
+                return `file:///local/${dirName}/${any.path.replace(/\\/g, "/")}`;
             }
 
             return null;
@@ -537,20 +552,16 @@ export class TypingsService {
 
         const entry = pickEntry();
         if (!entry) {
-            throw new Error("Could not find any .d.ts to use as an entry.");
+            this._disposeLocalFor(fullSpec);
+            return;
         }
 
-        // Wire paths for both the base and the fullSpec, plus wildcards
         const p = ParseSpec(fullSpec);
         const base = BasePackage(p);
-        const vdir = entry.replace(/\/index\.d\.ts$/i, "").replace(/\.d\.ts$/i, ""); // if entry isn't index.d.ts we still map wildcard
-
-        this._removeBareStub(fullSpec);
-        this._removeBareStub(fullSpec + "/*");
+        const vdir = entry.replace(/\/index\.d\.ts$/i, "").replace(/\.d\.ts$/i, "");
 
         this._addPaths(base, entry);
         this._addPaths(base + "/*", vdir + "/*");
-
         this._addPaths(fullSpec, entry);
         this._addPaths(fullSpec + "/*", vdir + "/*");
 
@@ -563,6 +574,10 @@ export class TypingsService {
     }
 
     private _addBareStub(spec: string) {
+        // Guard local - this should always be renewed explicitly
+        if (/@local$/.test(spec)) {
+            return;
+        }
         const names = this._requestedNamesBySpec.get(spec) ?? this._requestedNamesBySpec.get(BasePackage(ParseSpec(spec))) ?? new Set<string>();
         let text = `declare module "${spec}" {\n  const __def: any;\n  export default __def;\n`;
         for (const n of names) {

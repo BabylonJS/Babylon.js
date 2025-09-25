@@ -450,7 +450,7 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
             return;
         }
         // Open search
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "f") {
             e.preventDefault();
             e.stopPropagation();
             this.setState({

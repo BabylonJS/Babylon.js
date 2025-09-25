@@ -58,6 +58,7 @@ export class MonacoManager {
     private _skipOnceLocal = false;
 
     private _localPkgHandles = new Map<string, FileSystemDirectoryHandle>();
+    private _localPkgIntervals = new Map<string, NodeJS.Timeout>();
 
     public constructor(public globalState: GlobalState) {
         window.addEventListener("beforeunload", (evt) => {
@@ -866,12 +867,51 @@ export { Playground };`;
         if (!picked) {
             return;
         }
+        if (this._localPkgHandles.has(fullSpec)) {
+            const existingInterval = this._localPkgIntervals.get(fullSpec);
+            if (existingInterval) {
+                clearInterval(existingInterval);
+                this._localPkgIntervals.delete(fullSpec);
+            }
+        }
 
+        let initial = await this._enumerateDirectoryAsync(picked.handle, true);
+        // Monitor for changes every 3s
+        const interval = setInterval(async () => {
+            const next = await this._enumerateDirectoryAsync(picked.handle, true);
+            let changed = false;
+            if (next.files.length !== initial.files.length) {
+                changed = true;
+            } else {
+                for (let i = 0; i < next.files.length; i++) {
+                    if (next.files[i].path !== initial.files[i].path || next.files[i].lastModified !== initial.files[i].lastModified) {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if (!changed) {
+                return;
+            }
+            Logger.Log(`Detected change in local package: ${fullSpec}, updating...`);
+            const nextContent = await this._enumerateDirectoryAsync(picked.handle, false);
+            if (nextContent.files.length === 0) {
+                Logger.Warn(`No relevant files found in local package: ${fullSpec}, skipping update`);
+                return;
+            }
+            await this._typings.mapLocalTypingsAsync(fullSpec, `${ParseSpec(fullSpec).name}@local`, nextContent.files);
+            this._tsPipeline.forceSyncModels();
+            this._syncBareImportStubsAsync();
+            initial = next;
+            this._localPkgHandles.set(fullSpec, nextContent.handle);
+            this._publishLocalHandlesToWindow();
+        }, 3000);
+
+        this._localPkgIntervals.set(fullSpec, interval);
         this._localPkgHandles.set(fullSpec, picked.handle);
         this._publishLocalHandlesToWindow();
-
         await this._typings.mapLocalTypingsAsync(fullSpec, `${ParseSpec(fullSpec).name}@local`, picked.files);
-
+        this._tsPipeline.forceSyncModels();
         this._syncBareImportStubsAsync();
     }
 
@@ -880,10 +920,47 @@ export { Playground };`;
         return !!window.showDirectoryPicker;
     }
 
+    private async _enumerateDirectoryAsync(
+        handle: FileSystemDirectoryHandle,
+        skipContent: boolean = false
+    ): Promise<{
+        dirName: string;
+        handle: FileSystemDirectoryHandle;
+        files: Array<{ path: string; content: string; lastModified: number }>;
+    }> {
+        const files: Array<{ path: string; content: string; lastModified: number }> = [];
+        const skipDir = /^(node_modules|\.git|\.hg|\.svn|\.idea|\.vscode)$/i;
+        const walkAsync = async (dir: FileSystemDirectoryHandle, prefix = "") => {
+            // @ts-expect-error: .values() is not in TS lib yet
+            for await (const entry of dir.values()) {
+                if (entry.kind === "directory") {
+                    if (skipDir.test(entry.name)) {
+                        continue;
+                    }
+                    await walkAsync(entry as FileSystemDirectoryHandle, `${prefix}${entry.name}/`);
+                } else {
+                    const lower = entry.name.toLowerCase();
+                    if (!(lower.endsWith(".d.ts") || entry.name === "package.json")) {
+                        continue;
+                    }
+                    const file = await (entry as FileSystemFileHandle).getFile();
+                    files.push({
+                        path: `${prefix}${entry.name}`,
+                        content: skipContent ? "" : await file.text(),
+                        lastModified: file.lastModified,
+                    });
+                }
+            }
+        };
+
+        await walkAsync(handle, "");
+        return { dirName: handle.name, handle, files };
+    }
+
     private async _pickDirectoryAsync(): Promise<{
         dirName: string;
         handle: FileSystemDirectoryHandle;
-        files: Array<{ path: string; content: string }>;
+        files: Array<{ path: string; content: string; lastModified: number }>;
     } | null> {
         if (!this._hasFsAccessApi()) {
             alert("Your browser does not support the File System Access API. Please use a compatible browser like Chrome or Edge.");
@@ -900,30 +977,7 @@ export { Playground };`;
             return null;
         }
 
-        const files: Array<{ path: string; content: string }> = [];
-        const skipDir = /^(node_modules|\.git|\.hg|\.svn|\.idea|\.vscode)$/i;
-
-        const walkAsync = async (dir: FileSystemDirectoryHandle, prefix = "") => {
-            // @ts-expect-error: .values() is not in TS lib yet
-            for await (const entry of dir.values()) {
-                if (entry.kind === "directory") {
-                    if (skipDir.test(entry.name)) {
-                        continue;
-                    }
-                    await walkAsync(entry as FileSystemDirectoryHandle, `${prefix}${entry.name}/`);
-                } else {
-                    const lower = entry.name.toLowerCase();
-                    if (!(lower.endsWith(".d.ts") || entry.name === "package.json")) {
-                        continue;
-                    }
-                    const file = await (entry as FileSystemFileHandle).getFile();
-                    files.push({ path: `${prefix}${entry.name}`, content: await file.text() });
-                }
-            }
-        };
-
-        await walkAsync(handle, "");
-        return { dirName: handle.name, handle, files };
+        return await this._enumerateDirectoryAsync(handle);
     }
 
     private _publishLocalHandlesToWindow() {
