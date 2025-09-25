@@ -160,6 +160,8 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
 
 type ToolbarMode = "full" | "compact";
 
+type SidePaneMode = "both" | "right";
+
 /**
  * Options for configuring the shell service.
  */
@@ -191,6 +193,14 @@ export type ShellServiceOptions = {
      * In "compact" mode, toolbars are displayed at the top and bottom of the left and right side panes.
      */
     toolbarMode?: ToolbarMode;
+
+    /**
+     * The mode of the side panes.
+     * Can be either "both" (default) or "right".
+     * In "both" mode, side panes can be added to both the left and right sides.
+     * In "right" mode, all left panes are moved to the upper right, and all right panes are moved to the lower right.
+     */
+    sidePaneMode?: SidePaneMode;
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -693,6 +703,7 @@ export function MakeShellServiceDefinition({
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
     toolbarMode = "full",
+    sidePaneMode = "both",
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
     return {
         friendlyName: "MainView",
@@ -709,19 +720,36 @@ export function MakeShellServiceDefinition({
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
 
-                const topBarComponents = useOrderedObservableCollection(topBarComponentCollection);
-                const bottomBarComponents = useOrderedObservableCollection(bottomBarComponentCollection);
+                const topBarItems = useOrderedObservableCollection(topBarComponentCollection);
+                const bottomBarItems = useOrderedObservableCollection(bottomBarComponentCollection);
 
-                const topBarLeftComponents = useMemo(() => topBarComponents.filter((entry) => entry.horizontalLocation === "left"), [topBarComponents]);
-                const topBarRightComponents = useMemo(() => topBarComponents.filter((entry) => entry.horizontalLocation === "right"), [topBarComponents]);
+                const topLeftPaneItems = useOrderedObservableCollection(topLeftPaneComponentCollection);
+                const topRightPaneItems = useOrderedObservableCollection(topRightPaneComponentCollection);
+                const bottomLeftPaneItems = useOrderedObservableCollection(bottomLeftPaneComponentCollection);
+                const bottomRightPaneItems = useOrderedObservableCollection(bottomRightPaneComponentCollection);
 
-                const bottomBarLeftComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.horizontalLocation === "left"), [bottomBarComponents]);
-                const bottomBarRightComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.horizontalLocation === "right"), [bottomBarComponents]);
+                const hasLeftPaneItems = topLeftPaneItems.length > 0 || bottomLeftPaneItems.length > 0;
+                const hasRightPaneItems = topRightPaneItems.length > 0 || bottomRightPaneItems.length > 0;
 
-                const topLeftPaneComponents = useOrderedObservableCollection(topLeftPaneComponentCollection);
-                const topRightPaneComponents = useOrderedObservableCollection(topRightPaneComponentCollection);
-                const bottomLeftPaneComponents = useOrderedObservableCollection(bottomLeftPaneComponentCollection);
-                const bottomRightPaneComponents = useOrderedObservableCollection(bottomRightPaneComponentCollection);
+                // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
+                // depending on whether there are any side panes on that side.
+                const coerceToolBarItemHorizontalLocation = (item: ToolbarItem) => {
+                    let location = item.horizontalLocation;
+                    if (toolbarMode === "compact") {
+                        if (location === "left" && !hasLeftPaneItems) {
+                            location = "right";
+                        }
+                        if (location === "right" && !hasRightPaneItems) {
+                            location = "left";
+                        }
+                    }
+                    return location;
+                };
+
+                const topBarLeftComponents = useMemo(() => topBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [topBarItems]);
+                const topBarRightComponents = useMemo(() => topBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [topBarItems]);
+                const bottomBarLeftComponents = useMemo(() => bottomBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [bottomBarItems]);
+                const bottomBarRightComponents = useMemo(() => bottomBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [bottomBarItems]);
 
                 const contentComponents = useOrderedObservableCollection(contentComponentCollection);
 
@@ -729,8 +757,8 @@ export function MakeShellServiceDefinition({
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
-                    topLeftPaneComponents,
-                    bottomLeftPaneComponents,
+                    topLeftPaneItems,
+                    bottomLeftPaneItems,
                     toolbarMode,
                     topBarLeftComponents,
                     bottomBarLeftComponents
@@ -740,8 +768,8 @@ export function MakeShellServiceDefinition({
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
-                    topRightPaneComponents,
-                    bottomRightPaneComponents,
+                    topRightPaneItems,
+                    bottomRightPaneItems,
                     toolbarMode,
                     topBarRightComponents,
                     bottomBarRightComponents
@@ -754,7 +782,7 @@ export function MakeShellServiceDefinition({
                             <>
                                 <div className={classes.barDiv}>
                                     {topLeftPaneTabList}
-                                    <Toolbar location="top" components={topBarComponents} />
+                                    <Toolbar location="top" components={topBarItems} />
                                     {topRightPaneTabList}
                                 </div>
                             </>
@@ -780,7 +808,7 @@ export function MakeShellServiceDefinition({
                         {toolbarMode === "full" && (
                             <>
                                 <div className={classes.barDiv}>
-                                    <Toolbar location="bottom" components={bottomBarComponents} />
+                                    <Toolbar location="bottom" components={bottomBarItems} />
                                 </div>
                             </>
                         )}
@@ -806,14 +834,34 @@ export function MakeShellServiceDefinition({
                         entry.content.displayName = `${entry.key} | ${entry.horizontalLocation} pane`;
                     }
 
-                    if (entry.horizontalLocation === "left") {
-                        if (entry.verticalLocation === "top") {
+                    // When we are in "right" side pane mode, we need to coerce all left panes to be right panes.
+                    const coerceSidePaneLocation = (sidePane: SidePane) => {
+                        let { horizontalLocation, verticalLocation } = sidePane;
+                        if (sidePaneMode === "right") {
+                            // All right panes go to right bottom.
+                            if (horizontalLocation === "right") {
+                                verticalLocation = "bottom";
+                            }
+
+                            // All left panes go to right top.
+                            if (horizontalLocation === "left") {
+                                horizontalLocation = "right";
+                                verticalLocation = "top";
+                            }
+                        }
+                        return { horizontalLocation, verticalLocation };
+                    };
+
+                    const { horizontalLocation, verticalLocation } = coerceSidePaneLocation(entry);
+
+                    if (horizontalLocation === "left") {
+                        if (verticalLocation === "top") {
                             return topLeftPaneComponentCollection.add(entry);
                         } else {
                             return bottomLeftPaneComponentCollection.add(entry);
                         }
                     } else {
-                        if (entry.verticalLocation === "top") {
+                        if (verticalLocation === "top") {
                             return topRightPaneComponentCollection.add(entry);
                         } else {
                             return bottomRightPaneComponentCollection.add(entry);
