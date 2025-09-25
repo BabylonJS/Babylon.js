@@ -1063,10 +1063,10 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialAlphaOffset *= this.inertia;
             this.inertialBetaOffset *= this.inertia;
             this.inertialRadiusOffset *= this.inertia;
-            if (Math.abs(this.inertialAlphaOffset) < Epsilon) {
+            if (Math.abs(this.inertialAlphaOffset) < speed * Epsilon) {
                 this.inertialAlphaOffset = 0;
             }
-            if (Math.abs(this.inertialBetaOffset) < Epsilon) {
+            if (Math.abs(this.inertialBetaOffset) < speed * Epsilon) {
                 this.inertialBetaOffset = 0;
             }
             if (Math.abs(this.inertialRadiusOffset) < speed * Epsilon) {
