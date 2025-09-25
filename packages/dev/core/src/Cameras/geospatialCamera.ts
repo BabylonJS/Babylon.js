@@ -1,10 +1,11 @@
-import { Vector3, Matrix } from "../Maths/math.vector";
 import { GeospatialCameraInputsManager } from "./geospatialCameraInputsManager";
-import { Epsilon, Scalar, TmpVectors } from "../Maths";
+import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
+import { Epsilon } from "../Maths/math.constants";
+import { Scalar } from "../Maths/math.scalar";
 import { Camera } from "./camera";
-import { Ray } from "../Culling";
+import { Ray } from "../Culling/ray";
 import type { Scene } from "../scene";
-import type { MeshPredicate } from "../Culling";
+import type { MeshPredicate } from "../Culling/ray.core";
 import type { Nullable } from "../types";
 
 type CameraOptions = {
