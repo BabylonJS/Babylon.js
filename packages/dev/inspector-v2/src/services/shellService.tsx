@@ -217,7 +217,7 @@ const useStyles = makeStyles({
         flex: "1",
         height: "32px",
         overflow: "hidden",
-        padding: `0 ${tokens.spacingHorizontalSNudge}`,
+        padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
         border: `1px solid ${tokens.colorNeutralStroke2}`,
         backgroundColor: tokens.colorNeutralBackground1,
     },
@@ -692,7 +692,7 @@ export function MakeShellServiceDefinition({
     leftPaneMinWidth = 350,
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
-    toolbarMode: toolbarMode = "full",
+    toolbarMode = "full",
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
     return {
         friendlyName: "MainView",
