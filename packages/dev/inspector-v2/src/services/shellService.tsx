@@ -7,7 +7,8 @@ import type { IService, ServiceDefinition } from "../modularity/serviceDefinitio
 import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
 import { Button, Divider, makeResetStyles, makeStyles, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { TeachingMoment } from "../components/teachingMoment";
@@ -577,13 +578,31 @@ function usePane(
     const topPaneTabList = useMemo(() => createPaneTabList(topPaneComponents, toolbarMode, topSelectedTab, setTopSelectedTab), [topPaneComponents, toolbarMode, topSelectedTab]);
     const bottomPaneTabList = useMemo(() => createPaneTabList(bottomPaneComponents, "compact", bottomSelectedTab, setBottomSelectedTab), [bottomPaneComponents, bottomSelectedTab]);
 
+    // The class that manages the vertical resizing of the bottom pane.
     const paneVerticalResizeClass = usePaneVerticalResizeStyle();
 
-    const { elementRef, handleRef } = useResizeHandle({
+    // Storage for the vertical resize of the bottom pane so it persists across page reloads.
+    const [storedPaneHeightAdjust, setStoredPaneHeightAdjust] = useLocalStorage(`Babylon/Settings/${alignment}Pane/HeightAdjust`, 0);
+
+    // This manages the CSS variable that controls the height of the bottom pane.
+    const {
+        elementRef: resizePaneElementRef,
+        handleRef: paneResizeHandleRef,
+        setValue: setPaneHeightAdjust,
+    } = useResizeHandle({
         growDirection: "up",
         relative: true,
         variableName: PaneHeightAdjustCSSVar,
         variableTarget: "element",
+        onChange: (event, data) => {
+            // Whenever the height is adjusted, store the value.
+            setStoredPaneHeightAdjust(data.value);
+        },
+    });
+
+    // This ensures that when the component is first rendered, the CSS variable is set from storage.
+    useLayoutEffect(() => {
+        setPaneHeightAdjust(storedPaneHeightAdjust);
     });
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
@@ -616,9 +635,13 @@ function usePane(
                                     {topSelectedTab?.content && <topSelectedTab.content />}
                                 </div>
 
-                                {/* If we have both top and bottom panes, show a divider. */}
+                                {/* If we have both top and bottom panes, show a divider. This divider is also the resizer for the bottom pane. */}
                                 {topPaneComponents.length > 0 && bottomPaneComponents.length > 0 && (
-                                    <Divider ref={handleRef} className={classes.headerDivider} style={{ margin: "0", minHeight: tokens.spacingVerticalM, cursor: "ns-resize" }} />
+                                    <Divider
+                                        ref={paneResizeHandleRef}
+                                        className={classes.headerDivider}
+                                        style={{ margin: "0", minHeight: tokens.spacingVerticalM, cursor: "ns-resize" }}
+                                    />
                                 )}
 
                                 {/* Render the bottom pane tablist. */}
@@ -628,8 +651,8 @@ function usePane(
                                     </>
                                 )}
 
-                                {/* Render the bottom pane content. */}
-                                <div ref={elementRef} className={`${classes.paneContent} ${paneVerticalResizeClass}`} style={{ flex: "0 0 auto" }}>
+                                {/* Render the bottom pane content. This is the element that can be resized vertically. */}
+                                <div ref={resizePaneElementRef} className={`${classes.paneContent} ${paneVerticalResizeClass}`} style={{ flex: "0 0 auto" }}>
                                     {bottomSelectedTab?.title ? (
                                         <>
                                             <Title3 className={classes.paneHeader}>{bottomSelectedTab.title}</Title3>
