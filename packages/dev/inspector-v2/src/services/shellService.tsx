@@ -8,7 +8,6 @@ import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
 import { Button, Divider, makeStyles, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { TeachingMoment } from "../components/teachingMoment";
@@ -460,6 +459,7 @@ function usePane(
     }, [collapsed]);
 
     const widthStorageKey = `Babylon/Settings/${alignment}Pane/Width`;
+    const heightStorageKey = `Babylon/Settings/${alignment}Pane/HeightAdjust`;
 
     const [width, setWidth] = useState(Number.parseInt(localStorage.getItem(widthStorageKey) ?? "") || Math.max(defaultWidth, minWidth));
     const [resizing, setResizing] = useState(false);
@@ -488,6 +488,7 @@ function usePane(
         }
     }, [collapsed, alignment]);
 
+    // TODO: Replace this custom resizing logic with useResizeHandle.
     // This function handles resizing the side pane width.
     const onResizerPointerDown = useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
@@ -580,9 +581,6 @@ function usePane(
     const topPaneTabList = useMemo(() => createPaneTabList(topPaneComponents, toolbarMode, topSelectedTab, setTopSelectedTab), [topPaneComponents, toolbarMode, topSelectedTab]);
     const bottomPaneTabList = useMemo(() => createPaneTabList(bottomPaneComponents, "compact", bottomSelectedTab, setBottomSelectedTab), [bottomPaneComponents, bottomSelectedTab]);
 
-    // Storage for the vertical resize of the bottom pane so it persists across page reloads.
-    const [storedPaneHeightAdjust, setStoredPaneHeightAdjust] = useLocalStorage(`Babylon/Settings/${alignment}Pane/HeightAdjust`, 0);
-
     // This manages the CSS variable that controls the height of the bottom pane.
     const paneHeightAdjustCSSVar = "--pane-height-adjust";
     const {
@@ -596,13 +594,16 @@ function usePane(
         variableTarget: "element",
         onChange: (event, data) => {
             // Whenever the height is adjusted, store the value.
-            setStoredPaneHeightAdjust(data.value);
+            localStorage.setItem(heightStorageKey, data.value.toString());
         },
     });
 
     // This ensures that when the component is first rendered, the CSS variable is set from storage.
     useLayoutEffect(() => {
-        setPaneHeightAdjust(storedPaneHeightAdjust);
+        const storedPaneHeightAdjust = localStorage.getItem(heightStorageKey);
+        if (storedPaneHeightAdjust) {
+            setPaneHeightAdjust(Number.parseInt(storedPaneHeightAdjust));
+        }
     });
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
