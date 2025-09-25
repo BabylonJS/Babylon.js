@@ -3,8 +3,8 @@ import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
+import { Vector3 } from "core/Maths/math.vector";
 import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
-import { Vector3 } from "core/Maths";
 
 /**
  * Material Loading Adapter for OpenPBR materials that provides a unified OpenPBR-like interface.
