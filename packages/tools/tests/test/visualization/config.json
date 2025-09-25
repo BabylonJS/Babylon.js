@@ -2657,7 +2657,8 @@
         },
         {
             "title": "FrameGraph nrge clustered lights (simple)",
-            "playgroundId": "#1QCA2M#25"
+            "playgroundId": "#1QCA2M#25",
+            "renderCount": 50
         },
         {
             "title": "FrameGraph nrg gui bloom",
