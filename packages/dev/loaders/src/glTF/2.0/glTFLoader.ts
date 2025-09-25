@@ -433,16 +433,18 @@ export class GLTFLoader implements IGLTFLoader {
 
                 await this._loadExtensionsAsync();
 
-                if (this.parent.useOpenPBR) {
-                    const materialAdapterModule = await import("./openPbrMaterialLoadingAdapter");
-                    this._pbrMaterialAdapterClass = materialAdapterModule.OpenPBRMaterialLoadingAdapter;
-                    const materialModule = await import("core/Materials/PBR/openPbrMaterial");
-                    this._pbrMaterialClass = materialModule.OpenPBRMaterial;
-                } else {
-                    const materialAdapterModule = await import("./pbrMaterialLoadingAdapter");
-                    this._pbrMaterialAdapterClass = materialAdapterModule.PBRMaterialLoadingAdapter;
-                    const materialModule = await import("core/Materials/PBR/pbrMaterial");
-                    this._pbrMaterialClass = materialModule.PBRMaterial;
+                if (!this.parent.skipMaterials) {
+                    if (this.parent.useOpenPBR) {
+                        const materialAdapterModule = await import("./openPbrMaterialLoadingAdapter");
+                        this._pbrMaterialAdapterClass = materialAdapterModule.OpenPBRMaterialLoadingAdapter;
+                        const materialModule = await import("core/Materials/PBR/openPbrMaterial");
+                        this._pbrMaterialClass = materialModule.OpenPBRMaterial;
+                    } else {
+                        const materialAdapterModule = await import("./pbrMaterialLoadingAdapter");
+                        this._pbrMaterialAdapterClass = materialAdapterModule.PBRMaterialLoadingAdapter;
+                        const materialModule = await import("core/Materials/PBR/pbrMaterial");
+                        this._pbrMaterialClass = materialModule.PBRMaterial;
+                    }
                 }
 
                 const loadingToReadyCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.READY]}`;
@@ -1109,22 +1111,24 @@ export class GLTFLoader implements IGLTFLoader {
                 })
             );
 
-            const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
-            if (primitive.material == undefined) {
-                let babylonMaterial = this._defaultBabylonMaterialData[babylonDrawMode];
-                if (!babylonMaterial) {
-                    babylonMaterial = this._createDefaultMaterial("__GLTFLoader._default", babylonDrawMode);
-                    this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-                    this._defaultBabylonMaterialData[babylonDrawMode] = babylonMaterial;
+            if (!this.parent.skipMaterials) {
+                const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
+                if (primitive.material == undefined) {
+                    let babylonMaterial = this._defaultBabylonMaterialData[babylonDrawMode];
+                    if (!babylonMaterial) {
+                        babylonMaterial = this._createDefaultMaterial("__GLTFLoader._default", babylonDrawMode);
+                        this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
+                        this._defaultBabylonMaterialData[babylonDrawMode] = babylonMaterial;
+                    }
+                    babylonMesh.material = babylonMaterial;
+                } else {
+                    const material = ArrayItem.Get(`${context}/material`, this._gltf.materials, primitive.material);
+                    promises.push(
+                        this._loadMaterialAsync(`/materials/${material.index}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
+                            babylonMesh.material = babylonMaterial;
+                        })
+                    );
                 }
-                babylonMesh.material = babylonMaterial;
-            } else if (!this.parent.skipMaterials) {
-                const material = ArrayItem.Get(`${context}/material`, this._gltf.materials, primitive.material);
-                promises.push(
-                    this._loadMaterialAsync(`/materials/${material.index}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
-                        babylonMesh.material = babylonMaterial;
-                    })
-                );
             }
 
             promise = Promise.all(promises);
