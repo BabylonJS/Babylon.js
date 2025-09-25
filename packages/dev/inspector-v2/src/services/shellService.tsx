@@ -285,7 +285,7 @@ const useStyles = makeStyles({
     },
     paneContent: {
         display: "flex",
-        flex: 1,
+        flexGrow: 1,
         flexDirection: "column",
         paddingTop: tokens.spacingVerticalS,
         overflow: "hidden",
@@ -730,6 +730,7 @@ export function MakeShellServiceDefinition({
                 // depending on whether there are any side panes on that side.
                 const coerceToolBarItemHorizontalLocation = (item: ToolbarItem) => {
                     let location = item.horizontalLocation;
+                    // Coercion is only needed in compact toolbar mode since there might not be a left or right pane.
                     if (toolbarMode === "compact") {
                         if (location === "left" && !hasLeftPaneItems) {
                             location = "right";
@@ -748,7 +749,7 @@ export function MakeShellServiceDefinition({
 
                 const contentComponents = useOrderedObservableCollection(contentComponentCollection);
 
-                const [topLeftPaneTabList, topLeftPane] = usePane(
+                const [leftPaneTabList, leftPane] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
@@ -759,7 +760,7 @@ export function MakeShellServiceDefinition({
                     bottomBarLeftComponents
                 );
 
-                const [topRightPaneTabList, topRightPane] = usePane(
+                const [rightPaneTabList, rightPane] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
@@ -776,9 +777,9 @@ export function MakeShellServiceDefinition({
                         {toolbarMode === "full" && (
                             <>
                                 <div className={classes.barDiv}>
-                                    {topLeftPaneTabList}
+                                    {leftPaneTabList}
                                     <Toolbar location="top" components={topBarItems} />
-                                    {topRightPaneTabList}
+                                    {rightPaneTabList}
                                 </div>
                             </>
                         )}
@@ -786,7 +787,7 @@ export function MakeShellServiceDefinition({
                         {/* This renders the side panes and the main/central content. */}
                         <div className={classes.verticallyCentralContent}>
                             {/* Render the left pane container. */}
-                            {topLeftPane}
+                            {leftPane}
 
                             {/* Render the main/central content. */}
                             <div className={classes.centralContent}>
@@ -796,7 +797,7 @@ export function MakeShellServiceDefinition({
                             </div>
 
                             {/* Render the right pane container. */}
-                            {topRightPane}
+                            {rightPane}
                         </div>
 
                         {/* Only render the bottom toolbar if the toolbar mode is "full". Otherwise it will be embedded at the bottom of the side panes. */}
