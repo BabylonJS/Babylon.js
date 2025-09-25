@@ -2656,6 +2656,10 @@
             "playgroundId": "#1QCA2M#12"
         },
         {
+            "title": "FrameGraph nrge clustered lights (simple)",
+            "playgroundId": "#1QCA2M#25"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
