@@ -1072,6 +1072,34 @@ declare module BABYLON.GLTF2 {
         clearcoatRoughnessFactor?: number;
         clearcoatRoughnessTexture?: ITextureInfo;
         clearcoatNormalTexture?: IMaterialNormalTextureInfo;
+        /**
+         * Dictionary object with extension-specific objects
+         */
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /** @internal */
+    interface IKHRMaterialsClearcoatDarkening {
+        clearcoatDarkeningFactor?: number;
+        clearcoatDarkeningTexture?: ITextureInfo;
+    }
+
+    /** @internal */
+    interface IKHRMaterialsClearcoatColor {
+        clearcoatColorFactor?: number[];
+        clearcoatColorTexture?: ITextureInfo;
+    }
+
+    /** @internal */
+    interface IKHRMaterialsClearcoatAnisotropy {
+        clearcoatAnisotropyStrength?: number;
+        clearcoatAnisotropyRotation?: number;
+        clearcoatAnisotropyTexture?: ITextureInfo;
+        extensions?: {
+            [key: string]: any;
+        };
     }
 
     /** @internal */
@@ -1089,6 +1117,14 @@ declare module BABYLON.GLTF2 {
         anisotropyStrength?: number;
         anisotropyRotation?: number;
         anisotropyTexture?: ITextureInfo;
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /** @internal */
+    interface IKHRMaterialsAnisotropyOpenPbr {
+        anisotropyOpenPbrEnabled: boolean;
     }
 
     /**
@@ -1209,7 +1245,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the EXT_materials_diffuse_roughness extension
      */
     /** @internal */
-    interface IEXTMaterialsDiffuseRoughness {
+    interface IKHRMaterialsDiffuseRoughness {
         diffuseRoughnessFactor?: number;
         diffuseRoughnessTexture?: ITextureInfo;
     }

@@ -389,9 +389,9 @@ export class ClusteredLightContainer extends Light {
             const inverseSquaredRange = Math.max(light._inverseSquaredRange, this._minInverseSquaredRange);
 
             // vLightData
-            buf[off + 0] = position.x;
-            buf[off + 1] = position.y;
-            buf[off + 2] = position.z;
+            buf[off + 0] = position.x - this._scene.floatingOriginOffset.x;
+            buf[off + 1] = position.y - this._scene.floatingOriginOffset.y;
+            buf[off + 2] = position.z - this._scene.floatingOriginOffset.z;
             buf[off + 3] = 0;
             // vLightDiffuse
             buf[off + 4] = diffuse.r;
@@ -543,8 +543,7 @@ export class ClusteredLightContainer extends Light {
         return this;
     }
 
-    public override transferToNodeMaterialEffect(): Light {
-        // TODO: ????
+    public override transferToNodeMaterialEffect(_effect: Effect): Light {
         return this;
     }
 

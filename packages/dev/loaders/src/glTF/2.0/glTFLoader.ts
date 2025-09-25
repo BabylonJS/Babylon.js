@@ -16,7 +16,10 @@ import type { AnimationGroup } from "core/Animations/animationGroup";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { OpenPBRMaterialLoadingAdapter } from "./openPbrMaterialLoadingAdapter";
+import type { PBRMaterialLoadingAdapter } from "./pbrMaterialLoadingAdapter";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ITextureCreationOptions } from "core/Materials/Textures/texture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -84,6 +87,7 @@ import { GetMappingForKey } from "./Extensions/objectModelMapping";
 import { deepMerge } from "core/Misc/deepMerger";
 import { GetTypedArrayConstructor } from "core/Buffers/bufferUtils";
 import { Lazy } from "core/Misc/lazy";
+import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
 const LazyAnimationGroupModulePromise = new Lazy(() => import("core/Animations/animationGroup"));
@@ -223,6 +227,12 @@ export class GLTFLoader implements IGLTFLoader {
     private _rootBabylonMesh: Nullable<TransformNode> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
+    private readonly _materialAdapterCache = new WeakMap<Material, IMaterialLoadingAdapter>();
+
+    /** @internal */
+    public _pbrMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial | null = null;
+    /** @internal */
+    public _pbrMaterialAdapterClass: typeof OpenPBRMaterialLoadingAdapter | typeof PBRMaterialLoadingAdapter | null = null;
 
     /**
      * The default glTF sampler.
@@ -304,6 +314,25 @@ export class GLTFLoader implements IGLTFLoader {
      */
     constructor(parent: GLTFFileLoader) {
         this._parent = parent;
+    }
+
+    /**
+     * Creates or gets a cached material loading adapter with dynamic imports
+     * @param material The material to adapt
+     * @returns Promise that resolves to the appropriate adapter
+     * @internal
+     */
+    public _getOrCreateMaterialAdapter(material: Material): IMaterialLoadingAdapter {
+        let adapter = this._materialAdapterCache.get(material);
+        if (!adapter) {
+            if (this._pbrMaterialAdapterClass) {
+                adapter = new this._pbrMaterialAdapterClass(material);
+            } else {
+                throw new Error(`Appropriate material adapter class not found`);
+            }
+            this._materialAdapterCache.set(material, adapter);
+        }
+        return adapter;
     }
 
     /** @internal */
@@ -403,6 +432,18 @@ export class GLTFLoader implements IGLTFLoader {
                 this._allMaterialsDirtyRequired = false;
 
                 await this._loadExtensionsAsync();
+
+                if (this.parent.useOpenPBR) {
+                    const materialAdapterModule = await import("./openPbrMaterialLoadingAdapter");
+                    this._pbrMaterialAdapterClass = materialAdapterModule.OpenPBRMaterialLoadingAdapter;
+                    const materialModule = await import("core/Materials/PBR/openPbrMaterial");
+                    this._pbrMaterialClass = materialModule.OpenPBRMaterial;
+                } else {
+                    const materialAdapterModule = await import("./pbrMaterialLoadingAdapter");
+                    this._pbrMaterialAdapterClass = materialAdapterModule.PBRMaterialLoadingAdapter;
+                    const materialModule = await import("core/Materials/PBR/pbrMaterial");
+                    this._pbrMaterialClass = materialModule.PBRMaterial;
+                }
 
                 const loadingToReadyCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.READY]}`;
                 const loadingToCompleteCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.COMPLETE]}`;
@@ -2141,28 +2182,27 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, properties: IMaterialPbrMetallicRoughness, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
         const promises = new Array<Promise<unknown>>();
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
 
         if (properties) {
+            // Set base color and alpha using adapter
             if (properties.baseColorFactor) {
-                babylonMaterial.albedoColor = Color3.FromArray(properties.baseColorFactor);
-                babylonMaterial.alpha = properties.baseColorFactor[3];
+                adapter.baseColor = Color3.FromArray(properties.baseColorFactor);
+                adapter.geometryOpacity = properties.baseColorFactor[3];
             } else {
-                babylonMaterial.albedoColor = Color3.White();
+                adapter.baseColor = Color3.White();
             }
 
-            babylonMaterial.metallic = properties.metallicFactor == undefined ? 1 : properties.metallicFactor;
-            babylonMaterial.roughness = properties.roughnessFactor == undefined ? 1 : properties.roughnessFactor;
+            // Set metallic and roughness using adapter
+            adapter.baseMetalness = properties.metallicFactor == undefined ? 1 : properties.metallicFactor;
+            adapter.specularRoughness = properties.roughnessFactor == undefined ? 1 : properties.roughnessFactor;
 
             if (properties.baseColorTexture) {
                 promises.push(
                     this.loadTextureInfoAsync(`${context}/baseColorTexture`, properties.baseColorTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Base Color)`;
-                        babylonMaterial.albedoTexture = texture;
+                        adapter.baseColorTexture = texture;
                     })
                 );
             }
@@ -2172,13 +2212,14 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(
                     this.loadTextureInfoAsync(`${context}/metallicRoughnessTexture`, properties.metallicRoughnessTexture, (texture) => {
                         texture.name = `${babylonMaterial.name} (Metallic Roughness)`;
-                        babylonMaterial.metallicTexture = texture;
+                        adapter.baseMetalnessTexture = texture;
+                        adapter.specularRoughnessTexture = texture;
                     })
                 );
 
-                babylonMaterial.useMetallnessFromMetallicTextureBlue = true;
-                babylonMaterial.useRoughnessFromMetallicTextureGreen = true;
-                babylonMaterial.useRoughnessFromMetallicTextureAlpha = false;
+                // Configure texture channel usage using adapter
+                adapter.useRoughnessFromMetallicTextureGreen = true;
+                adapter.useMetallicFromMetallicTextureBlue = true;
             }
         }
 
@@ -2206,6 +2247,9 @@ export class GLTFLoader implements IGLTFLoader {
             this.logOpen(`${context} ${material.name || ""}`);
 
             const babylonMaterial = this.createMaterial(context, material, babylonDrawMode);
+
+            // Create the adapter for this material immediately after creation
+            this._getOrCreateMaterialAdapter(babylonMaterial);
 
             babylonData = {
                 babylonMaterial: babylonMaterial,
@@ -2240,18 +2284,23 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createDefaultMaterial(name: string, babylonDrawMode: number): Material {
+        if (!this._pbrMaterialClass) {
+            throw new Error("PBR Material class not loaded");
+        }
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        const babylonMaterial = new PBRMaterial(name, this._babylonScene);
+        const babylonMaterial = new this._pbrMaterialClass(name, this._babylonScene);
         babylonMaterial._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
-        // Moved to mesh so user can change materials on gltf meshes: babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
         babylonMaterial.fillMode = babylonDrawMode;
-        babylonMaterial.enableSpecularAntiAliasing = true;
-        babylonMaterial.useRadianceOverAlpha = !this._parent.transparencyAsCoverage;
-        babylonMaterial.useSpecularOverAlpha = !this._parent.transparencyAsCoverage;
-        babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
-        babylonMaterial.metallic = 1;
-        babylonMaterial.roughness = 1;
+        babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_OPAQUE;
+        // Create the material adapter and set some default properties.
+        // We don't need to wait for the promise to resolve here.
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
+        adapter.transparencyAsAlphaCoverage = this._parent.transparencyAsCoverage;
+
+        // Set default metallic and roughness values
+        adapter.baseMetalness = 1.0;
+        adapter.specularRoughness = 1.0;
 
         return babylonMaterial;
     }
@@ -2309,16 +2358,16 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns A promise that resolves when the load is complete
      */
     public loadMaterialBasePropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
         const promises = new Array<Promise<unknown>>();
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
 
-        babylonMaterial.emissiveColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
+        // Set emission color using adapter
+        adapter.emissionColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
+
+        // Set double-sided properties using adapter
         if (material.doubleSided) {
-            babylonMaterial.backFaceCulling = false;
-            babylonMaterial.twoSidedLighting = true;
+            adapter.backFaceCulling = false;
+            adapter.twoSidedLighting = true;
         }
 
         if (material.normalTexture) {
@@ -2326,31 +2375,32 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(
                 this.loadTextureInfoAsync(`${context}/normalTexture`, material.normalTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Normal)`;
-                    babylonMaterial.bumpTexture = texture;
+                    adapter.geometryNormalTexture = texture;
+                    if (material.normalTexture?.scale != undefined) {
+                        texture.level = material.normalTexture.scale;
+                    }
                 })
             );
 
-            babylonMaterial.invertNormalMapX = !this._babylonScene.useRightHandedSystem;
-            babylonMaterial.invertNormalMapY = this._babylonScene.useRightHandedSystem;
-            if (material.normalTexture.scale != undefined && babylonMaterial.bumpTexture) {
-                babylonMaterial.bumpTexture.level = material.normalTexture.scale;
-            }
-
-            babylonMaterial.forceIrradianceInFragment = true;
+            // Set normal map inversions using adapter
+            adapter.setNormalMapInversions(!this._babylonScene.useRightHandedSystem, this._babylonScene.useRightHandedSystem);
         }
+
+        let aoTexture: BaseTexture;
+        let aoStrength: number = 1.0;
+        let emissionTexture: BaseTexture;
 
         if (material.occlusionTexture) {
             material.occlusionTexture.nonColorData = true;
             promises.push(
                 this.loadTextureInfoAsync(`${context}/occlusionTexture`, material.occlusionTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Occlusion)`;
-                    babylonMaterial.ambientTexture = texture;
+                    aoTexture = texture;
                 })
             );
 
-            babylonMaterial.useAmbientInGrayScale = true;
             if (material.occlusionTexture.strength != undefined) {
-                babylonMaterial.ambientTextureStrength = material.occlusionTexture.strength;
+                aoStrength = material.occlusionTexture.strength;
             }
         }
 
@@ -2358,12 +2408,22 @@ export class GLTFLoader implements IGLTFLoader {
             promises.push(
                 this.loadTextureInfoAsync(`${context}/emissiveTexture`, material.emissiveTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Emissive)`;
-                    babylonMaterial.emissiveTexture = texture;
+                    emissionTexture = texture;
                 })
             );
         }
 
-        return Promise.all(promises).then(() => {});
+        return Promise.all(promises).then(() => {
+            // Set ambient occlusion and emissive textures using adapter
+            if (aoTexture) {
+                adapter.ambientOcclusionTexture = aoTexture;
+                adapter.ambientOcclusionTextureStrength = aoStrength;
+            }
+
+            if (emissionTexture) {
+                adapter.emissionColorTexture = emissionTexture;
+            }
+        });
     }
 
     /**
@@ -2374,30 +2434,33 @@ export class GLTFLoader implements IGLTFLoader {
      * @param babylonMaterial The Babylon material
      */
     public loadMaterialAlphaProperties(context: string, material: IMaterial, babylonMaterial: Material): void {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
+        if (!this._pbrMaterialClass) {
             throw new Error(`${context}: Material type not supported`);
         }
+
+        const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
+        const baseColorTexture = adapter.baseColorTexture;
 
         const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
         switch (alphaMode) {
             case MaterialAlphaMode.OPAQUE: {
-                babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
+                babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_OPAQUE;
                 babylonMaterial.alpha = 1.0; // Force alpha to 1.0 for opaque mode.
                 break;
             }
             case MaterialAlphaMode.MASK: {
-                babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
-                babylonMaterial.alphaCutOff = material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff;
-                if (babylonMaterial.albedoTexture) {
-                    babylonMaterial.albedoTexture.hasAlpha = true;
+                babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_ALPHATEST;
+                adapter.alphaCutOff = material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff;
+                if (baseColorTexture) {
+                    baseColorTexture.hasAlpha = true;
                 }
                 break;
             }
             case MaterialAlphaMode.BLEND: {
-                babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
-                if (babylonMaterial.albedoTexture) {
-                    babylonMaterial.albedoTexture.hasAlpha = true;
-                    babylonMaterial.useAlphaFromAlbedoTexture = true;
+                babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_ALPHABLEND;
+                if (baseColorTexture) {
+                    baseColorTexture.hasAlpha = true;
+                    adapter.useAlphaFromBaseColorTexture = true;
                 }
                 break;
             }

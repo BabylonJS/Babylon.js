@@ -6,6 +6,7 @@ struct ClusteredLight {
     vec4 vLightFalloff;
 };
 
+#define inline
 ClusteredLight getClusteredLight(sampler2D lightDataTexture, int index) {
     return ClusteredLight(
         texelFetch(lightDataTexture, ivec2(0, index), 0),

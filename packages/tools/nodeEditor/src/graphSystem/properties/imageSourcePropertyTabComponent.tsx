@@ -16,6 +16,7 @@ import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
+import { SmartFilterTextureBlock } from "core/Materials";
 
 export class ImageSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean }> {
     get imageSourceBlock(): ImageSourceBlock {
@@ -82,7 +83,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         }
 
         if (!texture) {
-            this.imageSourceBlock.texture = new Texture(null, (this.props.stateManager.data as GlobalState).nodeMaterial.getScene(), false, false);
+            const isFrozenTexture = this.imageSourceBlock.source.connectedBlocks.some((b) => b instanceof SmartFilterTextureBlock);
+            this.imageSourceBlock.texture = new Texture(null, (this.props.stateManager.data as GlobalState).nodeMaterial.getScene(), false, isFrozenTexture);
             texture = this.imageSourceBlock.texture;
             texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
         }
@@ -138,6 +140,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
         url = url.replace(/\?nocache=\d+/, "");
 
+        const isFrozenTexture = this.imageSourceBlock.source.connectedBlocks.some((b) => b instanceof SmartFilterTextureBlock);
+
         const samplingMode = [
             { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
             { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
@@ -161,7 +165,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
             <PropertyTabComponentBase>
                 {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
-                    {texture && texture.updateSamplingMode && (
+                    {texture && !isFrozenTexture && texture.updateSamplingMode && (
                         <OptionsLine
                             label="Sampling"
                             options={samplingMode}
@@ -174,7 +178,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <CheckBoxLineComponent
                             label="Clamp U"
                             isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE}
@@ -184,7 +188,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <CheckBoxLineComponent
                             label="Clamp V"
                             isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE}
@@ -194,7 +198,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <FloatLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Offset U"
@@ -205,7 +209,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <FloatLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Offset V"
@@ -216,7 +220,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <FloatLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Scale U"
@@ -227,7 +231,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <FloatLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Scale V"
@@ -238,7 +242,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <SliderLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Rotation U"
@@ -253,7 +257,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <SliderLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Rotation V"
@@ -268,7 +272,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <SliderLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Rotation W"

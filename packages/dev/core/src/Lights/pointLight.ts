@@ -189,9 +189,23 @@ export class PointLight extends ShadowLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): PointLight {
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4(
+                "vLightData",
+                this.transformedPosition.x - this._scene.floatingOriginOffset.x,
+                this.transformedPosition.y - this._scene.floatingOriginOffset.y,
+                this.transformedPosition.z - this._scene.floatingOriginOffset.z,
+                0.0,
+                lightIndex
+            );
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4(
+                "vLightData",
+                this.position.x - this._scene.floatingOriginOffset.x,
+                this.position.y - this._scene.floatingOriginOffset.y,
+                this.position.z - this._scene.floatingOriginOffset.z,
+                0,
+                lightIndex
+            );
         }
 
         this._uniformBuffer.updateFloat4("vLightFalloff", this.range, this._inverseSquaredRange, 0, 0, lightIndex);
@@ -200,9 +214,19 @@ export class PointLight extends ShadowLight {
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
         if (this.computeTransformedInformation()) {
-            effect.setFloat3(lightDataUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z);
+            effect.setFloat3(
+                lightDataUniformName,
+                this.transformedPosition.x - this._scene.floatingOriginOffset.x,
+                this.transformedPosition.y - this._scene.floatingOriginOffset.y,
+                this.transformedPosition.z - this._scene.floatingOriginOffset.z
+            );
         } else {
-            effect.setFloat3(lightDataUniformName, this.position.x, this.position.y, this.position.z);
+            effect.setFloat3(
+                lightDataUniformName,
+                this.position.x - this._scene.floatingOriginOffset.x,
+                this.position.y - this._scene.floatingOriginOffset.y,
+                this.position.z - this._scene.floatingOriginOffset.z
+            );
         }
 
         return this;
