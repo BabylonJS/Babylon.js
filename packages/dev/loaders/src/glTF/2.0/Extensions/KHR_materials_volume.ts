@@ -2,13 +2,13 @@
 import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
 import { Color3 } from "core/Maths/math.color";
+import { Vector3 } from "core/Maths/math.vector";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import type { IKHRMaterialsVolume } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
-import { Vector3 } from "core/Maths";
 
 const NAME = "KHR_materials_volume";
 
