@@ -1,7 +1,7 @@
 import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
-import type { PickingInfo } from "../../Collisions";
-import type { Ray } from "../../Culling";
-import type { IPointerEvent } from "../../Events";
+import type { PickingInfo } from "../../Collisions/pickingInfo";
+import type { Ray } from "../../Culling/ray";
+import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import type { PointerTouch } from "../../Events/pointerEvents";
 import { Plane } from "../../Maths/math.plane";
 import { TmpVectors, Vector3 } from "../../Maths/math.vector";
