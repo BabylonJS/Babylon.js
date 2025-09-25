@@ -433,18 +433,6 @@ export class GLTFLoader implements IGLTFLoader {
 
                 await this._loadExtensionsAsync();
 
-                if (this.parent.useOpenPBR) {
-                    const materialAdapterModule = await import("./openPbrMaterialLoadingAdapter");
-                    this._pbrMaterialAdapterClass = materialAdapterModule.OpenPBRMaterialLoadingAdapter;
-                    const materialModule = await import("core/Materials/PBR/openPbrMaterial");
-                    this._pbrMaterialClass = materialModule.OpenPBRMaterial;
-                } else {
-                    const materialAdapterModule = await import("./pbrMaterialLoadingAdapter");
-                    this._pbrMaterialAdapterClass = materialAdapterModule.PBRMaterialLoadingAdapter;
-                    const materialModule = await import("core/Materials/PBR/pbrMaterial");
-                    this._pbrMaterialClass = materialModule.PBRMaterial;
-                }
-
                 const loadingToReadyCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.READY]}`;
                 const loadingToCompleteCounterName = `${GLTFLoaderState[GLTFLoaderState.LOADING]} => ${GLTFLoaderState[GLTFLoaderState.COMPLETE]}`;
 
@@ -1111,13 +1099,20 @@ export class GLTFLoader implements IGLTFLoader {
 
             const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
             if (primitive.material == undefined) {
-                let babylonMaterial = this._defaultBabylonMaterialData[babylonDrawMode];
+                const babylonMaterial = this._defaultBabylonMaterialData[babylonDrawMode];
                 if (!babylonMaterial) {
-                    babylonMaterial = this._createDefaultMaterial("__GLTFLoader._default", babylonDrawMode);
-                    this._parent.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-                    this._defaultBabylonMaterialData[babylonDrawMode] = babylonMaterial;
+                    promises.push(
+                        (async () => {
+                            await this._ensurePbrMaterialClassesAsync();
+                            const created = this._createDefaultMaterial("__GLTFLoader._default", babylonDrawMode);
+                            this._parent.onMaterialLoadedObservable.notifyObservers(created);
+                            this._defaultBabylonMaterialData[babylonDrawMode] = created;
+                            babylonMesh.material = created;
+                        })()
+                    );
+                } else {
+                    babylonMesh.material = babylonMaterial;
                 }
-                babylonMesh.material = babylonMaterial;
             } else if (!this.parent.skipMaterials) {
                 const material = ArrayItem.Get(`${context}/material`, this._gltf.materials, primitive.material);
                 promises.push(
@@ -2229,7 +2224,24 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    public _loadMaterialAsync(
+    private async _ensurePbrMaterialClassesAsync(): Promise<void> {
+        if (!this._pbrMaterialClass || !this._pbrMaterialAdapterClass) {
+            const openpbrExt = this._extensions.find((extension) => extension.name === "KHR_materials_openpbr");
+            if (this.parent.useOpenPBR || openpbrExt) {
+                const materialAdapterModule = await import("./openPbrMaterialLoadingAdapter");
+                this._pbrMaterialAdapterClass = materialAdapterModule.OpenPBRMaterialLoadingAdapter;
+                const materialModule = await import("core/Materials/PBR/openPbrMaterial");
+                this._pbrMaterialClass = materialModule.OpenPBRMaterial;
+            } else {
+                const materialAdapterModule = await import("./pbrMaterialLoadingAdapter");
+                this._pbrMaterialAdapterClass = materialAdapterModule.PBRMaterialLoadingAdapter;
+                const materialModule = await import("core/Materials/PBR/pbrMaterial");
+                this._pbrMaterialClass = materialModule.PBRMaterial;
+            }
+        }
+    }
+
+    public async _loadMaterialAsync(
         context: string,
         material: IMaterial,
         babylonMesh: Nullable<Mesh>,
@@ -2238,8 +2250,11 @@ export class GLTFLoader implements IGLTFLoader {
     ): Promise<Material> {
         const extensionPromise = this._extensionsLoadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign);
         if (extensionPromise) {
-            return extensionPromise;
+            return await extensionPromise;
         }
+
+        // Ensure PBR/OpenPBR classes are available before creating materials
+        await this._ensurePbrMaterialClassesAsync();
 
         material._data = material._data || {};
         let babylonData = material._data[babylonDrawMode];
@@ -2278,9 +2293,8 @@ export class GLTFLoader implements IGLTFLoader {
 
         assign(babylonData.babylonMaterial);
 
-        return babylonData.promise.then(() => {
-            return babylonData.babylonMaterial;
-        });
+        await babylonData.promise;
+        return babylonData.babylonMaterial;
     }
 
     private _createDefaultMaterial(name: string, babylonDrawMode: number): Material {
