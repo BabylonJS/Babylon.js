@@ -391,28 +391,30 @@ export class TargetCamera extends Camera {
             }
         }
 
+        // Scale speed by framerate to ensure higher framerate devices don't clamp movement to 0 too early
+        const speed = this._computeLocalCameraSpeed();
         // Inertia
         if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.x) < speed * Epsilon) {
                 this.cameraDirection.x = 0;
             }
 
-            if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.y) < speed * Epsilon) {
                 this.cameraDirection.y = 0;
             }
 
-            if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.z) < speed * Epsilon) {
                 this.cameraDirection.z = 0;
             }
 
             this.cameraDirection.scaleInPlace(this.inertia);
         }
         if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraRotation.x) < speed * Epsilon) {
                 this.cameraRotation.x = 0;
             }
 
-            if (Math.abs(this.cameraRotation.y) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraRotation.y) < speed * Epsilon) {
                 this.cameraRotation.y = 0;
             }
             this.cameraRotation.scaleInPlace(this.inertia);
