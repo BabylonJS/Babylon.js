@@ -278,6 +278,29 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         }
         return spec;
     }
+
+    function resolveLocal(spec: string): string | null {
+        if (localImports[spec]) {
+            return localImports[spec];
+        }
+        let bestKey: string | null = null;
+        for (const k of Object.keys(localImports)) {
+            if (spec === k) {
+                return localImports[k];
+            }
+            if (spec.startsWith(k) && spec[k.length] === "/") {
+                if (!bestKey || k.length > bestKey.length) {
+                    bestKey = k;
+                }
+            }
+        }
+        if (bestKey) {
+            const baseUrl = localImports[bestKey].replace(/\/*$/, "");
+            const rest = spec.slice(bestKey.length);
+            return `${baseUrl}${rest}`;
+        }
+        return null;
+    }
     for (const [path, code] of Object.entries(compiled)) {
         const [imports] = parse(code);
         if (!imports.length) {
@@ -298,8 +321,11 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
             let replacement = spec;
             const normalized = normalizeForCdn(spec);
 
-            if (localImports[spec] || localImports[normalized]) {
-                replacement = localImports[spec] ?? localImports[normalized]!;
+            const localHit = resolveLocal(spec) ?? resolveLocal(normalized);
+            if (localHit) {
+                replacement = localHit;
+            } else if (/@local(?:\/|$)/.test(spec)) {
+                throw new Error(`Unresolved local import: ${spec}. Link the package and export types/entry in the editor.`);
             } else if (isRel) {
                 const target = pickActual(resolveRelative(path, spec).replace(/\\/g, "/"));
                 if (target) {
