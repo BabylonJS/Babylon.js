@@ -23,7 +23,7 @@ import type { Mesh } from "../Meshes/mesh";
 import type { Buffer } from "../Buffers/buffer";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
-import { CopyFloatData } from "../Buffers/bufferUtils";
+import { CopyFloatData, GetTypedArrayData } from "../Buffers/bufferUtils";
 import type { IAssetContainer } from "core/IAssetContainer";
 
 /**
@@ -1029,41 +1029,43 @@ export class Geometry implements IGetSetVerticesData {
      * @returns a new geometry object
      */
     public copy(id: string): Geometry {
-        const vertexData = new VertexData();
+        const geometry = new Geometry(id, this._scene);
 
-        vertexData.indices = [];
-
-        const indices = this.getIndices();
+        const indices = this.getIndices(undefined, true);
         if (indices) {
-            for (let index = 0; index < indices.length; index++) {
-                vertexData.indices.push(indices[index]);
-            }
+            geometry.setIndices(indices);
         }
 
         let updatable = false;
-        let stopChecking = false;
         let kind;
         for (kind in this._vertexBuffers) {
-            const data = this.getVerticesData(kind);
-            if (data) {
-                if (data instanceof Float32Array) {
-                    vertexData.set(new Float32Array(<Float32Array>data), kind);
-                } else {
-                    vertexData.set(data.slice(0), kind);
-                }
-
-                if (!stopChecking) {
-                    const vb = this.getVertexBuffer(kind);
-
-                    if (vb) {
-                        updatable = vb.isUpdatable();
-                        stopChecking = !updatable;
-                    }
-                }
+            const vb = this.getVertexBuffer(kind)!;
+            const bufferData = vb.getData();
+            if (!bufferData) {
+                continue;
             }
+
+            const isUpdatable = vb.isUpdatable();
+            const size = vb.getSize();
+            const { type, byteOffset, byteStride, normalized } = vb;
+            updatable = updatable || isUpdatable;
+
+            const data = GetTypedArrayData(bufferData, size, type, byteOffset, byteStride, normalized, this._totalVertices, true);
+            const newVb = new VertexBuffer(this._engine, data, kind, {
+                updatable: isUpdatable,
+                useBytes: true,
+                stride: byteStride,
+                size: size,
+                offset: byteOffset,
+                type: type,
+                normalized: normalized,
+                takeBufferOwnership: true,
+            });
+
+            geometry.setVerticesBuffer(newVb, this._totalVertices);
         }
 
-        const geometry = new Geometry(id, this._scene, vertexData, updatable);
+        geometry._updatable = updatable;
 
         geometry.delayLoadState = this.delayLoadState;
         geometry.delayLoadingFile = this.delayLoadingFile;
