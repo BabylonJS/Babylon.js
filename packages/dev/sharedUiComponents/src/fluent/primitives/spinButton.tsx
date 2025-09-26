@@ -27,6 +27,8 @@ export type SpinButtonProps = PrimitiveProps<number> & {
 };
 
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
+    SpinButton.displayName = "SpinButton";
+
     const classes = useSpinStyles();
     const { min, max } = props;
 

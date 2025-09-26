@@ -10,6 +10,7 @@ import type { FunctionComponent } from "react";
  * @returns property-line wrapped text
  */
 export const TextPropertyLine: FunctionComponent<PropertyLineProps<string> & ImmutablePrimitiveProps<string>> = (props) => {
+    TextPropertyLine.displayName = "TextPropertyLine";
     const { value, title } = props;
     return (
         <PropertyLine {...props}>

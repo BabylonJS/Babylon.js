@@ -9,6 +9,7 @@ import type { ButtonProps } from "../primitives/button";
  * @returns A button inside a line
  */
 export const ButtonLine: FunctionComponent<ButtonProps> = (props) => {
+    ButtonLine.displayName = "ButtonLine";
     return (
         <LineContainer>
             <Button {...props} />

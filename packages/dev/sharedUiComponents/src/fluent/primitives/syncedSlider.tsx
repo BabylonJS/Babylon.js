@@ -40,6 +40,7 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
  * @returns SyncedSlider component
  */
 export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) => {
+    SyncedSliderInput.displayName = "SyncedSliderInput";
     const classes = useSyncedSliderStyles();
     const [value, setValue] = useState<number>(props.value);
     const pendingValueRef = useRef<number>(undefined);

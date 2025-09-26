@@ -16,6 +16,7 @@ export type ButtonProps = {
 };
 
 export const Button: FunctionComponent<ButtonProps> = (props) => {
+    Button.displayName = "Button";
     const classes = useButtonLineStyles();
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { icon: Icon, ...buttonProps } = props;

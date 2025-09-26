@@ -70,22 +70,54 @@ export type ColorPickerProps<C extends Color3 | Color4> = {
 export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color4>> = (props) => {
     const classes = useColorPickerStyles();
     const [color, setColor] = useState(props.value);
-
     const [popoverOpen, setPopoverOpen] = useState(false);
 
+    // Store the actual HSV values from the picker separately
+    const [pickerHSV, setPickerHSV] = useState(() => rgbaToHsv(props.value));
+
     useEffect(() => {
-        setColor(props.value); // Ensures the trigger color updates when props.value changes
+        setColor(props.value);
+        if (props.value.r !== color.r || props.value.g !== color.g || props.value.b !== color.b) {
+            setPickerHSV(rgbaToHsv(props.value));
+        }
     }, [props.value]);
 
     const handleColorPickerChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
-        let color: Color3 | Color4 = Color3.FromHSV(data.color.h, data.color.s, data.color.v);
+        // Always store the exact picker position - this avoids snapping to the edges of the picker when changing to a zero'd out color
+        setPickerHSV({
+            h: data.color.h,
+            s: data.color.s,
+            v: data.color.v,
+            a: data.color.a,
+        });
+
+        // Convert to Color3/Color4 for the actual color value
+        let newColor: Color3 | Color4 = Color3.FromHSV(data.color.h, data.color.s, data.color.v);
         if (props.value instanceof Color4) {
-            color = Color4.FromColor3(color, data.color.a ?? 1);
+            newColor = Color4.FromColor3(newColor, data.color.a ?? 1);
         }
-        handleChange(color);
+
+        // Don't update pickerHSV here - we already have the correct values from the picker
+        syncColor(newColor);
     };
 
-    const handleChange = (newColor: Color3 | Color4) => {
+    // For HSV input fields, update pickerHSV directly, then update color
+    const handleHsvInputChange = (hsvKey: "h" | "s" | "v", value: number) => {
+        const newHSV = { ...pickerHSV, [hsvKey]: value };
+        setPickerHSV(newHSV);
+        let newColor: Color3 | Color4 = Color3.FromHSV(newHSV.h, newHSV.s, newHSV.v);
+        if (color instanceof Color4) {
+            newColor = Color4.FromColor3(newColor, color.a ?? 1);
+        }
+        syncColor(newColor);
+    };
+
+    const handleInputChange = (newColor: Color3 | Color4) => {
+        setPickerHSV(rgbaToHsv(newColor));
+        syncColor(newColor);
+    };
+
+    const syncColor = (newColor: Color3 | Color4) => {
         setColor(newColor);
         props.onChange(newColor); // Ensures the parent is notified when color changes from within colorPicker
     };
@@ -107,7 +139,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
 
             <PopoverSurface>
                 <div className={classes.colorPickerContainer}>
-                    <FluentColorPicker color={rgbaToHsv(color)} onColorChange={handleColorPickerChange}>
+                    <FluentColorPicker color={pickerHSV} onColorChange={handleColorPickerChange}>
                         <ColorArea inputX={{ "aria-label": "Saturation" }} inputY={{ "aria-label": "Brightness" }} />
                         <ColorSlider aria-label="Hue" />
                         {color instanceof Color4 && <AlphaSlider aria-label="Alpha" />}
@@ -116,23 +148,23 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
                         {/* Top Row: Preview, Gamma Hex, Linear Hex */}
                         <div className={classes.row}>
                             <div className={classes.previewColor} style={{ backgroundColor: color.toHexString() }} />
-                            <InputHexField title="Gamma Hex" value={color} isLinearMode={props.isLinearMode} onChange={handleChange} />
-                            <InputHexField title="Linear Hex" linearHex={true} isLinearMode={props.isLinearMode} value={color} onChange={handleChange} />
+                            <InputHexField title="Gamma Hex" value={color} isLinearMode={props.isLinearMode} onChange={handleInputChange} />
+                            <InputHexField title="Linear Hex" linearHex={true} isLinearMode={props.isLinearMode} value={color} onChange={handleInputChange} />
                         </div>
 
                         {/* Middle Row: Red, Green, Blue, Alpha */}
                         <div className={classes.row}>
-                            <InputRgbField title="Red" value={color} rgbKey="r" onChange={handleChange} />
-                            <InputRgbField title="Green" value={color} rgbKey="g" onChange={handleChange} />
-                            <InputRgbField title="Blue" value={color} rgbKey="b" onChange={handleChange} />
-                            <InputAlphaField color={color} onChange={handleChange} />
+                            <InputRgbField title="Red" value={color} rgbKey="r" onChange={handleInputChange} />
+                            <InputRgbField title="Green" value={color} rgbKey="g" onChange={handleInputChange} />
+                            <InputRgbField title="Blue" value={color} rgbKey="b" onChange={handleInputChange} />
+                            <InputAlphaField color={color} onChange={handleInputChange} />
                         </div>
 
                         {/* Bottom Row: Hue, Saturation, Value */}
                         <div className={classes.row}>
-                            <InputHsvField title="Hue" value={color} hsvKey="h" max={360} onChange={handleChange} />
-                            <InputHsvField title="Saturation" value={color} hsvKey="s" max={100} scale={100} onChange={handleChange} />
-                            <InputHsvField title="Value" value={color} hsvKey="v" max={100} scale={100} onChange={handleChange} />
+                            <InputHsvField title="Hue" hsvValue={pickerHSV} hsvKey="h" max={360} onHsvChange={(val) => handleHsvInputChange("h", val)} />
+                            <InputHsvField title="Saturation" hsvValue={pickerHSV} hsvKey="s" max={100} scale={100} onHsvChange={(val) => handleHsvInputChange("s", val)} />
+                            <InputHsvField title="Value" hsvValue={pickerHSV} hsvKey="v" max={100} scale={100} onHsvChange={(val) => handleHsvInputChange("v", val)} />
                         </div>
                     </div>
                 </div>
@@ -141,7 +173,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
     );
 };
 
-const HEX_REGEX = RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/);
+const HEX_REGEX = RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8})$/);
 
 export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
     linearHex?: boolean;
@@ -241,10 +273,13 @@ function rgbaToHsv(color: { r: number; g: number; b: number; a?: number }): { h:
 }
 
 type HsvKey = "h" | "s" | "v";
-type InputHsvFieldProps = PrimitiveProps<Color3 | Color4> & {
+type InputHsvFieldProps = {
+    hsvValue: { h: number; s: number; v: number };
     hsvKey: HsvKey;
     max: number;
     scale?: number;
+    title?: string;
+    onHsvChange: (val: number) => void;
 };
 
 /**
@@ -254,22 +289,16 @@ type InputHsvFieldProps = PrimitiveProps<Color3 | Color4> & {
  * @param props - The properties for the InputHsvField component.
  */
 export const InputHsvField: FunctionComponent<InputHsvFieldProps> = (props) => {
-    const { value, title, hsvKey, max, onChange, scale = 1 } = props;
+    const { hsvValue, title, hsvKey, max, scale = 1, onHsvChange } = props;
 
     const classes = useColorPickerStyles();
 
+    // For HSV fields, just pass the value up
     const handleChange = useCallback(
         (val: number) => {
-            // Convert current color to HSV, update the new hsv value, then call onChange prop
-            const hsv = rgbaToHsv(value);
-            hsv[hsvKey] = val / scale;
-            let newColor: Color3 | Color4 = Color3.FromHSV(hsv.h, hsv.s, hsv.v);
-            if (value instanceof Color4) {
-                newColor = Color4.FromColor3(newColor, value.a ?? 1);
-            }
-            props.onChange(newColor);
+            onHsvChange(val / scale);
         },
-        [value, onChange, hsvKey, scale]
+        [onHsvChange]
     );
 
     return (
@@ -280,7 +309,7 @@ export const InputHsvField: FunctionComponent<InputHsvFieldProps> = (props) => {
                 className={classes.spinButton}
                 min={0}
                 max={max}
-                value={Math.round(rgbaToHsv(value)[hsvKey] * scale)}
+                value={Math.round(hsvValue[hsvKey] * scale)}
                 forceInt
                 onChange={handleChange}
             />

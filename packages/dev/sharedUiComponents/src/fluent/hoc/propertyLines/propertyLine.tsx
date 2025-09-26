@@ -135,6 +135,7 @@ export type PropertyLineProps<ValueT> = BasePropertyLineProps &
  *
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps<any>>>((props, ref) => {
+    PropertyLine.displayName = "PropertyLine";
     const classes = usePropertyLineStyles();
     const { label, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 

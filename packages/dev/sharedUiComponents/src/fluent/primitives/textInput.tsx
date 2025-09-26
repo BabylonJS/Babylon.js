@@ -20,6 +20,7 @@ export type TextInputProps = PrimitiveProps<string> & {
 };
 
 export const TextInput: FunctionComponent<TextInputProps> = (props) => {
+    TextInput.displayName = "TextInput";
     const classes = useInputStyles();
 
     const [value, setValue] = useState(props.value);

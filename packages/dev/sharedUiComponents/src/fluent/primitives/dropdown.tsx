@@ -34,6 +34,7 @@ export type DropdownProps<V extends AcceptedDropdownValue> = PrimitiveProps<V> &
  * @returns dropdown component
  */
 export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> = (props) => {
+    Dropdown.displayName = "Dropdown";
     const classes = useDropdownStyles();
     const { options, value } = props;
     const [defaultVal, setDefaultVal] = useState(props.value);
