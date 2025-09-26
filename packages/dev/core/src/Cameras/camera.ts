@@ -1585,4 +1585,3 @@ export class Camera extends Node {
         return handednessMultiplier;
     }
 }
-
