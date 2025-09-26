@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type { INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import type { FloatArray, DataArray, IndicesArray } from "core/types";
+import type { FloatArray, DataArray, IndicesArray, Nullable } from "core/types";
 import type { Vector4 } from "core/Maths/math.vector";
 import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -325,25 +325,38 @@ export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, pare
 }
 
 /**
- * Converts an IndicesArray into either Uint32Array or Uint16Array, only copying if the data is number[].
+ * Normalizes an IndicesArray into either a Uint32Array or Uint16Array, only copying if the data is number[]
+ * Note that a copy will be made only if the data was number[].
  * @param indices input array to be converted
  * @param start starting index to copy from
  * @param count number of indices to copy
- * @returns a Uint32Array or Uint16Array
+ * @returns a Uint32Array or Uint16Array view at the specified count and offset
  * @internal
  */
-export function IndicesArrayToTypedArray(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint32Array | Uint16Array {
-    if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-        return indices;
+export function IndicesArrayToTypedSubarray(indices: Nullable<IndicesArray>, start: number, count: number, is32Bits: boolean): Nullable<Uint32Array | Uint16Array> {
+    if (!indices) {
+        return null;
     }
 
-    // If Int32Array, cast the indices (which are all positive) to Uint32Array
-    if (indices instanceof Int32Array) {
-        return new Uint32Array(indices.buffer, indices.byteOffset, indices.length);
+    // Subset from the full indices array if needed
+    let processedIndices = indices;
+    if (start !== 0 || count !== indices.length) {
+        processedIndices = Array.isArray(indices) ? indices.slice(start, start + count) : indices.subarray(start, start + count);
+    } else {
+        processedIndices = indices;
     }
 
-    const subarray = indices.slice(start, start + count);
-    return is32Bits ? new Uint32Array(subarray) : new Uint16Array(subarray);
+    // Cast Int32Array (which should all be positive) to Uint32Array
+    if (processedIndices instanceof Int32Array) {
+        return new Uint32Array(processedIndices.buffer, processedIndices.byteOffset, processedIndices.length);
+    }
+
+    // Convert number[] to typed array
+    if (Array.isArray(processedIndices)) {
+        return is32Bits ? new Uint32Array(processedIndices) : new Uint16Array(processedIndices);
+    }
+
+    return processedIndices;
 }
 
 export function DataArrayToUint8Array(data: DataArray): Uint8Array {

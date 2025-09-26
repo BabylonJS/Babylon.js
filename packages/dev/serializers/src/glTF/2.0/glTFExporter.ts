@@ -52,7 +52,7 @@ import {
     IsChildCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
-    IndicesArrayToTypedArray,
+    IndicesArrayToTypedSubarray,
     GetVertexBufferInfo,
     CollapseChildIntoParent,
     Rotate180Y,
@@ -83,8 +83,8 @@ import { DataWriter } from "./dataWriter";
 import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 class ExporterState {
-    // Babylon indices array, start, count, offset, flip -> glTF accessor index
-    private _indicesAccessorMap = new Map<Nullable<IndicesArray>, Map<number, Map<number, Map<number, Map<boolean, number>>>>>();
+    // Babylon indices array, start, count, flip -> glTF accessor index
+    private _indicesAccessorMap = new Map<Nullable<IndicesArray>, Map<number, Map<number, Map<boolean, number>>>>();
 
     // Babylon buffer -> glTF buffer view
     private _vertexBufferViewMap = new Map<Buffer, IBufferView>();
@@ -115,36 +115,30 @@ class ExporterState {
     // Only used when convertToRightHanded is true.
     public readonly convertedToRightHandedBuffers = new Map<Buffer, Uint8Array>();
 
-    public getIndicesAccessor(indices: Nullable<IndicesArray>, start: number, count: number, offset: number, flip: boolean): number | undefined {
-        return this._indicesAccessorMap.get(indices)?.get(start)?.get(count)?.get(offset)?.get(flip);
+    public getIndicesAccessor(indices: Nullable<IndicesArray>, start: number, count: number, flip: boolean): number | undefined {
+        return this._indicesAccessorMap.get(indices)?.get(start)?.get(count)?.get(flip);
     }
 
-    public setIndicesAccessor(indices: Nullable<IndicesArray>, start: number, count: number, offset: number, flip: boolean, accessorIndex: number): void {
+    public setIndicesAccessor(indices: Nullable<IndicesArray>, start: number, count: number, flip: boolean, accessorIndex: number): void {
         let map1 = this._indicesAccessorMap.get(indices);
         if (!map1) {
-            map1 = new Map<number, Map<number, Map<number, Map<boolean, number>>>>();
+            map1 = new Map<number, Map<number, Map<boolean, number>>>();
             this._indicesAccessorMap.set(indices, map1);
         }
 
         let map2 = map1.get(start);
         if (!map2) {
-            map2 = new Map<number, Map<number, Map<boolean, number>>>();
+            map2 = new Map<number, Map<boolean, number>>();
             map1.set(start, map2);
         }
 
         let map3 = map2.get(count);
         if (!map3) {
-            map3 = new Map<number, Map<boolean, number>>();
+            map3 = new Map<boolean, number>();
             map2.set(count, map3);
         }
 
-        let map4 = map3.get(offset);
-        if (!map4) {
-            map4 = new Map<boolean, number>();
-            map3.set(offset, map4);
-        }
-
-        map4.set(flip, accessorIndex);
+        map3.set(flip, accessorIndex);
     }
 
     public pushExportedNode(node: Node) {
@@ -1305,65 +1299,58 @@ export class GLTFExporter {
         is32Bits: boolean,
         start: number,
         count: number,
-        offset: number,
         fillMode: number,
         sideOrientation: number,
         state: ExporterState,
         primitive: IMeshPrimitive
     ): void {
-        let indicesToExport = indices;
-
-        primitive.mode = GetPrimitiveMode(fillMode);
-
         // Flip indices if triangle winding order is not CCW, as glTF is always CCW.
-        const flip = sideOrientation !== Material.CounterClockWiseSideOrientation && IsTriangleFillMode(fillMode);
-        if (flip) {
-            if (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode) {
-                throw new Error("Triangle strip/fan fill mode is not implemented");
-            }
+        const needsFlip = sideOrientation !== Material.CounterClockWiseSideOrientation && IsTriangleFillMode(fillMode);
 
-            primitive.mode = GetPrimitiveMode(fillMode);
-
-            const newIndices = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
-
-            if (indices) {
-                for (let i = 0; i + 2 < count; i += 3) {
-                    newIndices[i] = indices[start + i] + offset;
-                    newIndices[i + 1] = indices[start + i + 2] + offset;
-                    newIndices[i + 2] = indices[start + i + 1] + offset;
-                }
-            } else {
-                for (let i = 0; i + 2 < count; i += 3) {
-                    newIndices[i] = i;
-                    newIndices[i + 1] = i + 2;
-                    newIndices[i + 2] = i + 1;
-                }
-            }
-
-            indicesToExport = newIndices;
-        } else if (indices && offset !== 0) {
-            const newIndices = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
-            for (let i = 0; i < count; i++) {
-                newIndices[i] = indices[start + i] + offset;
-            }
-
-            indicesToExport = newIndices;
+        if (needsFlip && (fillMode === Material.TriangleStripDrawMode || fillMode === Material.TriangleFanDrawMode)) {
+            throw new Error("Converting sideOrientation of triangle strip/fan fill modes is not implemented");
         }
 
-        if (indicesToExport) {
-            let accessorIndex = state.getIndicesAccessor(indices, start, count, offset, flip);
-            if (accessorIndex === undefined) {
-                const bytes = IndicesArrayToTypedArray(indicesToExport, 0, count, is32Bits);
-                const bufferView = this._bufferManager.createBufferView(bytes);
+        let accessorIndex = state.getIndicesAccessor(indices, start, count, needsFlip);
+        if (accessorIndex === undefined) {
+            let indicesToExport: Nullable<Uint16Array | Uint32Array> = null;
 
+            if (needsFlip) {
+                // Create new array with swapped second and third vertices of each triangle
+                indicesToExport = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
+
+                if (indices) {
+                    // Use original indices with offset
+                    for (let i = 0; i + 2 < count; i += 3) {
+                        indicesToExport[i] = indices[start + i];
+                        indicesToExport[i + 1] = indices[start + i + 2];
+                        indicesToExport[i + 2] = indices[start + i + 1];
+                    }
+                } else {
+                    // Unindexed geometry - generate sequential indices
+                    for (let i = 0; i + 2 < count; i += 3) {
+                        indicesToExport[i] = i;
+                        indicesToExport[i + 1] = i + 2;
+                        indicesToExport[i + 2] = i + 1;
+                    }
+                }
+            } else {
+                // No flipping needed - normalize & create a subset of the indices to avoid exporting shared buffers multiple times
+                indicesToExport = IndicesArrayToTypedSubarray(indices, start, count, is32Bits);
+            }
+
+            // Create accessor and buffer view
+            if (indicesToExport) {
+                const bufferView = this._bufferManager.createBufferView(indicesToExport);
                 const componentType = is32Bits ? AccessorComponentType.UNSIGNED_INT : AccessorComponentType.UNSIGNED_SHORT;
                 this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.SCALAR, componentType, count, 0));
                 accessorIndex = this._accessors.length - 1;
-                state.setIndicesAccessor(indices, start, count, offset, flip, accessorIndex);
+                state.setIndicesAccessor(indices, start, count, needsFlip, accessorIndex);
             }
-
-            primitive.indices = accessorIndex;
         }
+
+        primitive.mode = GetPrimitiveMode(fillMode);
+        primitive.indices = accessorIndex;
     }
 
     private _exportVertexBuffer(vertexBuffer: VertexBuffer, babylonMaterial: Material, start: number, count: number, state: ExporterState, primitive: IMeshPrimitive): void {
@@ -1458,18 +1445,17 @@ export class GLTFExporter {
             for (const subMesh of subMeshes) {
                 const primitive: IMeshPrimitive = { attributes: {} };
 
+                // Material
                 const babylonMaterial = subMesh.getMaterial() || this._babylonScene.defaultMaterial;
-
                 if (isGreasedLineMesh) {
+                    // Special case for GreasedLineMesh
                     const material: IMaterial = {
                         name: babylonMaterial.name,
                     };
 
-                    const babylonLinesMesh = babylonMesh;
-
                     const colorWhite = Color3.White();
-                    const alpha = babylonLinesMesh.material?.alpha ?? 1;
-                    const color = babylonLinesMesh.greasedLineMaterial?.color ?? colorWhite;
+                    const alpha = babylonMesh.material?.alpha ?? 1;
+                    const color = babylonMesh.greasedLineMaterial?.color ?? colorWhite;
                     if (!color.equalsWithEpsilon(colorWhite, Epsilon) || alpha < 1) {
                         material.pbrMetallicRoughness = {
                             baseColorFactor: [...color.asArray(), alpha],
@@ -1484,18 +1470,15 @@ export class GLTFExporter {
                         name: babylonMaterial.name,
                     };
 
-                    const babylonLinesMesh = babylonMesh;
-
-                    if (!babylonLinesMesh.color.equalsWithEpsilon(Color3.White(), Epsilon) || babylonLinesMesh.alpha < 1) {
+                    if (!babylonMesh.color.equalsWithEpsilon(Color3.White(), Epsilon) || babylonMesh.alpha < 1) {
                         material.pbrMetallicRoughness = {
-                            baseColorFactor: [...babylonLinesMesh.color.asArray(), babylonLinesMesh.alpha],
+                            baseColorFactor: [...babylonMesh.color.asArray(), babylonMesh.alpha],
                         };
                     }
 
                     this._materials.push(material);
                     primitive.material = this._materials.length - 1;
                 } else {
-                    // Material
                     // eslint-disable-next-line no-await-in-loop
                     await this._exportMaterialAsync(babylonMaterial, vertexBuffers, subMesh, primitive);
                 }
@@ -1514,7 +1497,6 @@ export class GLTFExporter {
                     indices ? AreIndices32Bits(indices, subMesh.indexCount, subMesh.indexStart, subMesh.verticesStart) : subMesh.verticesCount > 65535,
                     indices ? subMesh.indexStart : subMesh.verticesStart,
                     indices ? subMesh.indexCount : subMesh.verticesCount,
-                    -subMesh.verticesStart,
                     fillMode,
                     sideOrientation,
                     state,
