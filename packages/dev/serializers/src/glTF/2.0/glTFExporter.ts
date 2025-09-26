@@ -1313,35 +1313,35 @@ export class GLTFExporter {
 
         let accessorIndex = state.getIndicesAccessor(indices, start, count, needsFlip);
         if (accessorIndex === undefined) {
-            let processedIndices: Nullable<Uint16Array | Uint32Array> = null;
+            let indicesToExport: Nullable<Uint16Array | Uint32Array> = null;
 
             if (needsFlip) {
                 // Create new array with swapped second and third vertices of each triangle
-                processedIndices = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
+                indicesToExport = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
 
                 if (indices) {
                     // Use original indices with offset
                     for (let i = 0; i + 2 < count; i += 3) {
-                        processedIndices[i] = indices[start + i];
-                        processedIndices[i + 1] = indices[start + i + 2];
-                        processedIndices[i + 2] = indices[start + i + 1];
+                        indicesToExport[i] = indices[start + i];
+                        indicesToExport[i + 1] = indices[start + i + 2];
+                        indicesToExport[i + 2] = indices[start + i + 1];
                     }
                 } else {
                     // Unindexed geometry - generate sequential indices
                     for (let i = 0; i + 2 < count; i += 3) {
-                        processedIndices[i] = i;
-                        processedIndices[i + 1] = i + 2;
-                        processedIndices[i + 2] = i + 1;
+                        indicesToExport[i] = i;
+                        indicesToExport[i + 1] = i + 2;
+                        indicesToExport[i + 2] = i + 1;
                     }
                 }
             } else {
-                // No flipping needed - create a subset of the original indices to avoid exporting shared buffers multiple times
-                processedIndices = IndicesArrayToTypedArray(indices, start, count, is32Bits);
+                // No flipping needed - normalize & create a subset of the indices to avoid exporting shared buffers multiple times
+                indicesToExport = IndicesArrayToTypedArray(indices, start, count, is32Bits);
             }
 
             // Create accessor and buffer view
-            if (processedIndices) {
-                const bufferView = this._bufferManager.createBufferView(processedIndices);
+            if (indicesToExport) {
+                const bufferView = this._bufferManager.createBufferView(indicesToExport);
                 const componentType = is32Bits ? AccessorComponentType.UNSIGNED_INT : AccessorComponentType.UNSIGNED_SHORT;
                 this._accessors.push(this._bufferManager.createAccessor(bufferView, AccessorType.SCALAR, componentType, count, 0));
                 accessorIndex = this._accessors.length - 1;
@@ -1404,11 +1404,7 @@ export class GLTFExporter {
         let materialIndex = this._materialMap.get(babylonMaterial);
         if (materialIndex === undefined) {
             const hasUVs = vertexBuffers && Object.keys(vertexBuffers).some((kind) => kind.startsWith("uv"));
-
-            if (babylonMaterial instanceof MultiMaterial) {
-                babylonMaterial = babylonMaterial.subMaterials[subMesh.materialIndex]!;
-            }
-
+            babylonMaterial = babylonMaterial instanceof MultiMaterial ? babylonMaterial.subMaterials[subMesh.materialIndex]! : babylonMaterial;
             if (babylonMaterial instanceof PBRBaseMaterial) {
                 materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, hasUVs);
             } else if (babylonMaterial instanceof StandardMaterial) {
@@ -1452,6 +1448,7 @@ export class GLTFExporter {
                 // Material
                 const babylonMaterial = subMesh.getMaterial() || this._babylonScene.defaultMaterial;
                 if (isGreasedLineMesh) {
+                    // Special case for GreasedLineMesh
                     const material: IMaterial = {
                         name: babylonMaterial.name,
                     };
@@ -1482,7 +1479,6 @@ export class GLTFExporter {
                     this._materials.push(material);
                     primitive.material = this._materials.length - 1;
                 } else {
-                    // Material
                     // eslint-disable-next-line no-await-in-loop
                     await this._exportMaterialAsync(babylonMaterial, vertexBuffers, subMesh, primitive);
                 }
