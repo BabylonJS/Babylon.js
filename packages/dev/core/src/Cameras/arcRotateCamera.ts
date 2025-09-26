@@ -1040,9 +1040,10 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         this.inputs.checkInputs();
-
         let hasUserInteractions = false;
 
+        // Scale speed by framerate to ensure higher framerate devices don't clamp movement to 0 too early
+        const speed = this._computeLocalCameraSpeed();
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
             hasUserInteractions = true;
@@ -1062,13 +1063,13 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialAlphaOffset *= this.inertia;
             this.inertialBetaOffset *= this.inertia;
             this.inertialRadiusOffset *= this.inertia;
-            if (Math.abs(this.inertialAlphaOffset) < Epsilon) {
+            if (Math.abs(this.inertialAlphaOffset) < speed * Epsilon) {
                 this.inertialAlphaOffset = 0;
             }
-            if (Math.abs(this.inertialBetaOffset) < Epsilon) {
+            if (Math.abs(this.inertialBetaOffset) < speed * Epsilon) {
                 this.inertialBetaOffset = 0;
             }
-            if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon) {
+            if (Math.abs(this.inertialRadiusOffset) < speed * Epsilon) {
                 this.inertialRadiusOffset = 0;
             }
         }
@@ -1114,10 +1115,10 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialPanningX *= this.panningInertia;
             this.inertialPanningY *= this.panningInertia;
 
-            if (Math.abs(this.inertialPanningX) < this.speed * Epsilon) {
+            if (Math.abs(this.inertialPanningX) < speed * Epsilon) {
                 this.inertialPanningX = 0;
             }
-            if (Math.abs(this.inertialPanningY) < this.speed * Epsilon) {
+            if (Math.abs(this.inertialPanningY) < speed * Epsilon) {
                 this.inertialPanningY = 0;
             }
         }
