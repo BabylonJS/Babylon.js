@@ -571,6 +571,16 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
+    const ssaoConfig = useConfiguration(
+        DefaultViewerOptions.postProcessing.ssao,
+        viewerOptions.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
+        () => viewer.postProcessing.ssao,
+        (ssao) => (viewer.postProcessing = { ssao }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+
     const autoOrbitConfig = useConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.enabled,
         viewerOptions.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
@@ -785,6 +795,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             attributes.push(`exposure="${exposureConfig.configuredState.toFixed(1)}"`);
         }
 
+        if (ssaoConfig.canReset) {
+            attributes.push(`ssao`);
+        }
+
         if (cameraConfig.canReset) {
             const { alpha, beta, radius, target } = cameraConfig.configuredState;
             attributes.push(`camera-orbit="${alpha.toFixed(3)} ${beta.toFixed(3)} ${radius.toFixed(3)}"`);
@@ -837,6 +851,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.configuredState,
         contrastConfig.configuredState,
         exposureConfig.configuredState,
+        ssaoConfig.configuredState,
         cameraConfig.configuredState,
         autoOrbitConfig.configuredState,
         autoOrbitSpeedConfig.configuredState,
@@ -906,6 +921,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         if (exposureConfig.canReset) {
             postProcessingProperties.push(`"exposure": ${exposureConfig.configuredState.toFixed(1)}`);
         }
+        if (ssaoConfig.canReset) {
+            postProcessingProperties.push(`"ssao": ${ssaoConfig.configuredState}`);
+        }
         if (postProcessingProperties.length > 0) {
             properties.push(`"postProcessing": {${postProcessingProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
         }
@@ -974,6 +992,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.configuredState,
         contrastConfig.configuredState,
         exposureConfig.configuredState,
+        ssaoConfig.configuredState,
         shadowQualityConfig.configuredState,
         cameraConfig.configuredState,
         autoOrbitConfig.configuredState,
@@ -1485,6 +1504,11 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         />
                     </div>
                     <FontAwesomeIconButton title="Reset exposure" icon={faTrashCan} disabled={!exposureConfig.canReset} onClick={exposureConfig.reset} />
+                </div>
+                <div>
+                    <div style={{ flex: 1 }}>
+                        <CheckBoxLineComponent label="SSAO (Ambient Occlusion)" isSelected={ssaoConfig.configuredState} onSelect={ssaoConfig.update} />
+                    </div>
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">
