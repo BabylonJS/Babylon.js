@@ -84,6 +84,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
             title: "Settings",
             icon: SettingsRegular,
             horizontalLocation: "right",
+            verticalLocation: "top",
             order: 500,
             suppressTeachingMoment: true,
             content: () => {
