@@ -52,7 +52,7 @@ import {
     IsChildCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
-    IndicesArrayToTypedArray,
+    IndicesArrayToTypedSubarray,
     GetVertexBufferInfo,
     CollapseChildIntoParent,
     Rotate180Y,
@@ -1336,7 +1336,7 @@ export class GLTFExporter {
                 }
             } else {
                 // No flipping needed - normalize & create a subset of the indices to avoid exporting shared buffers multiple times
-                indicesToExport = IndicesArrayToTypedArray(indices, start, count, is32Bits);
+                indicesToExport = IndicesArrayToTypedSubarray(indices, start, count, is32Bits);
             }
 
             // Create accessor and buffer view

@@ -325,28 +325,38 @@ export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, pare
 }
 
 /**
- * Normalizes an IndicesArray into either a Uint32Array or Uint16Array at the specified count and offset.
+ * Normalizes an IndicesArray into either a Uint32Array or Uint16Array, only copying if the data is number[]
+ * Note that a copy will be made only if the data was number[].
  * @param indices input array to be converted
  * @param start starting index to copy from
  * @param count number of indices to copy
- * @returns a Uint32Array or Uint16Array
+ * @returns a Uint32Array or Uint16Array view at the specified count and offset
  * @internal
  */
-export function IndicesArrayToTypedArray(indices: Nullable<IndicesArray>, start: number, count: number, is32Bits: boolean): Nullable<Uint32Array | Uint16Array> {
+export function IndicesArrayToTypedSubarray(indices: Nullable<IndicesArray>, start: number, count: number, is32Bits: boolean): Nullable<Uint32Array | Uint16Array> {
     if (!indices) {
         return null;
     }
 
-    // Convert to appropriate typed array
-    let typedIndices: Uint32Array | Uint16Array;
-    if (indices instanceof Uint32Array || indices instanceof Uint16Array) {
-        typedIndices = indices;
+    // Subset from the full indices array if needed
+    let processedIndices = indices;
+    if (start !== 0 || count !== indices.length) {
+        processedIndices = Array.isArray(indices) ? indices.slice(start, start + count) : indices.subarray(start, start + count);
     } else {
-        typedIndices = (is32Bits ? Uint32Array : Uint16Array).from(indices);
+        processedIndices = indices;
     }
 
-    // Apply subsetting if needed
-    return start !== 0 || count !== typedIndices.length ? typedIndices.subarray(start, start + count) : typedIndices;
+    // Cast Int32Array (which should all be positive) to Uint32Array
+    if (processedIndices instanceof Int32Array) {
+        return new Uint32Array(processedIndices.buffer, processedIndices.byteOffset, processedIndices.length);
+    }
+
+    // Convert number[] to typed array
+    if (Array.isArray(processedIndices)) {
+        return is32Bits ? new Uint32Array(processedIndices) : new Uint16Array(processedIndices);
+    }
+
+    return processedIndices;
 }
 
 export function DataArrayToUint8Array(data: DataArray): Uint8Array {
