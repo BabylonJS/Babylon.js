@@ -14,6 +14,7 @@ import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
@@ -21,16 +22,12 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
-import { TexturePreview } from "./texturePreview";
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
 
 export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
     const { texture } = props;
 
     const isUpdatable = texture instanceof Texture || texture instanceof CubeTexture;
 
-    const textureToSend = isUpdatable ? useObservableState(() => texture, useInterceptObservable("function", texture, "updateURL")) : texture;
     const updateTexture = useCallback(
         (file: File) => {
             ReadFile(
@@ -66,7 +63,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 
     return (
         <>
-            <TexturePreview texture={textureToSend} width={256} height={256} />
+            <PlaceholderPropertyLine label="TODO: Texture Preview" value={null} onChange={() => {}} />
             {/* TODO: This should probably be dynamically fetching a list of supported texture extensions. */}
             {isUpdatable && (
                 <FileUploadLine
@@ -79,7 +76,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
                     }}
                 />
             )}
-            <ButtonLine label="Edit Texture (coming soon!)" onClick={() => {}} />
+            <PlaceholderPropertyLine label="TODO:Texture Editor" value={null} onChange={() => {}} />
         </>
     );
 };
