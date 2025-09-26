@@ -226,7 +226,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     }
 #endif
 
-#ifdef CLUSTLIGHT_BATCH
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
 #include<clusteredLightingFunctions>
 
     fn computeClusteredLighting(

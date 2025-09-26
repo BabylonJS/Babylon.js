@@ -359,6 +359,9 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
 
     public DEBUGMODE = 0;
 
+    public CLUSTLIGHT_SLICES = 0;
+    public CLUSTLIGHT_BATCH = 0;
+
     // BRDF defines
     BRDF_V_HEIGHT_CORRELATED = true;
     MS_BRDF_ENERGY_CONSERVATION = true;

@@ -9,7 +9,7 @@
         // WARNING: If any changes are made to the lighting equation be sure to also add them to the
         //          `computeClusteredLighting` functions to ensure consistency when clustered lighting is used.
 
-        #if defined(PBR) && defined(CLUSTLIGHT{X}) && CLUSTLIGHT_BATCH > 0
+        #if defined(PBR) && defined(CLUSTLIGHT{X}) && defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
         {
             int sliceIndex = min(getClusteredSliceIndex(light{X}.vSliceData, vViewDepth), CLUSTLIGHT_SLICES - 1);
             info = computeClusteredLighting(

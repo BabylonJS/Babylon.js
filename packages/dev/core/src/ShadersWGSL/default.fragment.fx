@@ -16,7 +16,7 @@ varying vNormalW: vec3f;
 varying vColor: vec4f;
 #endif
 
-#ifdef CLUSTLIGHT_BATCH
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
 varying vViewDepth: f32;
 #endif
 
