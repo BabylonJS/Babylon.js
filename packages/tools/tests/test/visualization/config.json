@@ -2653,12 +2653,12 @@
         },
         {
             "title": "FrameGraph nrge clustered lights",
-            "playgroundId": "#1QCA2M#12"
+            "playgroundId": "#1QCA2M#12",
+            "excludedEngines": ["webgl1,webgl2"]
         },
         {
             "title": "FrameGraph nrge clustered lights (simple)",
-            "playgroundId": "#1QCA2M#27",
-            "renderCount": 50
+            "playgroundId": "#1QCA2M#26"
         },
         {
             "title": "FrameGraph nrg gui bloom",
