@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type { INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import type { FloatArray, DataArray, IndicesArray } from "core/types";
+import type { FloatArray, DataArray, IndicesArray, Nullable } from "core/types";
 import type { Vector4 } from "core/Maths/math.vector";
 import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -325,25 +325,28 @@ export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, pare
 }
 
 /**
- * Converts an IndicesArray into either Uint32Array or Uint16Array, only copying if the data is number[].
+ * Normalizes an IndicesArray into either a Uint32Array or Uint16Array at the specified count and offset.
  * @param indices input array to be converted
  * @param start starting index to copy from
  * @param count number of indices to copy
  * @returns a Uint32Array or Uint16Array
  * @internal
  */
-export function IndicesArrayToTypedArray(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint32Array | Uint16Array {
-    if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-        return indices;
+export function IndicesArrayToTypedArray(indices: Nullable<IndicesArray>, start: number, count: number, is32Bits: boolean): Nullable<Uint32Array | Uint16Array> {
+    if (!indices) {
+        return null;
     }
 
-    // If Int32Array, cast the indices (which are all positive) to Uint32Array
-    if (indices instanceof Int32Array) {
-        return new Uint32Array(indices.buffer, indices.byteOffset, indices.length);
+    // Convert to appropriate typed array
+    let typedIndices: Uint32Array | Uint16Array;
+    if (indices instanceof Uint32Array || indices instanceof Uint16Array) {
+        typedIndices = indices;
+    } else {
+        typedIndices = (is32Bits ? Uint32Array : Uint16Array).from(indices);
     }
 
-    const subarray = indices.slice(start, start + count);
-    return is32Bits ? new Uint32Array(subarray) : new Uint16Array(subarray);
+    // Apply subsetting if needed
+    return start !== 0 || count !== typedIndices.length ? typedIndices.subarray(start, start + count) : typedIndices;
 }
 
 export function DataArrayToUint8Array(data: DataArray): Uint8Array {
