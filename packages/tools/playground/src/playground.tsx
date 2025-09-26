@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { MonacoComponent } from "./components/monacoComponent";
+import { MonacoComponent } from "./components/editor/monacoComponent";
 import { RenderingComponent } from "./components/rendererComponent";
 import { GlobalState, EditionMode, RuntimeMode } from "./globalState";
 import { FooterComponent } from "./components/footerComponent";
@@ -25,7 +25,22 @@ interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
 }
 
-export class Playground extends React.Component<IPlaygroundProps, { errorMessage: string; mode: EditionMode }> {
+/**
+ *
+ */
+export class Playground extends React.Component<
+    IPlaygroundProps,
+    {
+        /**
+         *
+         */
+        errorMessage: string;
+        /**
+         *
+         */
+        mode: EditionMode;
+    }
+> {
     private _monacoRef: React.RefObject<HTMLDivElement>;
     private _renderingRef: React.RefObject<HTMLDivElement>;
     private _splitterRef: React.RefObject<HTMLDivElement>;
@@ -33,8 +48,17 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
 
     private _globalState: GlobalState;
 
+    /**
+     *
+     */
     public saveManager: SaveManager;
+    /**
+     *
+     */
     public loadManager: LoadManager;
+    /**
+     *
+     */
     public shortcutManager: ShortcutManager;
 
     public constructor(props: IPlaygroundProps) {
@@ -93,12 +117,13 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
                 this._renderingRef.current!.classList.add("hidden");
                 this._splitterRef.current!.classList.add("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
-                this._monacoRef.current!.style.width = "100%";
+                this._monacoRef.current!.classList.add("pg-monaco-wrapper__fullscreen");
                 break;
             case EditionMode.RenderingOnly:
                 this._splitContainerRef.current!.classList.add("disable-split-rendering");
                 this._splitContainerRef.current!.classList.remove("disable-split-code");
                 this._monacoRef.current!.classList.add("hidden");
+                this._monacoRef.current!.classList.remove("pg-monaco-wrapper__fullscreen");
                 this._splitterRef.current!.classList.add("hidden");
                 this._renderingRef.current!.classList.remove("hidden");
                 this._renderingRef.current!.style.width = "100%";
@@ -109,6 +134,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
                 this._renderingRef.current!.classList.remove("hidden");
                 this._splitterRef.current!.classList.remove("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
+                this._monacoRef.current!.classList.remove("pg-monaco-wrapper__fullscreen");
                 break;
         }
     }

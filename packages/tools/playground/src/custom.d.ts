@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable jsdoc/require-jsdoc */
 declare module "*.svg" {
     const content: string;
     export default content;
@@ -9,7 +10,13 @@ declare module "*.module.scss" {
     export = content;
 }
 
-declare module "monaco-editor/esm/vs/language/typescript/languageFeatures" {
+declare module "monaco-editor/esm/vs/base/common/lifecycle" {
+    export interface IDisposable {
+        dispose(): void;
+    }
+}
+
+declare module "monaco-editor/esm/vs/editor/common/services/languageFeatures" {
     const SuggestAdapter: any;
     export type SuggestAdapter = any;
 }

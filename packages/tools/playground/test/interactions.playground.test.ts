@@ -66,11 +66,17 @@ test("User can interact with the playground", async ({ page }) => {
         height: 1080,
     });
 
-    await page.locator(".view-lines > div:nth-child(16)").click();
+    // There is a real condition that can be waiting with an evaluated promise in the browser
+    // via the Playground window global... This is a timing hack but the small amount of tests here
+    // should make it ok for now.
+
+    await page.waitForTimeout(1500);
+    await page.locator(".view-line:nth-of-type(16)").click();
+    await page.waitForTimeout(1500);
     await page.keyboard.type("camera", { delay: 50 });
     await expect(page.locator(".editor-widget")).toBeVisible();
     await page.waitForTimeout(100);
-    await page.getByLabel("camera", { exact: true }).locator("span").filter({ hasText: "camera" }).first().click();
+    await page.keyboard.press("Escape");
 
     // change light's intensity to 0.2
     await page.getByText("0.7").click();
