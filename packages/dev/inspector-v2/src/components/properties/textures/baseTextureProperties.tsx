@@ -22,15 +22,13 @@ import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { BoundProperty } from "../boundProperty";
 import { FindTextureFormat, FindTextureType } from "./textureFormatUtils";
 import { TexturePreview } from "./texturePreview";
-import { useInterceptObservable } from "../../../hooks/instrumentationHooks";
-import { useObservableState } from "../../../hooks/observableHooks";
 
 export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
     const { texture } = props;
 
     const isUpdatable = texture instanceof Texture || texture instanceof CubeTexture;
 
-    const textureToSend = isUpdatable ? useObservableState(() => texture, useInterceptObservable("function", texture, "updateURL")) : texture;
+    const url = isUpdatable ? useProperty(texture, "url") : null;
     const updateTexture = useCallback(
         (file: File) => {
             ReadFile(
@@ -66,7 +64,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 
     return (
         <>
-            <TexturePreview texture={textureToSend} width={256} height={256} />
+            <TexturePreview url={url} texture={texture} width={256} height={256} />
             {/* TODO: This should probably be dynamically fetching a list of supported texture extensions. */}
             {isUpdatable && (
                 <FileUploadLine
