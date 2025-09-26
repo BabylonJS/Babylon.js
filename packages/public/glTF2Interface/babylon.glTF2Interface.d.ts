@@ -1149,6 +1149,16 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the KHR_materials_volume_scatter extension
+     */
+
+    /** @internal */
+    interface IKHRMaterialsVolumeScatter {
+        scatterAnisotropy?: number;
+        multiscatterColor?: number[];
+    }
+
+    /**
      * Interfaces from the KHR_materials_dispersion extension
      */
 
