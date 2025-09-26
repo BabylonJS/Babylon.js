@@ -1127,7 +1127,7 @@ export class Camera extends Node {
     /**
      * Gets a ray in the forward direction from the camera.
      * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a workd space ray
+     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a world space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
@@ -1141,7 +1141,7 @@ export class Camera extends Node {
      * Gets a ray in the forward direction from the camera.
      * @param refRay the ray to (re)use when setting the values
      * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a world space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
