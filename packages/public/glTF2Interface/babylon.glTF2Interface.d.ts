@@ -1081,6 +1081,11 @@ declare module BABYLON.GLTF2 {
     }
 
     /** @internal */
+    interface IKHRMaterialsClearcoatIor {
+        clearcoatIor?: number;
+    }
+
+    /** @internal */
     interface IKHRMaterialsClearcoatDarkening {
         clearcoatDarkeningFactor?: number;
         clearcoatDarkeningTexture?: ITextureInfo;
