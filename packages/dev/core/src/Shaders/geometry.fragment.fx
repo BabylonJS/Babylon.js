@@ -37,6 +37,15 @@ uniform vec2 vTangentSpaceParams;
     #if defined(ORMTEXTURE) || defined(SPECULARGLOSSINESSTEXTURE) || defined(REFLECTIVITYTEXTURE)
         uniform sampler2D reflectivitySampler;
         varying vec2 vReflectivityUV;
+    #else
+        #ifdef METALLIC_TEXTURE
+            uniform sampler2D metallicSampler;
+            varying vec2 vMetallicUV;
+        #endif
+        #ifdef ROUGHNESS_TEXTURE
+            uniform sampler2D roughnessSampler;
+            varying vec2 vRoughnessUV;
+        #endif
     #endif
     #ifdef ALBEDOTEXTURE
         varying vec2 vAlbedoUV;
@@ -141,6 +150,13 @@ void main() {
                 // pbr.useMetallnessFromMetallicTextureBlue = true;
                 metal *= texture2D(reflectivitySampler, vReflectivityUV).b;
                 roughness *= texture2D(reflectivitySampler, vReflectivityUV).g;
+            #else
+                #ifdef METALLIC_TEXTURE
+                    metal *= texture2D(metallicSampler, vMetallicUV).r;
+                #endif
+                #ifdef ROUGHNESS_TEXTURE
+                    roughness *= texture2D(roughnessSampler, vRoughnessUV).r;
+                #endif
             #endif
 
             #ifdef METALLIC

@@ -28,6 +28,14 @@ attribute normal: vec3f;
 	varying vReflectivityUV: vec2f;
 	varying vAlbedoUV: vec2f;
 	#endif
+	#ifdef METALLIC_TEXTURE
+	varying vMetallicUV: vec2f;
+	uniform metallicMatrix: mat4x4f;
+	#endif
+	#ifdef ROUGHNESS_TEXTURE
+	varying vRoughnessUV: vec2f;
+	uniform roughnessMatrix: mat4x4f;
+	#endif
 
 	#ifdef UV1
 	attribute uv: vec2f;
@@ -168,6 +176,13 @@ fn main(input : VertexInputs) -> FragmentInputs {
 			#endif
 			#ifdef REFLECTIVITY_UV1
 			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
+			#else
+				#ifdef METALLIC_UV1
+				vertexOutputs.vMetallicUV = (uniforms.metallicMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
+				#endif
+				#ifdef ROUGHNESS_UV1
+				vertexOutputs.vRoughnessUV = (uniforms.roughnessMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
+				#endif
 			#endif
 			#ifdef ALBEDO_UV1
 			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
@@ -185,6 +200,13 @@ fn main(input : VertexInputs) -> FragmentInputs {
 			#endif
 			#ifdef REFLECTIVITY_UV2
 			vertexOutputs.vReflectivityUV = (uniforms.reflectivityMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
+			#else
+				#ifdef METALLIC_UV2
+				vertexOutputs.vMetallicUV = (uniforms.metallicMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
+				#endif
+				#ifdef ROUGHNESS_UV2
+				vertexOutputs.vRoughnessUV = (uniforms.roughnessMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
+				#endif
 			#endif
 			#ifdef ALBEDO_UV2
 			vertexOutputs.vAlbedoUV = (uniforms.albedoMatrix *  vec4f(uv2Updated, 1.0, 0.0)).xy;
