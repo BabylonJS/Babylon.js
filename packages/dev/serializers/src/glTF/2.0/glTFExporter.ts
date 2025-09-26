@@ -1313,28 +1313,30 @@ export class GLTFExporter {
 
         let accessorIndex = state.getIndicesAccessor(indices, start, count, needsFlip);
         if (accessorIndex === undefined) {
-            // Normalize and subset indices
-            let processedIndices = IndicesArrayToTypedArray(indices, start, count, is32Bits);
+            let processedIndices: Nullable<Uint16Array | Uint32Array> = null;
 
-            // Flip indices, if needed
             if (needsFlip) {
-                const newIndices = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
+                // Create new array with swapped second and third vertices of each triangle
+                processedIndices = is32Bits ? new Uint32Array(count) : new Uint16Array(count);
 
-                if (processedIndices) {
+                if (indices) {
+                    // Use original indices with offset
                     for (let i = 0; i + 2 < count; i += 3) {
-                        newIndices[i] = processedIndices[i];
-                        newIndices[i + 1] = processedIndices[i + 2];
-                        newIndices[i + 2] = processedIndices[i + 1];
+                        processedIndices[i] = indices[start + i];
+                        processedIndices[i + 1] = indices[start + i + 2];
+                        processedIndices[i + 2] = indices[start + i + 1];
                     }
                 } else {
+                    // Unindexed geometry - generate sequential indices
                     for (let i = 0; i + 2 < count; i += 3) {
-                        newIndices[i] = i;
-                        newIndices[i + 1] = i + 2;
-                        newIndices[i + 2] = i + 1;
+                        processedIndices[i] = i;
+                        processedIndices[i + 1] = i + 2;
+                        processedIndices[i + 2] = i + 1;
                     }
                 }
-
-                processedIndices = newIndices;
+            } else {
+                // No flipping needed - create a subset of the original indices to avoid exporting shared buffers multiple times
+                processedIndices = IndicesArrayToTypedArray(indices, start, count, is32Bits);
             }
 
             // Create accessor and buffer view
