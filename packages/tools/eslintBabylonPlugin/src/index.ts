@@ -170,36 +170,52 @@ function loadTsConfig(projectRoot: string): TsConfig | null {
     return tsConfig;
 }
 
-function shouldUsePathMapping(importPath: string, filename: string, tsConfig: TsConfig) {
+function shouldUsePathMapping(projectRoot: string, importPath: string, filename: string, tsConfig: TsConfig) {
     if (!importPath.startsWith("../") || !tsConfig?.compilerOptions?.paths) {
         return null;
     }
 
     const { baseUrl = ".", paths } = tsConfig.compilerOptions;
-    const projectRoot = path.dirname(path.join(path.dirname(filename), "..", "..", ".."));
+
+    // Tries to match the file path against the path mappings from the tsconfig
+    const findPathInfo = (filename: string) => {
+        // Check if this resolved path matches any of the path mappings
+        for (const [pathKey, pathValues] of Object.entries(paths)) {
+            for (const pathValue of pathValues) {
+                // Convert tsconfig path to absolute path
+                const absolutePackageRoot = path.resolve(projectRoot, baseUrl, pathValue).replace("*", "");
+
+                // Check if the resolved import matches this path mapping
+                if (filename.startsWith(absolutePackageRoot)) {
+                    return { pathKey, absolutePackageRoot } as const;
+                }
+            }
+        }
+
+        return null;
+    };
 
     // Resolve the relative import to an absolute path
     const resolvedImportPath = path.resolve(path.dirname(filename), importPath);
 
-    // Check if this resolved path matches any of the path mappings
-    for (const [pathKey, pathValues] of Object.entries(paths)) {
-        for (const pathValue of pathValues) {
-            // Convert tsconfig path to absolute path
-            const absolutePathPattern = path.resolve(projectRoot, baseUrl, pathValue);
+    // Try to find a path mapping for the file in question
+    const filePathInfo = findPathInfo(filename);
 
-            // Check if the resolved import matches this path mapping
-            if (resolvedImportPath.startsWith(absolutePathPattern.replace("*", ""))) {
-                // Calculate what the import should be
-                const relativePart = path.relative(absolutePathPattern.replace("*", ""), resolvedImportPath);
+    // Try to find a path mapping for the import in question
+    const importPathInfo = findPathInfo(resolvedImportPath);
 
-                const suggestedImport = pathKey
-                    .replace("*", relativePart)
-                    .replace(/\\/g, "/") // Normalize to forward slashes
-                    .replace(/\.(ts|tsx)$/, ""); // Remove extension
+    // If the pathKeys are the same, it means it is a relative import within the same project/package, which is ok.
+    // Otherwise though, the relative path should be replaced with a mapped path.
+    if (filePathInfo && importPathInfo && filePathInfo.pathKey !== importPathInfo.pathKey) {
+        // Calculate what the import should be
+        const relativePart = path.relative(importPathInfo.absolutePackageRoot, resolvedImportPath);
 
-                return suggestedImport;
-            }
-        }
+        const suggestedImport = importPathInfo.pathKey
+            .replace("*", relativePart)
+            .replace(/\\/g, "/") // Normalize to forward slashes
+            .replace(/\.(ts|tsx)$/, ""); // Remove extension
+
+        return suggestedImport;
     }
 
     return null;
@@ -464,11 +480,11 @@ const plugin: IPlugin = {
                 },
             },
             create(context) {
+                const filename = context.filename;
+                const projectRoot = filename.split("packages")[0];
                 return {
                     Program() {
-                        // Load tsconfig once per file
-                        const filename = context.filename;
-                        const projectRoot = filename.split("packages")[0];
+                        // Load tsconfig (it will only be loaded upon first request).
                         tsConfig = loadTsConfig(projectRoot);
                     },
 
@@ -476,7 +492,7 @@ const plugin: IPlugin = {
                         const importPath = node.source.value as string;
                         const filename = context.filename;
 
-                        const suggestion = shouldUsePathMapping(importPath, filename, tsConfig!);
+                        const suggestion = shouldUsePathMapping(projectRoot, importPath, filename, tsConfig!);
 
                         if (suggestion) {
                             context.report({

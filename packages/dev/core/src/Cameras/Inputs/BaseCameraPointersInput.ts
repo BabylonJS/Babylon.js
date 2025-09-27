@@ -110,6 +110,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                         y: evt.clientY,
                         pointerId: evt.pointerId,
                         type: evt.pointerType,
+                        button: evt.button,
                     };
                 } else if (this._pointB === null) {
                     this._pointB = {
@@ -117,6 +118,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                         y: evt.clientY,
                         pointerId: evt.pointerId,
                         type: evt.pointerType,
+                        button: evt.button,
                     };
                 } else {
                     return; // We are already tracking two pointers so ignore this one

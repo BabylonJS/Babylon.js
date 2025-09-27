@@ -25,6 +25,7 @@ import { Light } from "../light";
 import { LightConstants } from "../lightConstants";
 import type { PointLight } from "../pointLight";
 import type { SpotLight } from "../spotLight";
+import type { RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
 
 import "core/Meshes/thinInstanceMesh";
 
@@ -106,6 +107,8 @@ export class ClusteredLightContainer extends Light {
     public get lights(): readonly Light[] {
         return this._lights;
     }
+
+    private _camera: Nullable<Camera> = null;
 
     // The lights sorted by depth
     private readonly _sortedLights: (PointLight | SpotLight)[] = [];
@@ -264,7 +267,8 @@ export class ClusteredLightContainer extends Light {
     }
 
     /** @internal */
-    public _updateBatches(): RenderTargetTexture {
+    public _updateBatches(camera: Nullable<Camera> = null): RenderTargetTexture {
+        this._camera = camera;
         this._proxyMesh.isVisible = this._sortedLights.length > 0;
 
         // Ensure space for atleast 1 batch
@@ -290,6 +294,7 @@ export class ClusteredLightContainer extends Light {
             Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             Constants.TEXTURETYPE_FLOAT
         );
+        this._lightDataTexture.name = "LightDataTexture_clustered_" + this.name;
         this._proxyMaterial.setTexture("lightDataTexture", this._lightDataTexture);
 
         this._tileMaskTexture?.dispose();
@@ -310,8 +315,21 @@ export class ClusteredLightContainer extends Light {
         this._tileMaskTexture.noPrePassRenderer = true;
         this._tileMaskTexture.renderList = [this._proxyMesh];
 
+        let currentRenderTarget: Nullable<RenderTargetWrapper> = null;
+
         this._tileMaskTexture.onBeforeBindObservable.add(() => {
+            currentRenderTarget = engine._currentRenderTarget;
             this._updateLightData();
+        });
+
+        this._tileMaskTexture.onAfterUnbindObservable.add(() => {
+            if (engine._currentRenderTarget !== currentRenderTarget) {
+                if (!currentRenderTarget) {
+                    engine.restoreDefaultFramebuffer();
+                } else {
+                    engine.bindFramebuffer(currentRenderTarget);
+                }
+            }
         });
 
         this._tileMaskTexture.onClearObservable.add(() => {
@@ -350,7 +368,7 @@ export class ClusteredLightContainer extends Light {
     }
 
     private _updateLightData(): void {
-        const camera = this._scene.activeCamera;
+        const camera = this._camera || this._scene.activeCamera;
         const renderId = this._scene.getRenderId();
         if (!camera || this._lightDataRenderId === renderId) {
             return;
@@ -389,9 +407,9 @@ export class ClusteredLightContainer extends Light {
             const inverseSquaredRange = Math.max(light._inverseSquaredRange, this._minInverseSquaredRange);
 
             // vLightData
-            buf[off + 0] = position.x;
-            buf[off + 1] = position.y;
-            buf[off + 2] = position.z;
+            buf[off + 0] = position.x - this._scene.floatingOriginOffset.x;
+            buf[off + 1] = position.y - this._scene.floatingOriginOffset.y;
+            buf[off + 2] = position.z - this._scene.floatingOriginOffset.z;
             buf[off + 3] = 0;
             // vLightDiffuse
             buf[off + 4] = diffuse.r;
@@ -543,8 +561,7 @@ export class ClusteredLightContainer extends Light {
         return this;
     }
 
-    public override transferToNodeMaterialEffect(): Light {
-        // TODO: ????
+    public override transferToNodeMaterialEffect(_effect: Effect): Light {
         return this;
     }
 

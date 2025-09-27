@@ -24,6 +24,7 @@ import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
 import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
+import { NodeRenderGraphBaseObjectRendererBlock } from "./Blocks/Rendering/baseObjectRendererBlock";
 import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import { NodeRenderGraphCullObjectsBlock } from "./Blocks/cullObjectsBlock";
@@ -295,7 +296,7 @@ export class NodeRenderGraph {
         }
 
         // Make sure that one of the object renderer is flagged as the main object renderer
-        const objectRendererBlocks = this.getBlocksByPredicate<NodeRenderGraphObjectRendererBlock>((block) => block instanceof NodeRenderGraphObjectRendererBlock);
+        const objectRendererBlocks = this.getBlocksByPredicate<NodeRenderGraphBaseObjectRendererBlock>((block) => block instanceof NodeRenderGraphBaseObjectRendererBlock);
         if (objectRendererBlocks.length > 0 && !objectRendererBlocks.find((block) => block.isMainObjectRenderer)) {
             objectRendererBlocks[0].isMainObjectRenderer = true;
         }

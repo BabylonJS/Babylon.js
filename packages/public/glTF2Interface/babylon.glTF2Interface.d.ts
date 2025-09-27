@@ -1072,6 +1072,34 @@ declare module BABYLON.GLTF2 {
         clearcoatRoughnessFactor?: number;
         clearcoatRoughnessTexture?: ITextureInfo;
         clearcoatNormalTexture?: IMaterialNormalTextureInfo;
+        /**
+         * Dictionary object with extension-specific objects
+         */
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /** @internal */
+    interface IKHRMaterialsClearcoatDarkening {
+        clearcoatDarkeningFactor?: number;
+        clearcoatDarkeningTexture?: ITextureInfo;
+    }
+
+    /** @internal */
+    interface IKHRMaterialsClearcoatColor {
+        clearcoatColorFactor?: number[];
+        clearcoatColorTexture?: ITextureInfo;
+    }
+
+    /** @internal */
+    interface IKHRMaterialsClearcoatAnisotropy {
+        clearcoatAnisotropyStrength?: number;
+        clearcoatAnisotropyRotation?: number;
+        clearcoatAnisotropyTexture?: ITextureInfo;
+        extensions?: {
+            [key: string]: any;
+        };
     }
 
     /** @internal */
@@ -1089,6 +1117,14 @@ declare module BABYLON.GLTF2 {
         anisotropyStrength?: number;
         anisotropyRotation?: number;
         anisotropyTexture?: ITextureInfo;
+        extensions?: {
+            [key: string]: any;
+        };
+    }
+
+    /** @internal */
+    interface IKHRMaterialsAnisotropyOpenPbr {
+        anisotropyOpenPbrEnabled: boolean;
     }
 
     /**
@@ -1209,7 +1245,7 @@ declare module BABYLON.GLTF2 {
      * Interfaces from the EXT_materials_diffuse_roughness extension
      */
     /** @internal */
-    interface IEXTMaterialsDiffuseRoughness {
+    interface IKHRMaterialsDiffuseRoughness {
         diffuseRoughnessFactor?: number;
         diffuseRoughnessTexture?: ITextureInfo;
     }
@@ -1386,6 +1422,37 @@ declare module BABYLON.GLTF2 {
         count: number;
         mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES";
         filter?: "NONE" | "OCTAHEDRAL" | "QUATERNION" | "EXPONENTIAL";
+    }
+
+    /**
+     * Interfaces from the EXT_lights_area extension
+     */
+
+    /** @internal */
+    const enum EXTLightsArea_LightShape {
+        RECT = "rect",
+        DISK = "disk"
+    }
+
+    /** @internal */
+    interface IEXTLightsArea_LightReference {
+        light: number;
+    }
+
+    /** @internal */
+    interface IEXTLightsArea_Light extends IChildRootProperty {
+        shape: EXTLightsArea_LightShape;
+        color?: number[];
+        intensity?: number;
+        type?: "area";
+        width?: number;
+        height?: number;
+        radius?: number;
+    }
+
+    /** @internal */
+    interface IEXTLightsArea {
+        lights: IEXTLightsArea_Light[];
     }
 
     /**

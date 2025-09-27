@@ -5,6 +5,7 @@ export * from "./iEffectFallbacks";
 export * from "./effectFallbacks";
 export * from "./effect";
 export * from "./fresnelParameters";
+export * from "./imageProcessing";
 export * from "./imageProcessingConfiguration";
 export * from "./material";
 export * from "./materialDefines";
@@ -40,6 +41,7 @@ export * from "./GaussianSplatting/gaussianSplattingMaterial";
 export * from "./materialHelper.functions";
 export * from "./materialHelper.geometryrendering";
 export * from "./materialStencilState";
+export * from "./uv.defines";
 import "./material.decalMap";
 
 // async-loaded shaders

@@ -1,9 +1,10 @@
 import { makeStyles, SpinButton as FluentSpinButton, useId, tokens } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
-import type { FunctionComponent, KeyboardEvent, FocusEvent } from "react";
+import type { FunctionComponent, KeyboardEvent } from "react";
 import { useEffect, useState, useRef } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
+import { HandleKeyDown, HandleOnBlur } from "./utils";
 
 const useSpinStyles = makeStyles({
     base: {
@@ -109,7 +110,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
  * @param value - the value to determine the precision of
  * @returns the calculated precision
  */
-function CalculatePrecision(value: number) {
+export function CalculatePrecision(value: number) {
     /**
      * Group 1:
      * [1-9]([0]+$) matches trailing zeros
@@ -139,18 +140,4 @@ function CalculatePrecision(value: number) {
 function PrecisionRound(value: number, precision: number) {
     const exp = Math.pow(10, precision);
     return Math.round(value * exp) / exp;
-}
-
-export function HandleOnBlur(event: FocusEvent<HTMLInputElement>) {
-    event.stopPropagation();
-    event.preventDefault();
-}
-
-export function HandleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    event.stopPropagation(); // Prevent event propagation
-
-    // Prevent Enter key from causing form submission or value reversion
-    if (event.key === "Enter") {
-        event.preventDefault();
-    }
 }

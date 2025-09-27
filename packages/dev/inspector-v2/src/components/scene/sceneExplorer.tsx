@@ -1,9 +1,10 @@
+import type { ScrollToInterface } from "@fluentui-contrib/react-virtualizer";
+import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
+import type { FluentIcon } from "@fluentui/react-icons";
+import type { ComponentType, FunctionComponent } from "react";
+
 import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
 
-import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
-import type { ScrollToInterface } from "@fluentui/react-components/unstable";
-import type { ComponentType, FunctionComponent } from "react";
-import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
     Body1,
@@ -23,9 +24,9 @@ import {
     TreeItemLayout,
 } from "@fluentui/react-components";
 import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
-import type { FluentIcon } from "@fluentui/react-icons";
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
@@ -560,7 +561,12 @@ export const SceneExplorer: FunctionComponent<{
         visibleItems.add(sceneTreeItem);
 
         for (const sectionTreeItem of sectionTreeItems) {
+            const children = sectionTreeItem.children;
             traversedItems.push(sectionTreeItem);
+            if (!children.length) {
+                continue;
+            }
+
             // Section tree items are always visible when not filtering.
             if (!filter) {
                 visibleItems.add(sectionTreeItem);
@@ -569,7 +575,7 @@ export const SceneExplorer: FunctionComponent<{
             // When an item filter is present, always traverse the full scene graph (e.g. ignore the open item state).
             if (filter || openItems.has(sectionTreeItem.sectionName)) {
                 TraverseGraph(
-                    sectionTreeItem.children,
+                    children,
                     // Get children
                     (treeItem) => {
                         if (filter || openItems.has(treeItem.entity.uniqueId)) {

@@ -174,7 +174,12 @@ export class SmartFilterEditorControl {
 
         if (!hostElement) {
             hostElement = CreatePopup("BABYLON.JS SMART FILTER EDITOR", {
-                onWindowCreateCallback: (w) => (this._PopupWindow = w),
+                onWindowCreateCallback: (w) => {
+                    this._PopupWindow = w;
+                    // Styles are copied from the launching page which could have custom styles on the body tag,
+                    //  and we require the body display to be block, so ensure that it is set as we need it.
+                    w.document.body.style.display = "block";
+                },
                 width: 1500,
                 height: 800,
             })!;

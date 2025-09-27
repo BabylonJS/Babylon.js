@@ -22,7 +22,7 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
     const namePropertyDescriptor = useMemo(() => GetPropertyDescriptor(commonEntity, "name")?.[1], [commonEntity]);
     const isNameReadonly = !namePropertyDescriptor || IsPropertyReadonly(namePropertyDescriptor);
 
-    const className = commonEntity.constructor?.name || commonEntity.getClassName?.();
+    const className = commonEntity.getClassName?.();
 
     return (
         <>

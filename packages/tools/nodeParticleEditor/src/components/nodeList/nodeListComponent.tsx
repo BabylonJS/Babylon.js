@@ -115,6 +115,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         AndBlock: "Conditional block set to And",
         CreateParticleBlock: "Block used to create a particle with properties such as emit power, lifetime, color, scale, and angle",
         AlignAngleBlock: "Block used to align the angle of a particle to its direction",
+        VectorLengthBlock: "Block used to get the length of a vector",
+        LocalVariableBlock: "Block used to store local values (eg. within a loop)",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -249,10 +251,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ToDegreesBlock",
                 "ToRadiansBlock",
                 "FractBlock",
+                "VectorLengthBlock",
             ],
             Logical: ["EqualBlock", "NotEqualBlock", "LessThanBlock", "LessOrEqualBlock", "GreaterThanBlock", "GreaterOrEqualBlock", "XorBlock", "OrBlock", "AndBlock"],
             Interpolation: ["LerpBlock", "GradientValueBlock", "GradientBlock"],
-            Misc: ["ConverterBlock", "RandomBlock", "DebugBlock", "ElbowBlock", "TeleportInBlock", "TeleportOutBlock"],
+            Misc: ["ConverterBlock", "RandomBlock", "DebugBlock", "ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "LocalVariableBlock"],
             System_Nodes: ["SystemBlock", "TimeBlock", "DeltaBlock", "EmitterPositionBlock"],
             Contextual: [
                 "PositionBlock",

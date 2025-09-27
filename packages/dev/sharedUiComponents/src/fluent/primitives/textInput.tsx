@@ -4,7 +4,7 @@ import type { InputOnChangeData } from "@fluentui/react-components";
 import { Input as FluentInput, makeStyles, tokens, useId } from "@fluentui/react-components";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
-import { HandleOnBlur, HandleKeyDown } from "./spinButton";
+import { HandleOnBlur, HandleKeyDown } from "./utils";
 
 const useInputStyles = makeStyles({
     base: {

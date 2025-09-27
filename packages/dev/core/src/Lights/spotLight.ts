@@ -431,11 +431,25 @@ export class SpotLight extends ShadowLight {
         let normalizeDirection;
 
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent, lightIndex);
+            this._uniformBuffer.updateFloat4(
+                "vLightData",
+                this.transformedPosition.x - this._scene.floatingOriginOffset.x,
+                this.transformedPosition.y - this._scene.floatingOriginOffset.y,
+                this.transformedPosition.z - this._scene.floatingOriginOffset.z,
+                this.exponent,
+                lightIndex
+            );
 
             normalizeDirection = Vector3.Normalize(this.transformedDirection);
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, this.exponent, lightIndex);
+            this._uniformBuffer.updateFloat4(
+                "vLightData",
+                this.position.x - this._scene.floatingOriginOffset.x,
+                this.position.y - this._scene.floatingOriginOffset.y,
+                this.position.z - this._scene.floatingOriginOffset.z,
+                this.exponent,
+                lightIndex
+            );
 
             normalizeDirection = Vector3.Normalize(this.direction);
         }

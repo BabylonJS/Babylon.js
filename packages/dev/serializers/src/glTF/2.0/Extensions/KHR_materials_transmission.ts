@@ -45,7 +45,7 @@ export class KHR_materials_transmission implements IGLTFExporterExtensionV2 {
      * @param babylonMaterial corresponding babylon material
      * @returns array of additional textures to export
      */
-    public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
+    public async postExportMaterialAdditionalTexturesAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         const additionalTextures: BaseTexture[] = [];
 
         if (babylonMaterial instanceof PBRMaterial) {
