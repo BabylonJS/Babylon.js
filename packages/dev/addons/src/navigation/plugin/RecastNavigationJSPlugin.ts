@@ -1,4 +1,5 @@
-import type { NavMesh, QueryFilter, TileCache, NavMeshQuery } from "@recast-navigation/core";
+import type { TileCacheMeshProcess } from "@recast-navigation/core";
+import { type NavMesh, type QueryFilter, type TileCache, type NavMeshQuery } from "@recast-navigation/core";
 
 import type { ICrowd, INavigationEnginePlugin, IObstacle } from "core/Navigation/INavigationEngine";
 import { Logger } from "core/Misc/logger";
@@ -16,7 +17,7 @@ import { CreateDebugNavMesh } from "../debug/simple-debug";
 import { GetRecast } from "../factory/common";
 import { InjectGenerators } from "../generator/injection";
 import { DefaultMaxObstacles } from "../common/config";
-import { WaitForFullTileCacheUpdate } from "../common/tile-cache";
+import { CreateDefaultTileCacheMeshProcess, WaitForFullTileCacheUpdate } from "../common/tile-cache";
 
 /**
  * Navigation plugin for Babylon.js. It is a simple wrapper around the recast-navigation-js library. Not all features are implemented.
@@ -484,6 +485,31 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             throw new Error("There is no NavMesh generated.");
         }
         return this.bjsRECAST.exportNavMesh(this.navMesh);
+    }
+
+    /**
+     * returns the tile cache data that can be used later. The tile cache must be built before retrieving the data
+     * @returns the tile cache data that can be used later. The tile cache must be built before retrieving the data
+     * @throws Error if there is no TileCache generated
+     * @remarks The returned data can be used to rebuild the tile cache later using buildFromTileCacheData
+     */
+    public getTileCacheData(): Uint8Array {
+        if (!this.navMesh || !this.tileCache) {
+            throw new Error("There is no TileCache generated.");
+        }
+        return this.bjsRECAST.exportTileCache(this.navMesh, this.tileCache);
+    }
+
+    /**
+     * build the tile cache from a previously saved state using getTileCacheData
+     * @param tileCacheData the data returned by getTileCacheData
+     * @param tileCacheMeshProcess optional process to apply to each tile created
+     */
+    public buildFromTileCacheData(tileCacheData: Uint8Array, tileCacheMeshProcess?: TileCacheMeshProcess): void {
+        const result = this.bjsRECAST.importTileCache(tileCacheData, tileCacheMeshProcess ?? CreateDefaultTileCacheMeshProcess([]));
+        this.navMesh = result.navMesh;
+        this.tileCache = result.tileCache;
+        this._navMeshQuery = new this.bjsRECAST.NavMeshQuery(this.navMesh);
     }
 
     /**
