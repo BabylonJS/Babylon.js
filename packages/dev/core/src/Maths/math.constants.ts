@@ -22,3 +22,9 @@ export const PHI = (1 + Math.sqrt(5)) / 2;
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Epsilon = 0.001;
+
+/**
+ * Delta Time in milliseconds at 60 frames per second
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const MsPerFrameAt60FPS = 1000 / 60; // 16.666... ms

@@ -3,7 +3,7 @@ import type { Nullable } from "../types";
 import { Camera } from "./camera";
 import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
-import { Epsilon } from "../Maths/math.constants";
+import { Epsilon, MsPerFrameAt60FPS } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
@@ -391,30 +391,32 @@ export class TargetCamera extends Camera {
             }
         }
 
-        // Scale speed by framerate to ensure higher framerate devices don't clamp movement to 0 too early
-        const speed = this._computeLocalCameraSpeed();
+       // At 60FPS, InertialLimit should be == this.speed * Epsilon.
+        // We scale InertialLimit based on time since last frame to ensure a smaller inertialLimit at higher framerates
+        const InertialLimit = this.speed * Epsilon * this._scene.getEngine().getDeltaTime() / MsPerFrameAt60FPS;
+        
         // Inertia
         if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.x) < InertialLimit) {
                 this.cameraDirection.x = 0;
             }
 
-            if (Math.abs(this.cameraDirection.y) < speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.y) < InertialLimit) {
                 this.cameraDirection.y = 0;
             }
 
-            if (Math.abs(this.cameraDirection.z) < speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.z) < InertialLimit) {
                 this.cameraDirection.z = 0;
             }
 
             this.cameraDirection.scaleInPlace(this.inertia);
         }
         if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < speed * Epsilon) {
+            if (Math.abs(this.cameraRotation.x) < InertialLimit) {
                 this.cameraRotation.x = 0;
             }
 
-            if (Math.abs(this.cameraRotation.y) < speed * Epsilon) {
+            if (Math.abs(this.cameraRotation.y) < InertialLimit) {
                 this.cameraRotation.y = 0;
             }
             this.cameraRotation.scaleInPlace(this.inertia);
