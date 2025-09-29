@@ -66,7 +66,7 @@ export type CreateNavMeshResult = Nullable<{
     intermediates?: GeneratorIntermediates;
     /**
      * Tile cache generated during the NavMesh creation process.
-     * @remarks This is only available if the `maxObstacles` parameter is set to a value greater than 0 in the `INavMeshParametersV2`.
+     * @remarks This is only available if the `maxObstacles` parameter is set to a value greater than 0 in the `INavMeshParametersV2`. Defaults `maxObstacles` to 128.
      * It can be used for obstacle avoidance and dynamic navigation mesh updates.
      * @see {@link INavMeshParametersV2}
      */
