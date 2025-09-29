@@ -168,40 +168,49 @@ declare module "*.fx"   { const content: string; export default content; }`;
             noSuggestionDiagnostics: false,
         });
     }
+    private _workspaceDecls?: { ts: monaco.IDisposable; js: monaco.IDisposable };
 
     addWorkspaceFileDeclarations(files: Record<string, string>) {
+        if (this._workspaceDecls) {
+            try {
+                this._workspaceDecls.ts.dispose();
+            } catch {}
+            try {
+                this._workspaceDecls.js.dispose();
+            } catch {}
+            this._workspaceDecls = undefined;
+        }
+
         let declarations = "";
+
         for (const [path, content] of Object.entries(files)) {
-            const moduleName = path.replace(/\.(ts|tsx|js|jsx)$/, "");
-            // For TypeScript files, extract exports
-            if (path.endsWith(".ts") || path.endsWith(".tsx")) {
-                // Basic export extraction - could be enhanced
-                const exportMatches = content.match(/export\s+(?:default\s+)?(?:class|function|const|let|var|interface|type|enum)\s+(\w+)/g);
-                if (exportMatches) {
-                    declarations += `declare module "./${moduleName}" {\n`;
-                    for (const match of exportMatches) {
-                        const nameMatch = match.match(/(\w+)$/);
-                        if (nameMatch) {
-                            declarations += `  export const ${nameMatch[1]}: any;\n`;
-                        }
-                    }
-                    declarations += `}\n`;
-                }
-            } else if (path.endsWith(".js") || path.endsWith(".jsx")) {
-                // For JS files, assume exports exist
-                declarations += `declare module "./${moduleName}" {\n`;
-                declarations += `  const _default: any;\n`;
-                declarations += `  export = _default;\n`;
-                declarations += `}\n`;
+            const isJS = /\.jsx?$/.test(path);
+            if (!isJS) {
+                continue;
             }
+
+            const moduleName = path.replace(/\.(ts|tsx|js|jsx)$/, "");
+
+            declarations += `declare module "./${moduleName}" {\n`;
+            const exportMatches = content.match(/export\s+(?:default\s+)?(?:class|function|const|let|var)\s+(\w+)/g) || [];
+            for (const m of exportMatches) {
+                const name = m.match(/(\w+)$/)?.[1];
+                if (name) {
+                    declarations += `  export const ${name}: any;\n`;
+                }
+            }
+            declarations += `  const _default: any;\n  export default _default;\n`;
+            declarations += `}\n`;
         }
 
         if (declarations) {
-            const ts = monaco.languages.typescript;
-            const tsDisposable = ts.typescriptDefaults.addExtraLib(declarations, "file:///external/workspace-declarations.d.ts");
-            const jsDisposable = ts.javascriptDefaults.addExtraLib(declarations, "file:///external/workspace-declarations.d.ts");
-            this._extraLibDisposables.push(tsDisposable, jsDisposable);
+            const uri = "file:///external/workspace-declarations.d.ts";
+            const tsDisp = monaco.languages.typescript.typescriptDefaults.addExtraLib(declarations, uri);
+            const jsDisp = monaco.languages.typescript.javascriptDefaults.addExtraLib(declarations, uri);
+            this._workspaceDecls = { ts: tsDisp, js: jsDisp };
         }
+
+        this.forceSyncModels();
     }
 
     dispose() {
