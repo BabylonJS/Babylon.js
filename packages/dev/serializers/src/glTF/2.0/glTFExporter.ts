@@ -468,8 +468,8 @@ export class GLTFExporter {
             const existingName = GLTFExporter._ExtensionNames[i];
             const existingOrder = GLTFExporter._ExtensionOrders[existingName];
 
-            // If the order is less, insert before. If the order is the same, use alphabetical order.
-            if (extensionOrder < existingOrder || (extensionOrder === existingOrder && name.localeCompare(existingName) < 0)) {
+            // If the order is less, insert before.
+            if (extensionOrder < existingOrder) {
                 insertIndex = i;
                 break;
             }
