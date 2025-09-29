@@ -1042,11 +1042,10 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.checkInputs();
         let hasUserInteractions = false;
 
-   
         // At 60FPS, InertialLimit should be == this.speed * Epsilon.
         // We scale InertialLimit based on time since last frame to ensure a smaller inertialLimit at higher framerates
-        const InertialLimit = this.speed * Epsilon * this._scene.getEngine().getDeltaTime() / MsPerFrameAt60FPS;
-        
+        const inertialLimit = (this.speed * Epsilon * this._scene.getEngine().getDeltaTime()) / MsPerFrameAt60FPS;
+
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
             hasUserInteractions = true;
@@ -1066,13 +1065,13 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialAlphaOffset *= this.inertia;
             this.inertialBetaOffset *= this.inertia;
             this.inertialRadiusOffset *= this.inertia;
-            if (Math.abs(this.inertialAlphaOffset) < InertialLimit) {
+            if (Math.abs(this.inertialAlphaOffset) < inertialLimit) {
                 this.inertialAlphaOffset = 0;
             }
-            if (Math.abs(this.inertialBetaOffset) < InertialLimit) {
+            if (Math.abs(this.inertialBetaOffset) < inertialLimit) {
                 this.inertialBetaOffset = 0;
             }
-            if (Math.abs(this.inertialRadiusOffset) < InertialLimit) {
+            if (Math.abs(this.inertialRadiusOffset) < inertialLimit) {
                 this.inertialRadiusOffset = 0;
             }
         }
@@ -1118,10 +1117,10 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialPanningX *= this.panningInertia;
             this.inertialPanningY *= this.panningInertia;
 
-            if (Math.abs(this.inertialPanningX) < InertialLimit) {
+            if (Math.abs(this.inertialPanningX) < inertialLimit) {
                 this.inertialPanningX = 0;
             }
-            if (Math.abs(this.inertialPanningY) < InertialLimit) {
+            if (Math.abs(this.inertialPanningY) < inertialLimit) {
                 this.inertialPanningY = 0;
             }
         }

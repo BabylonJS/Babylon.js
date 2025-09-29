@@ -391,32 +391,32 @@ export class TargetCamera extends Camera {
             }
         }
 
-       // At 60FPS, InertialLimit should be == this.speed * Epsilon.
+        // At 60FPS, InertialLimit should be == this.speed * Epsilon.
         // We scale InertialLimit based on time since last frame to ensure a smaller inertialLimit at higher framerates
-        const InertialLimit = this.speed * Epsilon * this._scene.getEngine().getDeltaTime() / MsPerFrameAt60FPS;
-        
+        const inertialLimit = (this.speed * Epsilon * this._scene.getEngine().getDeltaTime()) / MsPerFrameAt60FPS;
+
         // Inertia
         if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < InertialLimit) {
+            if (Math.abs(this.cameraDirection.x) < inertialLimit) {
                 this.cameraDirection.x = 0;
             }
 
-            if (Math.abs(this.cameraDirection.y) < InertialLimit) {
+            if (Math.abs(this.cameraDirection.y) < inertialLimit) {
                 this.cameraDirection.y = 0;
             }
 
-            if (Math.abs(this.cameraDirection.z) < InertialLimit) {
+            if (Math.abs(this.cameraDirection.z) < inertialLimit) {
                 this.cameraDirection.z = 0;
             }
 
             this.cameraDirection.scaleInPlace(this.inertia);
         }
         if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < InertialLimit) {
+            if (Math.abs(this.cameraRotation.x) < inertialLimit) {
                 this.cameraRotation.x = 0;
             }
 
-            if (Math.abs(this.cameraRotation.y) < InertialLimit) {
+            if (Math.abs(this.cameraRotation.y) < inertialLimit) {
                 this.cameraRotation.y = 0;
             }
             this.cameraRotation.scaleInPlace(this.inertia);
