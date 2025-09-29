@@ -728,6 +728,8 @@ export class TextBlock extends Control {
             // Should abstract platform instead of using LastCreatedEngine
             const context = EngineStore.LastCreatedEngine?.createCanvas(0, 0).getContext("2d");
             if (context) {
+                // This is a temporary context, no need to save/restore
+                // eslint-disable-next-line babylonjs/require-context-save-before-apply-states
                 this._applyStates(context);
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font, this._host.getScene()?.getEngine());
