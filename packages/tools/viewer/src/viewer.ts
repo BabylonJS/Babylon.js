@@ -78,6 +78,9 @@ export type ShadowQuality = (typeof shadowQualityOptions)[number];
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
 
+const ssaoOptions = ["enabled", "disabled", "auto"] as const;
+export type SSAOOptions = (typeof ssaoOptions)[number];
+
 const environmentMode = ["none", "auto", "url"] as const;
 type EnvironmentMode = (typeof environmentMode)[number];
 
@@ -148,7 +151,7 @@ export type PostProcessing = {
     /**
      * Whether to enable screen space ambient occlusion (SSAO).
      */
-    ssao: boolean;
+    ssao: SSAOOptions;
 };
 
 type ShadowState = {
@@ -190,6 +193,15 @@ export function IsToneMapping(value: string): value is ToneMapping {
  */
 export function IsShadowQuality(value: string): value is ShadowQuality {
     return shadowQualityOptions.includes(value as ShadowQuality);
+}
+
+/**
+ * Checks if the given value is a valid SSAO option.
+ * @param value The value to check.
+ * @returns True if the value is a valid SSAO option, otherwise false.
+ */
+export function isSSAOOptions(value: string): value is SSAOOptions {
+    return ssaoOptions.includes(value as SSAOOptions);
 }
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
@@ -540,7 +552,7 @@ export const DefaultViewerOptions = {
         toneMapping: "neutral",
         contrast: 1,
         exposure: 1,
-        ssao: false,
+        ssao: "auto",
     },
     useRightHandedSystem: false,
 } as const satisfies ViewerOptions;
@@ -862,7 +874,7 @@ export class Viewer implements IDisposable {
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
-    private _ssaoEnabled: boolean = false;
+    private _ssaoOption: SSAOOptions = this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao;
     private _ssaoPipeline: Nullable<SSAO2RenderingPipeline> = null;
 
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
@@ -1179,7 +1191,7 @@ export class Viewer implements IDisposable {
             toneMapping,
             contrast: this._contrast,
             exposure: this._exposure,
-            ssao: this._ssaoEnabled,
+            ssao: this._ssaoOption,
         };
     }
 
@@ -1213,13 +1225,12 @@ export class Viewer implements IDisposable {
             this._scene.imageProcessingConfiguration.exposure = value.exposure;
         }
 
-        if (value.ssao && !this._ssaoEnabled) {
-            observePromise(this._enableSSAOPipeline());
-        } else if (value.ssao === false && this._ssaoEnabled) {
-            this._disableSSAOPipeline();
+        if (value.ssao && this._ssaoOption !== value.ssao) {
+            this._ssaoOption = value.ssao;
+            this._updateSSAOPipeline();
         }
 
-        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoEnabled;
+        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoOption === "enabled";
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
@@ -1271,34 +1282,51 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private async _enableSSAOPipeline() {
-        const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
+    private async _enableSSAOPipeline(mode: SSAOOptions) {
+        const hasModels = this._loadedModels.length > 0;
+        const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
+        if (mode === "enabled" || (mode === "auto" && hasModels && !hasMaterials)) {
+            const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
 
-        if (!this._ssaoPipeline) {
-            this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
-                if (!this._ssaoEnabled && pipeline.name === "ssao") {
-                    this._ssaoEnabled = true;
-                    this.onPostProcessingChanged.notifyObservers();
-                }
-            });
-            this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
-                if (this._ssaoEnabled && pipeline.name === "ssao") {
-                    this._ssaoEnabled = false;
-                    this.onPostProcessingChanged.notifyObservers();
-                }
-            });
+            if (!this._ssaoPipeline) {
+                this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
+                    if (this._ssaoOption !== "enabled" && pipeline.name === "ssao") {
+                        this._ssaoOption = "enabled";
+                        this.onPostProcessingChanged.notifyObservers();
+                    }
+                });
+                this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
+                    if (this._ssaoOption === "enabled" && pipeline.name === "ssao") {
+                        this._ssaoOption = "disabled";
+                        this.onPostProcessingChanged.notifyObservers();
+                    }
+                });
+            }
+
+            const ssaoRatio = {
+                ssaoRatio: 1,
+                blurRatio: 1,
+            };
+            this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
+            this._updateSSAOPipeline();
+            this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
         }
+    }
 
-        const ssaoRatio = {
-            ssaoRatio: 1,
-            blurRatio: 1,
-        };
-        this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
-        this._updateSSAOPipeline();
-        this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+    private _disableSSAOPipeline() {
+        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", this._camera);
+        this._scene.postProcessRenderPipelineManager.removePipeline("ssao");
+        this._ssaoPipeline?.dispose();
+        this._ssaoPipeline = null;
     }
 
     private _updateSSAOPipeline() {
+        if (!this._ssaoPipeline && (this._ssaoOption === "auto" || this._ssaoOption === "enabled")) {
+            observePromise(this._enableSSAOPipeline(this._ssaoOption));
+        } else if (this._ssaoOption === "disabled") {
+            this._disableSSAOPipeline();
+        }
+
         const worldBounds = this._getWorldBounds(this._loadedModels);
         if (this._ssaoPipeline && worldBounds) {
             const size = Vector3.FromArray(worldBounds.size).length();
@@ -1310,11 +1338,6 @@ export class Viewer implements IDisposable {
             this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
             this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
         }
-    }
-
-    private _disableSSAOPipeline() {
-        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", this._camera);
-        this._scene.postProcessRenderPipelineManager.removePipeline("ssao");
     }
 
     /**

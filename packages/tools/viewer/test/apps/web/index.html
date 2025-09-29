@@ -127,8 +127,7 @@
                         </svg>
                     </div>
                 </babylon-viewer-annotation>
-                <babylon-viewer-annotation hotspot="thruster">
-                </babylon-viewer-annotation>
+                <babylon-viewer-annotation hotspot="thruster"> </babylon-viewer-annotation>
                 <babylon-viewer-annotation hotspot="poi"></babylon-viewer-annotation>
             </babylon-viewer>
         </div>
@@ -163,11 +162,15 @@
             </div>
             <div>
                 <span>SSAO</span>
-                <input type="checkbox" id="ssaoInput" oninput="onSSAO()" />
+                <select id="ssaoSelect" oninput="onSSAO()">
+                    <option value="disabled">Disabled</option>
+                    <option value="enabled">Enabled</option>
+                    <option selected value="auto">Auto</option>
+                </select>
             </div>
             <div>
                 <span>Shadows Quality</span>
-                <select id="shadowQualityInput" checked oninput="onShadowQuality()">
+                <select id="shadowQualityInput" oninput="onShadowQuality()">
                     <option value="none">None</option>
                     <option value="normal">Normal (shadow map)</option>
                     <option value="high">High (environment shadow)</option>
@@ -380,9 +383,9 @@
                 checked ? viewer.loadEnvironment("auto", { skybox: true }) : viewer.resetEnvironment({ skybox: true });
             };
             globalThis.onSSAO = () => {
-                const checked = document.querySelector("#ssaoInput").checked;
+                const value = document.querySelector("#ssaoSelect").value;
                 const viewer = viewerElement.viewerDetails.viewer;
-                viewer.postProcessing = { ssao: checked };
+                viewer.postProcessing = { ssao: value };
             };
             globalThis.onShadowQuality = () => {
                 const value = document.querySelector("#shadowQualityInput").value;
