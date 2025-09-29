@@ -2,7 +2,6 @@ import type { IMaterial, IKHRMaterialsClearcoatIor } from "babylonjs-gltf2interf
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Nullable } from "core/types";
@@ -43,21 +42,6 @@ export class KHR_materials_clearcoat_ior implements IGLTFExporterExtensionV2 {
     }
 
     // eslint-disable-next-line no-restricted-syntax
-    public async postExportMaterialAdditionalTexturesAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
-        const additionalTextures: BaseTexture[] = [];
-        if (babylonMaterial instanceof OpenPBRMaterial) {
-            if (babylonMaterial.coatDarkening) {
-                if (babylonMaterial.coatDarkeningTexture) {
-                    additionalTextures.push(babylonMaterial.coatDarkeningTexture);
-                }
-                return additionalTextures;
-            }
-        }
-
-        return [];
-    }
-
-    // eslint-disable-next-line no-restricted-syntax
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
             let coatIor: Nullable<number> = null;
@@ -83,9 +67,7 @@ export class KHR_materials_clearcoat_ior implements IGLTFExporterExtensionV2 {
                 clearcoatIor: coatIor,
             };
 
-            if (coatIorInfo.clearcoatIor !== null) {
-                this._exporter._materialNeedsUVsSet.add(babylonMaterial);
-            }
+            this._exporter;
 
             parentExt.extensions = parentExt.extensions || {};
             parentExt.extensions[NAME] = coatIorInfo;
@@ -95,4 +77,4 @@ export class KHR_materials_clearcoat_ior implements IGLTFExporterExtensionV2 {
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_ior(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_ior(exporter), 105);
