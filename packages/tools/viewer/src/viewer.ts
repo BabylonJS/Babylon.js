@@ -918,8 +918,8 @@ export class Viewer implements IDisposable {
             defaultMaterial.metallic = 0;
             defaultMaterial.roughness = 1;
             defaultMaterial.baseDiffuseRoughness = 1;
-            defaultMaterial.environmentIntensity = 1;
-            defaultMaterial.microSurface = 1;
+            defaultMaterial.environmentIntensity = 0.7;
+            defaultMaterial.microSurface = 0;
             scene.defaultMaterial = defaultMaterial;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
