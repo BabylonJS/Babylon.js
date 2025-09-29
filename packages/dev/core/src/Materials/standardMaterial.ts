@@ -211,6 +211,9 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public AREALIGHTSUPPORTED = true;
     public USE_VERTEX_PULLING = false;
 
+    public CLUSTLIGHT_SLICES = 0;
+    public CLUSTLIGHT_BATCH = 0;
+
     /**
      * If the reflection texture on this material is in linear color space
      * @internal

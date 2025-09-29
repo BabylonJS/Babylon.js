@@ -22,6 +22,7 @@ import type {
     ShaderMaterial,
     ShadowGenerator,
     IblCdfGenerator,
+    SSAO2RenderingPipeline,
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
@@ -56,6 +57,18 @@ import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
 import { _RetryWithInterval } from "core/Misc/timingTools";
+import { Lazy } from "core/Misc/lazy";
+
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+const LazySSAODependenciesPromise = new Lazy(() =>
+    Promise.all([
+        import("core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline"),
+        import("core/Rendering/prePassRendererSceneComponent"),
+        import("core/Rendering/geometryBufferRendererSceneComponent"),
+        import("core/Engines/Extensions/engine.multiRender"),
+        import("core/Engines/WebGPU/Extensions/engine.multiRender"),
+    ])
+);
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -64,6 +77,9 @@ export type ShadowQuality = (typeof shadowQualityOptions)[number];
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
+
+const ssaoOptions = ["enabled", "disabled", "auto"] as const;
+export type SSAOOptions = (typeof ssaoOptions)[number];
 
 const environmentMode = ["none", "auto", "url"] as const;
 type EnvironmentMode = (typeof environmentMode)[number];
@@ -131,6 +147,11 @@ export type PostProcessing = {
      * The exposure applied to the scene.
      */
     exposure: number;
+
+    /**
+     * Whether to enable screen space ambient occlusion (SSAO).
+     */
+    ssao: SSAOOptions;
 };
 
 type ShadowState = {
@@ -172,6 +193,15 @@ export function IsToneMapping(value: string): value is ToneMapping {
  */
 export function IsShadowQuality(value: string): value is ShadowQuality {
     return shadowQualityOptions.includes(value as ShadowQuality);
+}
+
+/**
+ * Checks if the given value is a valid SSAO option.
+ * @param value The value to check.
+ * @returns True if the value is a valid SSAO option, otherwise false.
+ */
+export function isSSAOOptions(value: string): value is SSAOOptions {
+    return ssaoOptions.includes(value as SSAOOptions);
 }
 
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
@@ -522,6 +552,7 @@ export const DefaultViewerOptions = {
         toneMapping: "neutral",
         contrast: 1,
         exposure: 1,
+        ssao: "auto",
     },
     useRightHandedSystem: false,
 } as const satisfies ViewerOptions;
@@ -843,6 +874,8 @@ export class Viewer implements IDisposable {
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
+    private _ssaoOption: SSAOOptions = this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao;
+    private _ssaoPipeline: Nullable<SSAO2RenderingPipeline> = null;
 
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
@@ -879,6 +912,15 @@ export class Viewer implements IDisposable {
         {
             const scene = new Scene(this._engine);
             scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? DefaultViewerOptions.useRightHandedSystem;
+
+            const defaultMaterial = new PBRMaterial("default Material", scene);
+            defaultMaterial.albedoColor = new Color3(0.4, 0.4, 0.4);
+            defaultMaterial.metallic = 0;
+            defaultMaterial.roughness = 1;
+            defaultMaterial.baseDiffuseRoughness = 1;
+            defaultMaterial.environmentIntensity = 0.7;
+            defaultMaterial.microSurface = 0;
+            scene.defaultMaterial = defaultMaterial;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -1149,6 +1191,7 @@ export class Viewer implements IDisposable {
             toneMapping,
             contrast: this._contrast,
             exposure: this._exposure,
+            ssao: this._ssaoOption,
         };
     }
 
@@ -1182,7 +1225,12 @@ export class Viewer implements IDisposable {
             this._scene.imageProcessingConfiguration.exposure = value.exposure;
         }
 
-        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1;
+        if (value.ssao && this._ssaoOption !== value.ssao) {
+            this._ssaoOption = value.ssao;
+            this._updateSSAOPipeline();
+        }
+
+        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoOption === "enabled";
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
@@ -1225,11 +1273,68 @@ export class Viewer implements IDisposable {
             this._activeModelBacking = model;
             this._updateLight();
             observePromise(this._updateShadows());
+            this._updateSSAOPipeline();
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
             this._reframeCamera(true, model ? [model] : undefined);
             this.onModelChanged.notifyObservers(options?.source ?? null);
+        }
+    }
+
+    private async _enableSSAOPipeline(mode: SSAOOptions) {
+        const hasModels = this._loadedModels.length > 0;
+        const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
+        if (mode === "enabled" || (mode === "auto" && hasModels && !hasMaterials)) {
+            const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
+
+            if (!this._ssaoPipeline) {
+                this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
+                    if (pipeline.name === "ssao") {
+                        this.onPostProcessingChanged.notifyObservers();
+                    }
+                });
+                this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
+                    if (pipeline.name === "ssao") {
+                        this.onPostProcessingChanged.notifyObservers();
+                    }
+                });
+            }
+
+            const ssaoRatio = {
+                ssaoRatio: 1,
+                blurRatio: 1,
+            };
+            this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
+            const worldBounds = this._getWorldBounds(this._loadedModels);
+            if (this._ssaoPipeline && worldBounds) {
+                const size = Vector3.FromArray(worldBounds.size).length();
+                this._ssaoPipeline.expensiveBlur = true;
+                this._ssaoPipeline.maxZ = size * 2;
+                // arbitrary max size to cap SSAO settings
+                const maxSceneSize = 50;
+                this._ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
+                this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
+                this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+            }
+            this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+        }
+    }
+
+    private _disableSSAOPipeline() {
+        if (this._ssaoPipeline) {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", this._camera);
+            this._scene.postProcessRenderPipelineManager.removePipeline("ssao");
+            this._ssaoPipeline?.dispose();
+            this._ssaoPipeline = null;
+        }
+    }
+
+    private _updateSSAOPipeline() {
+        if (!this._ssaoPipeline && (this._ssaoOption === "auto" || this._ssaoOption === "enabled")) {
+            observePromise(this._enableSSAOPipeline(this._ssaoOption));
+        } else if (this._ssaoOption === "disabled") {
+            this._disableSSAOPipeline();
         }
     }
 
@@ -1591,7 +1696,7 @@ export class Viewer implements IDisposable {
         });
 
         // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
-        if (!this._scene.environmentTexture && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+        if (!this._scene.environmentTexture && this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial))) {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
 
@@ -1903,7 +2008,6 @@ export class Viewer implements IDisposable {
             ground.receiveShadows = true;
             ground.position.y = worldBounds.extents.min[1];
             ground.material = shadowMaterial;
-            light.includedOnlyMeshes = [ground];
 
             const newNormal: ShadowState["normal"] = (normal = {
                 light: light,
@@ -2349,6 +2453,7 @@ export class Viewer implements IDisposable {
                 toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
                 contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
                 exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
+                ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
             };
         }
 
