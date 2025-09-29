@@ -16,10 +16,6 @@ import type { AnimationGroup } from "core/Animations/animationGroup";
 import { Bone } from "core/Bones/bone";
 import { Skeleton } from "core/Bones/skeleton";
 import { Material } from "core/Materials/material";
-import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
-import type { OpenPBRMaterialLoadingAdapter } from "./openPbrMaterialLoadingAdapter";
-import type { PBRMaterialLoadingAdapter } from "./pbrMaterialLoadingAdapter";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { ITextureCreationOptions } from "core/Materials/Textures/texture";
 import { Texture } from "core/Materials/Textures/texture";
@@ -193,6 +189,11 @@ export function LoadBoundingInfoFromPositionAccessor(accessor: IAccessor): Nulla
     return null;
 }
 
+type PBRMaterialImplementation = {
+    materialClass: typeof Material;
+    adapterClass: new (material: Material) => IMaterialLoadingAdapter;
+};
+
 /**
  * The glTF 2.0 loader
  */
@@ -230,9 +231,7 @@ export class GLTFLoader implements IGLTFLoader {
     private readonly _materialAdapterCache = new WeakMap<Material, IMaterialLoadingAdapter>();
 
     /** @internal */
-    public _pbrMaterialClass: typeof PBRMaterial | typeof OpenPBRMaterial | null = null;
-    /** @internal */
-    public _pbrMaterialAdapterClass: typeof OpenPBRMaterialLoadingAdapter | typeof PBRMaterialLoadingAdapter | null = null;
+    public _pbrMaterialImpl: Nullable<Readonly<PBRMaterialImplementation>> | false = null;
 
     /**
      * The default glTF sampler.
@@ -325,8 +324,8 @@ export class GLTFLoader implements IGLTFLoader {
     public _getOrCreateMaterialAdapter(material: Material): IMaterialLoadingAdapter {
         let adapter = this._materialAdapterCache.get(material);
         if (!adapter) {
-            if (this._pbrMaterialAdapterClass) {
-                adapter = new this._pbrMaterialAdapterClass(material);
+            if (this._pbrMaterialImpl) {
+                adapter = new this._pbrMaterialImpl.adapterClass(material);
             } else {
                 throw new Error(`Appropriate material adapter class not found`);
             }
@@ -433,17 +432,18 @@ export class GLTFLoader implements IGLTFLoader {
 
                 await this._loadExtensionsAsync();
 
-                if (!this.parent.skipMaterials) {
+                // NOTE: Explicitly check _pbrMaterialImpl for null as a value of false means don't use PBR materials at all.
+                if (!this.parent.skipMaterials && this._pbrMaterialImpl == null) {
                     if (this.parent.useOpenPBR) {
-                        const materialAdapterModule = await import("./openPbrMaterialLoadingAdapter");
-                        this._pbrMaterialAdapterClass = materialAdapterModule.OpenPBRMaterialLoadingAdapter;
-                        const materialModule = await import("core/Materials/PBR/openPbrMaterial");
-                        this._pbrMaterialClass = materialModule.OpenPBRMaterial;
+                        this._pbrMaterialImpl = {
+                            materialClass: (await import("core/Materials/PBR/openPbrMaterial")).OpenPBRMaterial,
+                            adapterClass: (await import("./openPbrMaterialLoadingAdapter")).OpenPBRMaterialLoadingAdapter,
+                        };
                     } else {
-                        const materialAdapterModule = await import("./pbrMaterialLoadingAdapter");
-                        this._pbrMaterialAdapterClass = materialAdapterModule.PBRMaterialLoadingAdapter;
-                        const materialModule = await import("core/Materials/PBR/pbrMaterial");
-                        this._pbrMaterialClass = materialModule.PBRMaterial;
+                        this._pbrMaterialImpl = {
+                            materialClass: (await import("core/Materials/PBR/pbrMaterial")).PBRMaterial,
+                            adapterClass: (await import("./pbrMaterialLoadingAdapter")).PBRMaterialLoadingAdapter,
+                        };
                     }
                 }
 
@@ -2288,15 +2288,15 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createDefaultMaterial(name: string, babylonDrawMode: number): Material {
-        if (!this._pbrMaterialClass) {
+        if (!this._pbrMaterialImpl) {
             throw new Error("PBR Material class not loaded");
         }
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        const babylonMaterial = new this._pbrMaterialClass(name, this._babylonScene);
+        const babylonMaterial = new this._pbrMaterialImpl.materialClass(name, this._babylonScene);
         babylonMaterial._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
         babylonMaterial.fillMode = babylonDrawMode;
-        babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_OPAQUE;
+        babylonMaterial.transparencyMode = this._pbrMaterialImpl.materialClass.MATERIAL_OPAQUE;
         // Create the material adapter and set some default properties.
         // We don't need to wait for the promise to resolve here.
         const adapter = this._getOrCreateMaterialAdapter(babylonMaterial);
@@ -2317,9 +2317,9 @@ export class GLTFLoader implements IGLTFLoader {
      * @returns The Babylon material
      */
     public createMaterial(context: string, material: IMaterial, babylonDrawMode: number): Material {
-        const extensionPromise = this._extensionsCreateMaterial(context, material, babylonDrawMode);
-        if (extensionPromise) {
-            return extensionPromise;
+        const extensionMaterial = this._extensionsCreateMaterial(context, material, babylonDrawMode);
+        if (extensionMaterial) {
+            return extensionMaterial;
         }
 
         const name = material.name || `material${material.index}`;
@@ -2438,7 +2438,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param babylonMaterial The Babylon material
      */
     public loadMaterialAlphaProperties(context: string, material: IMaterial, babylonMaterial: Material): void {
-        if (!this._pbrMaterialClass) {
+        if (!this._pbrMaterialImpl) {
             throw new Error(`${context}: Material type not supported`);
         }
 
@@ -2448,12 +2448,12 @@ export class GLTFLoader implements IGLTFLoader {
         const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
         switch (alphaMode) {
             case MaterialAlphaMode.OPAQUE: {
-                babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_OPAQUE;
+                babylonMaterial.transparencyMode = this._pbrMaterialImpl.materialClass.MATERIAL_OPAQUE;
                 babylonMaterial.alpha = 1.0; // Force alpha to 1.0 for opaque mode.
                 break;
             }
             case MaterialAlphaMode.MASK: {
-                babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_ALPHATEST;
+                babylonMaterial.transparencyMode = this._pbrMaterialImpl.materialClass.MATERIAL_ALPHATEST;
                 adapter.alphaCutOff = material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff;
                 if (baseColorTexture) {
                     baseColorTexture.hasAlpha = true;
@@ -2461,7 +2461,7 @@ export class GLTFLoader implements IGLTFLoader {
                 break;
             }
             case MaterialAlphaMode.BLEND: {
-                babylonMaterial.transparencyMode = this._pbrMaterialClass.MATERIAL_ALPHABLEND;
+                babylonMaterial.transparencyMode = this._pbrMaterialImpl.materialClass.MATERIAL_ALPHABLEND;
                 if (baseColorTexture) {
                     baseColorTexture.hasAlpha = true;
                     adapter.useAlphaFromBaseColorTexture = true;
