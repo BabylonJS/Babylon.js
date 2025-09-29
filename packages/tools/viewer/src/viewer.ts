@@ -1290,14 +1290,12 @@ export class Viewer implements IDisposable {
 
             if (!this._ssaoPipeline) {
                 this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
-                    if (this._ssaoOption !== "enabled" && pipeline.name === "ssao") {
-                        this._ssaoOption = "enabled";
+                    if (pipeline.name === "ssao") {
                         this.onPostProcessingChanged.notifyObservers();
                     }
                 });
                 this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
-                    if (this._ssaoOption === "enabled" && pipeline.name === "ssao") {
-                        this._ssaoOption = "disabled";
+                    if (pipeline.name === "ssao") {
                         this.onPostProcessingChanged.notifyObservers();
                     }
                 });
@@ -1308,16 +1306,28 @@ export class Viewer implements IDisposable {
                 blurRatio: 1,
             };
             this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
-            this._updateSSAOPipeline();
+            const worldBounds = this._getWorldBounds(this._loadedModels);
+            if (this._ssaoPipeline && worldBounds) {
+                const size = Vector3.FromArray(worldBounds.size).length();
+                this._ssaoPipeline.expensiveBlur = true;
+                this._ssaoPipeline.maxZ = size * 2;
+                // arbitrary max size to cap SSAO settings
+                const maxSceneSize = 50;
+                this._ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
+                this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
+                this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+            }
             this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
         }
     }
 
     private _disableSSAOPipeline() {
-        this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", this._camera);
-        this._scene.postProcessRenderPipelineManager.removePipeline("ssao");
-        this._ssaoPipeline?.dispose();
-        this._ssaoPipeline = null;
+        if (this._ssaoPipeline) {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", this._camera);
+            this._scene.postProcessRenderPipelineManager.removePipeline("ssao");
+            this._ssaoPipeline?.dispose();
+            this._ssaoPipeline = null;
+        }
     }
 
     private _updateSSAOPipeline() {
@@ -1325,18 +1335,6 @@ export class Viewer implements IDisposable {
             observePromise(this._enableSSAOPipeline(this._ssaoOption));
         } else if (this._ssaoOption === "disabled") {
             this._disableSSAOPipeline();
-        }
-
-        const worldBounds = this._getWorldBounds(this._loadedModels);
-        if (this._ssaoPipeline && worldBounds) {
-            const size = Vector3.FromArray(worldBounds.size).length();
-            this._ssaoPipeline.expensiveBlur = true;
-            this._ssaoPipeline.maxZ = size * 2;
-            // arbitrary max size to cap SSAO settings
-            const maxSceneSize = 50;
-            this._ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
-            this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
-            this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
         }
     }
 

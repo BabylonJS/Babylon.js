@@ -23,7 +23,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
-import { DefaultViewerOptions } from "viewer/viewer";
+import { DefaultViewerOptions, SSAOOptions } from "viewer/viewer";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
@@ -61,6 +61,12 @@ const ShadowQualityOptions = [
     { label: "Normal", value: "normal" },
     { label: "High", value: "high" },
 ] as const satisfies IInspectableOptions[] & { label: string; value: ShadowQuality }[];
+
+const SSAOOptions = [
+    { label: "Disabled", value: "disabled" },
+    { label: "Enabled", value: "enabled" },
+    { label: "Auto", value: "auto" },
+] as const satisfies IInspectableOptions[] & { label: string; value: SSAOOptions }[];
 
 const ToneMappingOptions = [
     { label: "Standard", value: "standard" },
@@ -580,6 +586,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer.onPostProcessingChanged],
         [viewer]
     );
+    // This is only needed because the select expects to "bind" to an object and a property.
+    const ssaoOptionsWrapper = useMemo(() => {
+        return { ssaoOptions: ssaoConfig.configuredState } as const;
+    }, [ssaoConfig.configuredState]);
 
     const autoOrbitConfig = useConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.enabled,
@@ -796,7 +806,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         }
 
         if (ssaoConfig.canReset) {
-            attributes.push(`ssao`);
+            attributes.push(`ssao="${ssaoConfig.configuredState}"`);
         }
 
         if (cameraConfig.canReset) {
@@ -1145,6 +1155,13 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             toneMappingConfig.update(value as ToneMapping);
         },
         [toneMappingConfig.update]
+    );
+
+    const onSSAOOptionChange = useCallback(
+        (value: string | number) => {
+            ssaoConfig.update(value as SSAOOptions);
+        },
+        [ssaoConfig.update]
     );
 
     const onAddHotspotClick = useCallback(() => {
@@ -1507,7 +1524,15 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                 </div>
                 <div>
                     <div style={{ flex: 1 }}>
-                        <CheckBoxLineComponent label="SSAO (Ambient Occlusion)" isSelected={ssaoConfig.configuredState} onSelect={ssaoConfig.update} />
+                        <OptionsLine
+                            label="SSAO (Ambient Occlusion)"
+                            valuesAreStrings={true}
+                            options={SSAOOptions}
+                            target={ssaoOptionsWrapper}
+                            propertyName={"ssaoOptions"}
+                            noDirectUpdate={true}
+                            onSelect={onSSAOOptionChange}
+                        />
                     </div>
                 </div>
             </LineContainerComponent>

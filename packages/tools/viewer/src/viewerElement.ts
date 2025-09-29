@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, SSAOOptions, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -215,7 +215,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
         this._createPropertyBinding(
             "ssao",
             (details) => details.viewer.onPostProcessingChanged,
-            (details) => (details.viewer.postProcessing = { ssao: this.ssao }),
+            (details) => (details.viewer.postProcessing = { ssao: this.ssao ?? undefined }),
             (details) => (this.ssao = details.viewer.postProcessing.ssao)
         ),
         this._createPropertyBinding(
@@ -734,8 +734,8 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
     /**
      * Enables or disables screen space ambient occlusion (SSAO).
      */
-    @property({ type: Boolean })
-    public ssao: boolean = this._options.postProcessing?.ssao ?? false;
+    @property({ type: String })
+    public ssao: Nullable<SSAOOptions> = this._options.postProcessing?.ssao ?? null;
 
     /**
      * The clear color (e.g. background color) for the viewer.
