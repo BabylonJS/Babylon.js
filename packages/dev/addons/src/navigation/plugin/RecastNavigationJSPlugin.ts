@@ -77,13 +77,29 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @remarks This is only available if the `keepIntermediates` parameter is set
      * @remarks to true during navmesh generation.
      */
-    public intermediates?: GeneratorIntermediates;
+    private _intermediates?: GeneratorIntermediates;
+
+    /**
+     * Gets the intermediates generated during the navmesh creation
+     * @returns The generator intermediates, or undefined if not available
+     */
+    public get intermediates(): GeneratorIntermediates | undefined {
+        return this._intermediates;
+    }
 
     /**
      * Tile cache used for tiled navigation meshes
      * @remarks This is used to store and manage tiles of the navigation mesh for efficient path and when obstacles are used.
      */
-    public tileCache?: TileCache;
+    private _tileCache?: TileCache;
+
+    /**
+     * Gets the tile cache used for tiled navigation meshes
+     * @returns The tile cache instance, or undefined if not available
+     */
+    public get tileCache(): TileCache | undefined {
+        return this._tileCache;
+    }
 
     // Crowd specific properties
     private _maximumSubStepCount: number = 10;
@@ -210,8 +226,8 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
             throw new Error("There is no navMesh generated.");
         }
 
-        if (this.navMesh && this.tileCache) {
-            WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
+        if (this.navMesh && this._tileCache) {
+            WaitForFullTileCacheUpdate(this.navMesh, this._tileCache);
         }
 
         return CreateDebugNavMesh(this.navMesh, scene);
@@ -495,7 +511,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     public buildFromTileCacheData(tileCacheData: Uint8Array, tileCacheMeshProcess?: TileCacheMeshProcess): void {
         const result = this.bjsRECAST.importTileCache(tileCacheData, tileCacheMeshProcess ?? CreateDefaultTileCacheMeshProcess([]));
         this.navMesh = result.navMesh;
-        this.tileCache = result.tileCache;
+        this._tileCache = result.tileCache;
         this._navMeshQuery = new this.bjsRECAST.NavMeshQuery(this.navMesh);
     }
 
@@ -506,10 +522,10 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @remarks The returned data can be used to rebuild the tile cache later using buildFromTileCacheData
      */
     public getTileCacheData(): Uint8Array {
-        if (!this.navMesh || !this.tileCache) {
+        if (!this.navMesh || !this._tileCache) {
             throw new Error("There is no TileCache generated.");
         }
-        return this.bjsRECAST.exportTileCache(this.navMesh, this.tileCache);
+        return this.bjsRECAST.exportTileCache(this.navMesh, this._tileCache);
     }
 
     /**
@@ -519,7 +535,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
         this._crowd?.dispose();
         this.navMesh?.destroy();
         this._navMeshQuery?.destroy();
-        this.tileCache?.destroy();
+        this._tileCache?.destroy();
     }
 
     /**
@@ -531,13 +547,13 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns the obstacle freshly created
      */
     public addCylinderObstacle(position: IVector3Like, radius: number, height: number, doNotWaitForCacheUpdate = false): Nullable<IObstacle> {
-        const obstacleResult = this.tileCache?.addCylinderObstacle(position, radius, height);
+        const obstacleResult = this._tileCache?.addCylinderObstacle(position, radius, height);
         if (!obstacleResult?.success) {
             return null;
         }
 
-        if (!doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
-            WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
+        if (!doNotWaitForCacheUpdate && this.navMesh && this._tileCache) {
+            WaitForFullTileCacheUpdate(this.navMesh, this._tileCache);
         }
 
         return (obstacleResult.obstacle as IObstacle) ?? null;
@@ -552,13 +568,13 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      * @returns the obstacle freshly created
      */
     public addBoxObstacle(position: IVector3Like, extent: IVector3Like, angle: number, doNotWaitForCacheUpdate = false): Nullable<IObstacle> {
-        const obstacleResult = this.tileCache?.addBoxObstacle(position, extent, angle);
+        const obstacleResult = this._tileCache?.addBoxObstacle(position, extent, angle);
         if (!obstacleResult?.success) {
             return null;
         }
 
-        if (!doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
-            WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
+        if (!doNotWaitForCacheUpdate && this.navMesh && this._tileCache) {
+            WaitForFullTileCacheUpdate(this.navMesh, this._tileCache);
         }
 
         return (obstacleResult.obstacle as IObstacle) ?? null;
@@ -571,10 +587,10 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
      *
      */
     public removeObstacle(obstacle: IObstacle, doNotWaitForCacheUpdate = false): void {
-        this.tileCache?.removeObstacle(obstacle);
+        this._tileCache?.removeObstacle(obstacle);
 
-        if (!doNotWaitForCacheUpdate && this.navMesh && this.tileCache) {
-            WaitForFullTileCacheUpdate(this.navMesh, this.tileCache);
+        if (!doNotWaitForCacheUpdate && this.navMesh && this._tileCache) {
+            WaitForFullTileCacheUpdate(this.navMesh, this._tileCache);
         }
     }
 
@@ -700,8 +716,8 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
 
         this.navMesh = result.navMesh;
         this._navMeshQuery = result.navMeshQuery;
-        this.intermediates = result.intermediates;
-        this.tileCache = result.tileCache;
+        this._intermediates = result.intermediates;
+        this._tileCache = result.tileCache;
 
         return {
             navMesh: result.navMesh,
