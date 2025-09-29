@@ -1603,7 +1603,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 ...(this._eventInfo.defineNames || {}),
                 ...(this._samplerDefines || {}),
             });
-            const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
+            const effect = this._prepareEffect(mesh, mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane)!;
             if (this._onEffectCreatedObservable) {
                 onCreatedEffectParameters.effect = effect;
                 onCreatedEffectParameters.subMesh = null;
@@ -1738,7 +1738,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         const previousEffect = subMesh.effect;
         const lightDisposed = defines._areLightsDisposed;
-        let effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+        let effect = this._prepareEffect(mesh, subMesh.getRenderingMesh(), defines, this.onCompiled, this.onError, useInstances, null);
 
         let forceWasNotReadyPreviously = false;
 
@@ -2121,14 +2121,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
     private _prepareEffect(
         mesh: AbstractMesh,
+        renderingMesh: AbstractMesh,
         defines: OpenPBRMaterialDefines,
         onCompiled: Nullable<(effect: Effect) => void> = null,
         onError: Nullable<(effect: Effect, errors: string) => void> = null,
         useInstances: Nullable<boolean> = null,
-        useClipPlane: Nullable<boolean> = null,
-        useThinInstances: boolean
+        useClipPlane: Nullable<boolean> = null
     ): Nullable<Effect> {
-        this._prepareDefines(mesh, defines, useInstances, useClipPlane, useThinInstances);
+        this._prepareDefines(mesh, renderingMesh, defines, useInstances, useClipPlane);
 
         if (!defines.isDirty) {
             return null;
@@ -2362,11 +2362,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
     private _prepareDefines(
         mesh: AbstractMesh,
+        renderingMesh: AbstractMesh,
         defines: OpenPBRMaterialDefines,
         useInstances: Nullable<boolean> = null,
-        useClipPlane: Nullable<boolean> = null,
-        useThinInstances: boolean = false
+        useClipPlane: Nullable<boolean> = null
     ): void {
+        const useThinInstances = renderingMesh.hasThinInstances;
+
         const scene = this.getScene();
         const engine = scene.getEngine();
 
@@ -2530,7 +2532,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 this.fogEnabled,
                 this.needAlphaTestingForMesh(mesh),
                 defines,
-                this._applyDecalMapAfterDetailMap
+                this._applyDecalMapAfterDetailMap,
+                this._useVertexPulling,
+                renderingMesh,
+                this._setVertexOutputInvariant
             );
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;
