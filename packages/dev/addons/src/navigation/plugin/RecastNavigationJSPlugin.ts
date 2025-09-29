@@ -1,5 +1,4 @@
-import type { TileCacheMeshProcess } from "@recast-navigation/core";
-import { type NavMesh, type QueryFilter, type TileCache, type NavMeshQuery } from "@recast-navigation/core";
+import type { TileCacheMeshProcess, NavMesh, QueryFilter, TileCache, NavMeshQuery } from "@recast-navigation/core";
 
 import type { ICrowd, INavigationEnginePlugin, IObstacle } from "core/Navigation/INavigationEngine";
 import { Logger } from "core/Misc/logger";
