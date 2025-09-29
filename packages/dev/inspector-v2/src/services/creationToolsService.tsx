@@ -28,6 +28,7 @@ export const CreationToolsServiceDefinition: ServiceDefinition<[], [IShellServic
             title: "Create",
             icon: FormNewRegular,
             horizontalLocation: "left",
+            verticalLocation: "top",
             content: () => {
                 const classes = useStyles();
 

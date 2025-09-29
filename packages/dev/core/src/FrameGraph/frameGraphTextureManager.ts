@@ -75,6 +75,12 @@ export class FrameGraphTextureManager {
      */
     public showDebugLogsForTextureAllcationOptimization = false;
 
+    /** If provided (greater than 0), forces the output screen width for percentage-based textures. If not provided (0), engine.getRenderWidth() will be used */
+    public forcedOutputScreenWidth = 0;
+
+    /** If provided (greater than 0), forces the output screen height for percentage-based textures. If not provided (0), engine.getRenderHeight() will be used */
+    public forcedOutputScreenHeight = 0;
+
     /**
      * Constructs a new instance of the texture manager
      * @param engine The engine to use
@@ -384,11 +390,10 @@ export class FrameGraphTextureManager {
      * @param screenHeight The height of the screen (default: the height of the rendering canvas)
      * @returns The absolute dimensions of the texture
      */
-    public getAbsoluteDimensions(
-        size: TextureSize,
-        screenWidth = this.engine.getRenderWidth(true),
-        screenHeight = this.engine.getRenderHeight(true)
-    ): { width: number; height: number } {
+    public getAbsoluteDimensions(size: TextureSize, screenWidth?: number, screenHeight?: number): { width: number; height: number } {
+        screenWidth = this.forcedOutputScreenWidth || this.engine.getRenderWidth(true);
+        screenHeight = this.forcedOutputScreenHeight || this.engine.getRenderHeight(true);
+
         const { width, height } = getDimensionsFromTextureSize(size);
 
         return {

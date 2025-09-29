@@ -163,13 +163,7 @@ class TransmissionHelper {
     }
 
     private _shouldRenderAsTransmission(material: Nullable<Material>): boolean {
-        if (!material) {
-            return false;
-        }
-        if ((material as any).subSurface.isRefractionEnabled) {
-            return true;
-        }
-        return false;
+        return (material as any)?.subSurface?.isRefractionEnabled ? true : false;
     }
 
     private _addMesh(mesh: AbstractMesh): void {
@@ -221,7 +215,10 @@ class TransmissionHelper {
         const useTransmission = this._shouldRenderAsTransmission(mesh.material);
         if (useTransmission) {
             if (mesh.material) {
-                (mesh.material as any).subSurface.refractionTexture = this._opaqueRenderTarget;
+                const subSurface = (mesh.material as PBRMaterial).subSurface;
+                if (subSurface) {
+                    subSurface.refractionTexture = this._opaqueRenderTarget;
+                }
             }
             if (opaqueIdx !== -1) {
                 this._opaqueMeshesCache.splice(opaqueIdx, 1);

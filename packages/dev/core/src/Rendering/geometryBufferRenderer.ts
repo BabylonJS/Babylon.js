@@ -24,6 +24,7 @@ import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareDefinesAndAtt
 
 import "../Engines/Extensions/engine.multiRender";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { OpenPBRMaterial } from "../Materials/PBR/openPbrMaterial";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -695,6 +696,38 @@ export class GeometryBufferRenderer {
                     if (material.specularColor) {
                         defines.push("#define REFLECTIVITYCOLOR");
                     }
+                } else if (material.getClassName() === "OpenPBRMaterial") {
+                    const pbrMaterial = material as OpenPBRMaterial;
+
+                    defines.push("#define METALLICWORKFLOW");
+                    metallicWorkflow = true;
+                    defines.push("#define METALLIC");
+                    defines.push("#define ROUGHNESS");
+                    if (pbrMaterial._useRoughnessFromMetallicTextureGreen && pbrMaterial.baseMetalnessTexture) {
+                        defines.push("#define ORMTEXTURE");
+                        defines.push(`#define REFLECTIVITY_UV${pbrMaterial.baseMetalnessTexture.coordinatesIndex + 1}`);
+                        needUv = true;
+                    } else if (pbrMaterial.baseMetalnessTexture) {
+                        defines.push("#define METALLIC_TEXTURE");
+                        defines.push(`#define METALLIC_UV${pbrMaterial.baseMetalnessTexture.coordinatesIndex + 1}`);
+                        needUv = true;
+                    } else if (pbrMaterial.specularRoughnessTexture) {
+                        defines.push("#define ROUGHNESS_TEXTURE");
+                        defines.push(`#define ROUGHNESS_UV${pbrMaterial.specularRoughnessTexture.coordinatesIndex + 1}`);
+                        needUv = true;
+                    }
+
+                    if (pbrMaterial.baseColorTexture) {
+                        defines.push("#define ALBEDOTEXTURE");
+                        defines.push(`#define ALBEDO_UV${pbrMaterial.baseColorTexture.coordinatesIndex + 1}`);
+                        if (pbrMaterial.baseColorTexture.gammaSpace) {
+                            defines.push("#define GAMMAALBEDO");
+                        }
+                        needUv = true;
+                    }
+                    if (pbrMaterial.baseColor) {
+                        defines.push("#define ALBEDOCOLOR");
+                    }
                 }
             }
 
@@ -1200,6 +1233,28 @@ export class GeometryBufferRenderer {
                         }
                         if (material.specularColor !== null) {
                             effect.setColor3("reflectivityColor", material.specularColor);
+                        }
+                    } else if (material.getClassName() === "OpenPBRMaterial") {
+                        // if it is a OpenPBR material:
+                        const openpbrMaterial = material as OpenPBRMaterial;
+                        if (openpbrMaterial._useRoughnessFromMetallicTextureGreen && openpbrMaterial.baseMetalnessTexture) {
+                            effect.setTexture("reflectivitySampler", openpbrMaterial.baseMetalnessTexture);
+                            effect.setMatrix("reflectivityMatrix", openpbrMaterial.baseMetalnessTexture.getTextureMatrix());
+                        } else if (openpbrMaterial.baseMetalnessTexture) {
+                            effect.setTexture("metallicSampler", openpbrMaterial.baseMetalnessTexture);
+                            effect.setMatrix("metallicMatrix", openpbrMaterial.baseMetalnessTexture.getTextureMatrix());
+                        } else if (openpbrMaterial.specularRoughnessTexture) {
+                            effect.setTexture("roughnessSampler", openpbrMaterial.specularRoughnessTexture);
+                            effect.setMatrix("roughnessMatrix", openpbrMaterial.specularRoughnessTexture.getTextureMatrix());
+                        }
+                        effect.setFloat("metallic", openpbrMaterial.baseMetalness);
+                        effect.setFloat("glossiness", 1.0 - openpbrMaterial.specularRoughness);
+                        if (openpbrMaterial.baseColorTexture !== null) {
+                            effect.setTexture("albedoSampler", openpbrMaterial.baseColorTexture);
+                            effect.setMatrix("albedoMatrix", openpbrMaterial.baseColorTexture.getTextureMatrix());
+                        }
+                        if (openpbrMaterial.baseColor !== null) {
+                            effect.setColor3("albedoColor", openpbrMaterial.baseColor);
                         }
                     }
                 }

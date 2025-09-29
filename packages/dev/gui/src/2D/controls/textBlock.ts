@@ -367,10 +367,14 @@ export class TextBlock extends Control {
     }
 
     protected override _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        // Ensure this is done first so that applyStates is called before remainder of work. If it turns out
+        // we need fontOffset to be set before specific logic inside processMeasures, we can move the below
+        // fontOffset check inside super.processMeasures
+        super._processMeasures(parentMeasure, context);
+
         if (!this._fontOffset || this.isDirty) {
             this._fontOffset = Control._GetFontOffset(context.font, this._host.getScene()?.getEngine());
         }
-        super._processMeasures(parentMeasure, context);
 
         // Prepare lines
         this._lines = this._breakLines(this._currentMeasure.width, this._currentMeasure.height, context);

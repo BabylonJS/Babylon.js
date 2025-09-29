@@ -2652,6 +2652,15 @@
             "playgroundId": "#ATL1CS#16"
         },
         {
+            "title": "FrameGraph nrge clustered lights",
+            "playgroundId": "#1QCA2M#12",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "FrameGraph nrge clustered lights (simple)",
+            "playgroundId": "#1QCA2M#26"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
@@ -2692,6 +2701,10 @@
             "title": "FrameGraph motion blur skinned",
             "playgroundId": "#YB006J#749",
             "renderCount": 40
+        },
+        {
+            "title": "Render target texture with clustered lights",
+            "playgroundId": "#1QCA2M#11"
         },
         {
             "title": "IBL radiance roughness",
@@ -2969,3 +2982,4 @@
         }
     ]
 }
+
