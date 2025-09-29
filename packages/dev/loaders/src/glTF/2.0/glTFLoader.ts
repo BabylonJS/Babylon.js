@@ -88,6 +88,10 @@ import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 // Caching these dynamic imports gives a surprising perf boost (compared to importing them directly each time).
 const LazyAnimationGroupModulePromise = new Lazy(() => import("core/Animations/animationGroup"));
 const LazyLoaderAnimationModulePromise = new Lazy(() => import("./glTFLoaderAnimation"));
+const LazyOpenPBRMaterialLoadingAdapterModulePromise = new Lazy(() => import("./openPbrMaterialLoadingAdapter"));
+const LazyPBRMaterialLoadingAdapterModulePromise = new Lazy(() => import("./pbrMaterialLoadingAdapter"));
+const LazyOpenPBRMaterialModulePromise = new Lazy(() => import("core/Materials/PBR/openPbrMaterial"));
+const LazyPBRMaterialModulePromise = new Lazy(() => import("core/Materials/PBR/pbrMaterial"));
 
 export { GLTFFileLoader };
 
