@@ -367,11 +367,13 @@ export class TextBlock extends Control {
     }
 
     protected override _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
-        // Ensure this is done first so that applyStates is called before remainder of work. If it turns out
-        // we need fontOffset to be set before specific logic inside processMeasures, we can move the below
-        // fontOffset check inside super.processMeasures
         super._processMeasures(parentMeasure, context);
 
+        // Apply states so we can use the right font to measure
+        context.save();
+        this._applyStates(context);
+
+        // Measure the font
         if (!this._fontOffset || this.isDirty) {
             this._fontOffset = Control._GetFontOffset(context.font, this._host.getScene()?.getEngine());
         }
@@ -379,6 +381,9 @@ export class TextBlock extends Control {
         // Prepare lines
         this._lines = this._breakLines(this._currentMeasure.width, this._currentMeasure.height, context);
         this.onLinesReadyObservable.notifyObservers(this);
+
+        // Restore context now that we're done measuring the font
+        context.restore();
 
         let maxLineWidth: number = 0;
 
@@ -443,6 +448,7 @@ export class TextBlock extends Control {
         if (this.outlineWidth) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
+        console.log("TextBlock._drawText", "this._currentMeasure.left =", this._currentMeasure.left, "x =", x, "y =", y, "textWidth =", textWidth);
         context.fillText(text, this._currentMeasure.left + x, y);
 
         if (this._underline) {
