@@ -277,6 +277,7 @@ export class GLTFExporter {
 
     private static readonly _ExtensionNames = new Array<string>();
     private static readonly _ExtensionFactories: { [name: string]: (exporter: GLTFExporter) => IGLTFExporterExtensionV2 } = {};
+    private static readonly _ExtensionOrders: { [name: string]: number } = {};
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     private _ApplyExtension<T>(
@@ -452,13 +453,29 @@ export class GLTFExporter {
         return this._options;
     }
 
-    public static RegisterExtension(name: string, factory: (exporter: GLTFExporter) => IGLTFExporterExtensionV2): void {
+    public static RegisterExtension(name: string, factory: (exporter: GLTFExporter) => IGLTFExporterExtensionV2, order: number = 100): void {
         if (GLTFExporter.UnregisterExtension(name)) {
             Tools.Warn(`Extension with the name ${name} already exists`);
         }
 
         GLTFExporter._ExtensionFactories[name] = factory;
-        GLTFExporter._ExtensionNames.push(name);
+        const extensionOrder = order ?? 0; // Use provided order or default to 0
+        GLTFExporter._ExtensionOrders[name] = extensionOrder;
+
+        // Find the correct position to insert the extension based on order
+        let insertIndex = GLTFExporter._ExtensionNames.length;
+        for (let i = 0; i < GLTFExporter._ExtensionNames.length; i++) {
+            const existingName = GLTFExporter._ExtensionNames[i];
+            const existingOrder = GLTFExporter._ExtensionOrders[existingName];
+
+            // If the order is less, insert before.
+            if (extensionOrder < existingOrder) {
+                insertIndex = i;
+                break;
+            }
+        }
+
+        GLTFExporter._ExtensionNames.splice(insertIndex, 0, name);
     }
 
     public static UnregisterExtension(name: string): boolean {
@@ -466,6 +483,7 @@ export class GLTFExporter {
             return false;
         }
         delete GLTFExporter._ExtensionFactories[name];
+        delete GLTFExporter._ExtensionOrders[name];
 
         const index = GLTFExporter._ExtensionNames.indexOf(name);
         if (index !== -1) {
