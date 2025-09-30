@@ -2,8 +2,6 @@
     "extends": "../../../tsconfig.json",
 
     "compilerOptions": {
-        "strict": true,
         "jsx": "react-jsx",
-        "allowSyntheticDefaultImports": true
     },
 }
