@@ -2252,9 +2252,6 @@ export class GLTFLoader implements IGLTFLoader {
 
             const babylonMaterial = this.createMaterial(context, material, babylonDrawMode);
 
-            // Create the adapter for this material immediately after creation
-            this._getOrCreateMaterialAdapter(babylonMaterial);
-
             babylonData = {
                 babylonMaterial: babylonMaterial,
                 babylonMeshes: [],
