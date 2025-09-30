@@ -264,6 +264,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         isThemeable: options.isThemeable ?? true,
         extensionFeeds: options.isExtensible ? [new BuiltInsExtensionFeed()] : [],
         toolbarMode: "compact",
+        sidePaneMode: options.embedMode ? "right" : "both",
     });
     disposeActions.push(() => modularTool.dispose());
 

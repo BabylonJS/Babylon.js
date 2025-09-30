@@ -54,6 +54,7 @@ export const ToolsServiceDefinition: ServiceDefinition<[IToolsService], [IShellS
                     title: "Tools",
                     icon: WrenchRegular,
                     horizontalLocation: "right",
+                    verticalLocation: "top",
                     order: 400,
                     suppressTeachingMoment: true,
                     content: () => {

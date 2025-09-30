@@ -2652,6 +2652,15 @@
             "playgroundId": "#ATL1CS#16"
         },
         {
+            "title": "FrameGraph nrge clustered lights",
+            "playgroundId": "#1QCA2M#12",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "FrameGraph nrge clustered lights (simple)",
+            "playgroundId": "#1QCA2M#26"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
@@ -2692,6 +2701,10 @@
             "title": "FrameGraph motion blur skinned",
             "playgroundId": "#YB006J#749",
             "renderCount": 40
+        },
+        {
+            "title": "Render target texture with clustered lights",
+            "playgroundId": "#1QCA2M#11"
         },
         {
             "title": "IBL radiance roughness",
@@ -2781,6 +2794,14 @@
             "title": "Sponza Clustered Lighting (2 viewports)",
             "playgroundId": "#CSCJO2#20",
             "referenceImage": "sponza-clustered-lighting-viewports.png"
+        },
+        {
+            "title": "Sponza Clustered Lighting (node material std)",
+            "playgroundId": "#QY98Z3#16"
+        },
+        {
+            "title": "Sponza Clustered Lighting (node material pbr)",
+            "playgroundId": "#QY98Z3#17"
         },
         {
             "title": "Atmosphere Day",
@@ -2962,6 +2983,17 @@
         {
             "title": "Specular Reflectance with IOR V2 Manifest",
             "playgroundId": "#KQYNYS#49"
+        },
+        {
+            "title": "OpenPBR Coat Roughness vs Coat Ior - Analytic Lights",
+            "playgroundId": "#GRQHVV#80",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Coat Roughness vs Coat Ior - IBL",
+            "playgroundId": "#GRQHVV#81",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
+

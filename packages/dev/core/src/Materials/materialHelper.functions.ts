@@ -921,6 +921,7 @@ export function PrepareDefinesForLight(
     defines["POINTLIGHT" + lightIndex] = false;
     defines["DIRLIGHT" + lightIndex] = false;
     defines["AREALIGHT" + lightIndex] = false;
+    defines["CLUSTLIGHT" + lightIndex] = false;
 
     light.prepareLightSpecificDefines(defines, lightIndex);
 

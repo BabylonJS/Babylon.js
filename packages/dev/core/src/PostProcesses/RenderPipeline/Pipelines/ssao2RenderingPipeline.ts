@@ -250,6 +250,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         return engine._features.supportSSAO2;
     }
 
+    /**
+     * Indicates that the combine stage should use the current camera viewport to render the SSAO result on only a portion of the output texture (default: true).
+     */
+    public useViewportInCombineStage = true;
+
     private _scene: Scene;
     private _randomTexture: Texture;
     private _originalColorPostProcess: PassPostProcess;
@@ -690,7 +695,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
             const viewport = this._scene.activeCamera!.viewport;
-            effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
+            if (this.useViewportInCombineStage) {
+                effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
+            } else {
+                effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(0, 0, 1, 1));
+            }
             effect.setTextureFromPostProcessOutput("originalColor", this._originalColorPostProcess);
         };
         this._ssaoCombinePostProcess.autoClear = false;
