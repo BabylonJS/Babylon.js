@@ -138,14 +138,7 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
     const meansl = imageDataArrays[0].bits;
     const meansu = imageDataArrays[1].bits;
     // Check that data.means.mins is an array
-    if (
-        !Array.isArray(data.means.mins) ||
-        !Array.isArray(data.means.maxs) ||
-        !Array.isArray(data.scales.mins) ||
-        !Array.isArray(data.scales.maxs) ||
-        !Array.isArray(data.sh0.mins) ||
-        !Array.isArray(data.sh0.maxs)
-    ) {
+    if (!Array.isArray(data.means.mins) || !Array.isArray(data.means.maxs)) {
         throw new Error("Missing arrays in SOG data.");
     }
 
@@ -177,12 +170,17 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
             }
         }
     } else {
+        if (!Array.isArray(data.scales.mins) || !Array.isArray(data.scales.maxs)) {
+            throw new Error("Missing arrays in SOG scales data.");
+        }
+
         for (let i = 0; i < splatCount; i++) {
             const index = i * 4;
             for (let j = 0; j < 3; j++) {
                 const sc = scales[index + j];
                 const lsc = Scalar.Lerp(data.scales.mins[j], data.scales.maxs[j], sc / 255);
-                scale[i * 8 + 3 + j] = lsc * 0 + 0.001;
+                const lsce = Math.exp(lsc);
+                scale[i * 8 + 3 + j] = lsce;
             }
         }
     }
@@ -202,6 +200,9 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
             rgba[i * 32 + 24 + 3] = colors[index + 3];
         }
     } else {
+        if (!Array.isArray(data.sh0.mins) || !Array.isArray(data.sh0.maxs)) {
+            throw new Error("Missing arrays in SOG sh0 data.");
+        }
         for (let i = 0; i < splatCount; i++) {
             const index = i * 4;
             for (let j = 0; j < 4; j++) {
@@ -263,10 +264,10 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
                 throw new Error("Invalid quaternion mode");
         }
 
-        rot[i * 32 + 28 + 0] = q[3] * 127.5 + 127.5;
-        rot[i * 32 + 28 + 1] = q[0] * 127.5 + 127.5;
-        rot[i * 32 + 28 + 2] = q[1] * 127.5 + 127.5;
-        rot[i * 32 + 28 + 3] = q[2] * 127.5 + 127.5;
+        rot[i * 32 + 28 + 0] = q[0] * 127.5 + 127.5;
+        rot[i * 32 + 28 + 1] = q[1] * 127.5 + 127.5;
+        rot[i * 32 + 28 + 2] = q[2] * 127.5 + 127.5;
+        rot[i * 32 + 28 + 3] = q[3] * 127.5 + 127.5;
     }
 
     // --- SH
