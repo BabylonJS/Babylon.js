@@ -16,7 +16,7 @@ import type { ArcRotateCameraPointersInput } from "../Cameras/Inputs/arcRotateCa
 import type { ArcRotateCameraKeyboardMoveInput } from "../Cameras/Inputs/arcRotateCameraKeyboardMoveInput";
 import type { ArcRotateCameraMouseWheelInput } from "../Cameras/Inputs/arcRotateCameraMouseWheelInput";
 import { ArcRotateCameraInputsManager } from "../Cameras/arcRotateCameraInputsManager";
-import { Epsilon, MsPerFrameAt60FPS } from "../Maths/math.constants";
+import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
 import { RegisterClass } from "../Misc/typeStore";
 
@@ -1042,9 +1042,8 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.checkInputs();
         let hasUserInteractions = false;
 
-        // At 60FPS, InertialLimit should be == this.speed * Epsilon.
-        // We scale InertialLimit based on time since last frame to ensure a smaller inertialLimit at higher framerates
-        const inertialLimit = (this.speed * Epsilon * this._scene.getEngine().getDeltaTime()) / MsPerFrameAt60FPS;
+        const inertialPanningLimit = this.speed * this._panningEpsilon;
+        const inertialRotationLimit = this.speed * this._rotationEpsilon;
 
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
@@ -1065,13 +1064,13 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialAlphaOffset *= this.inertia;
             this.inertialBetaOffset *= this.inertia;
             this.inertialRadiusOffset *= this.inertia;
-            if (Math.abs(this.inertialAlphaOffset) < inertialLimit) {
+            if (Math.abs(this.inertialAlphaOffset) < inertialRotationLimit) {
                 this.inertialAlphaOffset = 0;
             }
-            if (Math.abs(this.inertialBetaOffset) < inertialLimit) {
+            if (Math.abs(this.inertialBetaOffset) < inertialRotationLimit) {
                 this.inertialBetaOffset = 0;
             }
-            if (Math.abs(this.inertialRadiusOffset) < inertialLimit) {
+            if (Math.abs(this.inertialRadiusOffset) < inertialRotationLimit) {
                 this.inertialRadiusOffset = 0;
             }
         }
@@ -1117,10 +1116,10 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialPanningX *= this.panningInertia;
             this.inertialPanningY *= this.panningInertia;
 
-            if (Math.abs(this.inertialPanningX) < inertialLimit) {
+            if (Math.abs(this.inertialPanningX) < inertialPanningLimit) {
                 this.inertialPanningX = 0;
             }
-            if (Math.abs(this.inertialPanningY) < inertialLimit) {
+            if (Math.abs(this.inertialPanningY) < inertialPanningLimit) {
                 this.inertialPanningY = 0;
             }
         }

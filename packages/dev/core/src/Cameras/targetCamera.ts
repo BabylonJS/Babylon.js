@@ -3,7 +3,7 @@ import type { Nullable } from "../types";
 import { Camera } from "./camera";
 import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
-import { Epsilon, MsPerFrameAt60FPS } from "../Maths/math.constants";
+import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Node } from "../node";
@@ -74,6 +74,19 @@ export class TargetCamera extends Camera {
      * Speed multiplier for inverse camera panning
      */
     public inverseRotationSpeed = 0.2;
+
+    /**
+     * @internal
+     * @experimental
+     * Can be used to change clamping behavior for inertia. Hook into onBeforeRenderObservable to change the value per-frame
+     */
+    public _panningEpsilon = Epsilon;
+    /**
+     * @internal
+     * @experimental
+     * Can be used to change clamping behavior for inertia. Hook into onBeforeRenderObservable to change the value per-frame
+     */
+    public _rotationEpsilon = Epsilon;
 
     /**
      * Define the current target of the camera as an object or a position.
@@ -391,32 +404,30 @@ export class TargetCamera extends Camera {
             }
         }
 
-        // At 60FPS, InertialLimit should be == this.speed * Epsilon.
-        // We scale InertialLimit based on time since last frame to ensure a smaller inertialLimit at higher framerates
-        const inertialLimit = (this.speed * Epsilon * this._scene.getEngine().getDeltaTime()) / MsPerFrameAt60FPS;
-
+        const inertialPanningLimit = this.speed * this._panningEpsilon;
+        const inertialRotationLimit = this.speed * this._rotationEpsilon;
         // Inertia
         if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < inertialLimit) {
+            if (Math.abs(this.cameraDirection.x) < inertialPanningLimit) {
                 this.cameraDirection.x = 0;
             }
 
-            if (Math.abs(this.cameraDirection.y) < inertialLimit) {
+            if (Math.abs(this.cameraDirection.y) < inertialPanningLimit) {
                 this.cameraDirection.y = 0;
             }
 
-            if (Math.abs(this.cameraDirection.z) < inertialLimit) {
+            if (Math.abs(this.cameraDirection.z) < inertialPanningLimit) {
                 this.cameraDirection.z = 0;
             }
 
             this.cameraDirection.scaleInPlace(this.inertia);
         }
         if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < inertialLimit) {
+            if (Math.abs(this.cameraRotation.x) < inertialRotationLimit) {
                 this.cameraRotation.x = 0;
             }
 
-            if (Math.abs(this.cameraRotation.y) < inertialLimit) {
+            if (Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
                 this.cameraRotation.y = 0;
             }
             this.cameraRotation.scaleInPlace(this.inertia);
