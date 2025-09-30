@@ -1,11 +1,8 @@
-/* eslint-disable jsdoc/require-jsdoc */
-
 import { Utilities } from "./tools/utilities";
 import type { CompilationError } from "./components/errorDisplayComponent";
 import { Observable } from "@dev/core";
+
 import type { Nullable } from "@dev/core";
-import type { V2Runner } from "./tools/monaco/run/runner";
-import type { V2Manifest } from "./tools/snippet";
 
 export enum EditionMode {
     Desktop,
@@ -18,43 +15,30 @@ export enum RuntimeMode {
     Full = 1,
     Frame = 2,
 }
+
 export class GlobalState {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public readonly MobileSizeTrigger = 1024;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public SnippetServerUrl = "https://snippet.babylonjs.com";
-    public currentCode!: string;
 
+    public currentCode: string;
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    public getRunnable: () => Promise<V2Runner> = async () => {
-        throw new Error("Must be set in runtime");
+    public getCompiledCode: () => Promise<string> = async () => {
+        return await Promise.resolve(this.currentCode);
     };
-    currentRunner?: V2Runner | null;
-
     public language = Utilities.ReadStringFromStore("language", "JS");
-    public fpsElement!: HTMLDivElement;
+    public fpsElement: HTMLDivElement;
     public mobileDefaultMode = EditionMode.RenderingOnly;
+
     public runtimeMode = RuntimeMode.Editor;
+
     public currentSnippetTitle = "";
     public currentSnippetDescription = "";
     public currentSnippetTags = "";
     public currentSnippetToken = "";
-    public currentSnippetRevision = "";
-    public files: Record<string, string> = {};
 
-    /** Active file path (internal) */
-    public activeFilePath: string = Utilities.ReadStringFromStore("language", "JS") === "JS" ? "index.js" : "index.ts";
-    /** Import map for V2 multi-file */
-    public importsMap: Record<string, string> = {};
-    /** Entry file for execution */
-    public entryFilePath: string = Utilities.ReadStringFromStore("language", "JS") === "JS" ? "index.js" : "index.ts";
-    /** Manual tab order */
-    public filesOrder: string[] = [];
-
-    public openEditors: string[] = []; // paths that are open in tabs
-    public activeEditorPath: string | undefined; // current active tab
-    public onOpenEditorsChangedObservable: Observable<void> = new Observable<void>();
-    public onActiveEditorChangedObservable: Observable<void> = new Observable<void>();
+    public zipCode = "";
 
     public onRunRequiredObservable = new Observable<void>();
     public onRunExecutedObservable = new Observable<void>();
@@ -82,20 +66,13 @@ export class GlobalState {
     public onThemeChangedObservable = new Observable<void>();
     public onFontSizeChangedObservable = new Observable<void>();
     public onLanguageChangedObservable = new Observable<void>();
-    public onNavigateRequiredObservable = new Observable<{
-        lineNumber: number;
-        column: number;
-    }>();
+    public onNavigateRequiredObservable = new Observable<{ lineNumber: number; column: number }>();
     public onExamplesDisplayChangedObservable = new Observable<void>();
     public onQRCodeRequiredObservable = new Observable<boolean>();
     public onNewDropdownButtonClicked = new Observable<any>();
-    public onFilesChangedObservable = new Observable<void>();
-    public onActiveFileChangedObservable = new Observable<void>();
-    public onManifestChangedObservable = new Observable<void>();
-    public onFilesOrderChangedObservable = new Observable<void>();
-    public onV2HydrateRequiredObservable = new Observable<V2Manifest>();
 
     public loadingCodeInProgress = false;
     public onCodeLoaded = new Observable<string>();
+
     public doNotRun = false;
 }

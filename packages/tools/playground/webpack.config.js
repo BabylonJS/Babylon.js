@@ -1,5 +1,4 @@
 const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
-const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 const webpackTools = require("@dev/build-tools").webpackTools;
 const path = require("path");
 
@@ -81,19 +80,9 @@ module.exports = (env) => {
                         rootDir: "../../",
                     },
                 },
+                enableFastRefresh: !production,
             }),
         },
     };
-    const plugins = (commonConfig.plugins || []).filter((p) => !(p && p.constructor && p.constructor.name === "ReactRefreshWebpackPlugin"));
-    return {
-        ...commonConfig,
-        devServer: {
-            ...(commonConfig.devServer || {}),
-            client: {
-                ...(commonConfig.devServer?.client || {}),
-                overlay: false,
-            },
-        },
-        plugins: [...plugins, !production && new ReactRefreshWebpackPlugin({ overlay: false })].filter(Boolean),
-    };
+    return commonConfig;
 };
