@@ -118,7 +118,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Playground (Chrome)",
-            "url": "http://localhost:1338/#QA2662#1",
+            "url": "http://localhost:1338",
             "preLaunchTask": "Playground Serve for core (Dev)"
         },
         {
