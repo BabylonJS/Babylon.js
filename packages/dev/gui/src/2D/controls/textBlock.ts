@@ -448,7 +448,6 @@ export class TextBlock extends Control {
         if (this.outlineWidth) {
             context.strokeText(text, this._currentMeasure.left + x, y);
         }
-        console.log("TextBlock._drawText", "this._currentMeasure.left =", this._currentMeasure.left, "x =", x, "y =", y, "textWidth =", textWidth);
         context.fillText(text, this._currentMeasure.left + x, y);
 
         if (this._underline) {
