@@ -107,7 +107,7 @@ module.exports = (env) => {
         plugins: [
             ...plugins,
             new HtmlWebpackPlugin({
-                template: path.resolve(__dirname, "public/index.html"),
+                template: path.resolve(__dirname, "index.html"),
                 templateParameters: (compilation) => ({
                     PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
                 }),
