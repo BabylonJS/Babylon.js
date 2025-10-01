@@ -1,6 +1,7 @@
-import type { IDisposable } from "core/index";
-
 import type { ComponentType, FunctionComponent } from "react";
+import type { TernaryDarkMode } from "usehooks-ts";
+
+import type { IDisposable } from "core/index";
 import type { IExtensionFeed } from "./extensibility/extensionFeed";
 import type { IExtension, InstallFailedInfo } from "./extensibility/extensionManager";
 import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
@@ -25,13 +26,12 @@ import {
 import { ErrorCircleRegular } from "@fluentui/react-icons";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { useTernaryDarkMode } from "usehooks-ts";
 
-import { Logger } from "core/Misc/logger";
 import { Deferred } from "core/Misc/deferred";
-
+import { Logger } from "core/Misc/logger";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
+import { useThemeMode } from "./hooks/themeHooks";
 import { ServiceContainer } from "./modularity/serviceContainer";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
@@ -77,9 +77,14 @@ export type ModularToolOptions = {
     serviceDefinitions: readonly WeaklyTypedServiceDefinition[];
 
     /**
-     * Whether the tool should allow user selection of the theme (e.g. dark/light/system).
+     * The default theme to use. If not specified, the default is "system", which uses the system/browser preference.
      */
-    isThemeable?: boolean;
+    defaultTheme?: TernaryDarkMode;
+
+    /**
+     * Whether to show the theme selector in the toolbar. Default is true.
+     */
+    showThemeSelector?: boolean;
 
     /**
      * The extension feeds that provide optional extensions the user can install.
@@ -93,12 +98,12 @@ export type ModularToolOptions = {
  * @returns A token that can be used to dispose of the tool.
  */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
-    const { containerElement, serviceDefinitions, isThemeable = true, extensionFeeds = [] } = options;
+    const { containerElement, serviceDefinitions, defaultTheme = "system", showThemeSelector = true, extensionFeeds = [] } = options;
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
-        const { isDarkMode } = useTernaryDarkMode();
+        const { isDarkMode } = useThemeMode(defaultTheme);
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
@@ -132,7 +137,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 }
 
                 // Register the theme selector service (for selecting the theme) if theming is configured.
-                if (isThemeable) {
+                if (showThemeSelector) {
                     await serviceContainer.addServiceAsync(ThemeSelectorServiceDefinition);
                 }
 

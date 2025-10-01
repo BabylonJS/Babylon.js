@@ -60,7 +60,7 @@ import { AtmosphereExplorerServiceDefinition } from "./services/panes/scene/atmo
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
-type InspectorV2Options = Pick<ModularToolOptions, "serviceDefinitions" | "isThemeable"> & {
+type InspectorV2Options = Pick<ModularToolOptions, "serviceDefinitions" | "defaultTheme" | "showThemeSelector"> & {
     isExtensible?: boolean;
 };
 
@@ -83,7 +83,6 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         handleResize: true,
         enablePopup: true,
         isExtensible: true,
-        isThemeable: true,
         ...options,
     };
 
@@ -261,7 +260,8 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),
         ],
-        isThemeable: options.isThemeable ?? true,
+        defaultTheme: options.defaultTheme,
+        showThemeSelector: options.showThemeSelector,
         extensionFeeds: options.isExtensible ? [new BuiltInsExtensionFeed()] : [],
         toolbarMode: "compact",
         sidePaneMode: options.embedMode ? "right" : "both",
