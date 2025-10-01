@@ -77,9 +77,9 @@ export type ModularToolOptions = {
     serviceDefinitions: readonly WeaklyTypedServiceDefinition[];
 
     /**
-     * The default theme to use. If not specified, the default is "system", which uses the system/browser preference.
+     * The theme mode to use. If not specified, the default is "system", which uses the system/browser preference, and the last used mode is persisted.
      */
-    defaultTheme?: TernaryDarkMode;
+    themeMode?: TernaryDarkMode;
 
     /**
      * Whether to show the theme selector in the toolbar. Default is true.
@@ -98,12 +98,12 @@ export type ModularToolOptions = {
  * @returns A token that can be used to dispose of the tool.
  */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
-    const { containerElement, serviceDefinitions, defaultTheme = "system", showThemeSelector = true, extensionFeeds = [] } = options;
+    const { containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [] } = options;
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
-        const { isDarkMode } = useThemeMode(defaultTheme);
+        const { isDarkMode } = useThemeMode(themeMode);
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
