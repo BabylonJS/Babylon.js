@@ -2,10 +2,10 @@ import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-
 import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
-import { UniformWidthStyling } from "./utils";
+import { CustomTokens, UniformWidthStyling } from "./utils";
 
 const useDropdownStyles = makeStyles({
-    dropdown: UniformWidthStyling,
+    dropdown: { ...UniformWidthStyling, minWidth: CustomTokens.inputWidth },
 });
 
 export type AcceptedDropdownValue = string | number;
@@ -55,7 +55,7 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
             value={options.find((o) => o.value === defaultVal)?.label}
         >
             {options.map((option: DropdownOption<AcceptedDropdownValue>) => (
-                <Option key={option.label} value={option.value.toString()} disabled={false}>
+                <Option className={classes.dropdown} key={option.label} value={option.value.toString()} disabled={false}>
                     {option.label}
                 </Option>
             ))}
