@@ -618,6 +618,7 @@ export async function CreateScreenshotForFrameGraphAsync(
     const tasks = frameGraph.tasks;
     const currentTaskListLength = tasks.length;
     const pausedExecution = frameGraph.pausedExecution;
+    const currentParallelShaderCompile = engine.getCaps().parallelShaderCompile;
 
     textureManager.setBackBufferTextures(
         0,
@@ -692,6 +693,24 @@ export async function CreateScreenshotForFrameGraphAsync(
         mainObjectRendererTask.camera = camera;
     }
 
+    /**
+     * We need to disable parallel shader compile before running frameGraph.whenReadyAsync because of WebGL.
+     * In some cases, when whenReadyAsync is not ready the first time readiness is checked, the execute call will
+     * not render correctly. Disabling parallel shader compile fixes the problem. This does not happen with WebGPU.
+     *
+     * That's what happens in this PG: http://playground.babylonjs.com/#GAGVQO#16
+     *
+     * The FXAA task is injected in the frame graph (because antialiasing==true), and whenReadyAsync checks the readiness
+     * of the FXAA task for the first time, it returns false because the shader is not yet imported/compiled.
+     * If you uncomment line 2 in the PG, the FXAA shader will be preloaded/compiled before the screenshot is taken and
+     * whenReadyAsync won't have to check readiness twice. In that case, disabling parallel shader compile won't be necessary to have a correct screenshot.
+     *
+     * Same problem in: http://playground.babylonjs.com/#Z6C5EF#3
+     *
+     * TODO: find a better solution for this problem?
+     */
+    engine.getCaps().parallelShaderCompile = undefined;
+
     frameGraph.build();
 
     // We don't want the frame graph to render while waiting for whenReadyAsync to complete
@@ -702,21 +721,11 @@ export async function CreateScreenshotForFrameGraphAsync(
     // eslint-disable-next-line require-atomic-updates
     frameGraph.pausedExecution = false;
 
-    /**
-     * We need to execute twice because of WebGL. In some cases, when whenReadyAsync (see a few lines above) is not ready the first time readiness is checked, the first execute call will
-     * not render correctly, and only the second execute will have the expected rendering. This does not happen with WebGPU.
-     *
-     * That's what happens in this PG: http://playground.babylonjs.com/#GAGVQO#16
-     * The FXAA task is injected in the frame graph (because antialiasing==true), and whenReadyAsync checks the readiness of the FXAA task for the first time, it returns false because the shader is not yet imported.
-     * If you comment one of the two execute() calls below, the screenshot will be wrong.
-     * If you uncomment line 2 in the PG, the FXAA shader will be preloaded/compiled before the screenshot is taken and whenReadyAsync won't have to check readiness twice. In that case, a single execute() call is enough.
-     *
-     * TODO: find a better solution for this problem.
-     */
-    frameGraph.execute();
     frameGraph.execute();
 
     frameGraph.pausedExecution = true;
+
+    engine.getCaps().parallelShaderCompile = currentParallelShaderCompile;
 
     for (let i = currentTaskListLength; i < tasks.length; ++i) {
         frameGraph.tasks[i].dispose();
