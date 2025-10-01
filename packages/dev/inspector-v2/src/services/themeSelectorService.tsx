@@ -6,8 +6,8 @@ import type { IShellService } from "../services/shellService";
 import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
 import { WeatherMoonRegular, WeatherSunnyRegular } from "@fluentui/react-icons";
 import { useCallback } from "react";
-import { useTernaryDarkMode } from "usehooks-ts";
 
+import { useThemeMode } from "../hooks/themeHooks";
 import { ShellServiceIdentity } from "../services/shellService";
 
 const useStyles = makeStyles({
@@ -32,18 +32,18 @@ export const ThemeSelectorServiceDefinition: ServiceDefinition<[], [IShellServic
             component: () => {
                 const classes = useStyles();
 
-                const { isDarkMode, ternaryDarkMode, setTernaryDarkMode } = useTernaryDarkMode();
+                const { isDarkMode, themeMode, setThemeMode } = useThemeMode();
 
                 const onSelectedThemeChange = useCallback((e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
-                    setTernaryDarkMode(data.checkedItems.includes("System") ? "system" : (data.checkedItems[0].toLocaleLowerCase() as TernaryDarkMode));
+                    setThemeMode(data.checkedItems.includes("System") ? "system" : (data.checkedItems[0].toLocaleLowerCase() as TernaryDarkMode));
                 }, []);
 
                 const toggleTheme = useCallback(() => {
-                    setTernaryDarkMode(isDarkMode ? "light" : "dark");
+                    setThemeMode(isDarkMode ? "light" : "dark");
                 }, [isDarkMode]);
 
                 return (
-                    <Menu positioning="below-end" checkedValues={{ theme: [ternaryDarkMode] }} onCheckedValueChange={onSelectedThemeChange}>
+                    <Menu positioning="below-end" checkedValues={{ theme: [themeMode] }} onCheckedValueChange={onSelectedThemeChange}>
                         <MenuTrigger disableButtonEnhancement={true}>
                             {(triggerProps: MenuButtonProps) => (
                                 <Tooltip content="Select Theme" relationship="label">

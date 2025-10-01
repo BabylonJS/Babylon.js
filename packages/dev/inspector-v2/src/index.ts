@@ -6,6 +6,7 @@ export * from "./components/extensibleAccordion";
 export { Pane as PaneContainer } from "./components/pane";
 export * from "./components/teachingMoment";
 export * from "./extensibility/extensionFeed";
+export * from "./extensibility/builtInsExtensionFeed";
 export * from "./hooks/compoundPropertyHooks";
 export * from "./hooks/instrumentationHooks";
 export * from "./hooks/observableHooks";
