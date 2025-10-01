@@ -117,10 +117,11 @@ export class TransmittanceLut {
 
         const scene = this._atmosphere.scene;
         const engine = scene.getEngine();
+        const useHalfFloat = UseHalfFloat && engine.getCaps().textureHalfFloatRender;
 
         const name = "atmo-transmittance";
         const renderTarget = (this._renderTarget = new RenderTargetTexture(name, { width: LutWidthPx, height: LutHeightPx }, scene, {
-            type: UseHalfFloat ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            type: useHalfFloat ? Constants.TEXTURETYPE_HALF_FLOAT : Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
             generateDepthBuffer: false,
             gammaSpace: false,
@@ -128,7 +129,7 @@ export class TransmittanceLut {
         renderTarget.wrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         renderTarget.wrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         renderTarget.anisotropicFilteringLevel = 1;
-        renderTarget.skipInitialClear = true;
+        //renderTarget.skipInitialClear = true;
 
         const useUbo = this._atmosphere.uniformBuffer.useUbo;
         this._effectWrapper = new EffectWrapper({
