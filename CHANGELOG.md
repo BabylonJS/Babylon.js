@@ -1,5 +1,15 @@
 # Changelog
 
+## 8.29.2
+
+### Playground
+
+- Revert "Playground Editor V2: Multi-file, ES modules, NPM Support" - by [sebavan](https://github.com/sebavan) ([#17214](https://github.com/BabylonJS/Babylon.js/pull/17214))
+
+### Viewer
+
+- viewer: fix imageProcessingConfiguration condition with ssao - by [alexandremottet](https://github.com/alexandremottet) ([#17215](https://github.com/BabylonJS/Babylon.js/pull/17215))
+
 ## 8.29.1
 
 ### Core
