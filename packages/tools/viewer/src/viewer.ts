@@ -1230,7 +1230,7 @@ export class Viewer implements IDisposable {
             this._updateSSAOPipeline();
         }
 
-        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoOption === "enabled";
+        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoPipeline !== null;
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
