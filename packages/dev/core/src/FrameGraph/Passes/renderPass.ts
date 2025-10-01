@@ -71,7 +71,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
      * @param dependencies The dependencies to add.
      */
     public addDependencies(dependencies?: FrameGraphTextureHandle | FrameGraphTextureHandle[]) {
-        if (!dependencies) {
+        if (dependencies === undefined) {
             return;
         }
 
@@ -94,7 +94,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
             dependencies.add(key.value);
         }
 
-        if (this._renderTarget) {
+        if (this._renderTarget !== undefined) {
             if (Array.isArray(this._renderTarget)) {
                 for (const handle of this._renderTarget) {
                     if (handle !== undefined) {
@@ -106,7 +106,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
             }
         }
 
-        if (this._renderTargetDepth) {
+        if (this._renderTargetDepth !== undefined) {
             dependencies.add(this._renderTargetDepth);
         }
     }

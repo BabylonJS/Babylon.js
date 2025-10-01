@@ -79,6 +79,11 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
+     * Indicates whether the execution of the frame graph is paused (default is false)
+     */
+    public pausedExecution = false;
+
+    /**
      * Gets the node render graph linked to the frame graph (if any)
      * @returns the linked node render graph or null if none
      */
@@ -292,6 +297,10 @@ export class FrameGraph implements IDisposable {
      * Executes the frame graph.
      */
     public execute(): void {
+        if (this.pausedExecution) {
+            return;
+        }
+
         this._renderContext.bindRenderTarget();
 
         this.textureManager._updateHistoryTextures();
@@ -303,6 +312,8 @@ export class FrameGraph implements IDisposable {
                 pass._execute();
             }
         }
+
+        this._renderContext.bindRenderTarget(undefined, undefined, true); // restore default framebuffer
     }
 
     /**
