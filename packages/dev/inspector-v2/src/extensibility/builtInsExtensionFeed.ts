@@ -5,7 +5,7 @@ export type BuiltInExtension = ExtensionMetadata & {
      * Gets the extension module, typically dynamically importing the extension.
      * @returns The extension module (e.g. a collection of ServiceDefinitions).
      */
-    getExtensionModuleAsync: () => Promise<ExtensionModule>;
+    getExtensionModuleAsync(): Promise<ExtensionModule>;
 };
 
 /**
@@ -15,7 +15,7 @@ export type BuiltInExtension = ExtensionMetadata & {
  * bundle chunks and downloaded only when first installed.
  */
 export class BuiltInsExtensionFeed implements IExtensionFeed {
-    private readonly _extensions: BuiltInExtension[];
+    private readonly _extensions: readonly BuiltInExtension[];
 
     public constructor(
         public readonly name: string,
