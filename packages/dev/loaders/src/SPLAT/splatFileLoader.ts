@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/promise-function-async */
+/* eslint-disable @typescript-eslint/promise-function-async*/
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
@@ -20,6 +21,7 @@ import { Mode } from "./splatDefs";
 import type { IParsedPLY } from "./splatDefs";
 import { ParseSogMeta } from "./sog";
 import type { SOGRootData } from "./sog";
+import { Tools } from "core/Misc/tools";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
@@ -30,6 +32,9 @@ declare module "core/Loading/sceneLoader" {
         [SPLATFileLoaderMetadata.name]: Partial<SPLATLoadingOptions>;
     }
 }
+
+// FFlate access
+declare const fflate: any;
 
 /**
  * @experimental
@@ -169,9 +174,37 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return mesh;
     }
 
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax, @typescript-eslint/naming-convention
+    private async _unzipWithFFlateAsync(data: Uint8Array): Promise<Map<string, Uint8Array>> {
+        // ensure fflate is loaded
+        if (typeof (window as any).fflate === "undefined") {
+            await Tools.LoadScriptAsync("https://unpkg.com/fflate/umd/index.js");
+        }
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const { unzipSync } = (window as any).fflate as typeof import("fflate");
+
+        const unzipped = unzipSync(data); // { [filename: string]: Uint8Array }
+
+        const files = new Map<string, Uint8Array>();
+        for (const [name, content] of Object.entries(unzipped)) {
+            files.set(name, content as Uint8Array);
+        }
+        return files;
+    }
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _parseAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
+
+        const makeGSFromParsedSOG = (parsedSOG: IParsedPLY) => {
+            scene._blockEntityCollection = !!this._assetContainer;
+            const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+            gaussianSplatting._parentContainer = this._assetContainer;
+            babylonMeshesArray.push(gaussianSplatting);
+            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
+            scene._blockEntityCollection = false;
+        };
 
         // check if data is json string
         if (typeof data === "string") {
@@ -181,12 +214,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     ParseSogMeta(dataSOG, rootUrl)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
-                            scene._blockEntityCollection = !!this._assetContainer;
-                            const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
-                            gaussianSplatting._parentContainer = this._assetContainer;
-                            babylonMeshesArray.push(gaussianSplatting);
-                            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
-                            scene._blockEntityCollection = false;
+                            makeGSFromParsedSOG(parsedSOG);
                             resolve(babylonMeshesArray);
                         })
                         // eslint-disable-next-line github/no-then
@@ -197,6 +225,25 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             }
         }
 
+        const u8 = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+        // ZIP signature check for SOG
+        if (u8[0] === 0x50 && u8[1] === 0x4b) {
+            return new Promise((resolve) => {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                this._unzipWithFFlateAsync(u8).then((files) => {
+                    ParseSogMeta(files, rootUrl)
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                        .then((parsedSOG) => {
+                            makeGSFromParsedSOG(parsedSOG);
+                            resolve(babylonMeshesArray);
+                        }) // eslint-disable-next-line github/no-then
+                        .catch(() => {
+                            throw new Error("Failed to parse SOG zip data.");
+                        });
+                });
+            });
+        }
+
         const readableStream = new ReadableStream({
             start(controller) {
                 controller.enqueue(new Uint8Array(data)); // Enqueue the ArrayBuffer as a Uint8Array
@@ -205,7 +252,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         });
 
         // Use GZip DecompressionStream
-        const decompressionStream = new DecompressionStream("gzip");
+        const decompressionStream = new DecompressionStream("deflate");
         const decompressedStream = readableStream.pipeThrough(decompressionStream);
 
         return new Promise((resolve) => {

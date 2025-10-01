@@ -11,6 +11,8 @@ export const SPLATFileLoaderMetadata = {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         ".spz": { isBinary: true },
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        ".json": { isBinary: false },
+        ".json": { isBinary: false }, // For SOG metadata files
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        ".sog": { isBinary: true },
     } as const satisfies ISceneLoaderPluginExtensions,
 } as const satisfies ISceneLoaderPluginMetadata;

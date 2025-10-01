@@ -40,6 +40,10 @@ export interface SOGDataFile {
      * webp file names
      */
     files: string[];
+    /**
+     * SH band count (if applicable)
+     */
+    bands?: number;
 }
 
 /**
@@ -71,6 +75,10 @@ export interface SOGRootData {
      *  Optional higher order SH coefficients of the splats (lighting information)
      */
     shN?: SOGDataFile;
+    /**
+     * number of splats (optional, can be inferred from means.shape[0])
+     */
+    count?: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -80,7 +88,7 @@ interface IWebPImage {
 }
 const SH_C0 = 0.28209479177387814;
 
-async function LoadWebpImageData(rootUrl: string, filename: string): Promise<IWebPImage> {
+async function LoadWebpImageData(rootUrlOrData: string | Uint8Array, filename: string): Promise<IWebPImage> {
     const promise = new Promise<IWebPImage>((resolve, reject) => {
         const engine = Engine.LastCreatedEngine;
         if (!engine) {
@@ -117,13 +125,25 @@ async function LoadWebpImageData(rootUrl: string, filename: string): Promise<IWe
         };
 
         image.crossOrigin = "anonymous"; // To avoid CORS issues
-        image.src = rootUrl + filename;
+        let objectUrl: string | undefined;
+        if (typeof rootUrlOrData === "string") {
+            // old behavior: URL + filename
+            if (!filename) {
+                throw new Error("filename is required when using a URL");
+            }
+            image.src = rootUrlOrData + filename;
+        } else {
+            // new behavior: Uint8Array
+            const blob = new Blob([rootUrlOrData as any], { type: "image/webp" });
+            objectUrl = URL.createObjectURL(blob);
+            image.src = objectUrl;
+        }
     });
     return await promise;
 }
 
 async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): Promise<IParsedPLY> {
-    const splatCount = data.means.shape[0];
+    const splatCount = data.count ? data.count : data.means.shape[0];
     const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // 32
     const buffer = new ArrayBuffer(rowOutputLength * splatCount);
 
@@ -166,7 +186,8 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
             const index = i * 4;
             for (let j = 0; j < 3; j++) {
                 const sc = data.scales.codebook[scales[index + j]];
-                scale[i * 8 + 3 + j] = sc * 0 + 0.001;
+                const sce = Math.exp(sc);
+                scale[i * 8 + 3 + j] = sce;
             }
         }
     } else {
@@ -195,7 +216,7 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
             const index = i * 4;
             for (let j = 0; j < 3; j++) {
                 const component = 0.5 + data.sh0.codebook[colors[index + j]] * SH_C0;
-                rgba[i * 32 + 24 + 3] = Math.max(0, Math.min(255, Math.round(255 * component)));
+                rgba[i * 32 + 24 + j] = Math.max(0, Math.min(255, Math.round(255 * component)));
             }
             rgba[i * 32 + 24 + 3] = colors[index + 3];
         }
@@ -272,7 +293,8 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
 
     // --- SH
     if (data.shN) {
-        const coeffs = data.shN.shape[1] / 3; // 3 components per coeff
+        const coeffCounts = [0, 3, 8, 15];
+        const coeffs = data.shN.bands ? coeffCounts[data.shN.bands] : data.shN.shape[1] / 3; // 3 components per coeff
         const shCentroids = imageDataArrays[5].bits;
         const shLabelsData = imageDataArrays[6].bits;
         const shCentroidsWidth = imageDataArrays[5].width;
@@ -312,20 +334,49 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
         resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false });
     });
 }
+
 /**
- * @param data ArrayBuffer of the .sog file
- * @param rootUrl Root URL to load additional files
- * @returns A promise that resolves to an array of AbstractMesh (GaussianSplattingMesh)
+ * Parse SOG data from either a SOGRootData object (with webp files loaded from rootUrl) or from a Map of filenames to Uint8Array file data (including meta.json)
+ * @param dataOrFiles Either the SOGRootData or a Map of filenames to Uint8Array file data (including meta.json)
+ * @param rootUrl Base URL to load webp files from (if dataOrFiles is SOGRootData)
+ * @returns Parsed data
  */
-export async function ParseSogMeta(data: SOGRootData, rootUrl: string): Promise<IParsedPLY> {
-    // Collect all file URLs
+export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string): Promise<IParsedPLY> {
+    let data: SOGRootData;
+    let files: Map<string, Uint8Array> | undefined;
+
+    if (dataOrFiles instanceof Map) {
+        files = dataOrFiles;
+
+        const metaFile = files.get("meta.json");
+        if (!metaFile) {
+            throw new Error("meta.json not found in files Map");
+        }
+
+        data = JSON.parse(new TextDecoder().decode(metaFile)) as SOGRootData;
+    } else {
+        data = dataOrFiles;
+    }
+
+    // Collect all file names
     const urls = [...data.means.files, ...data.scales.files, ...data.quats.files, ...data.sh0.files];
     if (data.shN) {
         urls.push(...data.shN.files);
     }
 
-    // load webp images in parallel
-    const imageDataArrays: IWebPImage[] = await Promise.all(urls.map(async (url) => await LoadWebpImageData(rootUrl, url)));
+    // Load webp images in parallel
+    const imageDataArrays: IWebPImage[] = await Promise.all(
+        urls.map(async (fileName) => {
+            if (files && files.has(fileName)) {
+                // load from in-memory Uint8Array
+                const fileData = files.get(fileName)!;
+                return await LoadWebpImageData(fileData, fileName);
+            } else {
+                // fallback: load from URL
+                return await LoadWebpImageData(rootUrl, fileName);
+            }
+        })
+    );
 
     return await ParseSogDatas(data, imageDataArrays);
 }
