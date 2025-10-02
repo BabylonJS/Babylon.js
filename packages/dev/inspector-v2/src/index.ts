@@ -16,6 +16,7 @@ export * from "./hooks/settingsHooks";
 export * from "./hooks/teachingMomentHooks";
 export * from "./instrumentation/functionInstrumentation";
 export * from "./instrumentation/propertyInstrumentation";
+export * from "./misc/observableCollection";
 export * from "./modularity/serviceDefinition";
 export { IPropertiesService, PropertiesServiceIdentity } from "./services/panes/properties/propertiesService";
 export { ISceneExplorerService, SceneExplorerServiceIdentity } from "./services/panes/scene/sceneExplorerService";
