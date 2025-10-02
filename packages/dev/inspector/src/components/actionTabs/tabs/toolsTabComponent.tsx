@@ -135,6 +135,10 @@ export class ToolsTabComponent extends PaneComponent {
 
     captureRender() {
         const scene = this.props.scene;
+        const currentActiveCamera = scene.activeCamera;
+        if (!currentActiveCamera && scene.frameGraph) {
+            scene.activeCamera = FrameGraphUtils.FindMainCamera(scene.frameGraph);
+        }
         const oldScreenshotSize: IScreenshotSize = {
             height: this._screenShotSize.height,
             width: this._screenShotSize.width,
@@ -146,9 +150,8 @@ export class ToolsTabComponent extends PaneComponent {
         }
         if (scene.activeCamera) {
             Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize, undefined, undefined, 4);
-        } else if (scene.frameGraph) {
-            alert("Capture with RTT is not yet implemented for frame graphs");
         }
+        scene.activeCamera = currentActiveCamera;
         this._screenShotSize = oldScreenshotSize;
     }
 
