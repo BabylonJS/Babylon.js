@@ -3,17 +3,20 @@ import type { FunctionComponent, PropsWithChildren } from "react";
 
 import { Children, isValidElement, useCallback, useEffect, useMemo, useState } from "react";
 
-import { AccordionHeader, AccordionItem, AccordionPanel, Accordion as FluentAccordion, Subtitle1, makeStyles, tokens } from "@fluentui/react-components";
+import { AccordionHeader, AccordionItem, AccordionPanel, Divider, Accordion as FluentAccordion, Subtitle2Stronger, makeStyles, tokens } from "@fluentui/react-components";
 
 const useStyles = makeStyles({
     accordion: {
         overflowX: "hidden",
         overflowY: "auto",
-        paddingBottom: tokens.spacingVerticalM,
+        paddingTop: tokens.spacingVerticalM, // ensures the first section header has the same padding as the others (due to divider)
         display: "flex",
         flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
         height: "100%",
+    },
+    divider: {
+        paddingTop: "10px",
+        paddingBottom: "10px",
     },
     panelDiv: {
         display: "flex",
@@ -87,12 +90,13 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
             {validChildren.map((child) => {
                 return (
                     <AccordionItem key={child.content.key} value={child.title}>
-                        <AccordionHeader expandIconPosition="end">
-                            <Subtitle1>{child.title}</Subtitle1>
+                        <AccordionHeader>
+                            <Subtitle2Stronger>{child.title}</Subtitle2Stronger>
                         </AccordionHeader>
                         <AccordionPanel>
                             <div className={classes.panelDiv}>{child.content}</div>
                         </AccordionPanel>
+                        <Divider inset={true} className={classes.divider} />
                     </AccordionItem>
                 );
             })}

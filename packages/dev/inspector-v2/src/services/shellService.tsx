@@ -653,19 +653,21 @@ function usePane(
                                 )}
 
                                 {/* Render the bottom pane content. This is the element that can be resized vertically. */}
-                                <div
-                                    ref={paneVerticalResizeElementRef}
-                                    className={classes.paneContent}
-                                    style={{ height: `clamp(200px,calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
-                                >
-                                    {bottomSelectedTab?.title ? (
-                                        <>
-                                            <Title3 className={classes.paneHeader}>{bottomSelectedTab.title}</Title3>
-                                            <Divider inset className={classes.headerDivider} appearance="brand" />
-                                        </>
-                                    ) : null}
-                                    {bottomSelectedTab?.content && <bottomSelectedTab.content />}
-                                </div>
+                                {bottomPaneComponents.length > 0 && (
+                                    <div
+                                        ref={paneVerticalResizeElementRef}
+                                        className={classes.paneContent}
+                                        style={{ height: `clamp(200px,calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
+                                    >
+                                        {bottomSelectedTab?.title ? (
+                                            <>
+                                                <Title3 className={classes.paneHeader}>{bottomSelectedTab.title}</Title3>
+                                                <Divider inset className={classes.headerDivider} appearance="brand" />
+                                            </>
+                                        ) : null}
+                                        {bottomSelectedTab?.content && <bottomSelectedTab.content />}
+                                    </div>
+                                )}
 
                                 {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the bottom of the pane. */}
                                 {toolbarMode === "compact" && bottomBarComponents.length > 0 && (
