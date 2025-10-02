@@ -69,7 +69,7 @@ varying vPositionUVW: vec3f;
 varying vDirectionW: vec3f;
 #endif
 
-#ifdef CLUSTLIGHT_BATCH
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
 varying vViewDepth: f32;
 #endif
 
@@ -159,7 +159,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 	vertexOutputs.vDirectionW = normalize((finalWorld *  vec4f(positionUpdated, 0.0)).xyz);
 #endif
 
-#ifdef CLUSTLIGHT_BATCH
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
    vertexOutputs.vViewDepth = (scene.view * worldPos).z;
 #endif
 

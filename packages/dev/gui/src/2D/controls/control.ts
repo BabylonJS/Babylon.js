@@ -1865,6 +1865,9 @@ export class Control implements IAnimatable, IFocusableControl {
     }
 
     /**
+     * Applies the control's state to the provided context.  Important: unless this is a temporary context,
+     * be sure to call context.save() before calling _applyStates() and later call context.restore() when
+     * you are done using these state updates.
      * @internal
      */
     protected _applyStates(context: ICanvasRenderingContext): void {
@@ -1944,6 +1947,8 @@ export class Control implements IAnimatable, IFocusableControl {
      * @internal
      */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        context.save();
+
         // Ensure we always apply states before measuring
         this._applyStates(context);
 
@@ -1984,6 +1989,8 @@ export class Control implements IAnimatable, IFocusableControl {
         if (this.onDirtyObservable.hasObservers()) {
             this.onDirtyObservable.notifyObservers(this);
         }
+
+        context.restore();
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
