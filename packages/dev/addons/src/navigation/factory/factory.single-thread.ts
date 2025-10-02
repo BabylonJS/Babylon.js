@@ -8,7 +8,7 @@ import { GetRecast, InitRecast } from "./common";
  * @returns A promise that resolves to the created navigation plugin.
  * @remarks This function initializes the Recast module and sets up the navigation plugin.
  */
-export async function CreateNavigationPluginAsync(options?: { version: string; instance: RecastInjection }) {
+export async function CreateNavigationPluginAsync(options?: { version?: string; instance?: RecastInjection }) {
     await InitRecast(options);
 
     const navigationPlugin = new RecastNavigationJSPluginV2(GetRecast());

@@ -39,7 +39,7 @@ let _InitPromise: Nullable<Promise<{ core: any; generators: any }>> = null;
  * @param version defines the version of the library to use, default is "0.43.0"
  * @param options defines the options to use to initialize the library
  */
-export async function InitRecast(options?: { version?: string; instance: RecastInjection }) {
+export async function InitRecast(options?: { version?: string; instance?: RecastInjection }) {
     const version = options?.version ?? "0.43.0";
     const localOptions = {
         url: "https://unpkg.com/@recast-navigation",
