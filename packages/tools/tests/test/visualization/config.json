@@ -2966,6 +2966,61 @@
             "title": "OpenPBR Coat Anisotropy - Analytic Lights",
             "playgroundId": "#GRQHVV#78",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Weight VS IOR - IBL",
+            "playgroundId": "#GRQHVV#86",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Weight VS IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#87",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Thickness VS IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#88",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Thickness VS IOR - IBL",
+            "playgroundId": "#GRQHVV#89",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Weight VS IOR - Furnace Test",
+            "playgroundId": "#GRQHVV#90",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Thickness VS IOR - Furnace Test",
+            "playgroundId": "#GRQHVV#91",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Thickness VS IOR - Furnace Test Metals",
+            "playgroundId": "#GRQHVV#94",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular Weight - Analytic Lights",
+            "playgroundId": "#GRQHVV#95",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular Weight Metals - Analytic Lights",
+            "playgroundId": "#GRQHVV#96",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular Weight Metals - IBL",
+            "playgroundId": "#GRQHVV#97",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular Weight - IBL",
+            "playgroundId": "#GRQHVV#98",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

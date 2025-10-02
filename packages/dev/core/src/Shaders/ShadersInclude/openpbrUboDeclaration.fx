@@ -74,6 +74,9 @@ uniform Material {
     float vCoatDarkening;
     vec2 vGeometryCoatTangent;
     vec3 vEmissionColor;
+    float vThinFilmWeight;
+    vec2 vThinFilmThickness;
+    float vThinFilmIor;
 
     vec2 vBaseWeightInfos;
     mat4 baseWeightMatrix;
