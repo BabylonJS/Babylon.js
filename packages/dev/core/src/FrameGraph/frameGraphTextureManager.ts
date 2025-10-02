@@ -26,7 +26,7 @@ import { GetTypeForDepthTexture, IsDepthTexture, HasStencilAspect } from "core/M
 type HistoryTexture = {
     textures: Array<Nullable<InternalTexture>>;
     handles: Array<FrameGraphTextureHandle>;
-    index: number; // current index in textures array
+    index: number; // current index in textures array - in the current frame, textures[index] is the write texture, textures[index^1] is the read texture - index is flipped at the end of each frame
     references: Array<{ renderTargetWrapper: RenderTargetWrapper; textureIndex: number }>; // render target wrappers that reference this history texture
 };
 
@@ -186,6 +186,8 @@ export class FrameGraphTextureManager {
      * @returns The creation options of the texture
      */
     public getTextureCreationOptions(handle: FrameGraphTextureHandle): FrameGraphTextureCreationOptions {
+        handle = this._textures.get(handle)?.refHandle ?? handle;
+
         const entry = this._textures.get(handle)!;
         const creationOptions = entry.creationOptions;
 
@@ -237,16 +239,22 @@ export class FrameGraphTextureManager {
 
     /**
      * Gets a texture from a handle.
-     * Note that if the texture is a history texture, the read texture for the current frame will be returned.
+     * Note that if the texture is a history texture, the read texture for the current frame will be returned, except if historyGetWriteTexture is true.
      * @param handle The handle of the texture
+     * @param historyGetWriteTexture If true and the texture is a history texture, the write texture for the current frame will be returned (default: false)
      * @returns The texture or null if not found
      */
-    public getTextureFromHandle(handle: FrameGraphTextureHandle): Nullable<InternalTexture> {
-        const historyEntry = this._historyTextures.get(handle);
+    public getTextureFromHandle(handle: FrameGraphTextureHandle, historyGetWriteTexture?: boolean): Nullable<InternalTexture> {
+        const entry = this._textures.get(handle);
+        const refHandle = entry?.refHandle;
+        const finalEntry = refHandle !== undefined ? this._textures.get(refHandle) : entry;
+        const finalHandle = refHandle !== undefined ? refHandle : handle;
+
+        const historyEntry = this._historyTextures.get(finalHandle);
         if (historyEntry) {
-            return historyEntry.textures[historyEntry.index ^ 1]; // gets the read texture
+            return historyEntry.textures[historyGetWriteTexture ? historyEntry.index : historyEntry.index ^ 1];
         }
-        return this._textures.get(handle)!.texture;
+        return finalEntry!.texture;
     }
 
     /**
@@ -382,6 +390,8 @@ export class FrameGraphTextureManager {
         if (textureEntry === undefined) {
             throw new Error(`resolveDanglingHandle: Handle ${handle} does not exist!`);
         }
+
+        handle = textureEntry.refHandle ?? handle; // gets the refHandle if handle is a (resolved) dangling handle itself
 
         this._textures.set(danglingHandle, {
             texture: textureEntry.texture,
@@ -578,6 +588,13 @@ export class FrameGraphTextureManager {
         this.setBackBufferTextures(0, 0);
     }
 
+    /**
+     * Returns true if the texture manager has at least one history texture
+     */
+    public get hasHistoryTextures() {
+        return this._historyTextures.size > 0;
+    }
+
     /** @internal */
     public _dispose(): void {
         this._releaseTextures();
@@ -688,6 +705,7 @@ export class FrameGraphTextureManager {
 
             if (releaseAll || entry.namespace === FrameGraphTextureNamespace.Task) {
                 this._textures.delete(handle);
+                this._historyTextures.delete(handle);
             }
         });
 

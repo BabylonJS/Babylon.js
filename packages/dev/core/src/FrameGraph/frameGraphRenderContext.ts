@@ -266,7 +266,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             this.bindRenderTarget();
         }
         this._applyRenderTarget();
-        this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture)!);
+        this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture, true)!);
     }
 
     /**

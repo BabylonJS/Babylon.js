@@ -584,6 +584,8 @@ export async function CreateScreenshotUsingRenderTargetAsync(
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  * @param customDumpData The function to use to dump the data. If not provided, the default DumpData function will be used.
  * @param automaticDownload If true, the screenshot will be automatically downloaded as a file instead of being returned as a string: in this case, null is returned.
+ * @param numberOfFramesToRender If provided, the number of frames to render before taking the screenshot.
+ * If not provided, the screenshot will be taken after the next frame, or after 32 frames if the frame graph has at least one history texture.
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it. If automaticDownload is true, null is returned instead
  */
@@ -607,7 +609,8 @@ export async function CreateScreenshotForFrameGraphAsync(
         toArrayBuffer?: boolean,
         quality?: number
     ) => void,
-    automaticDownload = false
+    automaticDownload = false,
+    numberOfFramesToRender?: number
 ): Promise<string | ArrayBuffer | null> {
     const engine = frameGraph.engine;
     const textureManager = frameGraph.textureManager;
@@ -721,8 +724,13 @@ export async function CreateScreenshotForFrameGraphAsync(
     // eslint-disable-next-line require-atomic-updates
     frameGraph.pausedExecution = false;
 
-    frameGraph.execute();
+    const numberOfFrames = numberOfFramesToRender ?? (textureManager.hasHistoryTextures ? 32 : 1);
 
+    for (let i = 0; i < numberOfFrames; ++i) {
+        frameGraph.execute();
+    }
+
+    // eslint-disable-next-line require-atomic-updates
     frameGraph.pausedExecution = true;
 
     engine.getCaps().parallelShaderCompile = currentParallelShaderCompile;
@@ -731,6 +739,7 @@ export async function CreateScreenshotForFrameGraphAsync(
         frameGraph.tasks[i].dispose();
     }
 
+    // eslint-disable-next-line require-atomic-updates
     frameGraph.tasks.length = currentTaskListLength;
 
     if (mainObjectRendererTask && currentCamera) {
