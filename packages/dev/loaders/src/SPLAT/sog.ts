@@ -326,15 +326,17 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
                 const n = shLabelsData[i * 4 + 0] + (shLabelsData[i * 4 + 1] << 8);
                 const u = (n % 64) * coeffs;
                 const v = Math.floor(n / 64);
-                for (let j = 0; j < 3; ++j) {
-                    for (let k = 0; k < coeffs; ++k) {
-                        const shIndexWrite = j * coeffs + k;
+
+                for (let k = 0; k < coeffs; k++) {
+                    for (let j = 0; j < 3; j++) {
+                        const shIndexWrite = k * 3 + j;
                         const textureIndex = Math.floor(shIndexWrite / 16);
                         const shArray = sh[textureIndex];
                         const byteIndexInTexture = shIndexWrite % 16; // [0..15]
                         const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
 
-                        shArray[byteIndexInTexture + offsetPerSplat] = data.shN.codebook[shCentroids[(u + k) * 4 + j + v * shCentroidsWidth * 4]];
+                        const shValue = data.shN.codebook[shCentroids[(u + k) * 4 + j + v * shCentroidsWidth * 4]] * 127.5 + 127.5;
+                        shArray[byteIndexInTexture + offsetPerSplat] = Math.max(0, Math.min(255, shValue));
                     }
                 }
             }
@@ -345,15 +347,17 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
                 const v = Math.floor(n / 64);
                 const shMin = data.shN.mins as number;
                 const shMax = data.shN.maxs as number;
-                for (let j = 0; j < 3; ++j) {
-                    for (let k = 0; k < coeffs / 3; ++k) {
-                        const shIndexWrite = j * coeffs + k;
+
+                for (let j = 0; j < 3; j++) {
+                    for (let k = 0; k < coeffs / 3; k++) {
+                        const shIndexWrite = k * 3 + j;
                         const textureIndex = Math.floor(shIndexWrite / 16);
                         const shArray = sh[textureIndex];
                         const byteIndexInTexture = shIndexWrite % 16; // [0..15]
                         const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
 
-                        shArray[byteIndexInTexture + offsetPerSplat] = Scalar.Lerp(shMin, shMax, shCentroids[(u + k) * 4 + j + v * shCentroidsWidth * 4] / 255);
+                        const shValue = Scalar.Lerp(shMin, shMax, shCentroids[(u + k) * 4 + j + v * shCentroidsWidth * 4] / 255) * 127.5 + 127.5;
+                        shArray[byteIndexInTexture + offsetPerSplat] = Math.max(0, Math.min(255, shValue));
                     }
                 }
             }

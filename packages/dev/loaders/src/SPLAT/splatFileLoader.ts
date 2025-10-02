@@ -201,6 +201,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             scene._blockEntityCollection = !!this._assetContainer;
             const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
             gaussianSplatting._parentContainer = this._assetContainer;
+            gaussianSplatting.viewDirectionFactor.set(1, -1, 1);
             babylonMeshesArray.push(gaussianSplatting);
             gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
             scene._blockEntityCollection = false;
