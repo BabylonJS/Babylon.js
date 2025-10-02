@@ -1,5 +1,6 @@
 import { InjectGenerators } from "../generator/injection";
 import { RecastNavigationJSPluginV2 } from "../plugin/RecastNavigationJSPlugin";
+import type { RecastInjection } from "../types";
 import { GetRecast, InitRecast } from "./common";
 
 /**
@@ -7,8 +8,8 @@ import { GetRecast, InitRecast } from "./common";
  * @returns A promise that resolves to the created navigation plugin.
  * @remarks This function initializes the Recast module and sets up the navigation plugin.
  */
-export async function CreateNavigationPluginAsync() {
-    await InitRecast();
+export async function CreateNavigationPluginAsync(options?: { version: string; instance: RecastInjection }) {
+    await InitRecast(options);
 
     const navigationPlugin = new RecastNavigationJSPluginV2(GetRecast());
     InjectGenerators(navigationPlugin);
