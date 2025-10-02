@@ -1,4 +1,5 @@
 import { Engine } from "core/Engines/engine";
+import type { Scene } from "core/scene";
 import type { IParsedPLY } from "./splatDefs";
 import { Mode } from "./splatDefs";
 import { Scalar } from "core/Maths/math.scalar";
@@ -142,7 +143,7 @@ async function LoadWebpImageData(rootUrlOrData: string | Uint8Array, filename: s
     return await promise;
 }
 
-async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): Promise<IParsedPLY> {
+async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], scene: Scene): Promise<IParsedPLY> {
     const splatCount = data.count ? data.count : data.means.shape[0];
     const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // 32
     const buffer = new ArrayBuffer(rowOutputLength * splatCount);
@@ -299,6 +300,23 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
         const shLabelsData = imageDataArrays[6].bits;
         const shCentroidsWidth = imageDataArrays[5].width;
 
+        const shComponentCount = coeffs * 3;
+
+        const textureCount = Math.ceil(shComponentCount / 16); // 4 components can be stored per texture, 4 sh per component
+        //let shIndexRead = byteOffset;
+
+        // sh is an array of uint8array that will be used to create sh textures
+        const sh: Uint8Array[] = [];
+
+        const engine = scene.getEngine();
+        const width = engine.getCaps().maxTextureSize;
+        const height = Math.ceil(splatCount / width);
+        // create array for the number of textures needed.
+        for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
+            const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
+            sh.push(texture);
+        }
+
         if (data.version === 2) {
             if (!data.shN.codebook) {
                 throw new Error("Missing codebook in SOG version 2 shN data.");
@@ -310,7 +328,13 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
                 const v = Math.floor(n / 64);
                 for (let j = 0; j < 3; ++j) {
                     for (let k = 0; k < coeffs; ++k) {
-                        /*sh[j * 15 + k] =*/ data.shN.codebook[shCentroids[(u + k) * 4 + j + v * shCentroidsWidth * 4]];
+                        const shIndexWrite = j * coeffs + k;
+                        const textureIndex = Math.floor(shIndexWrite / 16);
+                        const shArray = sh[textureIndex];
+                        const byteIndexInTexture = shIndexWrite % 16; // [0..15]
+                        const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
+
+                        shArray[byteIndexInTexture + offsetPerSplat] = data.shN.codebook[shCentroids[(u + k) * 4 + j + v * shCentroidsWidth * 4]];
                     }
                 }
             }
@@ -323,11 +347,20 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
                 const shMax = data.shN.maxs as number;
                 for (let j = 0; j < 3; ++j) {
                     for (let k = 0; k < coeffs / 3; ++k) {
-                        /*sh[j * 15 + k] =*/ Scalar.Lerp(shMin, shMax, shCentroids[(u + k) * 4 + j + v * shCentroidsWidth * 4] / 255);
+                        const shIndexWrite = j * coeffs + k;
+                        const textureIndex = Math.floor(shIndexWrite / 16);
+                        const shArray = sh[textureIndex];
+                        const byteIndexInTexture = shIndexWrite % 16; // [0..15]
+                        const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
+
+                        shArray[byteIndexInTexture + offsetPerSplat] = Scalar.Lerp(shMin, shMax, shCentroids[(u + k) * 4 + j + v * shCentroidsWidth * 4] / 255);
                     }
                 }
             }
         }
+        return await new Promise((resolve) => {
+            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh });
+        });
     }
 
     return await new Promise((resolve) => {
@@ -339,9 +372,10 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[]): 
  * Parse SOG data from either a SOGRootData object (with webp files loaded from rootUrl) or from a Map of filenames to Uint8Array file data (including meta.json)
  * @param dataOrFiles Either the SOGRootData or a Map of filenames to Uint8Array file data (including meta.json)
  * @param rootUrl Base URL to load webp files from (if dataOrFiles is SOGRootData)
+ * @param scene The Babylon.js scene
  * @returns Parsed data
  */
-export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string): Promise<IParsedPLY> {
+export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene): Promise<IParsedPLY> {
     let data: SOGRootData;
     let files: Map<string, Uint8Array> | undefined;
 
@@ -378,5 +412,5 @@ export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8A
         })
     );
 
-    return await ParseSogDatas(data, imageDataArrays);
+    return await ParseSogDatas(data, imageDataArrays, scene);
 }

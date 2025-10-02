@@ -211,7 +211,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const dataSOG = JSON.parse(data) as SOGRootData;
             if (dataSOG && dataSOG.means && dataSOG.scales && dataSOG.quats && dataSOG.sh0) {
                 return new Promise((resolve) => {
-                    ParseSogMeta(dataSOG, rootUrl)
+                    ParseSogMeta(dataSOG, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
@@ -231,7 +231,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             return new Promise((resolve) => {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                 this._unzipWithFFlateAsync(u8).then((files) => {
-                    ParseSogMeta(files, rootUrl)
+                    ParseSogMeta(files, rootUrl, scene)
                         // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
                         .then((parsedSOG) => {
                             makeGSFromParsedSOG(parsedSOG);
@@ -252,7 +252,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         });
 
         // Use GZip DecompressionStream
-        const decompressionStream = new DecompressionStream("deflate");
+        const decompressionStream = new DecompressionStream("gzip");
         const decompressedStream = readableStream.pipeThrough(decompressionStream);
 
         return new Promise((resolve) => {
