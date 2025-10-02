@@ -368,6 +368,8 @@ export class Parser {
         positionProperty.startValue.y += spriteInfo.centerY;
         positionProperty.currentValue.y += spriteInfo.centerY;
 
+        // TODO DEPENDING IF THE TEXT IS CENTERED OR LEFT OR RIGHT ALIGNED, ADJUST THE X POSITION
+
         return new SpriteNode(
             "Sprite",
             sprite,
