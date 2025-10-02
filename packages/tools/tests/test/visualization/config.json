@@ -2805,21 +2805,42 @@
         },
         {
             "title": "Atmosphere Day",
-            "playgroundId": "#VO1Z0C#7",
+            "playgroundId": "#VO1Z0C#14",
+            "referenceImage": "atmosphere-day.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Day (Planet Origin)",
+            "playgroundId": "#VO1Z0C#10",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
         },
         {
             "title": "Atmosphere Sunset",
-            "playgroundId": "#VO1Z0C#9",
+            "playgroundId": "#VO1Z0C#15",
+            "referenceImage": "atmosphere-sunset.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Sunset (Planet Origin)",
+            "playgroundId": "#VO1Z0C#11",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
         },
         {
             "title": "Atmosphere Night",
-            "playgroundId": "#VO1Z0C#8",
+            "playgroundId": "#VO1Z0C#13",
+            "referenceImage": "atmosphere-night.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Night (Planet Origin)",
+            "playgroundId": "#VO1Z0C#12",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
@@ -2992,4 +3013,3 @@
         }
     ]
 }
-
