@@ -28,14 +28,17 @@ class AtmospherePBRMaterialDefines extends MaterialDefines {
     }
 }
 
+const OriginOffsetUniformName = "originOffsetKm";
+const InverseViewportSizeUniformName = "inverseViewportSize";
+
 const UboArray = [
-    { name: "originOffsetKm", size: 3, type: "vec3" },
+    { name: OriginOffsetUniformName, size: 3, type: "vec3" },
     { name: "_atmoPbrPadding1", size: 1, type: "float" },
-    { name: "inverseViewportSize", size: 2, type: "vec2" },
+    { name: InverseViewportSizeUniformName, size: 2, type: "vec2" },
 ];
 const MakeUniforms = (atmosphere: Atmosphere) => ({
     ubo: UboArray,
-    fragment: "uniform vec2 inverseViewportSize;\nuniform vec3 originOffsetKm;\n",
+    fragment: `uniform vec2 ${InverseViewportSizeUniformName};\nuniform vec3 ${OriginOffsetUniformName};\n`,
     externalUniforms: atmosphere.uniformBuffer.getUniformNames(),
 });
 
@@ -150,15 +153,15 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
         }
 
         uniformBuffer.updateVector3(
-            "originOffsetKm",
+            OriginOffsetUniformName,
             scene.floatingOriginMode
-                ? Vector3ScaleToRef(scene.floatingOriginOffset, 0.001, OriginOffsetKm)
-                : Vector3FromFloatsToRef(0, atmosphere.physicalProperties.planetRadius, 0, OriginOffsetKm)
+                ? Vector3ScaleToRef(scene.floatingOriginOffset, 0.001, OriginOffsetKm) // Convert to kilometers
+                : Vector3FromFloatsToRef(0, atmosphere.physicalProperties.planetRadius, 0, OriginOffsetKm) // planetRadius is already in kilometers
         );
 
         const width = engine.getRenderWidth();
         const height = engine.getRenderHeight();
-        uniformBuffer.updateFloat2("inverseViewportSize", 1.0 / width, 1.0 / height);
+        uniformBuffer.updateFloat2(InverseViewportSizeUniformName, 1.0 / width, 1.0 / height);
 
         if (this._isAerialPerspectiveEnabled && atmosphere.isAerialPerspectiveLutEnabled) {
             const aerialPerspectiveLutRenderTarget = atmosphere.aerialPerspectiveLutRenderTarget;
@@ -220,7 +223,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                     : `uniform sampler2D transmittanceLut;\r\n${atmosphereImportSnippet}\r\n#include<atmosphereFunctions>`,
             CUSTOM_LIGHT0_COLOR: `
             {
-                vec3 positionGlobal = 0.001 * vPositionW + originOffsetKm;
+                vec3 positionGlobal = 0.001 * vPositionW + ${OriginOffsetUniformName};
                 float positionRadius = length(positionGlobal);
                 vec3 geocentricNormal = positionGlobal / positionRadius;
                 vec3 directionToLight = ${directionToLightSnippet};
@@ -230,7 +233,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
 `,
             CUSTOM_REFLECTION: `
             {
-                vec3 positionGlobal =  0.001 * vPositionW + originOffsetKm;
+                vec3 positionGlobal =  0.001 * vPositionW + ${OriginOffsetUniformName};
                 float positionRadius = length(positionGlobal);
                 vec3 geocentricNormal = positionGlobal / positionRadius;
 
@@ -264,7 +267,7 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 float distanceFromCameraKm = 0.001 * distance(vEyePosition.xyz, vPositionW);
                 vec4 aerialPerspective = vec4(0.);
                 if (sampleAerialPerspectiveLut(
-                        gl_FragCoord.xy * inverseViewportSize,
+                        gl_FragCoord.xy * ${InverseViewportSizeUniformName},
                         true,
                         distanceFromCameraKm,
                         NumAerialPerspectiveLutLayers,
