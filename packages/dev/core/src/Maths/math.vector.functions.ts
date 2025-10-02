@@ -25,6 +25,35 @@ export function Vector3Dot<T extends IVector3Like, U extends IVector3Like>(a: De
 }
 
 /**
+ * Sets the given floats into the result.
+ * @param x defines the x coordinate
+ * @param y defines the y coordinate
+ * @param z defines the z coordinate
+ * @param result defines the target vector
+ * @returns the result vector
+ */
+export function Vector3FromFloatsToRef<T extends IVector3Like>(x: number, y: number, z: number, result: T): T {
+    result.x = x;
+    result.y = y;
+    result.z = z;
+    return result;
+}
+
+/**
+ * Stores the scaled values of a vector into the result.
+ * @param a defines the source vector
+ * @param scale defines the scale factor
+ * @param result defines the target vector
+ * @returns the scaled vector
+ */
+export function Vector3ScaleToRef<T extends IVector3Like, ResultT extends IVector3Like>(a: DeepImmutable<T>, scale: number, result: ResultT): ResultT {
+    result.x = a.x * scale;
+    result.y = a.y * scale;
+    result.z = a.z * scale;
+    return result;
+}
+
+/**
  * Creates a string representation of the Vector3
  * @param vector defines the Vector3 to stringify
  * @param decimalCount defines the number of decimals to use
