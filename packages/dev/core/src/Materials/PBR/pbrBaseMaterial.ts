@@ -2069,7 +2069,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                         }
                     }
 
-                    BindIBLParameters(scene, defines, ubo, reflectionTexture, this.realTimeFiltering, true, true, true, true, true, this._reflectionColor);
+                    BindIBLParameters(scene, defines, ubo, this._reflectionColor, reflectionTexture, this.realTimeFiltering, true, true, true, true, true);
                 }
 
                 // Point size
