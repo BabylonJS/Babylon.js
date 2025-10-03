@@ -18,10 +18,11 @@ import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { MorphTargetManager } from "../Morph/morphTargetManager";
-import type { IColor3Like } from "core/Maths";
+import type { IColor3Like } from "core/Maths/math.like";
 import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
 import type { CubeTexture } from "./Textures/cubeTexture";
+import type { Color3 } from "core/Maths/math.color";
 
 // Temps
 const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };
