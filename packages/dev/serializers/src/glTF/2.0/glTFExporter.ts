@@ -691,15 +691,27 @@ export class GLTFExporter {
     }
 
     private _setCameraTransformation(node: INode, babylonCamera: TargetCamera, convertToRightHanded: boolean): void {
-        if (!babylonCamera.position.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
-            const translation = TmpVectors.Vector3[0].copyFrom(babylonCamera.position);
+        // Camera types store rotation differently (e.g., ArcRotateCamera uses alpha/beta, others use rotationQuaternion).
+        // Extract the transform from the world matrix instead of handling each case separately.
+        const translation = TmpVectors.Vector3[0];
+        const rotationQuaternion = TmpVectors.Quaternion[0];
+        const cameraWorldMatrix = babylonCamera.getWorldMatrix();
+
+        if (babylonCamera.parent) {
+            // Camera.getWorldMatrix returns global coordinates. GLTF node must use local coordinates. If camera has parent we need to use local translation/rotation.
+            const parentInvWorldMatrix = babylonCamera.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+            const cameraLocal = cameraWorldMatrix.multiplyToRef(parentInvWorldMatrix, TmpVectors.Matrix[1]);
+            cameraLocal.decompose(undefined, rotationQuaternion, translation);
+        } else {
+            cameraWorldMatrix.decompose(undefined, rotationQuaternion, translation);
+        }
+
+        if (!translation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
             if (convertToRightHanded) {
                 ConvertToRightHandedPosition(translation);
             }
             node.translation = translation.asArray();
         }
-
-        const rotationQuaternion = babylonCamera.rotationQuaternion || Quaternion.FromEulerAngles(babylonCamera.rotation.x, babylonCamera.rotation.y, babylonCamera.rotation.z);
 
         if (convertToRightHanded) {
             ConvertToRightHandedRotation(rotationQuaternion);
