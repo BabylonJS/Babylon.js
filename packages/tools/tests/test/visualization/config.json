@@ -3021,6 +3021,11 @@
             "title": "OpenPBR Thin Film and Specular Weight - IBL",
             "playgroundId": "#GRQHVV#98",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Textures - IBL",
+            "playgroundId": "#GRQHVV#100",
+            "excludedEngines": ["webgl1"]
         }
     ]
 }

@@ -114,6 +114,10 @@ uniform Material {
     mat4 geometryOpacityMatrix;
     vec2 vEmissionColorInfos;
     mat4 emissionColorMatrix;
+    vec2 vThinFilmWeightInfos;
+    mat4 thinFilmWeightMatrix;
+    vec2 vThinFilmThicknessInfos;
+    mat4 thinFilmThicknessMatrix;
     vec2 vAmbientOcclusionInfos;
     mat4 ambientOcclusionMatrix;
 
