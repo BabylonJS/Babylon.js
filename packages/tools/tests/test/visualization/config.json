@@ -14,6 +14,7 @@
         {
             "title": "SOGS with SH",
             "playgroundId": "#QA2662#13",
+            "renderCount": 2,
             "errorRatio": 5,
             "referenceImage": "gsplat-sogs-sh.png"
         },
