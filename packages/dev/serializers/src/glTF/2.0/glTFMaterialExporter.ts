@@ -124,7 +124,6 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
  */
 export function _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number {
     if (specular < DielectricSpecular.r) {
-        DielectricSpecular;
         return 0;
     }
 
@@ -553,10 +552,7 @@ export class GLTFMaterialExporter {
      * @returns number representing the perceived brightness, or zero if color is undefined
      */
     private _getPerceivedBrightness(color: Color3): number {
-        if (color) {
-            return Math.sqrt(0.299 * color.r * color.r + 0.587 * color.g * color.g + 0.114 * color.b * color.b);
-        }
-        return 0;
+        return Math.sqrt(0.299 * color.r * color.r + 0.587 * color.g * color.g + 0.114 * color.b * color.b);
     }
 
     /**
@@ -565,10 +561,7 @@ export class GLTFMaterialExporter {
      * @returns maximum color component value, or zero if color is null or undefined
      */
     private _getMaxComponent(color: Color3): number {
-        if (color) {
-            return Math.max(color.r, Math.max(color.g, color.b));
-        }
-        return 0;
+        return Math.max(color.r, Math.max(color.g, color.b));
     }
 
     /**
