@@ -1695,7 +1695,7 @@ export class Viewer implements IDisposable {
         });
 
         const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial));
-        const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => mesh.material == null));
+        const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => !mesh.material));
         // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
         // and an environment texture is not already loaded, then load the default environment.
         if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
