@@ -81,7 +81,6 @@ import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
 import { DataWriter } from "./dataWriter";
 import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
-import { ArcRotateCamera } from "core/Cameras";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
