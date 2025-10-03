@@ -81,6 +81,7 @@ import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
 import { DataWriter } from "./dataWriter";
 import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { ArcRotateCamera } from "core/Cameras";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -699,7 +700,14 @@ export class GLTFExporter {
             node.translation = translation.asArray();
         }
 
-        const rotationQuaternion = babylonCamera.rotationQuaternion || Quaternion.FromEulerAngles(babylonCamera.rotation.x, babylonCamera.rotation.y, babylonCamera.rotation.z);
+        let rotationQuaternion = new Quaternion();
+        if (babylonCamera instanceof ArcRotateCamera) {
+            // ArcRotateCamera does not use nor update its rotation or rotationQuaternion properties, so we derive it ourselves.
+            babylonCamera.getViewMatrix().invertToRef(TmpVectors.Matrix[0]).decompose(undefined, rotationQuaternion);
+        } else {
+            rotationQuaternion =
+                babylonCamera.rotationQuaternion?.clone() || Quaternion.FromEulerAngles(babylonCamera.rotation.x, babylonCamera.rotation.y, babylonCamera.rotation.z);
+        }
 
         if (convertToRightHanded) {
             ConvertToRightHandedRotation(rotationQuaternion);
