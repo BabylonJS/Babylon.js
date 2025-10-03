@@ -400,7 +400,10 @@ export class Node implements IBehaviorAware<Node> {
         if (this._scene.isLoading && !attachImmediately) {
             // We defer the attach when the scene will be loaded
             this._scene.onDataLoadedObservable.addOnce(() => {
-                behavior.attach(this);
+                // Make sure the behavior has not been removed.
+                if (this._behaviors.includes(behavior)) {
+                    behavior.attach(this);
+                }
             });
         } else {
             behavior.attach(this);

@@ -1,15 +1,14 @@
 import { Effect } from "../Materials/effect";
-import { TmpVectors } from "../Maths/math.vector";
-import type { Matrix } from "../Maths/math.vector";
+import { Matrix } from "../Maths/math.vector";
 import type { IMatrixLike, IVector3Like } from "../Maths/math.like";
 import { InvertMatrixToRef, MultiplyMatricesToRef } from "../Maths/ThinMaths/thinMath.matrix.functions";
 import type { Scene } from "../scene";
 import type { DeepImmutable } from "../types";
 import { UniformBuffer } from "./uniformBuffer";
 
-const TempFinalMat: Matrix = TmpVectors.Matrix[4];
-const TempMat1: Matrix = TmpVectors.Matrix[5];
-const TempMat2: Matrix = TmpVectors.Matrix[6];
+const TempFinalMat: Matrix = new Matrix();
+const TempMat1: Matrix = new Matrix();
+const TempMat2: Matrix = new Matrix();
 
 function OffsetWorldToRef(offset: IVector3Like, world: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
     const refArray = ref.asArray();
@@ -20,6 +19,7 @@ function OffsetWorldToRef(offset: IVector3Like, world: DeepImmutable<IMatrixLike
     refArray[12] -= offset.x;
     refArray[13] -= offset.y;
     refArray[14] -= offset.z;
+    Matrix.FromArrayToRef(refArray, 0, ref);
     return ref;
 }
 
@@ -32,6 +32,7 @@ function OffsetViewToRef(view: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImm
     refArray[12] = 0;
     refArray[13] = 0;
     refArray[14] = 0;
+    Matrix.FromArrayToRef(refArray, 0, ref);
     return ref;
 }
 
@@ -94,17 +95,21 @@ function GetOffsetMatrix(uniformName: string, mat: IMatrixLike, scene: Scene): I
 
 // ---- Overriding the prototypes of effect and uniformBuffer's setMatrix functions ----
 const UniformBufferInternal = UniformBuffer as any;
+const EffectInternal = Effect as any;
 const OriginalUpdateMatrixForUniform = UniformBufferInternal.prototype._updateMatrixForUniform;
 const OriginalSetMatrix = Effect.prototype.setMatrix;
 
 export function ResetMatrixFunctions() {
     Effect.prototype.setMatrix = OriginalSetMatrix;
+    EffectInternal._setMatrixOverride = undefined;
     UniformBufferInternal.prototype._updateMatrixForUniform = OriginalUpdateMatrixForUniform;
     UniformBufferInternal.prototype._updateMatrixForUniformOverride = undefined;
 }
+
 export function OverrideMatrixFunctions(scene: Scene) {
-    Effect.prototype.setMatrix = function (uniformName: string, matrix: IMatrixLike) {
-        this._pipelineContext!.setMatrix(uniformName, GetOffsetMatrix(uniformName, matrix, scene));
+    EffectInternal.prototype._setMatrixOverride = Effect.prototype.setMatrix;
+    EffectInternal.prototype.setMatrix = function (uniformName: string, matrix: IMatrixLike) {
+        this._setMatrixOverride(uniformName, GetOffsetMatrix(uniformName, matrix, scene));
         return this;
     };
     UniformBufferInternal.prototype._updateMatrixForUniformOverride = UniformBufferInternal.prototype._updateMatrixForUniform;
