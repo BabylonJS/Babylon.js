@@ -3,7 +3,7 @@ export * from "./components/properties/boundProperty";
 export * from "./components/properties/linkToEntityPropertyLine";
 export { EntityBase, EntityDisplayInfo, SceneExplorerCommand, SceneExplorerCommandProvider, SceneExplorerSection } from "./components/scene/sceneExplorer";
 export * from "./components/extensibleAccordion";
-export { Pane as PaneContainer } from "./components/pane";
+export { SidePaneContainer } from "./components/pane";
 export * from "./components/teachingMoment";
 export * from "./extensibility/extensionFeed";
 export * from "./extensibility/builtInsExtensionFeed";
