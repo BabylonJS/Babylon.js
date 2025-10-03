@@ -1,11 +1,7 @@
-attribute position: vec3f;
-attribute normal: vec3f;
-varying vNormalizedPosition: vec3f;
-
-#include<helperFunctions>
-#include<bonesDeclaration>
-#include<bakedVertexAnimationDeclaration>
-#include<instancesDeclaration>
+#include <bakedVertexAnimationDeclaration>
+#include <bonesDeclaration>
+#include <helperFunctions>
+#include <instancesDeclaration>
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
@@ -14,7 +10,9 @@ varying vNormalizedPosition: vec3f;
 // provoked vertex and calculate the normal. Then, based on
 // the direction of teh normal, it swizzles the position to
 // maximize the rasterized area.
+#ifdef VERTEX_PULLING_USE_INDEX_BUFFER
 var<storage, read> indices : array<u32>;
+#endif
 var<storage, read> position : array<f32>;
 
 uniform world : mat4x4f;
@@ -35,13 +33,14 @@ fn readVertexPosition(index : u32)->vec3f {
 fn readVertexIndex(index : u32)->u32 {
 #ifndef VERTEX_PULLING_USE_INDEX_BUFFER
   return index;
-#endif
+#else
 #ifdef VERTEX_PULLING_INDEX_BUFFER_32BITS
   return indices[index];
 #else
   let u32_index = index / 2u;
   let bit_offset = (index & 1u) * 16u;
   return (indices[u32_index] >> bit_offset) & 0xFFFFu;
+#endif
 #endif
 }
 
@@ -65,45 +64,43 @@ fn calculateTriangleNormal(v0
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
   var vertIdx = readVertexIndex(input.vertexIndex);
-  var positionUpdated = vec4f(readVertexPosition(vertIdx), 1.);
+  var positionUpdated = readVertexPosition(vertIdx);
 
-#include<morphTargetsVertexGlobal>
-    #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+#include <morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+#include <morphTargetsVertexGlobal>
 
-    #include<instancesVertex>
+#include <instancesVertex>
 
-    #include<bonesVertex>
-    #include<bakedVertexAnimation>
+#include <bakedVertexAnimation>
+#include <bonesVertex>
 
-	let worldPos = finalWorld * vec4f(positionUpdated, 1.0);
+  let worldPos = finalWorld * vec4f(positionUpdated, 1.0);
 
-    // inverse scale this by world scale to put in 0-1 space.
-    vertexOutputs.position = uniforms.invWorldScale * worldPos;
+  // inverse scale this by world scale to put in 0-1 space.
+  vertexOutputs.position = uniforms.invWorldScale * worldPos;
 
-    // Normal transformation copied from pbr.vertex
-    var normalUpdated: vec3f = vertexInputs.normal;
+  var provokingVertNum : u32 = input.vertexIndex / 3 * 3;
+  var pos0 = readVertexPosition(readVertexIndex(provokingVertNum));
+  var pos1 = readVertexPosition(readVertexIndex(provokingVertNum + 1));
+  var pos2 = readVertexPosition(readVertexIndex(provokingVertNum + 2));
+  var N : vec3<f32> = calculateTriangleNormal(pos0, pos1, pos2);
 
-    var provokingVertNum : u32 = input.vertexIndex / 3 * 3;
-    var pos0 = readVertexPosition(readVertexIndex(provokingVertNum));
-    var pos1 = readVertexPosition(readVertexIndex(provokingVertNum + 1));
-    var pos2 = readVertexPosition(readVertexIndex(provokingVertNum + 2));
-    var N : vec3<f32> = calculateTriangleNormal(pos0, pos1, pos2);
+  // Check the direction that maximizes the rasterized area and swizzle as
+  // appropriate.
+  N = abs(N);
+  if (N.x > N.y && N.x > N.z) {
+    vertexOutputs.f_swizzle = 0;
+    vertexOutputs.position = vec4f(vertexOutputs.position.yzx, 1.0);
+  } else if (N.y > N.z) {
+    vertexOutputs.f_swizzle = 1;
+    vertexOutputs.position = vec4f(vertexOutputs.position.zxy, 1.0);
+  } else {
+    vertexOutputs.f_swizzle = 2;
+    vertexOutputs.position = vec4f(vertexOutputs.position.xyz, 1.0);
+  }
 
-    // Check the direction that maximizes the rasterized area and swizzle as appropriate.
-    N = abs(N);
-    if (N.x > N.y && N.x > N.z) {
-        vertexOutputs.f_swizzle = 0;
-        vertexOutputs.position = vec4f(vertexOutputs.position.yzx, 1.0);
-    } else if (N.y > N.z) {
-        vertexOutputs.f_swizzle = 1;
-        vertexOutputs.position = vec4f(vertexOutputs.position.zxy, 1.0);
-    } else {
-        vertexOutputs.f_swizzle = 2;
-        vertexOutputs.position = vec4f(vertexOutputs.position.xyz, 1.0);
-    }
-
-    // Normalized position from -1,1 -> 0,1
-    vertexOutputs.vNormalizedPosition = vertexOutputs.position.xyz * 0.5 + 0.5;
-    vertexOutputs.position.z = vertexOutputs.vNormalizedPosition
-                                   .z; // WebGPU uses a depth range of 0-1.
+  // Normalized position from -1,1 -> 0,1
+  vertexOutputs.vNormalizedPosition = vertexOutputs.position.xyz * 0.5 + 0.5;
+  vertexOutputs.position.z =
+      vertexOutputs.vNormalizedPosition.z; // WebGPU uses a depth range of 0-1.
 }
