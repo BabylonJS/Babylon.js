@@ -4,6 +4,7 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
@@ -245,6 +246,19 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     components.push(
                         <Vector2LineComponent
                             key={`vector2-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName}
+                            propertyName={propertyName}
+                            target={block}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.Vector3: {
+                    components.push(
+                        <Vector3LineComponent
+                            key={`vector3-${propertyName}`}
                             lockObject={this.props.stateManager.lockObject}
                             label={displayName}
                             propertyName={propertyName}

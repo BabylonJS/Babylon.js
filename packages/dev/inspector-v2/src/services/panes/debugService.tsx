@@ -45,6 +45,7 @@ export const DebugServiceDefinition: ServiceDefinition<[IDebugService], [IShellS
             title: "Debug",
             icon: BugRegular,
             horizontalLocation: "right",
+            verticalLocation: "top",
             order: 200,
             suppressTeachingMoment: true,
             content: () => {

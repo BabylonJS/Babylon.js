@@ -33,4 +33,6 @@ export enum NodeParticleContextualSources {
     InitialColor = 0x0013,
     /** Color Dead*/
     ColorDead = 0x0014,
+    /** Initial Direction */
+    InitialDirection = 0x0015,
 }

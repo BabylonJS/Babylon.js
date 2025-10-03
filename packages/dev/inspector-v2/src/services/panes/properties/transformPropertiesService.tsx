@@ -1,10 +1,11 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
+import type { ISettingsContext } from "../../settingsContext";
 import type { IPropertiesService } from "./propertiesService";
 
 import { Bone } from "core/Bones/bone";
 import { TransformNode } from "core/Meshes/transformNode";
 import { TransformProperties } from "../../../components/properties/transformProperties";
-import { SettingsContextIdentity, type ISettingsContext } from "../../settingsContext";
+import { SettingsContextIdentity } from "../../settingsContext";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const TransformPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {

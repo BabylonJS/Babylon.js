@@ -283,6 +283,9 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
 
+    public CLUSTLIGHT_SLICES = 0;
+    public CLUSTLIGHT_BATCH = 0;
+
     /**
      * Initializes the PBR Material defines.
      * @param externalProperties The external properties
@@ -2066,7 +2069,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                         }
                     }
 
-                    BindIBLParameters(scene, defines, ubo, reflectionTexture, this.realTimeFiltering, true, true, true, true, true, this._reflectionColor);
+                    BindIBLParameters(scene, defines, ubo, this._reflectionColor, reflectionTexture, this.realTimeFiltering, true, true, true, true, true);
                 }
 
                 // Point size

@@ -124,4 +124,4 @@ export class KHR_materials_clearcoat_color implements IGLTFExporterExtensionV2 {
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_color(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_color(exporter), 105);

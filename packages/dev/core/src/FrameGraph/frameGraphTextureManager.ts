@@ -26,7 +26,7 @@ import { GetTypeForDepthTexture, IsDepthTexture, HasStencilAspect } from "core/M
 type HistoryTexture = {
     textures: Array<Nullable<InternalTexture>>;
     handles: Array<FrameGraphTextureHandle>;
-    index: number; // current index in textures array
+    index: number; // current index in textures array - in the current frame, textures[index] is the write texture, textures[index^1] is the read texture - index is flipped at the end of each frame
     references: Array<{ renderTargetWrapper: RenderTargetWrapper; textureIndex: number }>; // render target wrappers that reference this history texture
 };
 
@@ -75,6 +75,10 @@ export class FrameGraphTextureManager {
      */
     public showDebugLogsForTextureAllcationOptimization = false;
 
+    private _backBufferTextureEntry: Nullable<TextureEntry> = null;
+    private _backBufferDepthStencilTextureEntry: Nullable<TextureEntry> = null;
+    private _backBufferTextureOverriden = false;
+
     /**
      * Constructs a new instance of the texture manager
      * @param engine The engine to use
@@ -95,6 +99,15 @@ export class FrameGraphTextureManager {
      * @returns True if the handle is a backbuffer handle
      */
     public isBackbuffer(handle: FrameGraphTextureHandle): boolean {
+        if (this._backBufferTextureOverriden) {
+            return false;
+        }
+
+        return this._isBackbuffer(handle);
+    }
+
+    /** @internal */
+    public _isBackbuffer(handle: FrameGraphTextureHandle): boolean {
         if (handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle) {
             return true;
         }
@@ -113,6 +126,10 @@ export class FrameGraphTextureManager {
      * @returns True if the handle is a backbuffer color handle
      */
     public isBackbufferColor(handle: FrameGraphTextureHandle): boolean {
+        if (this._backBufferTextureOverriden) {
+            return false;
+        }
+
         if (handle === backbufferColorTextureHandle) {
             return true;
         }
@@ -131,6 +148,10 @@ export class FrameGraphTextureManager {
      * @returns True if the handle is a backbuffer depth/stencil handle
      */
     public isBackbufferDepthStencil(handle: FrameGraphTextureHandle): boolean {
+        if (this._backBufferTextureOverriden) {
+            return false;
+        }
+
         if (handle === backbufferDepthStencilTextureHandle) {
             return true;
         }
@@ -165,6 +186,8 @@ export class FrameGraphTextureManager {
      * @returns The creation options of the texture
      */
     public getTextureCreationOptions(handle: FrameGraphTextureHandle): FrameGraphTextureCreationOptions {
+        handle = this._textures.get(handle)?.refHandle ?? handle;
+
         const entry = this._textures.get(handle)!;
         const creationOptions = entry.creationOptions;
 
@@ -216,16 +239,22 @@ export class FrameGraphTextureManager {
 
     /**
      * Gets a texture from a handle.
-     * Note that if the texture is a history texture, the read texture for the current frame will be returned.
+     * Note that if the texture is a history texture, the read texture for the current frame will be returned, except if historyGetWriteTexture is true.
      * @param handle The handle of the texture
+     * @param historyGetWriteTexture If true and the texture is a history texture, the write texture for the current frame will be returned (default: false)
      * @returns The texture or null if not found
      */
-    public getTextureFromHandle(handle: FrameGraphTextureHandle): Nullable<InternalTexture> {
-        const historyEntry = this._historyTextures.get(handle);
+    public getTextureFromHandle(handle: FrameGraphTextureHandle, historyGetWriteTexture?: boolean): Nullable<InternalTexture> {
+        const entry = this._textures.get(handle);
+        const refHandle = entry?.refHandle;
+        const finalEntry = refHandle !== undefined ? this._textures.get(refHandle) : entry;
+        const finalHandle = refHandle !== undefined ? refHandle : handle;
+
+        const historyEntry = this._historyTextures.get(finalHandle);
         if (historyEntry) {
-            return historyEntry.textures[historyEntry.index ^ 1]; // gets the read texture
+            return historyEntry.textures[historyGetWriteTexture ? historyEntry.index : historyEntry.index ^ 1];
         }
-        return this._textures.get(handle)!.texture;
+        return finalEntry!.texture;
     }
 
     /**
@@ -362,6 +391,8 @@ export class FrameGraphTextureManager {
             throw new Error(`resolveDanglingHandle: Handle ${handle} does not exist!`);
         }
 
+        handle = textureEntry.refHandle ?? handle; // gets the refHandle if handle is a (resolved) dangling handle itself
+
         this._textures.set(danglingHandle, {
             texture: textureEntry.texture,
             refHandle: handle,
@@ -384,11 +415,12 @@ export class FrameGraphTextureManager {
      * @param screenHeight The height of the screen (default: the height of the rendering canvas)
      * @returns The absolute dimensions of the texture
      */
-    public getAbsoluteDimensions(
-        size: TextureSize,
-        screenWidth = this.engine.getRenderWidth(true),
-        screenHeight = this.engine.getRenderHeight(true)
-    ): { width: number; height: number } {
+    public getAbsoluteDimensions(size: TextureSize, screenWidth?: number, screenHeight?: number): { width: number; height: number } {
+        const backbufferColorTextureSize = this._textures.get(backbufferColorTextureHandle)!.creationOptions.size as { width: number; height: number };
+
+        screenWidth = backbufferColorTextureSize.width;
+        screenHeight = backbufferColorTextureSize.height;
+
         const { width, height } = getDimensionsFromTextureSize(size);
 
         return {
@@ -408,7 +440,10 @@ export class FrameGraphTextureManager {
         let totalSize = 0;
 
         this._textures.forEach((entry, handle) => {
-            if (handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle || entry.refHandle !== undefined) {
+            if (
+                (!this._backBufferTextureOverriden && (handle === backbufferColorTextureHandle || handle === backbufferDepthStencilTextureHandle)) ||
+                entry.refHandle !== undefined
+            ) {
                 return;
             }
             if (optimizedSize && entry.aliasHandle !== undefined) {
@@ -441,6 +476,123 @@ export class FrameGraphTextureManager {
         });
 
         return totalSize;
+    }
+
+    /**
+     * True if the back buffer texture has been overriden by a call to setBackBufferTexture
+     */
+    public get backBufferTextureOverriden() {
+        return this._backBufferTextureOverriden;
+    }
+
+    /**
+     * Overrides the default back buffer color/depth-stencil textures used by the frame graph.
+     * Note that if both textureCreationOptions and depthStencilTextureCreationOptions are provided,
+     * the engine will use them to create the back buffer color and depth/stencil textures respectively.
+     * In that case, width and height are ignored.
+     * @param width The width of the back buffer color/depth-stencil texture (if 0, the engine's current back buffer color/depth-stencil texture width will be used)
+     * @param height The height of the back buffer color/depth-stencil texture (if 0, the engine's current back buffer color/depth-stencil texture height will be used)
+     * @param textureCreationOptions The color texture creation options (optional)
+     * @param depthStencilTextureCreationOptions The depth/stencil texture creation options (optional)
+     */
+    public setBackBufferTextures(
+        width: number,
+        height: number,
+        textureCreationOptions?: FrameGraphTextureCreationOptions,
+        depthStencilTextureCreationOptions?: FrameGraphTextureCreationOptions
+    ) {
+        if ((width === 0 || height === 0) && (!textureCreationOptions || !depthStencilTextureCreationOptions)) {
+            if (this._backBufferTextureOverriden) {
+                let entry = this._textures.get(backbufferColorTextureHandle)!;
+
+                entry.texture?.dispose();
+                entry.texture = null;
+                entry.debug?.dispose();
+                entry.debug = undefined;
+
+                entry = this._textures.get(backbufferDepthStencilTextureHandle)!;
+                entry.texture?.dispose();
+                entry.texture = null;
+                entry.debug?.dispose();
+                entry.debug = undefined;
+            }
+
+            this._backBufferTextureEntry = null;
+            this._backBufferDepthStencilTextureEntry = null;
+            this._backBufferTextureOverriden = false;
+
+            this._addSystemTextures();
+            return;
+        }
+
+        this._backBufferTextureOverriden = true;
+
+        const size = { width, height };
+
+        this._backBufferTextureEntry = {
+            name: "backbuffer color",
+            texture: null,
+            creationOptions: textureCreationOptions ?? {
+                size,
+                options: {
+                    createMipMaps: false,
+                    samples: this.engine.getCreationOptions().antialias ? 4 : 1,
+                    types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                    formats: [Constants.TEXTUREFORMAT_RGBA],
+                    useSRGBBuffers: [false],
+                    creationFlags: [0],
+                    labels: ["backbuffer color"],
+                },
+                sizeIsPercentage: false,
+            },
+            namespace: FrameGraphTextureNamespace.Graph,
+            lifespan: {
+                firstTask: Number.MAX_VALUE,
+                lastTask: 0,
+            },
+        };
+        this._backBufferTextureEntry.textureDescriptionHash = this._createTextureDescriptionHash(this._backBufferTextureEntry.creationOptions);
+
+        this._backBufferDepthStencilTextureEntry = {
+            name: "backbuffer depth/stencil",
+            texture: null,
+            creationOptions: depthStencilTextureCreationOptions ?? {
+                size,
+                options: {
+                    createMipMaps: false,
+                    samples: this.engine.getCreationOptions().antialias ? 4 : 1,
+                    types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
+                    formats: [this.engine.isStencilEnable ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT],
+                    useSRGBBuffers: [false],
+                    creationFlags: [0],
+                    labels: ["backbuffer depth/stencil"],
+                },
+                sizeIsPercentage: false,
+            },
+            namespace: FrameGraphTextureNamespace.Graph,
+            lifespan: {
+                firstTask: Number.MAX_VALUE,
+                lastTask: 0,
+            },
+        };
+        this._backBufferDepthStencilTextureEntry.textureDescriptionHash = this._createTextureDescriptionHash(this._backBufferDepthStencilTextureEntry.creationOptions);
+
+        this._addSystemTextures();
+    }
+
+    /**
+     * Resets the back buffer color/depth-stencil textures to the default (the engine's current back buffer textures)
+     * It has no effect if setBackBufferTextures has not been called before.
+     */
+    public resetBackBufferTextures() {
+        this.setBackBufferTextures(0, 0);
+    }
+
+    /**
+     * Returns true if the texture manager has at least one history texture
+     */
+    public get hasHistoryTextures() {
+        return this._historyTextures.size > 0;
     }
 
     /** @internal */
@@ -553,6 +705,7 @@ export class FrameGraphTextureManager {
 
             if (releaseAll || entry.namespace === FrameGraphTextureNamespace.Task) {
                 this._textures.delete(handle);
+                this._historyTextures.delete(handle);
             }
         });
 
@@ -585,43 +738,49 @@ export class FrameGraphTextureManager {
     private _addSystemTextures() {
         const size = { width: this.engine.getRenderWidth(true), height: this.engine.getRenderHeight(true) };
 
-        this._textures.set(backbufferColorTextureHandle, {
-            name: "backbuffer color",
-            texture: null,
-            creationOptions: {
-                size,
-                options: {
-                    createMipMaps: false,
-                    samples: this.engine.getCreationOptions().antialias ? 4 : 1,
-                    types: [Constants.TEXTURETYPE_UNSIGNED_BYTE], // todo? get from engine
-                    formats: [Constants.TEXTUREFORMAT_RGBA], // todo? get from engine
-                    useSRGBBuffers: [false],
-                    creationFlags: [0],
-                    labels: ["backbuffer color"],
+        this._textures.set(
+            backbufferColorTextureHandle,
+            this._backBufferTextureEntry ?? {
+                name: "backbuffer color",
+                texture: null,
+                creationOptions: {
+                    size,
+                    options: {
+                        createMipMaps: false,
+                        samples: this.engine.getCreationOptions().antialias ? 4 : 1,
+                        types: [Constants.TEXTURETYPE_UNSIGNED_BYTE], // todo? get from engine
+                        formats: [Constants.TEXTUREFORMAT_RGBA], // todo? get from engine
+                        useSRGBBuffers: [false],
+                        creationFlags: [0],
+                        labels: ["backbuffer color"],
+                    },
+                    sizeIsPercentage: false,
                 },
-                sizeIsPercentage: false,
-            },
-            namespace: FrameGraphTextureNamespace.External,
-        });
+                namespace: FrameGraphTextureNamespace.External,
+            }
+        );
 
-        this._textures.set(backbufferDepthStencilTextureHandle, {
-            name: "backbuffer depth/stencil",
-            texture: null,
-            creationOptions: {
-                size,
-                options: {
-                    createMipMaps: false,
-                    samples: this.engine.getCreationOptions().antialias ? 4 : 1,
-                    types: [Constants.TEXTURETYPE_UNSIGNED_BYTE], // todo? get from engine
-                    formats: [Constants.TEXTUREFORMAT_DEPTH24], // todo? get from engine
-                    useSRGBBuffers: [false],
-                    creationFlags: [0],
-                    labels: ["backbuffer depth/stencil"],
+        this._textures.set(
+            backbufferDepthStencilTextureHandle,
+            this._backBufferDepthStencilTextureEntry ?? {
+                name: "backbuffer depth/stencil",
+                texture: null,
+                creationOptions: {
+                    size,
+                    options: {
+                        createMipMaps: false,
+                        samples: this.engine.getCreationOptions().antialias ? 4 : 1,
+                        types: [Constants.TEXTURETYPE_UNSIGNED_BYTE], // todo? get from engine
+                        formats: [Constants.TEXTUREFORMAT_DEPTH24], // todo? get from engine
+                        useSRGBBuffers: [false],
+                        creationFlags: [0],
+                        labels: ["backbuffer depth/stencil"],
+                    },
+                    sizeIsPercentage: false,
                 },
-                sizeIsPercentage: false,
-            },
-            namespace: FrameGraphTextureNamespace.External,
-        });
+                namespace: FrameGraphTextureNamespace.External,
+            }
+        );
     }
 
     private _createDebugTexture(name: string, texture: InternalTexture): Texture | undefined {
@@ -855,6 +1014,9 @@ export class FrameGraphTextureManager {
         const iterator = dependencies.keys();
         for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
             const textureHandle = key.value;
+            if (this.isBackbuffer(textureHandle)) {
+                continue;
+            }
             let textureEntry = this._textures.get(textureHandle);
             if (!textureEntry) {
                 throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager.`);
