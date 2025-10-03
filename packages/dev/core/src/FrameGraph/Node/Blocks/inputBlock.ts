@@ -115,7 +115,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                 break;
             }
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
-                this.value = { meshes: [], particleSystems: [] };
+                this.value = { meshes: null, particleSystems: null };
                 this.isExternal = true;
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Camera:
