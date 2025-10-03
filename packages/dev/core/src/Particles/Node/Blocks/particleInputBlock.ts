@@ -95,6 +95,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;
                 case NodeParticleSystemSources.Emitter:
+                case NodeParticleSystemSources.CameraPosition:
                     this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                     break;
             }
@@ -133,6 +134,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleContextualSources.Position:
                 case NodeParticleContextualSources.Direction:
                 case NodeParticleContextualSources.ScaledDirection:
+                case NodeParticleContextualSources.InitialDirection:
                     this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                     break;
                 case NodeParticleContextualSources.Color:

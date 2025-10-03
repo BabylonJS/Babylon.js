@@ -68,6 +68,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleSystemSources.Emitter:
                     value = "Emitter";
                     break;
+                case NodeParticleSystemSources.CameraPosition:
+                    value = "Camera Position";
+                    break;
             }
         } else if (inputBlock.isContextual) {
             switch (inputBlock.contextualValue) {
@@ -100,6 +103,9 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeParticleContextualSources.InitialColor:
                     value = "Initial Color";
+                    break;
+                case NodeParticleContextualSources.InitialDirection:
+                    value = "Initial Direction";
                     break;
                 case NodeParticleContextualSources.ColorDead:
                     value = "Dead Color";
