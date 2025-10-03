@@ -727,7 +727,7 @@ export class RecastNavigationJSPluginV2 implements INavigationEnginePlugin {
     }
 
     private _preprocessParameters(parameters: INavMeshParametersV2) {
-        // if maxObstacles is not defines, set it to a default value and set a default tile size if not defined
+        // if maxObstacles is not defined, set it to a default value and set a default tile size if not defined
         if (parameters.maxObstacles === undefined) {
             parameters.tileSize = parameters.tileSize ?? 32; // maxObstacles will trigger tile cache creation, so we need a tile size
             parameters.maxObstacles = DefaultMaxObstacles;
