@@ -648,7 +648,7 @@ export class _IblShadowsVoxelRenderer {
         this._voxelizationInProgress = true;
 
         if (this._engine.isWebGPU) {
-            // this._voxelMaterial.useVertexPulling = true;
+            this._voxelMaterial.useVertexPulling = true;
             this._voxelMaterial.setTexture("voxel_storage", this.getVoxelGrid());
             this._voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
             this._voxelGridRT.setMaterialForRendering(includedMeshes, this._voxelMaterial);
