@@ -76,7 +76,7 @@ export function GetPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array
 export function GetReversedIndices(
     meshOrIndices: Mesh | Uint32Array | number[]
 ): Uint32Array<ArrayBufferLike> | number[] | Int32Array<ArrayBufferLike> | Uint16Array<ArrayBufferLike> | null {
-    const indices = meshOrIndices instanceof Mesh ? meshOrIndices.getIndices() : meshOrIndices;
+    const indices = meshOrIndices instanceof Mesh ? meshOrIndices.getIndices(false, true) : meshOrIndices;
 
     if (indices) {
         for (let i = 0; i < indices.length; i += 3) {
