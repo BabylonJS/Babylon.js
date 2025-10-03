@@ -28,7 +28,6 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 
     const isUpdatable = texture instanceof Texture || texture instanceof CubeTexture;
 
-    const url = isUpdatable ? useProperty(texture, "url") : null;
     const updateTexture = useCallback(
         (file: File) => {
             ReadFile(
@@ -64,7 +63,7 @@ export const BaseTexturePreviewProperties: FunctionComponent<{ texture: BaseText
 
     return (
         <>
-            <TexturePreview url={url} texture={texture} width={256} height={256} />
+            <TexturePreview texture={texture} width={256} height={256} />
             {/* TODO: This should probably be dynamically fetching a list of supported texture extensions. */}
             {isUpdatable && (
                 <FileUploadLine
