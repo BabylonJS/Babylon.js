@@ -5,7 +5,7 @@
 import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler, IImage } from "babylonjs-gltf2interface";
 import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
 
-import type { Nullable } from "core/types";
+import type { DeepImmutable, Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
@@ -29,10 +29,10 @@ import { GetMimeType } from "core/Misc/fileTools";
 import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 const Epsilon = 1e-6;
-const DielectricSpecular = new Color3(0.04, 0.04, 0.04);
+const DielectricSpecular = new Color3(0.04, 0.04, 0.04) as DeepImmutable<Color3>;
 const MaxSpecularPower = 1024;
-const White = Color3.White();
-const Black = Color3.Black();
+const White = Color3.White() as DeepImmutable<Color3>;
+const Black = Color3.BlackReadOnly;
 
 /**
  * Interface for storing specular glossiness factors
