@@ -1,6 +1,8 @@
+import type { FunctionComponent } from "react";
+
 import { Body1, Button, makeStyles, tokens, Tooltip } from "@fluentui/react-components";
 import { ArrowUndoRegular, ClearFormattingRegular, SaveRegular } from "@fluentui/react-icons";
-import { useMemo, useState, type FunctionComponent } from "react";
+import { useMemo, useState } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";

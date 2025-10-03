@@ -35,16 +35,13 @@ let _Recast: RecastInjection;
 let _InitPromise: Nullable<Promise<{ core: any; generators: any }>> = null;
 
 /**
- * Initialize the Manifold library
- * @param version defines the version of the library to use, default is "0.43.0"
- * @param options defines the options to use to initialize the library
+ * Initializes the Recast navigation library.
+ *
+ * @param options Optional configuration. options.version: The version of Recast to use. options.instance: A custom Recast instance to inject instead of loading one.
+ * @returns A promise that resolves when initialization is complete.
  */
-export async function InitRecast(
-    version = "0.43.0",
-    options?: {
-        instance: RecastInjection;
-    }
-) {
+export async function InitRecast(options?: { version?: string; instance?: RecastInjection }) {
+    const version = options?.version ?? "0.43.0";
     const localOptions = {
         url: "https://unpkg.com/@recast-navigation",
         version,

@@ -1,19 +1,10 @@
-import { makeStyles, SpinButton as FluentSpinButton, useId, tokens } from "@fluentui/react-components";
+import { SpinButton as FluentSpinButton, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent, KeyboardEvent } from "react";
 import { useEffect, useState, useRef } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
-import { HandleKeyDown, HandleOnBlur } from "./utils";
-
-const useSpinStyles = makeStyles({
-    base: {
-        display: "flex",
-        flexDirection: "column",
-        minWidth: "55px",
-    },
-    invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
-});
+import { HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
 
 export type SpinButtonProps = PrimitiveProps<number> & {
     min?: number;
@@ -27,7 +18,8 @@ export type SpinButtonProps = PrimitiveProps<number> & {
 };
 
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
-    const classes = useSpinStyles();
+    const classes = useInputStyles();
+
     const { min, max } = props;
 
     const [value, setValue] = useState(props.value);
@@ -78,13 +70,13 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
 
     const id = useId("spin-button");
     return (
-        <div className={classes.base}>
+        <div>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentSpinButton
                 {...props}
                 step={step}
                 id={id}
-                size="small"
+                size="medium"
                 precision={CalculatePrecision(step ?? 1.01)}
                 displayValue={props.unit ? `${PrecisionRound(value, CalculatePrecision(step ?? 1.01))} ${props.unit}` : undefined}
                 value={value}
@@ -92,7 +84,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 onKeyUp={handleKeyUp}
                 onKeyDown={HandleKeyDown}
                 onBlur={HandleOnBlur}
-                className={`${!validateValue(value) ? classes.invalid : ""}`}
+                className={`${!validateValue(value) ? classes.invalid : classes.valid}`}
             />
         </div>
     );

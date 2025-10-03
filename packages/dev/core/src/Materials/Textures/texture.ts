@@ -587,9 +587,19 @@ export class Texture extends BaseTexture {
         this._forcedExtension = forcedExtension;
         this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
 
-        if (onLoad) {
-            this._delayedOnLoad = onLoad;
-        }
+        const existingOnLoad = this._delayedOnLoad;
+        const load = () => {
+            if (existingOnLoad) {
+                existingOnLoad();
+            } else if (this.onLoadObservable.hasObservers()) {
+                this.onLoadObservable.notifyObservers(this);
+            }
+            if (onLoad) {
+                onLoad();
+            }
+        };
+
+        this._delayedOnLoad = load;
         this.delayLoad();
     }
 

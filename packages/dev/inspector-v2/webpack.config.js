@@ -4,7 +4,7 @@ const webpackTools = require("@dev/build-tools").webpackTools;
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     return {
-        entry: "./test/app/index.ts",
+        entry: "./test/app/index.tsx",
 
         ...webpackTools.commonDevWebpackConfiguration(
             {
