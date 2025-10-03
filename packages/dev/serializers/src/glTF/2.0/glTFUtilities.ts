@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type { INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import type { FloatArray, DataArray, IndicesArray } from "core/types";
+import type { FloatArray, DataArray, IndicesArray, DeepImmutable } from "core/types";
 import type { Vector4 } from "core/Maths/math.vector";
 import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -17,10 +17,10 @@ import { Epsilon } from "core/Maths/math.constants";
 import { ConvertHandednessMatrix } from "../../exportUtils";
 
 // Default values for comparison.
-export const DefaultTranslation = Vector3.Zero();
-export const DefaultRotation = Quaternion.Identity();
-export const DefaultScale = Vector3.One();
-const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1);
+export const DefaultTranslation = Vector3.ZeroReadOnly;
+export const DefaultRotation = Quaternion.Identity() as DeepImmutable<Quaternion>;
+export const DefaultScale = Vector3.OneReadOnly;
+const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1) as DeepImmutable<Vector3>;
 
 /**
  * Get the information necessary for enumerating a vertex buffer.

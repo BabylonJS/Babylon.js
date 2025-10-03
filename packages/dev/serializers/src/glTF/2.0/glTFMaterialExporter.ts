@@ -5,7 +5,7 @@
 import type { ITextureInfo, IMaterial, IMaterialPbrMetallicRoughness, IMaterialOcclusionTextureInfo, ISampler, IImage } from "babylonjs-gltf2interface";
 import { ImageMimeType, MaterialAlphaMode, TextureMagFilter, TextureMinFilter, TextureWrapMode } from "babylonjs-gltf2interface";
 
-import type { Nullable } from "core/types";
+import type { DeepImmutable, Nullable } from "core/types";
 import { Color3 } from "core/Maths/math.color";
 import { Scalar } from "core/Maths/math.scalar";
 import { Tools } from "core/Misc/tools";
@@ -29,10 +29,10 @@ import { GetMimeType } from "core/Misc/fileTools";
 import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 const Epsilon = 1e-6;
-const DielectricSpecular = new Color3(0.04, 0.04, 0.04);
+const DielectricSpecular = new Color3(0.04, 0.04, 0.04) as DeepImmutable<Color3>;
 const MaxSpecularPower = 1024;
-const White = Color3.White();
-const Black = Color3.Black();
+const White = Color3.White() as DeepImmutable<Color3>;
+const Black = Color3.BlackReadOnly;
 
 /**
  * Interface for storing specular glossiness factors
@@ -124,7 +124,6 @@ async function GetCachedImageAsync(babylonTexture: BaseTexture): Promise<Nullabl
  */
 export function _SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number {
     if (specular < DielectricSpecular.r) {
-        DielectricSpecular;
         return 0;
     }
 
@@ -416,7 +415,7 @@ export class GLTFMaterialExporter {
             const baseColorBuffer = new Uint8Array(byteLength);
 
             const strideSize = 4;
-            const maxBaseColor = Black;
+            const maxBaseColor = new Color3(0, 0, 0);
             let maxMetallic = 0;
             let maxRoughness = 0;
 
@@ -533,8 +532,8 @@ export class GLTFMaterialExporter {
         const specularPerceivedBrightness = this._getPerceivedBrightness(specularGlossiness.specularColor);
         const oneMinusSpecularStrength = 1 - this._getMaxComponent(specularGlossiness.specularColor);
         const metallic = _SolveMetallic(diffusePerceivedBrightness, specularPerceivedBrightness, oneMinusSpecularStrength);
-        const baseColorFromDiffuse = specularGlossiness.diffuseColor.scale(oneMinusSpecularStrength / (1.0 - DielectricSpecular.r) / Math.max(1 - metallic));
-        const baseColorFromSpecular = specularGlossiness.specularColor.subtract(DielectricSpecular.scale(1 - metallic)).scale(1 / Math.max(metallic));
+        const baseColorFromDiffuse = specularGlossiness.diffuseColor.scale(oneMinusSpecularStrength / (1.0 - DielectricSpecular.r) / Math.max(1 - metallic, Epsilon));
+        const baseColorFromSpecular = specularGlossiness.specularColor.subtract(DielectricSpecular.scale(1 - metallic)).scale(1 / Math.max(metallic, Epsilon));
         let baseColor = Color3.Lerp(baseColorFromDiffuse, baseColorFromSpecular, metallic * metallic);
         baseColor = baseColor.clampToRef(0, 1, baseColor);
 
@@ -553,10 +552,7 @@ export class GLTFMaterialExporter {
      * @returns number representing the perceived brightness, or zero if color is undefined
      */
     private _getPerceivedBrightness(color: Color3): number {
-        if (color) {
-            return Math.sqrt(0.299 * color.r * color.r + 0.587 * color.g * color.g + 0.114 * color.b * color.b);
-        }
-        return 0;
+        return Math.sqrt(0.299 * color.r * color.r + 0.587 * color.g * color.g + 0.114 * color.b * color.b);
     }
 
     /**
@@ -565,10 +561,7 @@ export class GLTFMaterialExporter {
      * @returns maximum color component value, or zero if color is null or undefined
      */
     private _getMaxComponent(color: Color3): number {
-        if (color) {
-            return Math.max(color.r, Math.max(color.g, color.b));
-        }
-        return 0;
+        return Math.max(color.r, Math.max(color.g, color.b));
     }
 
     /**
