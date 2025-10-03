@@ -78,6 +78,8 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
             } else {
                 particle.direction.copyFrom(direction);
             }
+
+            particle._initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {

@@ -10,4 +10,6 @@ export enum NodeParticleSystemSources {
     Delta = 2,
     /** Emitter */
     Emitter = 3,
+    /** Camera position */
+    CameraPosition = 4,
 }
