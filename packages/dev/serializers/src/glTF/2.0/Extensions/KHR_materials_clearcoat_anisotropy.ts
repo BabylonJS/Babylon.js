@@ -271,4 +271,4 @@ export class KHR_materials_clearcoat_anisotropy implements IGLTFExporterExtensio
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_anisotropy(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_anisotropy(exporter), 105);

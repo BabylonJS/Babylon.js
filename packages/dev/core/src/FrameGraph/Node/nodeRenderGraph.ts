@@ -80,8 +80,11 @@ export class NodeRenderGraph {
 
     /**
      * Observable raised when the node render graph is built
+     * Note that this is the same observable as the one in the underlying FrameGraph!
      */
-    public onBuildObservable = new Observable<NodeRenderGraph>();
+    public get onBuildObservable() {
+        return this._frameGraph.onBuildObservable;
+    }
 
     /**
      * Observable raised when an error is detected
@@ -308,9 +311,7 @@ export class NodeRenderGraph {
         } finally {
             this._buildId = NodeRenderGraph._BuildIdGenerator++;
 
-            if (state.emitErrors(this.onBuildErrorObservable)) {
-                this.onBuildObservable.notifyObservers(this);
-            }
+            state.emitErrors(this.onBuildErrorObservable);
         }
     }
 
@@ -722,7 +723,6 @@ export class NodeRenderGraph {
         (this._resizeObserver as WritableObject<Nullable<Observer<AbstractEngine>>>) = null;
 
         this.attachedBlocks.length = 0;
-        this.onBuildObservable.clear();
         this.onBuildErrorObservable.clear();
     }
 

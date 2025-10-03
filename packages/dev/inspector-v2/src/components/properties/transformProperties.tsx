@@ -23,7 +23,7 @@ export const TransformProperties: FunctionComponent<{ transform: Transform; sett
             {quatRotation ? (
                 <QuaternionPropertyLine
                     key="QuaternionRotationTransform"
-                    label="Rotation (Quaternion)"
+                    label="Rotation (Quat)"
                     value={quatRotation}
                     onChange={(val) => (transform.rotationQuaternion = val)}
                     useDegrees={useDegrees}

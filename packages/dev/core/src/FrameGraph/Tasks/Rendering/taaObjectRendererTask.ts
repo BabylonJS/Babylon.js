@@ -9,7 +9,6 @@ import type {
     Observer,
     ObjectRenderer,
 } from "core/index";
-import { backbufferColorTextureHandle, backbufferDepthStencilTextureHandle } from "../../frameGraphTypes";
 import { FrameGraphObjectRendererTask } from "./objectRendererTask";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
 import { Constants } from "core/Engines/constants";
@@ -46,9 +45,10 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: destinationTexture and objectList are required`);
         }
 
+        const textureManager = this._frameGraph.textureManager;
         const targetTextures = Array.isArray(this.targetTexture) ? this.targetTexture : [this.targetTexture];
 
-        if (targetTextures[0] === backbufferColorTextureHandle || this.depthTexture === backbufferDepthStencilTextureHandle) {
+        if (textureManager.isBackbuffer(targetTextures[0]) || (this.depthTexture !== undefined && textureManager.isBackbuffer(this.depthTexture))) {
             throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: the back buffer color/depth textures are not allowed. Use regular textures instead.`);
         }
 
@@ -56,12 +56,12 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
         this._renderer.renderList = this.objectList.meshes;
         this._renderer.particleSystemList = this.objectList.particleSystems;
 
-        const outputTextureDescription = this._frameGraph.textureManager.getTextureDescription(targetTextures[0]);
+        const outputTextureDescription = textureManager.getTextureDescription(targetTextures[0]);
 
         let depthEnabled = false;
 
         if (this.depthTexture !== undefined) {
-            const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
+            const depthTextureDescription = textureManager.getTextureDescription(this.depthTexture);
             if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
                 throw new Error(`FrameGraphTAAObjectRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
             }
@@ -88,11 +88,11 @@ export class FrameGraphTAAObjectRendererTask extends FrameGraphObjectRendererTas
             isHistoryTexture: true,
         };
 
-        const pingPongHandle = this._frameGraph.textureManager.createRenderTargetTexture(`${this.name} history`, textureCreationOptions);
+        const pingPongHandle = textureManager.createRenderTargetTexture(`${this.name} history`, textureCreationOptions);
 
-        this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, pingPongHandle);
+        textureManager.resolveDanglingHandle(this.outputTexture, pingPongHandle);
         if (this.depthTexture !== undefined) {
-            this._frameGraph.textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
+            textureManager.resolveDanglingHandle(this.outputDepthTexture, this.depthTexture);
         }
 
         this._textureWidth = outputTextureDescription.size.width;
