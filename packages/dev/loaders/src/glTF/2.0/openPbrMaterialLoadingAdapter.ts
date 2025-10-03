@@ -567,6 +567,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the coat index of refraction (IOR) of the OpenPBR material.
+     */
+    public set coatIor(value: number) {
+        this._material.coatIor = value;
+    }
+
+    /**
      * Sets the coat darkening value of the OpenPBR material.
      * @param value The coat darkening value
      */

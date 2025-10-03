@@ -9,7 +9,7 @@ import { Color4 } from "core/Maths/math.color";
  */
 export class ParticleLerpBlock extends NodeParticleBlock {
     /**
-     * Creates a new GeometryLerpBlock
+     * Creates a new ParticleLerpBlock
      * @param name defines the block name
      */
     public constructor(name: string) {

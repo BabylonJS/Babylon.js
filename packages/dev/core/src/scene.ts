@@ -21,7 +21,7 @@ import type { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import type { IOfflineProvider } from "./Offline/IOfflineProvider";
-import { OverrideMatrixFunctions, ResetMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
+import { SetFloatingOriginOverrides, ResetFloatingOriginOverrides } from "./Materials/floatingOriginMatrixOverrides";
 import type { RenderingGroupInfo, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { RenderingManager } from "./Rendering/renderingManager";
 import type {
@@ -978,7 +978,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onAfterStepObservable = new Observable<Scene>();
 
     /**
-     * An event triggered when the activeCamera property is updated
+     * An event triggered when the activeCamera property is updated.
+     * Note that userInfo property on EventState contains the previous active camera (and the new activeCamera can be read directly from the scene).
      */
     public onActiveCameraChanged = new Observable<Scene>();
 
@@ -1486,8 +1487,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
 
+        const prevValue = this._activeCamera;
         this._activeCamera = value;
-        this.onActiveCameraChanged.notifyObservers(this);
+        this.onActiveCameraChanged.notifyObservers(this, undefined, undefined, undefined, prevValue);
     }
 
     /** @internal */
@@ -2022,7 +2024,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         if (options?.floatingOriginMode) {
             engine.getCreationOptions().useHighPrecisionMatrix = true;
-            OverrideMatrixFunctions(this);
+            SetFloatingOriginOverrides(this);
             this._floatingOriginMode = true;
         }
 
@@ -2800,7 +2802,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * When floatingOriginMode is enabled, offset is equal to the active camera position. If no active camera or floatingOriginMode is disabled, offset is 0.
      */
     public get floatingOriginOffset(): Vector3 {
-        return this.floatingOriginMode && this.activeCamera ? this.activeCamera.position : this._floatingOriginOffsetDefault;
+        return this.floatingOriginMode && this._activeCamera ? this._activeCamera.position : this._floatingOriginOffsetDefault;
     }
 
     /**
@@ -5763,7 +5765,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onEnvironmentTextureChangedObservable.clear();
         this.onMeshUnderPointerUpdatedObservable.clear();
 
-        ResetMatrixFunctions();
+        ResetFloatingOriginOverrides(this);
         this._isDisposed = true;
     }
 

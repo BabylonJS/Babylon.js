@@ -94,7 +94,7 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
 
         const attachments = this._frameGraph.engine.buildTextureLayout(
             targetTextures ? Array(targetTextures.length).fill(true) : [],
-            this.targetTexture === backbufferColorTextureHandle
+            this.targetTexture === backbufferColorTextureHandle && !this._frameGraph.textureManager.backBufferTextureOverriden
         );
 
         const color = TmpColors.Color4[0];

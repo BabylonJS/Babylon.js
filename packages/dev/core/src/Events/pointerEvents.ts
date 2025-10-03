@@ -170,4 +170,8 @@ export interface PointerTouch {
      * Event type passed from DOM.
      */
     type: any;
+    /**
+     * The touch event's associated button ID (0: left, 1: middle, 2: right, etc.)
+     */
+    button?: number;
 }

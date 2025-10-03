@@ -12,6 +12,7 @@ import type {
     BoundingBoxRenderer,
     UniformBuffer,
     AbstractEngine,
+    ClusteredLightContainer,
 } from "core/index";
 import { Observable } from "../Misc/observable";
 import { RenderingManager } from "../Rendering/renderingManager";
@@ -20,6 +21,7 @@ import { _ObserveArray } from "../Misc/arrayTools";
 import { _RetryWithInterval } from "../Misc/timingTools";
 import { Logger } from "../Misc/logger";
 import { SmartArray } from "../Misc/smartArray";
+import { LightConstants } from "../Lights/lightConstants";
 
 /**
  * Defines the options of the object renderer
@@ -31,6 +33,9 @@ export interface ObjectRendererOptions {
 
     /** True (default) to not change the aspect ratio of the scene in the RTT */
     doNotChangeAspectRatio?: boolean;
+
+    /** True to enable clustered lights (default: false) */
+    enableClusteredLights?: boolean;
 }
 
 /**
@@ -412,6 +417,7 @@ export class ObjectRenderer {
         this.options = {
             numPasses: 1,
             doNotChangeAspectRatio: true,
+            enableClusteredLights: false,
             ...options,
         };
 
@@ -422,6 +428,16 @@ export class ObjectRenderer {
         // Rendering groups
         this._renderingManager = new RenderingManager(scene);
         this._renderingManager._useSceneAutoClearSetup = true;
+
+        if (this.options.enableClusteredLights) {
+            this.onInitRenderingObservable.add(() => {
+                for (const light of this._scene.lights) {
+                    if (light.getTypeID() === LightConstants.LIGHTTYPEID_CLUSTERED_CONTAINER && (light as ClusteredLightContainer).isSupported) {
+                        (light as ClusteredLightContainer)._updateBatches(this.activeCamera).render();
+                    }
+                }
+            });
+        }
 
         this._scene.addObjectRenderer(this);
     }
@@ -982,6 +998,8 @@ export class ObjectRenderer {
             }
         }
 
+        this.onInitRenderingObservable.clear();
+        this.onFinishRenderingObservable.clear();
         this.onBeforeRenderObservable.clear();
         this.onAfterRenderObservable.clear();
         this.onBeforeRenderingManagerRenderObservable.clear();

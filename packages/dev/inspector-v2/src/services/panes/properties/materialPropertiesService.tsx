@@ -1,3 +1,4 @@
+import type { MaterialWithNormalMaps } from "../../../components/properties/materials/normalMapProperties";
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISettingsContext } from "../../../services/settingsContext";
 import type { ISelectionService } from "../../selectionService";
@@ -12,7 +13,7 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
 import { MultiMaterialChildrenProperties } from "../../../components/properties/materials/multiMaterialProperties";
-import { type MaterialWithNormalMaps, NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
+import { NormalMapProperties } from "../../../components/properties/materials/normalMapProperties";
 import {
     PBRBaseMaterialAnisotropicProperties,
     PBRBaseMaterialClearCoatProperties,

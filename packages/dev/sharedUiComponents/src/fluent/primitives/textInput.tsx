@@ -1,19 +1,10 @@
 import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { InputOnChangeData } from "@fluentui/react-components";
-import { Input as FluentInput, makeStyles, tokens, useId } from "@fluentui/react-components";
+import { Input as FluentInput, useId } from "@fluentui/react-components";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
-import { HandleOnBlur, HandleKeyDown } from "./utils";
-
-const useInputStyles = makeStyles({
-    base: {
-        display: "flex",
-        flexDirection: "column",
-        width: "100px",
-    },
-    invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
-});
+import { HandleOnBlur, HandleKeyDown, useInputStyles } from "./utils";
 
 export type TextInputProps = PrimitiveProps<string> & {
     validator?: (value: string) => boolean;
@@ -60,18 +51,18 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
 
     const id = useId("input-button");
     return (
-        <div className={classes.base}>
+        <div>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentInput
                 {...props}
                 id={id}
-                size="small"
+                size="medium"
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}
                 onKeyDown={HandleKeyDown}
                 onBlur={HandleOnBlur}
-                className={`${!validateValue(value) ? classes.invalid : ""}`}
+                className={`${!validateValue(value) ? classes.invalid : classes.valid}`}
             />
         </div>
     );

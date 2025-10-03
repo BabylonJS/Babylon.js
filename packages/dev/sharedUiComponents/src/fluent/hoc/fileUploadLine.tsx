@@ -4,8 +4,9 @@ import { ButtonLine } from "./buttonLine";
 import type { ButtonProps } from "../primitives/button";
 import { ArrowUploadRegular } from "@fluentui/react-icons";
 
-type FileUploadLineProps = Omit<ButtonProps, "onClick"> & {
+type FileUploadLineProps = Omit<ButtonProps, "onClick" | "label"> & {
     onClick: (files: FileList) => void;
+    label: string; // Require a label when button is the entire line (by default, label is optional on a button)
     accept: string;
 };
 

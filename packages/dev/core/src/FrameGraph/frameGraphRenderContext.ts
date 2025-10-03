@@ -53,7 +53,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @returns True if the handle points to the backbuffer's color or depth texture, otherwise false
      */
     public isBackbuffer(handle: FrameGraphTextureHandle): boolean {
-        return this._textureManager.isBackbuffer(handle);
+        return this._textureManager._isBackbuffer(handle);
     }
 
     /**
@@ -266,7 +266,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             this.bindRenderTarget();
         }
         this._applyRenderTarget();
-        this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture)!);
+        this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture, true)!);
     }
 
     /**
@@ -305,8 +305,9 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
      * @param renderTarget The handle of the render target texture to bind (default: undefined, meaning "back buffer"). Pass an array for MRT rendering.
      * @param debugMessage Optional debug message to display when the render target is bound (visible in PIX, for example)
+     * @param applyImmediately If true, the render target will be applied immediately (otherwise it will be applied at first use). Default is false (delayed application).
      */
-    public bindRenderTarget(renderTarget?: FrameGraphRenderTarget, debugMessage?: string) {
+    public bindRenderTarget(renderTarget?: FrameGraphRenderTarget, debugMessage?: string, applyImmediately = false): void {
         if (
             (renderTarget?.renderTargetWrapper === undefined && this._currentRenderTarget === undefined) ||
             (renderTarget && this._currentRenderTarget && renderTarget.equals(this._currentRenderTarget))
@@ -317,11 +318,17 @@ export class FrameGraphRenderContext extends FrameGraphContext {
                 this._debugMessageWhenTargetBound = undefined;
                 this._debugMessageHasBeenPushed = true;
             }
+            if (applyImmediately) {
+                this._applyRenderTarget();
+            }
             return;
         }
         this._currentRenderTarget = renderTarget?.renderTargetWrapper === undefined ? undefined : renderTarget;
         this._debugMessageWhenTargetBound = debugMessage;
         this._renderTargetIsBound = false;
+        if (applyImmediately) {
+            this._applyRenderTarget();
+        }
     }
 
     /** @internal */

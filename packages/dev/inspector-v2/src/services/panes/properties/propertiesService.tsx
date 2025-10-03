@@ -63,6 +63,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
             title: "Properties",
             icon: DocumentTextRegular,
             horizontalLocation: "right",
+            verticalLocation: "top",
             order: 100,
             suppressTeachingMoment: true,
             content: () => {
