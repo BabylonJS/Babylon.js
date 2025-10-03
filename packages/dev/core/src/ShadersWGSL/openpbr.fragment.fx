@@ -79,6 +79,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
 
+    #include<openpbrThinFilmLayerData>
+
     // TEMP
     var subsurface_weight: f32 = 0.0f;
     var transmission_weight: f32 = 0.0f;
@@ -140,6 +142,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         , vec3f(1.0f)
         , coat_weight
     );
+
+#ifdef THIN_FILM
+    // Thin Film
+    let thin_film_outside_ior: f32 = mix(1.0f, coat_ior, coat_weight);
+#endif
 
     // Base Dielectric
     let baseDielectricReflectance: ReflectanceParams = dielectricReflectance(

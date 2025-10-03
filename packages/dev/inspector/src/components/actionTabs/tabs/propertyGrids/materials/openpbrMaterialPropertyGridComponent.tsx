@@ -181,6 +181,22 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
                 />
+                <TextureLinkLineComponent
+                    label="Thin Film Weight"
+                    texture={material.thinFilmWeightTexture}
+                    propertyName="thinFilmWeightTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Thin Film Thickness"
+                    texture={material.thinFilmThicknessTexture}
+                    propertyName="thinFilmThicknessTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
             </LineContainerComponent>
         );
     }
@@ -551,6 +567,54 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         propertyName="emissionLuminance"
                         minimum={0}
                         maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                </LineContainerComponent>
+                <LineContainerComponent title="THIN FILM" selection={this.props.globalState}>
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Weight"
+                        target={material}
+                        propertyName="thinFilmWeight"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Weight Texture"
+                        texture={material.thinFilmWeightTexture}
+                        propertyName="thinFilmWeightTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Thickness Texture"
+                        texture={material.thinFilmThicknessTexture}
+                        propertyName="thinFilmThicknessTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Thickness"
+                        target={material}
+                        propertyName="thinFilmThickness"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="IOR"
+                        target={material}
+                        propertyName="thinFilmIor"
+                        minimum={1}
+                        maximum={3}
                         step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

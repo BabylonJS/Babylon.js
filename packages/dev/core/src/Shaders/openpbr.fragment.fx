@@ -94,6 +94,8 @@ void main(void) {
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
 
+    #include<openpbrThinFilmLayerData>
+
     // TEMP
     float subsurface_weight = 0.0;
     float transmission_weight = 0.0;
@@ -157,6 +159,11 @@ void main(void) {
         , coat_weight
     );
 
+#ifdef THIN_FILM
+    // Thin Film
+    float thin_film_outside_ior = mix(1.0, coat_ior, coat_weight);
+#endif
+
     // Base Dielectric
     ReflectanceParams baseDielectricReflectance;
     {
@@ -172,7 +179,7 @@ void main(void) {
     // Base Metallic
     ReflectanceParams baseConductorReflectance;
     baseConductorReflectance = conductorReflectance(base_color, specular_color, specular_weight);
-    
+
     // ________________________ Environment (IBL) Lighting ____________________________
     vec3 material_surface_ibl = vec3(0., 0., 0.);
     #include<openpbrEnvironmentLighting>

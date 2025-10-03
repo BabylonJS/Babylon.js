@@ -3,6 +3,7 @@ import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 const NAME = "KHR_materials_iridescence";
@@ -48,8 +49,17 @@ export class KHR_materials_iridescence implements IGLTFExporterExtensionV2 {
                 }
                 return additionalTextures;
             }
+        } else if (babylonMaterial instanceof OpenPBRMaterial) {
+            if (babylonMaterial.thinFilmWeight > 0) {
+                if (babylonMaterial.thinFilmWeightTexture) {
+                    additionalTextures.push(babylonMaterial.thinFilmWeightTexture);
+                }
+                if (babylonMaterial.thinFilmThicknessTexture && babylonMaterial.thinFilmThicknessTexture !== babylonMaterial.thinFilmWeightTexture) {
+                    additionalTextures.push(babylonMaterial.thinFilmThicknessTexture);
+                }
+                return additionalTextures;
+            }
         }
-
         return [];
     }
 
@@ -77,6 +87,34 @@ export class KHR_materials_iridescence implements IGLTFExporterExtensionV2 {
 
                     iridescenceTexture: iridescenceTextureInfo ?? undefined,
                     iridescenceThicknessTexture: iridescenceThicknessTextureInfo ?? undefined,
+                };
+
+                if (iridescenceInfo.iridescenceTexture !== null || iridescenceInfo.iridescenceThicknessTexture !== null) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
+
+                node.extensions[NAME] = iridescenceInfo;
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                if (babylonMaterial.thinFilmWeight <= 0) {
+                    resolve(node);
+                    return;
+                }
+
+                this._wasUsed = true;
+
+                node.extensions = node.extensions || {};
+
+                const thinFilmWeightTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.thinFilmWeightTexture);
+                const thinFilmThicknessTextureInfo = this._exporter._materialExporter.getTextureInfo(babylonMaterial.thinFilmThicknessTexture);
+
+                const iridescenceInfo: IKHRMaterialsIridescence = {
+                    iridescenceFactor: babylonMaterial.thinFilmWeight,
+                    iridescenceIor: babylonMaterial.thinFilmIor,
+                    iridescenceThicknessMinimum: babylonMaterial.thinFilmThicknessMin * 1000, // Convert to nanometers for glTF
+                    iridescenceThicknessMaximum: babylonMaterial.thinFilmThickness * 1000, // Convert to nanometers for glTF
+
+                    iridescenceTexture: thinFilmWeightTextureInfo ?? undefined,
+                    iridescenceThicknessTexture: thinFilmThicknessTextureInfo ?? undefined,
                 };
 
                 if (iridescenceInfo.iridescenceTexture !== null || iridescenceInfo.iridescenceThicknessTexture !== null) {

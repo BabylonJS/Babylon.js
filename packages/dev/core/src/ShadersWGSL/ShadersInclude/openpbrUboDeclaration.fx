@@ -50,6 +50,9 @@ uniform vCoatIor: f32;
 uniform vCoatDarkening : f32;
 uniform vGeometryCoatTangent: vec2f;
 uniform vEmissionColor: vec3f;
+uniform vThinFilmWeight: f32;
+uniform vThinFilmThickness: vec2f;
+uniform vThinFilmIor: f32;
 
 uniform vBaseWeightInfos: vec2f;
 uniform baseWeightMatrix: mat4x4f;
@@ -87,6 +90,10 @@ uniform vGeometryOpacityInfos: vec2f;
 uniform geometryOpacityMatrix: mat4x4f;
 uniform vEmissionInfos: vec2f;
 uniform emissionMatrix: mat4x4f;
+uniform vThinFilmWeightInfos: vec2f;
+uniform thinFilmWeightMatrix: mat4x4f;
+uniform vThinFilmThicknessInfos: vec2f;
+uniform thinFilmThicknessMatrix: mat4x4f;
 uniform vAmbientOcclusionInfos: vec2f;
 uniform ambientOcclusionMatrix: mat4x4f;
 
