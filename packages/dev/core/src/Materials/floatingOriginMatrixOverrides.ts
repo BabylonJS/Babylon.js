@@ -5,9 +5,9 @@ import type { Matrix } from "../Maths/math.vector";
 import { TmpVectors } from "../Maths/math.vector";
 import { InvertMatrixToRef, MultiplyMatricesToRef } from "../Maths/ThinMaths/thinMath.matrix.functions";
 import type { AbstractMesh } from "../Meshes";
-import type { DeepImmutable, Nullable } from "../types";
+import type { DeepImmutable } from "../types";
 import { UniformBuffer } from "./uniformBuffer";
-import type { Camera } from "../Cameras";
+import type { EventState } from "../Misc/observable";
 
 const TempFinalMat: Matrix = TmpVectors.Matrix[4];
 const TempMat1: Matrix = TmpVectors.Matrix[5];
@@ -98,9 +98,6 @@ function GetOffsetMatrix(uniformName: string, mat: IMatrixLike, scene: Scene): I
 const UniformBufferInternal = UniformBuffer as any;
 const OriginalUpdateMatrixForUniform = UniformBufferInternal.prototype._updateMatrixForUniform;
 const OriginalSetMatrix = Effect.prototype.setMatrix;
-// Overriding active camera to hook into viewmatrixchanged observable
-let OriginalActiveCameraDescriptor: PropertyDescriptor | undefined;
-let ActiveCameraCallback: Nullable<() => void>;
 
 export function ResetFloatingOriginOverrides(scene: Scene) {
     Effect.prototype.setMatrix = OriginalSetMatrix;
@@ -108,10 +105,9 @@ export function ResetFloatingOriginOverrides(scene: Scene) {
     UniformBufferInternal.prototype._updateMatrixForUniformOverride = undefined;
 
     // Camera overrides
-    OriginalActiveCameraDescriptor && Object.defineProperty(scene.constructor.prototype, "activeCamera", OriginalActiveCameraDescriptor);
-    ActiveCameraCallback = null;
-    (scene as any)._internalActiveCamera = null;
-    (scene as any)._internalActivePos = null;
+    const sceneInternal = scene as any;
+    scene.activeCamera?.onViewMatrixChangedObservable?.remove(sceneInternal._activeCamViewMatChanged);
+    sceneInternal._activeCamViewMatChanged = undefined;
 }
 
 export function SetFloatingOriginOverrides(scene: Scene) {
@@ -124,60 +120,15 @@ export function SetFloatingOriginOverrides(scene: Scene) {
         this._updateMatrixForUniformOverride(uniformName, GetOffsetMatrix(uniformName, matrix, scene));
     };
 
-    // let activeCameraCallback: Nullable<() => void> = null;
-    // scene.onActiveCameraChanged.add((eventData: Scene, eventState: EventState) => {
-    //     activeCameraCallback && eventState.currentTarget?.onViewMatrixChangedObservable.remove(activeCameraCallback);
-    //     activeCameraCallback = () => {
-    //         scene.
-    //         (scene as any)._activeMeshes.forEach((mesh: AbstractMesh) => {
-    //             // Only mark as dirty if active mesh and root node
-    //             !mesh.parent && mesh.markAsDirty();
-    //         });
-    //     };
-    //     eventState.target.onViewMatrixChangedObservable.add(activeCameraCallback);
-    // });
-
-    // Override activecamera to hook into viewmatrixchanged observable
-    OriginalActiveCameraDescriptor = Object.getOwnPropertyDescriptor(scene.constructor.prototype, "activeCamera");
-    // Initialize the backing fields
-    (scene as any)._internalActiveCamera = scene._activeCamera;
-    (scene as any)._internalActiveTranslation = scene._activeCamera?.position;
-
-    // This ensures we are only overriding active camera in floatingOriginMode, and only marking meshes as dirty if they are active
-    Object.defineProperty(scene.constructor.prototype, "_activeCamera", {
-        get: function () {
-            return this._internalActiveCamera;
-        },
-        set: function (newActiveCamera: Nullable<Camera>) {
-            if (newActiveCamera === this._internalActiveCamera) {
-                return;
-            }
-
-            // Remove the callback from the old active camera before resetting callback and adding to new active camera
-            ActiveCameraCallback && this._internalActiveCamera?.onViewMatrixChangedObservable.removeCallback(ActiveCameraCallback);
-            if (newActiveCamera) {
-                ActiveCameraCallback = () => {
-                    const translationChanged =
-                        !this._internalActiveTranslation ||
-                        !this.activeCamera.position.equalsToFloats(this._internalActiveTranslation.x, this._internalActiveTranslation.y, this._internalActiveTranslation.z);
-                    // Only consider marking as dirty if camera position has changed
-                    global.console.log(translationChanged);
-                    if (translationChanged) {
-                        this._activeMeshes.forEach((mesh: AbstractMesh) => {
-                            // Only mark as dirty if active mesh and root node
-                            !mesh.parent && mesh.markAsDirty();
-                        });
-                    }
-                    this._internalActiveTranslation = this._activeCamera?.getViewMatrix().getTranslation();
-                };
-                newActiveCamera.onViewMatrixChangedObservable.add(ActiveCameraCallback);
-            } else {
-                ActiveCameraCallback = null;
-            }
-
-            this._internalActiveCamera = newActiveCamera;
-        },
-        configurable: true,
-        enumerable: true,
+    scene.onActiveCameraChanged.add((_s: Scene, eventState: EventState) => {
+        const sceneInternal = scene as any;
+        sceneInternal._activeCamViewMatChanged && eventState.userInfo?.onViewMatrixChangedObservable?.remove(sceneInternal._activeCamViewMatChanged);
+        sceneInternal._activeCamViewMatChanged = () => {
+            sceneInternal._activeMeshes.forEach((mesh: AbstractMesh) => {
+                // Only mark as dirty if active mesh and root node
+                !mesh.parent && mesh.markAsDirty();
+            });
+        };
+        scene.activeCamera?.onViewMatrixChangedObservable?.add(sceneInternal._activeCamViewMatChanged);
     });
 }

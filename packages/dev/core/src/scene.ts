@@ -978,7 +978,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public onAfterStepObservable = new Observable<Scene>();
 
     /**
-     * An event triggered when the activeCamera property is updated
+     * An event triggered when the activeCamera property is updated.
+     * Note that userInfo property on EventState contains the previous active camera (and the new activeCamera can be read directly from the scene).
      */
     public onActiveCameraChanged = new Observable<Scene>();
 
@@ -1486,8 +1487,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             return;
         }
 
+        const prevValue = this._activeCamera;
         this._activeCamera = value;
-        this.onActiveCameraChanged.notifyObservers(this);
+        this.onActiveCameraChanged.notifyObservers(this, undefined, undefined, undefined, prevValue);
     }
 
     /** @internal */
