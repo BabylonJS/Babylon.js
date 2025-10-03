@@ -1,10 +1,12 @@
-import { Effect } from "../Materials/effect";
-import { TmpVectors } from "../Maths/math.vector";
-import type { Matrix } from "../Maths/math.vector";
-import type { IMatrixLike, IVector3Like } from "../Maths/math.like";
-import { InvertMatrixToRef, MultiplyMatricesToRef } from "../Maths/ThinMaths/thinMath.matrix.functions";
 import type { Scene } from "../scene";
-import type { DeepImmutable } from "../types";
+import type { Camera } from "../Cameras";
+import { Effect } from "../Materials/effect";
+import type { IMatrixLike, IVector3Like } from "../Maths/math.like";
+import type { Matrix } from "../Maths/math.vector";
+import { TmpVectors } from "../Maths/math.vector";
+import { InvertMatrixToRef, MultiplyMatricesToRef } from "../Maths/ThinMaths/thinMath.matrix.functions";
+import type { AbstractMesh } from "../Meshes";
+import type { DeepImmutable, Nullable } from "../types";
 import { UniformBuffer } from "./uniformBuffer";
 
 const TempFinalMat: Matrix = TmpVectors.Matrix[4];
@@ -96,13 +98,20 @@ function GetOffsetMatrix(uniformName: string, mat: IMatrixLike, scene: Scene): I
 const UniformBufferInternal = UniformBuffer as any;
 const OriginalUpdateMatrixForUniform = UniformBufferInternal.prototype._updateMatrixForUniform;
 const OriginalSetMatrix = Effect.prototype.setMatrix;
+let OriginalActiveCameraDescriptor: PropertyDescriptor | undefined;
 
-export function ResetMatrixFunctions() {
+export function ResetFloatingOriginOverrides(scene: Scene) {
     Effect.prototype.setMatrix = OriginalSetMatrix;
     UniformBufferInternal.prototype._updateMatrixForUniform = OriginalUpdateMatrixForUniform;
     UniformBufferInternal.prototype._updateMatrixForUniformOverride = undefined;
+    OriginalActiveCameraDescriptor && Object.defineProperty(scene.constructor.prototype, "activeCamera", OriginalActiveCameraDescriptor);
+    ActiveCameraCallback = null;
+    (scene as any)._internalActiveCamera = null;
 }
-export function OverrideMatrixFunctions(scene: Scene) {
+
+let ActiveCameraCallback: Nullable<() => void>;
+
+export function SetFloatingOriginOverrides(scene: Scene) {
     Effect.prototype.setMatrix = function (uniformName: string, matrix: IMatrixLike) {
         this._pipelineContext!.setMatrix(uniformName, GetOffsetMatrix(uniformName, matrix, scene));
         return this;
@@ -111,4 +120,36 @@ export function OverrideMatrixFunctions(scene: Scene) {
     UniformBufferInternal.prototype._updateMatrixForUniform = function (uniformName: string, matrix: IMatrixLike) {
         this._updateMatrixForUniformOverride(uniformName, GetOffsetMatrix(uniformName, matrix, scene));
     };
+
+    OriginalActiveCameraDescriptor = Object.getOwnPropertyDescriptor(scene.constructor.prototype, "activeCamera");
+    // Initialize the backing field
+    (scene as any)._internalActiveCamera = scene._activeCamera;
+
+    // This ensures we are only overriding active camera in floatingOriginMode, and only marking meshes as dirty if they are active
+    Object.defineProperty(scene.constructor.prototype, "_activeCamera", {
+        get: function () {
+            return this._internalActiveCamera;
+        },
+        set: function (value: Nullable<Camera>) {
+            if (value === this._internalActiveCamera) {
+                return;
+            }
+
+            // Remove the callback from the old active camera before resetting callback and adding to new active camera
+            ActiveCameraCallback && this._internalActiveCamera?.onViewMatrixChangedObservable.removeCallback(ActiveCameraCallback);
+            if (value) {
+                ActiveCameraCallback = () =>
+                    this._activeMeshes.forEach((mesh: AbstractMesh) => {
+                        !mesh.parent && mesh.markAsDirty();
+                    });
+                value.onViewMatrixChangedObservable.add(ActiveCameraCallback);
+            } else {
+                ActiveCameraCallback = null;
+            }
+
+            this._internalActiveCamera = value;
+        },
+        configurable: true,
+        enumerable: true,
+    });
 }
