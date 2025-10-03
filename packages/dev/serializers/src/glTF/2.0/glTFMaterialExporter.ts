@@ -416,7 +416,7 @@ export class GLTFMaterialExporter {
             const baseColorBuffer = new Uint8Array(byteLength);
 
             const strideSize = 4;
-            const maxBaseColor = Black;
+            const maxBaseColor = new Color3(0, 0, 0);
             let maxMetallic = 0;
             let maxRoughness = 0;
 
