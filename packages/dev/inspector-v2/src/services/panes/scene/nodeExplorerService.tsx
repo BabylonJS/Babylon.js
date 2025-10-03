@@ -5,8 +5,6 @@ import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import {
-    BoxRegular,
-    BranchRegular,
     CameraRegular,
     Cone16Filled,
     Cone16Regular,
@@ -15,6 +13,7 @@ import {
     FlashlightOffRegular,
     FlashlightRegular,
     LightbulbRegular,
+    MyLocationRegular,
     VideoFilled,
     VideoRegular,
 } from "@fluentui/react-icons";
@@ -24,6 +23,7 @@ import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Observable } from "core/Misc/observable";
+import { MeshIcon } from "shared-ui-components/fluent/icons";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { GizmoServiceIdentity } from "../../gizmoService";
 import { SceneContextIdentity } from "../../sceneContext";
@@ -73,9 +73,9 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
             entityIcon: ({ entity: node }) =>
                 node instanceof AbstractMesh ? (
-                    <BoxRegular />
+                    <MeshIcon />
                 ) : node instanceof TransformNode ? (
-                    <BranchRegular />
+                    <MyLocationRegular />
                 ) : node instanceof Camera ? (
                     <CameraRegular />
                 ) : node instanceof Light ? (

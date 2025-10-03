@@ -23,7 +23,7 @@ import {
     Tooltip,
     TreeItemLayout,
 } from "@fluentui/react-components";
-import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
+import { FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
@@ -248,7 +248,7 @@ const SceneTreeItem: FunctionComponent<{
     return (
         <FlatTreeItem key="scene" value="scene" itemType="leaf" parentValue={undefined} aria-level={1} aria-setsize={1} aria-posinset={1} onClick={select}>
             <TreeItemLayout
-                iconBefore={<MoviesAndTvRegular />}
+                iconBefore={<GlobeRegular />}
                 className={classes.sceneTreeItemLayout}
                 style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
             >
