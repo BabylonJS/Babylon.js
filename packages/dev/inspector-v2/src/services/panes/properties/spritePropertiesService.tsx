@@ -1,16 +1,17 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import type { ISettingsContext } from "../../../services/settingsContext";
 import type { ISelectionService } from "../../selectionService";
+import type { IPropertiesService } from "./propertiesService";
 
 import { Sprite } from "core/Sprites/sprite";
 
-import { PropertiesServiceIdentity } from "./propertiesService";
-import { SelectionServiceIdentity } from "../../selectionService";
 import { SpriteAnimationProperties } from "../../../components/properties/sprites/spriteAnimationProperties";
 import { SpriteGeneralProperties } from "../../../components/properties/sprites/spriteGeneralProperties";
-import { SpriteTransformProperties } from "../../../components/properties/sprites/spriteTransformProperties";
 import { SpriteOtherProperties } from "../../../components/properties/sprites/spriteOtherProperties";
-import { SettingsContextIdentity, type ISettingsContext } from "../../../services/settingsContext";
+import { SpriteTransformProperties } from "../../../components/properties/sprites/spriteTransformProperties";
+import { SettingsContextIdentity } from "../../../services/settingsContext";
+import { SelectionServiceIdentity } from "../../selectionService";
+import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISettingsContext]> = {
     friendlyName: "Sprite Properties",

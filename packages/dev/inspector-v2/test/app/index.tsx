@@ -20,12 +20,12 @@ import "core/Helpers/sceneHelpers";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
-import { ShowInspector } from "../../src/inspector";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { MultiMaterial } from "core/Materials/multiMaterial";
 import { Texture } from "core/Materials/Textures/texture";
+import { ShowInspector } from "../../src";
 
 // Register scene loader plugins.
 registerBuiltInLoaders();
