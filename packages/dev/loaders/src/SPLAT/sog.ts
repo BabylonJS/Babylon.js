@@ -1,8 +1,8 @@
-import { Engine } from "core/Engines/engine";
 import type { Scene } from "core/scene";
 import type { IParsedPLY } from "./splatDefs";
 import { Mode } from "./splatDefs";
 import { Scalar } from "core/Maths/math.scalar";
+import type { AbstractEngine } from "core/Engines";
 
 /**
  * Definition of a SOG data file
@@ -89,12 +89,8 @@ interface IWebPImage {
 }
 const SH_C0 = 0.28209479177387814;
 
-async function LoadWebpImageData(rootUrlOrData: string | Uint8Array, filename: string): Promise<IWebPImage> {
+async function LoadWebpImageData(rootUrlOrData: string | Uint8Array, filename: string, engine: AbstractEngine): Promise<IWebPImage> {
     const promise = new Promise<IWebPImage>((resolve, reject) => {
-        const engine = Engine.LastCreatedEngine;
-        if (!engine) {
-            throw new Error("No engine available to load image");
-        }
         const image = engine.createCanvasImage();
         if (!image) {
             throw new Error("Failed to create ImageBitmap");
@@ -408,10 +404,10 @@ export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8A
             if (files && files.has(fileName)) {
                 // load from in-memory Uint8Array
                 const fileData = files.get(fileName)!;
-                return await LoadWebpImageData(fileData, fileName);
+                return await LoadWebpImageData(fileData, fileName, scene.getEngine());
             } else {
                 // fallback: load from URL
-                return await LoadWebpImageData(rootUrl, fileName);
+                return await LoadWebpImageData(rootUrl, fileName, scene.getEngine());
             }
         })
     );
