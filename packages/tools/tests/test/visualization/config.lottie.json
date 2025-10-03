@@ -170,6 +170,21 @@
             "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, With Variables)",
             "devHostQsps": "exp=lottie&file=trianglesAndTextWithVariable.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
             "referenceImage": "triangles-text.png"
+        },
+        {
+            "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, Left Aligned)",
+            "devHostQsps": "exp=lottie&file=trianglesAndTextLeft.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
+            "referenceImage": "triangles-text-left.png"
+        },
+        {
+            "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, Right Aligned)",
+            "devHostQsps": "exp=lottie&file=trianglesAndTextRight.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
+            "referenceImage": "triangles-text-right.png"
+        },
+        {
+            "title": "Lottie - Triangles and Text (Main Thread, URL, No Pre-Warm, Center Aligned)",
+            "devHostQsps": "exp=lottie&file=trianglesAndTextCentered.json&useWorker=false&useUrl=true&usePreWarm=false&variables=eyJ2YXIiOiJUZXh0IGluIEFFIn0",
+            "referenceImage": "triangles-text-center.png"
         }
     ]
 }

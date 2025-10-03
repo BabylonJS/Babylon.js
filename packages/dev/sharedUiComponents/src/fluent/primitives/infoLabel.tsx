@@ -1,5 +1,5 @@
 import type { FunctionComponent } from "react";
-import { InfoLabel as FluentInfoLabel } from "@fluentui/react-components";
+import { Body1, InfoLabel as FluentInfoLabel } from "@fluentui/react-components";
 
 export type InfoLabelProps = {
     htmlFor: string; // required ID of the element whose label we are applying
@@ -16,7 +16,7 @@ export type InfoLabelParentProps = Omit<InfoLabelProps, "htmlFor">;
 export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
     return (
         <FluentInfoLabel htmlFor={props.htmlFor} info={props.info}>
-            {props.label}
+            <Body1>{props.label}</Body1>
         </FluentInfoLabel>
     );
 };

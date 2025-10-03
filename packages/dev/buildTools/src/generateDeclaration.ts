@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-param */
 /* eslint-disable no-console */
 import { globSync } from "glob";
 import * as fs from "fs";
@@ -174,9 +175,9 @@ function GetModuleDeclaration(
         // TODO - make a list of dependencies that are accepted by each package
         if (!devPackageName) {
             if (externalName) {
-                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
+                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                     // replace with any
-                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
+                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
                     return;
                 }
@@ -410,9 +411,9 @@ function GetPackageDeclaration(
             // TODO - make a list of dependencies that are accepted by each package
             if (!localDevPackageMap) {
                 if (externalName) {
-                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
+                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                         // replace with any
-                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
+                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                         processedSource = processedSource.replace(matchRegex, `$1any$3`);
                         return;
                     } else if (externalName === "react") {

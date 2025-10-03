@@ -40,6 +40,10 @@ import "./Shaders/ShadersInclude/depthFunctions";
 
 const MaterialPlugin = "atmo-pbr";
 
+const AerialPerspectiveLutLayers = 32;
+
+let UniqueId = 0;
+
 /**
  * Renders a physically based atmosphere.
  * Use {@link IsSupported} to check if the atmosphere is supported before creating an instance.
@@ -84,6 +88,7 @@ export class Atmosphere implements IDisposable {
     private _aerialPerspectiveRenderingGroup: number;
     private _globeAtmosphereRenderingGroup: number;
     private _isEnabled = true;
+    private _aerialPerspectiveLutHasBeenRendered = false;
 
     private _hasRenderedMultiScatteringLut = false;
     private _multiScatteringEffectWrapper: Nullable<EffectWrapper> = null;
@@ -113,6 +118,11 @@ export class Atmosphere implements IDisposable {
     public static IsSupported(engine: AbstractEngine): boolean {
         return !engine._badOS && !engine.isWebGPU && engine.version >= 2;
     }
+
+    /**
+     * The unique ID of this atmosphere instance.
+     */
+    public readonly uniqueId = UniqueId++;
 
     /**
      * Called after the atmosphere variables have been updated for the specified camera.
@@ -340,7 +350,7 @@ export class Atmosphere implements IDisposable {
 
         const scene = this.scene;
         const name = "atmo-aerialPerspective";
-        const renderTarget = (this._aerialPerspectiveLutRenderTarget = CreateRenderTargetTexture(name, { width: 16, height: 64, layers: 32 }, scene, {}));
+        const renderTarget = (this._aerialPerspectiveLutRenderTarget = CreateRenderTargetTexture(name, { width: 16, height: 64, layers: AerialPerspectiveLutLayers }, scene, {}));
         this._aerialPerspectiveLutEffectWrapper = CreateAerialPerspectiveEffectWrapper(this._engine, this.uniformBuffer);
 
         return renderTarget;
@@ -637,8 +647,6 @@ export class Atmosphere implements IDisposable {
         return this._cameraAtmosphereVariables;
     }
 
-    public readonly uniqueId: number;
-
     /**
      * Constructs the {@link Atmosphere}.
      * @param name - The name of this instance.
@@ -653,7 +661,6 @@ export class Atmosphere implements IDisposable {
         options?: IAtmosphereOptions
     ) {
         const engine = (this._engine = scene.getEngine());
-        this.uniqueId = scene.getUniqueId();
 
         if (engine.isWebGPU) {
             throw new Error("Atmosphere is not supported on WebGPU.");
@@ -1233,9 +1240,17 @@ export class Atmosphere implements IDisposable {
                     this._drawSkyViewLut();
                 }
 
-                // Only need to render aerial perspective LUT when inside the atmosphere.
-                if (this._isAerialPerspectiveLutEnabled && this._cameraAtmosphereVariables.clampedCameraRadius <= this._physicalProperties.atmosphereRadius) {
-                    this._drawAerialPerspectiveLut();
+                if (this._isAerialPerspectiveLutEnabled) {
+                    // Only need to render aerial perspective LUT when inside the atmosphere.
+                    if (this._cameraAtmosphereVariables.clampedCameraRadius <= this._physicalProperties.atmosphereRadius) {
+                        this._drawAerialPerspectiveLut();
+                    } else {
+                        // Make sure to clear the LUT to some initial value if this would have otherwise been the first time rendering it.
+                        if (!this._aerialPerspectiveLutHasBeenRendered) {
+                            this._clearAerialPerspectiveLut();
+                        }
+                    }
+                    this._aerialPerspectiveLutHasBeenRendered = true;
                 }
             }
 
@@ -1350,10 +1365,9 @@ export class Atmosphere implements IDisposable {
             this._aerialPerspectiveLutRenderTarget,
             (effectRenderer, renderTarget, effect, engine) => {
                 this.bindUniformBufferToEffect(effect);
-                const layers = 32;
                 effect.setTexture("transmittanceLut", transmittanceLut);
                 effect.setTexture("multiScatteringLut", multiScatteringLut);
-                for (let layer = 0; layer < layers; layer++) {
+                for (let layer = 0; layer < AerialPerspectiveLutLayers; layer++) {
                     engine.bindFramebuffer(renderTarget!, undefined, undefined, undefined, true, undefined, layer);
                     effectRenderer.bindBuffers(effect);
                     effect.setFloat("layerIdx", layer);
@@ -1361,6 +1375,18 @@ export class Atmosphere implements IDisposable {
                 }
             }
         );
+    }
+
+    private _clearAerialPerspectiveLut(): void {
+        const renderTarget = this._aerialPerspectiveLutRenderTarget?.renderTarget;
+        if (renderTarget) {
+            const engine = this._engine;
+            const clearColor = { r: 0, g: 0, b: 0, a: 0 };
+            for (let layer = 0; layer < AerialPerspectiveLutLayers; layer++) {
+                engine.bindFramebuffer(renderTarget, undefined, undefined, undefined, true, undefined, layer);
+                engine.clear(clearColor, true, false, false);
+            }
+        }
     }
 
     /**
@@ -1422,13 +1448,19 @@ const CreateRenderTargetTexture = (
     scene: Scene,
     options?: RenderTargetTextureOptions
 ): RenderTargetTexture => {
+    const caps = scene.getEngine().getCaps();
+    const textureType = caps.textureHalfFloatRender
+        ? Constants.TEXTURETYPE_HALF_FLOAT
+        : caps.textureFloatRender
+          ? Constants.TEXTURETYPE_FLOAT
+          : Constants.TEXTURETYPE_UNSIGNED_BYTE;
     const rtOptions: RenderTargetTextureOptions = {
         generateMipMaps: false,
         generateDepthBuffer: false,
         generateStencilBuffer: false,
         gammaSpace: false,
         samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-        type: Constants.TEXTURETYPE_HALF_FLOAT,
+        type: textureType,
         format: Constants.TEXTUREFORMAT_RGBA,
         ...options,
     };

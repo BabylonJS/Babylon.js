@@ -116,13 +116,6 @@ export const PickingToolbar: FunctionComponent<{
     }, [pickingEnabled, sceneElement, ignoreBackfaces]);
 
     return (
-        sceneElement && (
-            <ToggleButton
-                title={`${pickingEnabled ? "Disable" : "Enable"} Picking`}
-                enabledIcon={TargetRegular}
-                value={pickingEnabled}
-                onChange={() => setPickingEnabled((prev) => !prev)}
-            />
-        )
+        sceneElement && <ToggleButton title={`${pickingEnabled ? "Disable" : "Enable"} Picking`} checkedIcon={TargetRegular} value={pickingEnabled} onChange={setPickingEnabled} />
     );
 };

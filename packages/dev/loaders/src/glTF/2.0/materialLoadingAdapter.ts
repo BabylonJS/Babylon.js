@@ -213,6 +213,11 @@ export interface IMaterialLoadingAdapter {
     coatRoughnessTexture: Nullable<BaseTexture>;
 
     /**
+     * Sets the coat index of refraction (IOR)
+     */
+    coatIor: number;
+
+    /**
      * Sets the coat darkening (OpenPBR: coatDarkening, no PBR equivalent)
      */
     coatDarkening: number;

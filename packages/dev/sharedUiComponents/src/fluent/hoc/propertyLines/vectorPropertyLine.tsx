@@ -74,7 +74,7 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
     return (
         <PropertyLine
             {...props}
-            onCopy={() => `(${vector.x}, ${vector.y} ${HasZ(vector) ? `, ${vector.z}` : ""}${HasW(vector) ? `, ${vector.w}` : ""})`}
+            onCopy={() => `new ${props.value.constructor.name}(${vector.x},${vector.y} ${HasZ(vector) ? `,${vector.z}` : ""}${HasW(vector) ? `,${vector.w}` : ""})`}
             expandedContent={
                 <>
                     <SyncedSliderPropertyLine
@@ -120,7 +120,7 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
                 </>
             }
         >
-            <Body1>{`X: ${formatted(props.value.x)} | Y: ${formatted(props.value.y)}${HasZ(props.value) ? ` | Z: ${formatted(props.value.z)}` : ""}${HasW(props.value) ? ` | W: ${formatted(props.value.w)}` : ""}`}</Body1>
+            <Body1>{`[${formatted(props.value.x)}, ${formatted(props.value.y)}${HasZ(props.value) ? `, ${formatted(props.value.z)}` : ""}${HasW(props.value) ? `, ${formatted(props.value.w)}` : ""}]`}</Body1>
         </PropertyLine>
     );
 };

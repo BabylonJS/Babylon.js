@@ -429,6 +429,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         this._started = true;
         this._stopped = false;
+        this._actualFrame = 0;
         this._preWarmDone = false;
 
         // Animations

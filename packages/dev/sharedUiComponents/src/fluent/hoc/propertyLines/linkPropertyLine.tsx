@@ -18,7 +18,7 @@ type LinkProps = ImmutablePrimitiveProps<string> & {
 export const LinkPropertyLine: FunctionComponent<PropertyLineProps<string> & LinkProps> = (props) => {
     return (
         <PropertyLine {...props}>
-            <Link inline appearance="subtle" onClick={() => props.onLink?.()} href={props.url} title={props.title}>
+            <Link inline onClick={() => props.onLink?.()} href={props.url} title={props.title}>
                 <Body1>{props.value}</Body1>
             </Link>
         </PropertyLine>

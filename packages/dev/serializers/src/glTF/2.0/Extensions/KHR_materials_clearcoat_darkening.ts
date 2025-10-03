@@ -92,4 +92,4 @@ export class KHR_materials_clearcoat_darkening implements IGLTFExporterExtension
     }
 }
 
-GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_darkening(exporter));
+GLTFExporter.RegisterExtension(NAME, (exporter) => new KHR_materials_clearcoat_darkening(exporter), 105);
