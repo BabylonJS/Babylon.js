@@ -84,10 +84,10 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     );
 
     const updatePreviewAsync = useCallback(async () => {
-        if (!canvasRef.current) {
+        const previewCanvas = canvasRef.current;
+        if (!previewCanvas) {
             return;
         }
-        const previewCanvas = canvasRef.current!;
         try {
             await WhenTextureReadyAsync(texture); // Ensure texture is loaded before grabbing size
             const { w, h } = updatePreviewCanvasSize(previewCanvas); // Grab desired size
