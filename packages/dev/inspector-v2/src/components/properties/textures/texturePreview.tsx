@@ -40,7 +40,7 @@ const TextureChannelStates = {
     B: { R: false, G: false, B: true, A: false },
     A: { R: false, G: false, B: false, A: true },
     ALL: { R: true, G: true, B: true, A: true },
-} as const;
+};
 
 type TexturePreviewProps = {
     texture: BaseTexture;
@@ -99,7 +99,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
                 context.putImageData(imageData, 0, 0);
             }
         } catch {
-            updatePreviewCanvasSize(previewCanvas);
+            updatePreviewCanvasSize(previewCanvas); // If we fail above, best effort sizing preview canvas
         }
     }, [[texture, width, height, face, channels, internalTexture]]);
 
