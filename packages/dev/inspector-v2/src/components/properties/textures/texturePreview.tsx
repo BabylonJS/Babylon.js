@@ -40,7 +40,7 @@ const TextureChannelStates = {
     B: { R: false, G: false, B: true, A: false },
     A: { R: false, G: false, B: false, A: true },
     ALL: { R: true, G: true, B: true, A: true },
-};
+} as const;
 
 type TexturePreviewProps = {
     texture: BaseTexture;
