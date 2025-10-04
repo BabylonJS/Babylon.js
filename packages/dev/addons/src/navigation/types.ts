@@ -124,6 +124,10 @@ export interface INavMeshParametersV2 extends INavMeshParameters {
      * Function which is sets the polyAreas and polyFlags for the tile cache mesh. Defaults to a function that sets all areas to 0 and flags to 1.
      */
     tileCacheMeshProcess?: TileCacheMeshProcess;
+    /**
+     * Don't reverse indices of the source mesh
+     */
+    doNotReverseIndices?: boolean;
 }
 
 /**

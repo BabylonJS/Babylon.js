@@ -68,7 +68,7 @@ export function GenerateNavMeshWithWorker(
     };
 
     // send message to worker
-    const [positions, indices] = GetPositionsAndIndices(meshes);
+    const [positions, indices] = GetPositionsAndIndices(meshes, { doNotReverseIndices: parameters.doNotReverseIndices });
     const positionsCopy = new Float32Array(positions);
     const indicesCopy = new Uint32Array(indices);
     workerOptions.worker.postMessage({ positions: positionsCopy, indices: indicesCopy, parameters }, [positionsCopy.buffer, indicesCopy.buffer]);

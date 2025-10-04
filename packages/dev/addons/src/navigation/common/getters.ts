@@ -7,7 +7,12 @@ import { Mesh } from "core/Meshes/mesh";
  *  @param meshes The array of meshes from which to extract positions and indices.
  *  @returns A tuple containing a Float32Array of positions and a Uint32Array of
  */
-export function GetPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array, indices: Uint32Array] {
+export function GetPositionsAndIndices(
+    meshes: Mesh[],
+    options?: {
+        doNotReverseIndices?: boolean;
+    }
+): [positions: Float32Array, indices: Uint32Array] {
     let offset = 0;
     let index: number;
     let tri: number;
@@ -19,7 +24,7 @@ export function GetPositionsAndIndices(meshes: Mesh[]): [positions: Float32Array
         if (meshes[index]) {
             const mesh = meshes[index];
 
-            const meshIndices = GetReversedIndices(mesh);
+            const meshIndices = options?.doNotReverseIndices ? mesh.getIndices(false, true) : GetReversedIndices(mesh);
             if (!meshIndices) {
                 continue;
             }
