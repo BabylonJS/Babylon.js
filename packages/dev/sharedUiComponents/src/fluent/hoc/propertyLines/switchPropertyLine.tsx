@@ -10,6 +10,7 @@ import type { SwitchProps } from "../../primitives/switch";
  * @returns A React element representing the property line with a switch
  */
 export const SwitchPropertyLine: FunctionComponent<PropertyLineProps<boolean> & SwitchProps> = (props) => {
+    SwitchPropertyLine.displayName = "SwitchPropertyLine";
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { label, ...switchProps } = props;
     // Ensure the label gets passed to the PropertyLine component and not to the underlying switch

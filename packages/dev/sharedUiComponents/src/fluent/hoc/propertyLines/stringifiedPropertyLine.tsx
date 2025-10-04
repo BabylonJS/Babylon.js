@@ -16,6 +16,7 @@ type StringifiedPropertyLineProps = PropertyLineProps<number> &
  * @returns
  */
 export const StringifiedPropertyLine: FunctionComponent<StringifiedPropertyLineProps> = (props) => {
+    StringifiedPropertyLine.displayName = "StringifiedPropertyLine";
     const value = props.precision !== undefined ? props.value.toFixed(props.precision) : props.value.toLocaleString();
     const withUnits = props.units ? `${value} ${props.units}` : value;
     return (

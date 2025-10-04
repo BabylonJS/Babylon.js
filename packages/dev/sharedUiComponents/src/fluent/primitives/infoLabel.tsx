@@ -14,6 +14,7 @@ export type InfoLabelParentProps = Omit<InfoLabelProps, "htmlFor">;
  * @returns
  */
 export const InfoLabel: FunctionComponent<InfoLabelProps> = (props) => {
+    InfoLabel.displayName = "InfoLabel";
     return (
         <FluentInfoLabel htmlFor={props.htmlFor} info={props.info}>
             <Body1>{props.label}</Body1>

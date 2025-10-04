@@ -11,6 +11,8 @@ type ButtonLineProps = Omit<ButtonProps, "label"> & { label: string }; // Requir
  * @returns A button inside a line
  */
 export const ButtonLine: FunctionComponent<ButtonLineProps> = (props) => {
+    ButtonLine.displayName = "ButtonLine";
+
     return (
         <LineContainer>
             <Button {...props} />

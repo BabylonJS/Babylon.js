@@ -10,6 +10,7 @@ import { Checkbox } from "../../primitives/checkbox";
  * @returns property-line wrapped checkbox
  */
 export const CheckboxPropertyLine: FunctionComponent<PropertyLineProps<boolean> & PrimitiveProps<boolean>> = (props) => {
+    CheckboxPropertyLine.displayName = "CheckboxPropertyLine";
     return (
         <PropertyLine {...props}>
             <Checkbox {...props} />

@@ -61,6 +61,7 @@ const useDraggableStyles = makeStyles({
 });
 
 export const DraggableLine: React.FunctionComponent<DraggableLineProps> = (props) => {
+    DraggableLine.displayName = "DraggableLine";
     const classes = useDraggableStyles();
     return (
         <div

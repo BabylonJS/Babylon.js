@@ -26,6 +26,7 @@ function GradientsToListItems<T extends IValueGradient>(gradients: Nullable<Arra
     );
 }
 export const FactorGradientList: FunctionComponent<GradientListProps<FactorGradient>> = (props) => {
+    FactorGradientList.displayName = "FactorGradientList";
     const { gradients } = props;
     const items = GradientsToListItems<FactorGradient>(gradients);
     return (
@@ -59,6 +60,7 @@ export const FactorGradientList: FunctionComponent<GradientListProps<FactorGradi
 };
 
 export const Color3GradientList: FunctionComponent<GradientListProps<Color3Gradient>> = (props) => {
+    Color3GradientList.displayName = "Color3GradientList";
     const { gradients } = props;
     const items = GradientsToListItems<Color3Gradient>(gradients);
     return (
@@ -91,6 +93,7 @@ export const Color3GradientList: FunctionComponent<GradientListProps<Color3Gradi
 };
 
 export const Color4GradientList: FunctionComponent<GradientListProps<Color4Gradient>> = (props) => {
+    Color4GradientList.displayName = "Color4GradientList";
     const { gradients } = props;
     const items = GradientsToListItems<Color4Gradient>(gradients);
     return (

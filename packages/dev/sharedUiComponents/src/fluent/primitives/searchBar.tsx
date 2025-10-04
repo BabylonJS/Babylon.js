@@ -13,6 +13,8 @@ const useStyles = makeStyles({
 });
 
 export const SearchBar = forwardRef<HTMLInputElement, SearchProps>((props, ref) => {
+    SearchBar.displayName = "SearchBar";
+
     const classes = useStyles();
     const onChange: (ev: SearchBoxChangeEvent, data: InputOnChangeData) => void = (_, data) => {
         props.onChange(data.value);

@@ -10,11 +10,14 @@ import { SpinButton } from "../../primitives/spinButton";
  * @param props - PropertyLineProps and InputProps
  * @returns property-line wrapped input component
  */
-export const TextInputPropertyLine: FunctionComponent<TextInputProps & PropertyLineProps<string>> = (props) => (
-    <PropertyLine {...props}>
-        <TextInput {...props} />
-    </PropertyLine>
-);
+export const TextInputPropertyLine: FunctionComponent<TextInputProps & PropertyLineProps<string>> = (props) => {
+    TextInputPropertyLine.displayName = "TextInputPropertyLine";
+    return (
+        <PropertyLine {...props}>
+            <TextInput {...props} />
+        </PropertyLine>
+    );
+};
 
 /**
  * Wraps a number input in a property line
@@ -23,6 +26,7 @@ export const TextInputPropertyLine: FunctionComponent<TextInputProps & PropertyL
  * @returns property-line wrapped input component
  */
 export const NumberInputPropertyLine: FunctionComponent<SpinButtonProps & PropertyLineProps<number> & { forceInt?: boolean }> = (props) => {
+    NumberInputPropertyLine.displayName = "NumberInputPropertyLine";
     return (
         <PropertyLine {...props}>
             <SpinButton {...props} />

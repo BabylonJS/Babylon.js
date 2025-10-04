@@ -23,6 +23,8 @@ export type TextareaProps = PrimitiveProps<string> & {
  * @returns
  */
 export const Textarea: FunctionComponent<TextareaProps> = (props) => {
+    Textarea.displayName = "Textarea";
+
     const classes = useInputStyles();
     const handleChange = (event: ChangeEvent<HTMLTextAreaElement>, _data: TextareaOnChangeData) => {
         event.stopPropagation(); // Prevent event propagation

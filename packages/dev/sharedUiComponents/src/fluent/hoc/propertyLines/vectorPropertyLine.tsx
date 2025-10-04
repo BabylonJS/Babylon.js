@@ -56,6 +56,7 @@ const HasW = (vector: Vector2 | Vector3 | Vector4 | Quaternion): vector is Vecto
  * @returns
  */
 const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Vector3 | Vector4 | Quaternion>> = (props) => {
+    TensorPropertyLine.displayName = "TensorPropertyLine";
     const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
     const formatted = (val: number) => converted(val).toFixed(props.step !== undefined ? CalculatePrecision(props.step) : 2);
 
@@ -134,6 +135,7 @@ type RotationVectorPropertyLineProps = TensorPropertyLineProps<Vector3> & {
 
 const ToDegreesConverter = { from: Tools.ToDegrees, to: Tools.ToRadians };
 export const RotationVectorPropertyLine: FunctionComponent<RotationVectorPropertyLineProps> = (props) => {
+    RotationVectorPropertyLine.displayName = "RotationVectorPropertyLine";
     const min = props.useDegrees ? 0 : undefined;
     const max = props.useDegrees ? 360 : undefined;
     return (
@@ -156,6 +158,7 @@ type QuaternionPropertyLineProps = TensorPropertyLineProps<Quaternion> & {
 };
 const QuaternionPropertyLineInternal = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Quaternion>>;
 export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLineProps> = (props) => {
+    QuaternionPropertyLine.displayName = "QuaternionPropertyLine";
     const min = props.useDegrees ? 0 : undefined;
     const max = props.useDegrees ? 360 : undefined;
     const [quat, setQuat] = useState(props.value);
