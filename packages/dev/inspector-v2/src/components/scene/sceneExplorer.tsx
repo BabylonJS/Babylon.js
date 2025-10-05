@@ -354,9 +354,26 @@ const EntityTreeItem: FunctionComponent<{
     // Get the commands that apply to this entity.
     const commands = useResource(
         useCallback(() => {
-            const commands: readonly SceneExplorerCommand[] = commandProviders
+            const commands: readonly SceneExplorerCommand[] = [...commandProviders]
                 .filter((provider) => provider.predicate(entityItem.entity))
-                .map((provider) => provider.getCommand(entityItem.entity));
+                .map((provider) => {
+                    return {
+                        order: provider.order,
+                        command: provider.getCommand(entityItem.entity),
+                    };
+                })
+                .sort((a, b) => {
+                    // Action commands always come before toggle commands, because toggle commands will remain
+                    // visible when they are enabled, even when the pointer is not hovering the item, and we
+                    // don't want a bunch of blank space.
+                    if (a.command.type !== b.command.type) {
+                        return a.command.type === "action" ? -1 : 1;
+                    }
+
+                    // Within each group of command types, sort by order (default 0) ascending.
+                    return (a.order ?? 0) - (b.order ?? 0);
+                })
+                .map((entry) => entry.command);
 
             return Object.assign(commands, {
                 dispose: () => commands.forEach((command) => command.dispose?.()),
@@ -364,10 +381,10 @@ const EntityTreeItem: FunctionComponent<{
         }, [entityItem.entity, commandProviders])
     );
 
-    // Actions are only visible when the item is focused or has pointer hover.
+    // TreeItemLayout actions (totally unrelated to "Action" type commands) are only visible when the item is focused or has pointer hover.
     const actions = useMemo(() => commands.map((command) => MakeCommandElement(command, false)), [commands]);
 
-    // Asides are always visible.
+    // TreeItemLayout asides are always visible.
     const [aside, setAside] = useState<readonly JSX.Element[]>([]);
 
     // This useEffect keeps the aside up-to-date. What should always show is any enabled toggle command, along with
@@ -384,6 +401,8 @@ const EntityTreeItem: FunctionComponent<{
             }
             setAside(aside);
         };
+
+        updateAside();
 
         const observers = commands
             .map((command) => command.onChange)
