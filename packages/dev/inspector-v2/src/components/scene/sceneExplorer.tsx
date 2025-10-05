@@ -23,7 +23,7 @@ import {
     Tooltip,
     TreeItemLayout,
 } from "@fluentui/react-components";
-import { FilterRegular, GlobeRegular } from "@fluentui/react-icons";
+import { createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
@@ -235,6 +235,28 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommand }> = (props) => 
     return <ToggleButton appearance="transparent" title={displayName} checkedIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
 };
 
+// This "placeholder" command has a blank icon and is a no-op. It is used for aside
+// alignment when some toggle commands are enabled. See more details on the commands
+// for setting the aside state.
+const PlaceHolderCommand: ActionCommand = {
+    type: "action",
+    displayName: "",
+    icon: createFluentIcon("Placeholder", "1em", ""),
+    execute: () => {
+        /* No-op */
+    },
+};
+
+function MakeCommandElement(command: SceneExplorerCommand, isPlaceholder: boolean): JSX.Element {
+    if (isPlaceholder) {
+        // Placeholders are not visible and not interacted with, so they are always ActionCommand
+        // components, just to ensure the exact right amount of space is taken up.
+        return <ActionCommand key={command.displayName} command={PlaceHolderCommand} />;
+    }
+
+    return command.type === "action" ? <ActionCommand key={command.displayName} command={command} /> : <ToggleCommand key={command.displayName} command={command} />;
+}
+
 const SceneTreeItem: FunctionComponent<{
     scene: Scene;
     isSelected: boolean;
@@ -342,22 +364,31 @@ const EntityTreeItem: FunctionComponent<{
         }, [entityItem.entity, commandProviders])
     );
 
-    const [enabledToggleCommands, setEnabledToggleCommands] = useState<readonly ToggleCommand[]>([]);
+    // Actions are only visible when the item is focused or has pointer hover.
+    const actions = useMemo(() => commands.map((command) => MakeCommandElement(command, false)), [commands]);
 
-    // For enabled/active toggle commands, we should always show them so the user knows this command is toggled on.
+    // Asides are always visible.
+    const [aside, setAside] = useState<readonly JSX.Element[]>([]);
+
+    // This useEffect keeps the aside up-to-date. What should always show is any enabled toggle command, along with
+    // placeholders to the right to keep the position of the actions consistent.
     useEffect(() => {
-        const toggleCommands = commands.filter((command) => command.type === "toggle");
-
-        const updateEnabledToggleCommands = () => {
-            setEnabledToggleCommands(toggleCommands.filter((command) => command.isEnabled));
+        const updateAside = () => {
+            let isAnyCommandEnabled = false;
+            const aside: JSX.Element[] = [];
+            for (const command of commands) {
+                isAnyCommandEnabled ||= command.type === "toggle" && command.isEnabled;
+                if (isAnyCommandEnabled) {
+                    aside.push(MakeCommandElement(command, command.type !== "toggle" || !command.isEnabled));
+                }
+            }
+            setAside(aside);
         };
 
-        updateEnabledToggleCommands();
-
-        const observers = toggleCommands
+        const observers = commands
             .map((command) => command.onChange)
             .filter((onChange) => !!onChange)
-            .map((onChange) => onChange.add(updateEnabledToggleCommands));
+            .map((onChange) => onChange.add(updateAside));
 
         return () => {
             for (const observer of observers) {
@@ -383,23 +414,19 @@ const EntityTreeItem: FunctionComponent<{
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-                        // Actions are only visible when the item is focused or has pointer hover.
-                        actions={commands.map((command) =>
-                            command.type === "action" ? (
-                                <ActionCommand key={command.displayName} command={command} />
-                            ) : (
-                                <ToggleCommand key={command.displayName} command={command} />
-                            )
-                        )}
-                        // Asides are always visible.
+                        actions={actions}
                         aside={{
                             // Match the gap and padding of the actions.
-                            style: { gap: 0, paddingRight: tokens.spacingHorizontalS },
-                            children: enabledToggleCommands.map((command) => <ToggleCommand key={command.displayName} command={command} />),
+                            style: { gap: 0, paddingLeft: tokens.spacingHorizontalS, paddingRight: tokens.spacingHorizontalS },
+                            children: aside,
+                        }}
+                        main={{
+                            // Prevent the "main" content (the Body1 below) from growing too large and pushing the actions/aside out of view.
+                            style: { flex: "1 1 0", overflow: "hidden", textOverflow: "ellipsis" },
                         }}
                     >
                         <Body1 wrap={false} truncate>
-                            {name.substring(0, 100)}
+                            {name}
                         </Body1>
                     </TreeItemLayout>
                 </FlatTreeItem>
