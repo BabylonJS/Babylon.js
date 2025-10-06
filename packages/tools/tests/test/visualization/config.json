@@ -2998,7 +2998,7 @@
             "excludedEngines": ["webgl1"]
         },
         {
-            "title": "OpenPBR Thin Film Thickness VS IOR - Furnace Test Metals",
+            "title": "OpenPBR Thin Film Thickness VS IOR Metal - Furnace Test",
             "playgroundId": "#GRQHVV#94",
             "excludedEngines": ["webgl1"]
         },

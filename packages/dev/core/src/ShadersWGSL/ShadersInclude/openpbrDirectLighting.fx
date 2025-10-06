@@ -47,7 +47,7 @@
             #ifdef THIN_FILM
                 let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
                 let thinFilmDielectricFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
-                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight);
+                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
             #endif
         }
     #endif
