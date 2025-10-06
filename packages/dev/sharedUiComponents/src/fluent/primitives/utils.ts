@@ -17,6 +17,7 @@ export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidt
 export const useInputStyles = makeStyles({
     invalid: { backgroundColor: tokens.colorPaletteRedBackground2, ...UniformWidthStyling },
     valid: UniformWidthStyling,
+    input: { textAlign: "end" },
 });
 
 export function HandleOnBlur(event: FocusEvent<HTMLInputElement>) {
