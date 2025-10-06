@@ -324,6 +324,13 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * Number of splats in the mesh
+     */
+    public get splatCount() {
+        return this._splatIndex?.length;
+    }
+
+    /**
      * returns the splats data array buffer that contains in order : postions (3 floats), size (3 floats), color (4 bytes), orientation quaternion (4 bytes)
      */
     public get splatsData() {
@@ -369,6 +376,23 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public get shTextures() {
         return this._shTextures;
+    }
+
+    /**
+     * Gets the kernel size
+     * Documentation and mathematical explanations here:
+     * https://github.com/graphdeco-inria/gaussian-splatting/issues/294#issuecomment-1772688093
+     * https://github.com/autonomousvision/mip-splatting/issues/18#issuecomment-1929388931
+     */
+    public get kernelSize() {
+        return this._material instanceof GaussianSplattingMaterial ? this._material.kernelSize : 0;
+    }
+
+    /**
+     * Get the compensation state
+     */
+    public get compensation() {
+        return this._material instanceof GaussianSplattingMaterial ? this._material.compensation : false;
     }
 
     /**
