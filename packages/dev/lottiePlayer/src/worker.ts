@@ -131,6 +131,24 @@ onmessage = async function (evt) {
             Controller.setScale(scaleFactor);
             break;
         }
+        case "dispose": {
+            // Clean up resources
+            if (Controller) {
+                Controller.dispose(); // If your AnimationController has a dispose method
+                Controller = null;
+            }
+
+            if (RawAnimation) {
+                RawAnimation = null;
+            }
+
+            // Clean up any other resources
+            GetRawAnimationDataAsync = null;
+            DefaultConfiguration = null;
+            AnimationControllerClass = null;
+            AnimationPromises = null;
+            break;
+        }
         default:
             return;
     }
