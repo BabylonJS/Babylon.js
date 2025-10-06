@@ -339,8 +339,6 @@ export function IndicesArrayToTypedSubarray(indices: IndicesArray, start: number
     let processedIndices = indices;
     if (start !== 0 || count !== indices.length) {
         processedIndices = Array.isArray(indices) ? indices.slice(start, start + count) : indices.subarray(start, start + count);
-    } else {
-        processedIndices = indices;
     }
 
     // If Int32Array, cast the indices (which should all be positive) to Uint32Array
