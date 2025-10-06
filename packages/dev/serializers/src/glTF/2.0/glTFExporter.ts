@@ -52,7 +52,7 @@ import {
     IsChildCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
-    IndicesArrayToTypedArray,
+    IndicesArrayToTypedSubarray,
     GetVertexBufferInfo,
     CollapseChildIntoParent,
     Rotate180Y,
@@ -1383,7 +1383,7 @@ export class GLTFExporter {
         if (indicesToExport) {
             let accessorIndex = state.getIndicesAccessor(indices, start, count, offset, flip);
             if (accessorIndex === undefined) {
-                const bytes = IndicesArrayToTypedArray(indicesToExport, start, count, is32Bits);
+                const bytes = IndicesArrayToTypedSubarray(indicesToExport, start, count, is32Bits);
                 const bufferView = this._bufferManager.createBufferView(bytes);
 
                 const componentType = is32Bits ? AccessorComponentType.UNSIGNED_INT : AccessorComponentType.UNSIGNED_SHORT;
