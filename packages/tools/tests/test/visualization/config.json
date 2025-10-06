@@ -3069,7 +3069,8 @@
         {
             "title": "OpenPBR Thin Film Textures - IBL",
             "playgroundId": "#GRQHVV#100",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
         }
     ]
 }
