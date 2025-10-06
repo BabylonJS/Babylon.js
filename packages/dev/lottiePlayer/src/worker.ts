@@ -132,7 +132,6 @@ onmessage = async function (evt) {
             break;
         }
         case "dispose": {
-            // Clean up resources
             if (Controller) {
                 Controller.dispose();
                 Controller = null;
@@ -142,7 +141,6 @@ onmessage = async function (evt) {
                 RawAnimation = null;
             }
 
-            // Clean up any other resources
             GetRawAnimationDataAsync = null;
             DefaultConfiguration = null;
             AnimationControllerClass = null;
