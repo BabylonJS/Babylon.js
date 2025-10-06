@@ -1,5 +1,20 @@
 # Changelog
 
+## 8.30.3
+
+### Core
+
+- Fix floating origin bugs causing meshes to not be properly offset - by [georginahalpern](https://github.com/georginahalpern) ([#17234](https://github.com/BabylonJS/Babylon.js/pull/17234))
+- Viewer: Fix lighting regression now that we use PBRMaterial by default - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17233](https://github.com/BabylonJS/Babylon.js/pull/17233))
+
+### Serializers
+
+- glTF Exporter: Fix ArcRotateCamera export - by [alexchuber](https://github.com/alexchuber) ([#17235](https://github.com/BabylonJS/Babylon.js/pull/17235))
+
+### Viewer
+
+- Viewer: Fix lighting regression now that we use PBRMaterial by default - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17233](https://github.com/BabylonJS/Babylon.js/pull/17233))
+
 ## 8.30.2
 
 ### Core
