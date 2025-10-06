@@ -46,19 +46,20 @@ export class CopyTextureToTexture {
      * Constructs a new instance of the class
      * @param engine The engine to use for the copy
      * @param isDepthTexture True means that we should write (using gl_FragDepth) into the depth texture attached to the destination (default: false)
+     * @param sameSizeCopy True means that the copy will be done without any sampling (more efficient, but requires the source and destination to be of the same size) (default: false)
      */
-    constructor(engine: AbstractEngine, isDepthTexture = false) {
+    constructor(engine: AbstractEngine, isDepthTexture = false, sameSizeCopy = false) {
         this._engine = engine;
         this._isDepthTexture = isDepthTexture;
 
         this._renderer = new EffectRenderer(engine);
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._initShaderSourceAsync(isDepthTexture);
+        this._initShaderSourceAsync(isDepthTexture, sameSizeCopy);
     }
 
     private _shadersLoaded = false;
-    private async _initShaderSourceAsync(isDepthTexture: boolean) {
+    private async _initShaderSourceAsync(isDepthTexture: boolean, sameSizeCopy: boolean) {
         const engine = this._engine;
 
         if (engine.isWebGPU) {
@@ -71,6 +72,15 @@ export class CopyTextureToTexture {
 
         this._shadersLoaded = true;
 
+        const defines: string[] = [];
+
+        if (isDepthTexture) {
+            defines.push("#define DEPTH_TEXTURE");
+        }
+        if (sameSizeCopy) {
+            defines.push("#define NO_SAMPLER");
+        }
+
         this._effectWrapper = new EffectWrapper({
             engine: engine,
             name: "CopyTextureToTexture",
@@ -78,7 +88,7 @@ export class CopyTextureToTexture {
             useShaderStore: true,
             uniformNames: ["conversion"],
             samplerNames: ["textureSampler"],
-            defines: isDepthTexture ? ["#define DEPTH_TEXTURE"] : [],
+            defines,
             shaderLanguage: this._shaderLanguage,
         });
 
