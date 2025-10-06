@@ -29,18 +29,25 @@ export class LineContainerComponent extends react.Component<ILineContainerCompon
 
     renderHeader() {
         const className = this.state.isExpanded ? "collapse" : "collapse closed";
-
-        return (
-            <ContextMenuTrigger id={this.props.contextMenu?.props.id || `NoContextMenu_${this.props.title}`}>
-                {this.props.contextMenu}
-                <div className="header" onClick={() => this.switchExpandedState()}>
-                    <div className="title">{this.props.title}</div>
-                    <div className={className}>
-                        <img className="img" title={this.props.title} src={downArrow} />
-                    </div>
+        const header = (
+            <div className="header" onClick={() => this.switchExpandedState()}>
+                <div className="title">{this.props.title}</div>
+                <div className={className}>
+                    <img className="img" title={this.props.title} src={downArrow} />
                 </div>
-            </ContextMenuTrigger>
+            </div>
         );
+
+        if (this.props.contextMenu) {
+            return (
+                <ContextMenuTrigger id={this.props.contextMenu.props.id}>
+                    {this.props.contextMenu}
+                    {header}
+                </ContextMenuTrigger>
+            );
+        } else {
+            return header;
+        }
     }
 
     override render() {
