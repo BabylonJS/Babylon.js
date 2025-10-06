@@ -31,12 +31,14 @@ export type AccordionSectionProps = {
 };
 
 export const AccordionSection: FunctionComponent<PropsWithChildren<AccordionSectionProps>> = (props) => {
+    AccordionSection.displayName = "AccordionSection";
     const classes = useStyles();
 
     return <div className={classes.panelDiv}>{props.children}</div>;
 };
 
 export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
+    Accordion.displayName = "Accordion";
     const classes = useStyles();
 
     const { children, ...rest } = props;
