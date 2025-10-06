@@ -23,7 +23,7 @@ import {
     Tooltip,
     TreeItemLayout,
 } from "@fluentui/react-components";
-import { createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
+import { ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
@@ -382,7 +382,19 @@ const EntityTreeItem: FunctionComponent<{
     );
 
     // TreeItemLayout actions (totally unrelated to "Action" type commands) are only visible when the item is focused or has pointer hover.
-    const actions = useMemo(() => commands.map((command) => MakeCommandElement(command, false)), [commands]);
+    const actions = useMemo(() => {
+        const defaultCommands: SceneExplorerCommand[] = [];
+        if (entityItem.children?.length) {
+            defaultCommands.push({
+                type: "action",
+                displayName: "Expand All",
+                icon: () => <ArrowExpandAllRegular />,
+                execute: () => expandAll(),
+            });
+        }
+
+        return [...defaultCommands, ...commands].map((command) => MakeCommandElement(command, false));
+    }, [commands, entityItem.children?.length, expandAll]);
 
     // TreeItemLayout asides are always visible.
     const [aside, setAside] = useState<readonly JSX.Element[]>([]);
