@@ -51,6 +51,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
 
         const activeFrameGraphCommandRegistration = sceneExplorerService.addCommand({
             predicate: (entity: unknown) => entity instanceof FrameGraph,
+            order: DefaultCommandsOrder.FrameGraphPlay,
             getCommand: (frameGraph) => {
                 const onChangeObservable = new Observable<void>();
                 const frameGraphHook = InterceptProperty(scene, "frameGraph", {
