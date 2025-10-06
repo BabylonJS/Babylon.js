@@ -1,9 +1,10 @@
+import type { ScrollToInterface } from "@fluentui-contrib/react-virtualizer";
+import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
+import type { FluentIcon } from "@fluentui/react-icons";
+import type { ComponentType, FunctionComponent } from "react";
+
 import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
 
-import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
-import type { ScrollToInterface } from "@fluentui/react-components/unstable";
-import type { ComponentType, FunctionComponent } from "react";
-import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
     Body1,
@@ -23,9 +24,9 @@ import {
     TreeItemLayout,
 } from "@fluentui/react-components";
 import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
-import type { FluentIcon } from "@fluentui/react-icons";
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
@@ -231,7 +232,7 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommand }> = (props) => 
     );
 
     // TODO-iv2: Consolidate icon prop passing approach for inspector and shared components
-    return <ToggleButton appearance="transparent" title={displayName} enabledIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
+    return <ToggleButton appearance="transparent" title={displayName} checkedIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
 };
 
 const SceneTreeItem: FunctionComponent<{

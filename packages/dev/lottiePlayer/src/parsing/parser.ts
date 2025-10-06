@@ -361,8 +361,16 @@ export class Parser {
             currentKeyframeIndex: 0,
         };
 
-        positionProperty.startValue.x += spriteInfo.centerX;
-        positionProperty.currentValue.x += spriteInfo.centerX;
+        let textAlignment = 0;
+        if (layer.t.d && layer.t.d.k && layer.t.d.k.length > 0) {
+            textAlignment = layer.t.d.k[0].s.j;
+        }
+
+        // The X offset of the text depends on the alignment of the text: 0=left, 1=right, 2=centered
+        // Sprites are centered by default, so that is why the offset is 0 for centered text
+        const xAlignmentOffset = textAlignment === 0 ? spriteInfo.widthPx / 2 : textAlignment === 1 ? -spriteInfo.widthPx / 2 : 0;
+        positionProperty.startValue.x += xAlignmentOffset;
+        positionProperty.currentValue.x += xAlignmentOffset;
 
         // For text, its Y position is at the baseline, so we need to offset it by half the height of the text upwards
         positionProperty.startValue.y += spriteInfo.centerY;

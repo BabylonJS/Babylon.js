@@ -2652,6 +2652,15 @@
             "playgroundId": "#ATL1CS#16"
         },
         {
+            "title": "FrameGraph nrge clustered lights",
+            "playgroundId": "#1QCA2M#12",
+            "excludedEngines": ["webgl1", "webgl2"]
+        },
+        {
+            "title": "FrameGraph nrge clustered lights (simple)",
+            "playgroundId": "#1QCA2M#26"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
@@ -2692,6 +2701,10 @@
             "title": "FrameGraph motion blur skinned",
             "playgroundId": "#YB006J#749",
             "renderCount": 40
+        },
+        {
+            "title": "Render target texture with clustered lights",
+            "playgroundId": "#1QCA2M#11"
         },
         {
             "title": "IBL radiance roughness",
@@ -2792,21 +2805,42 @@
         },
         {
             "title": "Atmosphere Day",
-            "playgroundId": "#VO1Z0C#7",
+            "playgroundId": "#VO1Z0C#14",
+            "referenceImage": "atmosphere-day.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Day (Planet Origin)",
+            "playgroundId": "#VO1Z0C#10",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
         },
         {
             "title": "Atmosphere Sunset",
-            "playgroundId": "#VO1Z0C#9",
+            "playgroundId": "#VO1Z0C#15",
+            "referenceImage": "atmosphere-sunset.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Sunset (Planet Origin)",
+            "playgroundId": "#VO1Z0C#11",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
         },
         {
             "title": "Atmosphere Night",
-            "playgroundId": "#VO1Z0C#8",
+            "playgroundId": "#VO1Z0C#13",
+            "referenceImage": "atmosphere-night.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Night (Planet Origin)",
+            "playgroundId": "#VO1Z0C#12",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
@@ -2965,6 +2999,16 @@
         {
             "title": "OpenPBR Coat Anisotropy - Analytic Lights",
             "playgroundId": "#GRQHVV#78",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Coat Roughness vs Coat Ior - Analytic Lights",
+            "playgroundId": "#GRQHVV#80",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Coat Roughness vs Coat Ior - IBL",
+            "playgroundId": "#GRQHVV#81",
             "excludedEngines": ["webgl1"]
         },
         {

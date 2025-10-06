@@ -586,6 +586,13 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the coat index of refraction (IOR).
+     */
+    public set coatIor(value: number) {
+        this._material.clearCoat.indexOfRefraction = value;
+    }
+
+    /**
      * Sets the coat darkening value.
      * Note: PBR doesn't have a direct coat darkening property, so this is a no-op.
      * @param value The coat darkening value (ignored for PBR)
