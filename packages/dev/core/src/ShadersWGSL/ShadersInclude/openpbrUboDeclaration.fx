@@ -76,6 +76,8 @@ uniform vCoatColorInfos: vec2f;
 uniform coatColorMatrix: mat4x4f;
 uniform vCoatRoughnessInfos: vec2f;
 uniform coatRoughnessMatrix: mat4x4f;
+uniform vCoatRoughnessAnisotropyInfos: vec2f;
+uniform coatRoughnessAnisotropyMatrix: mat4x4f;
 uniform vCoatDarkeningInfos : vec2f;
 uniform coatDarkeningMatrix : mat4x4f;
 uniform vGeometryNormalInfos: vec2f;

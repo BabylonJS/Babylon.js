@@ -790,11 +790,17 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _emissionColorTexture: Sampler = new Sampler("emission_color", "emissionColor", "EMISSION_COLOR");
 
+    /**
+     * Defines the weight of the thin film layer on top of the base layer for iridescent effects.
+     */
     public thinFilmWeight: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmWeight")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmWeight: Property<number> = new Property<number>("thin_film_weight", 0.0, "vThinFilmWeight", 1, 0);
 
+    /**
+     * Thin film weight texture.
+     */
     public thinFilmWeightTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmWeightTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -810,16 +816,25 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmThickness: Property<number> = new Property<number>("thin_film_thickness", 0.5, "vThinFilmThickness", 2, 0);
 
+    /**
+     * Defines the minimum thickness of the thin film layer in μm.
+     */
     public thinFilmThicknessMin: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmThicknessMin")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmThicknessMin: Property<number> = new Property<number>("thin_film_thickness_min", 0.0, "vThinFilmThickness", 2, 1);
 
+    /**
+     * Defines the maximum thickness of the thin film layer in μm.
+     */
     public thinFilmThicknessTexture: Nullable<BaseTexture>;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmThicknessTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _thinFilmThicknessTexture: Sampler = new Sampler("thin_film_thickness", "thinFilmThickness", "THIN_FILM_THICKNESS");
 
+    /**
+     * Defines the index of refraction of the thin film layer.
+     */
     public thinFilmIor: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmIor")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
