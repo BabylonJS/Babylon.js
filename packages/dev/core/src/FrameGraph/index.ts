@@ -44,6 +44,7 @@ export * from "./Tasks/Rendering/shadowGeneratorTask";
 export * from "./Tasks/Rendering/taaObjectRendererTask";
 export * from "./Tasks/Rendering/utilityLayerRendererTask";
 
+export * from "./frameGraph.decorators";
 export * from "./frameGraph";
 export * from "./frameGraphContext";
 export * from "./frameGraphObjectList";

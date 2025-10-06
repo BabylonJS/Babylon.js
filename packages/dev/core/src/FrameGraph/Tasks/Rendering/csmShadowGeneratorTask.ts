@@ -1,4 +1,4 @@
-import type { FrameGraphTextureHandle, FrameGraph, Scene } from "core/index";
+import type { FrameGraphTextureHandle, FrameGraph, Scene, FrameGraphMultiValueType } from "core/index";
 import { CascadedShadowGenerator } from "../../../Lights/Shadows/cascadedShadowGenerator";
 import { FrameGraphShadowGeneratorTask } from "./shadowGeneratorTask";
 import { DirectionalLight } from "../../../Lights/directionalLight";
@@ -6,6 +6,7 @@ import { DepthTextureType, ThinMinMaxReducer } from "../../../Misc/thinMinMaxRed
 import { FrameGraphPostProcessTask } from "../PostProcesses/postProcessTask";
 import { Constants } from "../../../Engines/constants";
 import { textureSizeIsObject } from "../../../Materials/Textures/textureCreationOptions";
+import { FrameGraphTaskMultiProperty } from "../../frameGraph.decorators";
 
 /**
  * Task used to generate a cascaded shadow map from a list of objects.
@@ -34,39 +35,35 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
      */
     public depthTextureType: DepthTextureType = DepthTextureType.NormalizedViewDepth;
 
-    private _numCascades = CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
     /**
      * The number of cascades.
      */
-    public get numCascades() {
-        return this._numCascades;
-    }
+    @FrameGraphTaskMultiProperty("_numCascadesSetter")
+    public numCascades = CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
 
-    public set numCascades(value: number) {
-        if (value === this._numCascades) {
-            return;
-        }
+    /**
+     * Multi value version of numCascades.
+     */
+    public numCascadesMulti: FrameGraphMultiValueType<number>;
 
-        this._numCascades = value;
+    protected _numCascadesSetter(_oldValue: number) {
         this._setupShadowGenerator();
     }
 
-    private _debug = false;
     /**
      * Gets or sets a value indicating whether the shadow generator should display the cascades.
      */
-    public get debug() {
-        return this._debug;
-    }
+    @FrameGraphTaskMultiProperty("_debugSetter")
+    public debug = false;
 
-    public set debug(value: boolean) {
-        if (value === this._debug) {
-            return;
-        }
+    /**
+     * Multi value version of debug.
+     */
+    public debugMulti: FrameGraphMultiValueType<boolean>;
 
-        this._debug = value;
+    protected _debugSetter(_oldValue: boolean) {
         if (this._shadowGenerator) {
-            this._shadowGenerator.debug = value;
+            this._shadowGenerator.debug = this.debug;
         }
     }
 
@@ -270,7 +267,7 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
             throw new Error(`FrameGraphCascadedShadowGeneratorTask ${this.name}: the CSM shadow generator only supports directional lights.`);
         }
         this._shadowGenerator = new CascadedShadowGenerator(this.mapSize, this.light, this.useFloat32TextureType, this.camera, this.useRedTextureFormat);
-        this._shadowGenerator.numCascades = this._numCascades;
+        this._shadowGenerator.numCascades = this.numCascades;
     }
 
     protected override _setupShadowGenerator() {
@@ -281,7 +278,7 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
             return;
         }
 
-        shadowGenerator.debug = this._debug;
+        shadowGenerator.debug = this.debug;
         shadowGenerator.stabilizeCascades = this._stabilizeCascades;
         shadowGenerator.lambda = this._lambda;
         shadowGenerator.cascadeBlendPercentage = this._cascadeBlendPercentage;

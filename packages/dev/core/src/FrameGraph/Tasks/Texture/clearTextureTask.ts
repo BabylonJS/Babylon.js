@@ -1,7 +1,8 @@
-import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass } from "core/index";
+import type { FrameGraph, FrameGraphTextureHandle, FrameGraphRenderPass, FrameGraphMultiValueType } from "core/index";
 import { Color4, TmpColors } from "../../../Maths/math.color";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { backbufferColorTextureHandle } from "../../frameGraphTypes";
+import { FrameGraphTaskMultiProperty } from "../../frameGraph.decorators";
 
 /**
  * Task used to clear a texture.
@@ -35,7 +36,13 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
     /**
      * The value to use to clear the stencil buffer (default: 0).
      */
+    @FrameGraphTaskMultiProperty()
     public stencilValue = 0;
+
+    /**
+     * Multi value version of stencilValue.
+     */
+    public stencilValueMulti: FrameGraphMultiValueType<number>;
 
     /**
      * The color texture to clear.

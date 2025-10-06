@@ -1,4 +1,13 @@
-import type { FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle, InternalTexture, FrameGraphRenderContext } from "core/index";
+import type {
+    FrameGraph,
+    FrameGraphObjectList,
+    IFrameGraphPass,
+    Nullable,
+    FrameGraphTextureHandle,
+    InternalTexture,
+    FrameGraphRenderContext,
+    FrameGraphTaskProperty,
+} from "core/index";
 import { FrameGraphCullPass } from "./Passes/cullPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { Observable } from "core/Misc/observable";
@@ -12,10 +21,26 @@ export abstract class FrameGraphTask {
 
     private readonly _passes: IFrameGraphPass[] = [];
     private readonly _passesDisabled: IFrameGraphPass[] = [];
+    private readonly _multiProperties: FrameGraphTaskProperty<any>[] = [];
+
+    /**
+     * The multi-value properties of the task.
+     * @internal
+     */
+    public get multiProperties() {
+        return this._multiProperties;
+    }
 
     // Note: must be a getter/setter even if there's no specific processing, otherwise inherited classes can't make it a getter/setter!
     // Same thing for the disabled property
     protected _name: string;
+
+    /**
+     * A function that returns whether the task is available.
+     * If not defined, the task is always available.
+     * If the task is not available, it will be skipped at build and execution time.
+     */
+    public available?: () => boolean;
 
     /**
      * The name of the task.
@@ -76,6 +101,15 @@ export abstract class FrameGraphTask {
      */
     public isReady(): boolean {
         return true;
+    }
+
+    /**
+     * Evaluates the multi-valued properties of the task.
+     */
+    public evaluateMultiValuedProperties(): void {
+        for (const prop of this._multiProperties) {
+            prop.evaluate();
+        }
     }
 
     /**
