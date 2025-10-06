@@ -331,7 +331,7 @@ export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, pare
  * @param indices input array to be converted
  * @param start starting index
  * @param count number of indices
- * @param is32Bits whether the output should be Uint32Array (true) or Uint16Array (false)
+ * @param is32Bits whether the output should be Uint32Array (true) or Uint16Array (false) when indices is an `Array`
  * @returns a Uint32Array or Uint16Array
  * @internal
  */
