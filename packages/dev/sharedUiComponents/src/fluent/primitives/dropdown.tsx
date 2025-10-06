@@ -6,6 +6,7 @@ import { CustomTokens, UniformWidthStyling } from "./utils";
 
 const useDropdownStyles = makeStyles({
     dropdown: { ...UniformWidthStyling, minWidth: CustomTokens.inputWidth },
+    button: { textAlign: "end" },
 });
 
 export type AcceptedDropdownValue = string | number;
@@ -41,6 +42,7 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
 
     return (
         <FluentDropdown
+            button={{ className: classes.button }}
             disabled={props.disabled}
             size="medium"
             className={classes.dropdown}

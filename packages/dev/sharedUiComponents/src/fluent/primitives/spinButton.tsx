@@ -74,6 +74,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentSpinButton
                 {...props}
+                input={{ className: classes.input }}
                 step={step}
                 id={id}
                 size="medium"
