@@ -134,7 +134,7 @@ onmessage = async function (evt) {
         case "dispose": {
             // Clean up resources
             if (Controller) {
-                Controller.dispose(); // If your AnimationController has a dispose method
+                Controller.dispose();
                 Controller = null;
             }
 
