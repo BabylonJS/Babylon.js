@@ -3,6 +3,7 @@ import * as react from "react";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools.js";
+import { ContextMenu, MenuItem } from "react-contextmenu";
 
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent.js";
@@ -107,6 +108,8 @@ export class NodeListComponent extends react.Component<INodeListComponentProps, 
                     return <DraggableBlockLineComponent key={GetBlockKey(block.blockType, block.namespace)} block={block} />;
                 });
 
+            let contextMenu: JSX.Element | undefined = undefined;
+
             if (key === CustomBlocksNamespace) {
                 const line = (
                     <LineWithFileButtonComponent
@@ -122,11 +125,28 @@ export class NodeListComponent extends react.Component<INodeListComponentProps, 
                     />
                 );
                 blockList.push(line);
+
+                if (this.props.globalState.clearCustomBlocks) {
+                    const clearCustomBlocks = this.props.globalState.clearCustomBlocks;
+                    contextMenu = (
+                        <ContextMenu id={"contextmenu#" + key} className="context-menu">
+                            <MenuItem
+                                key="Remove_All_Custom_Blocks"
+                                onClick={() => {
+                                    clearCustomBlocks();
+                                    this.forceUpdate();
+                                }}
+                            >
+                                Remove All Custom Blocks
+                            </MenuItem>
+                        </ContextMenu>
+                    );
+                }
             }
 
             if (blockList.length) {
                 blockMenu.push(
-                    <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false}>
+                    <LineContainerComponent key={key + " blocks"} title={key.replace("__", ": ").replace("_", " ")} closed={false} contextMenu={contextMenu}>
                         {blockList}
                     </LineContainerComponent>
                 );
