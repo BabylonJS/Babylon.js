@@ -5,10 +5,9 @@ import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import {
+    BorderNoneRegular,
     BorderOutsideRegular,
     CameraRegular,
-    Cone16Filled,
-    Cone16Regular,
     EyeOffRegular,
     EyeRegular,
     FlashlightOffRegular,
@@ -115,7 +114,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                     get displayName() {
                         return `${mesh.showBoundingBox ? "Hide" : "Show"} Bounding Box`;
                     },
-                    icon: () => <BorderOutsideRegular />,
+                    icon: () => (mesh.showBoundingBox ? <BorderOutsideRegular /> : <BorderNoneRegular />),
                     get isEnabled() {
                         return mesh.showBoundingBox;
                     },
@@ -208,7 +207,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                         get displayName() {
                             return `Turn ${gizmoRef ? "Off" : "On"} Gizmo`;
                         },
-                        icon: () => (gizmoRef ? <Cone16Filled /> : <Cone16Regular />),
+                        icon: () => (gizmoRef ? <EyeRegular /> : <EyeOffRegular />),
                         get isEnabled() {
                             return !!gizmoRef;
                         },

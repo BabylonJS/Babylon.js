@@ -1,4 +1,4 @@
-import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Stronger } from "@fluentui/react-components";
+import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Strong } from "@fluentui/react-components";
 import { ChevronCircleDown20Regular, ChevronCircleRight20Regular, CopyRegular } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
@@ -145,7 +145,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
                 <InfoLabel className={classes.label} info={description ? <div className={classes.infoPopup}>{description}</div> : undefined} title={label}>
-                    <Body1Stronger className={classes.labelText}>{label}</Body1Stronger>
+                    <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
                     {expandedContent && (

@@ -15,7 +15,7 @@ export const enum DefaultSectionsOrder {
 }
 
 export const enum DefaultCommandsOrder {
-    SpritePlay = 200,
+    SpritePlay = 600,
     LightActive = 700,
     CameraActive = 700,
     GizmoActive = 800,
