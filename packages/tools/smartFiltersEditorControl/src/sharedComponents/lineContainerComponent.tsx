@@ -1,5 +1,4 @@
 import { DataStorage } from "core/Misc/dataStorage.js";
-import type { Nullable } from "core/types";
 import * as react from "react";
 import downArrow from "../assets/imgs/downArrow.svg";
 import { ContextMenuTrigger } from "react-contextmenu";
@@ -8,7 +7,7 @@ interface ILineContainerComponentProps {
     title: string;
     children: any[] | any;
     closed?: boolean;
-    contextMenu: Nullable<JSX.Element>;
+    contextMenu?: JSX.Element;
 }
 
 export class LineContainerComponent extends react.Component<ILineContainerComponentProps, { isExpanded: boolean }> {

@@ -108,7 +108,7 @@ export class NodeListComponent extends react.Component<INodeListComponentProps, 
                     return <DraggableBlockLineComponent key={GetBlockKey(block.blockType, block.namespace)} block={block} />;
                 });
 
-            let contextMenu: Nullable<JSX.Element> = null;
+            let contextMenu: JSX.Element | undefined = undefined;
 
             if (key === CustomBlocksNamespace) {
                 const line = (
