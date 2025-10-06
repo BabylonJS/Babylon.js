@@ -5,6 +5,7 @@ import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
 import {
+    BorderOutsideRegular,
     CameraRegular,
     Cone16Filled,
     Cone16Regular,
@@ -27,8 +28,10 @@ import { MeshIcon } from "shared-ui-components/fluent/icons";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { GizmoServiceIdentity } from "../../gizmoService";
 import { SceneContextIdentity } from "../../sceneContext";
-import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
+import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
+
+import "core/Rendering/boundingBoxRenderer";
 
 export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext, IGizmoService]> = {
     friendlyName: "Node Explorer",
@@ -98,8 +101,39 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getEntityMovedObservables: () => [nodeMovedObservable],
         });
 
+        const abstractMeshBoundingBoxCommandRegistration = sceneExplorerService.addCommand({
+            predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
+            order: DefaultCommandsOrder.MeshBoundingBox,
+            getCommand: (mesh) => {
+                const onChangeObservable = new Observable<void>();
+                const showBoundingBoxHook = InterceptProperty(mesh, "showBoundingBox", {
+                    afterSet: () => onChangeObservable.notifyObservers(),
+                });
+
+                return {
+                    type: "toggle",
+                    get displayName() {
+                        return `${mesh.showBoundingBox ? "Hide" : "Show"} Bounding Box`;
+                    },
+                    icon: () => <BorderOutsideRegular />,
+                    get isEnabled() {
+                        return mesh.showBoundingBox;
+                    },
+                    set isEnabled(enabled: boolean) {
+                        mesh.showBoundingBox = enabled;
+                    },
+                    onChange: onChangeObservable,
+                    dispose: () => {
+                        showBoundingBoxHook.dispose();
+                        onChangeObservable.clear();
+                    },
+                };
+            },
+        });
+
         const abstractMeshVisibilityCommandRegistration = sceneExplorerService.addCommand({
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
+            order: DefaultCommandsOrder.MeshVisibility,
             getCommand: (mesh) => {
                 const onChangeObservable = new Observable<void>();
                 const isVisibleHook = InterceptProperty(mesh, "isVisible", {
@@ -129,6 +163,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const activeCameraCommandRegistration = sceneExplorerService.addCommand({
             predicate: (entity: unknown) => entity instanceof Camera,
+            order: DefaultCommandsOrder.CameraActive,
             getCommand: (camera) => {
                 const scene = camera.getScene();
                 const onChangeObservable = new Observable<void>();
@@ -162,6 +197,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         function addGizmoCommand<NodeT extends Node>(nodeClass: abstract new (...args: any[]) => NodeT, getGizmoRef: (node: NodeT) => IDisposable) {
             return sceneExplorerService.addCommand({
                 predicate: (entity: unknown): entity is NodeT => entity instanceof nodeClass,
+                order: DefaultCommandsOrder.GizmoActive,
                 getCommand: (node) => {
                     const onChangeObservable = new Observable<void>();
 
@@ -203,6 +239,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const lightEnabledCommandRegistration = sceneExplorerService.addCommand({
             predicate: (entity: unknown): entity is Light => entity instanceof Light,
+            order: DefaultCommandsOrder.LightActive,
             getCommand: (light) => {
                 return {
                     type: "toggle",
@@ -226,6 +263,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         return {
             dispose: () => {
                 sectionRegistration.dispose();
+                abstractMeshBoundingBoxCommandRegistration.dispose();
                 abstractMeshVisibilityCommandRegistration.dispose();
                 activeCameraCommandRegistration.dispose();
                 cameraGizmoCommandRegistration.dispose();
