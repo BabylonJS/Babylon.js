@@ -279,8 +279,9 @@ export class NodeRenderGraph {
 
     /**
      * Build the final list of blocks that will be executed by the "execute" method
+     * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
      */
-    public build() {
+    public build(dontBuildFrameGraph = false) {
         if (!this.outputBlock) {
             throw new Error("You must define the outputBlock property before building the node render graph");
         }
@@ -307,7 +308,9 @@ export class NodeRenderGraph {
         try {
             this.outputBlock.build(state);
 
-            this._frameGraph.build();
+            if (!dontBuildFrameGraph) {
+                this._frameGraph.build();
+            }
         } finally {
             this._buildId = NodeRenderGraph._BuildIdGenerator++;
 

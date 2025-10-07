@@ -11,6 +11,7 @@ import type { PrimitiveProps } from "./primitive";
  * @returns Checkbox component
  */
 export const Checkbox: FunctionComponent<PrimitiveProps<boolean>> = (props) => {
+    Checkbox.displayName = "Checkbox";
     const [checked, setChecked] = useState(() => props.value ?? false);
 
     useEffect(() => {

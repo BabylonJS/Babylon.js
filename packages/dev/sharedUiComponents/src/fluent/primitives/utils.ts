@@ -13,10 +13,16 @@ export const CustomTokens = {
 };
 
 export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, textAlign: "right", boxSizing: "border-box" };
-
 export const useInputStyles = makeStyles({
-    invalid: { backgroundColor: tokens.colorPaletteRedBackground2, ...UniformWidthStyling },
-    valid: UniformWidthStyling,
+    input: UniformWidthStyling,
+    invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
+    container: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center", // align items vertically
+        gap: "4px",
+    },
 });
 
 export function HandleOnBlur(event: FocusEvent<HTMLInputElement>) {

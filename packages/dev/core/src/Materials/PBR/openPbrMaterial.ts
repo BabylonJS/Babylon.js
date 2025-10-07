@@ -1890,7 +1890,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                         }
                     }
 
-                    BindIBLParameters(scene, defines, ubo, radianceTexture, this.realTimeFiltering, true, true, true, true, true, Color3.White());
+                    BindIBLParameters(scene, defines, ubo, Color3.White(), radianceTexture, this.realTimeFiltering, true, true, true, true, true);
                 }
 
                 // Point size

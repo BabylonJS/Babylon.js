@@ -11,9 +11,9 @@ export type ButtonProps = BasePrimitiveProps & {
 };
 
 export const Button: FunctionComponent<ButtonProps> = (props) => {
+    Button.displayName = "Button";
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { icon: Icon, label, ...buttonProps } = props;
-
     return (
         <FluentButton iconPosition="after" {...buttonProps} icon={Icon && <Icon />}>
             {label && props.label}
