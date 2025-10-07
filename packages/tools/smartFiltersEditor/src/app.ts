@@ -13,6 +13,7 @@ import {
     SmartFilterEditorControl,
     LogLevel,
     type SmartFilterEditorOptions,
+    CustomBlocksNamespace,
 } from "smart-filters-editor-control";
 import { SmartFilterRenderer } from "./smartFilterRenderer";
 import { CustomBlockManager } from "./customBlockManager";
@@ -311,6 +312,13 @@ async function Main(): Promise<void> {
             const { blockType, namespace } = blockRegistration;
             customBlockManager.deleteBlockDefinition(blockType, namespace);
             RemoveCustomBlockFromBlockEditorRegistration(blockEditorRegistration, allBlockRegistrations, blockType, namespace);
+        },
+        clearCustomBlocks: () => {
+            const blocksToDelete = customBlockManager.getCustomBlockDefinitions();
+            for (const block of blocksToDelete) {
+                customBlockManager.deleteBlockDefinition(block.blockType, block.namespace);
+                RemoveCustomBlockFromBlockEditorRegistration(blockEditorRegistration, allBlockRegistrations, block.blockType, block.namespace || CustomBlocksNamespace);
+            }
         },
         onLogRequiredObservable,
         onSaveEditorDataRequiredObservable,
