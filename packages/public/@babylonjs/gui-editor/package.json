@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/gui-editor",
-    "version": "8.30.4",
+    "version": "8.30.5",
     "main": "dist/babylon.guiEditor.js",
     "module": "dist/babylon.guiEditor.js",
     "esnext": "dist/babylon.guiEditor.js",
@@ -24,8 +24,8 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^8.30.4",
-        "@babylonjs/gui": "^8.30.4",
+        "@babylonjs/core": "^8.30.5",
+        "@babylonjs/gui": "^8.30.5",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },
