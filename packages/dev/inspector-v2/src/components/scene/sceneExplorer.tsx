@@ -337,6 +337,8 @@ const EntityTreeItem: FunctionComponent<{
 }> = (props) => {
     const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
 
+    const hasChildren = !!entityItem.children?.length;
+
     const displayInfo = useResource(
         useCallback(() => {
             const displayInfo = entityItem.getDisplayInfo();
@@ -384,7 +386,7 @@ const EntityTreeItem: FunctionComponent<{
     // TreeItemLayout actions (totally unrelated to "Action" type commands) are only visible when the item is focused or has pointer hover.
     const actions = useMemo(() => {
         const defaultCommands: SceneExplorerCommand[] = [];
-        if (entityItem.children?.length) {
+        if (hasChildren) {
             defaultCommands.push({
                 type: "action",
                 displayName: "Expand All",
@@ -394,7 +396,7 @@ const EntityTreeItem: FunctionComponent<{
         }
 
         return [...defaultCommands, ...commands].map((command) => MakeCommandElement(command, false));
-    }, [commands, entityItem.children?.length, expandAll]);
+    }, [commands, hasChildren, expandAll]);
 
     // TreeItemLayout asides are always visible.
     const [aside, setAside] = useState<readonly JSX.Element[]>([]);
@@ -435,7 +437,7 @@ const EntityTreeItem: FunctionComponent<{
                     key={entityItem.entity.uniqueId}
                     value={entityItem.entity.uniqueId}
                     // Disable manual expand/collapse when a filter is active.
-                    itemType={!isFiltering && (entityItem.children?.length ?? 0) > 0 ? "branch" : "leaf"}
+                    itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
                     parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : entityItem.entity.uniqueId}
                     aria-level={entityItem.depth}
                     aria-setsize={1}
@@ -462,7 +464,7 @@ const EntityTreeItem: FunctionComponent<{
                     </TreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>
-            <MenuPopover hidden={!entityItem.children?.length}>
+            <MenuPopover hidden={!hasChildren}>
                 <MenuList>
                     <MenuItem onClick={expandAll}>
                         <Body1>Expand All</Body1>
