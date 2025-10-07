@@ -69,7 +69,7 @@
                 // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
                 let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
                 let thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
-                coloredFresnel = specular_weight * thinFilmIorScale * mix(coloredFresnel, thinFilmConductorFresnel, thin_film_weight);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmIorScale * thinFilmConductorFresnel, thin_film_weight);
             #endif
 
             #ifdef ANISOTROPIC_BASE
