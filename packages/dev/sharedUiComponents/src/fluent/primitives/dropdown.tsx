@@ -13,6 +13,7 @@ const useDropdownStyles = makeStyles({
         justifyContent: "center", // align items vertically
         gap: "4px",
     },
+    button: { textAlign: "end" },
 });
 
 export type AcceptedDropdownValue = string | number;
@@ -58,6 +59,7 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
                 disabled={props.disabled}
                 size="medium"
                 className={mergedClassName}
+                button={{ className: classes.button }}
                 onOptionSelect={(evt, data) => {
                     const value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
                     if (value !== undefined) {

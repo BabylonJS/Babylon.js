@@ -12,9 +12,10 @@ export const CustomTokens = {
     rightAlignOffset: "-8px",
 };
 
-export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, textAlign: "right", boxSizing: "border-box" };
+export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, boxSizing: "border-box" };
 export const useInputStyles = makeStyles({
     input: UniformWidthStyling,
+    inputSlot: { textAlign: "right" },
     invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
     container: {
         flex: 1,

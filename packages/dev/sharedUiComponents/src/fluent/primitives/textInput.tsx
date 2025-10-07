@@ -55,6 +55,7 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentInput
                 {...props}
+                input={{ className: classes.inputSlot }}
                 id={id}
                 size="medium"
                 value={value}

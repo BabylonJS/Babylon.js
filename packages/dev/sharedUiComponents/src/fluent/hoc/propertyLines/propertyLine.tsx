@@ -1,4 +1,4 @@
-import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Stronger } from "@fluentui/react-components";
+import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Strong } from "@fluentui/react-components";
 import { ChevronCircleDown20Regular, ChevronCircleRight20Regular, CopyRegular } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
@@ -23,22 +23,26 @@ const usePropertyLineStyles = makeStyles({
         justifyContent: "flex-start",
         width: "100%",
     },
-    label: {
+    infoLabel: {
+        display: "flex",
         flex: "1 1 0", // grow=1, shrink =1, basis = 0 initial size before
         minWidth: CustomTokens.labelMinWidth,
         textAlign: "left",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
+    },
+    labelSlot: {
+        display: "flex",
+        minWidth: 0,
     },
     labelText: {
         whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
     },
     rightContent: {
         flex: "0 1 auto",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
-        minWidth: "50%",
     },
     infoPopup: {
         whiteSpace: "normal",
@@ -145,8 +149,13 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     return (
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
-                <InfoLabel className={classes.label} info={description ? <div className={classes.infoPopup}>{description}</div> : undefined} title={label}>
-                    <Body1Stronger className={classes.labelText}>{label}</Body1Stronger>
+                <InfoLabel
+                    className={classes.infoLabel}
+                    label={{ className: classes.labelSlot }}
+                    info={description ? <div className={classes.infoPopup}>{description}</div> : undefined}
+                    title={label}
+                >
+                    <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
                     {expandedContent && (

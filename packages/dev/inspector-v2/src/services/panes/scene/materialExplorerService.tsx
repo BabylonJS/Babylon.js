@@ -2,9 +2,8 @@ import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISceneContext } from "../../sceneContext";
 import type { ISceneExplorerService } from "./sceneExplorerService";
 
-import { PaintBrushRegular } from "@fluentui/react-icons";
-
 import { Observable } from "core/Misc/observable";
+import { MaterialIcon } from "shared-ui-components/fluent/icons";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
 import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
@@ -43,7 +42,7 @@ export const MaterialExplorerServiceDefinition: ServiceDefinition<[], [ISceneExp
                     },
                 };
             },
-            entityIcon: () => <PaintBrushRegular />,
+            entityIcon: () => <MaterialIcon />,
             getEntityAddedObservables: () => [scene.onNewMaterialAddedObservable],
             getEntityRemovedObservables: () => [scene.onMaterialRemovedObservable],
         });

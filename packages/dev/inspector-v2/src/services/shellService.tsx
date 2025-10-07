@@ -5,7 +5,7 @@ import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
-import { Button, Divider, makeStyles, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
+import { Button, Divider, makeStyles, Tab, TabList, Subtitle1, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 
@@ -228,13 +228,11 @@ const useStyles = makeStyles({
         overflow: "hidden",
         padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
         border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderBottomWidth: 0,
         backgroundColor: tokens.colorNeutralBackground1,
     },
     barTop: {
         borderTopWidth: 0,
-    },
-    barBottom: {
-        borderBottomWidth: 0,
     },
     barLeft: {
         marginRight: "auto",
@@ -287,11 +285,18 @@ const useStyles = makeStyles({
         display: "flex",
         flexGrow: 1,
         flexDirection: "column",
-        paddingTop: tokens.spacingVerticalS,
         overflow: "hidden",
     },
-    paneHeader: {
+    paneHeaderDiv: {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        backgroundColor: tokens.colorNeutralBackgroundInverted,
+        height: "44px",
+    },
+    paneHeaderText: {
         marginLeft: tokens.spacingHorizontalM,
+        color: tokens.colorNeutralForegroundInverted,
     },
     headerDivider: {
         flex: "0 0 auto",
@@ -324,6 +329,20 @@ const useStyles = makeStyles({
         overflow: "hidden",
     },
 });
+
+const PaneHeader: FunctionComponent<{ title?: string }> = ({ title }) => {
+    const classes = useStyles();
+
+    if (!title) {
+        return null;
+    }
+
+    return (
+        <div className={classes.paneHeaderDiv}>
+            <Subtitle1 className={classes.paneHeaderText}>{title}</Subtitle1>
+        </div>
+    );
+};
 
 // This is a wrapper for an item in a toolbar that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
 const ToolbarItem: FunctionComponent<{
@@ -366,7 +385,7 @@ const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: Toolb
     return (
         <>
             {components.length > 0 && (
-                <div className={`${classes.bar} ${location === "top" ? classes.barTop : classes.barBottom}`}>
+                <div className={`${classes.bar} ${location === "top" ? classes.barTop : null}`}>
                     <div className={classes.barLeft}>
                         {leftComponents.map((entry) => (
                             <ToolbarItem
@@ -627,12 +646,7 @@ function usePane(
 
                                 {/* Render the top pane content. */}
                                 <div className={classes.paneContent}>
-                                    {topSelectedTab?.title ? (
-                                        <>
-                                            <Title3 className={classes.paneHeader}>{topSelectedTab.title}</Title3>
-                                            <Divider inset className={classes.headerDivider} appearance="brand" />
-                                        </>
-                                    ) : null}
+                                    <PaneHeader title={topSelectedTab?.title} />
                                     {topSelectedTab?.content && <topSelectedTab.content />}
                                 </div>
 
@@ -659,12 +673,7 @@ function usePane(
                                         className={classes.paneContent}
                                         style={{ height: `clamp(200px,calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
                                     >
-                                        {bottomSelectedTab?.title ? (
-                                            <>
-                                                <Title3 className={classes.paneHeader}>{bottomSelectedTab.title}</Title3>
-                                                <Divider inset className={classes.headerDivider} appearance="brand" />
-                                            </>
-                                        ) : null}
+                                        <PaneHeader title={bottomSelectedTab?.title} />
                                         {bottomSelectedTab?.content && <bottomSelectedTab.content />}
                                     </div>
                                 )}
