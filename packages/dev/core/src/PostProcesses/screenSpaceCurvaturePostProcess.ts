@@ -104,6 +104,17 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
         }
     }
 
+    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
+        if (useWebGPU) {
+            this._webGPUReady = true;
+            list.push(Promise.all([import("../ShadersWGSL/screenSpaceCurvature.fragment")]));
+        } else {
+            list.push(Promise.all([import("../Shaders/screenSpaceCurvature.fragment")]));
+        }
+
+        super._gatherImports(useWebGPU, list);
+    }
+
     /**
      * Support test.
      */
