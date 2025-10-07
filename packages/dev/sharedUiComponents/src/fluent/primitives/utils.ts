@@ -12,11 +12,18 @@ export const CustomTokens = {
     rightAlignOffset: "-8px",
 };
 
-export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, textAlign: "right", boxSizing: "border-box" };
-
+export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, boxSizing: "border-box" };
 export const useInputStyles = makeStyles({
-    invalid: { backgroundColor: tokens.colorPaletteRedBackground2, ...UniformWidthStyling },
-    valid: UniformWidthStyling,
+    input: UniformWidthStyling,
+    inputSlot: { textAlign: "right" },
+    invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
+    container: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center", // align items vertically
+        gap: "4px",
+    },
 });
 
 export function HandleOnBlur(event: FocusEvent<HTMLInputElement>) {

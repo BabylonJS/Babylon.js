@@ -270,7 +270,12 @@ function IsCompressedTextureFormat(format: number): boolean {
     }
 }
 
-async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void> {
+/**
+ * Waits for when the given texture is ready to be used (downloaded, converted, mip mapped...)
+ * @param texture the texture to wait for
+ * @returns a promise that resolves when the texture is ready
+ */
+export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void> {
     if (texture.isReady()) {
         return;
     }

@@ -918,7 +918,6 @@ export class Viewer implements IDisposable {
             defaultMaterial.metallic = 0;
             defaultMaterial.roughness = 1;
             defaultMaterial.baseDiffuseRoughness = 1;
-            defaultMaterial.environmentIntensity = 0.7;
             defaultMaterial.microSurface = 0;
             scene.defaultMaterial = defaultMaterial;
 
@@ -1330,7 +1329,7 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private _updateSSAOPipeline() {
+    protected _updateSSAOPipeline() {
         if (!this._ssaoPipeline && (this._ssaoOption === "auto" || this._ssaoOption === "enabled")) {
             observePromise(this._enableSSAOPipeline(this._ssaoOption));
         } else if (this._ssaoOption === "disabled") {
@@ -1695,8 +1694,11 @@ export class Viewer implements IDisposable {
             }
         });
 
-        // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
-        if (!this._scene.environmentTexture && this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial))) {
+        const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial));
+        const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => !mesh.material));
+        // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
+        // and an environment texture is not already loaded, then load the default environment.
+        if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
 
@@ -2875,13 +2877,12 @@ export class Viewer implements IDisposable {
         } else {
             const hasModelProvidedLights = this._loadedModels.some((model) => model.assetContainer.lights.length > 0);
             const hasImageBasedLighting = !!this._reflectionTexture;
-            const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
             const hasNonPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => !(material instanceof PBRMaterial)));
 
             if (hasModelProvidedLights) {
                 shouldHaveDefaultLight = false;
             } else {
-                shouldHaveDefaultLight = !hasImageBasedLighting || !hasMaterials || hasNonPBRMaterials;
+                shouldHaveDefaultLight = !hasImageBasedLighting || hasNonPBRMaterials;
             }
         }
 

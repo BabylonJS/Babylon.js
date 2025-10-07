@@ -19,6 +19,7 @@ export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & Propert
  * @returns Component wrapping a colorPicker component with a property line
  */
 const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((props, ref) => {
+    ColorPropertyLine.displayName = "ColorPropertyLine";
     const [color, setColor] = useState(props.value);
 
     const onSliderChange = (value: number, key: "r" | "g" | "b" | "a") => {

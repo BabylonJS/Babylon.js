@@ -12,6 +12,13 @@
             "referenceImage": "gsplat-spz-v3.png"
         },
         {
+            "title": "SOGS with SH",
+            "playgroundId": "#QA2662#13",
+            "renderCount": 5,
+            "errorRatio": 5,
+            "referenceImage": "gsplat-sogs-sh.png"
+        },
+        {
             "title": "RH billboard",
             "playgroundId": "#PDO1L6#1",
             "referenceImage": "rh-billboard.png"
@@ -1076,25 +1083,25 @@
         },
         {
             "title": "GLTF Serializer Camera, left-handed",
-            "playgroundId": "#O0M0J9#20",
+            "playgroundId": "#O0M0J9#25",
             "replace": "//options//, roundtripCount = 1; useRightHandedSystem = false;",
             "referenceImage": "glTFSerializerCameraLeftHand.png"
         },
         {
             "title": "GLTF Serializer Camera, right-handed",
-            "playgroundId": "#O0M0J9#20",
+            "playgroundId": "#O0M0J9#25",
             "replace": "//options//, roundtripCount = 1; useRightHandedSystem = true;",
             "referenceImage": "glTFSerializerCameraRightHand.png"
         },
         {
             "title": "GLTF Serializer Camera, left-handed, round trip twice",
-            "playgroundId": "#O0M0J9#20",
+            "playgroundId": "#O0M0J9#25",
             "replace": "//options//, roundtripCount = 2; useRightHandedSystem = false;",
             "referenceImage": "glTFSerializerCameraLeftHand.png"
         },
         {
             "title": "GLTF Serializer Camera, right-handed, round trip twice",
-            "playgroundId": "#O0M0J9#20",
+            "playgroundId": "#O0M0J9#25",
             "replace": "//options//, roundtripCount = 2; useRightHandedSystem = true;",
             "referenceImage": "glTFSerializerCameraRightHand.png"
         },
@@ -2703,6 +2710,10 @@
             "renderCount": 40
         },
         {
+            "title": "FrameGraph convolution post process",
+            "playgroundId": "#SYQW69#1318"
+        },
+        {
             "title": "Render target texture with clustered lights",
             "playgroundId": "#1QCA2M#11"
         },
@@ -3071,6 +3082,10 @@
             "playgroundId": "#GRQHVV#101",
             "excludedEngines": ["webgl1"],
             "renderCount": 2
+        },
+        {
+            "title": "Background material blur",
+            "playgroundId": "#UU7RQ#4458"
         }
     ]
 }

@@ -1,11 +1,19 @@
-import { Dropdown as FluentDropdown, makeStyles, Option } from "@fluentui/react-components";
+import { Dropdown as FluentDropdown, makeStyles, mergeClasses, Option, useId } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { CustomTokens, UniformWidthStyling } from "./utils";
+import { InfoLabel } from "./infoLabel";
 
 const useDropdownStyles = makeStyles({
     dropdown: { ...UniformWidthStyling, minWidth: CustomTokens.inputWidth },
+    container: {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center", // align items vertically
+        gap: "4px",
+    },
+    button: { textAlign: "end" },
 });
 
 export type AcceptedDropdownValue = string | number;
@@ -31,6 +39,7 @@ export type DropdownProps<V extends AcceptedDropdownValue> = PrimitiveProps<V> &
  * @returns dropdown component
  */
 export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> = (props) => {
+    Dropdown.displayName = "Dropdown";
     const classes = useDropdownStyles();
     const { options, value } = props;
     const [defaultVal, setDefaultVal] = useState(props.value);
@@ -38,28 +47,36 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
     useEffect(() => {
         setDefaultVal(value);
     }, [props.value]);
+    const id = useId("dropdown");
+
+    const mergedClassName = mergeClasses(classes.dropdown, props.className);
 
     return (
-        <FluentDropdown
-            disabled={props.disabled}
-            size="medium"
-            className={classes.dropdown}
-            onOptionSelect={(evt, data) => {
-                const value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
-                if (value !== undefined) {
-                    setDefaultVal(value);
-                    props.onChange(value);
-                }
-            }}
-            selectedOptions={[defaultVal.toString()]}
-            value={options.find((o) => o.value === defaultVal)?.label}
-        >
-            {options.map((option: DropdownOption<AcceptedDropdownValue>) => (
-                <Option className={classes.dropdown} key={option.label} value={option.value.toString()} disabled={false}>
-                    {option.label}
-                </Option>
-            ))}
-        </FluentDropdown>
+        <div className={classes.container}>
+            {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
+            <FluentDropdown
+                id={id}
+                disabled={props.disabled}
+                size="medium"
+                className={mergedClassName}
+                button={{ className: classes.button }}
+                onOptionSelect={(evt, data) => {
+                    const value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
+                    if (value !== undefined) {
+                        setDefaultVal(value);
+                        props.onChange(value);
+                    }
+                }}
+                selectedOptions={[defaultVal.toString()]}
+                value={options.find((o) => o.value === defaultVal)?.label}
+            >
+                {options.map((option: DropdownOption<AcceptedDropdownValue>) => (
+                    <Option className={classes.dropdown} key={option.label} value={option.value.toString()} disabled={false}>
+                        {option.label}
+                    </Option>
+                ))}
+            </FluentDropdown>
+        </div>
     );
 };
 

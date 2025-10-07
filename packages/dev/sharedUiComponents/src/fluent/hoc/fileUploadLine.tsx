@@ -11,6 +11,7 @@ type FileUploadLineProps = Omit<ButtonProps, "onClick" | "label"> & {
 };
 
 export const FileUploadLine: FunctionComponent<FileUploadLineProps> = (props) => {
+    FileUploadLine.displayName = "FileUploadLine";
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleButtonClick = () => {

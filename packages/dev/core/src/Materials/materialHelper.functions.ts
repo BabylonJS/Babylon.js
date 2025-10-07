@@ -18,11 +18,11 @@ import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { MorphTargetManager } from "../Morph/morphTargetManager";
-import type { IColor3Like } from "core/Maths";
+import type { IColor3Like } from "core/Maths/math.like";
 import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
 import type { CubeTexture } from "./Textures/cubeTexture";
-import { Color3 } from "core/Maths/math.color";
+import type { Color3 } from "core/Maths/math.color";
 
 // Temps
 const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };
@@ -275,6 +275,7 @@ export function BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer):
  * @param scene The scene
  * @param defines The list of shader defines for the material
  * @param ubo The uniform buffer to update
+ * @param reflectionColor The color to use for the reflection
  * @param reflectionTexture The IBL texture
  * @param realTimeFiltering Whether realtime filtering of IBL texture is being used
  * @param supportTextureInfo Whether the texture info is supported
@@ -282,12 +283,13 @@ export function BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer):
  * @param usePBR Whether PBR is being used
  * @param supportSH Whether spherical harmonics are supported
  * @param useColor Whether to use the reflection color
- * @param reflectionColor The color to use for the reflection
+ * @param reflectionBlur The level of blur of the reflection
  */
 export function BindIBLParameters(
     scene: Scene,
     defines: any,
     ubo: UniformBuffer,
+    reflectionColor: Color3,
     reflectionTexture: Nullable<BaseTexture> = null,
     realTimeFiltering: boolean = false,
     supportTextureInfo: boolean = false,
@@ -295,12 +297,12 @@ export function BindIBLParameters(
     usePBR: boolean = false,
     supportSH: boolean = false,
     useColor: boolean = false,
-    reflectionColor: Color3 = Color3.White()
+    reflectionBlur: number = 0
 ): void {
     if (scene.texturesEnabled) {
         if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
             ubo.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
-            ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, 0);
+            ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, reflectionBlur);
 
             if (supportLocalProjection && (<any>reflectionTexture).boundingBoxSize) {
                 const cubeTexture = <CubeTexture>reflectionTexture;

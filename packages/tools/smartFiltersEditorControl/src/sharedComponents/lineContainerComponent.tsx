@@ -1,11 +1,13 @@
 import { DataStorage } from "core/Misc/dataStorage.js";
 import * as react from "react";
 import downArrow from "../assets/imgs/downArrow.svg";
+import { ContextMenuTrigger } from "react-contextmenu";
 
 interface ILineContainerComponentProps {
     title: string;
     children: any[] | any;
     closed?: boolean;
+    contextMenu?: JSX.Element;
 }
 
 export class LineContainerComponent extends react.Component<ILineContainerComponentProps, { isExpanded: boolean }> {
@@ -27,8 +29,7 @@ export class LineContainerComponent extends react.Component<ILineContainerCompon
 
     renderHeader() {
         const className = this.state.isExpanded ? "collapse" : "collapse closed";
-
-        return (
+        const header = (
             <div className="header" onClick={() => this.switchExpandedState()}>
                 <div className="title">{this.props.title}</div>
                 <div className={className}>
@@ -36,6 +37,17 @@ export class LineContainerComponent extends react.Component<ILineContainerCompon
                 </div>
             </div>
         );
+
+        if (this.props.contextMenu) {
+            return (
+                <ContextMenuTrigger id={this.props.contextMenu.props.id}>
+                    {this.props.contextMenu}
+                    {header}
+                </ContextMenuTrigger>
+            );
+        } else {
+            return header;
+        }
     }
 
     override render() {
