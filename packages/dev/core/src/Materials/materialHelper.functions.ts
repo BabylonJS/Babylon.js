@@ -283,6 +283,7 @@ export function BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer):
  * @param usePBR Whether PBR is being used
  * @param supportSH Whether spherical harmonics are supported
  * @param useColor Whether to use the reflection color
+ * @param reflectionBlur The level of blur of the reflection
  */
 export function BindIBLParameters(
     scene: Scene,
@@ -295,12 +296,13 @@ export function BindIBLParameters(
     supportLocalProjection: boolean = false,
     usePBR: boolean = false,
     supportSH: boolean = false,
-    useColor: boolean = false
+    useColor: boolean = false,
+    reflectionBlur: number = 0
 ): void {
     if (scene.texturesEnabled) {
         if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
             ubo.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
-            ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, 0);
+            ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, reflectionBlur);
 
             if (supportLocalProjection && (<any>reflectionTexture).boundingBoxSize) {
                 const cubeTexture = <CubeTexture>reflectionTexture;

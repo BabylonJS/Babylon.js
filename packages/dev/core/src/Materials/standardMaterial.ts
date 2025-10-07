@@ -1483,7 +1483,7 @@ export class StandardMaterial extends StandardMaterialBase {
                         ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
-                    BindIBLParameters(scene, defines, ubo, Color3.White(), this._reflectionTexture, false, false, true);
+                    BindIBLParameters(scene, defines, ubo, Color3.White(), this._reflectionTexture, false, false, true, false, false, false, this.roughness);
                     if (!this._reflectionTexture || !StandardMaterial.ReflectionTextureEnabled) {
                         ubo.updateFloat2("vReflectionInfos", 0.0, this.roughness);
                     }
