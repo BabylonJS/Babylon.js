@@ -1329,7 +1329,7 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private _updateSSAOPipeline() {
+    protected _updateSSAOPipeline() {
         if (!this._ssaoPipeline && (this._ssaoOption === "auto" || this._ssaoOption === "enabled")) {
             observePromise(this._enableSSAOPipeline(this._ssaoOption));
         } else if (this._ssaoOption === "disabled") {
