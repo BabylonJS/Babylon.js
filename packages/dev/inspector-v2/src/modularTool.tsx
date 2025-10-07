@@ -16,7 +16,6 @@ import {
     DialogContent,
     DialogSurface,
     DialogTitle,
-    FluentProvider,
     List,
     ListItem,
     makeStyles,
@@ -29,14 +28,14 @@ import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
+import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
-import { useThemeMode } from "./hooks/themeHooks";
+import { SetThemeMode } from "./hooks/themeHooks";
 import { ServiceContainer } from "./modularity/serviceContainer";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-import { DarkTheme, LightTheme } from "./themes/babylonTheme";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -99,11 +98,13 @@ export type ModularToolOptions = {
  */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
     const { containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [] } = options;
+    if (themeMode) {
+        SetThemeMode(themeMode);
+    }
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
-        const { isDarkMode } = useThemeMode(themeMode);
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
@@ -221,7 +222,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
         return (
             <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                <FluentProvider className={classes.app} theme={isDarkMode ? DarkTheme : LightTheme}>
+                <Theme className={classes.app}>
                     <>
                         <Dialog open={!!requiredExtensions} modalType="alert">
                             <DialogSurface>
@@ -273,7 +274,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                             <Content />
                         </Suspense>
                     </>
-                </FluentProvider>
+                </Theme>
             </ExtensionManagerContext.Provider>
         );
     };
