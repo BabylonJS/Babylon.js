@@ -131,6 +131,22 @@ onmessage = async function (evt) {
             Controller.setScale(scaleFactor);
             break;
         }
+        case "dispose": {
+            if (Controller) {
+                Controller.dispose();
+                Controller = null;
+            }
+
+            if (RawAnimation) {
+                RawAnimation = null;
+            }
+
+            GetRawAnimationDataAsync = null;
+            DefaultConfiguration = null;
+            AnimationControllerClass = null;
+            AnimationPromises = null;
+            break;
+        }
         default:
             return;
     }
