@@ -1,4 +1,4 @@
-import { SpinButton as FluentSpinButton, useId } from "@fluentui/react-components";
+import { SpinButton as FluentSpinButton, mergeClasses, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent, KeyboardEvent } from "react";
 import { useEffect, useState, useRef } from "react";
@@ -18,6 +18,7 @@ export type SpinButtonProps = PrimitiveProps<number> & {
 };
 
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
+    SpinButton.displayName = "SpinButton";
     const classes = useInputStyles();
 
     const { min, max } = props;
@@ -69,8 +70,10 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     };
 
     const id = useId("spin-button");
+    const mergedClassName = mergeClasses(classes.input, !validateValue(value) ? classes.invalid : "", props.className);
+
     return (
-        <div>
+        <div className={classes.container}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentSpinButton
                 {...props}
@@ -85,7 +88,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 onKeyUp={handleKeyUp}
                 onKeyDown={HandleKeyDown}
                 onBlur={HandleOnBlur}
-                className={`${!validateValue(value) ? classes.invalid : classes.valid}`}
+                className={mergedClassName}
             />
         </div>
     );

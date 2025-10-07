@@ -39,6 +39,7 @@ export * from "./thinBloomEffect";
 export * from "./thinBlurPostProcess";
 export * from "./thinChromaticAberrationPostProcess";
 export * from "./thinCircleOfConfusionPostProcess";
+export * from "./thinConvolutionPostProcess";
 export * from "./thinDepthOfFieldEffect";
 export * from "./thinExtractHighlightsPostProcess";
 export * from "./thinFXAAPostProcess";

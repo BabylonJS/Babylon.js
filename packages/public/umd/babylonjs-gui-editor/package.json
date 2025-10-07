@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-gui-editor",
-    "version": "8.30.2",
+    "version": "8.30.4",
     "main": "babylon.guiEditor.js",
     "types": "babylon.guiEditor.module.d.ts",
     "files": [
@@ -14,8 +14,8 @@
         "clean": "rimraf dist && rimraf babylon*.* -g"
     },
     "dependencies": {
-        "babylonjs": "^8.30.2",
-        "babylonjs-gui": "^8.30.2"
+        "babylonjs": "^8.30.4",
+        "babylonjs-gui": "^8.30.4"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

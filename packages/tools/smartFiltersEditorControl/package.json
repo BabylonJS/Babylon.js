@@ -34,6 +34,7 @@
         "@dev/smart-filters": "^1.0.0",
         "@dev/smart-filters-blocks": "^1.0.0",
         "@dev/core": "^1.0.0",
-        "@dev/shared-ui-components": "^1.0.0"
+        "@dev/shared-ui-components": "^1.0.0",
+        "react-contextmenu": "RaananW/react-contextmenu#4cb92c957ebff7aee6fc3b0ace61bc143a7373f2"
     }
 }

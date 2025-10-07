@@ -141,6 +141,11 @@ export type SmartFilterEditorOptions = {
     deleteCustomBlock?: (blockRegistration: IBlockRegistration) => void;
 
     /**
+     * If supplied, an option to clear all custom blocks will be presented to the user
+     */
+    clearCustomBlocks?: () => void;
+
+    /**
      * An observable that is called when the editor needs to log a message
      */
     onLogRequiredObservable?: Observable<LogEntry>;
@@ -206,6 +211,7 @@ export class SmartFilterEditorControl {
             options.saveToSnippetServer,
             options.addCustomBlock,
             options.deleteCustomBlock,
+            options.clearCustomBlocks,
             options.onLogRequiredObservable,
             options.onSaveEditorDataRequiredObservable
         );

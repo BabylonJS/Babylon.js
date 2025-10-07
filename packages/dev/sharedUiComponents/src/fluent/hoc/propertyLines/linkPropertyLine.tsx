@@ -16,6 +16,7 @@ type LinkProps = ImmutablePrimitiveProps<string> & {
  * @returns property-line wrapped link
  */
 export const LinkPropertyLine: FunctionComponent<PropertyLineProps<string> & LinkProps> = (props) => {
+    LinkPropertyLine.displayName = "LinkPropertyLine";
     return (
         <PropertyLine {...props}>
             <Link inline onClick={() => props.onLink?.()} href={props.url} title={props.title}>

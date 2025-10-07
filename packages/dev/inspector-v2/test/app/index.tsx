@@ -8,7 +8,7 @@ import HavokPhysics from "@babylonjs/havok";
 import type { Nullable } from "core/types";
 
 import { Engine } from "core/Engines/engine";
-import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
+import { ImportMeshAsync, LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Vector3 } from "core/Maths/math.vector";
 import { PhysicsAggregate, PhysicsMotionType, PhysicsShapeType } from "core/Physics/v2";
@@ -151,6 +151,15 @@ function createMaterials() {
     multiMaterial.subMaterials.push(...scene.materials);
 }
 
+function createGaussianSplatting() {
+    ImportMeshAsync("https://assets.babylonjs.com/splats/gs_Sqwakers_trimed.splat", scene).then((result) => {
+        const mesh = result.meshes[0];
+        mesh.scaling.scaleInPlace(0.1);
+        mesh.rotation.y = Math.PI;
+        mesh.position = new Vector3(0.336, 0.072, -0.171);
+    });
+}
+
 (async () => {
     let assetContainer = await LoadAssetContainerAsync("https://assets.babylonjs.com/meshes/Demos/optimized/acrobaticPlane_variants.glb", scene);
     assetContainer.addAllToScene();
@@ -158,6 +167,8 @@ function createMaterials() {
     createPostProcess();
 
     await createPhysics();
+
+    createGaussianSplatting();
 
     createTestBoxes();
     createTestPBRSphere();

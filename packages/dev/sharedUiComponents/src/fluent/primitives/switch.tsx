@@ -22,6 +22,8 @@ export type SwitchProps = PrimitiveProps<boolean>;
  * @returns Switch component
  */
 export const Switch: FunctionComponent<SwitchProps> = (props) => {
+    Switch.displayName = "Switch";
+
     const classes = useSwitchStyles();
     const [checked, setChecked] = useState(() => props.value ?? false);
 

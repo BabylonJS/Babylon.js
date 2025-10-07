@@ -1,7 +1,7 @@
 import type { FunctionComponent, KeyboardEvent, ChangeEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import type { InputOnChangeData } from "@fluentui/react-components";
-import { Input as FluentInput, useId } from "@fluentui/react-components";
+import { Input as FluentInput, mergeClasses, useId } from "@fluentui/react-components";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 import { HandleOnBlur, HandleKeyDown, useInputStyles } from "./utils";
@@ -11,8 +11,8 @@ export type TextInputProps = PrimitiveProps<string> & {
 };
 
 export const TextInput: FunctionComponent<TextInputProps> = (props) => {
+    TextInput.displayName = "TextInput";
     const classes = useInputStyles();
-
     const [value, setValue] = useState(props.value);
     const lastCommittedValue = useRef(props.value);
 
@@ -47,10 +47,11 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
         setValue(event.currentTarget.value);
         tryCommitValue(event.currentTarget.value);
     };
+    const mergedClassName = mergeClasses(classes.input, !validateValue(value) ? classes.invalid : "", props.className);
 
     const id = useId("input-button");
     return (
-        <div>
+        <div className={classes.container}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentInput
                 {...props}
@@ -62,7 +63,7 @@ export const TextInput: FunctionComponent<TextInputProps> = (props) => {
                 onKeyUp={handleKeyUp}
                 onKeyDown={HandleKeyDown}
                 onBlur={HandleOnBlur}
-                className={`${!validateValue(value) ? classes.invalid : classes.valid}`}
+                className={mergedClassName}
             />
         </div>
     );
