@@ -105,6 +105,7 @@ export class Parser {
         this._rootNodes = [];
 
         this._animationInfo = this._loadFromData(animationData);
+        this.debug();
     }
 
     /**

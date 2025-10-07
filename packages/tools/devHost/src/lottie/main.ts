@@ -13,7 +13,8 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
-    const fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
+    let fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
+    fileUrl = "./localDev/FRE_CSS_03_new_lrg.json";
 
     // Whether to use a web worker for rendering or not, defaults to true
     const useWorkerParam = searchParams.get("useworker");
@@ -52,7 +53,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         spritesCapacity: 64, // Maximum number of sprites the renderer can handle at once
         backgroundColor: { r: 1, g: 1, b: 1, a: 1 }, // Background color for the animation canvas
         scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,
-        devicePixelRatio: 1, // Scale factor,
+        devicePixelRatio: Math.ceil(window.devicePixelRatio), // Scale factor,
         easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
         supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
     };

@@ -556,9 +556,9 @@ export class SpritePacker {
 
         let stopsData: GradientStop[] | undefined = undefined;
         if (rawColors.length / stops === 4) {
-            stopsData = this._gradientColorsToCssColor(rawColors, stops, false);
+            stopsData = this._gradient4ColorsToCssColor(rawColors, stops);
         } else if (rawColors.length / stops === 6) {
-            stopsData = this._gradientColorsToCssColor(rawColors, stops, true);
+            stopsData = this._gradient6ColorsToCssColor(rawColors, stops);
         } else {
             return;
         }
@@ -568,14 +568,26 @@ export class SpritePacker {
         }
     }
 
-    private _gradientColorsToCssColor(colors: number[], stops: number, hasAlpha: boolean): GradientStop[] {
-        const skipElement = hasAlpha ? 0 : 1;
+    private _gradient4ColorsToCssColor(colors: number[], stops: number): GradientStop[] {
         const result: GradientStop[] = [];
         for (let i = 0; i < stops; i++) {
             const index = i * 4;
             result.push({
                 offset: colors[index],
-                color: this._lottieColorToCSSColor(colors.slice(index + skipElement, index + 4), 1),
+                color: this._lottieColorToCSSColor(colors.slice(index + 1, index + 4), 1),
+            });
+        }
+
+        return result;
+    }
+
+    private _gradient6ColorsToCssColor(colors: number[], stops: number): GradientStop[] {
+        const result: GradientStop[] = [];
+        for (let i = 0; i < stops; i++) {
+            const index = i * 4;
+            result.push({
+                offset: colors[index],
+                color: this._lottieColorToCSSColor(colors.slice(index + 1, index + 4), colors[stops * 4 + i * 2 + 1]),
             });
         }
 
