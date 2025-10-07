@@ -15,6 +15,7 @@ export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";
 export * from "./PostProcesses/chromaticAberrationPostProcessBlock";
 export * from "./PostProcesses/circleOfConfusionPostProcessBlock";
+export * from "./PostProcesses/convolutionPostProcessBlock";
 export * from "./PostProcesses/depthOfFieldPostProcessBlock";
 export * from "./PostProcesses/extractHighlightsPostProcessBlock";
 export * from "./PostProcesses/fxaaPostProcessBlock";
