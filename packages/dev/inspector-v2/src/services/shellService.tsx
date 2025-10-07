@@ -4,7 +4,7 @@ import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
-import { Button, Divider, Toolbar as FluentToolbar, makeStyles, Subtitle1, Tab, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
+import { Button, Divider, Toolbar as FluentToolbar, makeStyles, Subtitle2Stronger, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 
@@ -292,15 +292,19 @@ const useStyles = makeStyles({
         flexDirection: "column",
         justifyContent: "center",
         backgroundColor: tokens.colorNeutralBackgroundInverted,
-        height: "44px",
+        height: "36px",
     },
     paneHeaderText: {
         marginLeft: tokens.spacingHorizontalM,
         color: tokens.colorNeutralForegroundInverted,
     },
-    headerDivider: {
+    paneDivider: {
         flex: "0 0 auto",
         marginTop: tokens.spacingVerticalM,
+        margin: "0",
+        minHeight: tokens.spacingVerticalM,
+        cursor: "ns-resize",
+        alignItems: "end",
     },
     tabToolbar: {
         padding: 0,
@@ -349,7 +353,7 @@ const PaneHeader: FunctionComponent<{ title?: string }> = ({ title }) => {
 
     return (
         <div className={classes.paneHeaderDiv}>
-            <Subtitle1 className={classes.paneHeaderText}>{title}</Subtitle1>
+            <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
         </div>
     );
 };
@@ -673,13 +677,7 @@ function usePane(
                                 </div>
 
                                 {/* If we have both top and bottom panes, show a divider. This divider is also the resizer for the bottom pane. */}
-                                {topPanes.length > 0 && bottomPanes.length > 0 && (
-                                    <Divider
-                                        ref={paneVerticalResizeHandleRef}
-                                        className={classes.headerDivider}
-                                        style={{ margin: "0", minHeight: tokens.spacingVerticalM, cursor: "ns-resize" }}
-                                    />
-                                )}
+                                {topPanes.length > 0 && bottomPanes.length > 0 && <Divider ref={paneVerticalResizeHandleRef} className={classes.paneDivider} />}
 
                                 {/* Render the bottom pane tablist. */}
                                 {bottomPanes.length > 1 && (
