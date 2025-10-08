@@ -324,7 +324,7 @@ const useStyles = makeStyles({
     tabRadioButton: {
         backgroundColor: "transparent",
     },
-    tabIcon: {
+    selectedTabIcon: {
         color: tokens.colorNeutralForeground1,
     },
     resizer: {
@@ -469,7 +469,7 @@ const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; 
                     name="selectedTab"
                     value={id}
                     icon={{
-                        className: classes.tabIcon,
+                        className: isSelected ? classes.selectedTabIcon : undefined,
                         children: <Icon />,
                     }}
                 />
