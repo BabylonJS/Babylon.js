@@ -36,6 +36,7 @@ import { NodeRenderGraphFXAAPostProcessBlock } from "core/FrameGraph/Node/Blocks
 import { NodeRenderGraphGrainPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/grainPostProcessBlock";
 import { NodeRenderGraphMotionBlurPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/motionBlurPostProcessBlock";
 import { NodeRenderGraphConvolutionPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/convolutionPostProcessBlock";
+import { NodeRenderGraphSharpenPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/sharpenPostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -166,6 +167,9 @@ export class BlockTools {
             }
             case "ConvolutionBlock": {
                 return new NodeRenderGraphConvolutionPostProcessBlock("Convolution", frameGraph, scene);
+            }
+            case "SharpenBlock": {
+                return new NodeRenderGraphSharpenPostProcessBlock("Sharpen", frameGraph, scene);
             }
         }
 
