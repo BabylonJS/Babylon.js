@@ -464,6 +464,7 @@ const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; 
             <Theme className={tabClass} invert={isSelected}>
                 <ToolbarRadioButton
                     ref={teachingMoment.targetRef}
+                    title={title ?? id}
                     appearance="transparent"
                     className={classes.tabRadioButton}
                     name="selectedTab"
