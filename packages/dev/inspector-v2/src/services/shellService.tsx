@@ -1,16 +1,16 @@
 import type { IDisposable } from "core/index";
 
-import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
-import { Button, Divider, makeStyles, Tab, TabList, Subtitle1, tokens, Tooltip } from "@fluentui/react-components";
+import { Button, Divider, Toolbar as FluentToolbar, makeStyles, mergeClasses, Subtitle2Stronger, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { TeachingMoment } from "../components/teachingMoment";
+import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { ObservableCollection } from "../misc/observableCollection";
@@ -219,6 +219,7 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "row",
         flex: "0 0 auto",
+        height: "36px",
         backgroundColor: tokens.colorNeutralBackground2,
     },
     bar: {
@@ -226,7 +227,7 @@ const useStyles = makeStyles({
         flex: "1",
         height: "32px",
         overflow: "hidden",
-        padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
+        padding: `${tokens.spacingVerticalXXS} ${tokens.spacingHorizontalXXS}`,
         border: `1px solid ${tokens.colorNeutralStroke2}`,
         borderBottomWidth: 0,
         backgroundColor: tokens.colorNeutralBackground1,
@@ -292,22 +293,39 @@ const useStyles = makeStyles({
         flexDirection: "column",
         justifyContent: "center",
         backgroundColor: tokens.colorNeutralBackgroundInverted,
-        height: "44px",
+        height: "36px",
     },
     paneHeaderText: {
         marginLeft: tokens.spacingHorizontalM,
         color: tokens.colorNeutralForegroundInverted,
     },
-    headerDivider: {
+    paneDivider: {
         flex: "0 0 auto",
         marginTop: tokens.spacingVerticalM,
+        margin: "0",
+        minHeight: tokens.spacingVerticalM,
+        cursor: "ns-resize",
+        alignItems: "end",
+    },
+    tabToolbar: {
+        padding: 0,
     },
     tab: {
-        paddingTop: tokens.spacingVerticalXS,
-        paddingBottom: tokens.spacingVerticalXS,
-        paddingLeft: tokens.spacingHorizontalS,
-        paddingRight: tokens.spacingHorizontalS,
-        alignSelf: "center",
+        display: "flex",
+        height: "100%",
+        width: "36px",
+        justifyContent: "center",
+        borderTopLeftRadius: tokens.borderRadiusMedium,
+        borderTopRightRadius: tokens.borderRadiusMedium,
+    },
+    unselectedTab: {
+        backgroundColor: "transparent",
+    },
+    tabRadioButton: {
+        backgroundColor: "transparent",
+    },
+    selectedTabIcon: {
+        color: tokens.colorNeutralForeground1,
     },
     resizer: {
         width: "8px",
@@ -339,7 +357,7 @@ const PaneHeader: FunctionComponent<{ title?: string }> = ({ title }) => {
 
     return (
         <div className={classes.paneHeaderDiv}>
-            <Subtitle1 className={classes.paneHeaderText}>{title}</Subtitle1>
+            <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
         </div>
     );
 };
@@ -419,17 +437,21 @@ const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: Toolb
 };
 
 // This is a wrapper for a tab in a side pane that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
-const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string } & Pick<SidePane, "title" | "icon" | "suppressTeachingMoment">> = ({
-    alignment,
-    id,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    icon: Icon,
-    title,
-    suppressTeachingMoment,
-}) => {
+const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; isSelected: boolean } & Pick<SidePane, "title" | "icon" | "suppressTeachingMoment">> = (props) => {
+    const {
+        alignment,
+        id,
+        isSelected,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        icon: Icon,
+        title,
+        suppressTeachingMoment,
+    } = props;
     const classes = useStyles();
     const useTeachingMoment = useMemo(() => MakePopoverTeachingMoment(`Pane/${alignment}/${title ?? id}`), [title, id]);
     const teachingMoment = useTeachingMoment(suppressTeachingMoment);
+
+    const tabClass = mergeClasses(classes.tab, isSelected ? undefined : classes.unselectedTab);
 
     return (
         <>
@@ -439,17 +461,20 @@ const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string }
                 title={title ?? "Extension"}
                 description={`The "${title ?? id}" extension can be accessed here.`}
             />
-            <Tab
-                ref={teachingMoment.targetRef}
-                className={classes.tab}
-                key={id}
-                value={id}
-                icon={
-                    <Tooltip content={title ?? id} relationship="description">
-                        <Icon />
-                    </Tooltip>
-                }
-            />
+            <Theme className={tabClass} invert={isSelected}>
+                <ToolbarRadioButton
+                    ref={teachingMoment.targetRef}
+                    title={title ?? id}
+                    appearance="transparent"
+                    className={classes.tabRadioButton}
+                    name="selectedTab"
+                    value={id}
+                    icon={{
+                        className: isSelected ? classes.selectedTabIcon : undefined,
+                        children: <Icon />,
+                    }}
+                />
+            </Theme>
         </>
     );
 };
@@ -557,32 +582,41 @@ function usePane(
                             {/* Only render the tab list if there is more than tab. It's kind of pointless to show a tab list with just one tab. */}
                             {paneComponents.length > 1 && (
                                 <>
-                                    <TabList
-                                        selectedValue={selectedTab?.key ?? ""}
-                                        onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
-                                            const tab = paneComponents.find((entry) => entry.key === data.value);
+                                    <FluentToolbar
+                                        className={classes.tabToolbar}
+                                        checkedValues={{ selectedTab: [selectedTab?.key ?? ""] }}
+                                        onCheckedValueChange={(event, data) => {
+                                            const tab = paneComponents.find((entry) => entry.key === data.checkedItems[0]);
                                             setSelectedTab(tab);
                                             setCollapsed(false);
                                         }}
                                     >
-                                        {paneComponents.map((entry) => (
-                                            <SidePaneTab
-                                                key={entry.key}
-                                                alignment={alignment}
-                                                id={entry.key}
-                                                title={entry.title}
-                                                icon={entry.icon}
-                                                suppressTeachingMoment={entry.suppressTeachingMoment}
-                                            />
-                                        ))}
-                                    </TabList>
+                                        {paneComponents.map((entry) => {
+                                            const isSelected = selectedTab?.key === entry.key;
+                                            return (
+                                                <SidePaneTab
+                                                    key={entry.key}
+                                                    alignment={alignment}
+                                                    id={entry.key}
+                                                    title={entry.title}
+                                                    icon={entry.icon}
+                                                    suppressTeachingMoment={entry.suppressTeachingMoment}
+                                                    isSelected={isSelected && !collapsed}
+                                                />
+                                            );
+                                        })}
+                                    </FluentToolbar>
                                 </>
                             )}
 
                             {/* When the toolbar mode is "full", we add an extra button that allows the side panes to be collapsed. */}
                             {toolbarMode === "full" && (
                                 <>
-                                    <Divider vertical inset />
+                                    {paneComponents.length > 1 && (
+                                        <>
+                                            <Divider vertical inset style={{ minHeight: 0 }} />{" "}
+                                        </>
+                                    )}
                                     <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
                                         <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
                                     </Tooltip>
@@ -597,8 +631,11 @@ function usePane(
     );
 
     // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
-    const topPaneTabList = useMemo(() => createPaneTabList(topPanes, toolbarMode, topSelectedTab, setTopSelectedTab), [topPanes, toolbarMode, topSelectedTab]);
-    const bottomPaneTabList = useMemo(() => createPaneTabList(bottomPanes, "compact", bottomSelectedTab, setBottomSelectedTab), [bottomPanes, bottomSelectedTab]);
+    const topPaneTabList = useMemo(() => createPaneTabList(topPanes, toolbarMode, topSelectedTab, setTopSelectedTab), [createPaneTabList, topPanes, toolbarMode, topSelectedTab]);
+    const bottomPaneTabList = useMemo(
+        () => createPaneTabList(bottomPanes, "compact", bottomSelectedTab, setBottomSelectedTab),
+        [createPaneTabList, bottomPanes, bottomSelectedTab]
+    );
 
     // This manages the CSS variable that controls the height of the bottom pane.
     const paneHeightAdjustCSSVar = "--pane-height-adjust";
@@ -651,13 +688,7 @@ function usePane(
                                 </div>
 
                                 {/* If we have both top and bottom panes, show a divider. This divider is also the resizer for the bottom pane. */}
-                                {topPanes.length > 0 && bottomPanes.length > 0 && (
-                                    <Divider
-                                        ref={paneVerticalResizeHandleRef}
-                                        className={classes.headerDivider}
-                                        style={{ margin: "0", minHeight: tokens.spacingVerticalM, cursor: "ns-resize" }}
-                                    />
-                                )}
+                                {topPanes.length > 0 && bottomPanes.length > 0 && <Divider ref={paneVerticalResizeHandleRef} className={classes.paneDivider} />}
 
                                 {/* Render the bottom pane tablist. */}
                                 {bottomPanes.length > 1 && (
@@ -698,7 +729,7 @@ function usePane(
                 )}
             </>
         );
-    }, [topPanes, topSelectedTab, bottomPanes, bottomSelectedTab, topBarItems, bottomBarItems, collapsed, width, resizing]);
+    }, [topPanes, topSelectedTab, bottomPanes, bottomSelectedTab, topBarItems, bottomBarItems, topPaneTabList, bottomPaneTabList, collapsed, width, resizing]);
 
     return [topPaneTabList, pane];
 }
