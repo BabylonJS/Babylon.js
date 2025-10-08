@@ -2714,6 +2714,11 @@
             "playgroundId": "#SYQW69#1318"
         },
         {
+            "title": "FrameGraph screen space curvature post process",
+            "playgroundId": "#SYQW69#1323",
+            "excludedEngines": ["webgl1", "webgpu"]
+        },
+        {
             "title": "Render target texture with clustered lights",
             "playgroundId": "#1QCA2M#11"
         },
