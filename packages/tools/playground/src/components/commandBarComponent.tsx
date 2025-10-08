@@ -105,12 +105,20 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             const url = new URL(window.location.href);
             if (this.state.isInspectorV2ModeEnabled) {
                 url.searchParams.set("inspectorv2", "");
+                localStorage.setItem("inspectorv2", "true");
             } else {
                 url.searchParams.delete("inspectorv2");
+                localStorage.removeItem("inspectorv2");
             }
             window.history.pushState({}, "", url.toString());
             this.onInspector("refresh");
         });
+    }
+
+    override componentDidMount(): void {
+        if (!this.state.isInspectorV2ModeEnabled && localStorage.getItem("inspectorv2") === "true") {
+            this.onToggleInspectorV2Mode();
+        }
     }
 
     public override render() {
