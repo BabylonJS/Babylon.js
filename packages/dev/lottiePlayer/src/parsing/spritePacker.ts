@@ -62,6 +62,16 @@ export type SpriteAtlasInfo = {
 };
 
 /**
+ * Information about a shaped and its associated fills, used to render elements in the correct order
+ */
+type RenderElement = {
+    /** The shape to render */
+    shape: RawElement;
+    /** Any fills that affect this shape */
+    fills: RawElement[];
+};
+
+/**
  * Information about a gradient stop.
  * Used for gradient fills when adding vector shapes to the sprite atlas.
  */
@@ -276,13 +286,29 @@ export class SpritePacker {
         this._spritesCanvas = undefined as any; // Clear the canvas to allow garbage collection
     }
 
+    private _reorderElementsForDraw(rawElements: RawElement[]): RenderElement[] {
+        const result: RenderElement[] = [];
+        for (const element of rawElements) {
+            result.push({
+                shape: element,
+                fills: [],
+            });
+        }
+        return result;
+    }
+
     private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
         this._spritesCanvasContext.save();
+        this._spritesCanvasContext.globalCompositeOperation = "destination-over";
 
         this._spritesCanvasContext.translate(this._currentX + Math.ceil(boundingBox.strokeInset / 2), this._currentY + Math.ceil(boundingBox.strokeInset / 2));
         this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
 
         this._spritesCanvasContext.beginPath();
+
+        const reorderedElements = this._reorderElementsForDraw(rawElements);
+        for (let i = 0; i < reorderedElements.length; i++) {}
+
         for (let i = 0; i < rawElements.length; i++) {
             const shape = rawElements[i];
             switch (shape.ty) {
@@ -556,9 +582,11 @@ export class SpritePacker {
 
         let stopsData: GradientStop[] | undefined = undefined;
         if (rawColors.length / stops === 4) {
-            stopsData = this._gradient4ColorsToCssColor(rawColors, stops);
+            // Offset + RGB
+            stopsData = this._gradientColorsToCssColor(rawColors, stops, false);
         } else if (rawColors.length / stops === 6) {
-            stopsData = this._gradient6ColorsToCssColor(rawColors, stops);
+            // Offset + RGB + Offset + Alpha
+            stopsData = this._gradientColorsToCssColor(rawColors, stops, true);
         } else {
             return;
         }
@@ -568,26 +596,13 @@ export class SpritePacker {
         }
     }
 
-    private _gradient4ColorsToCssColor(colors: number[], stops: number): GradientStop[] {
+    private _gradientColorsToCssColor(colors: number[], stops: number, hasAlpha: boolean): GradientStop[] {
         const result: GradientStop[] = [];
         for (let i = 0; i < stops; i++) {
             const index = i * 4;
             result.push({
                 offset: colors[index],
-                color: this._lottieColorToCSSColor(colors.slice(index + 1, index + 4), 1),
-            });
-        }
-
-        return result;
-    }
-
-    private _gradient6ColorsToCssColor(colors: number[], stops: number): GradientStop[] {
-        const result: GradientStop[] = [];
-        for (let i = 0; i < stops; i++) {
-            const index = i * 4;
-            result.push({
-                offset: colors[index],
-                color: this._lottieColorToCSSColor(colors.slice(index + 1, index + 4), colors[stops * 4 + i * 2 + 1]),
+                color: this._lottieColorToCSSColor(colors.slice(index + 1, index + 4), hasAlpha ? colors[stops * 4 + i * 2 + 1] : 1),
             });
         }
 
