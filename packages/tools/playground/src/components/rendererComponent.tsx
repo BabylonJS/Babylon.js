@@ -80,7 +80,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             const isInspectorV1Enabled = this._scene.debugLayer.openedPanes !== 0;
             const isInspectorV2Enabled = inspectorV2Module.IsInspectorVisible();
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
-            const isInspectorV2ModeEnabled = new URLSearchParams(window.location.search).has("inspectorv2");
+
+            const searchParams = new URLSearchParams(window.location.search);
+            const isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
 
             if (action === "refresh") {
                 action = isInspectorEnabled ? "enable" : "disable";

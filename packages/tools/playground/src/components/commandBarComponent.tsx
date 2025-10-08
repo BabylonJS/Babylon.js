@@ -31,8 +31,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     public constructor(props: ICommandBarComponentProps) {
         super(props);
 
+        const searchParams = new URL(window.location.href).searchParams;
         this.state = {
-            isInspectorV2ModeEnabled: new URL(window.location.href).searchParams.has("inspectorv2"),
+            isInspectorV2ModeEnabled: searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false",
         };
 
         // First Fetch JSON data for procedural code
@@ -104,7 +105,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             // Update URL after state is set
             const url = new URL(window.location.href);
             if (this.state.isInspectorV2ModeEnabled) {
-                url.searchParams.set("inspectorv2", "");
+                url.searchParams.set("inspectorv2", "true");
                 localStorage.setItem("inspectorv2", "true");
             } else {
                 url.searchParams.delete("inspectorv2");
@@ -117,7 +118,11 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
     override componentDidMount(): void {
         if (!this.state.isInspectorV2ModeEnabled && localStorage.getItem("inspectorv2") === "true") {
-            this.onToggleInspectorV2Mode();
+            if (new URL(window.location.href).searchParams.get("inspectorv2") === "false") {
+                localStorage.removeItem("inspectorv2");
+            } else {
+                this.onToggleInspectorV2Mode();
+            }
         }
     }
 
