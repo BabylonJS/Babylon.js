@@ -31,6 +31,7 @@ export * from "./Tasks/PostProcesses/imageProcessingTask";
 export * from "./Tasks/PostProcesses/motionBlurTask";
 export * from "./Tasks/PostProcesses/passTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
+export * from "./Tasks/PostProcesses/sharpenTask";
 export * from "./Tasks/PostProcesses/screenSpaceCurvatureTask";
 export * from "./Tasks/PostProcesses/ssrRenderingPipelineTask";
 

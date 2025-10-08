@@ -36,6 +36,7 @@ import { NodeRenderGraphFXAAPostProcessBlock } from "core/FrameGraph/Node/Blocks
 import { NodeRenderGraphGrainPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/grainPostProcessBlock";
 import { NodeRenderGraphMotionBlurPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/motionBlurPostProcessBlock";
 import { NodeRenderGraphConvolutionPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/convolutionPostProcessBlock";
+import { NodeRenderGraphSharpenPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/sharpenPostProcessBlock";
 import { NodeRenderGraphScreenSpaceCurvaturePostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/screenSpaceCurvaturePostProcessBlock";
 
 /**
@@ -167,6 +168,9 @@ export class BlockTools {
             }
             case "ConvolutionBlock": {
                 return new NodeRenderGraphConvolutionPostProcessBlock("Convolution", frameGraph, scene);
+            }
+            case "SharpenBlock": {
+                return new NodeRenderGraphSharpenPostProcessBlock("Sharpen", frameGraph, scene);
             }
             case "ScreenSpaceCurvatureBlock": {
                 return new NodeRenderGraphScreenSpaceCurvaturePostProcessBlock("Screen Space Curvature", frameGraph, scene);
