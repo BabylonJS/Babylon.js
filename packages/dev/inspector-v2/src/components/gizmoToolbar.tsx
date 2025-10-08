@@ -155,7 +155,7 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
                                         onClick: toggleCoordinatesMode,
                                     }}
                                     size="small"
-                                    appearance="secondary"
+                                    appearance="transparent"
                                     shape="rounded"
                                     icon={coordinatesMode === GizmoCoordinatesMode.Local ? <CubeRegular /> : <GlobeRegular />}
                                 ></SplitButton>
