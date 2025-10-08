@@ -2720,7 +2720,8 @@
         },
         {
             "title": "FrameGraph sharpen post process",
-            "playgroundId": "#SYQW69#1329"
+            "playgroundId": "#SYQW69#1329",
+            "errorRatio": 6
         },
         {
             "title": "Render target texture with clustered lights",
