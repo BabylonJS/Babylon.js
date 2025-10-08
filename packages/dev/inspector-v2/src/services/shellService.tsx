@@ -4,7 +4,7 @@ import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
-import { Button, Divider, Toolbar as FluentToolbar, makeStyles, Subtitle2Stronger, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
+import { Button, Divider, Toolbar as FluentToolbar, makeStyles, mergeClasses, Subtitle2Stronger, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 
@@ -219,6 +219,7 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "row",
         flex: "0 0 auto",
+        height: "36px",
         backgroundColor: tokens.colorNeutralBackground2,
     },
     bar: {
@@ -316,6 +317,9 @@ const useStyles = makeStyles({
         justifyContent: "center",
         borderTopLeftRadius: tokens.borderRadiusMedium,
         borderTopRightRadius: tokens.borderRadiusMedium,
+    },
+    unselectedTab: {
+        backgroundColor: "transparent",
     },
     tabRadioButton: {
         backgroundColor: "transparent",
@@ -447,6 +451,8 @@ const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; 
     const useTeachingMoment = useMemo(() => MakePopoverTeachingMoment(`Pane/${alignment}/${title ?? id}`), [title, id]);
     const teachingMoment = useTeachingMoment(suppressTeachingMoment);
 
+    const tabClass = mergeClasses(classes.tab, isSelected ? undefined : classes.unselectedTab);
+
     return (
         <>
             <TeachingMoment
@@ -455,7 +461,7 @@ const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; 
                 title={title ?? "Extension"}
                 description={`The "${title ?? id}" extension can be accessed here.`}
             />
-            <Theme className={classes.tab} invert={isSelected}>
+            <Theme className={tabClass} invert={isSelected}>
                 <ToolbarRadioButton
                     ref={teachingMoment.targetRef}
                     appearance="transparent"
@@ -594,7 +600,7 @@ function usePane(
                                                     title={entry.title}
                                                     icon={entry.icon}
                                                     suppressTeachingMoment={entry.suppressTeachingMoment}
-                                                    isSelected={isSelected}
+                                                    isSelected={isSelected && !collapsed}
                                                 />
                                             );
                                         })}
@@ -605,7 +611,11 @@ function usePane(
                             {/* When the toolbar mode is "full", we add an extra button that allows the side panes to be collapsed. */}
                             {toolbarMode === "full" && (
                                 <>
-                                    <Divider vertical inset />
+                                    {paneComponents.length > 1 && (
+                                        <>
+                                            <Divider vertical inset style={{ minHeight: 0 }} />{" "}
+                                        </>
+                                    )}
                                     <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
                                         <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
                                     </Tooltip>

@@ -52,7 +52,7 @@ export const ThemeSelectorServiceDefinition: ServiceDefinition<[], [IShellServic
                                         menuButton={triggerProps}
                                         primaryActionButton={{ onClick: toggleTheme }}
                                         size="small"
-                                        appearance="secondary"
+                                        appearance="transparent"
                                         shape="circular"
                                         icon={isDarkMode ? <WeatherSunnyRegular /> : <WeatherMoonRegular />}
                                     ></SplitButton>
