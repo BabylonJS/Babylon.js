@@ -473,7 +473,10 @@ export class ObjectRenderer {
             this._createSceneUBO();
         }
 
-        return this._sceneUBOs[this._currentSceneUBOIndex++];
+        const ubo = this._sceneUBOs[this._currentSceneUBOIndex++];
+        ubo.unbindEffect();
+
+        return ubo;
     }
 
     /**

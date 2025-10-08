@@ -48,6 +48,7 @@ export * from "./thinImageProcessingPostProcess";
 export * from "./thinMotionBlurPostProcess";
 export * from "./thinPassPostProcess";
 export * from "./thinSharpenPostProcess";
+export * from "./thinScreenSpaceCurvaturePostProcess";
 
 // Postprocess
 export * from "../Shaders/postprocess.vertex";
