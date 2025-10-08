@@ -107,6 +107,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable") {
                 inspectorV2Module.ShowInspector(this._scene, {
                     embedMode: true,
+                    showThemeSelector: false,
+                    themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
                 });
             }
         });
