@@ -4,9 +4,10 @@ import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
-import { Button, Divider, makeStyles, Tab, TabList, Title3, tokens, Tooltip } from "@fluentui/react-components";
+import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
+import { Button, Divider, makeStyles, Tab, TabList, Subtitle1, tokens, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { TeachingMoment } from "../components/teachingMoment";
@@ -93,6 +94,12 @@ export type SidePane = Readonly<{
     horizontalLocation: "left" | "right";
 
     /**
+     * The vertical location of the side pane.
+     * Can be either "top" or "bottom".
+     */
+    verticalLocation: "top" | "bottom";
+
+    /**
      * An optional title for the side pane, displayed as a standardized header at the top of the pane.
      */
     title?: string;
@@ -152,6 +159,8 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
 
 type ToolbarMode = "full" | "compact";
 
+type SidePaneMode = "both" | "right";
+
 /**
  * Options for configuring the shell service.
  */
@@ -183,6 +192,14 @@ export type ShellServiceOptions = {
      * In "compact" mode, toolbars are displayed at the top and bottom of the left and right side panes.
      */
     toolbarMode?: ToolbarMode;
+
+    /**
+     * The mode of the side panes.
+     * Can be either "both" (default) or "right".
+     * In "both" mode, side panes can be added to both the left and right sides.
+     * In "right" mode, all left panes are moved to the upper right, and all right panes are moved to the lower right.
+     */
+    sidePaneMode?: SidePaneMode;
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -202,7 +219,7 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "row",
         flex: "0 0 auto",
-        backgroundColor: tokens.colorNeutralBackground1,
+        backgroundColor: tokens.colorNeutralBackground2,
     },
     bar: {
         display: "flex",
@@ -210,6 +227,12 @@ const useStyles = makeStyles({
         height: "32px",
         overflow: "hidden",
         padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalSNudge}`,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderBottomWidth: 0,
+        backgroundColor: tokens.colorNeutralBackground1,
+    },
+    barTop: {
+        borderTopWidth: 0,
     },
     barLeft: {
         marginRight: "auto",
@@ -223,16 +246,13 @@ const useStyles = makeStyles({
         flexDirection: "row-reverse",
         columnGap: tokens.spacingHorizontalSNudge,
     },
-    barDivider: {
-        flex: "0 0 auto",
-    },
     barItem: {
         display: "flex",
     },
     paneTabListDiv: {
+        backgroundColor: tokens.colorNeutralBackground2,
         flex: "0 0 auto",
         display: "flex",
-        columnGap: tokens.spacingHorizontalSNudge,
     },
     paneTabListDivLeft: {
         flexDirection: "row-reverse",
@@ -265,11 +285,18 @@ const useStyles = makeStyles({
         display: "flex",
         flexGrow: 1,
         flexDirection: "column",
-        paddingTop: tokens.spacingVerticalS,
         overflow: "hidden",
     },
-    paneHeader: {
+    paneHeaderDiv: {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        backgroundColor: tokens.colorNeutralBackgroundInverted,
+        height: "44px",
+    },
+    paneHeaderText: {
         marginLeft: tokens.spacingHorizontalM,
+        color: tokens.colorNeutralForegroundInverted,
     },
     headerDivider: {
         flex: "0 0 auto",
@@ -302,6 +329,20 @@ const useStyles = makeStyles({
         overflow: "hidden",
     },
 });
+
+const PaneHeader: FunctionComponent<{ title?: string }> = ({ title }) => {
+    const classes = useStyles();
+
+    if (!title) {
+        return null;
+    }
+
+    return (
+        <div className={classes.paneHeaderDiv}>
+            <Subtitle1 className={classes.paneHeaderText}>{title}</Subtitle1>
+        </div>
+    );
+};
 
 // This is a wrapper for an item in a toolbar that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
 const ToolbarItem: FunctionComponent<{
@@ -344,7 +385,7 @@ const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: Toolb
     return (
         <>
             {components.length > 0 && (
-                <div className={classes.bar}>
+                <div className={`${classes.bar} ${location === "top" ? classes.barTop : null}`}>
                     <div className={classes.barLeft}>
                         {leftComponents.map((entry) => (
                             <ToolbarItem
@@ -420,14 +461,16 @@ function usePane(
     alignment: "left" | "right",
     defaultWidth: number,
     minWidth: number,
-    paneComponents: SidePane[],
+    topPanes: SidePane[],
+    bottomPanes: SidePane[],
     toolbarMode: ToolbarMode,
-    topBarComponents: ToolbarItem[],
-    bottomBarComponents: ToolbarItem[]
+    topBarItems: ToolbarItem[],
+    bottomBarItems: ToolbarItem[]
 ) {
     const classes = useStyles();
 
-    const [selectedTab, setSelectedTab] = useState<SidePane | undefined>();
+    const [topSelectedTab, setTopSelectedTab] = useState<SidePane>();
+    const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePane>();
     const [collapsed, setCollapsed] = useState(false);
 
     const onExpandCollapseClick = useCallback(() => {
@@ -435,17 +478,26 @@ function usePane(
     }, [collapsed]);
 
     const widthStorageKey = `Babylon/Settings/${alignment}Pane/Width`;
+    const heightStorageKey = `Babylon/Settings/${alignment}Pane/HeightAdjust`;
 
     const [width, setWidth] = useState(Number.parseInt(localStorage.getItem(widthStorageKey) ?? "") || Math.max(defaultWidth, minWidth));
     const [resizing, setResizing] = useState(false);
 
     useEffect(() => {
-        if ((selectedTab && !paneComponents.includes(selectedTab)) || (!selectedTab && paneComponents.length > 0)) {
-            setSelectedTab(paneComponents[0]);
-        } else if (selectedTab && paneComponents.length === 0) {
-            setSelectedTab(undefined);
+        if ((topSelectedTab && !topPanes.includes(topSelectedTab)) || (!topSelectedTab && topPanes.length > 0)) {
+            setTopSelectedTab(topPanes[0]);
+        } else if (topSelectedTab && topPanes.length === 0) {
+            setTopSelectedTab(undefined);
         }
-    }, [selectedTab, paneComponents]);
+    }, [topSelectedTab, topPanes]);
+
+    useEffect(() => {
+        if ((bottomSelectedTab && !bottomPanes.includes(bottomSelectedTab)) || (!bottomSelectedTab && bottomPanes.length > 0)) {
+            setBottomSelectedTab(bottomPanes[0]);
+        } else if (bottomSelectedTab && bottomPanes.length === 0) {
+            setBottomSelectedTab(undefined);
+        }
+    }, [bottomSelectedTab, bottomPanes]);
 
     const expandCollapseIcon = useMemo(() => {
         if (alignment === "left") {
@@ -455,6 +507,7 @@ function usePane(
         }
     }, [collapsed, alignment]);
 
+    // TODO: Replace this custom resizing logic with useResizeHandle.
     // This function handles resizing the side pane width.
     const onResizerPointerDown = useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
@@ -493,87 +546,143 @@ function usePane(
         [resizing]
     );
 
-    // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
-    const paneTabList = useMemo(() => {
-        return (
-            <>
-                {paneComponents.length > 0 && (
-                    <div className={`${classes.paneTabListDiv} ${alignment === "left" || toolbarMode === "compact" ? classes.paneTabListDivLeft : classes.paneTabListDivRight}`}>
-                        {/* Only render the tab list if there is more than tab. It's kind of pointless to show a tab list with just one tab. */}
-                        {paneComponents.length > 1 && (
-                            <>
-                                <Divider vertical inset />
-                                <TabList
-                                    selectedValue={selectedTab?.key ?? ""}
-                                    onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
-                                        const tab = paneComponents.find((entry) => entry.key === data.value);
-                                        setSelectedTab(tab);
-                                        setCollapsed(false);
-                                    }}
-                                >
-                                    {paneComponents.map((entry) => (
-                                        <SidePaneTab
-                                            key={entry.key}
-                                            alignment={alignment}
-                                            id={entry.key}
-                                            title={entry.title}
-                                            icon={entry.icon}
-                                            suppressTeachingMoment={entry.suppressTeachingMoment}
-                                        />
-                                    ))}
-                                </TabList>
-                            </>
-                        )}
+    const createPaneTabList = useCallback(
+        (paneComponents: SidePane[], toolbarMode: "full" | "compact", selectedTab: SidePane | undefined, setSelectedTab: (tab: SidePane | undefined) => void) => {
+            return (
+                <>
+                    {paneComponents.length > 0 && (
+                        <div
+                            className={`${classes.paneTabListDiv} ${alignment === "left" || toolbarMode === "compact" ? classes.paneTabListDivLeft : classes.paneTabListDivRight}`}
+                        >
+                            {/* Only render the tab list if there is more than tab. It's kind of pointless to show a tab list with just one tab. */}
+                            {paneComponents.length > 1 && (
+                                <>
+                                    <TabList
+                                        selectedValue={selectedTab?.key ?? ""}
+                                        onTabSelect={(event: SelectTabEvent, data: SelectTabData) => {
+                                            const tab = paneComponents.find((entry) => entry.key === data.value);
+                                            setSelectedTab(tab);
+                                            setCollapsed(false);
+                                        }}
+                                    >
+                                        {paneComponents.map((entry) => (
+                                            <SidePaneTab
+                                                key={entry.key}
+                                                alignment={alignment}
+                                                id={entry.key}
+                                                title={entry.title}
+                                                icon={entry.icon}
+                                                suppressTeachingMoment={entry.suppressTeachingMoment}
+                                            />
+                                        ))}
+                                    </TabList>
+                                </>
+                            )}
 
-                        {/* When the toolbar mode is "full", we add an extra button that allows the side panes to be collapsed. */}
-                        {toolbarMode === "full" && (
-                            <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
-                                <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
-                            </Tooltip>
-                        )}
-                    </div>
-                )}
-            </>
-        );
-    }, [paneComponents, selectedTab, collapsed]);
+                            {/* When the toolbar mode is "full", we add an extra button that allows the side panes to be collapsed. */}
+                            {toolbarMode === "full" && (
+                                <>
+                                    <Divider vertical inset />
+                                    <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
+                                        <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
+                                    </Tooltip>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </>
+            );
+        },
+        [alignment, collapsed]
+    );
+
+    // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
+    const topPaneTabList = useMemo(() => createPaneTabList(topPanes, toolbarMode, topSelectedTab, setTopSelectedTab), [topPanes, toolbarMode, topSelectedTab]);
+    const bottomPaneTabList = useMemo(() => createPaneTabList(bottomPanes, "compact", bottomSelectedTab, setBottomSelectedTab), [bottomPanes, bottomSelectedTab]);
+
+    // This manages the CSS variable that controls the height of the bottom pane.
+    const paneHeightAdjustCSSVar = "--pane-height-adjust";
+    const {
+        elementRef: paneVerticalResizeElementRef,
+        handleRef: paneVerticalResizeHandleRef,
+        setValue: setPaneHeightAdjust,
+    } = useResizeHandle({
+        growDirection: "up",
+        relative: true,
+        variableName: paneHeightAdjustCSSVar,
+        variableTarget: "element",
+        onChange: (event, data) => {
+            // Whenever the height is adjusted, store the value.
+            localStorage.setItem(heightStorageKey, data.value.toString());
+        },
+    });
+
+    // This ensures that when the component is first rendered, the CSS variable is set from storage.
+    useLayoutEffect(() => {
+        const storedPaneHeightAdjust = localStorage.getItem(heightStorageKey);
+        if (storedPaneHeightAdjust) {
+            setPaneHeightAdjust(Number.parseInt(storedPaneHeightAdjust));
+        }
+    });
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
     const pane = useMemo(() => {
         return (
             <>
-                {paneComponents.length > 0 && (
+                {(topPanes.length > 0 || bottomPanes.length > 0) && (
                     <div className={`${classes.pane} ${alignment === "left" ? classes.paneLeft : classes.paneRight}`}>
                         <Collapse orientation="horizontal" visible={!collapsed}>
-                            <div className={classes.paneContainer}>
+                            <div className={classes.paneContainer} style={{ width: `${width}px` }}>
                                 {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
-                                {toolbarMode === "compact" && (paneComponents.length > 1 || topBarComponents.length > 0) && (
+                                {toolbarMode === "compact" && (topPanes.length > 1 || topBarItems.length > 0) && (
                                     <>
                                         <div className={classes.barDiv}>
                                             {/* The tablist gets merged in with the toolbar. */}
-                                            {paneTabList}
-                                            <Toolbar location="top" components={topBarComponents} />
+                                            {topPaneTabList}
+                                            <Toolbar location="top" components={topBarItems} />
                                         </div>
-                                        <Divider className={classes.barDivider} />
                                     </>
                                 )}
 
-                                {/* Render the actual pane content (with resizable width). */}
-                                <div className={classes.paneContent} style={{ width: `${width}px` }}>
-                                    {selectedTab?.title ? (
-                                        <>
-                                            <Title3 className={classes.paneHeader}>{selectedTab.title}</Title3>
-                                            <Divider inset className={classes.headerDivider} appearance="brand" />
-                                        </>
-                                    ) : null}
-                                    {selectedTab?.content && <selectedTab.content />}
+                                {/* Render the top pane content. */}
+                                <div className={classes.paneContent}>
+                                    <PaneHeader title={topSelectedTab?.title} />
+                                    {topSelectedTab?.content && <topSelectedTab.content />}
                                 </div>
 
-                                {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the top of the pane. */}
-                                {toolbarMode === "compact" && bottomBarComponents.length > 0 && (
+                                {/* If we have both top and bottom panes, show a divider. This divider is also the resizer for the bottom pane. */}
+                                {topPanes.length > 0 && bottomPanes.length > 0 && (
+                                    <Divider
+                                        ref={paneVerticalResizeHandleRef}
+                                        className={classes.headerDivider}
+                                        style={{ margin: "0", minHeight: tokens.spacingVerticalM, cursor: "ns-resize" }}
+                                    />
+                                )}
+
+                                {/* Render the bottom pane tablist. */}
+                                {bottomPanes.length > 1 && (
                                     <>
-                                        <Divider className={classes.barDivider} />
+                                        <div className={classes.barDiv}>{bottomPaneTabList}</div>
+                                    </>
+                                )}
+
+                                {/* Render the bottom pane content. This is the element that can be resized vertically. */}
+                                {bottomPanes.length > 0 && (
+                                    <div
+                                        ref={paneVerticalResizeElementRef}
+                                        className={classes.paneContent}
+                                        style={{ height: `clamp(200px,calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
+                                    >
+                                        <PaneHeader title={bottomSelectedTab?.title} />
+                                        {bottomSelectedTab?.content && <bottomSelectedTab.content />}
+                                    </div>
+                                )}
+
+                                {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the bottom of the pane. */}
+                                {toolbarMode === "compact" && bottomBarItems.length > 0 && (
+                                    <>
                                         <div className={classes.barDiv}>
-                                            <Toolbar location="bottom" components={bottomBarComponents} />
+                                            <Toolbar location="bottom" components={bottomBarItems} />
                                         </div>
                                     </>
                                 )}
@@ -589,9 +698,9 @@ function usePane(
                 )}
             </>
         );
-    }, [paneComponents, selectedTab, collapsed, width, resizing]);
+    }, [topPanes, topSelectedTab, bottomPanes, bottomSelectedTab, topBarItems, bottomBarItems, collapsed, width, resizing]);
 
-    return [paneTabList, pane];
+    return [topPaneTabList, pane];
 }
 
 export function MakeShellServiceDefinition({
@@ -599,52 +708,78 @@ export function MakeShellServiceDefinition({
     leftPaneMinWidth = 350,
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
-    toolbarMode: toolbarMode = "full",
+    toolbarMode = "full",
+    sidePaneMode = "both",
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
     return {
         friendlyName: "MainView",
         produces: [ShellServiceIdentity, RootComponentServiceIdentity],
         factory: () => {
-            const topBarComponentCollection = new ObservableCollection<ToolbarItem>();
-            const bottomBarComponentCollection = new ObservableCollection<ToolbarItem>();
-            const leftPaneComponentCollection = new ObservableCollection<SidePane>();
-            const rightPaneComponentCollection = new ObservableCollection<SidePane>();
-            const contentComponentCollection = new ObservableCollection<CentralContent>();
+            const topBarItemCollection = new ObservableCollection<ToolbarItem>();
+            const bottomBarItemCollection = new ObservableCollection<ToolbarItem>();
+            const topLeftPaneCollection = new ObservableCollection<SidePane>();
+            const topRightPaneCollection = new ObservableCollection<SidePane>();
+            const bottomLeftPaneCollection = new ObservableCollection<SidePane>();
+            const bottomRightPaneCollection = new ObservableCollection<SidePane>();
+            const centralContentCollection = new ObservableCollection<CentralContent>();
 
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
 
-                const topBarComponents = useOrderedObservableCollection(topBarComponentCollection);
-                const bottomBarComponents = useOrderedObservableCollection(bottomBarComponentCollection);
+                const topBarItems = useOrderedObservableCollection(topBarItemCollection);
+                const bottomBarItems = useOrderedObservableCollection(bottomBarItemCollection);
 
-                const topBarLeftComponents = useMemo(() => topBarComponents.filter((entry) => entry.horizontalLocation === "left"), [topBarComponents]);
-                const topBarRightComponents = useMemo(() => topBarComponents.filter((entry) => entry.horizontalLocation === "right"), [topBarComponents]);
+                const topLeftPanes = useOrderedObservableCollection(topLeftPaneCollection);
+                const topRightPanes = useOrderedObservableCollection(topRightPaneCollection);
+                const bottomLeftPanes = useOrderedObservableCollection(bottomLeftPaneCollection);
+                const bottomRightPanes = useOrderedObservableCollection(bottomRightPaneCollection);
 
-                const bottomBarLeftComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.horizontalLocation === "left"), [bottomBarComponents]);
-                const bottomBarRightComponents = useMemo(() => bottomBarComponents.filter((entry) => entry.horizontalLocation === "right"), [bottomBarComponents]);
+                const hasLeftPanes = topLeftPanes.length > 0 || bottomLeftPanes.length > 0;
+                const hasRightPanes = topRightPanes.length > 0 || bottomRightPanes.length > 0;
 
-                const leftPaneComponents = useOrderedObservableCollection(leftPaneComponentCollection);
-                const rightPaneComponents = useOrderedObservableCollection(rightPaneComponentCollection);
-                const contentComponents = useOrderedObservableCollection(contentComponentCollection);
+                // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
+                // depending on whether there are any side panes on that side.
+                const coerceToolBarItemHorizontalLocation = (item: ToolbarItem) => {
+                    let location = item.horizontalLocation;
+                    // Coercion is only needed in compact toolbar mode since there might not be a left or right pane.
+                    if (toolbarMode === "compact") {
+                        if (location === "left" && !hasLeftPanes) {
+                            location = "right";
+                        }
+                        if (location === "right" && !hasRightPanes) {
+                            location = "left";
+                        }
+                    }
+                    return location;
+                };
+
+                const topBarLeftItems = useMemo(() => topBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [topBarItems]);
+                const topBarRightItems = useMemo(() => topBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [topBarItems]);
+                const bottomBarLeftItems = useMemo(() => bottomBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [bottomBarItems]);
+                const bottomBarRightItems = useMemo(() => bottomBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [bottomBarItems]);
+
+                const centralContents = useOrderedObservableCollection(centralContentCollection);
 
                 const [leftPaneTabList, leftPane] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
-                    leftPaneComponents,
+                    topLeftPanes,
+                    bottomLeftPanes,
                     toolbarMode,
-                    topBarLeftComponents,
-                    bottomBarLeftComponents
+                    topBarLeftItems,
+                    bottomBarLeftItems
                 );
 
                 const [rightPaneTabList, rightPane] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
-                    rightPaneComponents,
+                    topRightPanes,
+                    bottomRightPanes,
                     toolbarMode,
-                    topBarRightComponents,
-                    bottomBarRightComponents
+                    topBarRightItems,
+                    bottomBarRightItems
                 );
 
                 return (
@@ -654,10 +789,9 @@ export function MakeShellServiceDefinition({
                             <>
                                 <div className={classes.barDiv}>
                                     {leftPaneTabList}
-                                    <Toolbar location="top" components={topBarComponents} />
+                                    <Toolbar location="top" components={topBarItems} />
                                     {rightPaneTabList}
                                 </div>
-                                <Divider className={classes.barDivider} />
                             </>
                         )}
 
@@ -668,7 +802,7 @@ export function MakeShellServiceDefinition({
 
                             {/* Render the main/central content. */}
                             <div className={classes.centralContent}>
-                                {contentComponents.map((entry) => (
+                                {centralContents.map((entry) => (
                                     <entry.component key={entry.key} />
                                 ))}
                             </div>
@@ -680,9 +814,8 @@ export function MakeShellServiceDefinition({
                         {/* Only render the bottom toolbar if the toolbar mode is "full". Otherwise it will be embedded at the bottom of the side panes. */}
                         {toolbarMode === "full" && (
                             <>
-                                <Divider className={classes.barDivider} />
                                 <div className={classes.barDiv}>
-                                    <Toolbar location="bottom" components={bottomBarComponents} />
+                                    <Toolbar location="bottom" components={bottomBarItems} />
                                 </div>
                             </>
                         )}
@@ -698,9 +831,9 @@ export function MakeShellServiceDefinition({
                     }
 
                     if (entry.verticalLocation === "top") {
-                        return topBarComponentCollection.add(entry);
+                        return topBarItemCollection.add(entry);
                     } else {
-                        return bottomBarComponentCollection.add(entry);
+                        return bottomBarItemCollection.add(entry);
                     }
                 },
                 addSidePane: (entry) => {
@@ -708,13 +841,41 @@ export function MakeShellServiceDefinition({
                         entry.content.displayName = `${entry.key} | ${entry.horizontalLocation} pane`;
                     }
 
-                    if (entry.horizontalLocation === "left") {
-                        return leftPaneComponentCollection.add(entry);
+                    // When we are in "right" side pane mode, we need to coerce all left panes to be right panes.
+                    const coerceSidePaneLocation = (sidePane: SidePane) => {
+                        let { horizontalLocation, verticalLocation } = sidePane;
+                        if (sidePaneMode === "right") {
+                            // All right panes go to right bottom.
+                            if (horizontalLocation === "right") {
+                                verticalLocation = "bottom";
+                            }
+
+                            // All left panes go to right top.
+                            if (horizontalLocation === "left") {
+                                horizontalLocation = "right";
+                                verticalLocation = "top";
+                            }
+                        }
+                        return { horizontalLocation, verticalLocation };
+                    };
+
+                    const { horizontalLocation, verticalLocation } = coerceSidePaneLocation(entry);
+
+                    if (horizontalLocation === "left") {
+                        if (verticalLocation === "top") {
+                            return topLeftPaneCollection.add(entry);
+                        } else {
+                            return bottomLeftPaneCollection.add(entry);
+                        }
                     } else {
-                        return rightPaneComponentCollection.add(entry);
+                        if (verticalLocation === "top") {
+                            return topRightPaneCollection.add(entry);
+                        } else {
+                            return bottomRightPaneCollection.add(entry);
+                        }
                     }
                 },
-                addCentralContent: (entry) => contentComponentCollection.add(entry),
+                addCentralContent: (entry) => centralContentCollection.add(entry),
                 rootComponent,
             };
         },

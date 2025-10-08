@@ -7,6 +7,7 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { EngineStore } from "core/Engines/engineStore";
+import { EXRCubeTexture } from "core/Materials/Textures/exrCubeTexture";
 
 export class EnvironmentTools {
     public static SkyboxPath = "";
@@ -32,6 +33,10 @@ export class EnvironmentTools {
 
         if (path.indexOf(".hdr") === path.length - 4) {
             return new HDRCubeTexture(path, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
+        }
+
+        if (path.indexOf(".exr") === path.length - 4) {
+            return new EXRCubeTexture(path, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
         }
 
         const envTexture = CubeTexture.CreateFromPrefilteredData(path, scene);

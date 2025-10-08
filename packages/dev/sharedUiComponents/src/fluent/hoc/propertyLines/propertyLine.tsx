@@ -1,62 +1,55 @@
-import { Body1, Body1Strong, Button, InfoLabel, Link, ToggleButton, Checkbox, makeStyles, tokens } from "@fluentui/react-components";
-import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
+import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Strong } from "@fluentui/react-components";
+import { ChevronCircleDown20Regular, ChevronCircleRight20Regular, CopyRegular } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
 import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
 import type { PrimitiveProps } from "../../primitives/primitive";
+import { ToggleButton } from "../../primitives/toggleButton";
+import { Button } from "../../primitives/button";
+import { CustomTokens } from "../../primitives/utils";
 
 const usePropertyLineStyles = makeStyles({
     container: {
         width: "100%",
         display: "flex",
         flexDirection: "column", // Stack line + expanded content
-        padding: `${tokens.spacingVerticalXS} 0px`,
-        borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
     },
-    line: {
+    baseLine: {
+        height: CustomTokens.lineHeight,
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-start",
         width: "100%",
     },
-    label: {
+    infoLabel: {
+        display: "flex",
         flex: "1 1 0", // grow=1, shrink =1, basis = 0 initial size before
-        minWidth: "50px",
+        minWidth: CustomTokens.labelMinWidth,
         textAlign: "left",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
+    },
+    labelSlot: {
+        display: "flex",
+        minWidth: 0,
     },
     labelText: {
         whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
     },
     rightContent: {
         flex: "0 1 auto",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
-        gap: tokens.spacingHorizontalS,
     },
-    button: {
-        marginLeft: tokens.spacingHorizontalXXS,
-        margin: 0,
-        padding: 0,
-        border: 0,
-        minWidth: 0,
+    infoPopup: {
+        whiteSpace: "normal",
+        wordBreak: "break-word",
     },
-    fillRestOfRightContentWidth: {
-        flex: 1,
-        display: "flex",
-        justifyContent: "flex-end",
-        alignItems: "center",
-    },
-    expandButton: {
-        margin: 0,
-    },
-    expandedContent: {
-        paddingLeft: "20px",
+    copy: {
+        marginRight: CustomTokens.rightAlignOffset, // Accounts for the padding baked into fluent button / ensures propertyLine looks visually aligned at the right
     },
 });
 
@@ -131,6 +124,7 @@ export type PropertyLineProps<ValueT> = BasePropertyLineProps &
  *
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps<any>>>((props, ref) => {
+    PropertyLine.displayName = "PropertyLine";
     const classes = usePropertyLineStyles();
     const { label, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 
@@ -139,7 +133,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
     const { disableCopy } = useContext(ToolContext);
 
-    const description = props.description ?? (props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description);
+    const description = props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
@@ -154,11 +148,27 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
     return (
         <LineContainer ref={ref}>
-            <div className={classes.line}>
-                <InfoLabel className={classes.label} info={description} title={label}>
+            <div className={classes.baseLine}>
+                <InfoLabel
+                    className={classes.infoLabel}
+                    label={{ className: classes.labelSlot }}
+                    info={description ? <div className={classes.infoPopup}>{description}</div> : undefined}
+                    title={label}
+                >
                     <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
+                    {expandedContent && (
+                        <ToggleButton
+                            title="Expand/Collapse property"
+                            appearance="transparent"
+                            checkedIcon={ChevronCircleDown20Regular}
+                            uncheckedIcon={ChevronCircleRight20Regular}
+                            value={expanded === true}
+                            onChange={setExpanded}
+                        />
+                    )}
+
                     {nullable && !ignoreNullable && (
                         // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
                         <Checkbox
@@ -176,29 +186,15 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                             title="Toggle null state"
                         />
                     )}
-                    <div className={classes.fillRestOfRightContentWidth}>{processedChildren}</div>
-
-                    {expandedContent && (
-                        <ToggleButton
-                            appearance="transparent"
-                            icon={expanded ? <SubtractFilled /> : <AddFilled />}
-                            className={classes.button}
-                            checked={expanded}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setExpanded((expanded) => !expanded);
-                            }}
-                        />
-                    )}
-
+                    {processedChildren}
                     {onCopy && !disableCopy && (
-                        <Button className={classes.button} id="copyProperty" icon={<CopyRegular />} onClick={() => copyCommandToClipboard(onCopy())} title="Copy to clipboard" />
+                        <Button className={classes.copy} title="Copy to clipboard" appearance="transparent" icon={CopyRegular} onClick={() => copyCommandToClipboard(onCopy())} />
                     )}
                 </div>
             </div>
             {expandedContent && (
                 <Collapse visible={!!expanded}>
-                    <div className={classes.expandedContent}>{expandedContent}</div>
+                    <div>{expandedContent}</div>
                 </Collapse>
             )}
         </LineContainer>

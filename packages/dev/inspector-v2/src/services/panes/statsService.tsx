@@ -52,6 +52,7 @@ export const StatsServiceDefinition: ServiceDefinition<[IStatsService], [IShellS
             title: "Statistics",
             icon: DataBarHorizontalRegular,
             horizontalLocation: "right",
+            verticalLocation: "top",
             order: 300,
             suppressTeachingMoment: true,
             content: () => {

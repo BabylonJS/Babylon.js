@@ -13,6 +13,8 @@ export const enum PropertyTypeForEdition {
     Int,
     /** property is a Vector2 */
     Vector2,
+    /** property is a Vector3 */
+    Vector3,
     /** property is a list of values */
     List,
     /** property is a Color4 */

@@ -7,7 +7,7 @@ import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
-import { ShaderLanguage } from "core/Materials";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import type { Observable } from "./observable";
 import type { Nullable } from "../types";
 import { Clamp } from "../Maths/math.scalar.functions";
@@ -270,7 +270,12 @@ function IsCompressedTextureFormat(format: number): boolean {
     }
 }
 
-async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void> {
+/**
+ * Waits for when the given texture is ready to be used (downloaded, converted, mip mapped...)
+ * @param texture the texture to wait for
+ * @returns a promise that resolves when the texture is ready
+ */
+export async function WhenTextureReadyAsync(texture: BaseTexture): Promise<void> {
     if (texture.isReady()) {
         return;
     }

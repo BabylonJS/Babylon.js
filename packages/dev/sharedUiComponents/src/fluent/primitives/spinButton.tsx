@@ -1,18 +1,10 @@
-import { makeStyles, SpinButton as FluentSpinButton, useId, tokens } from "@fluentui/react-components";
+import { SpinButton as FluentSpinButton, mergeClasses, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
-import type { FunctionComponent, KeyboardEvent, FocusEvent } from "react";
+import type { FunctionComponent, KeyboardEvent } from "react";
 import { useEffect, useState, useRef } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
-
-const useSpinStyles = makeStyles({
-    base: {
-        display: "flex",
-        flexDirection: "column",
-        minWidth: "55px",
-    },
-    invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
-});
+import { HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
 
 export type SpinButtonProps = PrimitiveProps<number> & {
     min?: number;
@@ -26,7 +18,9 @@ export type SpinButtonProps = PrimitiveProps<number> & {
 };
 
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
-    const classes = useSpinStyles();
+    SpinButton.displayName = "SpinButton";
+    const classes = useInputStyles();
+
     const { min, max } = props;
 
     const [value, setValue] = useState(props.value);
@@ -76,14 +70,17 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     };
 
     const id = useId("spin-button");
+    const mergedClassName = mergeClasses(classes.input, !validateValue(value) ? classes.invalid : "", props.className);
+
     return (
-        <div className={classes.base}>
+        <div className={classes.container}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentSpinButton
                 {...props}
+                input={{ className: classes.inputSlot }}
                 step={step}
                 id={id}
-                size="small"
+                size="medium"
                 precision={CalculatePrecision(step ?? 1.01)}
                 displayValue={props.unit ? `${PrecisionRound(value, CalculatePrecision(step ?? 1.01))} ${props.unit}` : undefined}
                 value={value}
@@ -91,7 +88,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 onKeyUp={handleKeyUp}
                 onKeyDown={HandleKeyDown}
                 onBlur={HandleOnBlur}
-                className={`${!validateValue(value) ? classes.invalid : ""}`}
+                className={mergedClassName}
             />
         </div>
     );
@@ -109,7 +106,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
  * @param value - the value to determine the precision of
  * @returns the calculated precision
  */
-function CalculatePrecision(value: number) {
+export function CalculatePrecision(value: number) {
     /**
      * Group 1:
      * [1-9]([0]+$) matches trailing zeros
@@ -139,18 +136,4 @@ function CalculatePrecision(value: number) {
 function PrecisionRound(value: number, precision: number) {
     const exp = Math.pow(10, precision);
     return Math.round(value * exp) / exp;
-}
-
-export function HandleOnBlur(event: FocusEvent<HTMLInputElement>) {
-    event.stopPropagation();
-    event.preventDefault();
-}
-
-export function HandleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    event.stopPropagation(); // Prevent event propagation
-
-    // Prevent Enter key from causing form submission or value reversion
-    if (event.key === "Enter") {
-        event.preventDefault();
-    }
 }

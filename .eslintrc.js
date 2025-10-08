@@ -504,6 +504,12 @@ const rules = {
                 ],
             },
         },
+        {
+            files: ["packages/dev/gui/src/2D/controls/**/*.{ts,tsx}"],
+            rules: {
+                "babylonjs/require-context-save-before-apply-states": "error",
+            },
+        },
     ],
     env: {
         browser: true,

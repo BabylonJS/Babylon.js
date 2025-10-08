@@ -1,9 +1,10 @@
+import type { ScrollToInterface } from "@fluentui-contrib/react-virtualizer";
+import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
+import type { FluentIcon } from "@fluentui/react-icons";
+import type { ComponentType, FunctionComponent } from "react";
+
 import type { IDisposable, IReadonlyObservable, Nullable, Scene } from "core/index";
 
-import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
-import type { ScrollToInterface } from "@fluentui/react-components/unstable";
-import type { ComponentType, FunctionComponent } from "react";
-import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { VirtualizerScrollView } from "@fluentui-contrib/react-virtualizer";
 import {
     Body1,
@@ -22,10 +23,10 @@ import {
     Tooltip,
     TreeItemLayout,
 } from "@fluentui/react-components";
-import { FilterRegular, MoviesAndTvRegular } from "@fluentui/react-icons";
-import type { FluentIcon } from "@fluentui/react-icons";
-
+import { ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
@@ -231,8 +232,30 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommand }> = (props) => 
     );
 
     // TODO-iv2: Consolidate icon prop passing approach for inspector and shared components
-    return <ToggleButton appearance="transparent" title={displayName} enabledIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
+    return <ToggleButton appearance="transparent" title={displayName} checkedIcon={Icon as FluentIcon} value={isEnabled} onChange={(val: boolean) => (command.isEnabled = val)} />;
 };
+
+// This "placeholder" command has a blank icon and is a no-op. It is used for aside
+// alignment when some toggle commands are enabled. See more details on the commands
+// for setting the aside state.
+const PlaceHolderCommand: ActionCommand = {
+    type: "action",
+    displayName: "",
+    icon: createFluentIcon("Placeholder", "1em", ""),
+    execute: () => {
+        /* No-op */
+    },
+};
+
+function MakeCommandElement(command: SceneExplorerCommand, isPlaceholder: boolean): JSX.Element {
+    if (isPlaceholder) {
+        // Placeholders are not visible and not interacted with, so they are always ActionCommand
+        // components, just to ensure the exact right amount of space is taken up.
+        return <ActionCommand key={command.displayName} command={PlaceHolderCommand} />;
+    }
+
+    return command.type === "action" ? <ActionCommand key={command.displayName} command={command} /> : <ToggleCommand key={command.displayName} command={command} />;
+}
 
 const SceneTreeItem: FunctionComponent<{
     scene: Scene;
@@ -247,7 +270,7 @@ const SceneTreeItem: FunctionComponent<{
     return (
         <FlatTreeItem key="scene" value="scene" itemType="leaf" parentValue={undefined} aria-level={1} aria-setsize={1} aria-posinset={1} onClick={select}>
             <TreeItemLayout
-                iconBefore={<MoviesAndTvRegular />}
+                iconBefore={<GlobeRegular />}
                 className={classes.sceneTreeItemLayout}
                 style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
             >
@@ -314,6 +337,8 @@ const EntityTreeItem: FunctionComponent<{
 }> = (props) => {
     const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
 
+    const hasChildren = !!entityItem.children?.length;
+
     const displayInfo = useResource(
         useCallback(() => {
             const displayInfo = entityItem.getDisplayInfo();
@@ -331,9 +356,26 @@ const EntityTreeItem: FunctionComponent<{
     // Get the commands that apply to this entity.
     const commands = useResource(
         useCallback(() => {
-            const commands: readonly SceneExplorerCommand[] = commandProviders
+            const commands: readonly SceneExplorerCommand[] = [...commandProviders]
                 .filter((provider) => provider.predicate(entityItem.entity))
-                .map((provider) => provider.getCommand(entityItem.entity));
+                .map((provider) => {
+                    return {
+                        order: provider.order,
+                        command: provider.getCommand(entityItem.entity),
+                    };
+                })
+                .sort((a, b) => {
+                    // Action commands always come before toggle commands, because toggle commands will remain
+                    // visible when they are enabled, even when the pointer is not hovering the item, and we
+                    // don't want a bunch of blank space.
+                    if (a.command.type !== b.command.type) {
+                        return a.command.type === "action" ? -1 : 1;
+                    }
+
+                    // Within each group of command types, sort by order (default 0) ascending.
+                    return (a.order ?? 0) - (b.order ?? 0);
+                })
+                .map((entry) => entry.command);
 
             return Object.assign(commands, {
                 dispose: () => commands.forEach((command) => command.dispose?.()),
@@ -341,22 +383,45 @@ const EntityTreeItem: FunctionComponent<{
         }, [entityItem.entity, commandProviders])
     );
 
-    const [enabledToggleCommands, setEnabledToggleCommands] = useState<readonly ToggleCommand[]>([]);
+    // TreeItemLayout actions (totally unrelated to "Action" type commands) are only visible when the item is focused or has pointer hover.
+    const actions = useMemo(() => {
+        const defaultCommands: SceneExplorerCommand[] = [];
+        if (hasChildren) {
+            defaultCommands.push({
+                type: "action",
+                displayName: "Expand All",
+                icon: () => <ArrowExpandAllRegular />,
+                execute: () => expandAll(),
+            });
+        }
 
-    // For enabled/active toggle commands, we should always show them so the user knows this command is toggled on.
+        return [...defaultCommands, ...commands].map((command) => MakeCommandElement(command, false));
+    }, [commands, hasChildren, expandAll]);
+
+    // TreeItemLayout asides are always visible.
+    const [aside, setAside] = useState<readonly JSX.Element[]>([]);
+
+    // This useEffect keeps the aside up-to-date. What should always show is any enabled toggle command, along with
+    // placeholders to the right to keep the position of the actions consistent.
     useEffect(() => {
-        const toggleCommands = commands.filter((command) => command.type === "toggle");
-
-        const updateEnabledToggleCommands = () => {
-            setEnabledToggleCommands(toggleCommands.filter((command) => command.isEnabled));
+        const updateAside = () => {
+            let isAnyCommandEnabled = false;
+            const aside: JSX.Element[] = [];
+            for (const command of commands) {
+                isAnyCommandEnabled ||= command.type === "toggle" && command.isEnabled;
+                if (isAnyCommandEnabled) {
+                    aside.push(MakeCommandElement(command, command.type !== "toggle" || !command.isEnabled));
+                }
+            }
+            setAside(aside);
         };
 
-        updateEnabledToggleCommands();
+        updateAside();
 
-        const observers = toggleCommands
+        const observers = commands
             .map((command) => command.onChange)
             .filter((onChange) => !!onChange)
-            .map((onChange) => onChange.add(updateEnabledToggleCommands));
+            .map((onChange) => onChange.add(updateAside));
 
         return () => {
             for (const observer of observers) {
@@ -372,7 +437,7 @@ const EntityTreeItem: FunctionComponent<{
                     key={entityItem.entity.uniqueId}
                     value={entityItem.entity.uniqueId}
                     // Disable manual expand/collapse when a filter is active.
-                    itemType={!isFiltering && (entityItem.children?.length ?? 0) > 0 ? "branch" : "leaf"}
+                    itemType={!isFiltering && hasChildren ? "branch" : "leaf"}
                     parentValue={entityItem.parent.type === "section" ? entityItem.parent.sectionName : entityItem.entity.uniqueId}
                     aria-level={entityItem.depth}
                     aria-setsize={1}
@@ -382,28 +447,24 @@ const EntityTreeItem: FunctionComponent<{
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
-                        // Actions are only visible when the item is focused or has pointer hover.
-                        actions={commands.map((command) =>
-                            command.type === "action" ? (
-                                <ActionCommand key={command.displayName} command={command} />
-                            ) : (
-                                <ToggleCommand key={command.displayName} command={command} />
-                            )
-                        )}
-                        // Asides are always visible.
+                        actions={actions}
                         aside={{
                             // Match the gap and padding of the actions.
-                            style: { gap: 0, paddingRight: tokens.spacingHorizontalS },
-                            children: enabledToggleCommands.map((command) => <ToggleCommand key={command.displayName} command={command} />),
+                            style: { gap: 0, paddingLeft: tokens.spacingHorizontalS, paddingRight: tokens.spacingHorizontalS },
+                            children: aside,
+                        }}
+                        main={{
+                            // Prevent the "main" content (the Body1 below) from growing too large and pushing the actions/aside out of view.
+                            style: { flex: "1 1 0", overflow: "hidden", textOverflow: "ellipsis" },
                         }}
                     >
                         <Body1 wrap={false} truncate>
-                            {name.substring(0, 100)}
+                            {name}
                         </Body1>
                     </TreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>
-            <MenuPopover hidden={!entityItem.children?.length}>
+            <MenuPopover hidden={!hasChildren}>
                 <MenuList>
                     <MenuItem onClick={expandAll}>
                         <Body1>Expand All</Body1>
@@ -560,7 +621,12 @@ export const SceneExplorer: FunctionComponent<{
         visibleItems.add(sceneTreeItem);
 
         for (const sectionTreeItem of sectionTreeItems) {
+            const children = sectionTreeItem.children;
             traversedItems.push(sectionTreeItem);
+            if (!children.length) {
+                continue;
+            }
+
             // Section tree items are always visible when not filtering.
             if (!filter) {
                 visibleItems.add(sectionTreeItem);
@@ -569,7 +635,7 @@ export const SceneExplorer: FunctionComponent<{
             // When an item filter is present, always traverse the full scene graph (e.g. ignore the open item state).
             if (filter || openItems.has(sectionTreeItem.sectionName)) {
                 TraverseGraph(
-                    sectionTreeItem.children,
+                    children,
                     // Get children
                     (treeItem) => {
                         if (filter || openItems.has(treeItem.entity.uniqueId)) {

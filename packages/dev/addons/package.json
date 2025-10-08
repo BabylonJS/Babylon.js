@@ -15,13 +15,15 @@
         "clean": "rimraf dist && rimraf *.tsbuildinfo -g",
         "precompile": "npm run compile:assets",
         "compile": "tsc -b tsconfig.build.json",
-        "compile:assets": "build-tools -c process-assets",
+        "compile:assets": "build-tools -c process-assets --package ..",
         "watch": "tsc -b tsconfig.build.json -w",
         "watch:dev": "npm run watch"
     },
     "devDependencies": {
-        "@dev/core": "^1.0.0"
+        "@dev/core": "^1.0.0",
+        "@recast-navigation/core": "^0.43.0",
+        "@recast-navigation/generators": "^0.43.0",
+        "@recast-navigation/wasm": "^0.43.0"
     },
-    "sideEffects": true,
-    "dependencies": {}
+    "sideEffects": true
 }

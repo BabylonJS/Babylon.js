@@ -11,6 +11,7 @@ import type { Color3, Color4 } from "core/Maths/math.color";
  * @returns property-line wrapped input hex component
  */
 export const HexPropertyLine: FunctionComponent<InputHexProps & PropertyLineProps<Color3 | Color4>> = (props) => {
+    HexPropertyLine.displayName = "HexPropertyLine";
     return (
         <PropertyLine {...props}>
             <InputHexField {...props} />

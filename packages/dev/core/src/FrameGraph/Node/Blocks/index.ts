@@ -9,11 +9,13 @@ export * from "./Layers/glowLayerBlock";
 export * from "./Layers/highlightLayerBlock";
 
 export * from "./PostProcesses/anaglyphPostProcessBlock";
+export * from "./PostProcesses/basePostProcessBlock";
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";
 export * from "./PostProcesses/chromaticAberrationPostProcessBlock";
 export * from "./PostProcesses/circleOfConfusionPostProcessBlock";
+export * from "./PostProcesses/convolutionPostProcessBlock";
 export * from "./PostProcesses/depthOfFieldPostProcessBlock";
 export * from "./PostProcesses/extractHighlightsPostProcessBlock";
 export * from "./PostProcesses/fxaaPostProcessBlock";
@@ -21,6 +23,7 @@ export * from "./PostProcesses/grainPostProcessBlock";
 export * from "./PostProcesses/imageProcessingPostProcessBlock";
 export * from "./PostProcesses/motionBlurPostProcessBlock";
 export * from "./PostProcesses/passPostProcessBlock";
+export * from "./PostProcesses/screenSpaceCurvaturePostProcessBlock";
 export * from "./PostProcesses/ssrPostProcessBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";

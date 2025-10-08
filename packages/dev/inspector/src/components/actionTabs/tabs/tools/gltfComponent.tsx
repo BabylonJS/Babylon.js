@@ -275,9 +275,9 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps, IGLTFCom
                                 onSelect={(value) => (extensionStates["KHR_materials_dispersion"].enabled = value)}
                             />
                             <CheckBoxLineComponent
-                                label="EXT_materials_diffuse_roughness"
-                                isSelected={() => extensionStates["EXT_materials_diffuse_roughness"].enabled}
-                                onSelect={(value) => (extensionStates["EXT_materials_diffuse_roughness"].enabled = value)}
+                                label="KHR_materials_diffuse_roughness"
+                                isSelected={() => extensionStates["KHR_materials_diffuse_roughness"].enabled}
+                                onSelect={(value) => (extensionStates["KHR_materials_diffuse_roughness"].enabled = value)}
                             />
                             <CheckBoxLineComponent
                                 label="KHR_mesh_quantization"

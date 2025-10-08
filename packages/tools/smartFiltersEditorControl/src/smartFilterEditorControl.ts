@@ -141,6 +141,11 @@ export type SmartFilterEditorOptions = {
     deleteCustomBlock?: (blockRegistration: IBlockRegistration) => void;
 
     /**
+     * If supplied, an option to clear all custom blocks will be presented to the user
+     */
+    clearCustomBlocks?: () => void;
+
+    /**
      * An observable that is called when the editor needs to log a message
      */
     onLogRequiredObservable?: Observable<LogEntry>;
@@ -174,7 +179,12 @@ export class SmartFilterEditorControl {
 
         if (!hostElement) {
             hostElement = CreatePopup("BABYLON.JS SMART FILTER EDITOR", {
-                onWindowCreateCallback: (w) => (this._PopupWindow = w),
+                onWindowCreateCallback: (w) => {
+                    this._PopupWindow = w;
+                    // Styles are copied from the launching page which could have custom styles on the body tag,
+                    //  and we require the body display to be block, so ensure that it is set as we need it.
+                    w.document.body.style.display = "block";
+                },
                 width: 1500,
                 height: 800,
             })!;
@@ -201,6 +211,7 @@ export class SmartFilterEditorControl {
             options.saveToSnippetServer,
             options.addCustomBlock,
             options.deleteCustomBlock,
+            options.clearCustomBlocks,
             options.onLogRequiredObservable,
             options.onSaveEditorDataRequiredObservable
         );

@@ -1,8 +1,8 @@
 import type { IDisposable, Scene } from "core/index";
-
 import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
 import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { ISceneContext } from "../sceneContext";
+import type { ISettingsContext } from "../settingsContext";
 import type { IShellService } from "../shellService";
 
 import { SettingsRegular } from "@fluentui/react-icons";
@@ -15,7 +15,7 @@ import { ExtensibleAccordion } from "../../components/extensibleAccordion";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
-import { SettingsContextIdentity, type ISettingsContext } from "../settingsContext";
+import { SettingsContextIdentity } from "../settingsContext";
 import { ShellServiceIdentity } from "../shellService";
 
 export const SettingsServiceIdentity = Symbol("SettingsService");
@@ -84,6 +84,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
             title: "Settings",
             icon: SettingsRegular,
             horizontalLocation: "right",
+            verticalLocation: "top",
             order: 500,
             suppressTeachingMoment: true,
             content: () => {

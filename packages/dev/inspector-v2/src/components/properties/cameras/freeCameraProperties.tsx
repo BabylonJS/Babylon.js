@@ -25,7 +25,7 @@ export const FreeCameraTransformProperties: FunctionComponent<{ camera: FreeCame
             {quatRotation ? (
                 <QuaternionPropertyLine
                     key="QuaternionRotationTransform"
-                    label="Rotation (Quaternion)"
+                    label="Rotation (Quat)"
                     value={quatRotation}
                     onChange={(val) => (camera.rotationQuaternion = val)}
                     useDegrees={useDegrees}

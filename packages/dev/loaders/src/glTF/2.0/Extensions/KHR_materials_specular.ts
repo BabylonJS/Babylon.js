@@ -1,12 +1,9 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
-
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
 import { Color3 } from "core/Maths/math.color";
-import { Constants } from "core/Engines/constants";
 import type { IEXTMaterialsSpecularEdgeColor, IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
 import { registerGLTFExtension, unregisterGLTFExtension } from "../glTFLoaderExtensionRegistry";
 
@@ -69,11 +66,11 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             promises.push(this._loadSpecularPropertiesAsync(extensionContext, extension, babylonMaterial));
             // Handle the EXT_materials_specular_edge_color sub-extension
             // https://github.com/KhronosGroup/glTF/blob/2a1111b88f052cbd3e2d82abb9faee56e7494904/extensions/2.0/Vendor/EXT_materials_specular_edge_color/README.md
-            if (extension.extensions && extension.extensions.EXT_materials_specular_edge_color && babylonMaterial instanceof PBRMaterial) {
+            const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+            if (extension.extensions && extension.extensions.EXT_materials_specular_edge_color) {
                 const specularEdgeColorExtension = extension.extensions.EXT_materials_specular_edge_color as IEXTMaterialsSpecularEdgeColor;
                 if (specularEdgeColorExtension.specularEdgeColorEnabled) {
-                    babylonMaterial.brdf.dielectricSpecularModel = Constants.MATERIAL_DIELECTRIC_SPECULAR_MODEL_OPENPBR;
-                    babylonMaterial.brdf.conductorSpecularModel = Constants.MATERIAL_CONDUCTOR_SPECULAR_MODEL_OPENPBR;
+                    adapter.enableSpecularEdgeColor(true);
                 }
             }
             // eslint-disable-next-line github/no-then
@@ -83,27 +80,19 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadSpecularPropertiesAsync(context: string, properties: IKHRMaterialsSpecular, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const promises = new Array<Promise<any>>();
 
-        if (properties.specularFactor !== undefined) {
-            babylonMaterial.metallicF0Factor = properties.specularFactor;
-        }
-
-        if (properties.specularColorFactor !== undefined) {
-            babylonMaterial.metallicReflectanceColor = Color3.FromArray(properties.specularColorFactor);
-        }
+        // Set non-texture properties immediately
+        adapter.specularWeight = properties.specularFactor ?? 1.0;
+        adapter.specularColor = properties.specularColorFactor !== undefined ? Color3.FromArray(properties.specularColorFactor) : new Color3(1, 1, 1);
 
         if (properties.specularTexture) {
             (properties.specularTexture as ITextureInfo).nonColorData = true;
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/specularTexture`, properties.specularTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Specular)`;
-                    babylonMaterial.metallicReflectanceTexture = texture;
-                    babylonMaterial.useOnlyMetallicFromMetallicReflectanceTexture = true;
+                    adapter.specularWeightTexture = texture;
                 })
             );
         }
@@ -112,7 +101,7 @@ export class KHR_materials_specular implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/specularColorTexture`, properties.specularColorTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Specular Color)`;
-                    babylonMaterial.reflectanceTexture = texture;
+                    adapter.specularColorTexture = texture;
                 })
             );
         }

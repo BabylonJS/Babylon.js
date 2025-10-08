@@ -89,3 +89,5 @@ export * from "../ShadersWGSL/rgbdEncode.fragment";
 // CopyTextureToTexture
 export * from "../Shaders/copyTextureToTexture.fragment";
 export * from "../ShadersWGSL/copyTextureToTexture.fragment";
+
+export * from "./tools.internals";

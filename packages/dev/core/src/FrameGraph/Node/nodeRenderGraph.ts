@@ -24,6 +24,7 @@ import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
 import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
+import { NodeRenderGraphBaseObjectRendererBlock } from "./Blocks/Rendering/baseObjectRendererBlock";
 import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import { NodeRenderGraphCullObjectsBlock } from "./Blocks/cullObjectsBlock";
@@ -79,8 +80,11 @@ export class NodeRenderGraph {
 
     /**
      * Observable raised when the node render graph is built
+     * Note that this is the same observable as the one in the underlying FrameGraph!
      */
-    public onBuildObservable = new Observable<NodeRenderGraph>();
+    public get onBuildObservable() {
+        return this._frameGraph.onBuildObservable;
+    }
 
     /**
      * Observable raised when an error is detected
@@ -275,8 +279,9 @@ export class NodeRenderGraph {
 
     /**
      * Build the final list of blocks that will be executed by the "execute" method
+     * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
      */
-    public build() {
+    public build(dontBuildFrameGraph = false) {
         if (!this.outputBlock) {
             throw new Error("You must define the outputBlock property before building the node render graph");
         }
@@ -295,7 +300,7 @@ export class NodeRenderGraph {
         }
 
         // Make sure that one of the object renderer is flagged as the main object renderer
-        const objectRendererBlocks = this.getBlocksByPredicate<NodeRenderGraphObjectRendererBlock>((block) => block instanceof NodeRenderGraphObjectRendererBlock);
+        const objectRendererBlocks = this.getBlocksByPredicate<NodeRenderGraphBaseObjectRendererBlock>((block) => block instanceof NodeRenderGraphBaseObjectRendererBlock);
         if (objectRendererBlocks.length > 0 && !objectRendererBlocks.find((block) => block.isMainObjectRenderer)) {
             objectRendererBlocks[0].isMainObjectRenderer = true;
         }
@@ -303,13 +308,13 @@ export class NodeRenderGraph {
         try {
             this.outputBlock.build(state);
 
-            this._frameGraph.build();
+            if (!dontBuildFrameGraph) {
+                this._frameGraph.build();
+            }
         } finally {
             this._buildId = NodeRenderGraph._BuildIdGenerator++;
 
-            if (state.emitErrors(this.onBuildErrorObservable)) {
-                this.onBuildObservable.notifyObservers(this);
-            }
+            state.emitErrors(this.onBuildErrorObservable);
         }
     }
 
@@ -721,7 +726,6 @@ export class NodeRenderGraph {
         (this._resizeObserver as WritableObject<Nullable<Observer<AbstractEngine>>>) = null;
 
         this.attachedBlocks.length = 0;
-        this.onBuildObservable.clear();
         this.onBuildErrorObservable.clear();
     }
 

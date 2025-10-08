@@ -11,4 +11,16 @@ export const enum DefaultSectionsOrder {
     AnimationGroups = 1000,
     GUIs = 1100,
     FrameGraphs = 1200,
+    Atmosphere = 1300,
+}
+
+export const enum DefaultCommandsOrder {
+    SpritePlay = 600,
+    LightActive = 700,
+    CameraActive = 700,
+    GizmoActive = 800,
+    AnimationGroupPlay = 900,
+    FrameGraphPlay = 900,
+    MeshBoundingBox = 1000,
+    MeshVisibility = 1100,
 }

@@ -1,6 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 import type { FontAsset } from "../fontAsset";
+import type { ISdfTextParagraphMetrics } from "../paragraphOptions";
 import { DefaultParagraphOptions, type ParagraphOptions } from "../paragraphOptions";
 import type { BMFontChar } from "./bmFont";
 import type { SdfGlyph } from "./glyph";
@@ -27,7 +28,7 @@ export class SdfTextParagraph {
     ) {
         this.options = { ...DefaultParagraphOptions, ...options };
 
-        const { paragraph, lines, glyphs, width, height } = this._computeMetrics(text);
+        const { paragraph, lines, glyphs, width, height } = this.options.customLayoutEngine ? this.options.customLayoutEngine(text, this.options) : this._computeMetrics(text);
 
         this.paragraph = paragraph;
         this.lines = lines;
@@ -36,7 +37,7 @@ export class SdfTextParagraph {
         this.height = height;
     }
 
-    private _computeMetrics(text: string) {
+    private _computeMetrics(text: string): ISdfTextParagraphMetrics {
         const collapsed = this._collapse(text);
         const breaked = this._breakLines(collapsed);
         const trimmed = breaked.map((line) => line.trim());

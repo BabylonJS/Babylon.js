@@ -130,7 +130,26 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     #endif
 #endif
 
-#ifdef ANISOTROPIC
+#if defined(ANISOTROPIC) && defined(ANISOTROPIC_OPENPBR)
+    fn computeAnisotropicSpecularLighting(info: preLightingInfo, V: vec3f, N: vec3f, T: vec3f, B: vec3f, anisotropy: f32, geometricRoughnessFactor: f32, lightColor: vec3f) -> vec3f {
+        var NdotH: f32 = saturateEps(dot(N, info.H));
+        var TdotH: f32 = dot(T, info.H);
+        var BdotH: f32 = dot(B, info.H);
+        var TdotV: f32 = dot(T, V);
+        var BdotV: f32 = dot(B, V);
+        var TdotL: f32 = dot(T, info.L);
+        var BdotL: f32 = dot(B, info.L);
+        var alphaG: f32 = convertRoughnessToAverageSlope(info.roughness);
+        var alphaTB: vec2f = getAnisotropicRoughness(alphaG, anisotropy);
+        alphaTB = max(alphaTB, vec2f(geometricRoughnessFactor * geometricRoughnessFactor));
+
+        var distribution: f32 = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
+        var smithVisibility: f32 = smithVisibility_GGXCorrelated_Anisotropic(info.NdotL, info.NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);
+
+        var specTerm: vec3f = vec3f(distribution * smithVisibility);
+        return specTerm * info.attenuation * info.NdotL * lightColor;
+    }
+#elif defined(ANISOTROPIC)
     fn computeAnisotropicSpecularLighting(info: preLightingInfo, V: vec3f, N: vec3f, T: vec3f, B: vec3f, anisotropy: f32, reflectance0: vec3f, reflectance90: vec3f, geometricRoughnessFactor: f32, lightColor: vec3f) -> vec3f {
         var NdotH: f32 = saturateEps(dot(N, info.H));
         var TdotH: f32 = dot(T, info.H);
@@ -207,7 +226,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     }
 #endif
 
-#ifdef CLUSTLIGHT_BATCH
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
 #include<clusteredLightingFunctions>
 
     fn computeClusteredLighting(

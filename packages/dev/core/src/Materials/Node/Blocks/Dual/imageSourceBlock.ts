@@ -115,7 +115,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            this._samplerName = state._getFreeVariableName(this.name + "Texture");
+            this._samplerName = state._getFreeVariableName(this.name);
 
             // Declarations
             state.sharedData.blockingBlocks.push(this);

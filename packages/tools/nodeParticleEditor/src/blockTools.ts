@@ -38,6 +38,9 @@ import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlo
 import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
 import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlock";
 import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicColorUpdateBlock";
+import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
+import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
+import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
 
 /**
  * Static class for BlockTools
@@ -45,6 +48,12 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "FresnelBlock":
+                return new ParticleFresnelBlock("Fresnel");
+            case "LocalVariableBlock":
+                return new ParticleLocalVariableBlock("Local variable");
+            case "VectorLengthBlock":
+                return new ParticleVectorLengthBlock("Vector length");
             case "AlignAngleBlock":
                 return new AlignAngleBlock("Align angle");
             case "CreateParticleBlock":
@@ -184,6 +193,11 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.InitialColor;
                 return block;
             }
+            case "InitialDirectionBlock": {
+                const block = new ParticleInputBlock("Initial Direction");
+                block.contextualValue = NodeParticleContextualSources.InitialDirection;
+                return block;
+            }
             case "ColorDeadBlock": {
                 const block = new ParticleInputBlock("Color Dead");
                 block.contextualValue = NodeParticleContextualSources.ColorDead;
@@ -237,6 +251,11 @@ export class BlockTools {
             case "EmitterPositionBlock": {
                 const block = new ParticleInputBlock("Emitter position");
                 block.systemSource = NodeParticleSystemSources.Emitter;
+                return block;
+            }
+            case "CameraPositionBlock": {
+                const block = new ParticleInputBlock("Camera position");
+                block.systemSource = NodeParticleSystemSources.CameraPosition;
                 return block;
             }
             case "AddBlock": {

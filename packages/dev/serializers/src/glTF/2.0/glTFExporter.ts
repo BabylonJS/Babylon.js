@@ -52,7 +52,7 @@ import {
     IsChildCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
-    IndicesArrayToTypedArray,
+    IndicesArrayToTypedSubarray,
     GetVertexBufferInfo,
     CollapseChildIntoParent,
     Rotate180Y,
@@ -80,6 +80,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
 import { DataWriter } from "./dataWriter";
+import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -276,6 +277,7 @@ export class GLTFExporter {
 
     private static readonly _ExtensionNames = new Array<string>();
     private static readonly _ExtensionFactories: { [name: string]: (exporter: GLTFExporter) => IGLTFExporterExtensionV2 } = {};
+    private static readonly _ExtensionOrders: { [name: string]: number } = {};
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     private _ApplyExtension<T>(
@@ -323,16 +325,26 @@ export class GLTFExporter {
         return this._ApplyExtensions(material, (extension, node) => extension.postExportMaterialAsync && extension.postExportMaterialAsync(context, node, babylonMaterial));
     }
 
-    public _extensionsPostExportMaterialAdditionalTextures(context: string, material: IMaterial, babylonMaterial: Material): BaseTexture[] {
+    /**
+     * Get additional textures for a material
+     * @param context The context when loading the asset
+     * @param material The glTF material
+     * @param babylonMaterial The Babylon.js material
+     * @returns List of additional textures
+     */
+    public async _extensionsPostExportMaterialAdditionalTexturesAsync(context: string, material: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         const output: BaseTexture[] = [];
 
-        for (const name of GLTFExporter._ExtensionNames) {
-            const extension = this._extensions[name];
+        await Promise.all(
+            GLTFExporter._ExtensionNames.map(async (name) => {
+                const extension = this._extensions[name];
 
-            if (extension.postExportMaterialAdditionalTextures) {
-                output.push(...extension.postExportMaterialAdditionalTextures(context, material, babylonMaterial));
-            }
-        }
+                if (extension.postExportMaterialAdditionalTexturesAsync) {
+                    const textures = await extension.postExportMaterialAdditionalTexturesAsync(context, material, babylonMaterial);
+                    output.push(...textures);
+                }
+            })
+        );
 
         return output;
     }
@@ -441,13 +453,29 @@ export class GLTFExporter {
         return this._options;
     }
 
-    public static RegisterExtension(name: string, factory: (exporter: GLTFExporter) => IGLTFExporterExtensionV2): void {
+    public static RegisterExtension(name: string, factory: (exporter: GLTFExporter) => IGLTFExporterExtensionV2, order: number = 100): void {
         if (GLTFExporter.UnregisterExtension(name)) {
             Tools.Warn(`Extension with the name ${name} already exists`);
         }
 
         GLTFExporter._ExtensionFactories[name] = factory;
-        GLTFExporter._ExtensionNames.push(name);
+        const extensionOrder = order ?? 0; // Use provided order or default to 0
+        GLTFExporter._ExtensionOrders[name] = extensionOrder;
+
+        // Find the correct position to insert the extension based on order
+        let insertIndex = GLTFExporter._ExtensionNames.length;
+        for (let i = 0; i < GLTFExporter._ExtensionNames.length; i++) {
+            const existingName = GLTFExporter._ExtensionNames[i];
+            const existingOrder = GLTFExporter._ExtensionOrders[existingName];
+
+            // If the order is less, insert before.
+            if (extensionOrder < existingOrder) {
+                insertIndex = i;
+                break;
+            }
+        }
+
+        GLTFExporter._ExtensionNames.splice(insertIndex, 0, name);
     }
 
     public static UnregisterExtension(name: string): boolean {
@@ -455,6 +483,7 @@ export class GLTFExporter {
             return false;
         }
         delete GLTFExporter._ExtensionFactories[name];
+        delete GLTFExporter._ExtensionOrders[name];
 
         const index = GLTFExporter._ExtensionNames.indexOf(name);
         if (index !== -1) {
@@ -662,15 +691,27 @@ export class GLTFExporter {
     }
 
     private _setCameraTransformation(node: INode, babylonCamera: TargetCamera, convertToRightHanded: boolean): void {
-        if (!babylonCamera.position.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
-            const translation = TmpVectors.Vector3[0].copyFrom(babylonCamera.position);
+        // Camera types store rotation differently (e.g., ArcRotateCamera uses alpha/beta, others use rotationQuaternion).
+        // Extract the transform from the world matrix instead of handling each case separately.
+        const translation = TmpVectors.Vector3[0];
+        const rotationQuaternion = TmpVectors.Quaternion[0];
+        const cameraWorldMatrix = babylonCamera.getWorldMatrix();
+
+        if (babylonCamera.parent) {
+            // Camera.getWorldMatrix returns global coordinates. GLTF node must use local coordinates. If camera has parent we need to use local translation/rotation.
+            const parentInvWorldMatrix = babylonCamera.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+            const cameraLocal = cameraWorldMatrix.multiplyToRef(parentInvWorldMatrix, TmpVectors.Matrix[1]);
+            cameraLocal.decompose(undefined, rotationQuaternion, translation);
+        } else {
+            cameraWorldMatrix.decompose(undefined, rotationQuaternion, translation);
+        }
+
+        if (!translation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
             if (convertToRightHanded) {
                 ConvertToRightHandedPosition(translation);
             }
             node.translation = translation.asArray();
         }
-
-        const rotationQuaternion = babylonCamera.rotationQuaternion || Quaternion.FromEulerAngles(babylonCamera.rotation.x, babylonCamera.rotation.y, babylonCamera.rotation.z);
 
         if (convertToRightHanded) {
             ConvertToRightHandedRotation(rotationQuaternion);
@@ -1342,7 +1383,7 @@ export class GLTFExporter {
         if (indicesToExport) {
             let accessorIndex = state.getIndicesAccessor(indices, start, count, offset, flip);
             if (accessorIndex === undefined) {
-                const bytes = IndicesArrayToTypedArray(indicesToExport, 0, count, is32Bits);
+                const bytes = IndicesArrayToTypedSubarray(indicesToExport, start, count, is32Bits);
                 const bufferView = this._bufferManager.createBufferView(bytes);
 
                 const componentType = is32Bits ? AccessorComponentType.UNSIGNED_INT : AccessorComponentType.UNSIGNED_SHORT;
@@ -1411,6 +1452,8 @@ export class GLTFExporter {
                 materialIndex = await this._materialExporter.exportPBRMaterialAsync(babylonMaterial, hasUVs);
             } else if (babylonMaterial instanceof StandardMaterial) {
                 materialIndex = await this._materialExporter.exportStandardMaterialAsync(babylonMaterial, hasUVs);
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                materialIndex = await this._materialExporter.exportOpenPBRMaterialAsync(babylonMaterial, hasUVs);
             } else {
                 Logger.Warn(`Unsupported material '${babylonMaterial.name}' with type ${babylonMaterial.getClassName()}`);
                 return;

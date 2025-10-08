@@ -128,7 +128,27 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 
 #endif
 
-#ifdef ANISOTROPIC
+#if defined(ANISOTROPIC) && defined(ANISOTROPIC_OPENPBR)
+    // Version used in OpenPBR differs only in that it does not include the Fresnel term.
+    vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, vec3 T, vec3 B, float anisotropy, float geometricRoughnessFactor, vec3 lightColor) {
+        float NdotH = saturateEps(dot(N, info.H));
+        float TdotH = dot(T, info.H);
+        float BdotH = dot(B, info.H);
+        float TdotV = dot(T, V);
+        float BdotV = dot(B, V);
+        float TdotL = dot(T, info.L);
+        float BdotL = dot(B, info.L);
+        float alphaG = convertRoughnessToAverageSlope(info.roughness);
+        vec2 alphaTB = getAnisotropicRoughness(alphaG, anisotropy);
+        alphaTB = max(alphaTB, square(geometricRoughnessFactor));
+
+        float distribution = normalDistributionFunction_BurleyGGX_Anisotropic(NdotH, TdotH, BdotH, alphaTB);
+        float smithVisibility = smithVisibility_GGXCorrelated_Anisotropic(info.NdotL, info.NdotV, TdotV, BdotV, TdotL, BdotL, alphaTB);
+
+        vec3 specTerm = vec3(distribution * smithVisibility);
+        return specTerm * info.attenuation * info.NdotL * lightColor;
+    }
+#elif defined(ANISOTROPIC)
     vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, vec3 T, vec3 B, float anisotropy, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor, vec3 lightColor) {
         float NdotH = saturateEps(dot(N, info.H));
         float TdotH = dot(T, info.H);

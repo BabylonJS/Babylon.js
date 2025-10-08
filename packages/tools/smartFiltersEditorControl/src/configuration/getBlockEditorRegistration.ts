@@ -40,11 +40,18 @@ export function GetBlockEditorRegistration(
     });
 
     // Create function to call the right factory for a block given the block type and namespace
-    const getBlockAsync = async (blockType: string, namespace: Nullable<string>, smartFilter: SmartFilter, engine: ThinEngine): Promise<Nullable<BaseBlock>> => {
+    const getBlockAsync = async (
+        blockType: string,
+        namespace: Nullable<string>,
+        smartFilter: SmartFilter,
+        engine: ThinEngine,
+        suppressAutomaticInputBlocks: boolean,
+        name?: string
+    ): Promise<Nullable<BaseBlock>> => {
         const registration = allBlockRegistrations.find((r) => r.blockType === blockType && r.namespace === namespace);
         if (registration && registration.factory) {
             try {
-                return await registration.factory(smartFilter, engine, smartFilterDeserializer);
+                return await registration.factory(smartFilter, engine, smartFilterDeserializer, undefined, { suppressAutomaticInputBlocks, name });
             } catch (err) {
                 const errorString = `Error creating block ${blockType} in namespace ${namespace}:\n ${err}`;
                 Logger.Error(errorString);
