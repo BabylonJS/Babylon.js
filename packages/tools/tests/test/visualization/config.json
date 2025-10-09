@@ -2724,6 +2724,10 @@
             "errorRatio": 6
         },
         {
+            "title": "FrameGraph custom post process",
+            "playgroundId": "#R33LVG"
+        },
+        {
             "title": "Render target texture with clustered lights",
             "playgroundId": "#1QCA2M#11"
         },

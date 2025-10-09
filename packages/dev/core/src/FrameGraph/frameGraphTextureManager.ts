@@ -46,6 +46,7 @@ type TextureEntry = {
     textureDescriptionHash?: string; // a hash of the texture creation options
     lifespan?: TextureLifespan;
     aliasHandle?: FrameGraphTextureHandle; // Handle of the texture this one is aliasing - can be set after execution of texture allocation optimization
+    historyTexture?: boolean; // True if the texture is part of a history texture
 };
 
 enum FrameGraphTextureNamespace {
@@ -167,9 +168,11 @@ export class FrameGraphTextureManager {
     /**
      * Checks if a handle is a history texture (or points to a history texture, for a dangling handle)
      * @param handle The handle to check
+     * @param checkAllTextures If false (default), the function will check if the handle is the main handle of a history texture (the first handle of the history texture).
+     *   If true, the function will also check if the handle is one of the other handles of a history texture.
      * @returns True if the handle is a history texture, otherwise false
      */
-    public isHistoryTexture(handle: FrameGraphTextureHandle): boolean {
+    public isHistoryTexture(handle: FrameGraphTextureHandle, checkAllTextures = false): boolean {
         const entry = this._textures.get(handle);
         if (!entry) {
             return false;
@@ -177,15 +180,20 @@ export class FrameGraphTextureManager {
 
         handle = entry.refHandle ?? handle;
 
-        return this._historyTextures.has(handle);
+        if (!checkAllTextures) {
+            return this._historyTextures.has(handle);
+        }
+
+        return this._textures.get(handle)?.historyTexture === true;
     }
 
     /**
      * Gets the creation options of a texture
      * @param handle Handle of the texture
+     * @param preserveHistoryTextureFlag If true, the isHistoryTexture flag in the returned creation options will be the same as when the texture was created (default: false)
      * @returns The creation options of the texture
      */
-    public getTextureCreationOptions(handle: FrameGraphTextureHandle): FrameGraphTextureCreationOptions {
+    public getTextureCreationOptions(handle: FrameGraphTextureHandle, preserveHistoryTextureFlag = false): FrameGraphTextureCreationOptions {
         handle = this._textures.get(handle)?.refHandle ?? handle;
 
         const entry = this._textures.get(handle)!;
@@ -195,7 +203,7 @@ export class FrameGraphTextureManager {
             size: textureSizeIsObject(creationOptions.size) ? { ...creationOptions.size } : creationOptions.size,
             sizeIsPercentage: creationOptions.sizeIsPercentage,
             options: FrameGraphTextureManager.CloneTextureOptions(creationOptions.options, entry.textureIndex),
-            isHistoryTexture: creationOptions.isHistoryTexture,
+            isHistoryTexture: preserveHistoryTextureFlag ? creationOptions.isHistoryTexture : false,
         };
     }
 
@@ -416,10 +424,15 @@ export class FrameGraphTextureManager {
      * @returns The absolute dimensions of the texture
      */
     public getAbsoluteDimensions(size: TextureSize, screenWidth?: number, screenHeight?: number): { width: number; height: number } {
-        const backbufferColorTextureSize = this._textures.get(backbufferColorTextureHandle)!.creationOptions.size as { width: number; height: number };
+        if (this._backBufferTextureOverriden) {
+            const backbufferColorTextureSize = this._textures.get(backbufferColorTextureHandle)!.creationOptions.size as { width: number; height: number };
 
-        screenWidth = backbufferColorTextureSize.width;
-        screenHeight = backbufferColorTextureSize.height;
+            screenWidth ??= backbufferColorTextureSize.width;
+            screenHeight ??= backbufferColorTextureSize.height;
+        } else {
+            screenWidth ??= this.engine.getRenderWidth(true);
+            screenHeight ??= this.engine.getRenderHeight(true);
+        }
 
         const { width, height } = getDimensionsFromTextureSize(size);
 
@@ -840,6 +853,7 @@ export class FrameGraphTextureManager {
                 firstTask: Number.MAX_VALUE,
                 lastTask: 0,
             },
+            historyTexture: creationOptions.isHistoryTexture,
         };
 
         this._textures.set(handle, textureEntry);
@@ -858,6 +872,7 @@ export class FrameGraphTextureManager {
 
             const pongTexture = this._createHandleForTexture(`${name} pong`, null, pongCreationOptions, namespace);
 
+            this._textures.get(pongTexture)!.historyTexture = true;
             this._historyTextures.set(handle, { textures: [null, null], handles: [handle, pongTexture], index: 0, references: [] });
 
             return handle;
@@ -909,7 +924,7 @@ export class FrameGraphTextureManager {
         for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
             const textureHandle = key.value;
             const textureEntry = this._textures.get(textureHandle)!;
-            if (textureEntry.refHandle !== undefined || textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(textureHandle)) {
+            if (textureEntry.refHandle !== undefined || textureEntry.namespace === FrameGraphTextureNamespace.External || this.isHistoryTexture(textureHandle, true)) {
                 continue;
             }
 
