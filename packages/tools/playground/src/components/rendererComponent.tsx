@@ -70,6 +70,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 } else {
                     inspectorV2Module.ShowInspector(this._scene, {
                         embedMode: true,
+                        showThemeSelector: false,
+                        themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
                     });
                 }
             } else {
