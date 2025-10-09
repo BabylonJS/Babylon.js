@@ -13,9 +13,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
-    let fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
-    fileUrl = "./localDev/contrastAnimation.json";
-    //fileUrl = "./localDev/word_plate.json";
+    const fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
 
     // Whether to use a web worker for rendering or not, defaults to true
     const useWorkerParam = searchParams.get("useworker");
@@ -50,7 +48,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         loopAnimation: false, // By default do not loop animations
         spriteAtlasWidth: 4096, // Size of the texture atlas
         spriteAtlasHeight: 4096, // Size of the texture atlas
-        gapSize: 5, // Gap around the sprites in the atlas
+        gapSize: 100, // Gap around the sprites in the atlas
         spritesCapacity: 64, // Maximum number of sprites the renderer can handle at once
         backgroundColor: { r: 1, g: 1, b: 1, a: 1 }, // Background color for the animation canvas
         scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,

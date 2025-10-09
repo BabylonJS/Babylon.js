@@ -287,14 +287,37 @@ export class SpritePacker {
     }
 
     private _reorderElementsForDraw(rawElements: RawElement[]): RenderElement[] {
-        const result: RenderElement[] = [];
-        for (const element of rawElements) {
-            result.push({
-                shape: element,
-                fills: [],
-            });
+        const reorderedElements: RenderElement[] = [];
+        // Create the groupings between the shapes and their fills
+        for (let i = 0; i < rawElements.length; i++) {
+            const element = rawElements[i];
+            if (element.ty === "rc" || element.ty === "sh" || element.ty === "st") {
+                const skip = this._createRenderElement(rawElements, i, reorderedElements);
+                i += skip;
+            }
         }
-        return result;
+
+        return reorderedElements;
+    }
+
+    private _createRenderElement(originalData: RawElement[], index: number, reorderedData: RenderElement[]): number {
+        const renderElement: RenderElement = {
+            shape: originalData[index],
+            fills: [],
+        };
+
+        let skip = 0;
+        for (let i = index + 1; i < originalData.length; i++) {
+            if (originalData[i].ty === "fl" || originalData[i].ty === "gf") {
+                renderElement.fills.unshift(originalData[i]);
+                skip++;
+            } else {
+                break;
+            }
+        }
+
+        reorderedData.unshift(renderElement);
+        return skip;
     }
 
     private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
@@ -306,8 +329,33 @@ export class SpritePacker {
 
         this._spritesCanvasContext.beginPath();
 
-        const reorderedElements = this._reorderElementsForDraw(rawElements);
-        for (let i = 0; i < reorderedElements.length; i++) {}
+        // const reorderedElements = this._reorderElementsForDraw(rawElements);
+        // for (let i = 0; i < reorderedElements.length; i++) {
+        //     const elementToRender = reorderedElements[i];
+        //     switch (elementToRender.shape.ty) {
+        //         case "rc":
+        //             this._drawRectangle(elementToRender.shape as RawRectangleShape);
+        //             break;
+        //         case "sh":
+        //             this._drawPath(elementToRender.shape as RawPathShape, boundingBox);
+        //             break;
+        //         case "st":
+        //             this._drawStroke(elementToRender.shape as RawStrokeShape);
+        //             break;
+        //     }
+
+        //     for (let j = 0; j < elementToRender.fills.length; j++) {
+        //         const fill = elementToRender.fills[j];
+        //         switch (fill.ty) {
+        //             case "fl":
+        //                 this._drawFill(fill as RawFillShape);
+        //                 break;
+        //             case "gf":
+        //                 this._drawGradientFill(fill as RawGradientFillShape, boundingBox);
+        //                 break;
+        //         }
+        //     }
+        // }
 
         for (let i = 0; i < rawElements.length; i++) {
             const shape = rawElements[i];
