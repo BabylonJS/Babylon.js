@@ -1,5 +1,4 @@
 import { Logger } from "../Misc/logger";
-import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -24,6 +23,9 @@ import { Texture } from "./Textures/texture";
 import type { CubeTexture } from "./Textures/cubeTexture";
 import type { Color3 } from "core/Maths/math.color";
 
+// For backwards compatibility, we export everything from the pure version of this file.
+export * from "./materialHelper.functions.pure";
+
 // Temps
 const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };
 const TmpMorphInfluencers = {
@@ -34,22 +36,6 @@ const TmpMorphInfluencers = {
     UV2: false,
     COLOR: false,
 };
-
-/**
- * Binds the logarithmic depth information from the scene to the effect for the given defines.
- * @param defines The generated defines used in the effect
- * @param effect The effect we are binding the data to
- * @param scene The scene we are willing to render with logarithmic scale for
- */
-export function BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-    if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
-        const camera = scene.activeCamera as Camera;
-        if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
-            Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
-        }
-        effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
-    }
-}
 
 /**
  * Binds the fog information from the scene to the effect for the given mesh.
