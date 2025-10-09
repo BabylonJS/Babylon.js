@@ -238,12 +238,14 @@ const useStyles = makeStyles({
     barLeft: {
         marginRight: "auto",
         display: "flex",
+        alignItems: "center",
         flexDirection: "row",
         columnGap: tokens.spacingHorizontalSNudge,
     },
     barRight: {
         marginLeft: "auto",
         display: "flex",
+        alignItems: "center",
         flexDirection: "row-reverse",
         columnGap: tokens.spacingHorizontalSNudge,
     },
