@@ -416,10 +416,15 @@ export class FrameGraphTextureManager {
      * @returns The absolute dimensions of the texture
      */
     public getAbsoluteDimensions(size: TextureSize, screenWidth?: number, screenHeight?: number): { width: number; height: number } {
+        if (this._backBufferTextureOverriden) {
         const backbufferColorTextureSize = this._textures.get(backbufferColorTextureHandle)!.creationOptions.size as { width: number; height: number };
 
-        screenWidth = backbufferColorTextureSize.width;
-        screenHeight = backbufferColorTextureSize.height;
+            screenWidth ??= backbufferColorTextureSize.width;
+            screenHeight ??= backbufferColorTextureSize.height;
+        } else {
+            screenWidth ??= this.engine.getRenderWidth(true);
+            screenHeight ??= this.engine.getRenderHeight(true);
+        }
 
         const { width, height } = getDimensionsFromTextureSize(size);
 
