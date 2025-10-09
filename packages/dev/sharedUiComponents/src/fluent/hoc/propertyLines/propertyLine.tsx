@@ -1,4 +1,4 @@
-import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Strong } from "@fluentui/react-components";
+import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Strong, tokens } from "@fluentui/react-components";
 import { ChevronCircleDown20Regular, ChevronCircleRight20Regular, CopyRegular } from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
@@ -15,9 +15,13 @@ const usePropertyLineStyles = makeStyles({
         width: "100%",
         display: "flex",
         flexDirection: "column", // Stack line + expanded content
+        minHeight: CustomTokens.lineHeight,
+        boxSizing: "border-box",
+        justifyContent: "center",
+        paddingTop: tokens.spacingVerticalXXS,
+        paddingBottom: tokens.spacingVerticalXXS,
     },
     baseLine: {
-        height: CustomTokens.lineHeight,
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-start",
