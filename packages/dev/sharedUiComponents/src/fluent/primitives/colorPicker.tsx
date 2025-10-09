@@ -26,20 +26,19 @@ import { NumberDropdown } from "./dropdown";
 
 const useColorPickerStyles = makeStyles({
     container: {
-        width: "380px",
+        width: "350px",
         display: "flex", // becomes a flexbox
         flexDirection: "column", // with children in a column
         alignItems: "center", // centers children horizontally
         justifyContent: "center", // centers children vertically (if height is set)
-        borderRadius: "4px",
-        gap: "15px",
+        gap: tokens.spacingVerticalM,
         overflow: "visible",
     },
     row: {
         flex: 1, // is a row in the container's flex column
         display: "flex", // becomes its own flexbox
         flexDirection: "row", // with children in a row
-        gap: "20px",
+        gap: tokens.spacingHorizontalXL,
         alignItems: "center", // align items vertically
         width: "100%",
     },
@@ -114,7 +113,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
             onOpenChange={(_, data) => setPopoverOpen(data.open)}
         >
             <PopoverTrigger disableButtonEnhancement>
-                <ColorSwatch borderColor={tokens.colorNeutralShadowKeyDarker} size="small" color={color.toHexString()} value={color.toHexString().slice(1)} />
+                <ColorSwatch borderColor={tokens.colorNeutralShadowKeyDarker} size="small" shape="rounded" color={color.toHexString()} value={color.toHexString().slice(1)} />
             </PopoverTrigger>
 
             <PopoverSurface>

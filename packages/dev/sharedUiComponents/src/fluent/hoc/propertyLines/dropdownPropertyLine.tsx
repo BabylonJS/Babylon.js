@@ -1,9 +1,17 @@
+import { makeStyles } from "@fluentui/react-components";
 import { Dropdown } from "../../primitives/dropdown";
 import type { AcceptedDropdownValue, DropdownProps } from "../../primitives/dropdown";
 import { PropertyLine } from "./propertyLine";
 import type { PropertyLineProps } from "./propertyLine";
 import { forwardRef } from "react";
 import type { FunctionComponent } from "react";
+import { UniformWidthStyling } from "../../primitives/utils";
+
+const useStyles = makeStyles({
+    dropdown: {
+        ...UniformWidthStyling,
+    },
+});
 
 type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = DropdownProps<V> & PropertyLineProps<V>;
 
@@ -15,9 +23,10 @@ type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = DropdownProps<
 
 const DropdownPropertyLine = forwardRef<HTMLDivElement, DropdownPropertyLineProps<AcceptedDropdownValue>>((props, ref) => {
     DropdownPropertyLine.displayName = "DropdownPropertyLine";
+    const classes = useStyles();
     return (
         <PropertyLine {...props} ref={ref}>
-            <Dropdown {...props} />
+            <Dropdown {...props} className={classes.dropdown} />
         </PropertyLine>
     );
 });

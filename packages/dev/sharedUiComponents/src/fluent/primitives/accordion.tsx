@@ -9,7 +9,7 @@ const useStyles = makeStyles({
     accordion: {
         overflowX: "hidden",
         overflowY: "auto",
-        paddingTop: tokens.spacingVerticalM, // ensures the first section header has the same padding as the others (due to divider)
+        paddingBottom: tokens.spacingVerticalM, // bottom padding since there is no divider at the bottom
         display: "flex",
         flexDirection: "column",
         height: "100%",
@@ -89,7 +89,7 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
 
     return (
         <FluentAccordion className={classes.accordion} collapsible multiple onToggle={onToggle} openItems={openItems} {...rest}>
-            {validChildren.map((child) => {
+            {validChildren.map((child, index) => {
                 return (
                     <AccordionItem key={child.content.key} value={child.title}>
                         <AccordionHeader>
@@ -98,7 +98,7 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
                         <AccordionPanel>
                             <div className={classes.panelDiv}>{child.content}</div>
                         </AccordionPanel>
-                        <Divider inset={true} className={classes.divider} />
+                        {index < validChildren.length - 1 && <Divider inset={true} className={classes.divider} />}
                     </AccordionItem>
                 );
             })}

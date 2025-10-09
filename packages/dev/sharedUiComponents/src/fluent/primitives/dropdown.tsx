@@ -1,19 +1,21 @@
 import { Dropdown as FluentDropdown, makeStyles, mergeClasses, Option, useId } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
-import { CustomTokens, UniformWidthStyling } from "./utils";
 import { InfoLabel } from "./infoLabel";
 
 const useDropdownStyles = makeStyles({
-    dropdown: { ...UniformWidthStyling, minWidth: CustomTokens.inputWidth },
+    dropdown: {
+        minWidth: 0,
+        width: "100%",
+    },
     container: {
         display: "flex",
         flexDirection: "column",
         justifyContent: "center", // align items vertically
         gap: "4px",
     },
-    button: { textAlign: "end" },
+    dropdownText: { textAlign: "end", textOverflow: "ellipsis", whiteSpace: "nowrap", overflowX: "hidden" },
 });
 
 export type AcceptedDropdownValue = string | number;
@@ -38,7 +40,7 @@ export type DropdownProps<V extends AcceptedDropdownValue> = PrimitiveProps<V> &
  * @param props
  * @returns dropdown component
  */
-export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> = (props) => {
+export const Dropdown = forwardRef<HTMLSpanElement, DropdownProps<AcceptedDropdownValue>>((props, ref) => {
     Dropdown.displayName = "Dropdown";
     const classes = useDropdownStyles();
     const { options, value } = props;
@@ -49,17 +51,23 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
     }, [props.value]);
     const id = useId("dropdown");
 
-    const mergedClassName = mergeClasses(classes.dropdown, props.className);
+    const mergedClassName = mergeClasses(classes.container, props.className);
+
+    const optionLabel = options.find((o) => o.value === defaultVal)?.label;
 
     return (
-        <div className={classes.container}>
+        <div className={mergedClassName}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentDropdown
                 id={id}
                 disabled={props.disabled}
                 size="medium"
-                className={mergedClassName}
-                button={{ className: classes.button }}
+                className={classes.dropdown}
+                button={
+                    <span ref={ref} className={classes.dropdownText}>
+                        {optionLabel}
+                    </span>
+                }
                 onOptionSelect={(evt, data) => {
                     const value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
                     if (value !== undefined) {
@@ -68,17 +76,17 @@ export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> =
                     }
                 }}
                 selectedOptions={[defaultVal.toString()]}
-                value={options.find((o) => o.value === defaultVal)?.label}
+                value={optionLabel}
             >
                 {options.map((option: DropdownOption<AcceptedDropdownValue>) => (
-                    <Option className={classes.dropdown} key={option.label} value={option.value.toString()} disabled={false}>
+                    <Option key={option.label} value={option.value.toString()} disabled={false}>
                         {option.label}
                     </Option>
                 ))}
             </FluentDropdown>
         </div>
     );
-};
+});
 
 export const NumberDropdown = Dropdown as FunctionComponent<DropdownProps<number>>;
 export const StringDropdown = Dropdown as FunctionComponent<DropdownProps<string>>;

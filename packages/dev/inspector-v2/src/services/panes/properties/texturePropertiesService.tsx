@@ -20,7 +20,7 @@ import { CubeTextureTransformProperties } from "../../../components/properties/t
 import { MultiRenderTargetGeneralProperties } from "../../../components/properties/textures/multiRenderTargetProperties";
 import { RenderTargetTextureGeneralProperties } from "../../../components/properties/textures/renderTargetTextureProperties";
 import { TextureGeneralProperties, TexturePreviewProperties, TextureTransformProperties } from "../../../components/properties/textures/textureProperties";
-import { ThinTextureGeneralProperties } from "../../../components/properties/textures/thinTextureProperties";
+import { ThinTextureGeneralProperties, ThinTextureSamplingProperties } from "../../../components/properties/textures/thinTextureProperties";
 import { SettingsContextIdentity } from "../../settingsContext";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
@@ -66,6 +66,11 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                     section: "General",
                     order: 100,
                     component: ({ context }) => <ThinTextureGeneralProperties texture={context} />,
+                },
+                {
+                    section: "General",
+                    order: 200,
+                    component: ({ context }) => <ThinTextureSamplingProperties texture={context} />,
                 },
             ],
         });
