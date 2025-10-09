@@ -23,6 +23,7 @@ export * from "./Tasks/PostProcesses/blurTask";
 export * from "./Tasks/PostProcesses/chromaticAberrationTask";
 export * from "./Tasks/PostProcesses/circleOfConfusionTask";
 export * from "./Tasks/PostProcesses/convolutionTask";
+export * from "./Tasks/PostProcesses/customPostProcessTask";
 export * from "./Tasks/PostProcesses/depthOfFieldTask";
 export * from "./Tasks/PostProcesses/extractHighlightsTask";
 export * from "./Tasks/PostProcesses/fxaaTask";
@@ -31,6 +32,7 @@ export * from "./Tasks/PostProcesses/imageProcessingTask";
 export * from "./Tasks/PostProcesses/motionBlurTask";
 export * from "./Tasks/PostProcesses/passTask";
 export * from "./Tasks/PostProcesses/postProcessTask";
+export * from "./Tasks/PostProcesses/sharpenTask";
 export * from "./Tasks/PostProcesses/screenSpaceCurvatureTask";
 export * from "./Tasks/PostProcesses/ssrRenderingPipelineTask";
 

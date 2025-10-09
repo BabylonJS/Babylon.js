@@ -12,6 +12,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
+import { ThinSharpenPostProcess } from "./thinSharpenPostProcess";
 
 /**
  * The SharpenPostProcess applies a sharpen kernel to every pixel
@@ -22,12 +23,25 @@ export class SharpenPostProcess extends PostProcess {
      * How much of the original color should be applied. Setting this to 0 will display edge detection. (default: 1)
      */
     @serialize()
-    public colorAmount: number = 1.0;
+    public get colorAmount() {
+        return this._effectWrapper.colorAmount;
+    }
+
+    public set colorAmount(value: number) {
+        this._effectWrapper.colorAmount = value;
+    }
+
     /**
      * How much sharpness should be applied (default: 0.3)
      */
     @serialize()
-    public edgeAmount: number = 0.3;
+    public get edgeAmount() {
+        return this._effectWrapper.edgeAmount;
+    }
+
+    public set edgeAmount(value: number) {
+        this._effectWrapper.edgeAmount = value;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -36,6 +50,8 @@ export class SharpenPostProcess extends PostProcess {
     public override getClassName(): string {
         return "SharpenPostProcess";
     }
+
+    protected override _effectWrapper: ThinSharpenPostProcess;
 
     /**
      * Creates a new instance ConvolutionPostProcess
@@ -58,23 +74,27 @@ export class SharpenPostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false
     ) {
-        super(name, "sharpen", ["sharpnessAmounts", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
-
-        this.onApply = (effect: Effect) => {
-            effect.setFloat2("screenSize", this.width, this.height);
-            effect.setFloat2("sharpnessAmounts", this.edgeAmount, this.colorAmount);
+        const localOptions = {
+            uniforms: ThinSharpenPostProcess.Uniforms,
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+            blockCompilation,
+            ...(options as PostProcessOptions),
         };
-    }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/sharpen.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/sharpen.fragment")]));
-        }
+        super(name, ThinSharpenPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinSharpenPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
 
-        super._gatherImports(useWebGPU, list);
+        this.onApply = (_effect: Effect) => {
+            this._effectWrapper.textureWidth = this.width;
+            this._effectWrapper.textureHeight = this.height;
+        };
     }
 
     /**
