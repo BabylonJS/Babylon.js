@@ -232,6 +232,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
     public COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
     public USE_GLTF_STYLE_ANISOTROPY = false;
+    public THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = false;
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
@@ -247,6 +248,8 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public ANISOTROPIC_OPENPBR = true; // Tells the shader to use OpenPBR's anisotropic roughness remapping
     public ANISOTROPIC_BASE = false; // Tells the shader to apply anisotropy to the base layer
     public ANISOTROPIC_COAT = false; // Tells the shader to apply anisotropy to the coat layer
+    public THIN_FILM = false; // Enables thin film layer
+    public IRIDESCENCE = false; // Enables iridescence layer
 
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -788,6 +791,56 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     private _emissionColorTexture: Sampler = new Sampler("emission_color", "emissionColor", "EMISSION_COLOR");
 
     /**
+     * Defines the weight of the thin film layer on top of the base layer for iridescent effects.
+     */
+    public thinFilmWeight: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmWeight")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _thinFilmWeight: Property<number> = new Property<number>("thin_film_weight", 0.0, "vThinFilmWeight", 1, 0);
+
+    /**
+     * Thin film weight texture.
+     */
+    public thinFilmWeightTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmWeightTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _thinFilmWeightTexture: Sampler = new Sampler("thin_film_weight", "thinFilmWeight", "THIN_FILM_WEIGHT");
+
+    /**
+     * Defines the thickness of the thin film layer in μm. If a texture is provided for thinFilmWeightTexture,
+     * this value will act as a multiplier to the texture values.
+     * See OpenPBR's specs for thin_film_thickness
+     */
+    public thinFilmThickness: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmThickness")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _thinFilmThickness: Property<number> = new Property<number>("thin_film_thickness", 0.5, "vThinFilmThickness", 2, 0);
+
+    /**
+     * Defines the minimum thickness of the thin film layer in μm.
+     */
+    public thinFilmThicknessMin: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmThicknessMin")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _thinFilmThicknessMin: Property<number> = new Property<number>("thin_film_thickness_min", 0.0, "vThinFilmThickness", 2, 1);
+
+    /**
+     * Defines the maximum thickness of the thin film layer in μm.
+     */
+    public thinFilmThicknessTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmThicknessTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _thinFilmThicknessTexture: Sampler = new Sampler("thin_film_thickness", "thinFilmThickness", "THIN_FILM_THICKNESS");
+
+    /**
+     * Defines the index of refraction of the thin film layer.
+     */
+    public thinFilmIor: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "thinFilmIor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _thinFilmIor: Property<number> = new Property<number>("thin_film_ior", 1.4, "vThinFilmIor", 1, 0);
+
+    /**
      * Defines the ambient occlusion texture.
      */
     public ambientOcclusionTexture: Nullable<BaseTexture>;
@@ -1145,6 +1198,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useMetallicFromMetallicTextureBlue = false;
 
     /**
+     * Specifies if the thin film thickness is stored in the green channel of the thin film thickness texture.
+     */
+    public _useThinFilmThicknessFromTextureGreen = false;
+
+    /**
      * Defines the  falloff type used in this material.
      * It by default is Physical.
      * @internal
@@ -1463,6 +1521,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._geometryCoatTangentTexture;
         this._geometryOpacity;
         this._geometryOpacityTexture;
+        this._thinFilmWeight;
+        this._thinFilmWeightTexture;
+        this._thinFilmThickness;
+        this._thinFilmThicknessMin;
+        this._thinFilmThicknessTexture;
+        this._thinFilmIor;
         this._emissionLuminance;
         this._emissionColor;
         this._emissionColorTexture;
@@ -2426,6 +2490,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useCoatRoughnessAnisotropyFromTangentTexture;
                 defines.ROUGHNESSSTOREINMETALMAPGREEN = this._useRoughnessFromMetallicTextureGreen;
                 defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallicFromMetallicTextureBlue;
+                defines.THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = this._useThinFilmThicknessFromTextureGreen;
 
                 if (this.geometryNormalTexture) {
                     if (this._useParallax && this.baseColorTexture && MaterialFlags.DiffuseTextureEnabled) {
@@ -2521,6 +2586,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             defines.ANISOTROPIC_BASE = false;
             defines.ANISOTROPIC_COAT = false;
         }
+
+        defines.THIN_FILM = this.thinFilmWeight > 0.0;
+        defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
 
         // Misc.
         if (defines._areMiscDirty) {
