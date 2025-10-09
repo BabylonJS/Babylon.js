@@ -16,6 +16,7 @@ const usePropertyLineStyles = makeStyles({
         display: "flex",
         flexDirection: "column", // Stack line + expanded content
         minHeight: CustomTokens.lineHeight,
+        boxSizing: "border-box",
         justifyContent: "center",
         paddingTop: tokens.spacingVerticalXXS,
         paddingBottom: tokens.spacingVerticalXXS,
