@@ -5,7 +5,7 @@ import type { KeyboardEvent, FocusEvent } from "react";
 
 export const CustomTokens = {
     inputWidth: "150px",
-    lineHeight: "36px",
+    lineHeight: "32px",
     labelMinWidth: "50px",
     sliderMinWidth: "30px",
     sliderMaxWidth: "80px",

@@ -5,11 +5,8 @@ import type { PrimitiveProps } from "./primitive";
 
 const useInputStyles = makeStyles({
     textarea: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "& textarea": {
-            minHeight: "100px",
-            maxHeight: "500px",
-        },
+        minHeight: "100px",
+        maxHeight: "500px",
     },
 });
 
@@ -37,5 +34,5 @@ export const Textarea: FunctionComponent<TextareaProps> = (props) => {
         event.stopPropagation(); // Prevent event propagation
     };
 
-    return <FluentTextarea {...props} className={classes.textarea} onChange={handleChange} onKeyDown={handleKeyDown} />;
+    return <FluentTextarea {...props} textarea={{ className: classes.textarea }} onChange={handleChange} onKeyDown={handleKeyDown} />;
 };
