@@ -204,6 +204,18 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
+     * Evaluates the multi-valued properties of all tasks in the frame graph.
+     */
+    public evaluateMultiValuedProperties(): void {
+        for (const task of this._tasks) {
+            if (task.available && !task.available()) {
+                continue;
+            }
+            task.evaluateMultiValuedProperties();
+        }
+    }
+
+    /**
      * Builds the frame graph.
      * This method should be called after all tasks have been added to the frame graph (FrameGraph.addTask) and before the graph is executed (FrameGraph.execute).
      */
@@ -211,7 +223,13 @@ export class FrameGraph implements IDisposable {
         this.textureManager._releaseTextures(false);
 
         try {
+            this.evaluateMultiValuedProperties();
+
             for (const task of this._tasks) {
+                if (task.available && !task.available()) {
+                    continue;
+                }
+
                 task._reset();
 
                 this._currentProcessedTask = task;
@@ -256,6 +274,9 @@ export class FrameGraph implements IDisposable {
                 () => {
                     let ready = this._renderContext._isReady();
                     for (const task of this._tasks) {
+                        if (task.available && !task.available()) {
+                            continue;
+                        }
                         const taskIsReady = task.isReady();
                         if (!taskIsReady && !firstNotReadyTask) {
                             firstNotReadyTask = task;
@@ -306,6 +327,10 @@ export class FrameGraph implements IDisposable {
         this.textureManager._updateHistoryTextures();
 
         for (const task of this._tasks) {
+            if (task.available && !task.available()) {
+                continue;
+            }
+
             const passes = task._getPasses();
 
             for (const pass of passes) {
