@@ -1053,10 +1053,7 @@ export class Geometry implements IGetSetVerticesData {
             const data = GetTypedArrayData(bufferData, size, type, byteOffset, byteStride, normalized, this._totalVertices, true);
             const newVb = new VertexBuffer(this._engine, data, kind, {
                 updatable: isUpdatable,
-                useBytes: true,
-                stride: byteStride,
                 size: size,
-                offset: byteOffset,
                 type: type,
                 normalized: normalized,
                 takeBufferOwnership: true,

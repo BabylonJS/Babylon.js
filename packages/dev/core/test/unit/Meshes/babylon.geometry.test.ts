@@ -56,4 +56,30 @@ describe("Babylon Geometry", () => {
             }
         });
     });
+
+    describe("#Geometry copy", () => {
+        it("vec3 float position interleaved with vec2 float uv", () => {
+            const scene = new Scene(subject);
+            const geometry = new Geometry("original", scene);
+            geometry.setIndices([0, 1], 2);
+
+            const data = new Float32Array([
+                // Vertex 0: position (0, 1, 2) + UV (0.6, 0.7)
+                0.0, 1.0, 2.0, 0.6, 0.7,
+                // Vertex 1: position (3, 4, 5) + UV (0.8, 0.9)
+                3.0, 4.0, 5.0, 0.8, 0.9,
+            ]);
+
+            geometry.setVerticesBuffer(new VertexBuffer(subject, data, VertexBuffer.PositionKind, { size: 3, stride: 5, offset: 0 }));
+            geometry.setVerticesBuffer(new VertexBuffer(subject, data, VertexBuffer.UVKind, { size: 2, stride: 5, offset: 3 }));
+
+            const copy = geometry.copy("copy");
+
+            // Verify separate buffers with identical values
+            [VertexBuffer.PositionKind, VertexBuffer.UVKind].forEach((kind) => {
+                expect(copy.getVertexBuffer(kind)?.getBuffer()?.uniqueId).not.toBe(geometry.getVertexBuffer(kind)?.getBuffer()?.uniqueId);
+                expect(copy.getVerticesData(kind)).toStrictEqual(geometry.getVerticesData(kind));
+            });
+        });
+    });
 });
