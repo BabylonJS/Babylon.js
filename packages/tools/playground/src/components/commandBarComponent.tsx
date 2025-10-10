@@ -15,7 +15,11 @@ interface ICommandBarComponentProps {
     globalState: GlobalState;
 }
 
-export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
+interface ICommandBarComponentState {
+    isInspectorV2ModeEnabled: boolean;
+}
+
+export class CommandBarComponent extends React.Component<ICommandBarComponentProps, ICommandBarComponentState> {
     private _webGPUSupported: boolean = false;
     private _procedural: {
         label: string;
@@ -26,6 +30,12 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
     public constructor(props: ICommandBarComponentProps) {
         super(props);
+
+        const searchParams = new URL(window.location.href).searchParams;
+        this.state = {
+            isInspectorV2ModeEnabled: searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false",
+        };
+
         // First Fetch JSON data for procedural code
         this._procedural = [];
         const url = "procedural.json?uncacher=" + Date.now();
@@ -81,12 +91,39 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onDownloadRequiredObservable.notifyObservers();
     }
 
-    onInspector() {
-        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+    onInspector(action: "refresh" | "toggle") {
+        this.props.globalState.onInspectorRequiredObservable.notifyObservers(action);
     }
 
     onExamples() {
         this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
+    }
+
+    onToggleInspectorV2Mode() {
+        const newState = !this.state.isInspectorV2ModeEnabled;
+        this.setState({ isInspectorV2ModeEnabled: newState }, () => {
+            // Update URL after state is set
+            const url = new URL(window.location.href);
+            if (this.state.isInspectorV2ModeEnabled) {
+                url.searchParams.set("inspectorv2", "true");
+                localStorage.setItem("inspectorv2", "true");
+            } else {
+                url.searchParams.delete("inspectorv2");
+                localStorage.removeItem("inspectorv2");
+            }
+            window.history.pushState({}, "", url.toString());
+            this.onInspector("refresh");
+        });
+    }
+
+    override componentDidMount(): void {
+        if (!this.state.isInspectorV2ModeEnabled && localStorage.getItem("inspectorv2") === "true") {
+            if (new URL(window.location.href).searchParams.get("inspectorv2") === "false") {
+                localStorage.removeItem("inspectorv2");
+            } else {
+                this.onToggleInspectorV2Mode();
+            }
+        }
     }
 
     public override render() {
@@ -298,7 +335,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Run" icon="play" shortcut="Alt+Enter" isActive={true} onClick={() => this.onPlay()} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Save" icon="save" shortcut="Ctrl+S" isActive={false} onClick={() => this.onSave()} />
                     <CommandDropdownComponent globalState={this.props.globalState} icon="saveLocal" tooltip="Local file" items={fileOptions} />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={() => this.onInspector()} />
+                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Inspector" icon="inspector" isActive={false} onClick={() => this.onInspector("toggle")} />
                     <CommandButtonComponent
                         globalState={this.props.globalState}
                         tooltip="Download"
@@ -332,6 +369,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         items={versionOptions}
                     />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={() => this.onExamples()} isActive={false} />
+                    <div className="language-button active inspector-v2-button" onClick={() => this.onToggleInspectorV2Mode()}>
+                        {this.state.isInspectorV2ModeEnabled ? "Back to Old Inspector" : "Try the New Inspector"}
+                    </div>
                 </div>
             </div>
         );
