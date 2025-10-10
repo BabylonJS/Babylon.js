@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-// During the ES6, this function inlines all Constants values directly into the JS files
+// During the ES6 build this function inlines all Constants values directly into the JS files
 // This is an optimization to avoid shipping our Constants.ts file, which has a significant size (20+KB)
 // This function only handles dot access and assumes no dynamic property access (Constants["X"]);
 
