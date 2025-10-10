@@ -609,14 +609,10 @@ export class SpritePacker {
         const startPoint = fill.s.k as number[];
         const endPoint = fill.e.k as number[];
 
-        const gradient = this._spritesCanvasContext.createRadialGradient(
-            startPoint[0] + xTranslate,
-            startPoint[1] + yTranslate,
-            0,
-            endPoint[0] + xTranslate,
-            endPoint[1] + yTranslate,
-            Math.hypot(endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]) // End radius
-        );
+        const centerX = startPoint[0] + xTranslate;
+        const centerY = startPoint[1] + yTranslate;
+        const outerRadius = Math.hypot(endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]);
+        const gradient = this._spritesCanvasContext.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
 
         this._addColorStops(gradient, fill);
 
