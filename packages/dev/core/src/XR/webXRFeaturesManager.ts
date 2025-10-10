@@ -1,27 +1,27 @@
 import type { Observable } from "core/Misc/observable";
 import { Tools } from "../Misc/tools";
 import type { IDisposable } from "../scene";
-import type { WebXRAnchorSystem } from "./features/WebXRAnchorSystem";
-import type { WebXRBackgroundRemover } from "./features/WebXRBackgroundRemover";
-import type { WebXRControllerMovement } from "./features/WebXRControllerMovement";
-import type { WebXRControllerPhysics } from "./features/WebXRControllerPhysics";
-import type { WebXRControllerPointerSelection } from "./features/WebXRControllerPointerSelection";
-import type { WebXRDepthSensing } from "./features/WebXRDepthSensing";
-import type { WebXRDomOverlay } from "./features/WebXRDOMOverlay";
+import type { WebXRAnchorSystem, IWebXRAnchorSystemOptions } from "./features/WebXRAnchorSystem";
+import type { WebXRBackgroundRemover, IWebXRBackgroundRemoverOptions } from "./features/WebXRBackgroundRemover";
+import type { WebXRControllerMovement, IWebXRControllerMovementOptions } from "./features/WebXRControllerMovement";
+import type { WebXRControllerPhysics, IWebXRControllerPhysicsOptions } from "./features/WebXRControllerPhysics";
+import type { WebXRControllerPointerSelection, IWebXRControllerPointerSelectionOptions } from "./features/WebXRControllerPointerSelection";
+import type { WebXRDepthSensing, IWebXRDepthSensingOptions } from "./features/WebXRDepthSensing";
+import type { WebXRDomOverlay, IWebXRDomOverlayOptions } from "./features/WebXRDOMOverlay";
 import type { WebXREyeTracking } from "./features/WebXREyeTracking";
 import type { WebXRFeaturePointSystem } from "./features/WebXRFeaturePointSystem";
-import type { WebXRHandTracking } from "./features/WebXRHandTracking";
-import type { WebXRHitTest } from "./features/WebXRHitTest";
-import type { WebXRImageTracking } from "./features/WebXRImageTracking";
-import type { WebXRLayers } from "./features/WebXRLayers";
-import type { WebXRLightEstimation } from "./features/WebXRLightEstimation";
-import type { WebXRMeshDetector } from "./features/WebXRMeshDetector";
-import type { WebXRMotionControllerTeleportation } from "./features";
-import type { WebXRNearInteraction } from "./features/WebXRNearInteraction";
-import type { WebXRPlaneDetector } from "./features/WebXRPlaneDetector";
-import type { WebXRRawCameraAccess } from "./features/WebXRRawCameraAccess";
+import type { WebXRHandTracking, IWebXRHandTrackingOptions } from "./features/WebXRHandTracking";
+import type { WebXRHitTest, IWebXRHitTestOptions } from "./features/WebXRHitTest";
+import type { WebXRImageTracking, IWebXRImageTrackingOptions } from "./features/WebXRImageTracking";
+import type { WebXRLayers, IWebXRLayersOptions } from "./features/WebXRLayers";
+import type { WebXRLightEstimation, IWebXRLightEstimationOptions } from "./features/WebXRLightEstimation";
+import type { WebXRMeshDetector, IWebXRMeshDetectorOptions } from "./features/WebXRMeshDetector";
+import type { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from "./features";
+import type { WebXRNearInteraction, IWebXRNearInteractionOptions } from "./features/WebXRNearInteraction";
+import type { WebXRPlaneDetector, IWebXRPlaneDetectorOptions } from "./features/WebXRPlaneDetector";
+import type { WebXRRawCameraAccess, IWebXRRawCameraAccessOptions } from "./features/WebXRRawCameraAccess";
 import type { WebXRSpaceWarp } from "./features/WebXRSpaceWarp";
-import type { WebXRWalkingLocomotion } from "./features/WebXRWalkingLocomotion";
+import type { WebXRWalkingLocomotion, IWebXRWalkingLocomotionOptions } from "./features/WebXRWalkingLocomotion";
 import type { WebXRSessionManager } from "./webXRSessionManager";
 
 /**
@@ -208,10 +208,53 @@ export interface IWebXRFeatureNameTypeMap {
 }
 
 /**
+ * Maps feature names to their corresponding options interfaces.
+ */
+export interface IWebXRFeatureNameOptionsMap {
+    [WebXRFeatureName.ANCHOR_SYSTEM]: IWebXRAnchorSystemOptions;
+    [WebXRFeatureName.BACKGROUND_REMOVER]: IWebXRBackgroundRemoverOptions;
+    [WebXRFeatureName.DEPTH_SENSING]: IWebXRDepthSensingOptions;
+    [WebXRFeatureName.DOM_OVERLAY]: IWebXRDomOverlayOptions;
+    [WebXRFeatureName.EYE_TRACKING]: undefined;
+    [WebXRFeatureName.FEATURE_POINTS]: undefined;
+    [WebXRFeatureName.HAND_TRACKING]: IWebXRHandTrackingOptions;
+    [WebXRFeatureName.HIT_TEST]: IWebXRHitTestOptions;
+    [WebXRFeatureName.IMAGE_TRACKING]: IWebXRImageTrackingOptions;
+    [WebXRFeatureName.LAYERS]: IWebXRLayersOptions;
+    [WebXRFeatureName.LIGHT_ESTIMATION]: IWebXRLightEstimationOptions;
+    [WebXRFeatureName.MESH_DETECTION]: IWebXRMeshDetectorOptions;
+    [WebXRFeatureName.MOVEMENT]: IWebXRControllerMovementOptions;
+    [WebXRFeatureName.NEAR_INTERACTION]: IWebXRNearInteractionOptions;
+    [WebXRFeatureName.PHYSICS_CONTROLLERS]: IWebXRControllerPhysicsOptions;
+    [WebXRFeatureName.PLANE_DETECTION]: IWebXRPlaneDetectorOptions;
+    [WebXRFeatureName.POINTER_SELECTION]: IWebXRControllerPointerSelectionOptions;
+    [WebXRFeatureName.RAW_CAMERA_ACCESS]: IWebXRRawCameraAccessOptions;
+    [WebXRFeatureName.SPACE_WARP]: undefined;
+    [WebXRFeatureName.TELEPORTATION]: IWebXRTeleportationOptions;
+    [WebXRFeatureName.WALKING_LOCOMOTION]: IWebXRWalkingLocomotionOptions;
+}
+
+/**
+ * Helper type that expands/flattens a type to show its properties inline in IntelliSense
+ */
+type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+
+/**
  * Helper type to resolve the specific feature type based on the feature name,
  * or fallback to IWebXRFeature if the feature name is not in the type map.
  */
 export type ResolveWebXRFeature<T extends WebXRFeatureNameType> = T extends keyof IWebXRFeatureNameTypeMap ? IWebXRFeatureNameTypeMap[T] : IWebXRFeature;
+
+/**
+ * Helper type to resolve the options type for a specific feature based on the feature name,
+ * or fallback to any if the feature name is not in the type map.
+ * The Expand utility type flattens the interface to show properties inline in IntelliSense.
+ */
+export type ResolveWebXRFeatureOptions<T extends WebXRFeatureNameType> = T extends keyof IWebXRFeatureNameOptionsMap
+    ? IWebXRFeatureNameOptionsMap[T] extends undefined
+        ? undefined
+        : Expand<IWebXRFeatureNameOptionsMap[T]>
+    : any;
 
 /**
  * Defining the constructor of a feature. Used to register the modules.
@@ -429,7 +472,7 @@ export class WebXRFeaturesManager implements IDisposable {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         featureName: T | { Name: T },
         version: number | string = "latest",
-        moduleOptions: any = {},
+        moduleOptions: ResolveWebXRFeatureOptions<T> = {} as ResolveWebXRFeatureOptions<T>,
         attachIfPossible: boolean = true,
         required: boolean = true
     ): ResolveWebXRFeature<T> {
