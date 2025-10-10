@@ -203,25 +203,25 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                             } else if (colorBuffer.length === instanceCount * 4) {
                                 colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
                             }
-                            extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                            extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
                         } else if (format === GLTFExporterInstanceColorFormat.RGB) {
                             if (colorBuffer.length === instanceCount * 4) {
                                 colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
                             }
-                            extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                            extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
                         } else if (format === GLTFExporterInstanceColorFormat.RGBA) {
                             if (colorBuffer.length === instanceCount * 3) {
                                 colorBuffer = ColorBufferToRGBToRGBA(colorBuffer, instanceCount);
                             }
-                            extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC4, instanceCount, bufferManager);
+                            extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC4, instanceCount, bufferManager);
                         } else if (format === GLTFExporterInstanceColorFormat.AUTO) {
                             if (babylonNode.hasVertexAlpha && colorBuffer.length === instanceCount * 4) {
-                                extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC4, instanceCount, bufferManager);
+                                extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC4, instanceCount, bufferManager);
                             } else if (colorBuffer.length === instanceCount * 4) {
                                 colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
-                                extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                                extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
                             } else {
-                                extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                                extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
                             }
                         }
                     }
