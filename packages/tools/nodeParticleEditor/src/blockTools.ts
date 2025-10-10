@@ -41,6 +41,19 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
+import {
+    SPSMeshSourceBlock,
+    SPSSystemBlock,
+    SPSCreateBlock,
+    SPSInitParticleBlock,
+    SPSUpdatePositionBlock,
+    SPSUpdateRotationBlock,
+    SPSUpdateScalingBlock,
+    SPSUpdateColorBlock,
+    SPSUpdateVelocityBlock,
+    SPSPhysicsBlock,
+    SPSGetParticlePropertyBlock,
+} from "core/Particles/Node/Blocks";
 
 /**
  * Static class for BlockTools
@@ -149,6 +162,28 @@ export class BlockTools {
                 return new UpdateAttractorBlock("Update attractor");
             case "SystemBlock":
                 return new SystemBlock("System");
+            case "SPSMeshSourceBlock":
+                return new SPSMeshSourceBlock("SPS Mesh Source");
+            case "SPSSystemBlock":
+                return new SPSSystemBlock("SPS System");
+            case "SPSCreateBlock":
+                return new SPSCreateBlock("SPS Create");
+            case "SPSInitParticleBlock":
+                return new SPSInitParticleBlock("SPS Init Particle");
+            case "SPSUpdatePositionBlock":
+                return new SPSUpdatePositionBlock("SPS Update Position");
+            case "SPSUpdateRotationBlock":
+                return new SPSUpdateRotationBlock("SPS Update Rotation");
+            case "SPSUpdateScalingBlock":
+                return new SPSUpdateScalingBlock("SPS Update Scaling");
+            case "SPSUpdateColorBlock":
+                return new SPSUpdateColorBlock("SPS Update Color");
+            case "SPSUpdateVelocityBlock":
+                return new SPSUpdateVelocityBlock("SPS Update Velocity");
+            case "SPSPhysicsBlock":
+                return new SPSPhysicsBlock("SPS Physics");
+            case "SPSGetParticlePropertyBlock":
+                return new SPSGetParticlePropertyBlock("SPS Get Property");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":
@@ -435,6 +470,24 @@ export class BlockTools {
             case NodeParticleBlockConnectionPointTypes.System:
                 color = "#f20a2e";
                 break;
+            case NodeParticleBlockConnectionPointTypes.SPS:
+                color = "#8b4513";
+                break;
+            case NodeParticleBlockConnectionPointTypes.SolidParticle:
+                color = "#2e8b57";
+                break;
+            case NodeParticleBlockConnectionPointTypes.Mesh:
+                color = "#4682b4";
+                break;
+            case NodeParticleBlockConnectionPointTypes.Material:
+                color = "#daa520";
+                break;
+            case NodeParticleBlockConnectionPointTypes.Camera:
+                color = "#9370db";
+                break;
+            case NodeParticleBlockConnectionPointTypes.Function:
+                color = "#ff6347";
+                break;
         }
 
         return color;
@@ -454,6 +507,18 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.Color4;
             case "Matrix":
                 return NodeParticleBlockConnectionPointTypes.Matrix;
+            case "SPS":
+                return NodeParticleBlockConnectionPointTypes.SPS;
+            case "SolidParticle":
+                return NodeParticleBlockConnectionPointTypes.SolidParticle;
+            case "Mesh":
+                return NodeParticleBlockConnectionPointTypes.Mesh;
+            case "Material":
+                return NodeParticleBlockConnectionPointTypes.Material;
+            case "Camera":
+                return NodeParticleBlockConnectionPointTypes.Camera;
+            case "Function":
+                return NodeParticleBlockConnectionPointTypes.Function;
         }
 
         return NodeParticleBlockConnectionPointTypes.AutoDetect;
@@ -473,6 +538,18 @@ export class BlockTools {
                 return "Color4";
             case NodeParticleBlockConnectionPointTypes.Matrix:
                 return "Matrix";
+            case NodeParticleBlockConnectionPointTypes.SPS:
+                return "SPS";
+            case NodeParticleBlockConnectionPointTypes.SolidParticle:
+                return "SolidParticle";
+            case NodeParticleBlockConnectionPointTypes.Mesh:
+                return "Mesh";
+            case NodeParticleBlockConnectionPointTypes.Material:
+                return "Material";
+            case NodeParticleBlockConnectionPointTypes.Camera:
+                return "Camera";
+            case NodeParticleBlockConnectionPointTypes.Function:
+                return "Function";
         }
 
         return "";

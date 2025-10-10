@@ -7,6 +7,7 @@ import { Mesh } from "../Meshes/mesh";
 import { CreateDisc } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
 import type { Scene, IDisposable } from "../scene";
+import type { Observer } from "../Misc/observable";
 import { DepthSortedParticle, SolidParticle, ModelShape, SolidParticleVertex } from "./solidParticle";
 import type { TargetCamera } from "../Cameras/targetCamera";
 import { BoundingInfo } from "../Culling/boundingInfo";
@@ -1534,10 +1535,39 @@ export class SolidParticleSystem implements IDisposable {
         return this;
     }
 
+    private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+
+    /**
+     * Starts the SPS by subscribing to the scene's before render observable
+     */
+    public start(): void {
+        if (this.mesh && this.mesh.getScene()) {
+            // Stop any existing observer first
+            this.stop();
+
+            const scene = this.mesh.getScene();
+            this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
+                this.setParticles();
+            });
+        }
+    }
+
+    /**
+     * Stops the SPS by unsubscribing from the scene's before render observable
+     */
+    public stop(): void {
+        if (this._onBeforeRenderObserver && this.mesh && this.mesh.getScene()) {
+            const scene = this.mesh.getScene();
+            scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
+    }
+
     /**
      * Disposes the SPS.
      */
     public dispose(): void {
+        this.stop();
         this.mesh.dispose();
         this.vars = null;
         // drop references to internal big arrays for the GC
