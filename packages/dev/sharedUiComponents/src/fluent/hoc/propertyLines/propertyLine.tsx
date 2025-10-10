@@ -55,6 +55,9 @@ const usePropertyLineStyles = makeStyles({
     copy: {
         marginRight: CustomTokens.rightAlignOffset, // Accounts for the padding baked into fluent button / ensures propertyLine looks visually aligned at the right
     },
+    expandedContentDiv: {
+        overflow: "hidden",
+    },
 });
 
 type BasePropertyLineProps = {
@@ -198,7 +201,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
             </div>
             {expandedContent && (
                 <Collapse visible={!!expanded}>
-                    <div>{expandedContent}</div>
+                    <div className={classes.expandedContentDiv}>{expandedContent}</div>
                 </Collapse>
             )}
         </LineContainer>
