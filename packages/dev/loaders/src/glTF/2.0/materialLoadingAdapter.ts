@@ -383,34 +383,34 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets the iridescence weight (OpenPBR: iridescenceWeight, PBR: iridescence.intensity)
+     * Sets the thin film weight
      */
-    iridescenceWeight: number;
+    thinFilmWeight: number;
 
     /**
-     * Sets the iridescence IOR (OpenPBR: iridescenceIor, PBR: iridescence.indexOfRefraction)
+     * Sets the thin film IOR
      */
-    iridescenceIor: number;
+    thinFilmIor: number;
 
     /**
-     * Sets the iridescence thickness minimum (OpenPBR: iridescenceThicknessMinimum, PBR: iridescence.minimumThickness)
+     * Sets the thin film thickness minimum
      */
-    iridescenceThicknessMinimum: number;
+    thinFilmThicknessMinimum: number;
 
     /**
-     * Sets the iridescence thickness maximum (OpenPBR: iridescenceThicknessMaximum, PBR: iridescence.maximumThickness)
+     * Sets the thin film thickness maximum
      */
-    iridescenceThicknessMaximum: number;
+    thinFilmThicknessMaximum: number;
 
     /**
-     * Sets the iridescence texture (OpenPBR: iridescenceTexture, PBR: iridescence.intensityTexture)
+     * Sets the thin film iridescence texture
      */
-    iridescenceTexture: Nullable<BaseTexture>;
+    thinFilmWeightTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets the iridescence thickness texture (OpenPBR: iridescenceThicknessTexture, PBR: iridescence.thicknessTexture)
+     * Sets the thin film thickness texture
      */
-    iridescenceThicknessTexture: Nullable<BaseTexture>;
+    thinFilmThicknessTexture: Nullable<BaseTexture>;
 
     // ========================================
     // UNLIT MATERIALS

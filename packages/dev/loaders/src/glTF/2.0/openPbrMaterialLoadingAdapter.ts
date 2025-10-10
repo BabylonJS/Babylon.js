@@ -898,63 +898,52 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets the iridescence weight.
-     * TODO: Implementation pending OpenPBR iridescence feature availability.
-     * @param value The iridescence intensity value
+     * Sets the thin film weight.
+     * @param value The thin film weight value
      */
-    public set iridescenceWeight(value: number) {
-        // TODO: Implement when OpenPBR iridescence is available
-        // this._material.iridescenceWeight = value;
+    public set thinFilmWeight(value: number) {
+        this._material.thinFilmWeight = value;
     }
 
     /**
-     * Sets the iridescence IOR.
-     * TODO: Implementation pending OpenPBR iridescence feature availability.
-     * @param value The iridescence IOR value
+     * Sets the thin film IOR.
+     * @param value The thin film IOR value
      */
-    public set iridescenceIor(value: number) {
-        // TODO: Implement when OpenPBR iridescence is available
-        // this._material.iridescenceIor = value;
+    public set thinFilmIor(value: number) {
+        this._material.thinFilmIor = value;
     }
 
     /**
-     * Sets the iridescence thickness minimum.
-     * TODO: Implementation pending OpenPBR iridescence feature availability.
+     * Sets the thin film thickness minimum.
      * @param value The minimum thickness value in nanometers
      */
-    public set iridescenceThicknessMinimum(value: number) {
-        // TODO: Implement when OpenPBR iridescence is available
-        // this._material.iridescenceThicknessMinimum = value;
+    public set thinFilmThicknessMinimum(value: number) {
+        this._material.thinFilmThicknessMin = value / 1000.0; // Convert to micrometers for OpenPBR
     }
 
     /**
-     * Sets the iridescence thickness maximum.
-     * TODO: Implementation pending OpenPBR iridescence feature availability.
+     * Sets the thin film thickness maximum.
      * @param value The maximum thickness value in nanometers
      */
-    public set iridescenceThicknessMaximum(value: number) {
-        // TODO: Implement when OpenPBR iridescence is available
-        // this._material.iridescenceThicknessMaximum = value;
+    public set thinFilmThicknessMaximum(value: number) {
+        this._material.thinFilmThickness = value / 1000.0; // Convert to micrometers for OpenPBR
     }
 
     /**
-     * Sets the iridescence texture.
-     * TODO: Implementation pending OpenPBR iridescence feature availability.
-     * @param value The iridescence intensity texture or null
+     * Sets the thin film weight texture.
+     * @param value The thin film weight texture or null
      */
-    public set iridescenceTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR iridescence is available
-        // this._material.iridescenceTexture = value;
+    public set thinFilmWeightTexture(value: Nullable<BaseTexture>) {
+        this._material.thinFilmWeightTexture = value;
     }
 
     /**
-     * Sets the iridescence thickness texture.
-     * TODO: Implementation pending OpenPBR iridescence feature availability.
-     * @param value The iridescence thickness texture or null
+     * Sets the thin film thickness texture.
+     * @param value The thin film thickness texture or null
      */
-    public set iridescenceThicknessTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR iridescence is available
-        // this._material.iridescenceThicknessTexture = value;
+    public set thinFilmThicknessTexture(value: Nullable<BaseTexture>) {
+        this._material.thinFilmThicknessTexture = value;
+        this._material._useThinFilmThicknessFromTextureGreen = true;
     }
 
     // ========================================
