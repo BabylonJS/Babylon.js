@@ -7,7 +7,10 @@ import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import type { Texture } from "core/Materials";
 
 const useStyles = makeStyles({
-    root: { display: "flex", flexDirection: "column", gap: "8px" },
+    root: {
+        display: "flex",
+        flexDirection: "column",
+    },
     controls: {
         display: "flex",
         gap: tokens.spacingHorizontalXS,
@@ -26,6 +29,7 @@ const useStyles = makeStyles({
         maxWidth: "100%",
         marginLeft: "auto",
         marginRight: "auto",
+        marginBottom: tokens.spacingVerticalS,
         display: "block",
     },
 });

@@ -1,5 +1,5 @@
 import { Dropdown as FluentDropdown, makeStyles, mergeClasses, Option, useId } from "@fluentui/react-components";
-import { forwardRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
@@ -40,7 +40,7 @@ export type DropdownProps<V extends AcceptedDropdownValue> = PrimitiveProps<V> &
  * @param props
  * @returns dropdown component
  */
-export const Dropdown = forwardRef<HTMLSpanElement, DropdownProps<AcceptedDropdownValue>>((props, ref) => {
+export const Dropdown: FunctionComponent<DropdownProps<AcceptedDropdownValue>> = (props) => {
     Dropdown.displayName = "Dropdown";
     const classes = useDropdownStyles();
     const { options, value } = props;
@@ -63,11 +63,7 @@ export const Dropdown = forwardRef<HTMLSpanElement, DropdownProps<AcceptedDropdo
                 disabled={props.disabled}
                 size="medium"
                 className={classes.dropdown}
-                button={
-                    <span ref={ref} className={classes.dropdownText}>
-                        {optionLabel}
-                    </span>
-                }
+                button={<span className={classes.dropdownText}>{optionLabel}</span>}
                 onOptionSelect={(evt, data) => {
                     const value = typeof props.value === "number" ? Number(data.optionValue) : data.optionValue;
                     if (value !== undefined) {
@@ -86,7 +82,7 @@ export const Dropdown = forwardRef<HTMLSpanElement, DropdownProps<AcceptedDropdo
             </FluentDropdown>
         </div>
     );
-});
+};
 
 export const NumberDropdown = Dropdown as FunctionComponent<DropdownProps<number>>;
 export const StringDropdown = Dropdown as FunctionComponent<DropdownProps<string>>;
