@@ -92,7 +92,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
             loadAttribute("TRANSLATION");
             loadAttribute("ROTATION");
             loadAttribute("SCALE");
-            loadAttribute("_COLOR");
+            loadAttribute("_COLOR_0");
 
             // eslint-disable-next-line github/no-then
             return await promise.then(async (babylonTransformNode) => {
@@ -128,3 +128,4 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
 
 unregisterGLTFExtension(NAME);
 registerGLTFExtension(NAME, true, (loader) => new EXT_mesh_gpu_instancing(loader));
+
