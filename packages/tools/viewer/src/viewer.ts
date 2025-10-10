@@ -739,6 +739,17 @@ export type Model = IDisposable & {
      * @param options Options for activating the model.
      */
     makeActive(options?: ActivateModelOptions): void;
+
+    /**
+     * Selects a material variant for the model.
+     * @param variantName The name of the material variant to select.
+     */
+    selectVariant(variantName: string): void;
+
+    /**
+     * The currently selected material variant.
+     */
+    selectedVariant: Nullable<string>;
 };
 
 type ModelInternal = Model & {
@@ -1439,22 +1450,15 @@ export class Viewer implements IDisposable {
      * The currently selected material variant.
      */
     public get selectedMaterialVariant(): Nullable<string> {
-        return this._activeModel?.materialVariantsController?.selectedVariant ?? null;
+        if (this._activeModel) {
+            return this._activeModel?.selectedVariant;
+        }
+        return null;
     }
 
     public set selectedMaterialVariant(value: Nullable<string>) {
-        if (this._activeModel?.materialVariantsController) {
-            if (!value) {
-                value = this._activeModel.materialVariantsController.variants[0];
-            }
-
-            if (value !== this.selectedMaterialVariant && this._activeModel.materialVariantsController.variants.includes(value)) {
-                this._snapshotHelper.disableSnapshotRendering();
-                this._activeModel.materialVariantsController.selectedVariant = value;
-                this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
-                this.onSelectedMaterialVariantChanged.notifyObservers();
-            }
+        if (value) {
+            this._activeModel?.selectVariant(value);
         }
     }
 
@@ -1659,6 +1663,28 @@ export class Viewer implements IDisposable {
                 },
                 makeActive: (options?: ActivateModelOptions) => {
                     this._setActiveModel(model, options);
+                },
+                selectVariant: (variantName: string) => {
+                    if (materialVariantsController) {
+                        let value: Nullable<string> = variantName;
+                        if (!value) {
+                            value = materialVariantsController.variants[0];
+                        }
+
+                        if (value !== materialVariantsController.selectedVariant && materialVariantsController.variants.includes(value)) {
+                            this._snapshotHelper.disableSnapshotRendering();
+                            materialVariantsController.selectedVariant = value;
+                            this._snapshotHelper.enableSnapshotRendering();
+                            this._markSceneMutated();
+                            this.onSelectedMaterialVariantChanged.notifyObservers();
+                        }
+                    }
+                },
+                get selectedVariant() {
+                    if (materialVariantsController) {
+                        return materialVariantsController.selectedVariant;
+                    }
+                    return null;
                 },
             };
 
