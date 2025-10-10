@@ -32,7 +32,7 @@ export class _IblShadowsVoxelRenderer {
     private _engine: Engine;
 
     // WebGPU, single-pass voxelization.
-    // See https://playground.babylonjs.com/#XSNYAU#118
+    // See https://playground.babylonjs.com/#XSNYAU#133
     private _voxelGrid: RenderTargetTexture;
     private _voxelGridRT: RenderTargetTexture;
 
