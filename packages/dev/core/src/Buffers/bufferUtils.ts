@@ -320,7 +320,7 @@ export function GetTypedArrayData(
         }
         if (stride !== size) {
             const copy = new constructor(count);
-            EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
+            EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, false, (values, index) => {
                 for (let i = 0; i < size; i++) {
                     copy[index + i] = values[i];
                 }
@@ -353,7 +353,7 @@ export function GetTypedArrayData(
     }
     if (byteStride !== tightlyPackedByteStride) {
         const copy = new constructor(count);
-        EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, normalized, (values, index) => {
+        EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, false, (values, index) => {
             for (let i = 0; i < size; i++) {
                 copy[index + i] = values[i];
             }

@@ -256,5 +256,20 @@ describe("VertexBuffer", () => {
             expect(typedArray[2]).toEqual(vb.array[8]);
             expect(typedArray instanceof Float32Array).toBeTruthy();
         });
+        it("preserves normalized values in interleaved data", () => {
+            const vb = {
+                data: new Uint8Array([0, 102, 0, 153, 0, 204]),
+                size: 1,
+                type: Constants.UNSIGNED_BYTE,
+                byteOffset: 1,
+                byteStride: 2,
+                normalized: true,
+                totalVertices: 3,
+            };
+
+            const result = GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
+            const expected = new Uint8Array([102, 153, 204]);
+            expect(result).toStrictEqual(expected);
+        });
     });
 });
