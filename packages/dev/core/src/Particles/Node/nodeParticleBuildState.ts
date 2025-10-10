@@ -9,6 +9,7 @@ import type { ThinParticleSystem } from "../thinParticleSystem";
 import { Color4 } from "core/Maths/math.color";
 import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { SolidParticleSystem } from "../solidParticleSystem";
 
 /**
  * Class used to store node based geometry build state
@@ -42,6 +43,16 @@ export class NodeParticleBuildState {
      * Gets or sets the system context for contextual data
      */
     public systemContext: Nullable<ThinParticleSystem> = null;
+
+    /**
+     * Gets or sets the SPS context for SPS blocks
+     */
+    public spsContext: Nullable<SolidParticleSystem> = null;
+
+    /**
+     * Gets or sets the delta time for physics calculations
+     */
+    public deltaTime: number = 0.016; // 60 FPS default
 
     /**
      * Gets or sets the index of the gradient to use
