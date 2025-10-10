@@ -20,6 +20,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
     var normalUpdated: vec3f = input.normal;
 
     #include<morphTargetsVertexGlobal>
+    #ifdef MORPHTARGETS_POSITION
+    let inputPosition: vec3f = vertexInputs.position;
+    #endif
     #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
     #include<instancesVertex>

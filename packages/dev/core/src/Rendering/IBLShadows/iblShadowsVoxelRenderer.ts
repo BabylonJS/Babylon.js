@@ -47,7 +47,7 @@ export class _IblShadowsVoxelRenderer {
 
     private _voxelMaterial: ShaderMaterial;
     private _voxelSlabDebugMaterial: ShaderMaterial;
-    // private _voxelClearColor: Color4 = new Color4(0, 0, 0, 1);
+    private _voxelClearColor: Color4 = new Color4(0, 0, 0, 1);
 
     /**
      * Return the voxel grid texture.
@@ -653,7 +653,7 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
             this._voxelGridRT.setMaterialForRendering(includedMeshes, this._voxelMaterial);
             this._voxelGridRT.renderList = includedMeshes;
-            this._scene.customRenderTargets.push(this._voxelGridRT);
+            // this._scene.customRenderTargets.push(this._voxelGridRT);
             if (this._voxelGrid && this._voxelGrid.renderTarget) {
                 // for (let layer = 0; layer < this._voxelResolution; layer++) {
                 //     this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
@@ -695,14 +695,14 @@ export class _IblShadowsVoxelRenderer {
                 this._stopVoxelization();
 
                 if (this._engine.isWebGPU) {
-                    // if (this._voxelGrid && this._voxelGrid.renderTarget) {
-                    //     for (let layer = 0; layer < this._voxelResolution; layer++) {
-                    //         this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
-                    //         this._engine.clear(this._voxelClearColor, true, false, false);
-                    //         this._engine.unBindFramebuffer(this._voxelGrid.renderTarget, true);
-                    //     }
-                    // }
-                    // this._voxelGridRT.render();
+                    if (this._voxelGrid && this._voxelGrid.renderTarget) {
+                        for (let layer = 0; layer < this._voxelResolution; layer++) {
+                            this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
+                            this._engine.clear(this._voxelClearColor, true, false, false);
+                            this._engine.unBindFramebuffer(this._voxelGrid.renderTarget, true);
+                        }
+                    }
+                    this._voxelGridRT.render();
                 } else if (this._triPlanarVoxelization) {
                     this._combinedVoxelGridPT.render();
                 }

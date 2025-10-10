@@ -10,17 +10,17 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     switch (input.f_swizzle) {
         case 0: {
             normPos = normPos.zxy; 
-            outputColor = vec4f(0.0, 1.0, 0.0, 1.0);
+            outputColor = vec4f(1.0, 1.0, 0.0, 1.0);
             break;
         }
         case 1: {
             normPos = normPos.yzx;
-            outputColor = vec4f(0.0, 0.0, 1.0, 1.0);
+            outputColor = vec4f(1.0, 1.0, 1.0, 1.0);
             break;
         }
         default: {
             normPos = normPos.xyz;
-            outputColor = vec4f(1.0, 0.0, 0.0, 1.0);
+            outputColor = vec4f(1.0, 1.0, 0.0, 1.0);
             break;
         }
     }

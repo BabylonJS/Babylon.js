@@ -66,8 +66,9 @@ fn main(input : VertexInputs) -> FragmentInputs {
   var vertIdx = readVertexIndex(input.vertexIndex);
   var positionUpdated = readVertexPosition(vertIdx);
 
-#include <morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include <morphTargetsVertexGlobal>
+let inputPosition: vec3f = positionUpdated;
+#include <morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include <instancesVertex>
 
