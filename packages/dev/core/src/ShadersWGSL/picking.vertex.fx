@@ -23,6 +23,9 @@ varying vMeshID: vec4f;
 fn main(input : VertexInputs) -> FragmentInputs {
     
 #include<morphTargetsVertexGlobal>
+#ifdef MORPHTARGETS_POSITION
+let inputPosition: vec3f = vertexInputs.position;
+#endif
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
 #include<bonesVertex>

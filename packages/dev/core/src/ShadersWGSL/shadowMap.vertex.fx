@@ -58,6 +58,9 @@ var positionUpdated: vec3f = input.position;
 #endif
 
 #include<morphTargetsVertexGlobal>
+#ifdef MORPHTARGETS_POSITION
+let inputPosition: vec3f = vertexInputs.position;
+#endif
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #include<instancesVertex>
