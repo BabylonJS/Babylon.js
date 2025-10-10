@@ -2724,6 +2724,10 @@
             "errorRatio": 6
         },
         {
+            "title": "FrameGraph custom post process",
+            "playgroundId": "#R33LVG"
+        },
+        {
             "title": "Render target texture with clustered lights",
             "playgroundId": "#1QCA2M#11"
         },
@@ -3031,6 +3035,67 @@
             "title": "OpenPBR Coat Roughness vs Coat Ior - IBL",
             "playgroundId": "#GRQHVV#81",
             "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Weight VS IOR - IBL",
+            "playgroundId": "#GRQHVV#86",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Weight VS IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#87",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Thickness VS IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#88",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Thickness VS IOR - IBL",
+            "playgroundId": "#GRQHVV#89",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Weight VS IOR - Furnace Test",
+            "playgroundId": "#GRQHVV#90",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Thickness VS IOR - Furnace Test",
+            "playgroundId": "#GRQHVV#91",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Thickness VS IOR Metal - Furnace Test",
+            "playgroundId": "#GRQHVV#94",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular Weight - Analytic Lights",
+            "playgroundId": "#GRQHVV#95",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular Weight Metals - Analytic Lights",
+            "playgroundId": "#GRQHVV#96",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular Weight Metals - IBL",
+            "playgroundId": "#GRQHVV#97",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film and Specular Weight - IBL",
+            "playgroundId": "#GRQHVV#98",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Thin Film Textures - IBL",
+            "playgroundId": "#GRQHVV#101",
+            "excludedEngines": ["webgl1"],
+            "renderCount": 2
         },
         {
             "title": "Background material blur",

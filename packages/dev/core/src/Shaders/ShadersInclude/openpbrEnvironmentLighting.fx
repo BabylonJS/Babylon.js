@@ -107,11 +107,22 @@
     // The colored fresnel represents the % of light reflected by the base specular lobe
     // The non-colored fresnel represents the % of light that doesn't penetrate through 
     // the base specular lobe. i.e. the specular lobe isn't energy conserving for coloured specular.
+
     float dielectricIblFresnel = getReflectanceFromBRDFLookup(vec3(baseDielectricReflectance.F0), vec3(baseDielectricReflectance.F90), baseGeoInfo.environmentBrdf).r;
-    vec3 dielectricIblColoredFresnel = getReflectanceFromBRDFLookup(baseDielectricReflectance.coloredF0, baseDielectricReflectance.coloredF90, baseGeoInfo.environmentBrdf);
+    vec3 dielectricIblColoredFresnel = dielectricIblFresnel * specular_color;
+    #ifdef THIN_FILM
+        // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
+        float thinFilmIorScale = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
+        vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseDielectricReflectance.coloredF0);
+        dielectricIblColoredFresnel = mix(dielectricIblColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+    #endif
 
     // Conductor IBL Fresnel
     vec3 conductorIblFresnel = conductorIblFresnel(baseConductorReflectance, baseGeoInfo.NdotV, specular_roughness, baseGeoInfo.environmentBrdf);
+    #ifdef THIN_FILM
+        vec3 thinFilmConductorFresnel = specular_weight * evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseConductorReflectance.coloredF0);
+        conductorIblFresnel = mix(conductorIblFresnel, thinFilmConductorFresnel, thin_film_weight * thinFilmIorScale);
+    #endif
 
     // Coat IBL Fresnel
     float coatIblFresnel = 0.0;
@@ -181,7 +192,7 @@
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
     vec3 material_opaque_base_ibl = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
     vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
-    vec3 material_dielectric_gloss_ibl = layer(material_dielectric_base_ibl, slab_glossy_ibl, dielectricIblFresnel, vec3(1.0), specular_color);
+    vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));
     material_surface_ibl = mix(material_coated_base_ibl, slab_fuzz_ibl, fuzz_weight);
