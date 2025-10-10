@@ -92,10 +92,11 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
             loadAttribute("TRANSLATION");
             loadAttribute("ROTATION");
             loadAttribute("SCALE");
+            loadAttribute("_COLOR");
 
             // eslint-disable-next-line github/no-then
             return await promise.then(async (babylonTransformNode) => {
-                const [translationBuffer, rotationBuffer, scaleBuffer] = await Promise.all(promises);
+                const [translationBuffer, rotationBuffer, scaleBuffer, colorBuffer] = await Promise.all(promises);
                 const matrices = new Float32Array(instanceCount * 16);
                 TmpVectors.Vector3[0].copyFromFloats(0, 0, 0); // translation
                 TmpVectors.Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
@@ -111,6 +112,13 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                 }
                 for (const babylonMesh of node._primitiveBabylonMeshes!) {
                     (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
+                    if (colorBuffer) {
+                        if (colorBuffer.length === instanceCount * 3) {
+                            (babylonMesh as Mesh).thinInstanceSetBuffer("color", colorBuffer, 3, true);
+                        } else if (colorBuffer.length === instanceCount * 4) {
+                            (babylonMesh as Mesh).thinInstanceSetBuffer("color", colorBuffer, 4, true);
+                        }
+                    }
                 }
                 return babylonTransformNode;
             });
