@@ -103,7 +103,6 @@ export class KHR_draco_mesh_compression implements IGLTFExporterExtensionV2 {
                 accessor.componentType,
                 accessor.byteOffset || 0,
                 bufferView.byteStride || GetTypeByteLength(accessor.componentType) * size,
-                accessor.normalized || false,
                 accessor.count,
                 true
             );
