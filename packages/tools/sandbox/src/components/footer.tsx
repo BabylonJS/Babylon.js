@@ -167,7 +167,7 @@ export class Footer extends React.Component<IFooterProps, IFooterState> {
                 <div className={"footerRight"}>
                     {!!this.props.globalState.currentScene && (
                         <div className="inspector-toggle" onClick={() => this._onToggleInspectorV2Mode()}>
-                            {this.state.isInspectorV2ModeEnabled ? "Back to Old Inspector ☹️" : "Try the New Inspector 😀"}
+                            {this.state.isInspectorV2ModeEnabled ? "Back to Old Inspector" : "Try the New Inspector"}
                         </div>
                     )}
                     <FooterFileButton

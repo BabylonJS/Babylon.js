@@ -31,6 +31,10 @@ export class GlobalState {
         port: number;
     };
 
+    constructor() {
+        this.onSceneLoaded.addOnce(async () => await this.refreshDebugLayerAsync());
+    }
+
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
         if (this.currentScene) {
@@ -63,19 +67,21 @@ export class GlobalState {
     }
 
     public async refreshDebugLayerAsync() {
-        const inspectorV2Module = await InspectorV2ModulePromise;
+        if (this.currentScene) {
+            const inspectorV2Module = await InspectorV2ModulePromise;
 
-        const isInspectorV1Enabled = this.currentScene.debugLayer.openedPanes !== 0;
-        const isInspectorV2Enabled = inspectorV2Module.IsInspectorVisible();
-        const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
+            const isInspectorV1Enabled = this.currentScene.debugLayer.openedPanes !== 0;
+            const isInspectorV2Enabled = inspectorV2Module.IsInspectorVisible();
+            const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
-        if (isInspectorEnabled) {
-            if (isInspectorV1Enabled && this._isInspectorV2ModeEnabled) {
-                this.currentScene.debugLayer.hide();
-                inspectorV2Module.ShowInspector(this.currentScene);
-            } else if (isInspectorV2Enabled && !this._isInspectorV2ModeEnabled) {
-                inspectorV2Module.HideInspector();
-                await this.currentScene.debugLayer.show();
+            if (isInspectorEnabled) {
+                if (isInspectorV1Enabled && this._isInspectorV2ModeEnabled) {
+                    this.currentScene.debugLayer.hide();
+                    inspectorV2Module.ShowInspector(this.currentScene);
+                } else if (isInspectorV2Enabled && !this._isInspectorV2ModeEnabled) {
+                    inspectorV2Module.HideInspector();
+                    await this.currentScene.debugLayer.show();
+                }
             }
         }
     }
