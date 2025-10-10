@@ -1050,7 +1050,7 @@ export class Geometry implements IGetSetVerticesData {
             const { type, byteOffset, byteStride, normalized } = vb;
             updatable = updatable || isUpdatable;
 
-            const copy = GetTypedArrayData(bufferData, size, type, byteOffset, byteStride, normalized, this._totalVertices, true);
+            const copy = GetTypedArrayData(bufferData, size, type, byteOffset, byteStride, this._totalVertices, true);
             const newVb = new VertexBuffer(this._engine, copy, kind, {
                 updatable: isUpdatable,
                 useBytes: false,

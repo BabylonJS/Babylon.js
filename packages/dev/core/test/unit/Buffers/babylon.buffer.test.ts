@@ -80,7 +80,7 @@ describe("VertexBuffer", () => {
 
     describe("GetTypedArrayData", () => {
         it("errors if type is invalid", () => {
-            expect(() => GetTypedArrayData(new ArrayBuffer(1), 1, Constants.FLOAT + 1, 0, 1, false, 1)).toThrow();
+            expect(() => GetTypedArrayData(new ArrayBuffer(1), 1, Constants.FLOAT + 1, 0, 1, 1)).toThrow();
         });
         it("errors if requested data is out of range", () => {
             // Missing byte at the end. Should never happen in practice, but just in case.
@@ -103,8 +103,8 @@ describe("VertexBuffer", () => {
                 normalized: false,
                 totalVertices: 2,
             };
-            expect(() => GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices)).toThrow();
-            expect(() => GetTypedArrayData(vb2.data, vb2.size, vb2.type, vb2.byteOffset, vb2.byteStride, vb2.normalized, vb2.totalVertices)).toThrow();
+            expect(() => GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices)).toThrow();
+            expect(() => GetTypedArrayData(vb2.data, vb2.size, vb2.type, vb2.byteOffset, vb2.byteStride, vb2.totalVertices)).toThrow();
         });
         it("errors if number[] byteStride or byteOffset is not 4-byte aligned", () => {
             const vb = {
@@ -114,12 +114,12 @@ describe("VertexBuffer", () => {
                 normalized: false,
                 totalVertices: 2,
             };
-            expect(() => GetTypedArrayData([1, 2, 3], vb.size, vb.type, 0, 2, vb.normalized, vb.totalVertices)).toThrow();
-            expect(() => GetTypedArrayData(vb.data, vb.size, vb.type, 2, 4, vb.normalized, vb.totalVertices)).toThrow();
+            expect(() => GetTypedArrayData([1, 2, 3], vb.size, vb.type, 0, 2, vb.totalVertices)).toThrow();
+            expect(() => GetTypedArrayData(vb.data, vb.size, vb.type, 2, 4, vb.totalVertices)).toThrow();
         });
         it("copies when data is an array", () => {
             const data = [0, 1, 2];
-            const typedData = GetTypedArrayData(data, 1, Constants.FLOAT, 0, 4, false, 3);
+            const typedData = GetTypedArrayData(data, 1, Constants.FLOAT, 0, 4, 3);
             expect(typedData.length).toEqual(3);
             expect(data.every((value, index) => value === typedData[index])).toBeTruthy();
             expect(typedData instanceof Float32Array).toBeTruthy();
@@ -134,7 +134,7 @@ describe("VertexBuffer", () => {
                 normalized: false,
                 totalVertices: 2,
             };
-            const typedArray = GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
+            const typedArray = GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
             expect(typedArray.length).toEqual(2);
             expect(vb.data[0] === typedArray[0]).toBeTruthy();
             expect(vb.data[2] === typedArray[1]).toBeTruthy();
@@ -161,8 +161,8 @@ describe("VertexBuffer", () => {
                 normalized: false,
                 totalVertices: 1,
             };
-            const typedArray = GetTypedArrayData(vb.bytes, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
-            const typedArray2 = GetTypedArrayData(vb2.bytes, vb2.size, vb2.type, vb2.byteOffset, vb2.byteStride, vb2.normalized, vb2.totalVertices);
+            const typedArray = GetTypedArrayData(vb.bytes, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
+            const typedArray2 = GetTypedArrayData(vb2.bytes, vb2.size, vb2.type, vb2.byteOffset, vb2.byteStride, vb2.totalVertices);
 
             expect(typedArray.length).toEqual(2);
             expect(typedArray.buffer !== vb.bytes.buffer).toBeTruthy();
@@ -185,7 +185,7 @@ describe("VertexBuffer", () => {
                 normalized: false,
                 totalVertices: 2,
             };
-            const typedArray = GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
+            const typedArray = GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
             expect(typedArray.length).toEqual(2);
             expect(typedArray.every((value, index) => value === vb.data[index])).toBeTruthy();
             expect(typedArray.buffer === vb.data.buffer).toBeTruthy();
@@ -202,8 +202,8 @@ describe("VertexBuffer", () => {
             };
             const vbData = Float32Array.from(vb.array);
 
-            const typedArray = GetTypedArrayData(vb.array, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
-            const typedArray2 = GetTypedArrayData(vbData, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
+            const typedArray = GetTypedArrayData(vb.array, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
+            const typedArray2 = GetTypedArrayData(vbData, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
 
             expect(typedArray.length).toEqual(3);
             expect(typedArray[0]).toBeCloseTo(vb.array[0]);
@@ -229,7 +229,7 @@ describe("VertexBuffer", () => {
                 totalVertices: 3,
             };
 
-            const typedArray = GetTypedArrayData(vb.array, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
+            const typedArray = GetTypedArrayData(vb.array, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
 
             expect(typedArray.length).toEqual(3);
             expect(typedArray[0]).toEqual(vb.array[1]);
@@ -248,13 +248,28 @@ describe("VertexBuffer", () => {
                 totalVertices: 3,
             };
 
-            const typedArray = GetTypedArrayData(vb.array, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.normalized, vb.totalVertices);
+            const typedArray = GetTypedArrayData(vb.array, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
 
             expect(typedArray.length).toEqual(3);
             expect(typedArray[0]).toEqual(vb.array[0]);
             expect(typedArray[1]).toEqual(vb.array[4]);
             expect(typedArray[2]).toEqual(vb.array[8]);
             expect(typedArray instanceof Float32Array).toBeTruthy();
+        });
+        it("preserves normalized values in interleaved data", () => {
+            const vb = {
+                data: new Uint8Array([0, 102, 0, 153, 0, 204]),
+                size: 1,
+                type: Constants.UNSIGNED_BYTE,
+                byteOffset: 1,
+                byteStride: 2,
+                normalized: true,
+                totalVertices: 3,
+            };
+
+            const result = GetTypedArrayData(vb.data, vb.size, vb.type, vb.byteOffset, vb.byteStride, vb.totalVertices);
+            const expected = new Uint8Array([102, 153, 204]);
+            expect(result).toStrictEqual(expected);
         });
     });
 });
