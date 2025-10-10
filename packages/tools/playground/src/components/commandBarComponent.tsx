@@ -369,12 +369,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         items={versionOptions}
                     />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Examples" icon="examples" onClick={() => this.onExamples()} isActive={false} />
-                    <div
-                        className="language-button background-ts active inspector-v2-button"
-                        style={{ width: "220px", fontWeight: "bold" }}
-                        onClick={() => this.onToggleInspectorV2Mode()}
-                    >
-                        {this.state.isInspectorV2ModeEnabled ? "Back to Old Inspector ☹️" : "Try the New Inspector 😀"}
+                    <div className="language-button active inspector-v2-button" onClick={() => this.onToggleInspectorV2Mode()}>
+                        {this.state.isInspectorV2ModeEnabled ? "Back to Old Inspector" : "Try the New Inspector"}
                     </div>
                 </div>
             </div>
