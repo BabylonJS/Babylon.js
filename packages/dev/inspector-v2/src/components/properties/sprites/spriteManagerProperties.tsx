@@ -2,17 +2,18 @@ import type { FunctionComponent } from "react";
 
 import type { SpriteManager } from "core/Sprites/spriteManager";
 import type { ISelectionService } from "../../../services/selectionService";
-import { BoundProperty } from "../boundProperty";
-import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
-import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
+
+import { RenderingManager } from "core/Rendering/renderingManager";
+import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { RenderingManager } from "core/Rendering/renderingManager";
-import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
-import { AlphaModeOptions } from "shared-ui-components/constToOptionsMaps";
-import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { BoundProperty } from "../boundProperty";
+import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
 
 export const SpriteManagerGeneralProperties: FunctionComponent<{ spriteManager: SpriteManager; selectionService: ISelectionService }> = (props) => {
     const { spriteManager, selectionService } = props;
