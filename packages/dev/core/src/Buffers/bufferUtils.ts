@@ -282,7 +282,6 @@ export function GetFloatData(
  * @param type the component type
  * @param byteOffset the byte offset of the data
  * @param byteStride the byte stride of the data
- * @param normalized whether the data is normalized
  * @param totalVertices number of vertices in the buffer to take into account
  * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
  * @returns a typed array containing vertex data
@@ -293,7 +292,6 @@ export function GetTypedArrayData(
     type: number,
     byteOffset: number,
     byteStride: number,
-    normalized: boolean,
     totalVertices: number,
     forceCopy?: boolean
 ): VertexDataTypedArray {
