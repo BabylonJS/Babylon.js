@@ -10,8 +10,56 @@ import "core/Meshes/thinInstanceMesh";
 import { TmpVectors, Quaternion, Vector3 } from "core/Maths/math.vector";
 import { ConvertToRightHandedPosition, ConvertToRightHandedRotation } from "../glTFUtilities";
 
+import { Logger } from "core/Misc/logger";
+
+/**
+ * Defines which format of unofficial instance color should be exported
+ * @experimental This might be changed in future
+ */
+export enum GLTFExporterInstanceColorFormat {
+    /**
+     * Export instance color as RGB and ignore alpha channel,
+     * and emit a warning if mesh.hasVertexAlpha is true and color buffer is Color4.
+     */
+    RGBAndWarnOnAlpha,
+    /**
+     * Export instance color as RGB and ignore alpha channel without a warning
+     */
+    RGB,
+    /**
+     * Export instance color as RGBA
+     */
+    RGBA,
+    /**
+     * Export instance color as RGBA if mesh.hasVertexAlpha is true and color buffer is Color4, or export as RGB
+     */
+    AUTO,
+}
+
 const NAME = "EXT_mesh_gpu_instancing";
 
+function ColorBufferToRGBAToRGB(colorBuffer: Float32Array, instanceCount: number) {
+    const colorBufferRgb = new Float32Array(instanceCount * 3);
+
+    for (let i = 0; i < instanceCount; i++) {
+        colorBufferRgb[i * 3 + 0] = colorBuffer[i * 4 + 0];
+        colorBufferRgb[i * 3 + 1] = colorBuffer[i * 4 + 1];
+        colorBufferRgb[i * 3 + 2] = colorBuffer[i * 4 + 2];
+    }
+    return colorBufferRgb;
+}
+
+function ColorBufferToRGBToRGBA(colorBuffer: Float32Array, instanceCount: number) {
+    const colorBufferRgb = new Float32Array(instanceCount * 4);
+
+    for (let i = 0; i < instanceCount; i++) {
+        colorBufferRgb[i * 4 + 0] = colorBuffer[i * 3 + 0];
+        colorBufferRgb[i * 4 + 1] = colorBuffer[i * 3 + 1];
+        colorBufferRgb[i * 4 + 2] = colorBuffer[i * 3 + 2];
+        colorBufferRgb[i * 4 + 3] = 1;
+    }
+    return colorBufferRgb;
+}
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md)
  */
@@ -25,6 +73,24 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
 
     /** Defines whether this extension is required */
     public required = false;
+
+    /**
+     * Defines whether unofficial instance color should be exported
+     * To keep behavior compatible with previous versions, this defaults to false
+     * @experimental This might be changed in future
+     */
+    public exportInstanceColor = false;
+
+    /**
+     * Defines which format of unofficial instance color should be exported
+     * @experimental This might be changed in future
+     */
+    public instanceColorFormat = GLTFExporterInstanceColorFormat.RGBAndWarnOnAlpha;
+
+    /**
+     * Internal state to emit warning about instance color alpha once
+     */
+    private _instanceColorWarned = false;
 
     private _exporter: GLTFExporter;
 
@@ -122,6 +188,42 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     // do we need to write SCALE ?
                     if (hasAnyInstanceWorldScale) {
                         extension.attributes["SCALE"] = this._buildAccessor(scaleBuffer, AccessorType.VEC3, babylonNode.thinInstanceCount, bufferManager);
+                    }
+                    let colorBuffer = babylonNode._userThinInstanceBuffersStorage?.data?.instanceColor;
+                    if (colorBuffer && this.exportInstanceColor) {
+                        const format = this.instanceColorFormat;
+                        const instanceCount = babylonNode.thinInstanceCount;
+                        if (format === GLTFExporterInstanceColorFormat.RGBAndWarnOnAlpha) {
+                            if (babylonNode.hasVertexAlpha && colorBuffer.length === instanceCount * 4) {
+                                if (!this._instanceColorWarned) {
+                                    Logger.Warn("EXT_mesh_gpu_instancing: Exporting instance colors as RGB, alpha channel of instance color is not exported");
+                                    this._instanceColorWarned = true;
+                                }
+                                colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
+                            } else if (colorBuffer.length === instanceCount * 4) {
+                                colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
+                            }
+                            extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                        } else if (format === GLTFExporterInstanceColorFormat.RGB) {
+                            if (colorBuffer.length === instanceCount * 4) {
+                                colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
+                            }
+                            extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                        } else if (format === GLTFExporterInstanceColorFormat.RGBA) {
+                            if (colorBuffer.length === instanceCount * 3) {
+                                colorBuffer = ColorBufferToRGBToRGBA(colorBuffer, instanceCount);
+                            }
+                            extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC4, instanceCount, bufferManager);
+                        } else if (format === GLTFExporterInstanceColorFormat.AUTO) {
+                            if (babylonNode.hasVertexAlpha && colorBuffer.length === instanceCount * 4) {
+                                extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC4, instanceCount, bufferManager);
+                            } else if (colorBuffer.length === instanceCount * 4) {
+                                colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
+                                extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                            } else {
+                                extension.attributes["_COLOR"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                            }
+                        }
                     }
 
                     /* eslint-enable @typescript-eslint/naming-convention*/
