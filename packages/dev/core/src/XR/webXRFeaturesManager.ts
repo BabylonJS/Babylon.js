@@ -1,7 +1,28 @@
-import type { WebXRSessionManager } from "./webXRSessionManager";
-import type { IDisposable } from "../scene";
-import { Tools } from "../Misc/tools";
 import type { Observable } from "core/Misc/observable";
+import { Tools } from "../Misc/tools";
+import type { IDisposable } from "../scene";
+import type { WebXRAnchorSystem } from "./features/WebXRAnchorSystem";
+import type { WebXRBackgroundRemover } from "./features/WebXRBackgroundRemover";
+import type { WebXRControllerMovement } from "./features/WebXRControllerMovement";
+import type { WebXRControllerPhysics } from "./features/WebXRControllerPhysics";
+import type { WebXRControllerPointerSelection } from "./features/WebXRControllerPointerSelection";
+import type { WebXRDepthSensing } from "./features/WebXRDepthSensing";
+import type { WebXRDomOverlay } from "./features/WebXRDOMOverlay";
+import type { WebXREyeTracking } from "./features/WebXREyeTracking";
+import type { WebXRFeaturePointSystem } from "./features/WebXRFeaturePointSystem";
+import type { WebXRHandTracking } from "./features/WebXRHandTracking";
+import type { WebXRHitTest } from "./features/WebXRHitTest";
+import type { WebXRImageTracking } from "./features/WebXRImageTracking";
+import type { WebXRLayers } from "./features/WebXRLayers";
+import type { WebXRLightEstimation } from "./features/WebXRLightEstimation";
+import type { WebXRMeshDetector } from "./features/WebXRMeshDetector";
+import type { WebXRMotionControllerTeleportation } from "./features";
+import type { WebXRNearInteraction } from "./features/WebXRNearInteraction";
+import type { WebXRPlaneDetector } from "./features/WebXRPlaneDetector";
+import type { WebXRRawCameraAccess } from "./features/WebXRRawCameraAccess";
+import type { WebXRSpaceWarp } from "./features/WebXRSpaceWarp";
+import type { WebXRWalkingLocomotion } from "./features/WebXRWalkingLocomotion";
+import type { WebXRSessionManager } from "./webXRSessionManager";
 
 /**
  * Defining the interface required for a (webxr) feature
@@ -159,6 +180,38 @@ export class WebXRFeatureName {
      */
     public static readonly RAW_CAMERA_ACCESS = "xr-raw-camera-access";
 }
+
+export type WebXRFeatureNameType = (typeof WebXRFeatureName)[Exclude<keyof typeof WebXRFeatureName, "prototype">];
+
+export interface IWebXRFeatureNameTypeMap {
+    [WebXRFeatureName.ANCHOR_SYSTEM]: WebXRAnchorSystem;
+    [WebXRFeatureName.BACKGROUND_REMOVER]: WebXRBackgroundRemover;
+    [WebXRFeatureName.DEPTH_SENSING]: WebXRDepthSensing;
+    [WebXRFeatureName.DOM_OVERLAY]: WebXRDomOverlay;
+    [WebXRFeatureName.EYE_TRACKING]: WebXREyeTracking;
+    [WebXRFeatureName.FEATURE_POINTS]: WebXRFeaturePointSystem;
+    [WebXRFeatureName.HAND_TRACKING]: WebXRHandTracking;
+    [WebXRFeatureName.HIT_TEST]: WebXRHitTest;
+    [WebXRFeatureName.IMAGE_TRACKING]: WebXRImageTracking;
+    [WebXRFeatureName.LAYERS]: WebXRLayers;
+    [WebXRFeatureName.LIGHT_ESTIMATION]: WebXRLightEstimation;
+    [WebXRFeatureName.MESH_DETECTION]: WebXRMeshDetector;
+    [WebXRFeatureName.MOVEMENT]: WebXRControllerMovement;
+    [WebXRFeatureName.NEAR_INTERACTION]: WebXRNearInteraction;
+    [WebXRFeatureName.PHYSICS_CONTROLLERS]: WebXRControllerPhysics;
+    [WebXRFeatureName.PLANE_DETECTION]: WebXRPlaneDetector;
+    [WebXRFeatureName.POINTER_SELECTION]: WebXRControllerPointerSelection;
+    [WebXRFeatureName.RAW_CAMERA_ACCESS]: WebXRRawCameraAccess;
+    [WebXRFeatureName.SPACE_WARP]: WebXRSpaceWarp;
+    [WebXRFeatureName.TELEPORTATION]: WebXRMotionControllerTeleportation;
+    [WebXRFeatureName.WALKING_LOCOMOTION]: WebXRWalkingLocomotion;
+}
+
+/**
+ * Helper type to resolve the specific feature type based on the feature name,
+ * or fallback to IWebXRFeature if the feature name is not in the type map.
+ */
+export type ResolveWebXRFeature<T extends WebXRFeatureNameType> = T extends keyof IWebXRFeatureNameTypeMap ? IWebXRFeatureNameTypeMap[T] : IWebXRFeature;
 
 /**
  * Defining the constructor of a feature. Used to register the modules.
@@ -372,14 +425,14 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param required is this feature required to the app. If set to true the session init will fail if the feature is not available.
      * @returns a new constructed feature or throws an error if feature not found or conflicts with another enabled feature.
      */
-    public enableFeature(
+    public enableFeature<T extends WebXRFeatureNameType>(
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        featureName: string | { Name: string },
+        featureName: T | { Name: T },
         version: number | string = "latest",
         moduleOptions: any = {},
         attachIfPossible: boolean = true,
         required: boolean = true
-    ): IWebXRFeature {
+    ): ResolveWebXRFeature<T> {
         const name = typeof featureName === "string" ? featureName : featureName.Name;
         let versionToLoad = 0;
         if (typeof version === "string") {
@@ -446,13 +499,13 @@ export class WebXRFeaturesManager implements IDisposable {
                 this._features[name].featureImplementation.disableAutoAttach = true;
             }
 
-            return this._features[name].featureImplementation;
+            return this._features[name].featureImplementation as ResolveWebXRFeature<T>;
         } else {
             if (required) {
                 throw new Error("required feature not compatible");
             } else {
                 Tools.Warn(`Feature ${name} not compatible with the current environment/browser and was not enabled.`);
-                return constructed;
+                return constructed as ResolveWebXRFeature<T>;
             }
         }
     }
@@ -462,8 +515,8 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param featureName the name of the feature to load
      * @returns the feature class, if found
      */
-    public getEnabledFeature(featureName: string): IWebXRFeature {
-        return this._features[featureName] && this._features[featureName].featureImplementation;
+    public getEnabledFeature<T extends WebXRFeatureNameType>(featureName: T): ResolveWebXRFeature<T> {
+        return this._features[featureName] && (this._features[featureName].featureImplementation as ResolveWebXRFeature<T>);
     }
 
     /**
