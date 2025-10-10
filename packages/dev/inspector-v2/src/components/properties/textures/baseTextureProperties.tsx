@@ -112,25 +112,6 @@ const CoordinatesMode = [
     { label: "Spherical", value: Texture.SPHERICAL_MODE },
 ] as const satisfies DropdownOption<number>[];
 
-const SamplingMode = [
-    { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
-    { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
-
-    { label: "Linear & linear mip", value: Texture.LINEAR_LINEAR_MIPLINEAR }, // 3
-    { label: "Linear & nearest mip", value: Texture.LINEAR_LINEAR_MIPNEAREST }, // 11
-
-    { label: "Nearest & linear mip", value: Texture.NEAREST_NEAREST_MIPLINEAR }, // 8
-    { label: "Nearest & nearest mip", value: Texture.NEAREST_NEAREST_MIPNEAREST }, // 4
-
-    { label: "Nearest/Linear", value: Texture.NEAREST_LINEAR }, // 7
-    { label: "Nearest/Linear & linear mip", value: Texture.NEAREST_LINEAR_MIPLINEAR }, // 6
-    { label: "Nearest/Linear & nearest mip", value: Texture.NEAREST_LINEAR_MIPNEAREST }, // 5
-
-    { label: "Linear/Nearest", value: Texture.LINEAR_NEAREST }, // 12
-    { label: "Linear/Nearest & linear mip", value: Texture.LINEAR_NEAREST_MIPLINEAR }, // 10
-    { label: "Linear/Nearest & nearest mip", value: Texture.LINEAR_NEAREST_MIPNEAREST }, // 9
-] as const satisfies DropdownOption<number>[];
-
 export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: BaseTexture }> = (props) => {
     const { texture } = props;
 
@@ -165,7 +146,6 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
             <BoundProperty component={SyncedSliderPropertyLine} label="UV Set" target={texture} propertyKey="coordinatesIndex" min={0} max={3} step={1} />
             <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="coordinatesMode" options={CoordinatesMode} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Level" target={texture} propertyKey="level" min={0} max={2} step={0.01} />
-            <BoundProperty component={NumberDropdownPropertyLine} label="Sampling" target={texture} propertyKey="samplingMode" options={SamplingMode} />
         </>
     );
 };

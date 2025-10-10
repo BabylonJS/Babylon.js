@@ -1,5 +1,5 @@
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Button, Toolbar, ToolbarButton, makeStyles } from "@fluentui/react-components";
+import { Button, Toolbar, ToolbarButton, makeStyles, tokens } from "@fluentui/react-components";
 import { useRef, useState, useEffect, useCallback } from "react";
 import type { FunctionComponent } from "react";
 import { GetTextureDataAsync, WhenTextureReadyAsync } from "core/Misc/textureTools";
@@ -7,28 +7,29 @@ import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import type { Texture } from "core/Materials";
 
 const useStyles = makeStyles({
-    root: { display: "flex", flexDirection: "column", gap: "8px" },
+    root: {
+        display: "flex",
+        flexDirection: "column",
+    },
     controls: {
         display: "flex",
-        gap: "2px",
-        padding: "2px",
-        width: "100%",
-        justifyContent: "center",
+        gap: tokens.spacingHorizontalXS,
     },
     controlButton: {
         minWidth: "auto",
         flex: "1 1 0", // Equal flex grow/shrink with 0 basis
-        paddingVertical: "4px",
-        paddingHorizontal: "8px",
+        paddingVertical: tokens.spacingVerticalXS,
+        paddingHorizontal: tokens.spacingHorizontalS,
         overflow: "hidden",
         textOverflow: "ellipsis",
     },
     preview: {
-        border: "1px solid #ccc",
-        marginTop: "8px",
+        border: `1px solid ${tokens.colorNeutralStroke1}`,
+        marginTop: tokens.spacingVerticalXS,
         maxWidth: "100%",
         marginLeft: "auto",
         marginRight: "auto",
+        marginBottom: tokens.spacingVerticalS,
         display: "block",
     },
 });
@@ -40,7 +41,7 @@ const TextureChannelStates = {
     B: { R: false, G: false, B: true, A: false },
     A: { R: false, G: false, B: false, A: true },
     ALL: { R: true, G: true, B: true, A: true },
-};
+} as const;
 
 type TexturePreviewProps = {
     texture: BaseTexture;
@@ -52,7 +53,7 @@ export const TexturePreview: FunctionComponent<TexturePreviewProps> = (props) =>
     const { texture, width, height } = props;
     const classes = useStyles();
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [channels, setChannels] = useState(TextureChannelStates.ALL);
+    const [channels, setChannels] = useState<(typeof TextureChannelStates)[keyof typeof TextureChannelStates]>(TextureChannelStates.ALL);
     const [face, setFace] = useState(0);
     const internalTexture = useProperty(texture, "_texture");
 
