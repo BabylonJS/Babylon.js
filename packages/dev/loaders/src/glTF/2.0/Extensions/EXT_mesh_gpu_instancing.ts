@@ -128,4 +128,3 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
 
 unregisterGLTFExtension(NAME);
 registerGLTFExtension(NAME, true, (loader) => new EXT_mesh_gpu_instancing(loader));
-
