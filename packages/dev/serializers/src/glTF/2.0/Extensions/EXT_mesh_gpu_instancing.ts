@@ -193,6 +193,7 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                     if (colorBuffer && this.exportInstanceColor) {
                         const format = this.instanceColorFormat;
                         const instanceCount = babylonNode.thinInstanceCount;
+                        let accessorType: AccessorType | undefined;
                         if (format === GLTFExporterInstanceColorFormat.RGBAndWarnOnAlpha) {
                             if (babylonNode.hasVertexAlpha && colorBuffer.length === instanceCount * 4) {
                                 if (!this._instanceColorWarned) {
@@ -203,26 +204,29 @@ export class EXT_mesh_gpu_instancing implements IGLTFExporterExtensionV2 {
                             } else if (colorBuffer.length === instanceCount * 4) {
                                 colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
                             }
-                            extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                            accessorType = AccessorType.VEC3;
                         } else if (format === GLTFExporterInstanceColorFormat.RGB) {
                             if (colorBuffer.length === instanceCount * 4) {
                                 colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
                             }
-                            extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                            accessorType = AccessorType.VEC3;
                         } else if (format === GLTFExporterInstanceColorFormat.RGBA) {
                             if (colorBuffer.length === instanceCount * 3) {
                                 colorBuffer = ColorBufferToRGBToRGBA(colorBuffer, instanceCount);
                             }
-                            extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC4, instanceCount, bufferManager);
+                            accessorType = AccessorType.VEC4;
                         } else if (format === GLTFExporterInstanceColorFormat.AUTO) {
                             if (babylonNode.hasVertexAlpha && colorBuffer.length === instanceCount * 4) {
-                                extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC4, instanceCount, bufferManager);
+                                accessorType = AccessorType.VEC4;
                             } else if (colorBuffer.length === instanceCount * 4) {
                                 colorBuffer = ColorBufferToRGBAToRGB(colorBuffer, instanceCount);
-                                extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
-                            } else {
-                                extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, AccessorType.VEC3, instanceCount, bufferManager);
+                                accessorType = AccessorType.VEC3;
+                            } else if (colorBuffer.length === instanceCount * 3) {
+                                accessorType = AccessorType.VEC3;
                             }
+                        }
+                        if (accessorType) {
+                            extension.attributes["_COLOR_0"] = this._buildAccessor(colorBuffer, accessorType, instanceCount, bufferManager);
                         }
                     }
 
