@@ -1676,9 +1676,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
         let offset = index * this._vertexBufferSize;
 
-        this._vertexData[offset++] = particle.position.x + this.worldOffset.x;
-        this._vertexData[offset++] = particle.position.y + this.worldOffset.y;
-        this._vertexData[offset++] = particle.position.z + this.worldOffset.z;
+        TmpVectors.Vector3[0].copyFrom(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly);
+        this._vertexData[offset++] = particle.position.x + this.worldOffset.x - TmpVectors.Vector3[0].x;
+        this._vertexData[offset++] = particle.position.y + this.worldOffset.y - TmpVectors.Vector3[0].y;
+        this._vertexData[offset++] = particle.position.z + this.worldOffset.z - TmpVectors.Vector3[0].z;
         this._vertexData[offset++] = particle.color.r;
         this._vertexData[offset++] = particle.color.g;
         this._vertexData[offset++] = particle.color.b;
@@ -2209,9 +2210,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, this.spriteCellWidth / baseSize.width);
         }
 
-        // effect.setVector2("translationPivot", this.translationPivot);
+        effect.setVector2("translationPivot", this.translationPivot);
 
-        effect.setVector2("translationPivot", this.translationPivot.subtractToRef(this._scene!.floatingOriginOffset, TmpVectors.Vector2[0]));
         effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
         if (this._isBillboardBased && this._scene) {

@@ -2,7 +2,7 @@
 import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, serializeAsVector3 } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
 import type { Matrix } from "core/Maths/math.vector";
-import { Vector4, Vector3, TmpVectors } from "core/Maths/math.vector";
+import { Vector4, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
@@ -307,7 +307,6 @@ export class GridMaterial extends PushMaterial {
             this._activeEffect.setColor3("lineColor", this.lineColor);
 
             this._activeEffect.setVector3("gridOffset", this.gridOffset);
-            // this._activeEffect.setVector3("gridOffset", this.gridOffset.subtractToRef(this.getScene().floatingOriginOffset, TmpVectors.Vector3[0]));
 
             this._gridControl.x = this.gridRatio;
             this._gridControl.y = Math.round(this.majorUnitFrequency);
