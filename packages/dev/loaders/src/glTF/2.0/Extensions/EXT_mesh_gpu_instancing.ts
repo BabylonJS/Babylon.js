@@ -2,6 +2,7 @@ import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector"
 import type { Mesh } from "core/Meshes/mesh";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { Nullable } from "core/types";
+import { Logger } from "core/Misc/logger";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import type { INode } from "../glTFLoaderInterfaces";
@@ -117,6 +118,8 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                             (babylonMesh as Mesh).thinInstanceSetBuffer("color", colorBuffer, 3, true);
                         } else if (colorBuffer.length === instanceCount * 4) {
                             (babylonMesh as Mesh).thinInstanceSetBuffer("color", colorBuffer, 4, true);
+                        } else {
+                            Logger.Warn("Unexpected size of _COLOR_0 attribute for mesh " + babylonMesh.name);
                         }
                     }
                 }
