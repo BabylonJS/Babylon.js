@@ -105,9 +105,9 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         var NdotH: f32 = saturateEps(dot(N, info.H));
         var roughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(roughness);
-
+        var modifiedFresnel: vec3f = fresnel;
         #ifdef IRIDESCENCE
-            fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
+            modifiedFresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
         #endif
 
         var distribution: f32 = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
@@ -118,7 +118,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             var smithVisibility: f32 = smithVisibility_TrowbridgeReitzGGXFast(info.NdotL, info.NdotV, alphaG);
         #endif
 
-        var specTerm: vec3f = fresnel * distribution * smithVisibility;
+        var specTerm: vec3f = modifiedFresnel * distribution * smithVisibility;
         return specTerm * info.attenuation * info.NdotL * lightColor;
     }
 

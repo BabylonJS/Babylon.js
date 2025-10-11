@@ -207,7 +207,13 @@ export class AnimationController {
      */
     public dispose(): void {
         this.stopAnimation();
-        this._engine.getRenderingCanvas()?.remove();
+
+        // Offscreen canvas do not have .remove() as it doesn't inherit from Element
+        const canvas = this._engine.getRenderingCanvas();
+        if (canvas && canvas.remove) {
+            canvas.remove();
+        }
+
         this._engine.dispose();
         this._renderingManager.dispose();
         this._spritePacker.texture.dispose();

@@ -24,6 +24,7 @@ export type ComboBoxProps = {
  * @returns
  */
 export const ComboBox: FunctionComponent<ComboBoxProps> = (props) => {
+    ComboBox.displayName = "ComboBox";
     const comboId = useId();
     const styles = useStyles();
 

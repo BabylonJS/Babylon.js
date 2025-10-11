@@ -106,6 +106,16 @@ uniform vec2 vGeometryCoatNormalInfos;
 uniform mat4 geometryCoatNormalMatrix;
 #endif
 
+#ifdef THIN_FILM_WEIGHT
+uniform vec2 vThinFilmWeightInfos;
+uniform mat4 thinFilmWeightMatrix;
+#endif
+
+#ifdef THIN_FILM_THICKNESS
+uniform vec2 vThinFilmThicknessInfos;
+uniform mat4 thinFilmThicknessMatrix;
+#endif
+
 #ifdef GEOMETRY_OPACITY
 uniform mat4 geometryOpacityMatrix;
 uniform vec2 vGeometryOpacityInfos;

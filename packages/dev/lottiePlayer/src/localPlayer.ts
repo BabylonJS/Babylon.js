@@ -104,6 +104,11 @@ export class LocalPlayer {
             this._input.container.removeChild(this._canvas);
         }
 
+        if (this._animationController) {
+            this._animationController.dispose();
+            this._animationController = null;
+        }
+
         this._canvas = null;
 
         this._disposed = true;

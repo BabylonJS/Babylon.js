@@ -74,6 +74,8 @@ const useSearchBoxStyles = makeStyles({
  * @returns The search box component
  */
 export const SearchBox: FunctionComponent<SearchBoxProps> = (props) => {
+    SearchBox.displayName = "SearchBox";
+
     const classes = useSearchBoxStyles();
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [items, setItems] = useState(props.items);

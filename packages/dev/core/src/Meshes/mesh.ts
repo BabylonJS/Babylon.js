@@ -4877,8 +4877,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             const boundingBox = boundingInfo.boundingBox;
             if (!minVector || !maxVector) {
-                minVector = boundingBox.minimumWorld;
-                maxVector = boundingBox.maximumWorld;
+                minVector = boundingBox.minimumWorld.clone();
+                maxVector = boundingBox.maximumWorld.clone();
             } else {
                 minVector.minimizeInPlace(boundingBox.minimumWorld);
                 maxVector.maximizeInPlace(boundingBox.maximumWorld);

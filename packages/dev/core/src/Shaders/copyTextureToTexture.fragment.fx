@@ -8,7 +8,11 @@ varying vec2 vUV;
 
 void main(void) 
 {
+#ifdef NO_SAMPLER
+    vec4 color = texelFetch(textureSampler, ivec2(gl_FragCoord.xy), 0);
+#else
     vec4 color = texture2D(textureSampler, vUV);
+#endif
 
 #ifdef DEPTH_TEXTURE
     gl_FragDepth = color.r;

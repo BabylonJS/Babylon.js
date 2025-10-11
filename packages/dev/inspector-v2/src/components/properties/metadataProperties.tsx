@@ -1,7 +1,7 @@
 import type { FunctionComponent } from "react";
 
 import { Body1, Button, makeStyles, tokens, Tooltip } from "@fluentui/react-components";
-import { ArrowUndoRegular, ClearFormattingRegular, SaveRegular } from "@fluentui/react-icons";
+import { ArrowUndoRegular, BracesDismiss16Regular, BracesRegular, SaveRegular } from "@fluentui/react-icons";
 import { useMemo, useState } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
@@ -137,6 +137,11 @@ export interface IMetadataContainer {
 }
 
 const useStyles = makeStyles({
+    mainDiv: {
+        display: "flex",
+        flexDirection: "column",
+        gap: tokens.spacingVerticalXS,
+    },
     buttonDiv: {
         display: "grid",
         gridAutoFlow: "column",
@@ -173,10 +178,12 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
             <Collapse visible={canPreventObjectCorruption}>
                 <SwitchPropertyLine label="Prevent Object Corruption" value={isReadonly} onChange={setPreventObjectCorruption} />
             </Collapse>
-            <Textarea disabled={isReadonly} value={editedMetadata} onChange={setEditedMetadata} />
+            <LineContainer>
+                <Textarea disabled={isReadonly} value={editedMetadata} onChange={setEditedMetadata} />
+            </LineContainer>
             <ButtonLine
                 label="Populate glTF extras"
-                disabled={!IsParsable(editedMetadata) || HasGltfExtras(editedMetadata)}
+                disabled={!!editedMetadata && (!IsParsable(editedMetadata) || HasGltfExtras(editedMetadata))}
                 onClick={() => {
                     const isFormatted = Restringify(editedMetadata, true) === editedMetadata;
                     let withGLTFExtras = PopulateGLTFExtras(editedMetadata);
@@ -196,20 +203,10 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
                         <Button icon={<ArrowUndoRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => setEditedMetadata(stringifiedMetadata)} />
                     </Tooltip>
                     <Tooltip content="Format (Pretty Print)" relationship="label">
-                        <Button
-                            icon={
-                                <svg {...props} viewBox="0 0 20 20" fill="none" stroke="currentColor">
-                                    <text x="3" y="14" fontSize="14" fill="currentColor">
-                                        {"{ }"}
-                                    </text>
-                                </svg>
-                            }
-                            disabled={!isEditedMetadataJSON}
-                            onClick={() => setEditedMetadata(Restringify(editedMetadata, true))}
-                        ></Button>
+                        <Button icon={<BracesRegular />} disabled={!isEditedMetadataJSON} onClick={() => setEditedMetadata(Restringify(editedMetadata, true))}></Button>
                     </Tooltip>
-                    <Tooltip content="Clear Formatting" relationship="label">
-                        <Button icon={<ClearFormattingRegular />} disabled={!isEditedMetadataJSON} onClick={() => setEditedMetadata(Restringify(editedMetadata, false))} />
+                    <Tooltip content="Clear Formatting (Undo Pretty Print)" relationship="label">
+                        <Button icon={<BracesDismiss16Regular />} disabled={!isEditedMetadataJSON} onClick={() => setEditedMetadata(Restringify(editedMetadata, false))} />
                     </Tooltip>
                 </div>
             </LineContainer>

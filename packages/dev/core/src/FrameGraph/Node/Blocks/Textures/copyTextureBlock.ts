@@ -33,7 +33,7 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
 
         this.source.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
         this.target.addExcludedConnectionPointFromAllowedTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
-        this.output._typeConnectionSource = this.target;
+        this.output._typeConnectionSource = this.source;
 
         this._frameGraphTask = new FrameGraphCopyToTextureTask(name, frameGraph);
     }

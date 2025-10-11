@@ -5,7 +5,7 @@ import type { IDisposable, Nullable, Scene, TransformNode } from "core/index";
 import type { IGizmoService } from "../services/gizmoService";
 
 import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
-import { ArrowExpandRegular, ArrowMoveRegular, ArrowRotateClockwiseRegular, CubeRegular, GlobeRegular, SelectObjectRegular } from "@fluentui/react-icons";
+import { ArrowExpandRegular, ArrowRotateClockwiseRegular, CubeRegular, GlobeRegular, SelectObjectRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useState } from "react";
 
 import { Bone } from "core/Bones/bone";
@@ -15,6 +15,7 @@ import { GizmoManager } from "core/Gizmos/gizmoManager";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Node } from "core/node";
+import { TranslateIcon } from "shared-ui-components/fluent/icons";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
 import { useProperty } from "../hooks/compoundPropertyHooks";
@@ -137,7 +138,7 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
 
     return (
         <>
-            <ToggleButton title="Translate" checkedIcon={ArrowMoveRegular} value={gizmoMode === "translate"} onChange={() => updateGizmoMode("translate")} />
+            <ToggleButton title="Translate" checkedIcon={TranslateIcon} value={gizmoMode === "translate"} onChange={() => updateGizmoMode("translate")} />
             <ToggleButton title="Rotate" checkedIcon={ArrowRotateClockwiseRegular} value={gizmoMode === "rotate"} onChange={() => updateGizmoMode("rotate")} />
             <ToggleButton title="Scale" checkedIcon={ArrowExpandRegular} value={gizmoMode === "scale"} onChange={() => updateGizmoMode("scale")} />
             <ToggleButton title="Bounding Box" checkedIcon={SelectObjectRegular} value={gizmoMode === "boundingBox"} onChange={() => updateGizmoMode("boundingBox")} />
@@ -154,7 +155,7 @@ export const GizmoToolbar: FunctionComponent<{ scene: Scene; entity: unknown; gi
                                         onClick: toggleCoordinatesMode,
                                     }}
                                     size="small"
-                                    appearance="secondary"
+                                    appearance="transparent"
                                     shape="rounded"
                                     icon={coordinatesMode === GizmoCoordinatesMode.Local ? <CubeRegular /> : <GlobeRegular />}
                                 ></SplitButton>

@@ -105,6 +105,8 @@ export class GlobalState {
 
     deleteCustomBlock?: (blockRegistration: IBlockRegistration) => void;
 
+    clearCustomBlocks?: () => void;
+
     public get previewBackground(): string {
         return this._previewBackground;
     }
@@ -135,6 +137,7 @@ export class GlobalState {
         saveToSnippetServer?: () => void,
         addCustomBlock?: (serializedData: string) => void,
         deleteCustomBlock?: (blockRegistration: IBlockRegistration) => void,
+        clearCustomBlocks?: () => void,
         onLogRequiredObservable?: Observable<LogEntry>,
         onSaveEditorDataRequiredObservable?: Observable<void>
     ) {
@@ -179,6 +182,7 @@ export class GlobalState {
         this.reloadAssets = reloadAssets;
         this.addCustomBlock = addCustomBlock;
         this.deleteCustomBlock = deleteCustomBlock;
+        this.clearCustomBlocks = clearCustomBlocks;
 
         this.onLogRequiredObservable = onLogRequiredObservable ?? new Observable<LogEntry>();
         this.onSaveEditorDataRequiredObservable = onSaveEditorDataRequiredObservable ?? new Observable<void>();

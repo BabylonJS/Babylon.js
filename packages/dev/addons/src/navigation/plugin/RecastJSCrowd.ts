@@ -323,8 +323,6 @@ export class RecastJSCrowd implements ICrowd {
      * @param deltaTime in seconds
      */
     public update(deltaTime: number): void {
-        this._recastCrowd.update(deltaTime);
-
         if (deltaTime <= Epsilon) {
             return;
         }
