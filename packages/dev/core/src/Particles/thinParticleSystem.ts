@@ -2209,7 +2209,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, this.spriteCellWidth / baseSize.width);
         }
 
-        effect.setVector2("translationPivot", this.translationPivot);
+        // effect.setVector2("translationPivot", this.translationPivot);
+
+        effect.setVector2("translationPivot", this.translationPivot.subtractToRef(this._scene!.floatingOriginOffset, TmpVectors.Vector2[0]));
         effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
         if (this._isBillboardBased && this._scene) {
