@@ -2,6 +2,7 @@ import { Vector3, Quaternion, Matrix, TmpVectors } from "core/Maths/math.vector"
 import type { Mesh } from "core/Meshes/mesh";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { Nullable } from "core/types";
+import { Logger } from "core/Misc/logger";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import type { INode } from "../glTFLoaderInterfaces";
@@ -92,10 +93,11 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
             loadAttribute("TRANSLATION");
             loadAttribute("ROTATION");
             loadAttribute("SCALE");
+            loadAttribute("_COLOR_0");
 
             // eslint-disable-next-line github/no-then
             return await promise.then(async (babylonTransformNode) => {
-                const [translationBuffer, rotationBuffer, scaleBuffer] = await Promise.all(promises);
+                const [translationBuffer, rotationBuffer, scaleBuffer, colorBuffer] = await Promise.all(promises);
                 const matrices = new Float32Array(instanceCount * 16);
                 TmpVectors.Vector3[0].copyFromFloats(0, 0, 0); // translation
                 TmpVectors.Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
@@ -111,6 +113,15 @@ export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
                 }
                 for (const babylonMesh of node._primitiveBabylonMeshes!) {
                     (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
+                    if (colorBuffer) {
+                        if (colorBuffer.length === instanceCount * 3) {
+                            (babylonMesh as Mesh).thinInstanceSetBuffer("color", colorBuffer, 3, true);
+                        } else if (colorBuffer.length === instanceCount * 4) {
+                            (babylonMesh as Mesh).thinInstanceSetBuffer("color", colorBuffer, 4, true);
+                        } else {
+                            Logger.Warn("Unexpected size of _COLOR_0 attribute for mesh " + babylonMesh.name);
+                        }
+                    }
                 }
                 return babylonTransformNode;
             });
