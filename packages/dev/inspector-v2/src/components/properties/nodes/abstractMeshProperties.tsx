@@ -22,7 +22,6 @@ import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/proper
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
@@ -35,6 +34,7 @@ import { BoundProperty } from "../boundProperty";
 import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
+import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -84,8 +84,7 @@ export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMe
                 max={RenderingManager.MAX_RENDERINGGROUPS - 1}
                 step={1}
             />
-            {/* TODO: Placeholder should be a hex property line */}
-            <BoundProperty component={PlaceholderPropertyLine} label="TODO: Layer Mask" target={mesh} propertyKey="layerMask" />
+            <BoundProperty component={HexPropertyLine} label="Layer Mask" target={mesh} propertyKey="layerMask" />
         </>
     );
 };

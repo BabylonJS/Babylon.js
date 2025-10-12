@@ -23,6 +23,7 @@ import type { PrimitiveProps } from "./primitive";
 import { SpinButton } from "./spinButton";
 import { TextInput } from "./textInput";
 import { NumberDropdown } from "./dropdown";
+import { ColorHexValidatorFn } from "./utils";
 
 const useColorPickerStyles = makeStyles({
     container: {
@@ -180,8 +181,6 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
     );
 };
 
-const HEX_REGEX = RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8})$/);
-
 export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
     linearHex?: boolean;
     isLinearMode?: boolean;
@@ -203,7 +202,7 @@ export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
             disabled={linearHex ? !isLinearMode : false}
             className={classes.inputField}
             value={linearHex ? value.toLinearSpace().toHexString() : value.toHexString()}
-            validator={(val) => val != "" && HEX_REGEX.test(val)}
+            validator={ColorHexValidatorFn}
             onChange={(val) => (linearHex ? onChange(Color3.FromHexString(val).toGammaSpace()) : onChange(Color3.FromHexString(val)))}
             infoLabel={
                 title

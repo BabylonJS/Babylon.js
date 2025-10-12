@@ -8,11 +8,10 @@ import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { BoundProperty } from "../boundProperty";
-// import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { useAngleConverters } from "../../../hooks/settingsHooks";
+import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 
 const CameraModes = [
     { label: "Perspective", value: Camera.PERSPECTIVE_CAMERA },
@@ -36,9 +35,7 @@ export const CameraGeneralProperties: FunctionComponent<{ camera: Camera; settin
             <BoundProperty component={NumberInputPropertyLine} label="Near Plane" description="Anything closer than this will not be drawn." target={camera} propertyKey="minZ" />
             <BoundProperty component={NumberInputPropertyLine} label="Far Plane" description="Anything further than this will not be drawn." target={camera} propertyKey="maxZ" />
             <BoundProperty component={SyncedSliderPropertyLine} label="Inertia" target={camera} propertyKey="inertia" min={0} max={1} step={0.01} />
-            {/* TODO: Make HexPropertyLine work in the case of simply editing a hex value */}
-            {/* <BoundProperty component={HexPropertyLine} label="Layer Mask" target={camera} propertyKey="layerMask" /> */}
-            <PlaceholderPropertyLine label="Layer Mask" value={camera.layerMask} onChange={() => {}} />
+            <BoundProperty component={HexPropertyLine} label="Layer Mask" target={camera} propertyKey="layerMask" />
             <BoundProperty component={NumberDropdownPropertyLine} label="Mode" options={CameraModes} target={camera} propertyKey="mode" />
             <Collapse visible={mode === Camera.PERSPECTIVE_CAMERA}>
                 <BoundProperty
