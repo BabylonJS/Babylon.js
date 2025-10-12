@@ -1,5 +1,6 @@
 import { PropertyLine } from "./propertyLine";
-import { useEffect, useState, type FunctionComponent } from "react";
+import { useEffect, useState } from "react";
+import type { FunctionComponent } from "react";
 import type { NumberInputPropertyLineProps } from "./inputPropertyLine";
 import { TextInput } from "../../primitives/textInput";
 
