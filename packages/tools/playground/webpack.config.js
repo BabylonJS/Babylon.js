@@ -43,7 +43,7 @@ module.exports = (env) => {
                     return callback(null, "BABYLON");
                 }
 
-                if (context.includes("inspector-v2")) {
+                if (context.includes("inspector-v2") || context.includes("sharedUiComponents")) {
                     if (/^core\//.test(request)) {
                         return callback(null, "BABYLON");
                     } else if (/^loaders\//.test(request)) {
