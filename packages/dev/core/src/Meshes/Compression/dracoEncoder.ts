@@ -71,16 +71,7 @@ function PrepareAttributesForDraco(input: Mesh | Geometry, excludedAttributes?: 
         // Convert number[] to typed array, if needed.
         const vertexBuffer = input.getVertexBuffer(kind)!;
         const size = vertexBuffer.getSize();
-        const data = GetTypedArrayData(
-            vertexBuffer.getData()!,
-            size,
-            vertexBuffer.type,
-            vertexBuffer.byteOffset,
-            vertexBuffer.byteStride,
-            vertexBuffer.normalized,
-            input.getTotalVertices(),
-            true
-        );
+        const data = GetTypedArrayData(vertexBuffer.getData()!, size, vertexBuffer.type, vertexBuffer.byteOffset, vertexBuffer.byteStride, input.getTotalVertices(), true);
         attributes.push({ kind: kind, dracoName: GetDracoAttributeName(kind), size: size, data: data });
     }
 
