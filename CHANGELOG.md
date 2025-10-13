@@ -1,5 +1,43 @@
 # Changelog
 
+## 8.31.1
+
+### Core
+
+- Add particleSystem support to Floating Origin Mode - by [georginahalpern](https://github.com/georginahalpern) ([#17276](https://github.com/BabylonJS/Babylon.js/pull/17276))
+- Geometry Buffer Renderer: Fix crash in WebGPU when mesh has no normal attribute - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17279](https://github.com/BabylonJS/Babylon.js/pull/17279))
+- Texture: Fix empty texture after when in delay load mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17278](https://github.com/BabylonJS/Babylon.js/pull/17278))
+- Improve WebXR feature typing - by [docEdub](https://github.com/docEdub) ([#17271](https://github.com/BabylonJS/Babylon.js/pull/17271))
+- BufferUtils: Fix GetTypedArrayData for interleaved, normalized data - by [alexchuber](https://github.com/alexchuber) ([#17269](https://github.com/BabylonJS/Babylon.js/pull/17269))
+- Geometry: Fix copying VBs with irregular strides or offsets - by [alexchuber](https://github.com/alexchuber) ([#17265](https://github.com/BabylonJS/Babylon.js/pull/17265))
+- PBR Material: Fix dispersion in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17268](https://github.com/BabylonJS/Babylon.js/pull/17268))
+- Mesh: Fix MinMax function - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17266](https://github.com/BabylonJS/Babylon.js/pull/17266))
+- Moving BindLogDepth to pure file - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17262](https://github.com/BabylonJS/Babylon.js/pull/17262))
+- OpenPBR Thin Film Iridescence - by [MiiBond](https://github.com/MiiBond) ([#17228](https://github.com/BabylonJS/Babylon.js/pull/17228))
+- Add support for hand tracking microgestures - by [simonedevit](https://github.com/simonedevit) ([#17255](https://github.com/BabylonJS/Babylon.js/pull/17255))
+- FrameGraph: Adds CustomPostProcessTask +fix a couple of bugs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17258](https://github.com/BabylonJS/Babylon.js/pull/17258))
+
+### Inspector
+
+- OpenPBR Thin Film Iridescence - by [MiiBond](https://github.com/MiiBond) ([#17228](https://github.com/BabylonJS/Babylon.js/pull/17228))
+
+### Loaders
+
+- OpenPBR Thin Film Iridescence - by [MiiBond](https://github.com/MiiBond) ([#17228](https://github.com/BabylonJS/Babylon.js/pull/17228))
+
+### Playground
+
+- Inspector v2: Update Playground webpack config for sharedUiComponents - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17274](https://github.com/BabylonJS/Babylon.js/pull/17274))
+
+### Serializers
+
+- BufferUtils: Fix GetTypedArrayData for interleaved, normalized data - by [alexchuber](https://github.com/alexchuber) ([#17269](https://github.com/BabylonJS/Babylon.js/pull/17269))
+- OpenPBR Thin Film Iridescence - by [MiiBond](https://github.com/MiiBond) ([#17228](https://github.com/BabylonJS/Babylon.js/pull/17228))
+
+### Viewer
+
+- viewer variants now work with loaded models - by [alexandremottet](https://github.com/alexandremottet) ([#17267](https://github.com/BabylonJS/Babylon.js/pull/17267))
+
 ## 8.31.0
 
 ### Core
