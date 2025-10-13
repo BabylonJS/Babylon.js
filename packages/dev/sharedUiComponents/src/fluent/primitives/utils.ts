@@ -72,4 +72,6 @@ export function CalculatePrecision(value: number) {
 }
 
 const HEX_REGEX = RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8})$/);
-export const ColorHexValidatorFn = (val: string) => val != "" && HEX_REGEX.test(val);
+export function ColorHexValidatorFn(val: string) {
+    return val != "" && HEX_REGEX.test(val);
+}
