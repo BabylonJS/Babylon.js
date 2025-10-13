@@ -258,7 +258,7 @@ export class SpritePacker {
     /**
      * Updates the internal atlas texture with the information that has been added to the SpritePacker.
      */
-    public async updateAtlasTextureAsync(): Promise<void> {
+    public updateAtlasTexture(): void {
         if (!this._isDirty) {
             return; // No need to update if nothing has changed
         }
@@ -266,8 +266,6 @@ export class SpritePacker {
         // Update the internal texture with the new canvas content
         this._engine.updateDynamicTexture(this._spritesInternalTexture, this._spritesCanvas, false);
         this._isDirty = false;
-
-        await this.downloadAtlasAsync();
     }
 
     /**
@@ -276,56 +274,6 @@ export class SpritePacker {
     public releaseCanvas(): void {
         this._spritesCanvasContext = undefined as any; // Clear the context to allow garbage collection
         this._spritesCanvas = undefined as any; // Clear the canvas to allow garbage collection
-    }
-
-    /**
-     * Exports the current sprite atlas canvas to a Blob (PNG by default).
-     * If the internal canvas is an OffscreenCanvas we use its convertToBlob method; otherwise we fall back to HTMLCanvasElement.toBlob.
-     * @param type MIME type to export (defaults to image/png)
-     * @param quality Quality parameter for formats that support it (like image/jpeg, image/webp)
-     * @returns A promise resolving with the Blob, or undefined if the canvas has been released.
-     */
-    public async exportAtlasBlobAsync(type: string = "image/png", quality?: number): Promise<Blob | undefined> {
-        if (!this._spritesCanvas) {
-            return undefined;
-        }
-        // Ensure latest drawing is uploaded if caller expects current state; updateAtlasTexture only pushes to GPU, so nothing needed here.
-        if (this._spritesCanvas instanceof OffscreenCanvas) {
-            return await this._spritesCanvas.convertToBlob({ type, quality });
-        }
-        const htmlCanvas = this._spritesCanvas as HTMLCanvasElement;
-        return await new Promise<Blob | undefined>((resolve) => {
-            htmlCanvas.toBlob((blob) => resolve(blob ?? undefined), type, quality);
-        });
-    }
-
-    /**
-     * Triggers a download of the atlas as an image file in a browser environment.
-     * @param filename Desired filename (defaults sprite-atlas.png)
-     * @param type MIME type (defaults image/png)
-     * @param quality Optional quality for lossy formats
-     * @returns True if a download was triggered, false otherwise.
-     */
-    public async downloadAtlasAsync(filename: string = "sprite-atlas.png", type: string = "image/png", quality?: number): Promise<boolean> {
-        if (typeof document === "undefined") {
-            return false; // Not a browser environment
-        }
-        const blob = await this.exportAtlasBlobAsync(type, quality);
-        if (!blob) {
-            return false;
-        }
-        const url = URL.createObjectURL(blob);
-        try {
-            const anchor = document.createElement("a");
-            anchor.href = url;
-            anchor.download = filename;
-            document.body.appendChild(anchor);
-            anchor.click();
-            document.body.removeChild(anchor);
-        } finally {
-            URL.revokeObjectURL(url);
-        }
-        return true;
     }
 
     private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
