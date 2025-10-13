@@ -82,11 +82,6 @@ function GetOffsetMatrix(uniformName: string, mat: IMatrixLike, scene: Scene): I
             return OffsetWorldToRef(scene.floatingOriginOffset, mat, TempFinalMat);
         case "view":
             return OffsetViewToRef(mat, TempFinalMat);
-        case "invView":
-            InvertMatrixToRef(mat, TempMat1);
-            OffsetViewToRef(TempMat1, TempMat2);
-            InvertMatrixToRef(TempMat2, TempFinalMat);
-            return TempFinalMat;
         case "worldView":
             return OffsetWorldViewToRef(scene.floatingOriginOffset, mat, scene.getViewMatrix(), TempFinalMat);
         case "viewProjection":
