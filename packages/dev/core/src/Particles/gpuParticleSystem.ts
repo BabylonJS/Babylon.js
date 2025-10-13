@@ -1696,7 +1696,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
         effect.setTexture("diffuseSampler", this.particleTexture);
         effect.setVector2("translationPivot", this.translationPivot);
-        const worldOffset = this.worldOffset.subtractToRef(this._scene?.floatingOriginOffset || Vector3.Zero(), TmpVectors.Vector3[0]);
+        const worldOffset = this.worldOffset.subtractToRef(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly, TmpVectors.Vector3[0]);
         effect.setVector3("worldOffset", worldOffset);
         if (this.isLocal) {
             effect.setMatrix("emitterWM", emitterWM);
