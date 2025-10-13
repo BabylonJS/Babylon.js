@@ -12,7 +12,9 @@ precision highp float;
 #include<clipPlaneVertexDeclaration>
 
 attribute vec3 position;
-attribute vec3 normal;
+#ifdef HAS_NORMAL_ATTRIBUTE
+	attribute vec3 normal;
+#endif
 
 #ifdef NEED_UV
 	varying vec2 vUV;
@@ -77,7 +79,11 @@ varying vec4 vPreviousPosition;
 void main(void)
 {
     vec3 positionUpdated = position;
+#ifdef HAS_NORMAL_ATTRIBUTE
     vec3 normalUpdated = normal;
+#else
+    vec3 normalUpdated = vec3(0.0, 0.0, 0.0);
+#endif
 #ifdef UV1
     vec2 uvUpdated = uv;
 #endif

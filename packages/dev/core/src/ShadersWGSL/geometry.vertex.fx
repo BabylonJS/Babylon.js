@@ -10,7 +10,9 @@
 #include<clipPlaneVertexDeclaration>
 
 attribute position: vec3f;
-attribute normal: vec3f;
+#ifdef HAS_NORMAL_ATTRIBUTE
+	attribute normal: vec3f;
+#endif
 
 #ifdef NEED_UV
 	varying vUV: vec2f;
@@ -78,7 +80,11 @@ varying vPreviousPosition: vec4f;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
     var positionUpdated: vec3f = input.position;
+#ifdef HAS_NORMAL_ATTRIBUTE
     var normalUpdated: vec3f = input.normal;
+#else
+    var normalUpdated: vec3f = vec3f(0.0, 0.0, 0.0);
+#endif
 #ifdef UV1
     var uvUpdated: vec2f = input.uv;
 #endif
