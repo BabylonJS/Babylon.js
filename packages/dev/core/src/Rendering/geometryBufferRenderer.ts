@@ -552,8 +552,14 @@ export class GeometryBufferRenderer {
         }
 
         const defines = [];
-        const attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
+        const attribs = [VertexBuffer.PositionKind];
         const mesh = subMesh.getMesh();
+        const hasNormals = mesh.isVerticesDataPresent(VertexBuffer.NormalKind);
+
+        if (hasNormals) {
+            defines.push("#define HAS_NORMAL_ATTRIBUTE");
+            attribs.push(VertexBuffer.NormalKind);
+        }
 
         let uv1 = false;
         let uv2 = false;
