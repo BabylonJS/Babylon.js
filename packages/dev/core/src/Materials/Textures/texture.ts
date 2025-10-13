@@ -617,14 +617,23 @@ export class Texture extends BaseTexture {
             return;
         }
 
+        let url = this.url;
+
+        if (!url && (this.name.indexOf("://") > 0 || this.name.startsWith("data:"))) {
+            // Some textures are serialized with an empty url and use name instead for storing the url.
+            // When created without delayed load, the url is set properly because it is passed to the constructor and the texture is created right away.
+            // But when created with delayed load, the url property is overwritten to "" (because it is the value in the serialized data) when the properties are parsed (see SerializationHelper.Parse).
+            url = this.name;
+        }
+
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer, this.isCube);
+        this._texture = this._getFromCache(url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer, this.isCube);
 
         if (!this._texture) {
             this._texture = scene
                 .getEngine()
                 .createTexture(
-                    this.url,
+                    url,
                     this._noMipmap,
                     this._invertY,
                     scene,
