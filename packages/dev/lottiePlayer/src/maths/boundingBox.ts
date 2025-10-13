@@ -1,5 +1,7 @@
 import type { RawBezier, RawElement, RawFont, RawPathShape, RawRectangleShape, RawStrokeShape, RawTextData, RawTextDocument } from "../parsing/rawTypes";
 
+const Points: { x: number; y: number }[] = [];
+
 /**
  * Represents a bounding box for a shape in the animation.
  */
@@ -22,6 +24,12 @@ export type BoundingBox = {
      * Optional: Canvas2D text metrics for precise vertical alignment
      */
     actualBoundingBoxDescent?: number;
+    /** Optional points */
+    points: { x: number; y: number }[];
+    /** BoxX displacement */
+    displacementX: number;
+    /** BoxY displacement */
+    displacementY: number;
 };
 
 // Corners of the bounding box
@@ -57,11 +65,15 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
     }
 
     return {
-        width: Math.ceil(boxCorners.maxX - boxCorners.minX) + extraPadding,
-        height: Math.ceil(boxCorners.maxY - boxCorners.minY) + extraPadding,
-        centerX: Math.ceil((boxCorners.maxX + boxCorners.minX) / 2),
-        centerY: Math.ceil((boxCorners.maxY + boxCorners.minY) / 2),
+        width: Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX) + extraPadding,
+        height: Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY) + extraPadding,
+        // Bounding boxes may not be centered around (0,0) themselves
+        centerX: (Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX)) / 2 - (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2,
+        centerY: (Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY)) / 2 - (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2,
+        displacementX: (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2,
+        displacementY: (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2,
         strokeInset: 0,
+        points: Points,
     };
 }
 
@@ -125,6 +137,9 @@ export function GetTextBoundingBox(
         strokeInset: 0, // Text bounding box ignores stroke padding here
         actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
         actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,
+        displacementX: 0,
+        displacementY: 0,
+        points: Points,
     };
 }
 
@@ -284,6 +299,8 @@ function BezierPoint(t: number, p0: number, p1: number, p2: number, p3: number):
 }
 
 function UpdateBoxCorners(boxCorners: Corners, x: number, y: number): void {
+    Points.push({ x: x, y: y });
+
     if (x < boxCorners.minX) {
         boxCorners.minX = x;
     }

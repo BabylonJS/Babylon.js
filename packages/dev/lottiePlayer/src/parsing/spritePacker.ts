@@ -62,16 +62,6 @@ export type SpriteAtlasInfo = {
 };
 
 /**
- * Information about a shaped and its associated fills, used to render elements in the correct order
- */
-type RenderElement = {
-    /** The shape to render */
-    shape: RawElement;
-    /** Any fills that affect this shape */
-    fills: RawElement[];
-};
-
-/**
  * Information about a gradient stop.
  * Used for gradient fills when adding vector shapes to the sprite atlas.
  */
@@ -133,8 +123,8 @@ export class SpritePacker {
         this._variables = variables;
         this._configuration = configuration;
         this._isDirty = false;
-        this._currentX = 0;
-        this._currentY = 0;
+        this._currentX = this._configuration.gapSize;
+        this._currentY = this._configuration.gapSize;
         this._maxRowHeight = 0;
 
         if (isHtmlCanvas) {
@@ -185,8 +175,8 @@ export class SpritePacker {
 
         // Check if the sprite fits in the current row
         if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasWidth) {
-            this._currentX = 0;
-            this._currentY += this._maxRowHeight; // Add a gap between sprites to avoid bleeding
+            this._currentX = this._configuration.gapSize;
+            this._currentY += this._maxRowHeight + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
             this._maxRowHeight = 0;
         }
 
@@ -201,8 +191,8 @@ export class SpritePacker {
         this._spriteAtlasInfo.widthPx = boundingBox.width;
         this._spriteAtlasInfo.heightPx = boundingBox.height;
 
-        this._spriteAtlasInfo.centerX = boundingBox.centerX;
-        this._spriteAtlasInfo.centerY = boundingBox.centerY;
+        this._spriteAtlasInfo.centerX = boundingBox.displacementX;
+        this._spriteAtlasInfo.centerY = boundingBox.displacementY;
 
         // Advance the current position for the next sprite
         this._currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
@@ -239,8 +229,8 @@ export class SpritePacker {
         // Find the position to draw the text
         // If the text doesn't fit in the current row, move to the next row
         if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasWidth) {
-            this._currentX = 0;
-            this._currentY += this._maxRowHeight; // Add a gap between sprites to avoid bleeding
+            this._currentX = this._configuration.gapSize;
+            this._currentY += this._maxRowHeight + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
             this._maxRowHeight = 0;
         }
 
@@ -268,7 +258,7 @@ export class SpritePacker {
     /**
      * Updates the internal atlas texture with the information that has been added to the SpritePacker.
      */
-    public updateAtlasTexture(): void {
+    public async updateAtlasTextureAsync(): Promise<void> {
         if (!this._isDirty) {
             return; // No need to update if nothing has changed
         }
@@ -276,6 +266,8 @@ export class SpritePacker {
         // Update the internal texture with the new canvas content
         this._engine.updateDynamicTexture(this._spritesInternalTexture, this._spritesCanvas, false);
         this._isDirty = false;
+
+        await this.downloadAtlasAsync();
     }
 
     /**
@@ -286,38 +278,54 @@ export class SpritePacker {
         this._spritesCanvas = undefined as any; // Clear the canvas to allow garbage collection
     }
 
-    private _reorderElementsForDraw(rawElements: RawElement[]): RenderElement[] {
-        const reorderedElements: RenderElement[] = [];
-        // Create the groupings between the shapes and their fills
-        for (let i = 0; i < rawElements.length; i++) {
-            const element = rawElements[i];
-            if (element.ty === "rc" || element.ty === "sh" || element.ty === "st") {
-                const skip = this._createRenderElement(rawElements, i, reorderedElements);
-                i += skip;
-            }
+    /**
+     * Exports the current sprite atlas canvas to a Blob (PNG by default).
+     * If the internal canvas is an OffscreenCanvas we use its convertToBlob method; otherwise we fall back to HTMLCanvasElement.toBlob.
+     * @param type MIME type to export (defaults to image/png)
+     * @param quality Quality parameter for formats that support it (like image/jpeg, image/webp)
+     * @returns A promise resolving with the Blob, or undefined if the canvas has been released.
+     */
+    public async exportAtlasBlobAsync(type: string = "image/png", quality?: number): Promise<Blob | undefined> {
+        if (!this._spritesCanvas) {
+            return undefined;
         }
-
-        return reorderedElements;
+        // Ensure latest drawing is uploaded if caller expects current state; updateAtlasTexture only pushes to GPU, so nothing needed here.
+        if (this._spritesCanvas instanceof OffscreenCanvas) {
+            return await this._spritesCanvas.convertToBlob({ type, quality });
+        }
+        const htmlCanvas = this._spritesCanvas as HTMLCanvasElement;
+        return await new Promise<Blob | undefined>((resolve) => {
+            htmlCanvas.toBlob((blob) => resolve(blob ?? undefined), type, quality);
+        });
     }
 
-    private _createRenderElement(originalData: RawElement[], index: number, reorderedData: RenderElement[]): number {
-        const renderElement: RenderElement = {
-            shape: originalData[index],
-            fills: [],
-        };
-
-        let skip = 0;
-        for (let i = index + 1; i < originalData.length; i++) {
-            if (originalData[i].ty === "fl" || originalData[i].ty === "gf") {
-                renderElement.fills.unshift(originalData[i]);
-                skip++;
-            } else {
-                break;
-            }
+    /**
+     * Triggers a download of the atlas as an image file in a browser environment.
+     * @param filename Desired filename (defaults sprite-atlas.png)
+     * @param type MIME type (defaults image/png)
+     * @param quality Optional quality for lossy formats
+     * @returns True if a download was triggered, false otherwise.
+     */
+    public async downloadAtlasAsync(filename: string = "sprite-atlas.png", type: string = "image/png", quality?: number): Promise<boolean> {
+        if (typeof document === "undefined") {
+            return false; // Not a browser environment
         }
-
-        reorderedData.unshift(renderElement);
-        return skip;
+        const blob = await this.exportAtlasBlobAsync(type, quality);
+        if (!blob) {
+            return false;
+        }
+        const url = URL.createObjectURL(blob);
+        try {
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = filename;
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+        return true;
     }
 
     private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
@@ -327,35 +335,11 @@ export class SpritePacker {
         this._spritesCanvasContext.translate(this._currentX + Math.ceil(boundingBox.strokeInset / 2), this._currentY + Math.ceil(boundingBox.strokeInset / 2));
         this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
 
+        // Draw a semi-transparent purple bounding box overlay for debugging/visualization.
+        //this._spritesCanvasContext.fillStyle = "rgba(128, 0, 128, 0.5)"; // semi transparent purple
+        //this._spritesCanvasContext.fillRect(0, 0, boundingBox.width, boundingBox.height);
+
         this._spritesCanvasContext.beginPath();
-
-        // const reorderedElements = this._reorderElementsForDraw(rawElements);
-        // for (let i = 0; i < reorderedElements.length; i++) {
-        //     const elementToRender = reorderedElements[i];
-        //     switch (elementToRender.shape.ty) {
-        //         case "rc":
-        //             this._drawRectangle(elementToRender.shape as RawRectangleShape);
-        //             break;
-        //         case "sh":
-        //             this._drawPath(elementToRender.shape as RawPathShape, boundingBox);
-        //             break;
-        //         case "st":
-        //             this._drawStroke(elementToRender.shape as RawStrokeShape);
-        //             break;
-        //     }
-
-        //     for (let j = 0; j < elementToRender.fills.length; j++) {
-        //         const fill = elementToRender.fills[j];
-        //         switch (fill.ty) {
-        //             case "fl":
-        //                 this._drawFill(fill as RawFillShape);
-        //                 break;
-        //             case "gf":
-        //                 this._drawGradientFill(fill as RawGradientFillShape, boundingBox);
-        //                 break;
-        //         }
-        //     }
-        // }
 
         for (let i = 0; i < rawElements.length; i++) {
             const shape = rawElements[i];
@@ -392,10 +376,8 @@ export class SpritePacker {
             return;
         }
 
-        const ctx = this._spritesCanvasContext;
-
-        ctx.translate(this._currentX, this._currentY);
-        ctx.scale(scalingFactor.x, scalingFactor.y);
+        this._spritesCanvasContext.translate(this._currentX, this._currentY);
+        this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
 
         let textInfo: RawTextDocument | undefined = undefined;
         textInfo = textData.d.k[0].s as RawTextDocument;
@@ -404,18 +386,18 @@ export class SpritePacker {
             const rawFillStyle = textInfo.fc;
             if (Array.isArray(rawFillStyle)) {
                 // If the fill style is an array, we assume it's a color array
-                ctx.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
+                this._spritesCanvasContext.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
             } else {
                 // If it's a string, we need to get the value from the variables map
                 const variableFillStyle = this._variables.get(rawFillStyle);
                 if (variableFillStyle !== undefined) {
-                    ctx.fillStyle = variableFillStyle;
+                    this._spritesCanvasContext.fillStyle = variableFillStyle;
                 }
             }
         }
 
         if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
-            ctx.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
+            this._spritesCanvasContext.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
         }
 
         // Text is supported as a possible variable (for localization for example)
@@ -426,12 +408,16 @@ export class SpritePacker {
             text = variableText;
         }
 
-        ctx.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
+        this._spritesCanvasContext.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
         if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0 && textInfo.of === true) {
-            ctx.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
+            this._spritesCanvasContext.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
         }
 
-        ctx.restore();
+        // Draw a semi-transparent purple bounding box overlay for debugging/visualization.
+        //this._spritesCanvasContext.fillStyle = "rgba(128, 0, 128, 0.5)"; // semi transparent purple
+        //this._spritesCanvasContext.fillRect(0, 0, boundingBox.width, boundingBox.height);
+
+        this._spritesCanvasContext.restore();
     }
 
     private _drawRectangle(shape: RawRectangleShape): void {
@@ -449,8 +435,8 @@ export class SpritePacker {
         // The path data has to be translated to the center of the bounding box
         // If the paths have stroke, we need to account for the stroke width
         const pathData = shape.ks.k as RawBezier;
-        const xTranslate = boundingBox.width / 2 - boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
-        const yTranslate = boundingBox.height / 2 - boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
+        const xTranslate = boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
+        const yTranslate = boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
 
         const vertices = pathData.v;
         const inTangents = pathData.i;
@@ -581,8 +567,8 @@ export class SpritePacker {
 
     private _drawLinearGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
         // We need to translate the gradient to the center of the bounding box
-        const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
-        const yTranslate = boundingBox.height / 2 - boundingBox.centerY;
+        const xTranslate = boundingBox.centerX;
+        const yTranslate = boundingBox.centerY;
 
         // Create the gradient
         const startPoint = fill.s.k as number[];
@@ -602,8 +588,8 @@ export class SpritePacker {
 
     private _drawRadialGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
         // We need to translate the gradient to the center of the bounding box
-        const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
-        const yTranslate = boundingBox.height / 2 - boundingBox.centerY;
+        const xTranslate = boundingBox.centerX;
+        const yTranslate = boundingBox.centerY;
 
         // Create the gradient
         const startPoint = fill.s.k as number[];
