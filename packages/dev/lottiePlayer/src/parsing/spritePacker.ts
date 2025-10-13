@@ -175,8 +175,9 @@ export class SpritePacker {
 
         // Check if the sprite fits in the current row
         if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasWidth) {
+            // Add a gap between sprites to avoid bleeding issues
             this._currentX = this._configuration.gapSize;
-            this._currentY += this._maxRowHeight + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
+            this._currentY += this._maxRowHeight + this._configuration.gapSize;
             this._maxRowHeight = 0;
         }
 
@@ -229,8 +230,9 @@ export class SpritePacker {
         // Find the position to draw the text
         // If the text doesn't fit in the current row, move to the next row
         if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasWidth) {
+            // Add a gap between sprites to avoid bleeding issues
             this._currentX = this._configuration.gapSize;
-            this._currentY += this._maxRowHeight + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
+            this._currentY += this._maxRowHeight + this._configuration.gapSize;
             this._maxRowHeight = 0;
         }
 
@@ -245,8 +247,8 @@ export class SpritePacker {
         this._spriteAtlasInfo.widthPx = boundingBox.width;
         this._spriteAtlasInfo.heightPx = boundingBox.height;
 
-        this._spriteAtlasInfo.centerX = boundingBox.centerX;
-        this._spriteAtlasInfo.centerY = boundingBox.centerY;
+        this._spriteAtlasInfo.centerX = boundingBox.offsetX;
+        this._spriteAtlasInfo.centerY = boundingBox.offsetY;
 
         // Advance the current position for the next sprite
         this._currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
@@ -282,10 +284,6 @@ export class SpritePacker {
 
         this._spritesCanvasContext.translate(this._currentX + Math.ceil(boundingBox.strokeInset / 2), this._currentY + Math.ceil(boundingBox.strokeInset / 2));
         this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
-
-        // Draw a semi-transparent purple bounding box overlay for debugging/visualization.
-        //this._spritesCanvasContext.fillStyle = "rgba(128, 0, 128, 0.5)"; // semi transparent purple
-        //this._spritesCanvasContext.fillRect(0, 0, boundingBox.width, boundingBox.height);
 
         this._spritesCanvasContext.beginPath();
 
