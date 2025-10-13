@@ -10,4 +10,9 @@ export type SPLATLoadingOptions = {
      * Spatial Y Flip for splat position and orientation
      */
     flipY?: boolean;
+    /**
+     * URL to load fflate from. If null or undefined, will load from unpkg.com
+     * (https://unpkg.com/fflate/umd/index.js)
+     */
+    deflateURL?: string;
 };
