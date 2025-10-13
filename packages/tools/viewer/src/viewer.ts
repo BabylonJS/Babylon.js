@@ -741,15 +741,9 @@ export type Model = IDisposable & {
     makeActive(options?: ActivateModelOptions): void;
 
     /**
-     * Selects a material variant for the model.
-     * @param variantName The name of the material variant to select.
+     * The selected material variant.
      */
-    selectVariant(variantName: string): void;
-
-    /**
-     * The currently selected material variant.
-     */
-    selectedVariant: Nullable<string>;
+    selectedMaterialVariant: Nullable<string>;
 };
 
 type ModelInternal = Model & {
