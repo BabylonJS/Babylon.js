@@ -16,7 +16,7 @@ import type { WebXRImageTracking, IWebXRImageTrackingOptions } from "./features/
 import type { WebXRLayers, IWebXRLayersOptions } from "./features/WebXRLayers";
 import type { WebXRLightEstimation, IWebXRLightEstimationOptions } from "./features/WebXRLightEstimation";
 import type { WebXRMeshDetector, IWebXRMeshDetectorOptions } from "./features/WebXRMeshDetector";
-import type { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from "./features";
+import type { WebXRMotionControllerTeleportation, IWebXRTeleportationOptions } from "./features/WebXRControllerTeleportation";
 import type { WebXRNearInteraction, IWebXRNearInteractionOptions } from "./features/WebXRNearInteraction";
 import type { WebXRPlaneDetector, IWebXRPlaneDetectorOptions } from "./features/WebXRPlaneDetector";
 import type { WebXRRawCameraAccess, IWebXRRawCameraAccessOptions } from "./features/WebXRRawCameraAccess";
