@@ -56,8 +56,8 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         }
     }
 
-    const width = Math.ceil(Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX));
-    const height = Math.ceil(Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY));
+    const width = Math.ceil(Math.abs(boxCorners.maxX)) + Math.ceil(Math.abs(boxCorners.minX));
+    const height = Math.ceil(Math.abs(boxCorners.maxY)) + Math.ceil(Math.abs(boxCorners.minY));
 
     const offsetX = (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2;
     const offsetY = (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2;
