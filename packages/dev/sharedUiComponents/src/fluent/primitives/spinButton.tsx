@@ -27,7 +27,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const lastCommittedValue = useRef(props.value);
     // step and forceInt are not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
     const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
-    const precision = Math.min(4, step !== undefined ? CalculatePrecision(step) : 2); // If no step, set precision to 2. Regardless, cap precision at 4 to avoid wild numbers
+    const precision = Math.min(4, step !== undefined ? Math.max(0, CalculatePrecision(step)) : 2); // If no step, set precision to 2. Regardless, cap precision at 4 to avoid wild numbers
 
     useEffect(() => {
         if (props.value !== lastCommittedValue.current) {
