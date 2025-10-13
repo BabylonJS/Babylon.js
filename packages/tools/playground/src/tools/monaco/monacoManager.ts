@@ -784,7 +784,6 @@ export { Playground };`;
 
     public setTagCandidates(candidates: { name: string; tagName: string }[] | undefined) {
         this._codeAnalysis.setTagCandidates(candidates);
-        this._completions.setTagCandidates(candidates);
     }
 
     /**
@@ -821,13 +820,24 @@ export { Playground };`;
 
         const selection = editor.getSelection();
         if (selection) {
-            editor.executeEdits("snippet", [
-                {
-                    range: selection,
-                    text: template.insertText,
-                    forceMoveMarkers: true,
-                },
-            ]);
+            const snippetController = editor.getContribution("snippetController2") as any;
+            if (snippetController) {
+                snippetController.insert(template.insertText, {
+                    overwriteBefore: 0,
+                    overwriteAfter: 0,
+                    undoStopBefore: true,
+                    undoStopAfter: true,
+                    adjustWhitespace: true,
+                });
+            } else {
+                editor.executeEdits("snippet", [
+                    {
+                        range: selection,
+                        text: template.insertText,
+                        forceMoveMarkers: true,
+                    },
+                ]);
+            }
         }
     }
 
