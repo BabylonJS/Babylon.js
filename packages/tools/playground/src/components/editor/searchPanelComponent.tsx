@@ -1,6 +1,7 @@
 // components/searchPanel.tsx
 /* eslint-disable jsdoc/require-jsdoc */
 import * as React from "react";
+import { useEffect } from "react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import { debounce } from "ts-debounce";
 import RegexIcon from "./icons/regex.svg";
@@ -35,6 +36,13 @@ export const SearchPanel: React.FC<{
     const [useRegex, setUseRegex] = React.useState(false);
     const [matchCase, setMatchCase] = React.useState(false);
     const [wholeWord, setWholeWord] = React.useState(false);
+    const searchRef = React.useRef<HTMLTextAreaElement>(null);
+    useEffect(() => {
+        if (searchRef.current) {
+            searchRef.current.focus();
+            searchRef.current.setSelectionRange(query.length, query.length);
+        }
+    }, []);
 
     const [results, setResults] = React.useState<ResultsByFile>({});
     const [isSearching, setIsSearching] = React.useState(false);
@@ -206,6 +214,7 @@ export const SearchPanel: React.FC<{
                 <div className="pg-search-row">
                     <textarea
                         id="pg-search-input"
+                        ref={searchRef}
                         className="pg-search-input"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
