@@ -1658,7 +1658,7 @@ export class Viewer implements IDisposable {
                 makeActive: (options?: ActivateModelOptions) => {
                     this._setActiveModel(model, options);
                 },
-                selectVariant: (variantName: string) => {
+                set selectMaterialVariant (variantName: string) {
                     if (materialVariantsController) {
                         let value: Nullable<string> = variantName;
                         if (!value) {
