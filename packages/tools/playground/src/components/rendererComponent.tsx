@@ -20,10 +20,14 @@ interface IRenderingComponentProps {
     globalState: GlobalState;
 }
 
+interface IRenderingComponentState {
+    preferInspector: boolean;
+}
+
 /**
  *
  */
-export class RenderingComponent extends React.Component<IRenderingComponentProps> {
+export class RenderingComponent extends React.Component<IRenderingComponentProps, IRenderingComponentState> {
     /** Engine instance for current run */
     private _engine!: Nullable<Engine>;
     /** Active scene */
@@ -39,6 +43,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     public constructor(props: IRenderingComponentProps) {
         super(props);
         this._canvasRef = React.createRef();
+        this.state = {
+            preferInspector: false,
+        };
 
         // Create the global handleException
         (window as any).handleException = (e: Error) => {
@@ -60,10 +67,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._downloadManager.downloadAsync();
         });
 
-        this.props.globalState.onInspectorRequiredObservable.add(async () => {
+        this.props.globalState.onInspectorRequiredObservable.add(async (forceState = undefined) => {
             if (!this._scene) {
                 return;
             }
+            this.setState((prevState) => ({ preferInspector: forceState !== undefined ? forceState : !prevState.preferInspector }));
 
             if (InspectorV2ModulePromise) {
                 const inspectorV2Module = await InspectorV2ModulePromise;
@@ -293,6 +301,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             this._preventReentrancy = false;
             this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+
+            // Rehydrate inspector
+            if (this.state.preferInspector) {
+                this.props.globalState.onInspectorRequiredObservable.notifyObservers(this.state.preferInspector);
+            }
             return;
         } catch (e) {
             (window as any).handleException(e as Error);
