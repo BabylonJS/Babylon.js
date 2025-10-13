@@ -13,7 +13,7 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
-    const fileUrl = `./localDev/FRE_Intro_new_icons_HC_04.json`;
+    const fileUrl = `https://assets.babylonjs.com/lottie/${filename}`;
 
     // Whether to use a web worker for rendering or not, defaults to true
     const useWorkerParam = searchParams.get("useworker");
