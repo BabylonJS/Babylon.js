@@ -1444,10 +1444,7 @@ export class Viewer implements IDisposable {
      * The currently selected material variant.
      */
     public get selectedMaterialVariant(): Nullable<string> {
-        if (this._activeModel) {
-            return this._activeModel?.selectedVariant;
-        }
-        return null;
+        return this._activeModel?.selectedMaterialVariant ?? null;
     }
 
     public set selectedMaterialVariant(value: Nullable<string>) {
