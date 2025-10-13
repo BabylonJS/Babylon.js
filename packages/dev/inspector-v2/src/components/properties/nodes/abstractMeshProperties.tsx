@@ -133,6 +133,7 @@ export const AbstractMeshOutlineOverlayProperties: FunctionComponent<{ mesh: Abs
             <BoundProperty component={SwitchPropertyLine} label="Render Outline" target={mesh} propertyKey="renderOutline" />
             <Collapse visible={renderOutline}>
                 <BoundProperty label="Outline Color" component={Color3PropertyLine} target={mesh} propertyKey="outlineColor" />
+                <BoundProperty label="Outline Width" component={NumberInputPropertyLine} target={mesh} propertyKey="outlineWidth" step={0.001} />
             </Collapse>
         </>
     );

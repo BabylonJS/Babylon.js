@@ -739,6 +739,11 @@ export type Model = IDisposable & {
      * @param options Options for activating the model.
      */
     makeActive(options?: ActivateModelOptions): void;
+
+    /**
+     * The selected material variant.
+     */
+    selectedMaterialVariant: Nullable<string>;
 };
 
 type ModelInternal = Model & {
@@ -1439,22 +1444,12 @@ export class Viewer implements IDisposable {
      * The currently selected material variant.
      */
     public get selectedMaterialVariant(): Nullable<string> {
-        return this._activeModel?.materialVariantsController?.selectedVariant ?? null;
+        return this._activeModel?.selectedMaterialVariant ?? null;
     }
 
     public set selectedMaterialVariant(value: Nullable<string>) {
-        if (this._activeModel?.materialVariantsController) {
-            if (!value) {
-                value = this._activeModel.materialVariantsController.variants[0];
-            }
-
-            if (value !== this.selectedMaterialVariant && this._activeModel.materialVariantsController.variants.includes(value)) {
-                this._snapshotHelper.disableSnapshotRendering();
-                this._activeModel.materialVariantsController.selectedVariant = value;
-                this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
-                this.onSelectedMaterialVariantChanged.notifyObservers();
-            }
+        if (this._activeModel && value) {
+            this._activeModel.selectedMaterialVariant = value;
         }
     }
 
@@ -1659,6 +1654,28 @@ export class Viewer implements IDisposable {
                 },
                 makeActive: (options?: ActivateModelOptions) => {
                     this._setActiveModel(model, options);
+                },
+                set selectedMaterialVariant(variantName: string) {
+                    if (materialVariantsController) {
+                        let value: Nullable<string> = variantName;
+                        if (!value) {
+                            value = materialVariantsController.variants[0];
+                        }
+
+                        if (value !== materialVariantsController.selectedVariant && materialVariantsController.variants.includes(value)) {
+                            viewer._snapshotHelper.disableSnapshotRendering();
+                            materialVariantsController.selectedVariant = value;
+                            viewer._snapshotHelper.enableSnapshotRendering();
+                            viewer._markSceneMutated();
+                            viewer.onSelectedMaterialVariantChanged.notifyObservers();
+                        }
+                    }
+                },
+                get selectedMaterialVariant(): Nullable<string> {
+                    if (materialVariantsController) {
+                        return materialVariantsController.selectedVariant;
+                    }
+                    return null;
                 },
             };
 

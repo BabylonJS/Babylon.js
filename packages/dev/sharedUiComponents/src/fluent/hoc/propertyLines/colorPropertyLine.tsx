@@ -1,5 +1,5 @@
 import type { FunctionComponent } from "react";
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 
 import type { PropertyLineProps } from "./propertyLine";
 import { PropertyLine } from "./propertyLine";
@@ -21,6 +21,10 @@ export type ColorPropertyLineProps = ColorPickerProps<Color3 | Color4> & Propert
 const ColorPropertyLine = forwardRef<HTMLDivElement, ColorPropertyLineProps>((props, ref) => {
     ColorPropertyLine.displayName = "ColorPropertyLine";
     const [color, setColor] = useState(props.value);
+
+    useEffect(() => {
+        setColor(props.value);
+    }, [props.value]);
 
     const onSliderChange = (value: number, key: "r" | "g" | "b" | "a") => {
         let newColor: Color3 | Color4;
