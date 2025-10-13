@@ -1,7 +1,5 @@
 import type { RawBezier, RawElement, RawFont, RawPathShape, RawRectangleShape, RawStrokeShape, RawTextData, RawTextDocument } from "../parsing/rawTypes";
 
-const Points: { x: number; y: number }[] = [];
-
 /**
  * Represents a bounding box for a shape in the animation.
  */
@@ -14,22 +12,16 @@ export type BoundingBox = {
     centerX: number;
     /** Y coordinate of the center of the bounding box */
     centerY: number;
+    /** Box X offset, as the box may not be centered around (0,0) */
+    offsetX: number;
+    /** Box Y offset, as the box may not be centered around (0,0) */
+    offsetY: number;
     /** Inset for the stroke, if applicable. */
     strokeInset: number;
-    /**
-     * Optional: Canvas2D text metrics for precise vertical alignment
-     */
+    /** Optional: Canvas2D text metrics for precise vertical alignment */
     actualBoundingBoxAscent?: number;
-    /**
-     * Optional: Canvas2D text metrics for precise vertical alignment
-     */
+    /** Optional: Canvas2D text metrics for precise vertical alignment */
     actualBoundingBoxDescent?: number;
-    /** Optional points */
-    points: { x: number; y: number }[];
-    /** BoxX displacement */
-    displacementX: number;
-    /** BoxY displacement */
-    displacementY: number;
 };
 
 // Corners of the bounding box
@@ -53,27 +45,29 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         maxY: -Infinity,
     };
 
-    let extraPadding = 0;
+    let strokeWidth = 0;
     for (let i = 0; i < rawElements.length; i++) {
         if (rawElements[i].ty === "rc") {
             GetRectangleVertices(boxCorners, rawElements[i] as RawRectangleShape);
         } else if (rawElements[i].ty === "sh") {
             GetPathVertices(boxCorners, rawElements[i] as RawPathShape);
         } else if (rawElements[i].ty === "st") {
-            extraPadding = Math.max(extraPadding, GetStrokeInset(rawElements[i] as RawStrokeShape));
+            strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawStrokeShape));
         }
     }
 
+    const offsetX = (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2;
+    const offsetY = (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2;
+
     return {
-        width: Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX) + extraPadding,
-        height: Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY) + extraPadding,
-        // Bounding boxes may not be centered around (0,0) themselves
-        centerX: (Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX)) / 2 - (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2 + extraPadding / 2,
-        centerY: (Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY)) / 2 - (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2 + extraPadding / 2,
-        displacementX: (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2,
-        displacementY: (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2,
+        width: Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX) + strokeWidth,
+        height: Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY) + strokeWidth,
+        // The center of the box is the center of its width and height, modified by its offset and the stroke width
+        centerX: (Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX)) / 2 - offsetX + strokeWidth / 2,
+        centerY: (Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY)) / 2 - offsetY + strokeWidth / 2,
+        offsetX: offsetX,
+        offsetY: offsetY,
         strokeInset: 0,
-        points: Points,
     };
 }
 
@@ -134,12 +128,11 @@ export function GetTextBoundingBox(
         height: heightPx,
         centerX: Math.ceil(widthPx / 2),
         centerY: Math.ceil(heightPx / 2),
+        offsetX: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
+        offsetY: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
         strokeInset: 0, // Text bounding box ignores stroke padding here
         actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
         actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,
-        displacementX: 0,
-        displacementY: 0,
-        points: Points,
     };
 }
 
@@ -299,8 +292,6 @@ function BezierPoint(t: number, p0: number, p1: number, p2: number, p3: number):
 }
 
 function UpdateBoxCorners(boxCorners: Corners, x: number, y: number): void {
-    Points.push({ x: x, y: y });
-
     if (x < boxCorners.minX) {
         boxCorners.minX = x;
     }

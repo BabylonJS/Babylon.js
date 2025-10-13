@@ -191,8 +191,8 @@ export class SpritePacker {
         this._spriteAtlasInfo.widthPx = boundingBox.width;
         this._spriteAtlasInfo.heightPx = boundingBox.height;
 
-        this._spriteAtlasInfo.centerX = boundingBox.displacementX;
-        this._spriteAtlasInfo.centerY = boundingBox.displacementY;
+        this._spriteAtlasInfo.centerX = boundingBox.offsetX;
+        this._spriteAtlasInfo.centerY = boundingBox.offsetY;
 
         // Advance the current position for the next sprite
         this._currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
