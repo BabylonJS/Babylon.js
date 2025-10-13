@@ -6,7 +6,9 @@ const path = require("path");
 
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
-    const BUILD_ID = process.env.BUILD_ID || process.env.GIT_COMMIT || String(Date.now());
+    const BUILD_ID = process.env.BUILD_BUILDID || process.env.BUILD_SOURCEVERSION || String(Date.now());
+    // eslint-disable-next-line no-console
+    console.log(`Building playground in ${production ? "production" : "development"} mode using build id: ${BUILD_ID}`);
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
