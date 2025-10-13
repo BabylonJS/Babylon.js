@@ -178,7 +178,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     private async _unzipWithFFlateAsync(data: Uint8Array): Promise<Map<string, Uint8Array>> {
         // ensure fflate is loaded
         if (typeof (window as any).fflate === "undefined") {
-            await Tools.LoadScriptAsync("https://unpkg.com/fflate/umd/index.js");
+            await Tools.LoadScriptAsync(this._loadingOptions.deflateURL ?? "https://unpkg.com/fflate/umd/index.js");
         }
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
