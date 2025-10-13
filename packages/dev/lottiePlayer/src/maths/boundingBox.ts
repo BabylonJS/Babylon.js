@@ -120,14 +120,14 @@ export function GetTextBoundingBox(
     }
     const metrics = spritesCanvasContext.measureText(text);
 
-    const widthPx = Math.ceil(metrics.width);
-    const heightPx = Math.ceil(metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
+    const widthPx = metrics.width;
+    const heightPx = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 
     return {
         width: widthPx,
         height: heightPx,
-        centerX: Math.ceil(widthPx / 2),
-        centerY: Math.ceil(heightPx / 2),
+        centerX: widthPx / 2,
+        centerY: heightPx / 2,
         offsetX: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
         offsetY: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
         strokeInset: 0, // Text bounding box ignores stroke padding here
