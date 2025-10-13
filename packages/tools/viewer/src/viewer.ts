@@ -1448,8 +1448,8 @@ export class Viewer implements IDisposable {
     }
 
     public set selectedMaterialVariant(value: Nullable<string>) {
-        if (value) {
-            this._activeModel?.selectVariant(value);
+        if (this._activeModel && value) {
+            this._activeModel.selectedMaterialVariant = value;
         }
     }
 
@@ -1655,7 +1655,7 @@ export class Viewer implements IDisposable {
                 makeActive: (options?: ActivateModelOptions) => {
                     this._setActiveModel(model, options);
                 },
-                set selectMaterialVariant (variantName: string) {
+                set selectedMaterialVariant(variantName: string) {
                     if (materialVariantsController) {
                         let value: Nullable<string> = variantName;
                         if (!value) {
@@ -1663,15 +1663,15 @@ export class Viewer implements IDisposable {
                         }
 
                         if (value !== materialVariantsController.selectedVariant && materialVariantsController.variants.includes(value)) {
-                            this._snapshotHelper.disableSnapshotRendering();
+                            viewer._snapshotHelper.disableSnapshotRendering();
                             materialVariantsController.selectedVariant = value;
-                            this._snapshotHelper.enableSnapshotRendering();
-                            this._markSceneMutated();
-                            this.onSelectedMaterialVariantChanged.notifyObservers();
+                            viewer._snapshotHelper.enableSnapshotRendering();
+                            viewer._markSceneMutated();
+                            viewer.onSelectedMaterialVariantChanged.notifyObservers();
                         }
                     }
                 },
-                get selectedVariant() {
+                get selectedMaterialVariant(): Nullable<string> {
                     if (materialVariantsController) {
                         return materialVariantsController.selectedVariant;
                     }
