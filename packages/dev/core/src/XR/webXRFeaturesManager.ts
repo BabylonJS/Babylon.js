@@ -98,87 +98,87 @@ export class WebXRFeatureName {
     /**
      * The name of the anchor system feature
      */
-    public static readonly ANCHOR_SYSTEM = "xr-anchor-system";
+    public static readonly ANCHOR_SYSTEM = "xr-anchor-system" as const;
     /**
      * The name of the background remover feature
      */
-    public static readonly BACKGROUND_REMOVER = "xr-background-remover";
+    public static readonly BACKGROUND_REMOVER = "xr-background-remover" as const;
     /**
      * The name of the hit test feature
      */
-    public static readonly HIT_TEST = "xr-hit-test";
+    public static readonly HIT_TEST = "xr-hit-test" as const;
     /**
      * The name of the mesh detection feature
      */
-    public static readonly MESH_DETECTION = "xr-mesh-detection";
+    public static readonly MESH_DETECTION = "xr-mesh-detection" as const;
     /**
      * physics impostors for xr controllers feature
      */
-    public static readonly PHYSICS_CONTROLLERS = "xr-physics-controller";
+    public static readonly PHYSICS_CONTROLLERS = "xr-physics-controller" as const;
     /**
      * The name of the plane detection feature
      */
-    public static readonly PLANE_DETECTION = "xr-plane-detection";
+    public static readonly PLANE_DETECTION = "xr-plane-detection" as const;
     /**
      * The name of the pointer selection feature
      */
-    public static readonly POINTER_SELECTION = "xr-controller-pointer-selection";
+    public static readonly POINTER_SELECTION = "xr-controller-pointer-selection" as const;
     /**
      * The name of the teleportation feature
      */
-    public static readonly TELEPORTATION = "xr-controller-teleportation";
+    public static readonly TELEPORTATION = "xr-controller-teleportation" as const;
     /**
      * The name of the feature points feature.
      */
-    public static readonly FEATURE_POINTS = "xr-feature-points";
+    public static readonly FEATURE_POINTS = "xr-feature-points" as const;
     /**
      * The name of the hand tracking feature.
      */
-    public static readonly HAND_TRACKING = "xr-hand-tracking";
+    public static readonly HAND_TRACKING = "xr-hand-tracking" as const;
     /**
      * The name of the image tracking feature
      */
-    public static readonly IMAGE_TRACKING = "xr-image-tracking";
+    public static readonly IMAGE_TRACKING = "xr-image-tracking" as const;
     /**
      * The name of the near interaction feature
      */
-    public static readonly NEAR_INTERACTION = "xr-near-interaction";
+    public static readonly NEAR_INTERACTION = "xr-near-interaction" as const;
     /**
      * The name of the DOM overlay feature
      */
-    public static readonly DOM_OVERLAY = "xr-dom-overlay";
+    public static readonly DOM_OVERLAY = "xr-dom-overlay" as const;
     /**
      * The name of the movement feature
      */
-    public static readonly MOVEMENT = "xr-controller-movement";
+    public static readonly MOVEMENT = "xr-controller-movement" as const;
     /**
      * The name of the light estimation feature
      */
-    public static readonly LIGHT_ESTIMATION = "xr-light-estimation";
+    public static readonly LIGHT_ESTIMATION = "xr-light-estimation" as const;
     /**
      * The name of the eye tracking feature
      */
-    public static readonly EYE_TRACKING = "xr-eye-tracking";
+    public static readonly EYE_TRACKING = "xr-eye-tracking" as const;
     /**
      * The name of the walking locomotion feature
      */
-    public static readonly WALKING_LOCOMOTION = "xr-walking-locomotion";
+    public static readonly WALKING_LOCOMOTION = "xr-walking-locomotion" as const;
     /**
      * The name of the composition layers feature
      */
-    public static readonly LAYERS = "xr-layers";
+    public static readonly LAYERS = "xr-layers" as const;
     /**
      * The name of the depth sensing feature
      */
-    public static readonly DEPTH_SENSING = "xr-depth-sensing";
+    public static readonly DEPTH_SENSING = "xr-depth-sensing" as const;
     /**
      * The name of the WebXR Space Warp feature
      */
-    public static readonly SPACE_WARP = "xr-space-warp";
+    public static readonly SPACE_WARP = "xr-space-warp" as const;
     /**
      * The name of the WebXR Raw Camera Access feature
      */
-    public static readonly RAW_CAMERA_ACCESS = "xr-raw-camera-access";
+    public static readonly RAW_CAMERA_ACCESS = "xr-raw-camera-access" as const;
 }
 
 export type WebXRFeatureNameType = (typeof WebXRFeatureName)[Exclude<keyof typeof WebXRFeatureName, "prototype">];
