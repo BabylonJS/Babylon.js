@@ -269,17 +269,7 @@ export class MonacoManager {
         this._files.removeFile(path);
         delete this.globalState.files[path];
 
-        const fallback = this.globalState.language === "JS" ? "index.js" : "index.ts";
-        if (this.globalState.entryFilePath === path) {
-            if (!this.globalState.files[fallback]) {
-                this.addFile(fallback, "// Entry file\n");
-            }
-            this.globalState.entryFilePath = fallback;
-        }
-        if (!this.globalState.files[fallback]) {
-            this.addFile(fallback, "// Entry file\n");
-        }
-        const next = Object.keys(this.globalState.files)[0] || fallback;
+        const next = Object.keys(this.globalState.files)[0];
         this.switchActiveFile(next);
         this.globalState.onFilesChangedObservable.notifyObservers();
         this.globalState.onManifestChangedObservable.notifyObservers();
