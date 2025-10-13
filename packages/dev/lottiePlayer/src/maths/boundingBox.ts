@@ -56,15 +56,18 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         }
     }
 
+    const width = Math.ceil(Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX));
+    const height = Math.ceil(Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY));
+
     const offsetX = (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2;
     const offsetY = (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2;
 
     return {
-        width: Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX) + strokeWidth,
-        height: Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY) + strokeWidth,
+        width: width + strokeWidth,
+        height: height + strokeWidth,
         // The center of the box is the center of its width and height, modified by its offset and the stroke width
-        centerX: (Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX)) / 2 - offsetX + strokeWidth / 2,
-        centerY: (Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY)) / 2 - offsetY + strokeWidth / 2,
+        centerX: width / 2 - offsetX + strokeWidth / 2,
+        centerY: height / 2 - offsetY + strokeWidth / 2,
         offsetX: offsetX,
         offsetY: offsetY,
         strokeInset: 0,
@@ -120,8 +123,8 @@ export function GetTextBoundingBox(
     }
     const metrics = spritesCanvasContext.measureText(text);
 
-    const widthPx = metrics.width;
-    const heightPx = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    const widthPx = Math.ceil(metrics.width);
+    const heightPx = Math.ceil(metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
 
     return {
         width: widthPx,
