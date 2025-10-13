@@ -129,7 +129,6 @@ export class Parser {
         }
 
         // Update the atlas texture after creating all sprites from the animation
-        // eslint-disable-next-line github/no-then
         this._packer.updateAtlasTexture();
 
         // Reorder the sprites from back to front
