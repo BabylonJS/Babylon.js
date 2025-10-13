@@ -68,8 +68,8 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         width: Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX) + extraPadding,
         height: Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY) + extraPadding,
         // Bounding boxes may not be centered around (0,0) themselves
-        centerX: (Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX)) / 2 - (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2,
-        centerY: (Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY)) / 2 - (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2,
+        centerX: (Math.abs(boxCorners.maxX) + Math.abs(boxCorners.minX)) / 2 - (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2 + extraPadding / 2,
+        centerY: (Math.abs(boxCorners.maxY) + Math.abs(boxCorners.minY)) / 2 - (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2 + extraPadding / 2,
         displacementX: (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2,
         displacementY: (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2,
         strokeInset: 0,
