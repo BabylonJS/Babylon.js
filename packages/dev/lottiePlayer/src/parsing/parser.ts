@@ -373,8 +373,8 @@ export class Parser {
         positionProperty.currentValue.x += xAlignmentOffset;
 
         // For text, its Y position is at the baseline, so we need to offset it by half the height of the text upwards
-        positionProperty.startValue.y += spriteInfo.centerY;
-        positionProperty.currentValue.y += spriteInfo.centerY;
+        positionProperty.startValue.y += spriteInfo.heightPx / 2;
+        positionProperty.currentValue.y += spriteInfo.heightPx / 2;
 
         return new SpriteNode(
             "Sprite",
