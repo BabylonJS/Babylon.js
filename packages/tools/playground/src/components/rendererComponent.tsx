@@ -133,6 +133,21 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
     private _preventReentrancy = false;
 
+    private _lastEngineKind: "webgpu" | "webgl2" | "webgl" | null = null;
+
+    private _hardResetCanvas = () => {
+        const old = this._canvasRef.current!;
+        const parent = old.parentElement!;
+        const fresh = old.cloneNode(false) as HTMLCanvasElement;
+        fresh.id = old.id;
+        fresh.className = old.className;
+        fresh.width = old.width;
+        fresh.height = old.height;
+        parent.replaceChild(fresh, old);
+        (this._canvasRef as any).current = fresh;
+        (window as any).canvas = fresh;
+    };
+
     private async _compileAndRunAsync() {
         if (this._preventReentrancy) {
             return;
@@ -207,7 +222,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     }
                 });
             };
+            const desiredKind: "webgpu" | "webgl2" | "webgl" = useWebGPU ? "webgpu" : forceWebGL1 ? "webgl" : "webgl2";
 
+            if (this._lastEngineKind && this._lastEngineKind !== desiredKind) {
+                this._hardResetCanvas();
+            }
+            this._lastEngineKind = desiredKind;
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function () {
                     try {
@@ -254,6 +274,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             (window as any).engine = this._engine;
 
             const createEngineAsync = async () => {
+                const desiredKind: "webgpu" | "webgl2" | "webgl" = useWebGPU ? "webgpu" : forceWebGL1 ? "webgl" : "webgl2";
+
+                if (this._lastEngineKind && this._lastEngineKind !== desiredKind) {
+                    this._hardResetCanvas();
+                }
+                this._lastEngineKind = desiredKind;
                 let engine: Engine | null = null;
                 if (useWebGPU) {
                     try {
@@ -265,7 +291,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     }
                 }
                 if (!engine) {
-                    engine = new Engine(canvas, true, {
+                    engine = new Engine(this._canvasRef.current, true, {
                         disableWebGL2Support: forceWebGL1,
                         preserveDrawingBuffer: true,
                         stencil: true,

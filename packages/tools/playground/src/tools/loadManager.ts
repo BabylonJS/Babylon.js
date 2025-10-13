@@ -196,9 +196,8 @@ export class LoadManager {
 Confirm to switch to ${payload.engine}, cancel to keep ${currentEngine}`
                     )
                 ) {
-                    // we need to change the engine
                     Utilities.StoreStringToStore("engineVersion", payload.engine, true);
-                    window.location.reload();
+                    this.globalState.onEngineChangedObservable.notifyObservers(payload.engine);
                 }
             }
         }

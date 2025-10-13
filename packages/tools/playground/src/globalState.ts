@@ -56,6 +56,7 @@ export class GlobalState {
     public onOpenEditorsChangedObservable: Observable<void> = new Observable<void>();
     public onActiveEditorChangedObservable: Observable<void> = new Observable<void>();
 
+    public onEngineChangedObservable = new Observable<string | void>();
     public onRunRequiredObservable = new Observable<void>();
     public onRunExecutedObservable = new Observable<void>();
     public onSavedObservable = new Observable<void>();
