@@ -74,6 +74,10 @@ export class SaveManager {
         void this._saveJsonFileAsync(PackSnippetData(this.globalState));
     }
 
+    private _replaceUrlSilently(newUrl: string) {
+        history.replaceState(null, "", newUrl);
+    }
+
     private _saveSnippet() {
         const xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = () => {
@@ -81,18 +85,22 @@ export class SaveManager {
                 if (xmlHttp.status === 200) {
                     const snippet = JSON.parse(xmlHttp.responseText);
                     if (location.pathname && location.pathname.indexOf("pg/") !== -1) {
+                        let newHref = location.href;
                         if (location.pathname.indexOf("revision") !== -1) {
-                            location.href = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
+                            newHref = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
                         } else {
-                            location.href = location.href + "/revision/" + snippet.version;
+                            newHref = location.href + "/revision/" + snippet.version;
                         }
+                        this._replaceUrlSilently(newHref);
                     } else if (location.search && location.search.indexOf("pg=") !== -1) {
                         const currentQuery = Utilities.ParseQuery();
+                        let newHref = location.href;
                         if (currentQuery.revision) {
-                            location.href = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
+                            newHref = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
                         } else {
-                            location.href = location.href + "&revision=" + snippet.version;
+                            newHref = location.href + "&revision=" + snippet.version;
                         }
+                        this._replaceUrlSilently(newHref);
                     } else {
                         const baseUrl = location.href.replace(location.hash, "");
                         let toolkit = "";
@@ -108,7 +116,7 @@ export class SaveManager {
                             newUrl += "#" + snippet.version;
                         }
                         this.globalState.currentSnippetRevision = `#${snippet.version}`;
-                        location.href = newUrl;
+                        this._replaceUrlSilently(newUrl);
                     }
 
                     this.globalState.onSavedObservable.notifyObservers();
