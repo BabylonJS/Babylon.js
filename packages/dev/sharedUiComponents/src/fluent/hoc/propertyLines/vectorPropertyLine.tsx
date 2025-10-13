@@ -58,7 +58,7 @@ const HasW = (vector: Vector2 | Vector3 | Vector4 | Quaternion): vector is Vecto
 const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Vector3 | Vector4 | Quaternion>> = (props) => {
     TensorPropertyLine.displayName = "TensorPropertyLine";
     const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
-    const formatted = (val: number) => converted(val).toFixed(props.step !== undefined ? CalculatePrecision(props.step) : 2);
+    const formatted = (val: number) => converted(val).toFixed(props.step !== undefined ? Math.max(0, CalculatePrecision(props.step)) : 2);
 
     const [vector, setVector] = useState(props.value);
     const { min, max } = props;
