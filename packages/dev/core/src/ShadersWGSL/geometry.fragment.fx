@@ -95,8 +95,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #else
             normalOutput = normalize( (mat4x4f(input.vWorldView0, input.vWorldView1, input.vWorldView2, input.vWorldView3) *  vec4f(normalW, 0.0)).xyz);
         #endif
-    #else
+    #elif defined(HAS_NORMAL_ATTRIBUTE)
         normalOutput = normalize(input.vNormalV);
+    #elif defined(POSITION)
+        // Derive normal from position
+	    normalOutput = normalize(-cross(dpdx(input.vPositionW), dpdy(input.vPositionW)));
     #endif
 
     #ifdef ENCODE_NORMAL
