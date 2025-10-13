@@ -3,8 +3,8 @@ import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 
-// If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
-const InspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
+// Preload (asynchronously) the inspector v2 module, but don't block rendering.
+const InspectorV2ModulePromise = import("inspector-v2/inspector");
 
 export class GlobalState {
     public currentScene: Scene;
@@ -31,10 +31,14 @@ export class GlobalState {
         port: number;
     };
 
+    constructor() {
+        this.onSceneLoaded.addOnce(async () => await this.refreshDebugLayerAsync());
+    }
+
     public showDebugLayer() {
         this.isDebugLayerEnabled = true;
         if (this.currentScene) {
-            if (!InspectorV2ModulePromise) {
+            if (!this._isInspectorV2ModeEnabled) {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 this.currentScene.debugLayer.show();
             } else {
@@ -50,7 +54,7 @@ export class GlobalState {
     public hideDebugLayer() {
         this.isDebugLayerEnabled = false;
         if (this.currentScene) {
-            if (!InspectorV2ModulePromise) {
+            if (!this._isInspectorV2ModeEnabled) {
                 this.currentScene.debugLayer.hide();
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -60,5 +64,30 @@ export class GlobalState {
                 })();
             }
         }
+    }
+
+    public async refreshDebugLayerAsync() {
+        if (this.currentScene) {
+            const inspectorV2Module = await InspectorV2ModulePromise;
+
+            const isInspectorV1Enabled = this.currentScene.debugLayer.openedPanes !== 0;
+            const isInspectorV2Enabled = inspectorV2Module.IsInspectorVisible();
+            const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
+
+            if (isInspectorEnabled) {
+                if (isInspectorV1Enabled && this._isInspectorV2ModeEnabled) {
+                    this.currentScene.debugLayer.hide();
+                    inspectorV2Module.ShowInspector(this.currentScene);
+                } else if (isInspectorV2Enabled && !this._isInspectorV2ModeEnabled) {
+                    inspectorV2Module.HideInspector();
+                    await this.currentScene.debugLayer.show();
+                }
+            }
+        }
+    }
+
+    private get _isInspectorV2ModeEnabled() {
+        const searchParams = new URLSearchParams(window.location.search);
+        return searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
     }
 }
