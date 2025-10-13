@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.31.2
+
+### Core
+
+- Render normals when no normal attribute - by [MiiBond](https://github.com/MiiBond) ([#17281](https://github.com/BabylonJS/Babylon.js/pull/17281))
+
 ## 8.31.1
 
 ### Core
