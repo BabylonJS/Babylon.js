@@ -10,7 +10,7 @@
 #include<clipPlaneVertexDeclaration>
 
 attribute position: vec3f;
-#ifdef HAS_NORMAL_ATTRIBUTENORMAL
+#ifdef HAS_NORMAL_ATTRIBUTE
 	attribute normal: vec3f;
 #endif
 
