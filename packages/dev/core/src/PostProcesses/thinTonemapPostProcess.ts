@@ -82,6 +82,7 @@ export class ThinTonemapPostProcess extends EffectWrapper {
         });
 
         this.operator = operator;
+        this.exposureAdjustment = options?.exposureAdjustment ?? 1;
     }
 
     /**
