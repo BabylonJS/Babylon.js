@@ -2,6 +2,61 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Atmosphere Day",
+            "playgroundId": "#VO1Z0C#14",
+            "referenceImage": "atmosphere-day.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Day (Planet Origin)",
+            "playgroundId": "#VO1Z0C#10",
+            "referenceImage": "atmosphere-day.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Sunset",
+            "playgroundId": "#VO1Z0C#15",
+            "referenceImage": "atmosphere-sunset.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Sunset (Planet Origin)",
+            "playgroundId": "#VO1Z0C#11",
+            "referenceImage": "atmosphere-sunset.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Night",
+            "playgroundId": "#VO1Z0C#13",
+            "referenceImage": "atmosphere-night.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Night (Planet Origin)",
+            "playgroundId": "#VO1Z0C#12",
+            "referenceImage": "atmosphere-night.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "renderCount": 2
+        },
+        {
+            "title": "Atmosphere Space View",
+            "playgroundId": "#VO1Z0C#6",
+            "referenceImage": "atmosphere-space-view.png",
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }]
+        },
+        {
             "title": "NPE - Angle align",
             "playgroundId": "#H5RP91",
             "referenceImage": "npe-angle-align.png"
@@ -2828,82 +2883,7 @@
             "title": "Sponza Clustered Lighting (node material pbr)",
             "playgroundId": "#QY98Z3#17"
         },
-        {
-            "title": "Atmosphere Day",
-            "playgroundId": "#VO1Z0C#14",
-            "referenceImage": "atmosphere-day.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [
-                { "os": "darwin", "browser": "firefox" },
-                { "os": "darwin", "browser": "safari" }
-            ],
-            "renderCount": 2
-        },
-        {
-            "title": "Atmosphere Day (Planet Origin)",
-            "playgroundId": "#VO1Z0C#10",
-            "referenceImage": "atmosphere-day.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [
-                { "os": "darwin", "browser": "firefox" },
-                { "os": "darwin", "browser": "safari" }
-            ],
-            "renderCount": 2
-        },
-        {
-            "title": "Atmosphere Sunset",
-            "playgroundId": "#VO1Z0C#15",
-            "referenceImage": "atmosphere-sunset.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [
-                { "os": "darwin", "browser": "firefox" },
-                { "os": "darwin", "browser": "safari" }
-            ],
-            "renderCount": 2
-        },
-        {
-            "title": "Atmosphere Sunset (Planet Origin)",
-            "playgroundId": "#VO1Z0C#11",
-            "referenceImage": "atmosphere-sunset.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [
-                { "os": "darwin", "browser": "firefox" },
-                { "os": "darwin", "browser": "safari" }
-            ],
-            "renderCount": 2
-        },
-        {
-            "title": "Atmosphere Night",
-            "playgroundId": "#VO1Z0C#13",
-            "referenceImage": "atmosphere-night.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [
-                { "os": "darwin", "browser": "firefox" },
-                { "os": "darwin", "browser": "safari" }
-            ],
-            "renderCount": 2
-        },
-        {
-            "title": "Atmosphere Night (Planet Origin)",
-            "playgroundId": "#VO1Z0C#12",
-            "referenceImage": "atmosphere-night.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [
-                { "os": "darwin", "browser": "firefox" },
-                { "os": "darwin", "browser": "safari" }
-            ],
-            "renderCount": 2
-        },
-        {
-            "title": "Atmosphere Space View",
-            "playgroundId": "#VO1Z0C#6",
-            "referenceImage": "atmosphere-space-view.png",
-            "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [
-                { "os": "darwin", "browser": "firefox" },
-                { "os": "darwin", "browser": "safari" }
-            ]
-        },
+
         {
             "title": "OpenPBR IBL Reflectance with IOR",
             "playgroundId": "#KQYNYS#46",

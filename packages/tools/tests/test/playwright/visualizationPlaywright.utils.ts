@@ -108,6 +108,7 @@ export const evaluatePlaywrightVisTests = async (
         });
     });
 
+    console.log("browserType:", process.env.BROWSER, "os", process.platform);
     for (const testCase of tests) {
         if (testCase.excludeFromAutomaticTesting) {
             continue;
