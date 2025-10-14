@@ -202,10 +202,12 @@ let checkBabylonVersionAsync = async function () {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
         }
+
+        return version;
     });
 };
 
-checkBabylonVersionAsync().then(() => {
+checkBabylonVersionAsync().then((version) => {
     loadScriptAsync("babylon.playground.js").then(() => {
         var hostElement = document.getElementById("host-element");
         let mode = undefined;
@@ -215,6 +217,6 @@ checkBabylonVersionAsync().then(() => {
             mode = 2;
         }
         // eslint-disable-next-line no-undef
-        BABYLON.Playground.Show(hostElement, mode);
+        BABYLON.Playground.Show(hostElement, mode, version);
     });
 });

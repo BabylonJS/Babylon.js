@@ -86,7 +86,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
             const searchParams = new URLSearchParams(window.location.search);
-            const isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
+            // Disallow Inspector v2 on specific versions. For now, only support the latest as both core and inspector are evolving in tandem.
+            // Once we have an Inspector v2 UMD package, we can make this work the same as Inspector v1.
+            const isInspectorV2ModeEnabled = !props.globalState.version && searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
 
             if (action === "refresh") {
                 action = isInspectorEnabled ? "enable" : "disable";
