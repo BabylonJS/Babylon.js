@@ -2668,6 +2668,10 @@
             "playgroundId": "#1QCA2M#26"
         },
         {
+            "title": "FrameGraph nrge multiple post processes",
+            "playgroundId": "#SYQW69#1339"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2
