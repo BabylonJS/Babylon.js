@@ -203,6 +203,7 @@ let checkBabylonVersionAsync = async function () {
         } else if (activeVersion === "local") {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+            return "";
         }
 
         return activeVersion.includes(".") ? activeVersion : "";
