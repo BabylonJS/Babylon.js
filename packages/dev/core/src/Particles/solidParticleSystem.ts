@@ -1546,6 +1546,13 @@ export class SolidParticleSystem implements IDisposable {
             this.stop();
 
             const scene = this.mesh.getScene();
+            this.buildMesh();
+
+            if (this.initParticles) {
+                this.initParticles();
+            }
+
+            this.setParticles();
             this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
                 this.setParticles();
             });
@@ -1560,6 +1567,7 @@ export class SolidParticleSystem implements IDisposable {
             const scene = this.mesh.getScene();
             scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
+            this.mesh.dispose();
         }
     }
 

@@ -223,26 +223,6 @@ export class SPSSystemBlock extends NodeParticleBlock {
             return particle;
         };
 
-        sps.buildMesh();
-
-        if (sps.initParticles) {
-            sps.initParticles();
-        }
-
-        sps.setParticles();
-
-        if (state.scene) {
-            state.scene.onBeforeRenderObservable.add(() => {
-                if (sps && sps.nbParticles > 0) {
-                    try {
-                        sps.setParticles();
-                    } catch (error) {
-                        console.error("SPSSystemBlock - error in setParticles:", error);
-                    }
-                }
-            });
-        }
-
         sps.start();
 
         this.system._storedValue = this;

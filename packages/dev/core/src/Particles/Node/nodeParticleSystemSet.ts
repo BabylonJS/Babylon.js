@@ -21,19 +21,7 @@ import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleport
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Nullable } from "../../types";
-import {
-    SPSMeshSourceBlock,
-    SPSCreateBlock,
-    SPSSystemBlock,
-    SPSInitParticleBlock,
-    SPSUpdatePositionBlock,
-    SPSUpdateColorBlock,
-    SPSPhysicsBlock,
-    SPSMeshShapeType,
-} from "./Blocks/spsBlocks";
 import { Color4 } from "core/Maths/math.color";
-import { Vector3 } from "core/Maths/math.vector";
-import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;
@@ -346,84 +334,6 @@ export class NodeParticleSystemSet {
         textureBlock.url = "https://assets.babylonjs.com/textures/flare.png";
 
         this._systemBlocks.push(system);
-    }
-
-    /**
-     * Create a simple SPS example with 2 groups of particles
-     * - Particles 0-499: Core particles (golden color)
-     * - Particles 500-999: Outer particles with physics
-     */
-    public setToDefaultSPS() {
-        this.clear();
-        this.editorData = null;
-
-        // ========== CREATE BASE MESH AND SPS ==========
-        const meshSource = new SPSMeshSourceBlock("Mesh Source");
-        meshSource.shapeType = SPSMeshShapeType.Sphere;
-        meshSource.size = 0.1;
-        meshSource.segments = 8;
-
-        const createSPS = new SPSCreateBlock("Create SPS");
-        meshSource.mesh.connectTo(createSPS.baseMesh);
-
-        const spsSystem = new SPSSystemBlock("SPS System");
-        spsSystem.capacity = 1000;
-        spsSystem.billboard = true;
-        createSPS.solidParticle.connectTo(spsSystem.solidParticle);
-
-        // ========== GROUP 1: CORE (0-499) - Golden color ==========
-        const coreInit = new SPSInitParticleBlock("Core Init");
-        coreInit.startIndex = 0;
-        coreInit.endIndex = 499;
-        spsSystem.system.connectTo(coreInit.system);
-
-        // Set color only (positions will be from mesh)
-        const coreColor = new ParticleInputBlock("Core Color", NodeParticleBlockConnectionPointTypes.Color4);
-        coreColor.value = new Color4(1, 0.8, 0.2, 1);
-
-        const coreUpdateColor = new SPSUpdateColorBlock("Core Update Color");
-        coreColor.output.connectTo(coreUpdateColor.color);
-        coreInit.updateFunction.connectTo(coreUpdateColor.particle);
-
-        // ========== GROUP 2: OUTER (500-999) - Physics ==========
-        const outerInit = new SPSInitParticleBlock("Outer Init");
-        outerInit.startIndex = 500;
-        outerInit.endIndex = 999;
-        spsSystem.system.connectTo(outerInit.system);
-
-        const outerPhysics = new SPSPhysicsBlock("Outer Physics");
-        outerInit.updateFunction.connectTo(outerPhysics.particle);
-
-        const gravity = new ParticleInputBlock("Gravity", NodeParticleBlockConnectionPointTypes.Vector3);
-        gravity.value = new Vector3(0, -1, 0);
-        gravity.output.connectTo(outerPhysics.gravity);
-
-        const damping = new ParticleInputBlock("Damping", NodeParticleBlockConnectionPointTypes.Float);
-        damping.value = 0.99;
-        damping.output.connectTo(outerPhysics.damping);
-
-        const outerColor = new ParticleInputBlock("Outer Color", NodeParticleBlockConnectionPointTypes.Color4);
-        outerColor.value = new Color4(0.7, 0.7, 0.7, 0.8);
-
-        const outerUpdateColor = new SPSUpdateColorBlock("Outer Update Color");
-        outerColor.output.connectTo(outerUpdateColor.color);
-        outerPhysics.output.connectTo(outerUpdateColor.particle);
-
-        // Add all blocks to attachedBlocks
-        this.attachedBlocks.push(meshSource);
-        this.attachedBlocks.push(createSPS);
-        this.attachedBlocks.push(spsSystem);
-        this.attachedBlocks.push(coreInit);
-        this.attachedBlocks.push(coreColor);
-        this.attachedBlocks.push(coreUpdateColor);
-        this.attachedBlocks.push(outerInit);
-        this.attachedBlocks.push(outerPhysics);
-        this.attachedBlocks.push(gravity);
-        this.attachedBlocks.push(damping);
-        this.attachedBlocks.push(outerColor);
-        this.attachedBlocks.push(outerUpdateColor);
-
-        this._systemBlocks.push(spsSystem as any);
     }
 
     /**
