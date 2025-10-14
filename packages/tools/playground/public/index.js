@@ -195,15 +195,18 @@ let checkBabylonVersionAsync = async function () {
         if (snapshot) {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot;
+            return "";
         } else if (version) {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
+            return version;
         } else if (activeVersion === "local") {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+            return "";
         }
 
-        return version;
+        return activeVersion.includes(".") ? activeVersion : "";
     });
 };
 
