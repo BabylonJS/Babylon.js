@@ -113,7 +113,6 @@ export const evaluatePlaywrightVisTests = async (
         });
     });
 
-    console.log("browserType:", process.env.BROWSER, "os", process.platform);
     for (const testCase of tests) {
         if (testCase.excludeFromAutomaticTesting) {
             continue;
@@ -124,7 +123,11 @@ export const evaluatePlaywrightVisTests = async (
         if (testCase.excludedEngines && testCase.excludedEngines.indexOf(engineType) !== -1) {
             continue;
         }
-        test(testCase.title, async () => {
+        test(testCase.title, async ({ browserName }) => {
+            console.log(`platform: ${process.platform}, `);
+            console.log(`browser: ${browserName}`);
+            console.log(`env: ${JSON.stringify(process.env)}`);
+
             //defensive
             const logCallback = (msg: any) => {
                 log(msg, testCase.title);
