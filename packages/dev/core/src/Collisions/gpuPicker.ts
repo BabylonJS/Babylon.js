@@ -497,6 +497,50 @@ export class GPUPicker {
         return await this._executeMultiPickingAsync(processedXY, minX, maxY, rttSizeH, w, h, disposeWhenDone);
     }
 
+    /**
+     * Execute a picking operation on box defined by two screen coordinates
+     * @param x1 defines the X coordinate of the first corner of the box where to run the pick
+     * @param y1 defines the Y coordinate of the first corner of the box where to run the pick
+     * @param x2 defines the X coordinate of the opposite corner of the box where to run the pick
+     * @param y2 defines the Y coordinate of the opposite corner of the box where to run the pick
+     * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
+     * @returns A promise with the picking results. Always returns an array with the same length as the number of coordinates. The mesh or null at the index where no mesh was picked.
+     */
+    public async boxPickAsync(x1: number, y1: number, x2: number, y2: number, disposeWhenDone = false): Promise<Nullable<IGPUMultiPickingInfo>> {
+        if (this._pickingInProgress) {
+            return null;
+        }
+
+        if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
+            return null;
+        }
+
+        this._pickingInProgress = true;
+
+        const { rttSizeW, rttSizeH, devicePixelRatio } = this._getRenderInfo();
+
+        const { x: adjustedX1, y: adjustedY1 } = this._prepareForPicking(x1, y1, devicePixelRatio);
+        const { x: adjustedX2, y: adjustedY2 } = this._prepareForPicking(x2, y2, devicePixelRatio);
+
+        const minX = Math.max(Math.min(adjustedX1, adjustedX2), 0);
+        const maxX = Math.min(Math.max(adjustedX1, adjustedX2), rttSizeW - 1);
+        const minY = Math.max(Math.min(adjustedY1, adjustedY2), 0);
+        const maxY = Math.min(Math.max(adjustedY1, adjustedY2), rttSizeH - 1);
+
+        if (minX >= rttSizeW || minY >= rttSizeH || maxX < 0 || maxY < 0) {
+            this._pickingInProgress = false;
+            return null;
+        }
+
+        const w = Math.max(maxX - minX, 1);
+        const h = Math.max(maxY - minY, 1);
+        const partialCutH = rttSizeH - maxY - 1;
+
+        this._preparePickingBuffer(this._engine!, rttSizeW, rttSizeH, minX, partialCutH, w, h);
+
+        return await this._executeBoxPickingAsync(minX, partialCutH, w, h, disposeWhenDone);
+    }
+
     private _getRenderInfo(): { rttSizeW: number; rttSizeH: number; devicePixelRatio: number } {
         const engine = this._cachedScene!.getEngine();
         const rttSizeW = engine.getRenderWidth();
@@ -624,6 +668,53 @@ export class GPUPicker {
                             const { pickedMesh, thinInstanceIndex } = this._getMeshFromMultiplePoints(xy[i].x, xy[i].y, minX, maxY, w);
                             pickedMeshes.push(pickedMesh);
                             thinInstanceIndexes.push(thinInstanceIndex ?? 0);
+                        }
+                    }
+
+                    if (disposeWhenDone) {
+                        this.dispose();
+                    }
+
+                    this._pickingInProgress = false;
+                    resolve({ meshes: pickedMeshes, thinInstanceIndexes: thinInstanceIndexes });
+                }
+            };
+        });
+    }
+
+    // pick box area
+    private async _executeBoxPickingAsync(x: number, y: number, w: number, h: number, disposeWhenDone: boolean): Promise<IGPUMultiPickingInfo> {
+        return new Promise((resolve, reject) => {
+            if (!this._pickingTexture) {
+                this._pickingInProgress = false;
+                reject(new Error("Picking texture not created"));
+                return;
+            }
+
+            this._pickingTexture.onAfterRender = async(): Promise<void> => {
+                if (this._checkRenderStatus()) {
+                    this._pickingTexture!.onAfterRender = null as any;
+                    const pickedMeshes: Nullable<AbstractMesh>[] = [];
+                    const thinInstanceIndexes: number[] = [];
+
+                    if (await this._readTexturePixelsAsync(x, y, w, h)) {
+                        for (let offsetY = 0; offsetY < h; ++offsetY) {
+                            for (let offsetX = 0; offsetX < w; ++offsetX) {
+                                const colorId = this._getColorIdFromReadBuffer((offsetY * w + offsetX) * 4);
+                                if (colorId > 0) {
+                                    // Thin?
+                                    if (this._thinIdMap[colorId]) {
+                                        const pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+                                        const thinInstanceIndex = this._thinIdMap[colorId].thinId;
+                                        pickedMeshes.push(pickedMesh);
+                                        thinInstanceIndexes.push(thinInstanceIndex);
+                                    } else {
+                                        const pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+                                        pickedMeshes.push(pickedMesh);
+                                        thinInstanceIndexes.push(0);
+                                    }
+                                }
+                            }
                         }
                     }
 
