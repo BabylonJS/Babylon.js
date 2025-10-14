@@ -12,8 +12,14 @@ import type { Nullable, Scene } from "@dev/core";
 
 import "../scss/rendering.scss";
 
-// Preload (asynchronously) the inspector v2 module, but don't block rendering.
-const InspectorV2ModulePromise = import("inspector-v2/inspector");
+let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/inspector")> | null = null;
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+function ImportInspectorV2() {
+    if (!InspectorV2ModulePromise) {
+        InspectorV2ModulePromise = import("inspector-v2/inspector");
+    }
+    return InspectorV2ModulePromise;
+}
 
 interface IRenderingComponentProps {
     globalState: GlobalState;
@@ -63,8 +69,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 return;
             }
 
-            const inspectorV2Module = await InspectorV2ModulePromise;
-
             // support for older versions
             // openedPanes was not available until 7.44.0, so we need to fallback to the inspector's _OpenedPane property
             if (this._scene.debugLayer.openedPanes === undefined) {
@@ -78,11 +82,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             const isInspectorV1Enabled = this._scene.debugLayer.openedPanes !== 0;
-            const isInspectorV2Enabled = inspectorV2Module.IsInspectorVisible();
+            const isInspectorV2Enabled = InspectorV2ModulePromise && (await InspectorV2ModulePromise).IsInspectorVisible();
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
             const searchParams = new URLSearchParams(window.location.search);
-            const isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
+            let isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
 
             if (action === "refresh") {
                 action = isInspectorEnabled ? "enable" : "disable";
@@ -90,12 +94,19 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 action = isInspectorEnabled ? "disable" : "enable";
             }
 
+            // Disallow Inspector v2 on specific/older versions. For now, only support the latest as both core and inspector are evolving in tandem.
+            // Once we have an Inspector v2 UMD package, we can make this work the same as Inspector v1.)
+            if (action === "enable" && isInspectorV2ModeEnabled && props.globalState.version) {
+                isInspectorV2ModeEnabled = false;
+                alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
+            }
+
             if (isInspectorV1Enabled && (isInspectorV2ModeEnabled || action === "disable")) {
                 this._scene.debugLayer.hide();
             }
 
             if (isInspectorV2Enabled && (!isInspectorV2ModeEnabled || action === "disable")) {
-                inspectorV2Module.HideInspector();
+                (await ImportInspectorV2()).HideInspector();
             }
 
             if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
@@ -105,7 +116,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable") {
-                inspectorV2Module.ShowInspector(this._scene, {
+                (await ImportInspectorV2()).ShowInspector(this._scene, {
                     embedMode: true,
                     showThemeSelector: false,
                     themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
@@ -195,7 +206,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
-        const displayInspector = (await InspectorV2ModulePromise).IsInspectorVisible() || this._scene?.debugLayer.isVisible();
+        const displayInspector = (InspectorV2ModulePromise && (await InspectorV2ModulePromise).IsInspectorVisible()) || this._scene?.debugLayer.isVisible();
 
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;

@@ -23,6 +23,7 @@ import { ControlledSize, SplitDirection } from "shared-ui-components/split/split
 
 interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
+    version: string;
 }
 
 export class Playground extends React.Component<IPlaygroundProps, { errorMessage: string; mode: EditionMode }> {
@@ -42,6 +43,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         this._globalState = new GlobalState();
 
         this._globalState.runtimeMode = props.runtimeMode || RuntimeMode.Editor;
+        this._globalState.version = props.version;
 
         this._monacoRef = React.createRef();
         this._renderingRef = React.createRef();
@@ -162,8 +164,8 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         );
     }
 
-    public static Show(hostElement: HTMLElement, mode: RuntimeMode) {
-        const playground = React.createElement(Playground, { runtimeMode: mode });
+    public static Show(hostElement: HTMLElement, mode: RuntimeMode, version: string) {
+        const playground = React.createElement(Playground, { runtimeMode: mode, version });
 
         const root = createRoot(hostElement);
         root.render(playground);
