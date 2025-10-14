@@ -119,6 +119,11 @@ export class NodeParticleConnectionPoint {
     public valueMax: Nullable<any> = null;
 
     /**
+     * Gets or sets a boolean indicating that this connection point allows multiple connections
+     */
+    public allowMultipleConnections: boolean = false;
+
+    /**
      * Gets or sets the connection point type (default is float)
      */
     public get type(): NodeParticleBlockConnectionPointTypes {
@@ -239,11 +244,13 @@ export class NodeParticleConnectionPoint {
      * @param name defines the connection point name
      * @param ownerBlock defines the block hosting this connection point
      * @param direction defines the direction of the connection point
+     * @param allowMultipleConnections defines if this point allows multiple connections
      */
-    public constructor(name: string, ownerBlock: NodeParticleBlock, direction: NodeParticleConnectionPointDirection) {
+    public constructor(name: string, ownerBlock: NodeParticleBlock, direction: NodeParticleConnectionPointDirection, allowMultipleConnections = false) {
         this._ownerBlock = ownerBlock;
         this.name = name;
         this._direction = direction;
+        this.allowMultipleConnections = allowMultipleConnections;
     }
 
     /**
@@ -328,8 +335,13 @@ export class NodeParticleConnectionPoint {
             throw `Cannot connect these two connectors. source: "${this.ownerBlock.name}".${this.name}, target: "${connectionPoint.ownerBlock.name}".${connectionPoint.name}`;
         }
 
-        this._endpoints.push(connectionPoint);
-        connectionPoint._connectedPoint = this;
+        if (this.direction === NodeParticleConnectionPointDirection.Input && this.allowMultipleConnections) {
+            this._endpoints.push(connectionPoint);
+            connectionPoint._connectedPoint = this;
+        } else {
+            this._endpoints.push(connectionPoint);
+            connectionPoint._connectedPoint = this;
+        }
 
         this.onConnectionObservable.notifyObservers(connectionPoint);
         connectionPoint.onConnectionObservable.notifyObservers(this);

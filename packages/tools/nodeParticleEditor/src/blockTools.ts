@@ -42,19 +42,7 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
-import {
-    SPSMeshSourceBlock,
-    SPSSystemBlock,
-    SPSCreateBlock,
-    SPSInitParticleBlock,
-    SPSUpdatePositionBlock,
-    SPSUpdateRotationBlock,
-    SPSUpdateScalingBlock,
-    SPSUpdateColorBlock,
-    SPSUpdateVelocityBlock,
-    SPSPhysicsBlock,
-    SPSGetParticlePropertyBlock,
-} from "core/Particles/Node/Blocks";
+import { SPSMeshSourceBlock, SPSSystemBlock, SPSCreateBlock, SPSInitBlock } from "core/Particles/Node/Blocks";
 
 /**
  * Static class for BlockTools
@@ -169,22 +157,8 @@ export class BlockTools {
                 return new SPSSystemBlock("SPS System");
             case "SPSCreateBlock":
                 return new SPSCreateBlock("SPS Create");
-            case "SPSInitParticleBlock":
-                return new SPSInitParticleBlock("SPS Init Particle");
-            case "SPSUpdatePositionBlock":
-                return new SPSUpdatePositionBlock("SPS Update Position");
-            case "SPSUpdateRotationBlock":
-                return new SPSUpdateRotationBlock("SPS Update Rotation");
-            case "SPSUpdateScalingBlock":
-                return new SPSUpdateScalingBlock("SPS Update Scaling");
-            case "SPSUpdateColorBlock":
-                return new SPSUpdateColorBlock("SPS Update Color");
-            case "SPSUpdateVelocityBlock":
-                return new SPSUpdateVelocityBlock("SPS Update Velocity");
-            case "SPSPhysicsBlock":
-                return new SPSPhysicsBlock("SPS Physics");
-            case "SPSGetParticlePropertyBlock":
-                return new SPSGetParticlePropertyBlock("SPS Get Property");
+            case "SPSInitBlock":
+                return new SPSInitBlock("SPS Init");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":
@@ -488,7 +462,7 @@ export class BlockTools {
             case NodeParticleBlockConnectionPointTypes.System:
                 color = "#f20a2e";
                 break;
-            case NodeParticleBlockConnectionPointTypes.SPS:
+            case NodeParticleBlockConnectionPointTypes.SolidParticleSystem:
                 color = "#8b4513";
                 break;
             case NodeParticleBlockConnectionPointTypes.SolidParticle:
@@ -525,8 +499,8 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.Color4;
             case "Matrix":
                 return NodeParticleBlockConnectionPointTypes.Matrix;
-            case "SPS":
-                return NodeParticleBlockConnectionPointTypes.SPS;
+            case "SolidParticleSystem":
+                return NodeParticleBlockConnectionPointTypes.SolidParticleSystem;
             case "SolidParticle":
                 return NodeParticleBlockConnectionPointTypes.SolidParticle;
             case "Mesh":
@@ -556,8 +530,8 @@ export class BlockTools {
                 return "Color4";
             case NodeParticleBlockConnectionPointTypes.Matrix:
                 return "Matrix";
-            case NodeParticleBlockConnectionPointTypes.SPS:
-                return "SPS";
+            case NodeParticleBlockConnectionPointTypes.SolidParticleSystem:
+                return "SolidParticleSystem";
             case NodeParticleBlockConnectionPointTypes.SolidParticle:
                 return "SolidParticle";
             case NodeParticleBlockConnectionPointTypes.Mesh:

@@ -218,10 +218,19 @@ export class NodeParticleBlock {
      * @param value value to return if there is no connection
      * @param valueMin min value accepted for value
      * @param valueMax max value accepted for value
+     * @param allowMultipleConnections defines if this input allows multiple connections
      * @returns the current block
      */
-    public registerInput(name: string, type: NodeParticleBlockConnectionPointTypes, isOptional: boolean = false, value?: any, valueMin?: any, valueMax?: any) {
-        const point = new NodeParticleConnectionPoint(name, this, NodeParticleConnectionPointDirection.Input);
+    public registerInput(
+        name: string,
+        type: NodeParticleBlockConnectionPointTypes,
+        isOptional: boolean = false,
+        value?: any,
+        valueMin?: any,
+        valueMax?: any,
+        allowMultipleConnections: boolean = false
+    ) {
+        const point = new NodeParticleConnectionPoint(name, this, NodeParticleConnectionPointDirection.Input, allowMultipleConnections);
         point.type = type;
         point.isOptional = isOptional;
         point.defaultValue = value;
