@@ -76,9 +76,6 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
             // When the JSON Pointer is used we need to change both the transform node and the primitive meshes to the new value.
             if (node.extensions?.KHR_node_visibility) {
                 if (node.extensions?.KHR_node_visibility.visible === false) {
-                    if (node._babylonTransformNode) {
-                        (node._babylonTransformNode as AbstractMesh).isVisible = false;
-                    }
                     node._primitiveBabylonMeshes?.forEach((mesh) => {
                         mesh.isVisible = false;
                     });
