@@ -54,7 +54,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
             externallyExcluded ||
             test.excludeFromAutomaticTesting ||
             (test.excludedEngines && test.excludedEngines.includes(engineType)) ||
-            (test.excludedSystems && test.excludedSystems.some((sys: any) => sys.os === process.platform && sys.browser === process.env.BROWSER))
+            (test.excludedSystems && test.excludedSystems.includes(process.env.BROWSERSTACK_BROWSER))
         );
     });
 

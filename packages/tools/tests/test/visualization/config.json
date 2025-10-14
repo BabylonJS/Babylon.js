@@ -6,7 +6,7 @@
             "playgroundId": "#VO1Z0C#14",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "excludedSystems": ["playwright-firefox@latest:OSX Sonoma"],
             "renderCount": 2
         },
         {
@@ -14,7 +14,7 @@
             "playgroundId": "#VO1Z0C#10",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "excludedSystems": ["playwright-firefox@latest:OSX Sonoma"],
             "renderCount": 2
         },
         {
@@ -22,7 +22,7 @@
             "playgroundId": "#VO1Z0C#15",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "excludedSystems": ["playwright-firefox@latest:OSX Sonoma"],
             "renderCount": 2
         },
         {
@@ -30,7 +30,7 @@
             "playgroundId": "#VO1Z0C#11",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "excludedSystems": ["playwright-firefox@latest:OSX Sonoma"],
             "renderCount": 2
         },
         {
@@ -38,7 +38,7 @@
             "playgroundId": "#VO1Z0C#13",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "excludedSystems": ["playwright-firefox@latest:OSX Sonoma"],
             "renderCount": 2
         },
         {
@@ -46,7 +46,7 @@
             "playgroundId": "#VO1Z0C#12",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }],
+            "excludedSystems": ["playwright-firefox@latest:OSX Sonoma"],
             "renderCount": 2
         },
         {
@@ -54,7 +54,7 @@
             "playgroundId": "#VO1Z0C#6",
             "referenceImage": "atmosphere-space-view.png",
             "excludedEngines": ["webgl1", "webgpu"],
-            "excludedSystems": [{ "os": "darwin", "browser": "Firefox" }]
+            "excludedSystems": ["playwright-firefox@latest:OSX Sonoma"]
         },
         {
             "title": "NPE - Angle align",

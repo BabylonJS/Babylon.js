@@ -43,7 +43,12 @@ export const evaluatePlaywrightVisTests = async (
             const re = new RegExp(regex, "i");
             return re.test(test.title);
         });
-        return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
+        return !(
+            externallyExcluded ||
+            test.excludeFromAutomaticTesting ||
+            (test.excludedEngines && test.excludedEngines.includes(engineType)) ||
+            (test.excludedSystems && test.excludedSystems.includes(process.env.BROWSERSTACK_BROWSER))
+        );
     });
 
     function log(msg: any, title?: string) {
@@ -113,7 +118,7 @@ export const evaluatePlaywrightVisTests = async (
         if (testCase.excludeFromAutomaticTesting) {
             continue;
         }
-        if (testCase.excludedSystems && testCase.excludedSystems.some((sys: any) => sys.os === process.platform && sys.browser === process.env.BROWSER)) {
+        if (testCase.excludedSystems && testCase.excludedSystems.includes(process.env.BROWSERSTACK_BROWSER)) {
             continue;
         }
         if (testCase.excludedEngines && testCase.excludedEngines.indexOf(engineType) !== -1) {
