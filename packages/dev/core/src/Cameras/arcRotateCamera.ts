@@ -1566,6 +1566,8 @@ export class ArcRotateCamera extends TargetCamera {
         const aspectRatio = engine.getAspectRatio(this);
         const frustumSlopeY = Math.tan(this.fov / 2);
         const frustumSlopeX = frustumSlopeY * aspectRatio;
+        const oldRadius = this.radius;
+        let distance = oldRadius;
         let distanceForHorizontalFrustum: number = 0;
         let distanceForVerticalFrustum: number = 0;
         const height = (maximumWorld.y - minimumWorld.y) * 0.5;
@@ -1573,41 +1575,41 @@ export class ArcRotateCamera extends TargetCamera {
         if (mode === "sphere") {
             const boxVectorGlobalDiagonal = Vector3.Distance(minimumWorld, maximumWorld);
             // Get aspect ratio in order to calculate frustum slope
-    
+
             // Formula for setting distance
             // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
             const radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
-    
+
             // Horizon distance
             const radius = radiusWithoutFraming * radiusScale;
             distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeX * frustumSlopeX));
             distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeY * frustumSlopeY));
-        }
-        else if (mode === "bounding box"){
+            distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
+        } else if (mode === "bounding box") {
             // Setting the distance according to the bounding box (centring the first face of the bounding box)
             const depth = (maximumWorld.z - minimumWorld.z) * 0.5;
-            distanceForHorizontalFrustum =  radiusScale * widht/frustumSlopeX + depth;
-            distanceForVerticalFrustum =  radiusScale * height/frustumSlopeY + depth;
-        }
-        else{
+            distanceForHorizontalFrustum = (radiusScale * widht) / frustumSlopeX + depth;
+            distanceForVerticalFrustum = (radiusScale * height) / frustumSlopeY + depth;
+            distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
+        } else {
             return this.radius;
         }
         //Adding a check for orthographic Camera
-        if (this.mode === Camera.ORTHOGRAPHIC_CAMERA){
-            if (aspectRatio < widht/height){
-                this.orthoRight = widht * radiusScale
-                this.orthoLeft = - this.orthoRight
-                this.orthoTop = this.orthoRight / aspectRatio
-                this.orthoBottom = this.orthoLeft / aspectRatio    
+        if (this.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+            if (aspectRatio < widht / height) {
+                this.orthoRight = widht * radiusScale;
+                this.orthoLeft = -this.orthoRight;
+                this.orthoTop = this.orthoRight / aspectRatio;
+                this.orthoBottom = this.orthoLeft / aspectRatio;
+            } else {
+                this.orthoRight = height * aspectRatio * radiusScale;
+                this.orthoLeft = -this.orthoRight * radiusScale;
+                this.orthoTop = height;
+                this.orthoBottom = -this.orthoTop;
             }
-            else{
-                this.orthoRight = height * aspectRatio * radiusScale
-                this.orthoLeft = - this.orthoRight * radiusScale
-                this.orthoTop = this.orthoRight / aspectRatio
-                this.orthoBottom = - this.orthoLeft / aspectRatio
-            }
+            console.log("ciao", this.orthoBottom, this.orthoTop, this.orthoLeft, this.orthoRight);
         }
-        return Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
+        return distance;
     }
 
     /**

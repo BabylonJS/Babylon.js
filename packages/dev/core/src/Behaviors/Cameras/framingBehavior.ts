@@ -312,7 +312,14 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      * @param onAnimationEnd Callback triggered at the end of the framing animation
      * @returns true if the zoom was done
      */
-    public zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, mode: string ="sphere", radiusScaling: number = 1, focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): boolean {
+    public zoomOnBoundingInfo(
+        minimumWorld: Vector3,
+        maximumWorld: Vector3,
+        focusOnOriginXZ: boolean = false,
+        onAnimationEnd: Nullable<() => void> = null,
+        mode: string = "sphere",
+        radiusScaling: number = 1
+    ): boolean {
         let zoomTarget: Vector3;
 
         if (!this._attachedCamera) {
@@ -350,13 +357,13 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         // Small delta ensures camera is not always at lower zoom limit.
         let radius = 0;
         if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-            const position = this._calculateLowerRadiusFromModelBoundingInfo(minimumWorld, maximumWorld);
+            const position = this._calculateLowerRadiusFromModelBoundingInfo(minimumWorld, maximumWorld, mode, radiusScaling);
             if (this.autoCorrectCameraLimitsAndSensibility) {
                 this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
             }
             radius = position;
         } else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
-            radius = this._calculateLowerRadiusFromModelBoundingInfo(minimumWorld, maximumWorld);
+            radius = this._calculateLowerRadiusFromModelBoundingInfo(minimumWorld, maximumWorld, mode, radiusScaling);
             if (this.autoCorrectCameraLimitsAndSensibility && this._attachedCamera.lowerRadiusLimit === null) {
                 this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
             }
