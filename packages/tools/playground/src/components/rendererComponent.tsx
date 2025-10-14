@@ -86,14 +86,19 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
             const searchParams = new URLSearchParams(window.location.search);
-            // Disallow Inspector v2 on specific versions. For now, only support the latest as both core and inspector are evolving in tandem.
-            // Once we have an Inspector v2 UMD package, we can make this work the same as Inspector v1.
-            const isInspectorV2ModeEnabled = !props.globalState.version && searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
+            let isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
 
             if (action === "refresh") {
                 action = isInspectorEnabled ? "enable" : "disable";
             } else if (action === "toggle") {
                 action = isInspectorEnabled ? "disable" : "enable";
+            }
+
+            // Disallow Inspector v2 on specific/older versions. For now, only support the latest as both core and inspector are evolving in tandem.
+            // Once we have an Inspector v2 UMD package, we can make this work the same as Inspector v1.)
+            if (action === "enable" && isInspectorV2ModeEnabled && props.globalState.version) {
+                isInspectorV2ModeEnabled = false;
+                alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
             }
 
             if (isInspectorV1Enabled && (isInspectorV2ModeEnabled || action === "disable")) {
