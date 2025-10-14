@@ -10,6 +10,7 @@ import { DecodeQspStringToObject } from "./utils";
  */
 export async function Main(searchParams: URLSearchParams): Promise<void> {
     const div = document.getElementById("main-div") as HTMLDivElement; // The player will be inside this div
+    div.style = "justify-content: center; align-items: center;"; // We want the animation centered
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";

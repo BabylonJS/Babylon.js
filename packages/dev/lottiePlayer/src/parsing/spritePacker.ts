@@ -359,10 +359,6 @@ export class SpritePacker {
             this._spritesCanvasContext.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
         }
 
-        // Draw a semi-transparent purple bounding box overlay for debugging/visualization.
-        //this._spritesCanvasContext.fillStyle = "rgba(128, 0, 128, 0.5)"; // semi transparent purple
-        //this._spritesCanvasContext.fillRect(0, 0, boundingBox.width, boundingBox.height);
-
         this._spritesCanvasContext.restore();
     }
 
