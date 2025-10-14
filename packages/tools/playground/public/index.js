@@ -41,6 +41,7 @@ var Versions = {
     "7.54.2": [
         "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
         "https://cdn.babylonjs.com/v7.54.2/babylon.js",
+        "https://cdn.babylonjs.com/v7.54.2/addons/babylonjs.addons.js",
         "https://cdn.babylonjs.com/v7.54.2/gui/babylon.gui.min.js",
         "https://cdn.babylonjs.com/v7.54.2/inspector/babylon.inspector.bundle.js",
         "https://cdn.babylonjs.com/v7.54.2/nodeEditor/babylon.nodeEditor.js",
