@@ -13,11 +13,10 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #else
 	id = i32(uniforms.meshID);
 #endif
-
-    fragmentOutputs.color = vec4f(
+    var color = vec3f(
         f32((id >> 16) & 0xFF),
         f32((id >> 8) & 0xFF),
         f32(id & 0xFF),
-        255.0
     ) / 255.0;
+    fragmentOutputs.color = vec4f(color, 1.0);
 }

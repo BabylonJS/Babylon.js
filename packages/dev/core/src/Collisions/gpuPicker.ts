@@ -59,10 +59,10 @@ export class GPUPicker {
     private readonly _thinIdMap: Array<{ meshId: number; thinId: number }> = [];
     private readonly _meshUniqueIdToPickerId: Array<number> = [];
     private _idWarningIssued = false;
-    
+
     private _cachedScene: Nullable<Scene> = null;
     private _engine: Nullable<AbstractEngine> = null;
-    
+
     private readonly _pickingMaterialCache: Nullable<ShaderMaterial>[] = new Array(9).fill(null);
 
     private _pickableMeshes: Array<AbstractMesh> = [];
@@ -99,7 +99,7 @@ export class GPUPicker {
 
     /**
      * Gets the default render materials used by the picker.
-     * 
+     *
      * index is Material filling mode
      */
     public get defaultRenderMaterials(): readonly Nullable<ShaderMaterial>[] {
@@ -150,7 +150,7 @@ export class GPUPicker {
         if (fillMode < 0 || 8 < fillMode) {
             fillMode = Constants.MATERIAL_TriangleFillMode;
         }
-        
+
         const cachedMaterial = this._pickingMaterialCache[fillMode];
         if (cachedMaterial) {
             return cachedMaterial;
@@ -170,13 +170,13 @@ export class GPUPicker {
             defines: defines,
             useClipPlane: null,
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async () => {
+            extraInitializationsAsync: async() => {
                 if (this.shaderLanguage === ShaderLanguage.WGSL) {
                     await Promise.all([import("../ShadersWGSL/picking.fragment"), import("../ShadersWGSL/picking.vertex")]);
                 } else {
                     await Promise.all([import("../Shaders/picking.fragment"), import("../Shaders/picking.vertex")]);
                 }
-            },
+            }
         };
 
         const newMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
@@ -254,7 +254,7 @@ export class GPUPicker {
                 }
 
                 const material = this._meshMaterialMap.get(mesh)!;
-                if (this._pickingMaterialCache.indexOf(material) === -1) {
+                if (!this._pickingMaterialCache.includes(material)) {
                     material.onBindObservable.removeCallback(this._materialBindCallback);
                 }
             }
@@ -335,11 +335,11 @@ export class GPUPicker {
 
         // We will affect colors and create vertex color buffers
         let nextFreeid = this._nextFreeId;
-        for (let index = 0; index < this._pickableMeshes.length; index++) {
-            const mesh = this._pickableMeshes[index];
+        for (let index = 0; index < newPickableMeshes.length; index++) {
+            const mesh = newPickableMeshes[index];
             const material = this._meshMaterialMap.get(mesh)!;
 
-            if (this._pickingMaterialCache.indexOf(material) === -1) {
+            if (!this._pickingMaterialCache.includes(material)) {
                 material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
             }
             this._pickingTexture!.setMaterialForRendering(mesh, material);
@@ -454,7 +454,7 @@ export class GPUPicker {
             const pi = await this.pickAsync(xy[0].x, xy[0].y, disposeWhenDone);
             return {
                 meshes: [pi?.mesh ?? null],
-                thinInstanceIndexes: pi?.thinInstanceIndex ? [pi.thinInstanceIndex] : undefined,
+                thinInstanceIndexes: pi?.thinInstanceIndex ? [pi.thinInstanceIndex] : undefined
             };
         }
 
@@ -479,7 +479,7 @@ export class GPUPicker {
             processedXY[i] = {
                 ...item,
                 x: adjustedX,
-                y: adjustedY,
+                y: adjustedY
             };
 
             minX = Math.min(minX, adjustedX);
@@ -550,7 +550,7 @@ export class GPUPicker {
         return {
             rttSizeW,
             rttSizeH,
-            devicePixelRatio,
+            devicePixelRatio
         };
     }
 
@@ -614,7 +614,6 @@ export class GPUPicker {
                     // Do the actual picking
                     if (await this._readTexturePixelsAsync(x, y)) {
                         const colorId = this._getColorIdFromReadBuffer(0);
-
                         // Thin?
                         if (this._thinIdMap[colorId]) {
                             pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
