@@ -51,7 +51,7 @@ export class NodeRenderGraphColorCorrectionPostProcessBlock extends NodeRenderGr
         this._additionalConstructionParameters = [colorTableUrl];
     }
 
-    /** The quality of the blur effect */
+    /** The color table URL */
     @editableInPropertyPage("Color Table URL", PropertyTypeForEdition.String, "PROPERTIES")
     public get colorTableUrl(): string {
         return this._frameGraphTask.postProcess.colorTableUrl;
