@@ -223,7 +223,7 @@ checkBabylonVersionAsync().then(() => {
             scene = new BABYLON.Scene(engine);
 
             nodeParticleSet = new BABYLON.NodeParticleSystemSet("System set");
-            nodeParticleSet.setToDefaultSPS();
+            nodeParticleSet.setToDefault();
             nodeParticleSet.buildAsync(scene).then(() => {
                 showEditor();
             });
