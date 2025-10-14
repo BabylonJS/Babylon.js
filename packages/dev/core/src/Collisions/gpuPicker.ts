@@ -51,7 +51,7 @@ export interface IGPUMultiPickingInfo {
  */
 export class GPUPicker {
     private static readonly _AttributeName = "instanceMeshID";
-    private static readonly _MaxPickingID = 0x00FFFFFF; // 24 bits unsigned integer max
+    private static readonly _MaxPickingId = 0x00ffffff; // 24 bits unsigned integer max
 
     private _pickingTexture: Nullable<RenderTargetTexture> = null;
 
@@ -124,16 +124,11 @@ export class GPUPicker {
         if (this._pickingTexture) {
             this._pickingTexture.dispose();
         }
-        this._pickingTexture = new RenderTargetTexture(
-            "pickingTexure",
-            { width: width, height: height },
-            scene,
-            {
-                generateMipMaps: false,
-                type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                samplingMode: Constants.TEXTURE_NEAREST_NEAREST
-            }
-        );
+        this._pickingTexture = new RenderTargetTexture("pickingTexure", { width: width, height: height }, scene, {
+            generateMipMaps: false,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            samplingMode: Constants.TEXTURE_NEAREST_NEAREST,
+        });
     }
 
     private _clearPickingMaterials(): void {
@@ -170,13 +165,13 @@ export class GPUPicker {
             defines: defines,
             useClipPlane: null,
             shaderLanguage: this._shaderLanguage,
-            extraInitializationsAsync: async() => {
+            extraInitializationsAsync: async () => {
                 if (this.shaderLanguage === ShaderLanguage.WGSL) {
                     await Promise.all([import("../ShadersWGSL/picking.fragment"), import("../ShadersWGSL/picking.vertex")]);
                 } else {
                     await Promise.all([import("../Shaders/picking.fragment"), import("../Shaders/picking.vertex")]);
                 }
-            }
+            },
         };
 
         const newMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
@@ -393,10 +388,10 @@ export class GPUPicker {
             }
         }
 
-        if (GPUPicker._MaxPickingID < (nextFreeid - 1)) {
+        if (GPUPicker._MaxPickingId < nextFreeid - 1) {
             if (!this._idWarningIssued) {
                 this._idWarningIssued = true;
-                Logger.Warn(`GPUPicker maximum number of pickable meshes and instances is ${GPUPicker._MaxPickingID}. Some meshes or instances won't be pickable.`);
+                Logger.Warn(`GPUPicker maximum number of pickable meshes and instances is ${GPUPicker._MaxPickingId}. Some meshes or instances won't be pickable.`);
             }
         }
 
@@ -454,7 +449,7 @@ export class GPUPicker {
             const pi = await this.pickAsync(xy[0].x, xy[0].y, disposeWhenDone);
             return {
                 meshes: [pi?.mesh ?? null],
-                thinInstanceIndexes: pi?.thinInstanceIndex ? [pi.thinInstanceIndex] : undefined
+                thinInstanceIndexes: pi?.thinInstanceIndex ? [pi.thinInstanceIndex] : undefined,
             };
         }
 
@@ -479,7 +474,7 @@ export class GPUPicker {
             processedXY[i] = {
                 ...item,
                 x: adjustedX,
-                y: adjustedY
+                y: adjustedY,
             };
 
             minX = Math.min(minX, adjustedX);
@@ -550,7 +545,7 @@ export class GPUPicker {
         return {
             rttSizeW,
             rttSizeH,
-            devicePixelRatio
+            devicePixelRatio,
         };
     }
 
@@ -683,14 +678,15 @@ export class GPUPicker {
 
     // pick box area
     private async _executeBoxPickingAsync(x: number, y: number, w: number, h: number, disposeWhenDone: boolean): Promise<IGPUMultiPickingInfo> {
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             if (!this._pickingTexture) {
                 this._pickingInProgress = false;
                 reject(new Error("Picking texture not created"));
                 return;
             }
 
-            this._pickingTexture.onAfterRender = async(): Promise<void> => {
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            this._pickingTexture.onAfterRender = async (): Promise<void> => {
                 if (this._checkRenderStatus()) {
                     this._pickingTexture!.onAfterRender = null as any;
                     const pickedMeshes: Nullable<AbstractMesh>[] = [];
