@@ -143,6 +143,10 @@ export class ConnectionPointPortData implements IPortData {
         return endpoints;
     }
 
+    public get allowMultipleConnections() {
+        return this.data.allowMultipleConnections;
+    }
+
     public constructor(connectionPoint: NodeParticleConnectionPoint, nodeContainer: INodeContainer) {
         this.data = connectionPoint;
         this._nodeContainer = nodeContainer;

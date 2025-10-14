@@ -40,14 +40,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["SPSMeshSourceBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SPSCreateBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SPSSystemBlock"] = SystemDisplayManager;
-    DisplayLedger.RegisteredControls["SPSInitParticleBlock"] = UpdateDisplayManager;
-    DisplayLedger.RegisteredControls["SPSUpdatePositionBlock"] = UpdateDisplayManager;
-    DisplayLedger.RegisteredControls["SPSUpdateRotationBlock"] = UpdateDisplayManager;
-    DisplayLedger.RegisteredControls["SPSUpdateScalingBlock"] = UpdateDisplayManager;
-    DisplayLedger.RegisteredControls["SPSUpdateColorBlock"] = UpdateDisplayManager;
-    DisplayLedger.RegisteredControls["SPSUpdateVelocityBlock"] = UpdateDisplayManager;
-    DisplayLedger.RegisteredControls["SPSPhysicsBlock"] = UpdateDisplayManager;
-    DisplayLedger.RegisteredControls["SPSGetParticlePropertyBlock"] = InputDisplayManager;
+    DisplayLedger.RegisteredControls["SPSInitBlock"] = UpdateDisplayManager;
 
     DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
     DisplayLedger.RegisteredControls["ParticleElbowBlock"] = ElbowDisplayManager;
