@@ -1,7 +1,7 @@
 ﻿// Attributes
 attribute vec3 position;
 #if defined(INSTANCES)
-attribute vec4 instanceMeshID;
+attribute float instanceMeshID;
 #endif
 
 #include<bonesDeclaration>
@@ -16,7 +16,7 @@ uniform mat4 viewProjection;
 
 // Output
 #if defined(INSTANCES)
-varying vec4 vMeshID;
+varying float vMeshID;
 #endif
 
 void main(void) {
