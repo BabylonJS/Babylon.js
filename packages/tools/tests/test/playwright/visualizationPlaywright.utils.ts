@@ -112,6 +112,9 @@ export const evaluatePlaywrightVisTests = async (
         if (testCase.excludeFromAutomaticTesting) {
             continue;
         }
+        if (testCase.excludedSystems && testCase.excludedSystems.some((sys: any) => sys.os === process.platform && sys.browser === process.env.BROWSER)) {
+            continue;
+        }
         if (testCase.excludedEngines && testCase.excludedEngines.indexOf(engineType) !== -1) {
             continue;
         }

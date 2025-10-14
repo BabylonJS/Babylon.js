@@ -50,7 +50,12 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
             const re = new RegExp(regex, "i");
             return re.test(test.title);
         });
-        return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
+        return !(
+            externallyExcluded ||
+            test.excludeFromAutomaticTesting ||
+            (test.excludedEngines && test.excludedEngines.includes(engineType)) ||
+            (test.excludedSystems && test.excludedSystems.some((sys: any) => sys.os === process.platform && sys.browser === process.env.BROWSER))
+        );
     });
 
     // 2% error rate
