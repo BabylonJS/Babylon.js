@@ -4,12 +4,15 @@ import type { GriffelStyle } from "@fluentui/react-components";
 import type { KeyboardEvent, FocusEvent } from "react";
 
 export const CustomTokens = {
-    inputWidth: "150px",
-    lineHeight: "36px",
+    inputWidth: "100px",
+    lineHeight: tokens.lineHeightHero700, // 36px
+    lineHeightSmall: tokens.lineHeightBase300, // 24px
+    dividerGap: tokens.fontSizeBase100, // "10px",
+    dividerGapSmall: tokens.borderRadiusMedium, // 4px",
     labelMinWidth: "50px",
     sliderMinWidth: "30px",
     sliderMaxWidth: "80px",
-    rightAlignOffset: "-8px",
+    rightAlignOffset: `-${tokens.borderRadiusXLarge}`, // -8px
 };
 
 export const UniformWidthStyling: GriffelStyle = { width: CustomTokens.inputWidth, boxSizing: "border-box" };
@@ -22,7 +25,6 @@ export const useInputStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
         justifyContent: "center", // align items vertically
-        gap: "4px",
     },
 });
 
@@ -72,6 +74,6 @@ export function CalculatePrecision(value: number) {
 }
 
 const HEX_REGEX = RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8})$/);
-export function ColorHexValidatorFn(val: string) {
+export function ValidateColorHex(val: string) {
     return val != "" && HEX_REGEX.test(val);
 }
