@@ -3,7 +3,6 @@ import type { IDisposable } from "core/index";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
-import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
 import { Button, Divider, Toolbar as FluentToolbar, makeStyles, mergeClasses, Subtitle2Stronger, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
@@ -14,6 +13,7 @@ import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
+import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
 
 /**
@@ -701,12 +701,10 @@ function usePane(
         setValue: setPaneHeightAdjust,
     } = useResizeHandle({
         growDirection: "up",
-        relative: true,
         variableName: paneHeightAdjustCSSVar,
-        variableTarget: "element",
-        onChange: (event, data) => {
+        onChange: (value) => {
             // Whenever the height is adjusted, store the value.
-            localStorage.setItem(heightStorageKey, data.value.toString());
+            localStorage.setItem(heightStorageKey, value.toString());
         },
     });
 
