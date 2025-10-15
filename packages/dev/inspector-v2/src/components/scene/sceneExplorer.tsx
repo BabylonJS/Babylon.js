@@ -22,6 +22,7 @@ import {
     tokens,
     Tooltip,
     TreeItemLayout,
+    treeItemLevelToken,
 } from "@fluentui/react-components";
 import { ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -455,6 +456,7 @@ const EntityTreeItem: FunctionComponent<{
                     aria-setsize={1}
                     aria-posinset={1}
                     onClick={select}
+                    style={{ [treeItemLevelToken]: entityItem.depth }}
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
