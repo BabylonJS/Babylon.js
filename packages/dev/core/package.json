@@ -6,6 +6,7 @@
     "esnext": "dist/index",
     "types": "dist/index",
     "private": true,
+    "type": "module",
     "files": [
         "dist",
         "src"
