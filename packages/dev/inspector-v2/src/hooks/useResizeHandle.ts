@@ -1,10 +1,12 @@
 // NOTE: This is basically a super simplified version of https://github.com/microsoft/fluentui-contrib/blob/main/packages/react-resize-handle/src/hooks
-// This version does not support keyboard interactions, absolute values, min/max, accessibility, and various other features.
+// This version does not support keyboard interactions, absolute values, automatically clamping to the actual adjusted size, accessibility, and various other features.
 // We can switch back to Fluent's implementation once some known bugs are fixed:
 // 1. https://github.com/microsoft/fluentui-contrib/issues/523
 // 2. React 19 compatibility
 
 import { useCallback, useEffect, useState } from "react";
+
+import { Clamp } from "core/Maths/math.scalar.functions";
 
 export type GrowDirection = "end" | "start" | "up" | "down";
 
@@ -23,6 +25,14 @@ export type UseResizeHandleParams = {
      * @remarks The passed function should be memoized for better performance.
      */
     onChange?: (value: number) => void;
+    /**
+     * The minimum change allowed (e.g. the smallest negative number allowed).
+     */
+    minValue?: number;
+    /**
+     * The maximum change allowed (e.g. the largest positive number allowed).
+     */
+    maxValue?: number;
 };
 
 /**
@@ -51,6 +61,8 @@ export function useResizeHandle(params: UseResizeHandleParams) {
         if (handleRef) {
             let delta = 0;
 
+            const coerceDelta = (delta: number) => Clamp(delta, params.minValue ?? -Infinity, params.maxValue ?? Infinity);
+
             const onPointerMove = (event: PointerEvent) => {
                 event.preventDefault();
                 switch (growDirection) {
@@ -67,7 +79,7 @@ export function useResizeHandle(params: UseResizeHandleParams) {
                         delta += event.movementX;
                         break;
                 }
-                setValue(delta);
+                setValue(coerceDelta(delta));
             };
 
             const onPointerDown = (event: PointerEvent) => {
@@ -80,6 +92,7 @@ export function useResizeHandle(params: UseResizeHandleParams) {
                 event.preventDefault();
                 handleRef.releasePointerCapture(event.pointerId);
                 handleRef.removeEventListener("pointermove", onPointerMove);
+                delta = coerceDelta(delta);
             };
 
             handleRef.addEventListener("pointerdown", onPointerDown);

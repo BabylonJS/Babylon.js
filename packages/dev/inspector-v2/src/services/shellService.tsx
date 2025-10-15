@@ -532,11 +532,8 @@ function usePane(
         setCollapsed((collapsed) => !collapsed);
     }, [collapsed]);
 
-    const widthStorageKey = `Babylon/Settings/${alignment}Pane/Width`;
+    const widthStorageKey = `Babylon/Settings/${alignment}Pane/WidthAdjust`;
     const heightStorageKey = `Babylon/Settings/${alignment}Pane/HeightAdjust`;
-
-    const [width, setWidth] = useState(Number.parseInt(localStorage.getItem(widthStorageKey) ?? "") || Math.max(defaultWidth, minWidth));
-    const [resizing, setResizing] = useState(false);
 
     // Selects a default top tab (during initialization or if the selected tab is removed).
     useEffect(() => {
@@ -582,45 +579,6 @@ function usePane(
             return collapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />;
         }
     }, [collapsed, alignment]);
-
-    // TODO: Replace this custom resizing logic with useResizeHandle.
-    // This function handles resizing the side pane width.
-    const onResizerPointerDown = useCallback(
-        (event: React.PointerEvent<HTMLDivElement>) => {
-            const currentTarget = event.currentTarget;
-            const pointerId = event.pointerId;
-            event.preventDefault();
-            setResizing(true);
-            currentTarget.setPointerCapture(pointerId);
-            let newWidth = width;
-            let finalWidth = newWidth;
-
-            const onPointerMove = (event: PointerEvent) => {
-                event.preventDefault();
-                let movementX = event.movementX;
-                if (alignment === "right") {
-                    movementX *= -1;
-                }
-                newWidth = Math.max(0, newWidth + movementX);
-                finalWidth = Math.max(minWidth, newWidth);
-                setWidth(finalWidth);
-            };
-            currentTarget.addEventListener("pointermove", onPointerMove);
-
-            currentTarget.addEventListener(
-                "pointerup",
-                (event) => {
-                    event.preventDefault();
-                    currentTarget.removeEventListener("pointermove", onPointerMove);
-                    currentTarget.releasePointerCapture(pointerId);
-                    setResizing(false);
-                    localStorage.setItem(widthStorageKey, finalWidth.toString());
-                },
-                { once: true }
-            );
-        },
-        [resizing]
-    );
 
     const createPaneTabList = useCallback(
         (
@@ -693,6 +651,22 @@ function usePane(
         [createPaneTabList, bottomPanes, bottomSelectedTab]
     );
 
+    // This manages the CSS variable that controls the width of the side pane.
+    const paneWidthAdjustCSSVar = "--pane-width-adjust";
+    const {
+        elementRef: paneHorizontalResizeElementRef,
+        handleRef: paneHorizontalResizeHandleRef,
+        setValue: setPaneWidthAdjust,
+    } = useResizeHandle({
+        growDirection: alignment === "left" ? "end" : "start",
+        variableName: paneWidthAdjustCSSVar,
+        minValue: minWidth - defaultWidth,
+        onChange: (value) => {
+            // Whenever the width is adjusted, store the value.
+            localStorage.setItem(widthStorageKey, value.toString());
+        },
+    });
+
     // This manages the CSS variable that controls the height of the bottom pane.
     const paneHeightAdjustCSSVar = "--pane-height-adjust";
     const {
@@ -710,11 +684,16 @@ function usePane(
 
     // This ensures that when the component is first rendered, the CSS variable is set from storage.
     useLayoutEffect(() => {
+        const storedPaneWidthAdjust = localStorage.getItem(widthStorageKey);
+        if (storedPaneWidthAdjust) {
+            setPaneWidthAdjust(Number.parseInt(storedPaneWidthAdjust));
+        }
+
         const storedPaneHeightAdjust = localStorage.getItem(heightStorageKey);
         if (storedPaneHeightAdjust) {
             setPaneHeightAdjust(Number.parseInt(storedPaneHeightAdjust));
         }
-    });
+    }, []);
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
     const pane = useMemo(() => {
@@ -723,7 +702,11 @@ function usePane(
                 {(topPanes.length > 0 || bottomPanes.length > 0) && (
                     <div className={`${classes.pane} ${alignment === "left" ? classes.paneLeft : classes.paneRight}`}>
                         <Collapse orientation="horizontal" visible={!collapsed}>
-                            <div className={classes.paneContainer} style={{ width: `${width}px` }}>
+                            <div
+                                ref={paneHorizontalResizeElementRef}
+                                className={classes.paneContainer}
+                                style={{ width: `clamp(${minWidth}px, calc(${defaultWidth}px + var(${paneWidthAdjustCSSVar}, 0px)), 1000px)` }}
+                            >
                                 {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
                                 {toolbarMode === "compact" && (topPanes.length > 1 || topBarItems.length > 0) && (
                                     <>
@@ -756,7 +739,7 @@ function usePane(
                                     <div
                                         ref={paneVerticalResizeElementRef}
                                         className={classes.paneContent}
-                                        style={{ height: `clamp(200px,calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
+                                        style={{ height: `clamp(200px, calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
                                     >
                                         <PaneHeader title={bottomSelectedTab?.title} />
                                         {bottomSelectedTab?.content && <bottomSelectedTab.content />}
@@ -775,15 +758,15 @@ function usePane(
                         </Collapse>
                         {/* This is the resizer (width) for the pane container. */}
                         <div
+                            ref={paneHorizontalResizeHandleRef}
                             className={`${classes.resizer} ${alignment === "left" ? classes.resizerLeft : classes.resizerRight}`}
                             style={{ pointerEvents: `${collapsed ? "none" : "auto"}` }}
-                            onPointerDown={onResizerPointerDown}
                         />
                     </div>
                 )}
             </>
         );
-    }, [topPanes, topSelectedTab, bottomPanes, bottomSelectedTab, topBarItems, bottomBarItems, topPaneTabList, bottomPaneTabList, collapsed, width, resizing]);
+    }, [topPanes, topSelectedTab, bottomPanes, bottomSelectedTab, topBarItems, bottomBarItems, topPaneTabList, bottomPaneTabList, collapsed]);
 
     return [topPaneTabList, pane];
 }
