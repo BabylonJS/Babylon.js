@@ -49,6 +49,9 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
                     }
                 }
 
+                // Expose the selected entity through a global variable. This is an Inspector v1 feature that people have found useful.
+                (globalThis as any).debugNode = item;
+
                 // Automatically open the properties pane when an entity is selected.
                 if (item && settingsContext.showPropertiesOnEntitySelection) {
                     shellService.sidePanes.find((pane) => pane.key === "Properties")?.select();
