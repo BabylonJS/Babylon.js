@@ -1,6 +1,8 @@
 // NOTE: This is basically a super simplified version of https://github.com/microsoft/fluentui-contrib/blob/main/packages/react-resize-handle/src/hooks
 // This version does not support keyboard interactions, absolute values, min/max, accessibility, and various other features.
-// We can switch back to Fluent's implementation once some known bugs are fixed, such as https://github.com/microsoft/fluentui-contrib/issues/523.
+// We can switch back to Fluent's implementation once some known bugs are fixed:
+// 1. https://github.com/microsoft/fluentui-contrib/issues/523
+// 2. React 19 compatibility
 
 import { useCallback, useEffect, useState } from "react";
 
