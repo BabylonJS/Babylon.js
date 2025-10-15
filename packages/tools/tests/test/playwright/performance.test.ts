@@ -96,12 +96,7 @@ export const performanceTests = async (engineType = "webgl2", testFileName = "co
             const re = new RegExp(regex, "i");
             return re.test(test.title);
         });
-        return !(
-            externallyExcluded ||
-            test.excludeFromAutomaticTesting ||
-            (test.excludedEngines && test.excludedEngines.includes(engineType)) ||
-            (test.excludedSystems && test.excludedSystems.includes(process.env.BROWSERSTACK_BROWSER))
-        );
+        return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
     });
 
     function log(msg: any, title?: string) {
@@ -185,13 +180,9 @@ export const performanceTests = async (engineType = "webgl2", testFileName = "co
         if (testCase.excludeFromAutomaticTesting) {
             continue;
         }
-        if (testCase.excludedSystems && testCase.excludedSystems.includes(process.env.BROWSERSTACK_BROWSER)) {
-            continue;
-        }
         if (testCase.excludedEngines && testCase.excludedEngines.indexOf(engineType) !== -1) {
             continue;
         }
-
         test(testCase.title, async ({ browser }) => {
             //defensive
             testResults = {};
