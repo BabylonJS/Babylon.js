@@ -10,6 +10,7 @@
     vec3 slab_coat = vec3(0., 0., 0.);
     float coatFresnel = 0.0;
     vec3 slab_fuzz = vec3(0., 0., 0.);
+    float fuzzFresnel = 0.0;
 
     // Diffuse Lobe
     #ifdef HEMILIGHT{X}
@@ -25,6 +26,11 @@
     #endif
 
     numLights += 1.0;
+
+    #ifdef FUZZ
+        float fuzzNdotH = max(dot(fuzzNormalW, preInfo{X}.H), 0.0);
+        vec3 fuzzBrdf = getFuzzBRDFLookup(fuzzNdotH, sqrt(fuzz_roughness));
+    #endif
 
     // Specular Lobe
     #if AREALIGHT{X}
@@ -134,12 +140,22 @@
         coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
     }
 
+    #ifdef FUZZ
+        fuzzFresnel = fuzzBrdf.z;
+        vec3 fuzzNormalW = mix(normalW, coatNormalW, coat_weight);
+        float fuzzNdotV = max(dot(fuzzNormalW, viewDirectionW.xyz), 0.0);
+        float fuzzNdotL = max(dot(fuzzNormalW, preInfo{X}.L), 0.0);
+        slab_fuzz = lightColor{X}.rgb * preInfo{X}.attenuation * evalFuzz(preInfo{X}.L, fuzzNdotL, fuzzNdotV, fuzzTangent, fuzzBitangent, fuzzBrdf);
+    #else
+        vec3 fuzz_color = vec3(0.0);
+    #endif
+
     slab_diffuse *= base_color.rgb;
     vec3 material_opaque_base = mix(slab_diffuse, slab_subsurface, subsurface_weight);
     vec3 material_dielectric_base = mix(material_opaque_base, slab_translucent, transmission_weight);
     vec3 material_dielectric_gloss = material_dielectric_base * (1.0 - specularFresnel) + slab_glossy * specularColoredFresnel;
     vec3 material_base_substrate = mix(material_dielectric_gloss, slab_metal, base_metalness);
     vec3 material_coated_base = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3(1.0));
-    material_surface_direct += mix(material_coated_base, slab_fuzz, fuzz_weight);
+    material_surface_direct += layer(material_coated_base, slab_fuzz, fuzzFresnel * fuzz_weight, vec3(1.0), fuzz_color);
 }
 #endif

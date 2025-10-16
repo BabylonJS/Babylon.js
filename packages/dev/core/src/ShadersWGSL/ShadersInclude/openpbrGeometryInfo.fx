@@ -6,7 +6,6 @@ struct geometryInfoOutParams
     horizonOcclusion: f32
 };
 
-#ifdef ANISOTROPIC
 struct geometryInfoAnisoOutParams
 {
     NdotV: f32,
@@ -18,7 +17,6 @@ struct geometryInfoAnisoOutParams
     anisotropicBitangent: vec3f,
     TBN: mat3x3<f32>
 };
-#endif
 
 fn geometryInfo(
     normalW: vec3f, viewDirectionW: vec3f, roughness: f32, geometricNormalW: vec3f
@@ -50,7 +48,6 @@ fn geometryInfo(
     return outParams;
 }
 
-#ifdef ANISOTROPIC
 fn geometryInfoAniso(
     normalW: vec3f, viewDirectionW: vec3f, roughness: f32, geometricNormalW: vec3f
     , vAnisotropy: vec3f, TBN: mat3x3<f32>
@@ -71,4 +68,3 @@ fn geometryInfoAniso(
 
     return outParams;
 }
-#endif

@@ -1,5 +1,10 @@
 // _____________________________ Base Diffuse Layer IBL _______________________________________
 #ifdef REFLECTION
+
+    #ifdef FUZZ
+        vec3 environmentFuzzBrdf = getFuzzBRDFLookup(fuzzGeoInfo.NdotV, sqrt(fuzz_roughness));
+    #endif
+
     // Pass in a vector to sample the irradiance with. A normal can be used for
     // diffuse irradiance while a refracted vector can be used for diffuse transmission.
     vec3 baseDiffuseEnvironmentLight = sampleIrradiance(
@@ -100,7 +105,44 @@
             );
         #endif
     }
-    
+
+    #ifdef FUZZ
+        // _____________________________ Fuzz Layer IBL _______________________________________
+        
+        // From the LUT, the y component represents a slight skewing of the lobe. I'm using this to
+        // bump the roughness up slightly.
+        float modifiedFuzzRoughness = clamp(fuzz_roughness * (1.0 - 0.5 * environmentFuzzBrdf.y), 0.0, 1.0);
+        
+        // The x component of the LUT, represents the anisotropy of the lobe (0 being anisotropic, 1 being isotropic)
+        // We'll do a simple approximation by sampling the environment multiple times around an imaginary fiber.
+        // This will be scaled by the anisotropy value from the LUT so that, for isotropic fuzz, we just use the surface normal.
+        vec3 fuzzEnvironmentLight = vec3(0.0);
+        float samples = 4.0;
+        float totalWeight = 0.0;
+        for (int i = 0; i < int(samples); ++i) {
+            float angle = float(i) * (3.141592 * 2.0 / samples);
+            // Normal of the fiber is a simple rotation of the tangent and bitangent around the surface normal
+            vec3 fiberNormal = normalize(cos(angle) * fuzzTangent + sin(angle) * fuzzBitangent);
+            // Then, we mix it with the fuzz surface normal based on the anisotropy.
+            fiberNormal = normalize(mix(fiberNormal, fuzzNormalW, environmentFuzzBrdf.x * environmentFuzzBrdf.x));
+            float sampleWeight = max(dot(viewDirectionW, fiberNormal), 0.0);
+            vec3 fuzzReflectionCoords = createReflectionCoords(vPositionW, fiberNormal);
+            fuzzEnvironmentLight += sampleWeight * sampleRadiance(modifiedFuzzRoughness, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                , fuzzGeoInfo
+                , reflectionSampler
+                , fuzzReflectionCoords
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+            totalWeight += sampleWeight;
+        }
+        fuzzEnvironmentLight /= totalWeight;
+
+        // Empirical blend between fuzz and diffuse lobes based on roughness
+        // Fully rough fuzz is essentially isotropic.
+        fuzzEnvironmentLight = mix(fuzzEnvironmentLight.rgb, baseDiffuseEnvironmentLight, modifiedFuzzRoughness * modifiedFuzzRoughness);
+    #endif
     // ______________________________ IBL Fresnel Reflectance ____________________________
 
     // Dielectric IBL Fresnel
@@ -181,10 +223,14 @@
         coatAbsorption = mix(vec3(1.0), colored_transmission * darkened_transmission, coat_weight);
     }
 
+    #ifdef FUZZ
+        vec3 slab_fuzz_ibl = fuzzEnvironmentLight*vLightingIntensity.z;
+        float fuzzIblFresnel = environmentFuzzBrdf.z;
+    #endif
+
     // TEMP
     vec3 slab_subsurface_ibl = vec3(0., 0., 0.);
     vec3 slab_translucent_base_ibl = vec3(0., 0., 0.);
-    vec3 slab_fuzz_ibl = vec3(0., 0., 0.);
     
     slab_diffuse_ibl *= base_color.rgb;
 
@@ -195,6 +241,10 @@
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));
-    material_surface_ibl = mix(material_coated_base_ibl, slab_fuzz_ibl, fuzz_weight);
+    #ifdef FUZZ
+    material_surface_ibl = layer(material_coated_base_ibl, slab_fuzz_ibl, fuzzIblFresnel * fuzz_weight, vec3(1.0), fuzz_color);
+    #else
+    material_surface_ibl = material_coated_base_ibl;
+    #endif
     
 #endif

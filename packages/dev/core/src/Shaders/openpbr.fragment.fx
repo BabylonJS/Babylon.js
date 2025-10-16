@@ -96,10 +96,12 @@ void main(void) {
 
     #include<openpbrThinFilmLayerData>
 
+    // _____________________________ Read Fuzz Layer properties ______________________
+    #include<openpbrFuzzLayerData>
+
     // TEMP
     float subsurface_weight = 0.0;
     float transmission_weight = 0.0;
-    float fuzz_weight = 0.0;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
@@ -145,6 +147,17 @@ void main(void) {
     #else
         geometryInfoOutParams baseGeoInfo = geometryInfo(
             normalW, viewDirectionW.xyz, specular_roughness, geometricNormalW
+        );
+    #endif
+
+    #ifdef FUZZ
+        // _____________________________ Compute Geometry info for fuzz layer _________________________
+        vec3 fuzzNormalW = normalize(mix(normalW, coatNormalW, coat_weight));
+        vec3 fuzzTangent = normalize(TBN[0]);
+        fuzzTangent = normalize(fuzzTangent - dot(fuzzTangent, fuzzNormalW) * fuzzNormalW);
+        vec3 fuzzBitangent = cross(fuzzNormalW, fuzzTangent);
+        geometryInfoOutParams fuzzGeoInfo = geometryInfo(
+            fuzzNormalW, viewDirectionW.xyz, fuzz_roughness, geometricNormalW
         );
     #endif
 
