@@ -1,4 +1,4 @@
-import type { ComponentType, ContextType, FunctionComponent } from "react";
+import type { ComponentType, FunctionComponent } from "react";
 import type { TernaryDarkMode } from "usehooks-ts";
 
 import type { IDisposable } from "core/index";
