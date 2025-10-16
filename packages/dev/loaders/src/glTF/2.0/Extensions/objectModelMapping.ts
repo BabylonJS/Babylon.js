@@ -51,6 +51,9 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
                 multiplier: IObjectAccessor<INode, Light, number>;
                 color: IObjectAccessor<INode, Light, Color3>;
             };
+            KHR_node_visibility?: {
+                visible: IObjectAccessor<INode, Mesh, boolean>;
+            };
         };
     };
 }
@@ -382,6 +385,20 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                             if (light) {
                                 light.diffuse = value;
                             }
+                        }
+                    },
+                },
+            },
+            KHR_node_visibility: {
+                visible: {
+                    type: "boolean",
+                    get: (node: INode) => {
+                        return node._primitiveBabylonMeshes ? node._primitiveBabylonMeshes[0].isVisible : false;
+                    },
+                    getTarget: () => undefined, // TODO: what should this return?
+                    set: (value: boolean, node: INode) => {
+                        if (node._primitiveBabylonMeshes) {
+                            node._primitiveBabylonMeshes.forEach((mesh) => (mesh.isVisible = value));
                         }
                     },
                 },

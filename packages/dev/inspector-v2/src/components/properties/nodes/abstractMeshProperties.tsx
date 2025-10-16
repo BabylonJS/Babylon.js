@@ -48,7 +48,6 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
 
     return (
         <>
-            <BoundProperty component={SwitchPropertyLine} label="Is Visible" target={mesh} propertyKey="isVisible" />
             <StringifiedPropertyLine label="Vertices" value={mesh.getTotalVertices()} />
             <StringifiedPropertyLine label="Faces" value={mesh.getTotalIndices() / 3} />
             <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />

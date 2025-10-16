@@ -1,5 +1,21 @@
 # Changelog
 
+## 8.32.0
+
+## 8.31.4
+
+### Core
+
+- Fix: use camera world position for floating origin - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#17301](https://github.com/BabylonJS/Babylon.js/pull/17301))
+
+### Loaders
+
+- Gltf: unofficial _COLOR_0 for EXT_mesh_gpu_instancing - by [kzhsw](https://github.com/kzhsw) ([#17264](https://github.com/BabylonJS/Babylon.js/pull/17264))
+
+### Serializers
+
+- Gltf: unofficial _COLOR_0 for EXT_mesh_gpu_instancing - by [kzhsw](https://github.com/kzhsw) ([#17264](https://github.com/BabylonJS/Babylon.js/pull/17264))
+
 ## 8.31.3
 
 ### Core
