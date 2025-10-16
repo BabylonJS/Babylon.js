@@ -1,5 +1,6 @@
 import { Button as FluentButton } from "@fluentui/react-components";
-import { useContext, type FunctionComponent } from "react";
+import type { FunctionComponent } from "react";
+import { useContext } from "react";
 import type { FluentIcon } from "@fluentui/react-icons";
 import type { BasePrimitiveProps } from "./primitive";
 import { ToolContext } from "../hoc/fluentToolWrapper";
