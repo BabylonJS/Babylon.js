@@ -1,27 +1,5 @@
 layout(std140, column_major) uniform;
 
-// layout(set = 0, binding = 0) uniform Harmonics
-// {
-//     uniform vec3 vSphericalL00;
-//     uniform vec3 vSphericalL1_1;
-//     uniform vec3 vSphericalL10;
-//     uniform vec3 vSphericalL11;
-//     uniform vec3 vSphericalL2_2;
-//     uniform vec3 vSphericalL2_1;
-//     uniform vec3 vSphericalL20;
-//     uniform vec3 vSphericalL21;
-//     uniform vec3 vSphericalL22;
-//     uniform vec3 vSphericalX;
-//     uniform vec3 vSphericalY;
-//     uniform vec3 vSphericalZ;
-//     uniform vec3 vSphericalXX_ZZ;
-//     uniform vec3 vSphericalYY_ZZ;
-//     uniform vec3 vSphericalZZ;
-//     uniform vec3 vSphericalXY;
-//     uniform vec3 vSphericalYZ;
-//     uniform vec3 vSphericalZX;
-// }
-
 uniform Material {
     vec2 vTangentSpaceParams;
     vec4 vLightingIntensity;
@@ -74,6 +52,9 @@ uniform Material {
     float vCoatDarkening;
     vec2 vGeometryCoatTangent;
     vec3 vEmissionColor;
+    float vThinFilmWeight;
+    vec2 vThinFilmThickness;
+    float vThinFilmIor;
 
     vec2 vBaseWeightInfos;
     mat4 baseWeightMatrix;
@@ -97,6 +78,8 @@ uniform Material {
     mat4 coatColorMatrix;
     vec2 vCoatRoughnessInfos;
     mat4 coatRoughnessMatrix;
+    vec2 vCoatRoughnessAnisotropyInfos;
+    mat4 coatRoughnessAnisotropyMatrix;
     vec2 vCoatDarkeningInfos;
     mat4 coatDarkeningMatrix;
     vec2 vGeometryNormalInfos;
@@ -111,6 +94,10 @@ uniform Material {
     mat4 geometryOpacityMatrix;
     vec2 vEmissionColorInfos;
     mat4 emissionColorMatrix;
+    vec2 vThinFilmWeightInfos;
+    mat4 thinFilmWeightMatrix;
+    vec2 vThinFilmThicknessInfos;
+    mat4 thinFilmThicknessMatrix;
     vec2 vAmbientOcclusionInfos;
     mat4 ambientOcclusionMatrix;
 

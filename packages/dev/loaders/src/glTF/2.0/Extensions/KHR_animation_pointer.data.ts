@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { Animation } from "core/Animations/animation";
-import type { ICamera, IKHRLightsPunctual_Light, IMaterial } from "../glTFLoaderInterfaces";
+import type { ICamera, IKHRLightsPunctual_Light, IMaterial, INode } from "../glTFLoaderInterfaces";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import { AnimationPropertyInfo } from "../glTFLoaderAnimation";
 import { Color3 } from "core/Maths/math.color";
@@ -70,6 +70,15 @@ class LightAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
     public buildAnimations(target: IKHRLightsPunctual_Light, name: string, fps: number, keys: any[]) {
         return [{ babylonAnimatable: target._babylonLight!, babylonAnimation: this._buildAnimation(name, fps, keys) }];
+    }
+}
+
+class MeshAnimationPropertyInfo extends AnimationPropertyInfo {
+    /** @internal */
+    public buildAnimations(target: INode, name: string, fps: number, keys: any[]) {
+        return target._primitiveBabylonMeshes
+            ? target._primitiveBabylonMeshes.map((mesh) => ({ babylonAnimatable: mesh, babylonAnimation: this._buildAnimation(name, fps, keys) }))
+            : [];
     }
 }
 
@@ -326,3 +335,5 @@ SetInterpolationForKey("/extensions/KHR_lights_punctual/lights/{}/spot/outerCone
 
 SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/color", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "diffuse", getColor3, () => 3)]);
 SetInterpolationForKey("/nodes/{}/extensions/EXT_lights_ies/multiplier", [new LightAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "intensity", getFloat, () => 1)]);
+
+SetInterpolationForKey("/nodes/{}/extensions/KHR_node_visibility/visible", [new MeshAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "isVisible", getFloat, () => 1)]);

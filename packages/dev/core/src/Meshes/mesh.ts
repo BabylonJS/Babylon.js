@@ -1661,7 +1661,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         this.releaseSubMeshes();
-        return new SubMesh(0, 0, totalVertices, 0, this.getTotalIndices() || totalVertices, this); // getTotalIndices() can be zero if the mesh is unindexed
+        return new SubMesh(0, 0, totalVertices, 0, this.getTotalIndices() || (this.isUnIndexed ? totalVertices : 0), this); // getTotalIndices() can be zero if the mesh is unindexed
     }
 
     /**
@@ -4877,8 +4877,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             const boundingBox = boundingInfo.boundingBox;
             if (!minVector || !maxVector) {
-                minVector = boundingBox.minimumWorld;
-                maxVector = boundingBox.maximumWorld;
+                minVector = boundingBox.minimumWorld.clone();
+                maxVector = boundingBox.maximumWorld.clone();
             } else {
                 minVector.minimizeInPlace(boundingBox.minimumWorld);
                 maxVector.maximizeInPlace(boundingBox.maximumWorld);

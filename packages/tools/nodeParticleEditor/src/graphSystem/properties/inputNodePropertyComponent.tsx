@@ -143,8 +143,12 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Position", value: NodeParticleContextualSources.Position },
                     { label: "Direction", value: NodeParticleContextualSources.Direction },
                     { label: "Scaled direction", value: NodeParticleContextualSources.ScaledDirection },
+                    { label: "Initial Direction", value: NodeParticleContextualSources.InitialDirection },
                 ];
-                systemSourcesOptions = [{ label: "Emitter", value: NodeParticleSystemSources.Emitter }];
+                systemSourcesOptions = [
+                    { label: "Emitter", value: NodeParticleSystemSources.Emitter },
+                    { label: "Camera Position", value: NodeParticleSystemSources.CameraPosition },
+                ];
                 break;
             case NodeParticleBlockConnectionPointTypes.Color4:
                 contextualSourcesOptions = [

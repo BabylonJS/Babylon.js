@@ -10,13 +10,15 @@ import { makeStyles } from "@fluentui/react-components";
 import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
-import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
+import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
 import { MakeModularTool } from "./modularTool";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
+import { MiniStatsServiceDefinition } from "./services/miniStatsService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
 import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
 import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
+import { AtmospherePropertiesServiceDefinition } from "./services/panes/properties/atmospherePropertiesService";
 import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
 import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
@@ -36,6 +38,7 @@ import { SpritePropertiesServiceDefinition } from "./services/panes/properties/s
 import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
 import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
 import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { AtmosphereExplorerServiceDefinition } from "./services/panes/scene/atmosphereExplorerService";
 import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
 import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
 import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
@@ -55,14 +58,11 @@ import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
-import { AtmospherePropertiesServiceDefinition } from "./services/panes/properties/atmospherePropertiesService";
-import { AtmosphereExplorerServiceDefinition } from "./services/panes/scene/atmosphereExplorerService";
+import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
-type InspectorV2Options = Pick<ModularToolOptions, "serviceDefinitions" | "isThemeable"> & {
-    isExtensible?: boolean;
-};
+type InspectorV2Options = Omit<ModularToolOptions, "containerElement">;
 
 export function IsInspectorVisible(): boolean {
     return CurrentInspectorToken != null;
@@ -82,8 +82,6 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         enableClose: true,
         handleResize: true,
         enablePopup: true,
-        isExtensible: true,
-        isThemeable: true,
         ...options,
     };
 
@@ -258,11 +256,18 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Allows picking objects from the scene to select them.
             PickingServiceDefinition,
 
+            // Adds entry points for user feedback on Inspector v2 (probably eventually will be removed).
+            UserFeedbackServiceDefinition,
+
+            // Adds always present "mini stats" (like fps) to the toolbar, etc.
+            MiniStatsServiceDefinition,
+
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),
         ],
-        isThemeable: options.isThemeable ?? true,
-        extensionFeeds: options.isExtensible ? [new BuiltInsExtensionFeed()] : [],
+        themeMode: options.themeMode,
+        showThemeSelector: options.showThemeSelector,
+        extensionFeeds: [DefaultInspectorExtensionFeed, ...(options.extensionFeeds ?? [])],
         toolbarMode: "compact",
         sidePaneMode: options.embedMode ? "right" : "both",
     });

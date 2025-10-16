@@ -13,8 +13,8 @@ import type { Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 
-// If the "inspectorv2" query parameter is present, preload (asynchronously) the new inspector v2 module.
-const InspectorV2ModulePromise = new URLSearchParams(window.location.search).has("inspectorv2") ? import("inspector-v2/inspector") : null;
+// Preload (asynchronously) the inspector v2 module, but don't block rendering.
+const InspectorV2ModulePromise = import("inspector-v2/inspector");
 
 interface IRenderingComponentProps {
     globalState: GlobalState;
@@ -67,41 +67,61 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this._downloadManager.downloadAsync();
         });
 
-        this.props.globalState.onInspectorRequiredObservable.add(async (forceState = undefined) => {
+        this.props.globalState.onInspectorRequiredObservable.add(async (action) => {
             if (!this._scene) {
                 return;
             }
-            this.setState((prevState) => ({ preferInspector: forceState !== undefined ? forceState : !prevState.preferInspector }));
+            const inspectorV2Module = await InspectorV2ModulePromise;
 
-            if (InspectorV2ModulePromise) {
-                const inspectorV2Module = await InspectorV2ModulePromise;
-                if (inspectorV2Module.IsInspectorVisible()) {
-                    inspectorV2Module.HideInspector();
-                } else {
-                    inspectorV2Module.ShowInspector(this._scene, {
-                        embedMode: true,
-                    });
-                }
-            } else {
-                // support for older versions
-                // openedPanes was not available until 7.44.0, so we need to fallback to the inspector's _OpenedPane property
-                if (this._scene.debugLayer.openedPanes === undefined) {
-                    this._inspectorFallback = true;
-                }
+            // support for older versions
+            // openedPanes was not available until 7.44.0, so we need to fallback to the inspector's _OpenedPane property
+            if (this._scene.debugLayer.openedPanes === undefined) {
+                this._inspectorFallback = true;
+            }
 
-                // fallback?
-                if (this._inspectorFallback) {
-                    const debugLayer: any = this._scene.debugLayer;
-                    debugLayer.openedPanes = debugLayer.BJSINSPECTOR?.Inspector?._OpenedPane || 0;
-                }
+            // fallback?
+            if (this._inspectorFallback) {
+                const debugLayer: any = this._scene.debugLayer;
+                debugLayer.openedPanes = debugLayer.BJSINSPECTOR?.Inspector?._OpenedPane || 0;
+            }
 
-                if (this._scene.debugLayer.openedPanes === 0) {
-                    this._scene.debugLayer.show({
-                        embedMode: true,
-                    });
-                } else {
-                    this._scene.debugLayer.hide();
-                }
+            const isInspectorV1Enabled = this._scene.debugLayer.openedPanes !== 0;
+            const isInspectorV2Enabled = inspectorV2Module && inspectorV2Module.IsInspectorVisible();
+            const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
+
+            const searchParams = new URLSearchParams(window.location.search);
+            const isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
+
+            if (action === "refresh") {
+                action = isInspectorEnabled ? "enable" : "disable";
+            } else if (action === "toggle") {
+                action = isInspectorEnabled ? "disable" : "enable";
+            }
+
+            this.setState({
+                preferInspector: action === "enable",
+            });
+
+            if (isInspectorV1Enabled && (isInspectorV2ModeEnabled || action === "disable")) {
+                this._scene.debugLayer.hide();
+            }
+
+            if (isInspectorV2Enabled && (!isInspectorV2ModeEnabled || action === "disable")) {
+                inspectorV2Module.HideInspector();
+            }
+
+            if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
+                this._scene.debugLayer.show({
+                    embedMode: true,
+                });
+            }
+
+            if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable" && inspectorV2Module !== null) {
+                inspectorV2Module.ShowInspector(this._scene, {
+                    embedMode: true,
+                    showThemeSelector: false,
+                    themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
+                });
             }
         });
 
@@ -155,6 +175,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         this._preventReentrancy = true;
 
         this.props.globalState.onErrorObservable.notifyObservers(null);
+
+        const displayInspector = (InspectorV2ModulePromise && (await InspectorV2ModulePromise).IsInspectorVisible()) || this._scene?.debugLayer.isVisible();
 
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
@@ -329,8 +351,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
 
             // Rehydrate inspector
-            if (this.state.preferInspector) {
-                this.props.globalState.onInspectorRequiredObservable.notifyObservers(this.state.preferInspector);
+            if (this.state.preferInspector && displayInspector) {
+                this.props.globalState.onInspectorRequiredObservable.notifyObservers("enable");
             }
             return;
         } catch (e) {

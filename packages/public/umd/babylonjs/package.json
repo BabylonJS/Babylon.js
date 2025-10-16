@@ -1,6 +1,6 @@
 {
     "name": "babylonjs",
-    "version": "8.29.1",
+    "version": "8.31.4",
     "main": "babylon.js",
     "types": "babylon.module.d.ts",
     "files": [

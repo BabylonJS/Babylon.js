@@ -1,7 +1,7 @@
 // Attributes
 attribute position: vec3f;
 #if defined(INSTANCES)
-attribute instanceMeshID: vec4f;
+attribute instanceMeshID: f32;
 #endif
 
 #include<bonesDeclaration>
@@ -16,7 +16,7 @@ uniform viewProjection: mat4x4f;
 
 // Output
 #if defined(INSTANCES)
-varying vMeshID: vec4f;
+varying vMeshID: f32;
 #endif
 
 @vertex

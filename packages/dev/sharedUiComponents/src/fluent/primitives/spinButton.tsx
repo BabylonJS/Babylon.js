@@ -1,19 +1,10 @@
-import { makeStyles, SpinButton as FluentSpinButton, useId, tokens } from "@fluentui/react-components";
+import { SpinButton as FluentSpinButton, mergeClasses, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent, KeyboardEvent } from "react";
 import { useEffect, useState, useRef } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
-import { HandleKeyDown, HandleOnBlur } from "./utils";
-
-const useSpinStyles = makeStyles({
-    base: {
-        display: "flex",
-        flexDirection: "column",
-        minWidth: "55px",
-    },
-    invalid: { backgroundColor: tokens.colorPaletteRedBackground2 },
-});
+import { CalculatePrecision, HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
 
 export type SpinButtonProps = PrimitiveProps<number> & {
     min?: number;
@@ -27,13 +18,16 @@ export type SpinButtonProps = PrimitiveProps<number> & {
 };
 
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
-    const classes = useSpinStyles();
+    SpinButton.displayName = "SpinButton";
+    const classes = useInputStyles();
+
     const { min, max } = props;
 
     const [value, setValue] = useState(props.value);
     const lastCommittedValue = useRef(props.value);
     // step and forceInt are not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
     const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
+    const precision = Math.min(4, step !== undefined ? Math.max(0, CalculatePrecision(step)) : 2); // If no step, set precision to 2. Regardless, cap precision at 4 to avoid wild numbers
 
     useEffect(() => {
         if (props.value !== lastCommittedValue.current) {
@@ -77,67 +71,26 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     };
 
     const id = useId("spin-button");
+    const mergedClassName = mergeClasses(classes.input, !validateValue(value) ? classes.invalid : "", props.className);
+
     return (
-        <div className={classes.base}>
+        <div className={classes.container}>
             {props.infoLabel && <InfoLabel {...props.infoLabel} htmlFor={id} />}
             <FluentSpinButton
                 {...props}
+                input={{ className: classes.inputSlot }}
                 step={step}
                 id={id}
-                size="small"
-                precision={CalculatePrecision(step ?? 1.01)}
-                displayValue={props.unit ? `${PrecisionRound(value, CalculatePrecision(step ?? 1.01))} ${props.unit}` : undefined}
+                size="medium"
+                precision={precision}
+                displayValue={`${value.toFixed(precision)}${props.unit ? " " + props.unit : ""}`}
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}
                 onKeyDown={HandleKeyDown}
                 onBlur={HandleOnBlur}
-                className={`${!validateValue(value) ? classes.invalid : ""}`}
+                className={mergedClassName}
             />
         </div>
     );
 };
-
-/**
- * Fluent's CalculatePrecision function
- * https://github.com/microsoft/fluentui/blob/dcbf775d37938eacffa37922fc0b43a3cdd5753f/packages/utilities/src/math.ts#L91C1
- *
- * Calculates a number's precision based on the number of trailing
- * zeros if the number does not have a decimal indicated by a negative
- * precision. Otherwise, it calculates the number of digits after
- * the decimal point indicated by a positive precision.
- *
- * @param value - the value to determine the precision of
- * @returns the calculated precision
- */
-export function CalculatePrecision(value: number) {
-    /**
-     * Group 1:
-     * [1-9]([0]+$) matches trailing zeros
-     * Group 2:
-     * \.([0-9]*) matches all digits after a decimal point.
-     */ const groups = /[1-9]([0]+$)|\.([0-9]*)/.exec(String(value));
-    if (!groups) {
-        return 0;
-    }
-    if (groups[1]) {
-        return -groups[1].length;
-    }
-    if (groups[2]) {
-        return groups[2].length;
-    }
-    return 0;
-}
-/**
- * Fluent's PrecisionRound function
- * https://github.com/microsoft/fluentui/blob/dcbf775d37938eacffa37922fc0b43a3cdd5753f/packages/utilities/src/math.ts#L116
- *
- * Rounds a number to a certain level of precision. Accepts negative precision.
- * @param value - The value that is being rounded.
- * @param precision - The number of decimal places to round the number to
- * @returns The rounded number.
- */
-function PrecisionRound(value: number, precision: number) {
-    const exp = Math.pow(10, precision);
-    return Math.round(value * exp) / exp;
-}

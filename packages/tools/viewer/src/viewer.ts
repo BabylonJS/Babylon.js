@@ -739,6 +739,11 @@ export type Model = IDisposable & {
      * @param options Options for activating the model.
      */
     makeActive(options?: ActivateModelOptions): void;
+
+    /**
+     * The selected material variant.
+     */
+    selectedMaterialVariant: Nullable<string>;
 };
 
 type ModelInternal = Model & {
@@ -918,7 +923,6 @@ export class Viewer implements IDisposable {
             defaultMaterial.metallic = 0;
             defaultMaterial.roughness = 1;
             defaultMaterial.baseDiffuseRoughness = 1;
-            defaultMaterial.environmentIntensity = 0.7;
             defaultMaterial.microSurface = 0;
             scene.defaultMaterial = defaultMaterial;
 
@@ -1230,7 +1234,7 @@ export class Viewer implements IDisposable {
             this._updateSSAOPipeline();
         }
 
-        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoOption === "enabled";
+        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoPipeline !== null;
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
@@ -1330,7 +1334,7 @@ export class Viewer implements IDisposable {
         }
     }
 
-    private _updateSSAOPipeline() {
+    protected _updateSSAOPipeline() {
         if (!this._ssaoPipeline && (this._ssaoOption === "auto" || this._ssaoOption === "enabled")) {
             observePromise(this._enableSSAOPipeline(this._ssaoOption));
         } else if (this._ssaoOption === "disabled") {
@@ -1440,22 +1444,12 @@ export class Viewer implements IDisposable {
      * The currently selected material variant.
      */
     public get selectedMaterialVariant(): Nullable<string> {
-        return this._activeModel?.materialVariantsController?.selectedVariant ?? null;
+        return this._activeModel?.selectedMaterialVariant ?? null;
     }
 
     public set selectedMaterialVariant(value: Nullable<string>) {
-        if (this._activeModel?.materialVariantsController) {
-            if (!value) {
-                value = this._activeModel.materialVariantsController.variants[0];
-            }
-
-            if (value !== this.selectedMaterialVariant && this._activeModel.materialVariantsController.variants.includes(value)) {
-                this._snapshotHelper.disableSnapshotRendering();
-                this._activeModel.materialVariantsController.selectedVariant = value;
-                this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
-                this.onSelectedMaterialVariantChanged.notifyObservers();
-            }
+        if (this._activeModel && value) {
+            this._activeModel.selectedMaterialVariant = value;
         }
     }
 
@@ -1661,6 +1655,28 @@ export class Viewer implements IDisposable {
                 makeActive: (options?: ActivateModelOptions) => {
                     this._setActiveModel(model, options);
                 },
+                set selectedMaterialVariant(variantName: string) {
+                    if (materialVariantsController) {
+                        let value: Nullable<string> = variantName;
+                        if (!value) {
+                            value = materialVariantsController.variants[0];
+                        }
+
+                        if (value !== materialVariantsController.selectedVariant && materialVariantsController.variants.includes(value)) {
+                            viewer._snapshotHelper.disableSnapshotRendering();
+                            materialVariantsController.selectedVariant = value;
+                            viewer._snapshotHelper.enableSnapshotRendering();
+                            viewer._markSceneMutated();
+                            viewer.onSelectedMaterialVariantChanged.notifyObservers();
+                        }
+                    }
+                },
+                get selectedMaterialVariant(): Nullable<string> {
+                    if (materialVariantsController) {
+                        return materialVariantsController.selectedVariant;
+                    }
+                    return null;
+                },
             };
 
             this._loadedModelsBacking.push(model);
@@ -1695,8 +1711,11 @@ export class Viewer implements IDisposable {
             }
         });
 
-        // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
-        if (!this._scene.environmentTexture && this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial))) {
+        const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial));
+        const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => !mesh.material));
+        // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
+        // and an environment texture is not already loaded, then load the default environment.
+        if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
 
@@ -2875,13 +2894,12 @@ export class Viewer implements IDisposable {
         } else {
             const hasModelProvidedLights = this._loadedModels.some((model) => model.assetContainer.lights.length > 0);
             const hasImageBasedLighting = !!this._reflectionTexture;
-            const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
             const hasNonPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => !(material instanceof PBRMaterial)));
 
             if (hasModelProvidedLights) {
                 shouldHaveDefaultLight = false;
             } else {
-                shouldHaveDefaultLight = !hasImageBasedLighting || !hasMaterials || hasNonPBRMaterials;
+                shouldHaveDefaultLight = !hasImageBasedLighting || hasNonPBRMaterials;
             }
         }
 

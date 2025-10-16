@@ -1,6 +1,7 @@
-import type { IDisposable } from "core/index";
-
 import type { ComponentType, FunctionComponent } from "react";
+import type { TernaryDarkMode } from "usehooks-ts";
+
+import type { IDisposable } from "core/index";
 import type { IExtensionFeed } from "./extensibility/extensionFeed";
 import type { IExtension, InstallFailedInfo } from "./extensibility/extensionManager";
 import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
@@ -15,7 +16,6 @@ import {
     DialogContent,
     DialogSurface,
     DialogTitle,
-    FluentProvider,
     List,
     ListItem,
     makeStyles,
@@ -25,18 +25,17 @@ import {
 import { ErrorCircleRegular } from "@fluentui/react-icons";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { useTernaryDarkMode } from "usehooks-ts";
 
-import { Logger } from "core/Misc/logger";
 import { Deferred } from "core/Misc/deferred";
-
+import { Logger } from "core/Misc/logger";
+import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
+import { SetThemeMode } from "./hooks/themeHooks";
 import { ServiceContainer } from "./modularity/serviceContainer";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-import { DarkTheme, LightTheme } from "./themes/babylonTheme";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -77,9 +76,14 @@ export type ModularToolOptions = {
     serviceDefinitions: readonly WeaklyTypedServiceDefinition[];
 
     /**
-     * Whether the tool should allow user selection of the theme (e.g. dark/light/system).
+     * The theme mode to use. If not specified, the default is "system", which uses the system/browser preference, and the last used mode is persisted.
      */
-    isThemeable?: boolean;
+    themeMode?: TernaryDarkMode;
+
+    /**
+     * Whether to show the theme selector in the toolbar. Default is true.
+     */
+    showThemeSelector?: boolean;
 
     /**
      * The extension feeds that provide optional extensions the user can install.
@@ -93,12 +97,14 @@ export type ModularToolOptions = {
  * @returns A token that can be used to dispose of the tool.
  */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
-    const { containerElement, serviceDefinitions, isThemeable = true, extensionFeeds = [] } = options;
+    const { containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [] } = options;
+    if (themeMode) {
+        SetThemeMode(themeMode);
+    }
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
-        const { isDarkMode } = useTernaryDarkMode();
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
@@ -132,7 +138,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 }
 
                 // Register the theme selector service (for selecting the theme) if theming is configured.
-                if (isThemeable) {
+                if (showThemeSelector) {
                     await serviceContainer.addServiceAsync(ThemeSelectorServiceDefinition);
                 }
 
@@ -216,7 +222,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
         return (
             <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                <FluentProvider className={classes.app} theme={isDarkMode ? DarkTheme : LightTheme}>
+                <Theme className={classes.app}>
                     <>
                         <Dialog open={!!requiredExtensions} modalType="alert">
                             <DialogSurface>
@@ -268,7 +274,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                             <Content />
                         </Suspense>
                     </>
-                </FluentProvider>
+                </Theme>
             </ExtensionManagerContext.Provider>
         );
     };

@@ -1,22 +1,46 @@
 import type { ServiceDefinition } from "../../../modularity/serviceDefinition";
-import type { IPropertiesService } from "./propertiesService";
+import type { ISettingsContext } from "../../../services/settingsContext";
 import type { ISelectionService } from "../../selectionService";
+import type { IPropertiesService } from "./propertiesService";
 
 import { Sprite } from "core/Sprites/sprite";
-
-import { PropertiesServiceIdentity } from "./propertiesService";
+import { SpriteManager } from "core/Sprites/spriteManager";
+import { SpriteManagerCellProperties, SpriteManagerGeneralProperties, SpriteManagerOtherProperties } from "../../../components/properties/sprites/spriteManagerProperties";
+import {
+    SpriteAnimationProperties,
+    SpriteCellProperties,
+    SpriteGeneralProperties,
+    SpriteOtherProperties,
+    SpriteTransformProperties,
+} from "../../../components/properties/sprites/spriteProperties";
+import { SettingsContextIdentity } from "../../../services/settingsContext";
 import { SelectionServiceIdentity } from "../../selectionService";
-import { SpriteAnimationProperties } from "../../../components/properties/sprites/spriteAnimationProperties";
-import { SpriteGeneralProperties } from "../../../components/properties/sprites/spriteGeneralProperties";
-import { SpriteTransformProperties } from "../../../components/properties/sprites/spriteTransformProperties";
-import { SpriteOtherProperties } from "../../../components/properties/sprites/spriteOtherProperties";
-import { SettingsContextIdentity, type ISettingsContext } from "../../../services/settingsContext";
+import { PropertiesServiceIdentity } from "./propertiesService";
 
 export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService, ISettingsContext]> = {
     friendlyName: "Sprite Properties",
     consumes: [PropertiesServiceIdentity, SelectionServiceIdentity, SettingsContextIdentity],
     factory: (propertiesService, selectionService, settingsContent) => {
-        const generalSectionContentRegistration = propertiesService.addSectionContent({
+        const spriteManagerSectionContentRegistration = propertiesService.addSectionContent({
+            key: "Sprite Manager Properties",
+            predicate: (entity: unknown) => entity instanceof SpriteManager,
+            content: [
+                {
+                    section: "General",
+                    component: ({ context }) => <SpriteManagerGeneralProperties spriteManager={context} selectionService={selectionService} />,
+                },
+                {
+                    section: "Cells",
+                    component: ({ context }) => <SpriteManagerCellProperties spriteManager={context} />,
+                },
+                {
+                    section: "Other",
+                    component: ({ context }) => <SpriteManagerOtherProperties spriteManager={context} />,
+                },
+            ],
+        });
+
+        const spriteSectionContentRegistration = propertiesService.addSectionContent({
             key: "Sprite Properties",
             predicate: (entity: unknown) => entity instanceof Sprite,
             content: [
@@ -24,35 +48,18 @@ export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                     section: "General",
                     component: ({ context }) => <SpriteGeneralProperties sprite={context} selectionService={selectionService} />,
                 },
-            ],
-        });
-
-        const transformSectionContentRegistration = propertiesService.addSectionContent({
-            key: "Sprite Properties",
-            predicate: (entity: unknown) => entity instanceof Sprite,
-            content: [
                 {
                     section: "Transform",
                     component: ({ context }) => <SpriteTransformProperties sprite={context} settings={settingsContent} />,
                 },
-            ],
-        });
-
-        const animationSectionContentRegistration = propertiesService.addSectionContent({
-            key: "Sprite Properties",
-            predicate: (entity: unknown) => entity instanceof Sprite,
-            content: [
+                {
+                    section: "Cell",
+                    component: ({ context }) => <SpriteCellProperties sprite={context} />,
+                },
                 {
                     section: "Animation",
                     component: ({ context }) => <SpriteAnimationProperties sprite={context} />,
                 },
-            ],
-        });
-
-        const otherSectionContentRegistration = propertiesService.addSectionContent({
-            key: "Sprite Properties",
-            predicate: (entity: unknown) => entity instanceof Sprite,
-            content: [
                 {
                     section: "Other",
                     component: ({ context }) => <SpriteOtherProperties sprite={context} />,
@@ -62,10 +69,8 @@ export const SpritePropertiesServiceDefinition: ServiceDefinition<[], [IProperti
 
         return {
             dispose: () => {
-                generalSectionContentRegistration.dispose();
-                transformSectionContentRegistration.dispose();
-                otherSectionContentRegistration.dispose();
-                animationSectionContentRegistration.dispose();
+                spriteManagerSectionContentRegistration.dispose();
+                spriteSectionContentRegistration.dispose();
             },
         };
     },

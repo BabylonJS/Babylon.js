@@ -93,8 +93,11 @@ void main() {
         #else
             normalOutput = normalize(vec3(vWorldView * vec4(normalW, 0.0)));
         #endif
-    #else
+    #elif defined(HAS_NORMAL_ATTRIBUTE)
         normalOutput = normalize(vNormalV);
+    #elif defined(POSITION)
+        // Derive normal from position
+	    normalOutput = normalize(-cross(dFdx(vPositionW), dFdy(vPositionW)));
     #endif
 
     #ifdef ENCODE_NORMAL

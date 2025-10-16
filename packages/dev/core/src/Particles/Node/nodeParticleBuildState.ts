@@ -139,6 +139,8 @@ export class NodeParticleBuildState {
                 return this.particleContext.cellIndex;
             case NodeParticleContextualSources.SpriteCellStart:
                 return this.systemContext.startSpriteCellID;
+            case NodeParticleContextualSources.InitialDirection:
+                return this.particleContext._initialDirection;
         }
 
         return null;
@@ -216,6 +218,8 @@ export class NodeParticleBuildState {
                 } else {
                     return this.systemContext.emitter;
                 }
+            case NodeParticleSystemSources.CameraPosition:
+                return this.scene.activeCamera?.globalPosition || Vector3.Zero();
         }
 
         return null;

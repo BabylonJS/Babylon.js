@@ -21,10 +21,14 @@ interface IFooterProps {
     globalState: GlobalState;
 }
 
+interface IFooterState {
+    isInspectorV2ModeEnabled: boolean;
+}
+
 /**
  * Footer
  */
-export class Footer extends React.Component<IFooterProps> {
+export class Footer extends React.Component<IFooterProps, IFooterState> {
     private _cameraNames: string[] = [];
 
     public constructor(props: IFooterProps) {
@@ -37,6 +41,11 @@ export class Footer extends React.Component<IFooterProps> {
             this._updateCameraNames();
             this.forceUpdate();
         }
+
+        const searchParams = new URL(window.location.href).searchParams;
+        this.state = {
+            isInspectorV2ModeEnabled: searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false",
+        };
     }
 
     showInspector() {
@@ -70,6 +79,33 @@ export class Footer extends React.Component<IFooterProps> {
 
     private _getVariantsExtension(): Nullable<KHR_materials_variants> {
         return this.props.globalState?.glTFLoaderExtensions["KHR_materials_variants"] as KHR_materials_variants;
+    }
+
+    private _onToggleInspectorV2Mode() {
+        const newState = !this.state.isInspectorV2ModeEnabled;
+        this.setState({ isInspectorV2ModeEnabled: newState }, async () => {
+            // Update URL after state is set
+            const url = new URL(window.location.href);
+            if (this.state.isInspectorV2ModeEnabled) {
+                url.searchParams.set("inspectorv2", "true");
+                localStorage.setItem("inspectorv2", "true");
+            } else {
+                url.searchParams.delete("inspectorv2");
+                localStorage.removeItem("inspectorv2");
+            }
+            window.history.pushState({}, "", url.toString());
+            await this.props.globalState.refreshDebugLayerAsync();
+        });
+    }
+
+    override componentDidMount(): void {
+        if (!this.state.isInspectorV2ModeEnabled && localStorage.getItem("inspectorv2") === "true") {
+            if (new URL(window.location.href).searchParams.get("inspectorv2") === "false") {
+                localStorage.removeItem("inspectorv2");
+            } else {
+                this._onToggleInspectorV2Mode();
+            }
+        }
     }
 
     override render() {
@@ -114,13 +150,26 @@ export class Footer extends React.Component<IFooterProps> {
 
         const hasCameras = this._cameraNames.length > 1;
 
+        // Determine footer class based on which controls are present
+        let footerClass = "footer";
+        if (hasCameras && hasVariants) {
+            footerClass += " longer";
+        } else if (hasCameras || hasVariants) {
+            footerClass += " long";
+        }
+
         return (
-            <div id="footer" className={"footer" + (hasCameras || hasVariants ? " long" : hasCameras && hasVariants ? " longer" : "")}>
+            <div id="footer" className={footerClass}>
                 <div className="footerLeft">
                     <img id="logoImg" src={babylonIdentity} />
                 </div>
                 <AnimationBar globalState={this.props.globalState} enabled={!!this.props.globalState.currentScene} />
                 <div className={"footerRight"}>
+                    {!!this.props.globalState.currentScene && (
+                        <div className="inspector-toggle" onClick={() => this._onToggleInspectorV2Mode()}>
+                            {this.state.isInspectorV2ModeEnabled ? "Back to Old Inspector" : "Try the New Inspector"}
+                        </div>
+                    )}
                     <FooterFileButton
                         globalState={this.props.globalState}
                         enabled={true}

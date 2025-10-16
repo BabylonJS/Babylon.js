@@ -113,6 +113,8 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
             } else {
                 particle.direction.copyFrom(this._tempVector);
             }
+
+            particle._initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {

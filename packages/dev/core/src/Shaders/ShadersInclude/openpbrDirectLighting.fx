@@ -5,6 +5,7 @@
     vec3 slab_translucent = vec3(0., 0., 0.);
     vec3 slab_glossy = vec3(0., 0., 0.);
     float specularFresnel = 0.0;
+    vec3 specularColoredFresnel = vec3(0., 0., 0.);
     vec3 slab_metal = vec3(0., 0., 0.);
     vec3 slab_coat = vec3(0., 0., 0.);
     float coatFresnel = 0.0;
@@ -35,11 +36,19 @@
                     baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
                     0.0, lightColor{X}.rgb);
             #else
-                slab_glossy = computeSpecularLighting(preInfo{X}, normalW, baseDielectricReflectance.coloredF0, baseDielectricReflectance.coloredF90, specular_roughness, lightColor{X}.rgb);
+                // We're passing in vec3(1.0) for both F0 and F90 here because the actual Fresnel is computed below
+                // Also computeSpecularLighting does some iridescence work using these values that we don't want.
+                slab_glossy = computeSpecularLighting(preInfo{X}, normalW, vec3(1.0), vec3(1.0), specular_roughness, lightColor{X}.rgb);
             #endif
-            
             float NdotH = dot(normalW, preInfo{X}.H);
             specularFresnel = fresnelSchlickGGX(NdotH, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
+            specularColoredFresnel = specularFresnel * specular_color;
+            #ifdef THIN_FILM
+                // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
+                float thinFilmIorScale = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
+                vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
+                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+            #endif
         }
     #endif
 
@@ -51,16 +60,25 @@
             // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
             // usual Schlick lobe.
             #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
-                vec3 coloredFresnel = specular_weight * getF82Specular(preInfo{X}.VdotH, baseConductorReflectance.coloredF0, baseConductorReflectance.coloredF90, specular_roughness);
+                vec3 coloredFresnel = getF82Specular(preInfo{X}.VdotH, baseConductorReflectance.coloredF0, baseConductorReflectance.coloredF90, specular_roughness);
             #else
                 vec3 coloredFresnel = fresnelSchlickGGX(preInfo{X}.VdotH, baseConductorReflectance.coloredF0, baseConductorReflectance.coloredF90);
+            #endif
+
+            #ifdef THIN_FILM
+                // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
+                float thinFilmIorScale = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
+                vec3 thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmIorScale * thinFilmConductorFresnel, thin_film_weight);
             #endif
 
             #ifdef ANISOTROPIC_BASE
                 slab_metal = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 0.0, lightColor{X}.rgb);
             #else
-                slab_metal = computeSpecularLighting(preInfo{X}, normalW, baseConductorReflectance.coloredF0, coloredFresnel, specular_roughness, lightColor{X}.rgb);
+                slab_metal = computeSpecularLighting(preInfo{X}, normalW, vec3(1.0), coloredFresnel, specular_roughness, lightColor{X}.rgb);
             #endif
+
+            
         }
     #endif
 
@@ -119,7 +137,7 @@
     slab_diffuse *= base_color.rgb;
     vec3 material_opaque_base = mix(slab_diffuse, slab_subsurface, subsurface_weight);
     vec3 material_dielectric_base = mix(material_opaque_base, slab_translucent, transmission_weight);
-    vec3 material_dielectric_gloss = layer(material_dielectric_base, slab_glossy, specularFresnel, vec3(1.0), specular_color);
+    vec3 material_dielectric_gloss = material_dielectric_base * (1.0 - specularFresnel) + slab_glossy * specularColoredFresnel;
     vec3 material_base_substrate = mix(material_dielectric_gloss, slab_metal, base_metalness);
     vec3 material_coated_base = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3(1.0));
     material_surface_direct += mix(material_coated_base, slab_fuzz, fuzz_weight);

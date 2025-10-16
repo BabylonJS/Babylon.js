@@ -28,12 +28,11 @@
         "@babylonjs/loaders": "^8.0.0",
         "@babylonjs/materials": "^8.0.0",
         "@babylonjs/serializers": "^8.0.0",
-        "@fluentui-contrib/react-resize-handle": "^0.8.0",
         "@fluentui-contrib/react-virtualizer": "^0.3.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
+        "react": ">=16.14.0 <20.0.0",
+        "react-dom": ">=16.14.0 <20.0.0",
         "usehooks-ts": "^3.1.1"
     },
     "devDependencies": {
