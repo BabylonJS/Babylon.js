@@ -9,6 +9,28 @@ import { Clamp } from "../Maths/math.scalar.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
+import { EncodeArrayBufferToBase64 } from "./stringTools";
+
+// NOTE: If not using nativeOverride, need to declare this. Good for type safety, but also bad as it adds noise.
+// Pros to this approach:
+// - Type safety, harder to accidentally break sync between native and JS versions
+// - Can keep native implementation simple, work around it more easily in JS
+// Cons to this approach:
+// - More noise, doesn't fit with INative types right now
+// - Breaks nativeoptimizations pattern
+
+// Pros to nativeOverride approach:
+// - No noise, cleaner
+// - Fits with NativeOptimizations pattern
+// Cons to nativeOverride approach:
+// - Need to use nativeOverride for module-level functions, + hoisting issue?
+// - No type safety, easier to accidentally break sync between native and JS versions
+// - More complex native implementation, need to handle more cases (see blob v ArrayBuffer below)
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EncodeImage?: (pixelData: Uint8Array, width: number, height: number, mimeType: string, invertY: boolean) => ArrayBuffer;
+};
 
 type DumpResources = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -80,6 +102,66 @@ async function _GetDumpResourcesAsync() {
         ResourcesPromise = _CreateDumpResourcesAsync();
     }
     return await ResourcesPromise;
+}
+
+// NOTE: Hmm. Should _native.EncodeImage be updated to return a Blob instead of an ArrayBuffer? Promise or not?
+// Blob pros:
+// - Matches canvas.toBlob()
+// - Offers way to say "we can't encode this format" by returning different mime type
+// Blob cons:
+// - Conversion step (native version) from buffer -> Blob
+// - Conversion step (native version) from buffer -> Blob -> back to ArrayBuffer if caller wants ArrayBuffer
+
+// ArrayBuffer pros:
+// - Easier to manipulate directly if needed
+// ArrayBuffer cons:
+// - Conversion step (web version) from Blob -> ArrayBuffer -> back to Blob for download
+// - Conversion step (native version) from buffer -> ArrayBuffer -> back to Blob for download
+// - No way to say "we can't encode this format" other than throwing or returning null/undefined
+
+// Promise pros:
+// - Matches canvas.toBlob()
+// - Allows for async processing in native implementation if needed
+// Promise cons:
+// - More complex for native implementation if not needed
+
+// For now, I'm leaning towards Promise<Blob>, as it's the native output of canvas.toBlob() and can be easily converted to ArrayBuffer if needed.
+async function _EncodeImage(pixelData: Uint8Array, width: number, height: number, mimeType: string, invertY: boolean, quality?: number): Promise<Blob> {
+    if (typeof _native !== "undefined" && _native.EncodeImage) {
+        const buffer = _native.EncodeImage(pixelData as Uint8Array, width, height, mimeType, invertY);
+        return new Blob([buffer], { type: mimeType });
+    }
+
+    const resources = await _GetDumpResourcesAsync();
+
+    // Keep the async render + read from the shared canvas atomic
+    return await new Promise<Blob>((resolve, reject) => {
+        const dumpEngine = resources.dumpEngine;
+        dumpEngine.engine.setSize(width, height, true);
+
+        // Create the image
+        const texture = dumpEngine.engine.createRawTexture(pixelData, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+
+        dumpEngine.renderer.setViewport();
+        dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
+        dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
+        dumpEngine.renderer.draw();
+
+        texture.dispose();
+
+        Tools.ToBlob(
+            resources.canvas,
+            (blob) => {
+                if (!blob) {
+                    reject(new Error("DumpData: Failed to convert canvas to blob."));
+                } else {
+                    resolve(blob);
+                }
+            },
+            mimeType,
+            quality
+        );
+    });
 }
 
 /**
@@ -165,50 +247,24 @@ export async function DumpDataAsync(
         data = data2;
     }
 
-    const resources = await _GetDumpResourcesAsync();
+    const blob = await _EncodeImage(data as Uint8Array, width, height, mimeType, invertY, quality);
 
-    // Keep the async render + read from the shared canvas atomic
-    return await new Promise<string | ArrayBuffer>((resolve) => {
-        const dumpEngine = resources.dumpEngine;
-        dumpEngine.engine.setSize(width, height, true);
+    if (blob.type !== mimeType) {
+        // The MIME type of a canvas.toBlob() output can be different from the one requested if the browser does not support the requested format
+        Logger.Warn(`DumpData: Unsupported MIME type ${mimeType}. Using ${blob.type} instead.`);
+    }
 
-        // Create the image
-        const texture = dumpEngine.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+    if (fileName !== undefined) {
+        Tools.DownloadBlob(blob);
+    }
 
-        dumpEngine.renderer.setViewport();
-        dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
-        dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
-        dumpEngine.renderer.draw();
+    const buffer = await blob.arrayBuffer();
+    if (toArrayBuffer) {
+        return buffer;
+    }
 
-        texture.dispose();
-
-        Tools.ToBlob(
-            resources.canvas,
-            (blob) => {
-                if (!blob) {
-                    throw new Error("DumpData: Failed to convert canvas to blob.");
-                }
-
-                if (fileName !== undefined) {
-                    Tools.DownloadBlob(blob, fileName);
-                }
-
-                const fileReader = new FileReader();
-                fileReader.onload = (event: any) => {
-                    const result = event.target!.result as string | ArrayBuffer;
-                    resolve(result);
-                };
-
-                if (toArrayBuffer) {
-                    fileReader.readAsArrayBuffer(blob);
-                } else {
-                    fileReader.readAsDataURL(blob);
-                }
-            },
-            mimeType,
-            quality
-        );
-    });
+    const base64 = EncodeArrayBufferToBase64(buffer);
+    return "data:" + mimeType + ";base64," + base64;
 }
 
 /**
