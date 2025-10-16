@@ -1,4 +1,4 @@
-import type { ComponentType, FunctionComponent } from "react";
+import type { ComponentType, ContextType, FunctionComponent } from "react";
 import type { TernaryDarkMode } from "usehooks-ts";
 
 import type { IDisposable } from "core/index";
@@ -23,14 +23,16 @@ import {
     tokens,
 } from "@fluentui/react-components";
 import { ErrorCircleRegular } from "@fluentui/react-icons";
-import { createElement, Suspense, useCallback, useEffect, useState } from "react";
+import { createElement, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { Deferred } from "core/Misc/deferred";
 import { Logger } from "core/Misc/logger";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
+import { useCompactMode } from "./hooks/settingsHooks";
 import { SetThemeMode } from "./hooks/themeHooks";
 import { ServiceContainer } from "./modularity/serviceContainer";
 import { ExtensionListServiceDefinition } from "./services/extensionsListService";
@@ -110,6 +112,16 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
         const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
 
         const [rootComponent, setRootComponent] = useState<ComponentType>();
+
+        const [isCompactMode] = useCompactMode();
+        const toolsContext = useMemo(() => {
+            return {
+                toolName: "",
+                size: isCompactMode ? "small" : "medium",
+                disableCopy: false,
+                useFluent: true,
+            } satisfies ContextType<typeof ToolContext>;
+        }, [isCompactMode]);
 
         // This is the main async initialization.
         useEffect(() => {
@@ -222,59 +234,61 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
         return (
             <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                <Theme className={classes.app}>
-                    <>
-                        <Dialog open={!!requiredExtensions} modalType="alert">
-                            <DialogSurface>
-                                <DialogBody>
-                                    <DialogTitle>Required Extensions</DialogTitle>
-                                    <DialogContent>
-                                        Opening this URL requires the following extensions to be installed and enabled:
-                                        <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
-                                            Install & Enable
-                                        </Button>
-                                        <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
-                                            No Thanks
-                                        </Button>
-                                    </DialogActions>
-                                </DialogBody>
-                            </DialogSurface>
-                        </Dialog>
-                        <Dialog open={!!extensionInstallError} modalType="alert">
-                            <DialogSurface>
-                                <DialogBody>
-                                    <DialogTitle>
-                                        <div className={classes.extensionErrorTitleDiv}>
-                                            Extension Install Error
-                                            <ErrorCircleRegular className={classes.extensionErrorIcon} />
-                                        </div>
-                                    </DialogTitle>
-                                    <DialogContent>
-                                        <List>
-                                            <ListItem>
-                                                <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
-                                            </ListItem>
-                                            <ListItem>
-                                                <Body1>{`${extensionInstallError?.error}`}</Body1>
-                                            </ListItem>
-                                        </List>
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
-                                            Close
-                                        </Button>
-                                    </DialogActions>
-                                </DialogBody>
-                            </DialogSurface>
-                        </Dialog>
-                        <Suspense fallback={<Spinner className={classes.spinner} />}>
-                            <Content />
-                        </Suspense>
-                    </>
-                </Theme>
+                <ToolContext.Provider value={toolsContext}>
+                    <Theme className={classes.app}>
+                        <>
+                            <Dialog open={!!requiredExtensions} modalType="alert">
+                                <DialogSurface>
+                                    <DialogBody>
+                                        <DialogTitle>Required Extensions</DialogTitle>
+                                        <DialogContent>
+                                            Opening this URL requires the following extensions to be installed and enabled:
+                                            <ul>{requiredExtensions?.map((name) => <li key={name}>{name}</li>)}</ul>
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button appearance="primary" onClick={onAcceptRequiredExtensions}>
+                                                Install & Enable
+                                            </Button>
+                                            <Button appearance="secondary" onClick={onRejectRequiredExtensions}>
+                                                No Thanks
+                                            </Button>
+                                        </DialogActions>
+                                    </DialogBody>
+                                </DialogSurface>
+                            </Dialog>
+                            <Dialog open={!!extensionInstallError} modalType="alert">
+                                <DialogSurface>
+                                    <DialogBody>
+                                        <DialogTitle>
+                                            <div className={classes.extensionErrorTitleDiv}>
+                                                Extension Install Error
+                                                <ErrorCircleRegular className={classes.extensionErrorIcon} />
+                                            </div>
+                                        </DialogTitle>
+                                        <DialogContent>
+                                            <List>
+                                                <ListItem>
+                                                    <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
+                                                </ListItem>
+                                                <ListItem>
+                                                    <Body1>{`${extensionInstallError?.error}`}</Body1>
+                                                </ListItem>
+                                            </List>
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
+                                                Close
+                                            </Button>
+                                        </DialogActions>
+                                    </DialogBody>
+                                </DialogSurface>
+                            </Dialog>
+                            <Suspense fallback={<Spinner className={classes.spinner} />}>
+                                <Content />
+                            </Suspense>
+                        </>
+                    </Theme>
+                </ToolContext.Provider>
             </ExtensionManagerContext.Provider>
         );
     };

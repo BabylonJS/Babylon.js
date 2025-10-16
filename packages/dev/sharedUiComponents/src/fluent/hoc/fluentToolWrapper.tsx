@@ -49,7 +49,7 @@ export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProp
         size: props.size ?? "small",
     };
     return useFluent ? (
-        <FluentProvider theme={props.customTheme || webDarkTheme} {...props}>
+        <FluentProvider theme={props.customTheme || webDarkTheme}>
             <ToolContext.Provider value={contextValue}>{props.children}</ToolContext.Provider>
         </FluentProvider>
     ) : (
