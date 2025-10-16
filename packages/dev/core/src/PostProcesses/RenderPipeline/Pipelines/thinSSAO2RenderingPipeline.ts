@@ -1,4 +1,4 @@
-import type { Scene } from "core/index";
+import type { Camera, Nullable, Scene } from "core/index";
 import { ThinSSAO2PostProcess } from "core/PostProcesses/thinSSAO2PostProcess";
 import { ThinSSAO2BlurPostProcess } from "core/PostProcesses/thinSSAO2BlurPostProcess";
 import { ThinSSAO2CombinePostProcess } from "core/PostProcesses/thinSSAO2CombinePostProcess";
@@ -20,6 +20,18 @@ export class ThinSSAO2RenderingPipeline {
      * Gets or sets the name of the rendering pipeline
      */
     public name: string;
+
+    /**
+     * The camera to which the rendering pipeline will be applied.
+     */
+    public get camera() {
+        return this._ssaoPostProcess.camera;
+    }
+
+    public set camera(camera: Nullable<Camera>) {
+        this._ssaoPostProcess.camera = camera;
+        this._ssaoCombinePostProcess.camera = camera;
+    }
 
     /**
      * Number of samples used for the SSAO calculations. Default value is 8.
