@@ -791,52 +791,42 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Sets the fuzz weight.
-     * TODO: Implementation pending OpenPBR fuzz feature availability.
      * @param value The fuzz weight value
      */
     public set fuzzWeight(value: number) {
-        // TODO: Implement when OpenPBR fuzz is available
-        // this._material.fuzzWeight = value;
+        this._material.fuzzWeight = value;
     }
 
     /**
      * Sets the fuzz color.
-     * TODO: Implementation pending OpenPBR fuzz feature availability.
      * @param value The fuzz color as a Color3
      */
     public set fuzzColor(value: Color3) {
-        // TODO: Implement when OpenPBR fuzz is available
-        // this._material.fuzzColor = value;
+        this._material.fuzzColor = value;
     }
 
     /**
      * Sets the fuzz color texture.
-     * TODO: Implementation pending OpenPBR fuzz feature availability.
      * @param value The fuzz color texture or null
      */
     public set fuzzColorTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR fuzz is available
-        // this._material.fuzzColorTexture = value;
+        this._material.fuzzColorTexture = value;
     }
 
     /**
      * Sets the fuzz roughness.
-     * TODO: Implementation pending OpenPBR fuzz feature availability.
      * @param value The fuzz roughness value (0-1)
      */
     public set fuzzRoughness(value: number) {
-        // TODO: Implement when OpenPBR fuzz is available
-        // this._material.fuzzRoughness = value;
+        this._material.fuzzRoughness = value;
     }
 
     /**
      * Sets the fuzz roughness texture.
-     * TODO: Implementation pending OpenPBR fuzz feature availability.
      * @param value The fuzz roughness texture or null
      */
     public set fuzzRoughnessTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR fuzz is available
-        // this._material.fuzzRoughnessTexture = value;
+        this._material.fuzzRoughnessTexture = value;
     }
 
     // ========================================
