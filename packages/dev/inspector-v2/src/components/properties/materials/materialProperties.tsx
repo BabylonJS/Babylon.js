@@ -64,16 +64,27 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
     const { material } = props;
 
     const pointsCloud = useProperty(material, "pointsCloud");
+    const faceCulling = useProperty(material, "backFaceCulling");
+    const isWebGPU = material.getScene().getEngine().isWebGPU;
 
     return (
         <>
             <BoundProperty
                 component={SwitchPropertyLine}
-                label="Backface Culling"
+                label="Face Culling"
                 docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction#back-face-culling"
                 target={material}
                 propertyKey="backFaceCulling"
             />
+            {faceCulling && (
+                <BoundProperty
+                    component={SwitchPropertyLine}
+                    label="Culls back faces"
+                    description="Culls back faces. If false, front faces are culled."
+                    target={material}
+                    propertyKey="cullBackFaces"
+                />
+            )}
             <BoundProperty
                 component={NumberDropdownPropertyLine}
                 label="Orientation"
@@ -88,6 +99,7 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
             <BoundProperty component={SwitchPropertyLine} label="Disable Lighting" target={material} propertyKey="disableLighting" /> */}
             <BoundProperty component={SwitchPropertyLine} label="Disable Color Write" target={material} propertyKey="disableColorWrite" />
             <BoundProperty component={SwitchPropertyLine} label="Disable Depth Write" target={material} propertyKey="disableDepthWrite" />
+            <BoundProperty component={SwitchPropertyLine} label="Force Depth Write" target={material} propertyKey="forceDepthWrite" />
             <BoundProperty component={NumberDropdownPropertyLine} label="Depth Function" options={DepthFunctionOptions} target={material} propertyKey="depthFunction" />
             <BoundProperty
                 component={SwitchPropertyLine}
@@ -101,6 +113,28 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
             <BoundProperty component={SwitchPropertyLine} label="Wireframe" target={material} propertyKey="wireframe" />
             <BoundProperty component={SwitchPropertyLine} label="Point Cloud" target={material} propertyKey="pointsCloud" />
             {pointsCloud && <BoundProperty component={SyncedSliderPropertyLine} label="Point Size" target={material} propertyKey="pointSize" min={0} max={100} step={0.1} />}
+            {isWebGPU && <BoundProperty component={SwitchPropertyLine} label="Use vertex pulling" target={material} propertyKey="useVertexPulling" />}
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Support fog"
+                target={material}
+                propertyKey="fogEnabled"
+                description="Indicates whether the material supports fog (however, fog must be enabled at the scene level to be effective)."
+            />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Use logarithmic depth"
+                target={material}
+                propertyKey="useLogarithmicDepth"
+                docLink="https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer"
+            />
+            <BoundProperty
+                component={SwitchPropertyLine}
+                label="Set vertex output invariant"
+                target={material}
+                propertyKey="setVertexOutputInvariant"
+                description="Setting this property to true will force the shader compiler to disable some optimization to make sure the vertex output is always calculated the same way across different compilation units."
+            />
         </>
     );
 };

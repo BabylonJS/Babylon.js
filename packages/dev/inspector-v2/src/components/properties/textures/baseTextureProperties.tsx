@@ -124,6 +124,8 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
     const displayFormat = FindTextureFormat(format === -1 ? Constants.TEXTUREFORMAT_RGBA : format);
     const displayType = FindTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
 
+    const maxAnisotropy = texture.getScene()?.getEngine().getCaps().maxAnisotropy ?? 1;
+
     return (
         <>
             {texture.is2DArray && <TextPropertyLine label="Layers" value={depth?.toString() ?? "?"} />}
@@ -146,6 +148,7 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
             <BoundProperty component={SyncedSliderPropertyLine} label="UV Set" target={texture} propertyKey="coordinatesIndex" min={0} max={3} step={1} />
             <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="coordinatesMode" options={CoordinatesMode} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Level" target={texture} propertyKey="level" min={0} max={2} step={0.01} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Anisotropy" target={texture} propertyKey="anisotropicFilteringLevel" min={1} max={maxAnisotropy} step={1} />
         </>
     );
 };
