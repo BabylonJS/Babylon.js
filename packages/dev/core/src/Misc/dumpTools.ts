@@ -12,7 +12,7 @@ import { Logger } from "./logger";
 
 type DumpResources = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
-    dumpEngine?: {
+    dumpEngine: {
         engine: ThinEngine;
         renderer: EffectRenderer;
         wrapper: EffectWrapper;
@@ -28,14 +28,11 @@ async function _CreateDumpResourcesAsync(): Promise<DumpResources> {
         Logger.Warn("DumpData: OffscreenCanvas will be used for dumping data. This may result in lossy alpha values.");
     }
 
-    // If WebGL via ThinEngine is not available (e.g. Native), use the BitmapRenderer.
+    // If WebGL via ThinEngine is not available, we cannot encode the data.
     // If https://github.com/whatwg/html/issues/10142 is resolved, we can migrate to just BitmapRenderer and avoid an engine dependency altogether.
     const { ThinEngine: thinEngineClass } = await import("../Engines/thinEngine");
     if (!thinEngineClass.IsSupported) {
-        if (!canvas.getContext("bitmaprenderer")) {
-            throw new Error("DumpData: No WebGL or bitmap rendering context available. Cannot dump data.");
-        }
-        return { canvas };
+        throw new Error("DumpData: No WebGL context available. Cannot dump data.");
     }
 
     const options = {
@@ -171,32 +168,19 @@ export async function DumpDataAsync(
     const resources = await _GetDumpResourcesAsync();
 
     // Keep the async render + read from the shared canvas atomic
-    // eslint-disable-next-line no-async-promise-executor
-    return await new Promise<string | ArrayBuffer>(async (resolve) => {
-        if (resources.dumpEngine) {
-            const dumpEngine = resources.dumpEngine;
-            dumpEngine.engine.setSize(width, height, true);
+    return await new Promise<string | ArrayBuffer>((resolve) => {
+        const dumpEngine = resources.dumpEngine;
+        dumpEngine.engine.setSize(width, height, true);
 
-            // Create the image
-            const texture = dumpEngine.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+        // Create the image
+        const texture = dumpEngine.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
 
-            dumpEngine.renderer.setViewport();
-            dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
-            dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
-            dumpEngine.renderer.draw();
+        dumpEngine.renderer.setViewport();
+        dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
+        dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
+        dumpEngine.renderer.draw();
 
-            texture.dispose();
-        } else {
-            const ctx = resources.canvas.getContext("bitmaprenderer") as ImageBitmapRenderingContext;
-            resources.canvas.width = width;
-            resources.canvas.height = height;
-
-            const imageData = new ImageData(width, height); // ImageData(data, sw, sh) ctor not yet widely implemented
-            imageData.data.set(data as Uint8ClampedArray);
-            const imageBitmap = await createImageBitmap(imageData, { premultiplyAlpha: "none", imageOrientation: invertY ? "flipY" : "from-image" });
-
-            ctx.transferFromImageBitmap(imageBitmap);
-        }
+        texture.dispose();
 
         Tools.ToBlob(
             resources.canvas,
