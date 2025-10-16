@@ -6,11 +6,6 @@ import { FluentProvider, webDarkTheme } from "@fluentui/react-components";
 export type UiSize = "small" | "medium";
 export type ToolHostProps = {
     /**
-     * Forces fluent (by default false and relies on QSP)
-     */
-    useFluent?: boolean;
-
-    /**
      * Will ensure all of the controls within the tool are of the same scale
      */
     size?: UiSize;
@@ -41,7 +36,7 @@ export const ToolContext = createContext({ useFluent: false as boolean, disableC
  */
 export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProps>> = (props) => {
     const url = new URL(window.location.href);
-    const useFluent = props.useFluent ?? (url.searchParams.has("newUX") || url.hash.includes("newUX"));
+    const useFluent = url.searchParams.has("newUX") || url.hash.includes("newUX");
     const contextValue = {
         useFluent,
         disableCopy: !!props.disableCopy,
