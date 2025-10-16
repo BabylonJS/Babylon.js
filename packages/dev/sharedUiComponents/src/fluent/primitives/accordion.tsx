@@ -97,7 +97,7 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
             {validChildren.map((child, index) => {
                 return (
                     <AccordionItem key={child.content.key} value={child.title}>
-                        <AccordionHeader>
+                        <AccordionHeader size={size}>
                             <Subtitle2Stronger>{child.title}</Subtitle2Stronger>
                         </AccordionHeader>
                         <AccordionPanel>
