@@ -213,13 +213,6 @@ export class Player {
         this._canvas = document.createElement("canvas");
         this._canvas.id = "babylon-canvas";
 
-        // Center the canvas in the container
-        this._canvas.style.position = "absolute";
-        this._canvas.style.left = "50%";
-        this._canvas.style.top = "50%";
-        this._canvas.style.transform = "translate(-50%, -50%)";
-        this._canvas.style.display = "block";
-
         // The size of the canvas is the relation between the size of the container div and the size of the animation
         this._scaleFactor = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._input.container);
         this._canvas.style.width = `${this._animationWidth * this._scaleFactor}px`;

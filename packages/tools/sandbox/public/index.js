@@ -142,11 +142,13 @@ let checkBabylonVersionAsync = function () {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
         }
+
+        return version;
     });
 };
 
-checkBabylonVersionAsync().then(() => {
+checkBabylonVersionAsync().then((version) => {
     loadScriptAsync("babylon.sandbox.js").then(() => {
-        BABYLON.Sandbox.Show(hostElement);
+        BABYLON.Sandbox.Show(hostElement, version);
     });
 });

@@ -23,23 +23,23 @@ import type { PrimitiveProps } from "./primitive";
 import { SpinButton } from "./spinButton";
 import { TextInput } from "./textInput";
 import { NumberDropdown } from "./dropdown";
+import { ColorHexValidatorFn } from "./utils";
 
 const useColorPickerStyles = makeStyles({
     container: {
-        width: "380px",
+        width: "350px",
         display: "flex", // becomes a flexbox
         flexDirection: "column", // with children in a column
         alignItems: "center", // centers children horizontally
         justifyContent: "center", // centers children vertically (if height is set)
-        borderRadius: "4px",
-        gap: "15px",
+        gap: tokens.spacingVerticalM,
         overflow: "visible",
     },
     row: {
         flex: 1, // is a row in the container's flex column
         display: "flex", // becomes its own flexbox
         flexDirection: "row", // with children in a row
-        gap: "20px",
+        gap: tokens.spacingHorizontalXL,
         alignItems: "center", // align items vertically
         width: "100%",
     },
@@ -114,7 +114,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
             onOpenChange={(_, data) => setPopoverOpen(data.open)}
         >
             <PopoverTrigger disableButtonEnhancement>
-                <ColorSwatch borderColor={tokens.colorNeutralShadowKeyDarker} size="small" color={color.toHexString()} value={color.toHexString().slice(1)} />
+                <ColorSwatch borderColor={tokens.colorNeutralShadowKeyDarker} size="small" shape="rounded" color={color.toHexString()} value={color.toHexString().slice(1)} />
             </PopoverTrigger>
 
             <PopoverSurface>
@@ -181,8 +181,6 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
     );
 };
 
-const HEX_REGEX = RegExp(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8})$/);
-
 export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
     linearHex?: boolean;
     isLinearMode?: boolean;
@@ -204,7 +202,7 @@ export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
             disabled={linearHex ? !isLinearMode : false}
             className={classes.inputField}
             value={linearHex ? value.toLinearSpace().toHexString() : value.toHexString()}
-            validator={(val) => val != "" && HEX_REGEX.test(val)}
+            validator={ColorHexValidatorFn}
             onChange={(val) => (linearHex ? onChange(Color3.FromHexString(val).toGammaSpace()) : onChange(Color3.FromHexString(val)))}
             infoLabel={
                 title

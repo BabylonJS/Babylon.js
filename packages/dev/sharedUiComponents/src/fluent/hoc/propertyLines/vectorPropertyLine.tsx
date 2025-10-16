@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 
 import { Body1 } from "@fluentui/react-components";
@@ -10,7 +10,7 @@ import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Quaternion, Vector2, Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import { CalculatePrecision } from "../../primitives/spinButton";
+import { CalculatePrecision } from "../../primitives/utils";
 
 export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quaternion> = PropertyLineProps<V> &
     PrimitiveProps<V> & {
@@ -58,7 +58,7 @@ const HasW = (vector: Vector2 | Vector3 | Vector4 | Quaternion): vector is Vecto
 const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Vector3 | Vector4 | Quaternion>> = (props) => {
     TensorPropertyLine.displayName = "TensorPropertyLine";
     const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
-    const formatted = (val: number) => converted(val).toFixed(props.step !== undefined ? CalculatePrecision(props.step) : 2);
+    const formatted = (val: number) => converted(val).toFixed(props.step !== undefined ? Math.max(0, CalculatePrecision(props.step)) : 2);
 
     const [vector, setVector] = useState(props.value);
     const { min, max } = props;
@@ -71,6 +71,10 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
         setVector(newVector);
         props.onChange(newVector);
     };
+
+    useEffect(() => {
+        setVector(props.value);
+    }, [props.value, props.expandedContent]);
 
     return (
         <PropertyLine

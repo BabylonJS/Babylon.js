@@ -3,22 +3,23 @@ import type { IDisposable } from "core/index";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
-import { useResizeHandle } from "@fluentui-contrib/react-resize-handle";
 import { Button, Divider, Toolbar as FluentToolbar, makeStyles, mergeClasses, Subtitle2Stronger, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 
+import { Observable } from "core/Misc/observable";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
+import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
 
 /**
  * Describes an item that can be added to one of the shell's toolbars.
  */
-export type ToolbarItem = Readonly<{
+export type ToolbarItemDefinition = Readonly<{
     /**
      * A unique key for the toolbar item.
      */
@@ -65,7 +66,7 @@ export type ToolbarItem = Readonly<{
 /**
  * Describes a side pane that can be added to the shell's left or right side.
  */
-export type SidePane = Readonly<{
+export type SidePaneDefinition = Readonly<{
     /**
      * A unique key for the side pane.
      */
@@ -112,10 +113,15 @@ export type SidePane = Readonly<{
     suppressTeachingMoment?: boolean;
 }>;
 
+type RegisteredSidePane = {
+    key: string;
+    select(): void;
+};
+
 /**
  * Describes content that can be added to the shell's central area (between the side panes and toolbars - e.g. the main content).
  */
-export type CentralContent = Readonly<{
+export type CentralContentDefinition = Readonly<{
     /**
      * A unique key for the central content.
      */
@@ -152,9 +158,28 @@ export const ShellServiceIdentity = Symbol("ShellService");
  * This service allows adding toolbar items, side panes, and central content dynamically.
  */
 export interface IShellService extends IService<typeof ShellServiceIdentity> {
-    addToolbarItem(item: ToolbarItem): IDisposable;
-    addSidePane(pane: SidePane): IDisposable;
-    addCentralContent(content: CentralContent): IDisposable;
+    /**
+     * Adds a new item to one of the shell's toolbars.
+     * @param item Defines the item to add.
+     */
+    addToolbarItem(item: ToolbarItemDefinition): IDisposable;
+
+    /**
+     * Adds a new side pane to the shell.
+     * @param pane Defines the side pane to add.
+     */
+    addSidePane(pane: SidePaneDefinition): IDisposable;
+
+    /**
+     * Adds new central content to the shell.
+     * @param content Defines the content area to add.
+     */
+    addCentralContent(content: CentralContentDefinition): IDisposable;
+
+    /**
+     * The side panes currently present in the shell.
+     */
+    readonly sidePanes: readonly RegisteredSidePane[];
 }
 
 type ToolbarMode = "full" | "compact";
@@ -396,7 +421,7 @@ const ToolbarItem: FunctionComponent<{
 
 // TODO: Handle overflow, possibly via https://react.fluentui.dev/?path=/docs/components-overflow--docs with priority.
 // This component just renders a toolbar with left aligned toolbar items on the left and right aligned toolbar items on the right.
-const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: ToolbarItem[] }> = ({ location, components }) => {
+const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: ToolbarItemDefinition[] }> = ({ location, components }) => {
     const classes = useStyles();
 
     const leftComponents = useMemo(() => components.filter((entry) => entry.horizontalLocation === "left"), [components]);
@@ -439,7 +464,9 @@ const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: Toolb
 };
 
 // This is a wrapper for a tab in a side pane that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
-const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; isSelected: boolean } & Pick<SidePane, "title" | "icon" | "suppressTeachingMoment">> = (props) => {
+const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; isSelected: boolean } & Pick<SidePaneDefinition, "title" | "icon" | "suppressTeachingMoment">> = (
+    props
+) => {
     const {
         alignment,
         id,
@@ -488,28 +515,27 @@ function usePane(
     alignment: "left" | "right",
     defaultWidth: number,
     minWidth: number,
-    topPanes: SidePane[],
-    bottomPanes: SidePane[],
+    topPanes: SidePaneDefinition[],
+    bottomPanes: SidePaneDefinition[],
+    onSelectSidePane: Observable<string>,
     toolbarMode: ToolbarMode,
-    topBarItems: ToolbarItem[],
-    bottomBarItems: ToolbarItem[]
+    topBarItems: ToolbarItemDefinition[],
+    bottomBarItems: ToolbarItemDefinition[]
 ) {
     const classes = useStyles();
 
-    const [topSelectedTab, setTopSelectedTab] = useState<SidePane>();
-    const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePane>();
+    const [topSelectedTab, setTopSelectedTab] = useState<SidePaneDefinition>();
+    const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneDefinition>();
     const [collapsed, setCollapsed] = useState(false);
 
     const onExpandCollapseClick = useCallback(() => {
         setCollapsed((collapsed) => !collapsed);
     }, [collapsed]);
 
-    const widthStorageKey = `Babylon/Settings/${alignment}Pane/Width`;
+    const widthStorageKey = `Babylon/Settings/${alignment}Pane/WidthAdjust`;
     const heightStorageKey = `Babylon/Settings/${alignment}Pane/HeightAdjust`;
 
-    const [width, setWidth] = useState(Number.parseInt(localStorage.getItem(widthStorageKey) ?? "") || Math.max(defaultWidth, minWidth));
-    const [resizing, setResizing] = useState(false);
-
+    // Selects a default top tab (during initialization or if the selected tab is removed).
     useEffect(() => {
         if ((topSelectedTab && !topPanes.includes(topSelectedTab)) || (!topSelectedTab && topPanes.length > 0)) {
             setTopSelectedTab(topPanes[0]);
@@ -518,6 +544,7 @@ function usePane(
         }
     }, [topSelectedTab, topPanes]);
 
+    // Selects a default bottom tab (during initialization or if the selected tab is removed).
     useEffect(() => {
         if ((bottomSelectedTab && !bottomPanes.includes(bottomSelectedTab)) || (!bottomSelectedTab && bottomPanes.length > 0)) {
             setBottomSelectedTab(bottomPanes[0]);
@@ -525,6 +552,25 @@ function usePane(
             setBottomSelectedTab(undefined);
         }
     }, [bottomSelectedTab, bottomPanes]);
+
+    // Selects a tab when explicitly requested.
+    useEffect(() => {
+        const observer = onSelectSidePane.add((key) => {
+            const topPane = topPanes.find((entry) => entry.key === key);
+            if (topPane) {
+                setTopSelectedTab(topPane);
+                setCollapsed(false);
+            }
+
+            const bottomPane = bottomPanes.find((entry) => entry.key === key);
+            if (bottomPane) {
+                setBottomSelectedTab(bottomPane);
+                setCollapsed(false);
+            }
+        });
+
+        return () => observer.remove();
+    }, [topPanes, bottomPanes, onSelectSidePane]);
 
     const expandCollapseIcon = useMemo(() => {
         if (alignment === "left") {
@@ -534,47 +580,13 @@ function usePane(
         }
     }, [collapsed, alignment]);
 
-    // TODO: Replace this custom resizing logic with useResizeHandle.
-    // This function handles resizing the side pane width.
-    const onResizerPointerDown = useCallback(
-        (event: React.PointerEvent<HTMLDivElement>) => {
-            const currentTarget = event.currentTarget;
-            const pointerId = event.pointerId;
-            event.preventDefault();
-            setResizing(true);
-            currentTarget.setPointerCapture(pointerId);
-            let newWidth = width;
-            let finalWidth = newWidth;
-
-            const onPointerMove = (event: PointerEvent) => {
-                event.preventDefault();
-                let movementX = event.movementX;
-                if (alignment === "right") {
-                    movementX *= -1;
-                }
-                newWidth = Math.max(0, newWidth + movementX);
-                finalWidth = Math.max(minWidth, newWidth);
-                setWidth(finalWidth);
-            };
-            currentTarget.addEventListener("pointermove", onPointerMove);
-
-            currentTarget.addEventListener(
-                "pointerup",
-                (event) => {
-                    event.preventDefault();
-                    currentTarget.removeEventListener("pointermove", onPointerMove);
-                    currentTarget.releasePointerCapture(pointerId);
-                    setResizing(false);
-                    localStorage.setItem(widthStorageKey, finalWidth.toString());
-                },
-                { once: true }
-            );
-        },
-        [resizing]
-    );
-
     const createPaneTabList = useCallback(
-        (paneComponents: SidePane[], toolbarMode: "full" | "compact", selectedTab: SidePane | undefined, setSelectedTab: (tab: SidePane | undefined) => void) => {
+        (
+            paneComponents: SidePaneDefinition[],
+            toolbarMode: "full" | "compact",
+            selectedTab: SidePaneDefinition | undefined,
+            setSelectedTab: (tab: SidePaneDefinition | undefined) => void
+        ) => {
             return (
                 <>
                     {paneComponents.length > 0 && (
@@ -639,6 +651,22 @@ function usePane(
         [createPaneTabList, bottomPanes, bottomSelectedTab]
     );
 
+    // This manages the CSS variable that controls the width of the side pane.
+    const paneWidthAdjustCSSVar = "--pane-width-adjust";
+    const {
+        elementRef: paneHorizontalResizeElementRef,
+        handleRef: paneHorizontalResizeHandleRef,
+        setValue: setPaneWidthAdjust,
+    } = useResizeHandle({
+        growDirection: alignment === "left" ? "end" : "start",
+        variableName: paneWidthAdjustCSSVar,
+        minValue: minWidth - defaultWidth,
+        onChange: (value) => {
+            // Whenever the width is adjusted, store the value.
+            localStorage.setItem(widthStorageKey, value.toString());
+        },
+    });
+
     // This manages the CSS variable that controls the height of the bottom pane.
     const paneHeightAdjustCSSVar = "--pane-height-adjust";
     const {
@@ -647,22 +675,25 @@ function usePane(
         setValue: setPaneHeightAdjust,
     } = useResizeHandle({
         growDirection: "up",
-        relative: true,
         variableName: paneHeightAdjustCSSVar,
-        variableTarget: "element",
-        onChange: (event, data) => {
+        onChange: (value) => {
             // Whenever the height is adjusted, store the value.
-            localStorage.setItem(heightStorageKey, data.value.toString());
+            localStorage.setItem(heightStorageKey, value.toString());
         },
     });
 
     // This ensures that when the component is first rendered, the CSS variable is set from storage.
     useLayoutEffect(() => {
+        const storedPaneWidthAdjust = localStorage.getItem(widthStorageKey);
+        if (storedPaneWidthAdjust) {
+            setPaneWidthAdjust(Number.parseInt(storedPaneWidthAdjust));
+        }
+
         const storedPaneHeightAdjust = localStorage.getItem(heightStorageKey);
         if (storedPaneHeightAdjust) {
             setPaneHeightAdjust(Number.parseInt(storedPaneHeightAdjust));
         }
-    });
+    }, []);
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
     const pane = useMemo(() => {
@@ -671,7 +702,11 @@ function usePane(
                 {(topPanes.length > 0 || bottomPanes.length > 0) && (
                     <div className={`${classes.pane} ${alignment === "left" ? classes.paneLeft : classes.paneRight}`}>
                         <Collapse orientation="horizontal" visible={!collapsed}>
-                            <div className={classes.paneContainer} style={{ width: `${width}px` }}>
+                            <div
+                                ref={paneHorizontalResizeElementRef}
+                                className={classes.paneContainer}
+                                style={{ width: `clamp(${minWidth}px, calc(${defaultWidth}px + var(${paneWidthAdjustCSSVar}, 0px)), 1000px)` }}
+                            >
                                 {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
                                 {toolbarMode === "compact" && (topPanes.length > 1 || topBarItems.length > 0) && (
                                     <>
@@ -704,7 +739,7 @@ function usePane(
                                     <div
                                         ref={paneVerticalResizeElementRef}
                                         className={classes.paneContent}
-                                        style={{ height: `clamp(200px,calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
+                                        style={{ height: `clamp(200px, calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
                                     >
                                         <PaneHeader title={bottomSelectedTab?.title} />
                                         {bottomSelectedTab?.content && <bottomSelectedTab.content />}
@@ -723,15 +758,15 @@ function usePane(
                         </Collapse>
                         {/* This is the resizer (width) for the pane container. */}
                         <div
+                            ref={paneHorizontalResizeHandleRef}
                             className={`${classes.resizer} ${alignment === "left" ? classes.resizerLeft : classes.resizerRight}`}
                             style={{ pointerEvents: `${collapsed ? "none" : "auto"}` }}
-                            onPointerDown={onResizerPointerDown}
                         />
                     </div>
                 )}
             </>
         );
-    }, [topPanes, topSelectedTab, bottomPanes, bottomSelectedTab, topBarItems, bottomBarItems, topPaneTabList, bottomPaneTabList, collapsed, width, resizing]);
+    }, [topPanes, topSelectedTab, bottomPanes, bottomSelectedTab, topBarItems, bottomBarItems, topPaneTabList, bottomPaneTabList, collapsed]);
 
     return [topPaneTabList, pane];
 }
@@ -748,13 +783,15 @@ export function MakeShellServiceDefinition({
         friendlyName: "MainView",
         produces: [ShellServiceIdentity, RootComponentServiceIdentity],
         factory: () => {
-            const topBarItemCollection = new ObservableCollection<ToolbarItem>();
-            const bottomBarItemCollection = new ObservableCollection<ToolbarItem>();
-            const topLeftPaneCollection = new ObservableCollection<SidePane>();
-            const topRightPaneCollection = new ObservableCollection<SidePane>();
-            const bottomLeftPaneCollection = new ObservableCollection<SidePane>();
-            const bottomRightPaneCollection = new ObservableCollection<SidePane>();
-            const centralContentCollection = new ObservableCollection<CentralContent>();
+            const topBarItemCollection = new ObservableCollection<ToolbarItemDefinition>();
+            const bottomBarItemCollection = new ObservableCollection<ToolbarItemDefinition>();
+            const topLeftPaneCollection = new ObservableCollection<SidePaneDefinition>();
+            const topRightPaneCollection = new ObservableCollection<SidePaneDefinition>();
+            const bottomLeftPaneCollection = new ObservableCollection<SidePaneDefinition>();
+            const bottomRightPaneCollection = new ObservableCollection<SidePaneDefinition>();
+            const centralContentCollection = new ObservableCollection<CentralContentDefinition>();
+
+            const onSelectSidePane = new Observable<string>();
 
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
@@ -772,7 +809,7 @@ export function MakeShellServiceDefinition({
 
                 // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
                 // depending on whether there are any side panes on that side.
-                const coerceToolBarItemHorizontalLocation = (item: ToolbarItem) => {
+                const coerceToolBarItemHorizontalLocation = (item: ToolbarItemDefinition) => {
                     let location = item.horizontalLocation;
                     // Coercion is only needed in compact toolbar mode since there might not be a left or right pane.
                     if (toolbarMode === "compact") {
@@ -799,6 +836,7 @@ export function MakeShellServiceDefinition({
                     leftPaneMinWidth,
                     topLeftPanes,
                     bottomLeftPanes,
+                    onSelectSidePane,
                     toolbarMode,
                     topBarLeftItems,
                     bottomBarLeftItems
@@ -810,6 +848,7 @@ export function MakeShellServiceDefinition({
                     rightPaneMinWidth,
                     topRightPanes,
                     bottomRightPanes,
+                    onSelectSidePane,
                     toolbarMode,
                     topBarRightItems,
                     bottomBarRightItems
@@ -875,7 +914,7 @@ export function MakeShellServiceDefinition({
                     }
 
                     // When we are in "right" side pane mode, we need to coerce all left panes to be right panes.
-                    const coerceSidePaneLocation = (sidePane: SidePane) => {
+                    const coerceSidePaneLocation = (sidePane: SidePaneDefinition) => {
                         let { horizontalLocation, verticalLocation } = sidePane;
                         if (sidePaneMode === "right") {
                             // All right panes go to right bottom.
@@ -909,6 +948,16 @@ export function MakeShellServiceDefinition({
                     }
                 },
                 addCentralContent: (entry) => centralContentCollection.add(entry),
+                get sidePanes() {
+                    return [...topLeftPaneCollection.items, ...bottomLeftPaneCollection.items, ...topRightPaneCollection.items, ...bottomRightPaneCollection.items].map(
+                        (sidePaneDefinition) => {
+                            return {
+                                key: sidePaneDefinition.key,
+                                select: () => onSelectSidePane.notifyObservers(sidePaneDefinition.key),
+                            };
+                        }
+                    );
+                },
                 rootComponent,
             };
         },

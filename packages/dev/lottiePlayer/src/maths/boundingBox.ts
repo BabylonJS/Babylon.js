@@ -12,15 +12,15 @@ export type BoundingBox = {
     centerX: number;
     /** Y coordinate of the center of the bounding box */
     centerY: number;
+    /** Box X offset, as the box may not be centered around (0,0) */
+    offsetX: number;
+    /** Box Y offset, as the box may not be centered around (0,0) */
+    offsetY: number;
     /** Inset for the stroke, if applicable. */
     strokeInset: number;
-    /**
-     * Optional: Canvas2D text metrics for precise vertical alignment
-     */
+    /** Optional: Canvas2D text metrics for precise vertical alignment */
     actualBoundingBoxAscent?: number;
-    /**
-     * Optional: Canvas2D text metrics for precise vertical alignment
-     */
+    /** Optional: Canvas2D text metrics for precise vertical alignment */
     actualBoundingBoxDescent?: number;
 };
 
@@ -45,22 +45,31 @@ export function GetShapesBoundingBox(rawElements: RawElement[]): BoundingBox {
         maxY: -Infinity,
     };
 
-    let extraPadding = 0;
+    let strokeWidth = 0;
     for (let i = 0; i < rawElements.length; i++) {
         if (rawElements[i].ty === "rc") {
             GetRectangleVertices(boxCorners, rawElements[i] as RawRectangleShape);
         } else if (rawElements[i].ty === "sh") {
             GetPathVertices(boxCorners, rawElements[i] as RawPathShape);
         } else if (rawElements[i].ty === "st") {
-            extraPadding = Math.max(extraPadding, GetStrokeInset(rawElements[i] as RawStrokeShape));
+            strokeWidth = Math.max(strokeWidth, GetStrokeInset(rawElements[i] as RawStrokeShape));
         }
     }
 
+    const width = Math.ceil(Math.abs(boxCorners.maxX)) + Math.ceil(Math.abs(boxCorners.minX));
+    const height = Math.ceil(Math.abs(boxCorners.maxY)) + Math.ceil(Math.abs(boxCorners.minY));
+
+    const offsetX = (Math.abs(boxCorners.maxX) - Math.abs(boxCorners.minX)) / 2;
+    const offsetY = (Math.abs(boxCorners.maxY) - Math.abs(boxCorners.minY)) / 2;
+
     return {
-        width: Math.ceil(boxCorners.maxX - boxCorners.minX) + extraPadding,
-        height: Math.ceil(boxCorners.maxY - boxCorners.minY) + extraPadding,
-        centerX: Math.ceil((boxCorners.maxX + boxCorners.minX) / 2),
-        centerY: Math.ceil((boxCorners.maxY + boxCorners.minY) / 2),
+        width: width + strokeWidth,
+        height: height + strokeWidth,
+        // The center of the box is the center of its width and height, modified by its offset and the stroke width
+        centerX: width / 2 - offsetX + strokeWidth / 2,
+        centerY: height / 2 - offsetY + strokeWidth / 2,
+        offsetX: offsetX,
+        offsetY: offsetY,
         strokeInset: 0,
     };
 }
@@ -115,13 +124,15 @@ export function GetTextBoundingBox(
     const metrics = spritesCanvasContext.measureText(text);
 
     const widthPx = Math.ceil(metrics.width);
-    const heightPx = Math.ceil(metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
+    const heightPx = Math.ceil(metrics.actualBoundingBoxAscent) + Math.ceil(metrics.actualBoundingBoxDescent);
 
     return {
         width: widthPx,
         height: heightPx,
-        centerX: Math.ceil(widthPx / 2),
-        centerY: Math.ceil(heightPx / 2),
+        centerX: widthPx / 2,
+        centerY: heightPx / 2,
+        offsetX: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
+        offsetY: 0, // The bounding box calculated by the canvas for the text is always centered in (0, 0)
         strokeInset: 0, // Text bounding box ignores stroke padding here
         actualBoundingBoxAscent: metrics.actualBoundingBoxAscent,
         actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,

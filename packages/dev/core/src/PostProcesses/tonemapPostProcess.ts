@@ -1,28 +1,44 @@
-import type { Camera } from "../Cameras/camera";
-import type { Effect } from "../Materials/effect";
+import { Camera } from "../Cameras/camera";
+import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import { Constants } from "../Engines/constants";
 
+import { RegisterClass } from "../Misc/typeStore";
+import { serialize } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { ThinTonemapPostProcessOptions, TonemappingOperator } from "./thinTonemapPostProcess";
+import { ThinTonemapPostProcess } from "./thinTonemapPostProcess";
+import type { Scene } from "../scene";
 
-/** Defines operator used for tonemapping */
-export const enum TonemappingOperator {
-    /** Hable */
-    Hable = 0,
-    /** Reinhard */
-    Reinhard = 1,
-    /** HejiDawson */
-    HejiDawson = 2,
-    /** Photographic */
-    Photographic = 3,
-}
+export type ToneMapPostProcessOptions = ThinTonemapPostProcessOptions & PostProcessOptions;
 
 /**
  * Defines a post process to apply tone mapping
  */
 export class TonemapPostProcess extends PostProcess {
+    /**
+     * Defines the required exposure adjustment
+     */
+    @serialize()
+    public get exposureAdjustment() {
+        return this._effectWrapper.exposureAdjustment;
+    }
+
+    public set exposureAdjustment(value: number) {
+        this._effectWrapper.exposureAdjustment = value;
+    }
+
+    /**
+     * Gets the operator used for tonemapping
+     */
+    @serialize()
+    public get operator() {
+        return this._effectWrapper.operator;
+    }
+
     /**
      * Gets a string identifying the name of the class
      * @returns "TonemapPostProcess" string
@@ -31,58 +47,74 @@ export class TonemapPostProcess extends PostProcess {
         return "TonemapPostProcess";
     }
 
+    protected override _effectWrapper: ThinTonemapPostProcess;
+
     /**
      * Creates a new TonemapPostProcess
      * @param name defines the name of the postprocess
-     * @param _operator defines the operator to use
+     * @param operator defines the operator to use
      * @param exposureAdjustment defines the required exposure adjustment
      * @param camera defines the camera to use (can be null)
      * @param samplingMode defines the required sampling mode (BABYLON.Texture.BILINEAR_SAMPLINGMODE by default)
      * @param engine defines the hosting engine (can be ignore if camera is set)
-     * @param textureFormat defines the texture format to use (BABYLON.Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
+     * @param textureType defines the texture format to use (BABYLON.Engine.TEXTURETYPE_UNSIGNED_BYTE by default)
      * @param reusable If the post process can be reused on the same frame. (default: false)
      */
     constructor(
         name: string,
-        private _operator: TonemappingOperator,
-        /** Defines the required exposure adjustment */
-        public exposureAdjustment: number,
-        camera: Nullable<Camera>,
+        operator: TonemappingOperator,
+        exposureAdjustment: number,
+        camera: Nullable<Camera> | ToneMapPostProcessOptions,
         samplingMode: number = Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
         engine?: AbstractEngine,
-        textureFormat = Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         reusable?: boolean
     ) {
-        super(name, "tonemap", ["_ExposureAdjustment"], null, 1.0, camera, samplingMode, engine, reusable, null, textureFormat);
+        const cameraIsCamera = camera === null || camera instanceof Camera;
 
-        let defines = "#define ";
+        const localOptions = {
+            operator,
+            exposureAdjustment,
+            uniforms: ThinTonemapPostProcess.Uniforms,
+            camera: cameraIsCamera ? camera : undefined,
+            samplingMode,
+            engine,
+            reusable,
+            textureType,
+        };
 
-        if (this._operator === TonemappingOperator.Hable) {
-            defines += "HABLE_TONEMAPPING";
-        } else if (this._operator === TonemappingOperator.Reinhard) {
-            defines += "REINHARD_TONEMAPPING";
-        } else if (this._operator === TonemappingOperator.HejiDawson) {
-            defines += "OPTIMIZED_HEJIDAWSON_TONEMAPPING";
-        } else if (this._operator === TonemappingOperator.Photographic) {
-            defines += "PHOTOGRAPHIC_TONEMAPPING";
+        if (!cameraIsCamera) {
+            Object.assign(localOptions, camera);
         }
 
-        //sadly a second call to create the effect.
-        this.updateEffect(defines);
-
-        this.onApply = (effect: Effect) => {
-            effect.setFloat("_ExposureAdjustment", this.exposureAdjustment);
-        };
+        super(name, ThinTonemapPostProcess.FragmentUrl, {
+            effectWrapper: cameraIsCamera || !camera.effectWrapper ? new ThinTonemapPostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
     }
 
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/tonemap.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/tonemap.fragment")]));
-        }
-
-        super._gatherImports(useWebGPU, list);
+    /**
+     * @internal
+     */
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<TonemapPostProcess> {
+        return SerializationHelper.Parse(
+            () => {
+                return new TonemapPostProcess(
+                    parsedPostProcess.name,
+                    parsedPostProcess.operator,
+                    parsedPostProcess.exposureAdjustment,
+                    targetCamera,
+                    parsedPostProcess.renderTargetSamplingMode,
+                    scene.getEngine(),
+                    parsedPostProcess.textureType,
+                    parsedPostProcess.reusable
+                );
+            },
+            parsedPostProcess,
+            scene,
+            rootUrl
+        );
     }
 }
+
+RegisterClass("BABYLON.TonemapPostProcess", TonemapPostProcess);

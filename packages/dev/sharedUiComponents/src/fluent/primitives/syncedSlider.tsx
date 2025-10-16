@@ -105,7 +105,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                         onPointerUp={handleSliderPointerUp}
                     />
                 )}
-                <SpinButton {...passthroughProps} value={Math.round(value / step) * step} onChange={handleInputChange} step={props.step} />
+                <SpinButton {...passthroughProps} value={value} onChange={handleInputChange} step={props.step} />
             </div>
         </div>
     );

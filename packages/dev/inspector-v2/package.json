@@ -22,7 +22,6 @@
         "@dev/loaders": "1.0.0",
         "@dev/materials": "^1.0.0",
         "@dev/serializers": "1.0.0",
-        "@fluentui-contrib/react-resize-handle": "^0.8.0",
         "@fluentui-contrib/react-virtualizer": "^0.3.0",
         "@fluentui/react-components": "^9.70.0",
         "@fluentui/react-icons": "^2.0.310",

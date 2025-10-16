@@ -2797,10 +2797,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     private _floatingOriginOffsetDefault: Vector3 = Vector3.Zero();
     /**
      * @experimental
-     * When floatingOriginMode is enabled, offset is equal to the active camera position. If no active camera or floatingOriginMode is disabled, offset is 0.
+     * When floatingOriginMode is enabled, offset is equal to the active camera position in world space. If no active camera or floatingOriginMode is disabled, offset is 0.
      */
     public get floatingOriginOffset(): Vector3 {
-        return this.floatingOriginMode && this.activeCamera ? this.activeCamera.position : this._floatingOriginOffsetDefault;
+        return this.floatingOriginMode && this.activeCamera ? this.activeCamera.getWorldMatrix().getTranslation() : this._floatingOriginOffsetDefault;
     }
 
     /**

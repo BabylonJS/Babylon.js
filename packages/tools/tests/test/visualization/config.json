@@ -1197,7 +1197,7 @@
         },
         {
             "title": "GLTF Node visibility test",
-            "playgroundId": "#80DN99#3",
+            "playgroundId": "#80DN99#6",
             "referenceImage": "gltfNodeVisibility.png"
         },
         {
@@ -1918,7 +1918,7 @@
         {
             "title": "Multi cameras and output render target",
             "renderCount": 2,
-            "playgroundId": "#BCYE7J#31",
+            "playgroundId": "#BCYE7J#46",
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
         {
@@ -2666,6 +2666,10 @@
         {
             "title": "FrameGraph nrge clustered lights (simple)",
             "playgroundId": "#1QCA2M#26"
+        },
+        {
+            "title": "FrameGraph nrge multiple post processes",
+            "playgroundId": "#SYQW69#1339"
         },
         {
             "title": "FrameGraph nrg gui bloom",

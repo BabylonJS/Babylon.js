@@ -11,7 +11,7 @@
         "@dev/build-tools": "^1.0.0",
         "@nrwl/tao": "^18.0.4",
         "@nrwl/workspace": "^18.0.4",
-        "@playwright/test": "1.49.1",
+        "@playwright/test": "1.54.0",
         "@types/expect-puppeteer": "~5.0.3",
         "@types/fs-extra": "^9.0.13",
         "@types/jest": "~27.4.0",

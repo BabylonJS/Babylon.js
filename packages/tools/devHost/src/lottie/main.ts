@@ -10,6 +10,7 @@ import { DecodeQspStringToObject } from "./utils";
  */
 export async function Main(searchParams: URLSearchParams): Promise<void> {
     const div = document.getElementById("main-div") as HTMLDivElement; // The player will be inside this div
+    div.style = "justify-content: center; align-items: center;"; // We want the animation centered
 
     // You can also pass a local file that you are serving from the devhost public folder to test: const fileUrl = './myLottieFile.json'
     const filename = searchParams.get("file") || "triangles_noParents_noCross.json";
@@ -48,11 +49,11 @@ export async function Main(searchParams: URLSearchParams): Promise<void> {
         loopAnimation: false, // By default do not loop animations
         spriteAtlasWidth: 4096, // Size of the texture atlas
         spriteAtlasHeight: 4096, // Size of the texture atlas
-        gapSize: 5, // Gap around the sprites in the atlas
+        gapSize: 25, // Gap around the sprites in the atlas
         spritesCapacity: 64, // Maximum number of sprites the renderer can handle at once
         backgroundColor: { r: 1, g: 1, b: 1, a: 1 }, // Background color for the animation canvas
         scaleMultiplier: 5, // Minimum scale factor to prevent too small sprites,
-        devicePixelRatio: 1, // Scale factor,
+        devicePixelRatio: Math.ceil(window.devicePixelRatio), // Scale factor,
         easingSteps: 4, // Number of steps to sample easing functions for animations - Less than 4 causes issues with some interpolations
         supportDeviceLost: false, // Whether to support device lost events for WebGL contexts,
     };

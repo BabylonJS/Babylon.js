@@ -22,6 +22,7 @@ import {
     tokens,
     Tooltip,
     TreeItemLayout,
+    treeItemLevelToken,
 } from "@fluentui/react-components";
 import { ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -204,6 +205,16 @@ const useStyles = makeStyles({
     sceneTreeItemLayout: {
         padding: 0,
     },
+    treeItemLayoutAside: {
+        gap: 0,
+        paddingLeft: tokens.spacingHorizontalS,
+        paddingRight: tokens.spacingHorizontalS,
+    },
+    treeItemLayoutMain: {
+        flex: "1 1 0",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    },
 });
 
 const ActionCommand: FunctionComponent<{ command: ActionCommand }> = (props) => {
@@ -337,6 +348,8 @@ const EntityTreeItem: FunctionComponent<{
 }> = (props) => {
     const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
 
+    const classes = useStyles();
+
     const hasChildren = !!entityItem.children?.length;
 
     const displayInfo = useResource(
@@ -443,6 +456,7 @@ const EntityTreeItem: FunctionComponent<{
                     aria-setsize={1}
                     aria-posinset={1}
                     onClick={select}
+                    style={{ [treeItemLevelToken]: entityItem.depth }}
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
@@ -450,12 +464,12 @@ const EntityTreeItem: FunctionComponent<{
                         actions={actions}
                         aside={{
                             // Match the gap and padding of the actions.
-                            style: { gap: 0, paddingLeft: tokens.spacingHorizontalS, paddingRight: tokens.spacingHorizontalS },
+                            className: classes.treeItemLayoutAside,
                             children: aside,
                         }}
                         main={{
                             // Prevent the "main" content (the Body1 below) from growing too large and pushing the actions/aside out of view.
-                            style: { flex: "1 1 0", overflow: "hidden", textOverflow: "ellipsis" },
+                            className: classes.treeItemLayoutMain,
                         }}
                     >
                         <Body1 wrap={false} truncate>
