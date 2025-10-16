@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 const useSwitchStyles = makeStyles({
     switch: {
         marginLeft: "auto",
+        transform: `scale(.85)`, // workaround since we cannot resize fluent switch
+        transformOrigin: "right",
     },
     indicator: {
         margin: 0, // Remove the default right margin so the switch aligns well on the right side inside panels like the properties pane.

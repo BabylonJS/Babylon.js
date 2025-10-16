@@ -6,7 +6,7 @@ import type { KeyboardEvent, FocusEvent } from "react";
 export const CustomTokens = {
     inputWidth: "100px",
     lineHeight: tokens.lineHeightHero700, // 36px
-    lineHeightSmall: tokens.lineHeightBase300, // 24px
+    lineHeightSmall: tokens.lineHeightBase500, // 28px
     dividerGap: tokens.fontSizeBase100, // "10px",
     dividerGapSmall: tokens.borderRadiusMedium, // 4px",
     labelMinWidth: "50px",
