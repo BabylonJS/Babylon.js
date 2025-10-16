@@ -31,7 +31,7 @@ export type ToolHostProps = {
     toolName: string;
 };
 
-export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean, toolName: "" as string, size: "small" as UiSize } as const);
+export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean, toolName: "" as string, size: "medium" as UiSize } as const);
 
 /**
  * For tools which are ready to move over the fluent, wrap the root of the tool (or the panel which you want fluentized) with this component

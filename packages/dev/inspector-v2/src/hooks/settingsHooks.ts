@@ -1,8 +1,8 @@
 import type { ISettingsContext } from "../services/settingsContext";
 
 import { useCallback } from "react";
-
 import { useLocalStorage } from "usehooks-ts";
+
 import { useObservableState } from "./observableHooks";
 
 const CompactModeStorageKey = "Babylon/Settings/IsCompactMode";
