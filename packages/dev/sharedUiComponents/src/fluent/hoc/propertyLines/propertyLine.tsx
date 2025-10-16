@@ -146,7 +146,6 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
                 <InfoLabel
-                    size={size}
                     className={classes.infoLabel}
                     label={{ className: classes.labelSlot }}
                     info={description ? <div className={classes.infoPopup}>{description}</div> : undefined}
