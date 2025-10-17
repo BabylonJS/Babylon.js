@@ -14,6 +14,8 @@ import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectR
 export class NodeRenderGraphHighlightLayerBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphHighlightLayerTask;
 
+    public override _additionalConstructionParameters: [number, number | undefined, number, boolean, number];
+
     /**
      * Gets the frame graph task associated with this block
      */

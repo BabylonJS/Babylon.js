@@ -14,6 +14,8 @@ import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectR
 export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphGlowLayerTask;
 
+    public override _additionalConstructionParameters: [boolean, number, number | undefined, number];
+
     /**
      * Gets the frame graph task associated with this block
      */
