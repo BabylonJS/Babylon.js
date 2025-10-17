@@ -648,19 +648,8 @@ export class _IblShadowsVoxelRenderer {
         this._voxelizationInProgress = true;
 
         if (this._engine.isWebGPU) {
-            this._voxelMaterial.useVertexPulling = true;
-            this._voxelMaterial.setTexture("voxel_storage", this.getVoxelGrid());
-            this._voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
-            this._voxelGridRT.setMaterialForRendering(includedMeshes, this._voxelMaterial);
             this._voxelGridRT.renderList = includedMeshes;
-            // this._scene.customRenderTargets.push(this._voxelGridRT);
-            if (this._voxelGrid && this._voxelGrid.renderTarget) {
-                // for (let layer = 0; layer < this._voxelResolution; layer++) {
-                //     this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
-                //     this._engine.clear(this._voxelClearColor, true, false, false);
-                //     this._engine.unBindFramebuffer(this._voxelGrid.renderTarget, true);
-                // }
-            }
+            this._addRTsForRender([this._voxelGridRT], includedMeshes, 0);
         } else if (this._triPlanarVoxelization) {
             this._addRTsForRender(this._voxelMrtsXaxis, includedMeshes, 0);
             this._addRTsForRender(this._voxelMrtsYaxis, includedMeshes, 1);
@@ -689,12 +678,10 @@ export class _IblShadowsVoxelRenderer {
                 allReady &&= rttReady;
             }
             if (allReady) {
-                for (const rt of this._renderTargets) {
-                    rt.render();
-                }
-                this._stopVoxelization();
-
                 if (this._engine.isWebGPU) {
+                    // Clear the voxel grid storage texture.
+                    // Need to clear each layer individually.
+                    // Would a compute shader be faster here to clear all layers in one go?
                     if (this._voxelGrid && this._voxelGrid.renderTarget) {
                         for (let layer = 0; layer < this._voxelResolution; layer++) {
                             this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
@@ -702,8 +689,13 @@ export class _IblShadowsVoxelRenderer {
                             this._engine.unBindFramebuffer(this._voxelGrid.renderTarget, true);
                         }
                     }
-                    this._voxelGridRT.render();
-                } else if (this._triPlanarVoxelization) {
+                }
+                for (const rt of this._renderTargets) {
+                    rt.render();
+                }
+                this._stopVoxelization();
+
+                if (this._triPlanarVoxelization && !this._engine.isWebGPU) {
                     this._combinedVoxelGridPT.render();
                 }
                 this._generateMipMaps();
@@ -752,6 +744,10 @@ export class _IblShadowsVoxelRenderer {
                 voxelMaterial.setFloat("nearPlane", nearPlane);
                 voxelMaterial.setFloat("farPlane", farPlane);
                 voxelMaterial.setFloat("stepSize", stepSize);
+                if (this._engine.isWebGPU) {
+                    this._voxelMaterial.useVertexPulling = true;
+                    this._voxelMaterial.setTexture("voxel_storage", this.getVoxelGrid());
+                }
             });
 
             // Set this material on every mesh in the scene (for this RT)
