@@ -1,10 +1,11 @@
 import type { AccordionToggleData, AccordionToggleEvent } from "@fluentui/react-components";
 import type { FunctionComponent, PropsWithChildren } from "react";
 
-import { Children, isValidElement, useCallback, useEffect, useMemo, useState } from "react";
+import { Children, isValidElement, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { AccordionHeader, AccordionItem, AccordionPanel, Divider, Accordion as FluentAccordion, Subtitle2Stronger, makeStyles, tokens } from "@fluentui/react-components";
-
+import { CustomTokens } from "./utils";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 const useStyles = makeStyles({
     accordion: {
         overflowX: "hidden",
@@ -15,8 +16,12 @@ const useStyles = makeStyles({
         height: "100%",
     },
     divider: {
-        paddingTop: "10px",
-        paddingBottom: "10px",
+        paddingTop: CustomTokens.dividerGap,
+        paddingBottom: CustomTokens.dividerGap,
+    },
+    dividerSmall: {
+        paddingTop: CustomTokens.dividerGapSmall,
+        paddingBottom: CustomTokens.dividerGapSmall,
     },
     panelDiv: {
         display: "flex",
@@ -40,7 +45,7 @@ export const AccordionSection: FunctionComponent<PropsWithChildren<AccordionSect
 export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
     Accordion.displayName = "Accordion";
     const classes = useStyles();
-
+    const { size } = useContext(ToolContext);
     const { children, ...rest } = props;
     const validChildren = useMemo(() => {
         return (
@@ -92,13 +97,13 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
             {validChildren.map((child, index) => {
                 return (
                     <AccordionItem key={child.content.key} value={child.title}>
-                        <AccordionHeader>
+                        <AccordionHeader size={size}>
                             <Subtitle2Stronger>{child.title}</Subtitle2Stronger>
                         </AccordionHeader>
                         <AccordionPanel>
                             <div className={classes.panelDiv}>{child.content}</div>
                         </AccordionPanel>
-                        {index < validChildren.length - 1 && <Divider inset={true} className={classes.divider} />}
+                        {index < validChildren.length - 1 && <Divider inset={true} className={size === "small" ? classes.dividerSmall : classes.divider} />}
                     </AccordionItem>
                 );
             })}

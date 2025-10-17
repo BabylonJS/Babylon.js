@@ -18,6 +18,7 @@ import {
     MenuList,
     MenuPopover,
     MenuTrigger,
+    mergeClasses,
     SearchBox,
     tokens,
     Tooltip,
@@ -28,8 +29,10 @@ import { ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
+import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
+import { useCompactMode } from "../../hooks/settingsHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
 export type EntityBase = Readonly<{
@@ -215,6 +218,10 @@ const useStyles = makeStyles({
         overflow: "hidden",
         textOverflow: "ellipsis",
     },
+    treeItemLayoutCompact: {
+        minHeight: CustomTokens.lineHeightSmall,
+        maxHeight: CustomTokens.lineHeightSmall,
+    },
 });
 
 const ActionCommand: FunctionComponent<{ command: ActionCommand }> = (props) => {
@@ -277,12 +284,14 @@ const SceneTreeItem: FunctionComponent<{
     const { isSelected, select } = props;
 
     const classes = useStyles();
+    const [compactMode] = useCompactMode();
+    const treeItemLayoutClass = mergeClasses(classes.sceneTreeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined);
 
     return (
         <FlatTreeItem key="scene" value="scene" itemType="leaf" parentValue={undefined} aria-level={1} aria-setsize={1} aria-posinset={1} onClick={select}>
             <TreeItemLayout
                 iconBefore={<GlobeRegular />}
-                className={classes.sceneTreeItemLayout}
+                className={treeItemLayoutClass}
                 style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
             >
                 <Body1Strong wrap={false} truncate>
@@ -302,6 +311,9 @@ const SectionTreeItem: FunctionComponent<{
 }> = (props) => {
     const { section, isFiltering, expandAll, collapseAll } = props;
 
+    const classes = useStyles();
+    const [compactMode] = useCompactMode();
+
     return (
         <Menu openOnContext>
             <MenuTrigger disableButtonEnhancement>
@@ -315,7 +327,7 @@ const SectionTreeItem: FunctionComponent<{
                     aria-setsize={1}
                     aria-posinset={1}
                 >
-                    <TreeItemLayout>
+                    <TreeItemLayout className={compactMode ? classes.treeItemLayoutCompact : undefined}>
                         <Body1Strong wrap={false} truncate>
                             {section.sectionName.substring(0, 100)}
                         </Body1Strong>
@@ -349,6 +361,7 @@ const EntityTreeItem: FunctionComponent<{
     const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
 
     const classes = useStyles();
+    const [compactMode] = useCompactMode();
 
     const hasChildren = !!entityItem.children?.length;
 
@@ -460,6 +473,7 @@ const EntityTreeItem: FunctionComponent<{
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                        className={compactMode ? classes.treeItemLayoutCompact : undefined}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
                         aside={{

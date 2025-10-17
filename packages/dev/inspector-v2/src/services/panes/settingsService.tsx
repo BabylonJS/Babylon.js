@@ -13,6 +13,7 @@ import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLine
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ExtensibleAccordion } from "../../components/extensibleAccordion";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
+import { useCompactMode } from "../../hooks/settingsHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { SettingsContextIdentity } from "../settingsContext";
@@ -106,11 +107,21 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 const sectionContent = useObservableCollection(sectionContentCollection);
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
 
+                const [compactMode, setCompactMode] = useCompactMode();
+
                 return (
                     <>
                         {scene && (
                             <ExtensibleAccordion sections={sections} sectionContent={sectionContent} context={scene}>
                                 <AccordionSection title="UI">
+                                    <SwitchPropertyLine
+                                        label="Compact Mode"
+                                        description="Use a more compact UI with less spacing."
+                                        value={compactMode}
+                                        onChange={(checked) => {
+                                            setCompactMode(checked);
+                                        }}
+                                    />
                                     <SwitchPropertyLine
                                         label="Use Degrees"
                                         description="Using degrees instead of radians."
