@@ -35,7 +35,7 @@ export class GlobalState {
     public fpsElement!: HTMLDivElement;
     public mobileDefaultMode = EditionMode.RenderingOnly;
     public runtimeMode = RuntimeMode.Editor;
-    public version: string;
+    public version: string = "";
 
     public currentSnippetTitle = "";
     public currentSnippetDescription = "";

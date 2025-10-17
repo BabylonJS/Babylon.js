@@ -13,8 +13,14 @@ import type { Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 
-// Preload (asynchronously) the inspector v2 module, but don't block rendering.
-const InspectorV2ModulePromise = import("inspector-v2/inspector");
+let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/inspector")> | null = null;
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+function ImportInspectorV2() {
+    if (!InspectorV2ModulePromise) {
+        InspectorV2ModulePromise = import("inspector-v2/inspector");
+    }
+    return InspectorV2ModulePromise;
+}
 
 interface IRenderingComponentProps {
     globalState: GlobalState;
@@ -86,16 +92,21 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             const isInspectorV1Enabled = this._scene.debugLayer.openedPanes !== 0;
-            const isInspectorV2Enabled = inspectorV2Module && inspectorV2Module.IsInspectorVisible();
+            const isInspectorV2Enabled = InspectorV2ModulePromise && (await InspectorV2ModulePromise).IsInspectorVisible();
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
             const searchParams = new URLSearchParams(window.location.search);
-            const isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
+            let isInspectorV2ModeEnabled = searchParams.has("inspectorv2") && searchParams.get("inspectorv2") !== "false";
 
             if (action === "refresh") {
                 action = isInspectorEnabled ? "enable" : "disable";
             } else if (action === "toggle") {
                 action = isInspectorEnabled ? "disable" : "enable";
+            }
+
+            if (action === "enable" && isInspectorV2ModeEnabled && props.globalState.version) {
+                isInspectorV2ModeEnabled = false;
+                alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
             }
 
             this.setState({
@@ -107,7 +118,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (isInspectorV2Enabled && (!isInspectorV2ModeEnabled || action === "disable")) {
-                inspectorV2Module.HideInspector();
+                (await ImportInspectorV2()).HideInspector();
             }
 
             if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
@@ -117,7 +128,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable" && inspectorV2Module !== null) {
-                inspectorV2Module.ShowInspector(this._scene, {
+                (await ImportInspectorV2()).ShowInspector(this._scene, {
                     embedMode: true,
                     showThemeSelector: false,
                     themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
