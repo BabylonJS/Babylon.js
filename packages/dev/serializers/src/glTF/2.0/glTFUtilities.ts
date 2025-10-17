@@ -15,6 +15,7 @@ import { TargetCamera } from "core/Cameras/targetCamera";
 import type { ShadowLight } from "core/Lights/shadowLight";
 import { Epsilon } from "core/Maths/math.constants";
 import { ConvertHandednessMatrix } from "../../exportUtils";
+import type { AreaLight } from "core/Lights/areaLight";
 
 // Default values for comparison.
 export const DefaultTranslation = Vector3.Zero();
@@ -301,7 +302,7 @@ export function CollapseChildIntoParent(node: INode, parentNode: INode): void {
  * @param parentBabylonNode Target Babylon parent node.
  * @returns True if the two nodes can be merged, false otherwise.
  */
-export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, parentBabylonNode: Node): boolean {
+export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera | AreaLight, parentBabylonNode: Node): boolean {
     if (!(parentBabylonNode instanceof TransformNode)) {
         return false;
     }
