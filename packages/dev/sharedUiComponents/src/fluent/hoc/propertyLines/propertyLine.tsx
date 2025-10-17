@@ -1,5 +1,12 @@
-import { Body1, InfoLabel, Link, Checkbox, makeStyles, tokens, mergeClasses } from "@fluentui/react-components";
-import { ChevronCircleDown16Regular, ChevronCircleRight16Regular, Copy16Regular } from "@fluentui/react-icons";
+import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses } from "@fluentui/react-components";
+import {
+    ChevronCircleDown20Regular,
+    ChevronCircleDown16Regular,
+    ChevronCircleRight16Regular,
+    ChevronCircleRight20Regular,
+    Copy16Regular,
+    Copy20Regular,
+} from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
 import { Collapse } from "../../primitives/collapse";
@@ -122,7 +129,7 @@ export type PropertyLineProps<ValueT> = BasePropertyLineProps &
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps<any>>>((props, ref) => {
     PropertyLine.displayName = "PropertyLine";
-    const { disableCopy } = useContext(ToolContext);
+    const { disableCopy, size } = useContext(ToolContext);
     const classes = usePropertyLineStyles();
     const { label, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 
@@ -146,20 +153,21 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
         <LineContainer ref={ref}>
             <div className={classes.baseLine}>
                 <InfoLabel
+                    size={size}
                     className={classes.infoLabel}
                     label={{ className: classes.labelSlot }}
                     info={description ? <div className={classes.infoPopup}>{description}</div> : undefined}
                     title={label}
                 >
-                    <Body1 className={classes.labelText}>{label}</Body1>
+                    <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
                     {expandedContent && (
                         <ToggleButton
                             title="Expand/Collapse property"
                             appearance="transparent"
-                            checkedIcon={ChevronCircleDown16Regular}
-                            uncheckedIcon={ChevronCircleRight16Regular}
+                            checkedIcon={size === "small" ? ChevronCircleDown16Regular : ChevronCircleDown20Regular}
+                            uncheckedIcon={size === "small" ? ChevronCircleRight16Regular : ChevronCircleRight20Regular}
                             value={expanded === true}
                             onChange={setExpanded}
                         />
@@ -184,7 +192,13 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                     )}
                     {processedChildren}
                     {onCopy && !disableCopy && (
-                        <Button className={classes.copy} title="Copy to clipboard" appearance="transparent" icon={Copy16Regular} onClick={() => copyCommandToClipboard(onCopy())} />
+                        <Button
+                            className={classes.copy}
+                            title="Copy to clipboard"
+                            appearance="transparent"
+                            icon={size === "small" ? Copy16Regular : Copy20Regular}
+                            onClick={() => copyCommandToClipboard(onCopy())}
+                        />
                     )}
                 </div>
             </div>

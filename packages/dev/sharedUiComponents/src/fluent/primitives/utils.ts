@@ -4,7 +4,7 @@ import type { GriffelStyle } from "@fluentui/react-components";
 import type { KeyboardEvent, FocusEvent } from "react";
 
 export const CustomTokens = {
-    inputWidth: "100px",
+    inputWidth: "150px",
     lineHeight: tokens.lineHeightHero700, // 36px
     lineHeightSmall: tokens.lineHeightBase500, // 28px
     dividerGap: tokens.fontSizeBase100, // "10px",
