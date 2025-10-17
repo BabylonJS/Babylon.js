@@ -2,12 +2,15 @@ import type { SwitchOnChangeData } from "@fluentui/react-components";
 import type { ChangeEvent, FunctionComponent } from "react";
 import type { PrimitiveProps } from "./primitive";
 
-import { makeStyles, Switch as FluentSwitch } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
+import { makeStyles, Switch as FluentSwitch, mergeClasses } from "@fluentui/react-components";
+import { useContext, useEffect, useState } from "react";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 const useSwitchStyles = makeStyles({
     switch: {
         marginLeft: "auto",
+    },
+    switchSmall: {
         transform: `scale(.85)`, // workaround since we cannot resize fluent switch
         transformOrigin: "right",
     },
@@ -25,7 +28,7 @@ export type SwitchProps = PrimitiveProps<boolean>;
  */
 export const Switch: FunctionComponent<SwitchProps> = (props) => {
     Switch.displayName = "Switch";
-
+    const { size } = useContext(ToolContext);
     const classes = useSwitchStyles();
     const [checked, setChecked] = useState(() => props.value ?? false);
 
@@ -40,5 +43,13 @@ export const Switch: FunctionComponent<SwitchProps> = (props) => {
         setChecked(event.target.checked);
     };
 
-    return <FluentSwitch className={classes.switch} indicator={{ className: classes.indicator }} checked={checked} disabled={props.disabled} onChange={onChange} />;
+    return (
+        <FluentSwitch
+            className={mergeClasses(classes.switch, size === "small" && classes.switchSmall)}
+            indicator={{ className: classes.indicator }}
+            checked={checked}
+            disabled={props.disabled}
+            onChange={onChange}
+        />
+    );
 };
