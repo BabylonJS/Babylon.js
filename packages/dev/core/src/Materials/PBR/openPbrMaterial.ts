@@ -2292,9 +2292,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         useInstances: Nullable<boolean> = null,
         useClipPlane: Nullable<boolean> = null
     ): Nullable<Effect> {
-        if (this.fuzzWeight > 0) {
-            this._environmentFuzzBRDFTexture = GetEnvironmentFuzzBRDFTexture(this.getScene());
-        }
         this._prepareDefines(mesh, renderingMesh, defines, useInstances, useClipPlane);
 
         if (!defines.isDirty) {
@@ -2700,13 +2697,15 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
 
-        if (this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled) {
-            defines.FUZZ = true;
+        defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
+        if (defines.FUZZ) {
             if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
                 defines._needUVs = true;
                 defines.MAINUV1 = true;
             }
             this._environmentFuzzBRDFTexture = GetEnvironmentFuzzBRDFTexture(this.getScene());
+        } else {
+            this._environmentFuzzBRDFTexture = null;
         }
 
         // Misc.
