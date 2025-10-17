@@ -41,7 +41,7 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
-import { SPSMeshSourceBlock, SPSSystemBlock, SPSCreateBlock, SPSInitBlock } from "core/Particles/Node/Blocks";
+import { SPSMeshSourceBlock, SPSSystemBlock, SPSCreateBlock, SPSInitBlock, SPSUpdateBlock } from "core/Particles/Node/Blocks";
 
 /**
  * Static class for BlockTools
@@ -158,6 +158,8 @@ export class BlockTools {
                 return new SPSCreateBlock("SPS Create");
             case "SPSInitBlock":
                 return new SPSInitBlock("SPS Init");
+            case "SPSUpdateBlock":
+                return new SPSUpdateBlock("SPS Update");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":

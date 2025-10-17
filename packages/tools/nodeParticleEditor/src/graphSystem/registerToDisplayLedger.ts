@@ -41,6 +41,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["SPSCreateBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SPSSystemBlock"] = SystemDisplayManager;
     DisplayLedger.RegisteredControls["SPSInitBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["SPSUpdateBlock"] = UpdateDisplayManager;
 
     DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
     DisplayLedger.RegisteredControls["ParticleElbowBlock"] = ElbowDisplayManager;

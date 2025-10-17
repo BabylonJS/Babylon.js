@@ -94,6 +94,11 @@ export class SolidParticleSystem implements IDisposable {
     public depthSortedParticles: DepthSortedParticle[];
 
     /**
+     * If the SPS has been started.
+     */
+    public isStarted: boolean = false;
+
+    /**
      * If the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster). (Internal use only)
      * @internal
      */
@@ -1556,6 +1561,7 @@ export class SolidParticleSystem implements IDisposable {
             this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
                 this.setParticles();
             });
+            this.isStarted = true;
         }
     }
 
@@ -1563,11 +1569,15 @@ export class SolidParticleSystem implements IDisposable {
      * Stops the SPS by unsubscribing from the scene's before render observable
      */
     public stop(): void {
+        if (!this.isStarted) {
+            return;
+        }
         if (this._onBeforeRenderObserver && this.mesh && this.mesh.getScene()) {
             const scene = this.mesh.getScene();
             scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
             this.mesh.dispose();
+            this.isStarted = false;
         }
     }
 
@@ -1576,7 +1586,9 @@ export class SolidParticleSystem implements IDisposable {
      */
     public dispose(): void {
         this.stop();
-        this.mesh.dispose();
+        if (this.mesh) {
+            this.mesh.dispose();
+        }
         this.vars = null;
         // drop references to internal big arrays for the GC
         (<any>this._positions) = null;
