@@ -17,11 +17,6 @@ export class FrameGraphSSAO2Task extends FrameGraphPostProcessTask {
 
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinSSAO2PostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinSSAO2PostProcess(name, frameGraph.scene));
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            context.setTextureSamplingMode(this.depthTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-            context.setTextureSamplingMode(this.normalTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-        });
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -29,12 +24,19 @@ export class FrameGraphSSAO2Task extends FrameGraphPostProcessTask {
             throw new Error(`FrameGraphSSAO2Task "${this.name}": sourceTexture, depthTexture, normalTexture and camera are required`);
         }
 
-        const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
-            this.postProcess.camera = this.camera;
+        const pass = super.record(
+            skipCreationOfDisabledPasses,
+            (context) => {
+                this.postProcess.camera = this.camera;
 
-            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
-            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "normalSampler", this.normalTexture);
-        });
+                context.setTextureSamplingMode(this.depthTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+                context.setTextureSamplingMode(this.normalTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            },
+            (context) => {
+                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
+                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "normalSampler", this.normalTexture);
+            }
+        );
 
         pass.addDependencies([this.depthTexture]);
 

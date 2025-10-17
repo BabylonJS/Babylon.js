@@ -18,10 +18,6 @@ export class FrameGraphSSAO2BlurTask extends FrameGraphPostProcessTask {
         thinPostProcess?: ThinSSAO2BlurPostProcess
     ) {
         super(name, frameGraph, thinPostProcess || new ThinSSAO2BlurPostProcess(name, frameGraph.engine, _isHorizontal));
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            context.setTextureSamplingMode(this.depthTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-        });
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -29,9 +25,15 @@ export class FrameGraphSSAO2BlurTask extends FrameGraphPostProcessTask {
             throw new Error(`FrameGraphSSAO2BlurTask "${this.name}": sourceTexture and depthTexture are required`);
         }
 
-        const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
-            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
-        });
+        const pass = super.record(
+            skipCreationOfDisabledPasses,
+            (context) => {
+                context.setTextureSamplingMode(this.depthTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            },
+            (context) => {
+                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "depthSampler", this.depthTexture);
+            }
+        );
 
         this.postProcess.textureSize = this._isHorizontal ? this._outputWidth : this._outputHeight;
 

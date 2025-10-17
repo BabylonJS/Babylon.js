@@ -74,7 +74,7 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
     public override set name(name: string) {
         this._name = name;
         if (this._ssao) {
-            this._ssao.name = `${name} SSAO2`;
+            this._ssao.name = `${name} SSAO2 main`;
         }
         if (this._ssaoBlurX) {
             this._ssaoBlurX.name = `${name} SSAO2 Blur X`;
@@ -131,17 +131,10 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
 
         this.ssao = new ThinSSAO2RenderingPipeline(name, frameGraph.scene);
 
-        this._ssao = new FrameGraphSSAO2Task(`${name} SSAO2`, this._frameGraph, this.ssao._ssaoPostProcess);
+        this._ssao = new FrameGraphSSAO2Task(`${name} SSAO2 main`, this._frameGraph, this.ssao._ssaoPostProcess);
         this._ssaoBlurX = new FrameGraphSSAO2BlurTask(`${name} SSAO2 Blur X`, this._frameGraph, true, this.ssao._ssaoBlurXPostProcess);
         this._ssaoBlurY = new FrameGraphSSAO2BlurTask(`${name} SSAO2 Blur Y`, this._frameGraph, false, this.ssao._ssaoBlurYPostProcess);
         this._ssaoCombine = new FrameGraphPostProcessTask(`${name} SSAO2 Combine`, this._frameGraph, this.ssao._ssaoCombinePostProcess);
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            this._ssao.onTexturesAllocatedObservable.notifyObservers(context);
-            this._ssaoBlurX.onTexturesAllocatedObservable.notifyObservers(context);
-            this._ssaoBlurY.onTexturesAllocatedObservable.notifyObservers(context);
-            this._ssaoCombine.onTexturesAllocatedObservable.notifyObservers(context);
-        });
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
@@ -211,19 +204,20 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
         this._ssaoBlurY.record(true);
 
         // SSAO Combine
-        this._ssaoCombine.onTexturesAllocatedObservable.clear();
-        this._ssaoCombine.onTexturesAllocatedObservable.add((context) => {
-            context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
-            context.setTextureSamplingMode(blurYTextureHandle, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-        });
-
         this._ssaoCombine.sourceTexture = this.sourceTexture;
         this._ssaoCombine.sourceSamplingMode = this.sourceSamplingMode;
         this._ssaoCombine.targetTexture = this.outputTexture;
-        const combinerPass = this._ssaoCombine.record(true, undefined, (context) => {
-            context.bindTextureHandle(this._ssaoCombine.drawWrapper.effect!, "textureSampler", blurYTextureHandle);
-            context.bindTextureHandle(this._ssaoCombine.drawWrapper.effect!, "originalColor", this.sourceTexture);
-        });
+        const combinerPass = this._ssaoCombine.record(
+            true,
+            (context) => {
+                context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
+                context.setTextureSamplingMode(blurYTextureHandle, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+            },
+            (context) => {
+                context.bindTextureHandle(this._ssaoCombine.drawWrapper.effect!, "textureSampler", blurYTextureHandle);
+                context.bindTextureHandle(this._ssaoCombine.drawWrapper.effect!, "originalColor", this.sourceTexture);
+            }
+        );
 
         combinerPass.addDependencies(blurYTextureHandle);
 
