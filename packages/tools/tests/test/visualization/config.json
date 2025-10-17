@@ -2672,6 +2672,10 @@
             "playgroundId": "#SYQW69#1339"
         },
         {
+            "title": "FrameGraph nrge SSAO",
+            "playgroundId": "#SYQW69#1350"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#1",
             "errorRatio": 2

@@ -90,16 +90,12 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
     /**
      * The ratio between the SSAO texture size and the source texture size
      */
-    public get ratioSSAO() {
-        return this._ratioSSAO;
-    }
+    public readonly ratioSSAO: number;
 
     /**
      * The ratio between the SSAO blur texture size and the source texture size
      */
-    public get ratioBlur() {
-        return this._ratioBlur;
-    }
+    public readonly ratioBlur: number;
 
     /**
      * The texture type used by the different post processes created by SSAO2.
@@ -111,8 +107,6 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
     private readonly _ssaoBlurX: FrameGraphSSAO2BlurTask;
     private readonly _ssaoBlurY: FrameGraphSSAO2BlurTask;
     private readonly _ssaoCombine: FrameGraphPostProcessTask;
-    private readonly _ratioSSAO: number;
-    private readonly _ratioBlur: number;
 
     /**
      * Constructs a SSAO2 rendering pipeline task.
@@ -125,8 +119,8 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph, ratioSSAO: number, ratioBlur: number, textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE) {
         super(name, frameGraph);
 
-        this._ratioSSAO = ratioSSAO;
-        this._ratioBlur = ratioBlur;
+        this.ratioSSAO = ratioSSAO;
+        this.ratioBlur = ratioBlur;
         this.textureType = textureType;
 
         this.ssao = new ThinSSAO2RenderingPipeline(name, frameGraph.scene);
@@ -157,8 +151,8 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
         this._ssao.normalTexture = this.normalTexture;
 
         const textureSize = {
-            width: Math.floor(sourceTextureDescription.size.width * this._ratioSSAO) || 1,
-            height: Math.floor(sourceTextureDescription.size.height * this._ratioSSAO) || 1,
+            width: Math.floor(sourceTextureDescription.size.width * this.ratioSSAO) || 1,
+            height: Math.floor(sourceTextureDescription.size.height * this.ratioSSAO) || 1,
         };
         const textureCreationOptions: FrameGraphTextureCreationOptions = {
             size: textureSize,
@@ -180,8 +174,8 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
         this._ssao.record(true);
 
         // SSAO Blur X & Y
-        textureSize.width = Math.floor(sourceTextureDescription.size.width * this._ratioBlur) || 1;
-        textureSize.height = Math.floor(sourceTextureDescription.size.height * this._ratioBlur) || 1;
+        textureSize.width = Math.floor(sourceTextureDescription.size.width * this.ratioBlur) || 1;
+        textureSize.height = Math.floor(sourceTextureDescription.size.height * this.ratioBlur) || 1;
 
         const sourceTextureCreationOptions = this._frameGraph.textureManager.getTextureCreationOptions(this.sourceTexture);
 

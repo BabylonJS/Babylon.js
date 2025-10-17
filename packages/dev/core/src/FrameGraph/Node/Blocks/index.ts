@@ -27,6 +27,7 @@ export * from "./PostProcesses/motionBlurPostProcessBlock";
 export * from "./PostProcesses/passPostProcessBlock";
 export * from "./PostProcesses/sharpenPostProcessBlock";
 export * from "./PostProcesses/screenSpaceCurvaturePostProcessBlock";
+export * from "./PostProcesses/ssao2PostProcessBlock";
 export * from "./PostProcesses/ssrPostProcessBlock";
 export * from "./PostProcesses/tonemapPostProcessBlock";
 
