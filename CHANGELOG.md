@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.32.1
+
+### Core
+
+- Ortho projection support for GS - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#17307](https://github.com/BabylonJS/Babylon.js/pull/17307))
+
 ## 8.32.0
 
 ## 8.31.4
