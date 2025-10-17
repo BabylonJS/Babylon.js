@@ -112,12 +112,6 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.outputDepthAttachmentTexture = this._frameGraph.textureManager.createDanglingHandle();
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            if (this.sourceTexture !== undefined) {
-                context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
-            }
-        });
     }
 
     public override isReady() {
@@ -169,6 +163,9 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         pass.setRenderTarget(this.outputTexture);
         pass.setRenderTargetDepth(this.depthAttachmentTexture);
         pass.setExecuteFunc((context) => {
+            if (this.sourceTexture !== undefined) {
+                context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
+            }
             additionalExecute?.(context);
             context.applyFullScreenEffect(
                 this._postProcessDrawWrapper,

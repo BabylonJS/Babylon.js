@@ -11,6 +11,8 @@ import { ThinConvolutionPostProcess } from "../../../../PostProcesses/thinConvol
 export class NodeRenderGraphConvolutionPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphConvolutionTask;
 
+    public override _additionalConstructionParameters: [number[]];
+
     /**
      * Gets the frame graph task associated with this block
      */

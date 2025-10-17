@@ -11,6 +11,8 @@ import { ThinTonemapPostProcess, TonemappingOperator } from "../../../../PostPro
 export class NodeRenderGraphTonemapPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphTonemapTask;
 
+    public override _additionalConstructionParameters: [TonemappingOperator];
+
     /**
      * Gets the frame graph task associated with this block
      */

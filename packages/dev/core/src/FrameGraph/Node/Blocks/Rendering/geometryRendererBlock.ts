@@ -12,6 +12,8 @@ import { Constants } from "core/Engines/constants";
 export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphGeometryRendererTask;
 
+    public override _additionalConstructionParameters: [boolean, boolean];
+
     /**
      * Gets the frame graph task associated with this block
      */

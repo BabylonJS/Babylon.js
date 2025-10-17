@@ -41,6 +41,7 @@ import { NodeRenderGraphScreenSpaceCurvaturePostProcessBlock } from "core/FrameG
 import { NodeRenderGraphColorCorrectionPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/colorCorrectionPostProcessBlock";
 import { NodeRenderGraphFilterPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/filterPostProcessBlock";
 import { NodeRenderGraphTonemapPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/tonemapPostProcessBlock";
+import { NodeRenderGraphSSAO2PostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/ssao2PostProcessBlock";
 
 /**
  * Static class for BlockTools
@@ -186,6 +187,9 @@ export class BlockTools {
             }
             case "TonemapBlock": {
                 return new NodeRenderGraphTonemapPostProcessBlock("Tonemap", frameGraph, scene);
+            }
+            case "SSAO2Block": {
+                return new NodeRenderGraphSSAO2PostProcessBlock("SSAO", frameGraph, scene);
             }
         }
 
