@@ -19,4 +19,5 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["SPSCreateBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSSystemBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSInitBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSUpdateBlock"] = GenericPropertyComponent;
 };

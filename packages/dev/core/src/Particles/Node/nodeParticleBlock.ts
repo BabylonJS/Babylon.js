@@ -230,13 +230,14 @@ export class NodeParticleBlock {
         valueMax?: any,
         allowMultipleConnections: boolean = false
     ) {
-        const point = new NodeParticleConnectionPoint(name, this, NodeParticleConnectionPointDirection.Input, allowMultipleConnections);
+        const point = new NodeParticleConnectionPoint(name, this, NodeParticleConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
         point.defaultValue = value;
         point.value = value;
         point.valueMin = valueMin;
         point.valueMax = valueMax;
+        point.allowMultipleConnections = allowMultipleConnections;
 
         this._inputs.push(point);
 

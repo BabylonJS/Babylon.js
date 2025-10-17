@@ -5,4 +5,3 @@ export * from "./SPSCreateBlock";
 export * from "./SPSSystemBlock";
 export * from "./SPSUpdateBlock";
 export * from "./SPSInitBlock";
-export * from "./SPSRandomBlock";

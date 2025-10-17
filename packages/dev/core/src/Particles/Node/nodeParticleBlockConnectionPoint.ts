@@ -244,13 +244,11 @@ export class NodeParticleConnectionPoint {
      * @param name defines the connection point name
      * @param ownerBlock defines the block hosting this connection point
      * @param direction defines the direction of the connection point
-     * @param allowMultipleConnections defines if this point allows multiple connections
      */
-    public constructor(name: string, ownerBlock: NodeParticleBlock, direction: NodeParticleConnectionPointDirection, allowMultipleConnections = false) {
+    public constructor(name: string, ownerBlock: NodeParticleBlock, direction: NodeParticleConnectionPointDirection) {
         this._ownerBlock = ownerBlock;
         this.name = name;
         this._direction = direction;
-        this.allowMultipleConnections = allowMultipleConnections;
     }
 
     /**
