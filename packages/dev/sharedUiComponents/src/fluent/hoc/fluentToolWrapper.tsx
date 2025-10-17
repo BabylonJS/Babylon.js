@@ -41,7 +41,7 @@ export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProp
         useFluent,
         disableCopy: !!props.disableCopy,
         toolName: props.toolName,
-        size: props.size ?? "small",
+        size: props.size ?? "medium",
     };
     return useFluent ? (
         <FluentProvider theme={props.customTheme || webDarkTheme}>
