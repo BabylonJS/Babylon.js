@@ -2673,7 +2673,8 @@
         },
         {
             "title": "FrameGraph nrge SSAO",
-            "playgroundId": "#SYQW69#1350"
+            "playgroundId": "#SYQW69#1350",
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "FrameGraph nrg gui bloom",
