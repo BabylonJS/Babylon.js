@@ -15,4 +15,10 @@ export type SPLATLoadingOptions = {
      * (https://unpkg.com/fflate/umd/index.js)
      */
     deflateURL?: string;
+    /**
+     * Instance of [fflate](https://github.com/101arrowz/fflate) to avoid
+     * dynamically loading of the lib to global if needed, useful for bundler users.
+     * @example import * as fflate from 'fflate';
+     */
+    fflate?: unknown;
 };
