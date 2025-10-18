@@ -128,6 +128,33 @@ vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, m
 
 #endif
 
+#ifdef FUZZ
+float evalFuzz(vec3 L, float NdotL, float NdotV, vec3 T, vec3 B, vec3 ltcLut)
+{
+    // Cosine terms
+    if (NdotL <= 0.0 || NdotV <= 0.0)
+        return 0.0;
+
+    // === 3. Build LTC transform ===
+    // This matrix warps the hemisphere to match the BRDF shape
+    mat3 M = mat3(
+        vec3(ltcLut.r, 0.0, 0.0),
+        vec3(ltcLut.g, 1.0, 0.0),
+        vec3(0.0, 0.0, 1.0)
+    );
+
+    // === 4. Transform light direction to local tangent space ===
+    vec3 Llocal = vec3(dot(L, T), dot(L, B), NdotL);
+
+    // Apply the LTC transform
+    vec3 Lwarp = normalize(M * Llocal);
+
+    // === 5. Compute projected cosine term ===
+    float cosThetaWarp = max(Lwarp.z, 0.0);
+    return cosThetaWarp * NdotL;
+}
+#endif
+
 #if defined(ANISOTROPIC) && defined(ANISOTROPIC_OPENPBR)
     // Version used in OpenPBR differs only in that it does not include the Fresnel term.
     vec3 computeAnisotropicSpecularLighting(preLightingInfo info, vec3 V, vec3 N, vec3 T, vec3 B, float anisotropy, float geometricRoughnessFactor, vec3 lightColor) {

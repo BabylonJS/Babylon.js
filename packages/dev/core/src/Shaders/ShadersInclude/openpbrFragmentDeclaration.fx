@@ -12,6 +12,9 @@ uniform float vCoatRoughness;
 uniform float vCoatRoughnessAnisotropy;
 uniform float vCoatIor;
 uniform float vCoatDarkening;
+uniform float vFuzzWeight;
+uniform vec3 vFuzzColor;
+uniform float vFuzzRoughness;
 uniform vec2 vGeometryCoatTangent;
 uniform vec3 vEmissionColor;
 uniform float vThinFilmWeight;
@@ -106,6 +109,18 @@ uniform vec2 vCoatIorInfos;
 
 #ifdef COAT_DARKENING
 uniform vec2 vCoatDarkeningInfos;
+#endif
+
+#ifdef FUZZ_WEIGHT
+uniform vec2 vFuzzWeightInfos;
+#endif
+
+#ifdef FUZZ_COLOR
+uniform vec2 vFuzzColorInfos;
+#endif
+
+#ifdef FUZZ_ROUGHNESS
+uniform vec2 vFuzzRoughnessInfos;
 #endif
 
 #ifdef GEOMETRY_COAT_TANGENT

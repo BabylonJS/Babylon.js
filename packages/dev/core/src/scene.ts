@@ -274,6 +274,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     public environmentBRDFTexture: BaseTexture;
 
+    /** @internal */
+    public environmentFuzzBRDFTexture: BaseTexture;
+
     /**
      * Intensity of the environment (i.e. all indirect lighting) in all pbr material.
      * This dims or reinforces the indirect lighting overall (reflection and diffuse).

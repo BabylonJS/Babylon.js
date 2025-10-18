@@ -130,6 +130,34 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     #endif
 #endif
 
+#ifdef FUZZ
+fn evalFuzz(L: vec3f, NdotL: f32, NdotV: f32, T: vec3f, B: vec3f, ltcLut: vec3f) -> f32
+{
+    // Cosine terms
+    if (NdotL <= 0.0f || NdotV <= 0.0f) {
+        return 0.0f;
+    }
+
+    // === 3. Build LTC transform ===
+    // This matrix warps the hemisphere to match the BRDF shape
+    let M = mat3x3f(
+        vec3f(ltcLut.r, 0.0f, 0.0f),
+        vec3f(ltcLut.g, 1.0f, 0.0f),
+        vec3f(0.0f, 0.0f, 1.0f)
+    );
+
+    // === 4. Transform light direction to local tangent space ===
+    let Llocal: vec3f = vec3f(dot(L, T), dot(L, B), NdotL);
+
+    // Apply the LTC transform
+    let Lwarp: vec3f = normalize(M * Llocal);
+
+    // === 5. Compute projected cosine term ===
+    let cosThetaWarp: f32 = max(Lwarp.z, 0.0f);
+    return cosThetaWarp * NdotL;
+}
+#endif
+
 #if defined(ANISOTROPIC) && defined(ANISOTROPIC_OPENPBR)
     fn computeAnisotropicSpecularLighting(info: preLightingInfo, V: vec3f, N: vec3f, T: vec3f, B: vec3f, anisotropy: f32, geometricRoughnessFactor: f32, lightColor: vec3f) -> vec3f {
         var NdotH: f32 = saturateEps(dot(N, info.H));
