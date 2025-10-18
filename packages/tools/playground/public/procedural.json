@@ -6,6 +6,13 @@
         "keepExpanded": true
     },
     {
+        "label": "Frame Graph",
+        "tooltip": "Frame Graph tools",
+        "subItems": ["Simple ", "Simple (NRG)", "Simple (NRG no autofill JS)"],
+        "subItemsTS": ["Simple ", "Simple (NRG)", "Simple (NRG no autofill TS)"],
+        "keepExpanded": true
+    },
+    {
         "label": "Cameras",
         "tooltip": "Select a camera type",
         "subItems": ["Arc Rotate (Rad)", "Arc Rotate (Deg)", "Free", "WebXR"],
