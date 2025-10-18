@@ -262,6 +262,7 @@
     #endif
 
     #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
+        #define SMALLEST_ABOVE_ZERO 1.1754943508e-38
         #define GREATEST_LESS_THAN_ONE 0.99999994
 
         // We need to disable uniformity analysis when using CSM, as there's no textureLod overload that takes a sampler2DArrayShadow.
@@ -276,7 +277,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            uvDepth.z = clamp(ZINCLIP, SMALLEST_ABOVE_ZERO, 1.);
+        #else
             uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
+        #endif
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
@@ -294,7 +299,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            uvDepth.z = clamp(ZINCLIP, SMALLEST_ABOVE_ZERO, 1.);
+        #else
             uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
+        #endif
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -331,7 +340,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            uvDepth.z = clamp(ZINCLIP, SMALLEST_ABOVE_ZERO, 1.);
+        #else
             uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
+        #endif
 
             vec2 uv = uvDepth.xy * shadowMapSizeAndInverse.x;	// uv in texel units
             uv += 0.5;											// offset of half to be in the center of the texel
@@ -621,7 +634,11 @@
             vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
             vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
+        #ifdef USE_REVERSE_DEPTHBUFFER
+            uvDepth.z = clamp(ZINCLIP, SMALLEST_ABOVE_ZERO, 1.);
+        #else
             uvDepth.z = clamp(ZINCLIP, 0., GREATEST_LESS_THAN_ONE);
+        #endif
 
             vec4 uvDepthLayer = vec4(uvDepth.x, uvDepth.y, layer, uvDepth.z);
 
