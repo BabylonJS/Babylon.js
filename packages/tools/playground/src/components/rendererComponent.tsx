@@ -77,7 +77,6 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (!this._scene) {
                 return;
             }
-            const inspectorV2Module = await InspectorV2ModulePromise;
 
             // support for older versions
             // openedPanes was not available until 7.44.0, so we need to fallback to the inspector's _OpenedPane property
@@ -104,6 +103,8 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 action = isInspectorEnabled ? "disable" : "enable";
             }
 
+            // Disallow Inspector v2 on specific/older versions. For now, only support the latest as both core and inspector are evolving in tandem.
+            // Once we have an Inspector v2 UMD package, we can make this work the same as Inspector v1.)
             if (action === "enable" && isInspectorV2ModeEnabled && props.globalState.version) {
                 isInspectorV2ModeEnabled = false;
                 alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
@@ -127,7 +128,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
 
-            if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable" && inspectorV2Module !== null) {
+            if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable") {
                 (await ImportInspectorV2()).ShowInspector(this._scene, {
                     embedMode: true,
                     showThemeSelector: false,
