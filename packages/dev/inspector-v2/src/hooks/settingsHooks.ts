@@ -1,8 +1,29 @@
 import type { ISettingsContext } from "../services/settingsContext";
 
 import { useCallback } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
 import { useObservableState } from "./observableHooks";
+
+const CompactModeStorageKey = "Babylon/Settings/IsCompactMode";
+
+function useSetting<T>(storageKey: string, defaultValue: T): [T, (value: T) => void, () => void] {
+    const [value, setValue, resetValue] = useLocalStorage<T>(storageKey, defaultValue);
+
+    if (!localStorage.getItem(storageKey)) {
+        localStorage.setItem(storageKey, JSON.stringify(value));
+    }
+
+    return [value, setValue, resetValue] as const;
+}
+
+/**
+ * Gets the compact mode setting.
+ * @returns A tuple containing the current compact mode value, a function to update it, and a function to reset it.
+ */
+export function useCompactMode() {
+    return useSetting<boolean>(CompactModeStorageKey, !matchMedia("(pointer: coarse)").matches);
+}
 
 const RadiansToDegrees = 180 / Math.PI;
 

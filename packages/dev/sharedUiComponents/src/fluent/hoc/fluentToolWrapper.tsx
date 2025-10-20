@@ -3,7 +3,13 @@ import { createContext } from "react";
 import type { Theme } from "@fluentui/react-components";
 import { FluentProvider, webDarkTheme } from "@fluentui/react-components";
 
+export type UiSize = "small" | "medium";
 export type ToolHostProps = {
+    /**
+     * Will ensure all of the controls within the tool are of the same scale
+     */
+    size?: UiSize;
+
     /**
      * Allows host to pass in a theme
      */
@@ -20,7 +26,7 @@ export type ToolHostProps = {
     toolName: string;
 };
 
-export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean, toolName: "" as string } as const);
+export const ToolContext = createContext({ useFluent: false as boolean, disableCopy: false as boolean, toolName: "" as string, size: undefined as UiSize | undefined } as const);
 
 /**
  * For tools which are ready to move over the fluent, wrap the root of the tool (or the panel which you want fluentized) with this component
@@ -35,6 +41,7 @@ export const FluentToolWrapper: FunctionComponent<PropsWithChildren<ToolHostProp
         useFluent,
         disableCopy: !!props.disableCopy,
         toolName: props.toolName,
+        size: props.size,
     };
     return useFluent ? (
         <FluentProvider theme={props.customTheme || webDarkTheme}>

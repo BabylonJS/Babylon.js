@@ -27,7 +27,7 @@ export class NodeRenderGraphTAAObjectRendererBlock extends NodeRenderGraphBaseOb
     public constructor(name: string, frameGraph: FrameGraph, scene: Scene, doNotChangeAspectRatio = true) {
         super(name, frameGraph, scene);
 
-        this._additionalConstructionParameters = [doNotChangeAspectRatio];
+        this._additionalConstructionParameters = [doNotChangeAspectRatio, false];
 
         this._frameGraphTask = new FrameGraphTAAObjectRendererTask(this.name, frameGraph, scene, { doNotChangeAspectRatio });
     }

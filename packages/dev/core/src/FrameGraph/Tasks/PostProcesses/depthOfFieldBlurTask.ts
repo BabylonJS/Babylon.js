@@ -14,10 +14,6 @@ export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
 
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinDepthOfFieldBlurPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinDepthOfFieldBlurPostProcess(name, frameGraph.engine, new Vector2(1, 0), 10));
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            context.setTextureSamplingMode(this.circleOfConfusionTexture, this.circleOfConfusionSamplingMode);
-        });
     }
 
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
@@ -25,9 +21,15 @@ export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
             throw new Error(`FrameGraphDepthOfFieldBlurTask "${this.name}": sourceTexture and circleOfConfusionTexture are required`);
         }
 
-        const pass = super.record(skipCreationOfDisabledPasses, undefined, (context) => {
-            context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "circleOfConfusionSampler", this.circleOfConfusionTexture);
-        });
+        const pass = super.record(
+            skipCreationOfDisabledPasses,
+            (context) => {
+                context.setTextureSamplingMode(this.circleOfConfusionTexture, this.circleOfConfusionSamplingMode);
+            },
+            (context) => {
+                context.bindTextureHandle(this._postProcessDrawWrapper.effect!, "circleOfConfusionSampler", this.circleOfConfusionTexture);
+            }
+        );
 
         pass.addDependencies(this.circleOfConfusionTexture);
 

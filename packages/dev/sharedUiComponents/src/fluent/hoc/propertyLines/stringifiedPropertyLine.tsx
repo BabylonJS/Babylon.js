@@ -1,5 +1,6 @@
 import type { ImmutablePrimitiveProps } from "../../primitives/primitive";
-import { PropertyLine, type PropertyLineProps } from "./propertyLine";
+import type { PropertyLineProps } from "./propertyLine";
+import { PropertyLine } from "./propertyLine";
 import type { FunctionComponent } from "react";
 import { Body1 } from "@fluentui/react-components";
 

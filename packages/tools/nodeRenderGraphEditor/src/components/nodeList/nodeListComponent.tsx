@@ -69,6 +69,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ColorCorrectionBlock: "Applies a color correction post process",
         FilterBlock: "Applies a kernel filter post process",
         TonemapBlock: "Applies a tonemapping post process",
+        SSAO2Block: "Applies a Screen Space Ambient Occlusion post process",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -184,6 +185,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "PassCubeBlock",
                 "ScreenSpaceCurvatureBlock",
                 "SharpenBlock",
+                "SSAO2Block",
                 "SSRBlock",
                 "TonemapBlock",
             ],

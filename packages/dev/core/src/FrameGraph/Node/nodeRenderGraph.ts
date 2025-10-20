@@ -509,7 +509,7 @@ export class NodeRenderGraph {
                 this.editorData.locations = locations;
             }
 
-            const blockMap: number[] = [];
+            const blockMap: { [key: number]: number } = {};
 
             for (const key in map) {
                 blockMap[key] = map[key].uniqueId;

@@ -2,9 +2,10 @@ import type { FunctionComponent } from "react";
 
 import { Body1, Button, makeStyles, tokens, Tooltip } from "@fluentui/react-components";
 import { ArrowUndoRegular, BracesDismiss16Regular, BracesRegular, SaveRegular } from "@fluentui/react-icons";
-import { useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { ToolContext } from "shared-ui-components/fluent/hoc/fluentToolWrapper";
 import { LineContainer } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
@@ -160,6 +161,8 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
 
     const classes = useStyles();
 
+    const { size } = useContext(ToolContext);
+
     const metadata = useProperty(entity, "metadata");
     const stringifiedMetadata = useMemo(() => StringifyMetadata(metadata, false) ?? "", [metadata]);
     const metadataType = useMemo(() => GetMetadataEntityType(metadata), [metadata]);
@@ -196,17 +199,27 @@ export const MetadataProperties: FunctionComponent<{ entity: IMetadataContainer 
             <LineContainer>
                 <div className={classes.buttonDiv}>
                     {/* TODO: gehalper - need to update our Button primitive to accommodate these scenarios. */}
-                    <Button icon={<SaveRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => SaveMetadata(entity, editedMetadata)}>
+                    <Button size={size} icon={<SaveRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => SaveMetadata(entity, editedMetadata)}>
                         <Body1>Save</Body1>
                     </Button>
                     <Tooltip content="Undo Changes" relationship="label">
-                        <Button icon={<ArrowUndoRegular />} disabled={stringifiedMetadata === unformattedEditedMetadata} onClick={() => setEditedMetadata(stringifiedMetadata)} />
+                        <Button
+                            size={size}
+                            icon={<ArrowUndoRegular />}
+                            disabled={stringifiedMetadata === unformattedEditedMetadata}
+                            onClick={() => setEditedMetadata(stringifiedMetadata)}
+                        />
                     </Tooltip>
                     <Tooltip content="Format (Pretty Print)" relationship="label">
-                        <Button icon={<BracesRegular />} disabled={!isEditedMetadataJSON} onClick={() => setEditedMetadata(Restringify(editedMetadata, true))}></Button>
+                        <Button size={size} icon={<BracesRegular />} disabled={!isEditedMetadataJSON} onClick={() => setEditedMetadata(Restringify(editedMetadata, true))}></Button>
                     </Tooltip>
                     <Tooltip content="Clear Formatting (Undo Pretty Print)" relationship="label">
-                        <Button icon={<BracesDismiss16Regular />} disabled={!isEditedMetadataJSON} onClick={() => setEditedMetadata(Restringify(editedMetadata, false))} />
+                        <Button
+                            size={size}
+                            icon={<BracesDismiss16Regular />}
+                            disabled={!isEditedMetadataJSON}
+                            onClick={() => setEditedMetadata(Restringify(editedMetadata, false))}
+                        />
                     </Tooltip>
                 </div>
             </LineContainer>

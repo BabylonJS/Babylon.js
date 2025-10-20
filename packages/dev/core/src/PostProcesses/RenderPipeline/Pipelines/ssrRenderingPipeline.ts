@@ -50,8 +50,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      */
     public SSRCombineRenderEffect: string = "SSRCombineRenderEffect";
 
-    /** @internal */
-    public _thinSSRRenderingPipeline: ThinSSRRenderingPipeline;
+    private _thinSSRRenderingPipeline: ThinSSRRenderingPipeline;
 
     private _samples = 1;
     /**
