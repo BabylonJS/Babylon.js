@@ -16,6 +16,9 @@ import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
 
+type HorizontalAlignment = "left" | "right";
+type VerticalAlignment = "top" | "bottom";
+
 /**
  * Describes an item that can be added to one of the shell's toolbars.
  */
@@ -42,13 +45,13 @@ export type ToolbarItemDefinition = Readonly<{
      * In "compact" toolbar mode, "left" and "right" mean the "compact" toolbars at the top/bottom of the left/right side panes.
      * In "full" toolbar mode, "left" and "right" mean the left side and right side of the full width toolbars above/below the side panes.
      */
-    horizontalLocation: "left" | "right";
+    horizontalLocation: HorizontalAlignment;
 
     /**
      * The vertical location of the toolbar item.
      * Can be either "top" or "bottom".
      */
-    verticalLocation: "top" | "bottom";
+    verticalLocation: VerticalAlignment;
 
     /**
      * An optional display name for the toolbar item, used for teaching moments, tooltips, etc.
@@ -92,13 +95,13 @@ export type SidePaneDefinition = Readonly<{
      * The horizontal location of the side pane.
      * Can be either "left" or "right".
      */
-    horizontalLocation: "left" | "right";
+    horizontalLocation: HorizontalAlignment;
 
     /**
      * The vertical location of the side pane.
      * Can be either "top" or "bottom".
      */
-    verticalLocation: "top" | "bottom";
+    verticalLocation: VerticalAlignment;
 
     /**
      * An optional title for the side pane, displayed as a standardized header at the top of the pane.
@@ -391,8 +394,8 @@ const PaneHeader: FunctionComponent<{ title?: string }> = ({ title }) => {
 
 // This is a wrapper for an item in a toolbar that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
 const ToolbarItem: FunctionComponent<{
-    location: "top" | "bottom";
-    alignment: "left" | "right";
+    location: VerticalAlignment;
+    alignment: HorizontalAlignment;
     id: string;
     component: ComponentType;
     displayName?: string;
@@ -421,7 +424,7 @@ const ToolbarItem: FunctionComponent<{
 
 // TODO: Handle overflow, possibly via https://react.fluentui.dev/?path=/docs/components-overflow--docs with priority.
 // This component just renders a toolbar with left aligned toolbar items on the left and right aligned toolbar items on the right.
-const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: ToolbarItemDefinition[] }> = ({ location, components }) => {
+const Toolbar: FunctionComponent<{ location: VerticalAlignment; components: ToolbarItemDefinition[] }> = ({ location, components }) => {
     const classes = useStyles();
 
     const leftComponents = useMemo(() => components.filter((entry) => entry.horizontalLocation === "left"), [components]);
@@ -464,9 +467,9 @@ const Toolbar: FunctionComponent<{ location: "top" | "bottom"; components: Toolb
 };
 
 // This is a wrapper for a tab in a side pane that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
-const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; isSelected: boolean } & Pick<SidePaneDefinition, "title" | "icon" | "suppressTeachingMoment">> = (
-    props
-) => {
+const SidePaneTab: FunctionComponent<
+    { alignment: HorizontalAlignment; id: string; isSelected: boolean } & Pick<SidePaneDefinition, "title" | "icon" | "suppressTeachingMoment">
+> = (props) => {
     const {
         alignment,
         id,
@@ -512,11 +515,10 @@ const SidePaneTab: FunctionComponent<{ alignment: "left" | "right"; id: string; 
 // In "compact" mode, the tab list is integrated into the pane itself.
 // In "full" mode, the returned tab list is later injected into the toolbar.
 function usePane(
-    alignment: "left" | "right",
+    alignment: HorizontalAlignment,
     defaultWidth: number,
     minWidth: number,
-    topPanes: SidePaneDefinition[],
-    bottomPanes: SidePaneDefinition[],
+    sidePanes: SidePaneDefinition[],
     onSelectSidePane: Observable<string>,
     toolbarMode: ToolbarMode,
     topBarItems: ToolbarItemDefinition[],
@@ -534,6 +536,9 @@ function usePane(
 
     const widthStorageKey = `Babylon/Settings/${alignment}Pane/WidthAdjust`;
     const heightStorageKey = `Babylon/Settings/${alignment}Pane/HeightAdjust`;
+
+    const topPanes = sidePanes.filter((entry) => entry.horizontalLocation === alignment && entry.verticalLocation === "top");
+    const bottomPanes = sidePanes.filter((entry) => entry.horizontalLocation === alignment && entry.verticalLocation === "bottom");
 
     // Selects a default top tab (during initialization or if the selected tab is removed).
     useEffect(() => {
@@ -783,12 +788,8 @@ export function MakeShellServiceDefinition({
         friendlyName: "MainView",
         produces: [ShellServiceIdentity, RootComponentServiceIdentity],
         factory: () => {
-            const topBarItemCollection = new ObservableCollection<ToolbarItemDefinition>();
-            const bottomBarItemCollection = new ObservableCollection<ToolbarItemDefinition>();
-            const topLeftPaneCollection = new ObservableCollection<SidePaneDefinition>();
-            const topRightPaneCollection = new ObservableCollection<SidePaneDefinition>();
-            const bottomLeftPaneCollection = new ObservableCollection<SidePaneDefinition>();
-            const bottomRightPaneCollection = new ObservableCollection<SidePaneDefinition>();
+            const toolbarItemCollection = new ObservableCollection<ToolbarItemDefinition>();
+            const sidePaneCollection = new ObservableCollection<SidePaneDefinition>();
             const centralContentCollection = new ObservableCollection<CentralContentDefinition>();
 
             const onSelectSidePane = new Observable<string>();
@@ -796,16 +797,11 @@ export function MakeShellServiceDefinition({
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
 
-                const topBarItems = useOrderedObservableCollection(topBarItemCollection);
-                const bottomBarItems = useOrderedObservableCollection(bottomBarItemCollection);
+                const toolbarItems = useOrderedObservableCollection(toolbarItemCollection);
+                const sidePanes = useOrderedObservableCollection(sidePaneCollection);
 
-                const topLeftPanes = useOrderedObservableCollection(topLeftPaneCollection);
-                const topRightPanes = useOrderedObservableCollection(topRightPaneCollection);
-                const bottomLeftPanes = useOrderedObservableCollection(bottomLeftPaneCollection);
-                const bottomRightPanes = useOrderedObservableCollection(bottomRightPaneCollection);
-
-                const hasLeftPanes = topLeftPanes.length > 0 || bottomLeftPanes.length > 0;
-                const hasRightPanes = topRightPanes.length > 0 || bottomRightPanes.length > 0;
+                const hasLeftPanes = sidePanes.some((entry) => entry.horizontalLocation === "left");
+                const hasRightPanes = sidePanes.some((entry) => entry.horizontalLocation === "right");
 
                 // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
                 // depending on whether there are any side panes on that side.
@@ -823,10 +819,13 @@ export function MakeShellServiceDefinition({
                     return location;
                 };
 
-                const topBarLeftItems = useMemo(() => topBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [topBarItems]);
-                const topBarRightItems = useMemo(() => topBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [topBarItems]);
-                const bottomBarLeftItems = useMemo(() => bottomBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [bottomBarItems]);
-                const bottomBarRightItems = useMemo(() => bottomBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [bottomBarItems]);
+                const topToolBarItems = useMemo(() => toolbarItems.filter((entry) => entry.verticalLocation === "top"), [toolbarItems]);
+                const bottomToolBarItems = useMemo(() => toolbarItems.filter((entry) => entry.verticalLocation === "bottom"), [toolbarItems]);
+
+                const topBarLeftItems = useMemo(() => topToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [topToolBarItems]);
+                const topBarRightItems = useMemo(() => topToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [topToolBarItems]);
+                const bottomBarLeftItems = useMemo(() => bottomToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [bottomToolBarItems]);
+                const bottomBarRightItems = useMemo(() => bottomToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [bottomToolBarItems]);
 
                 const centralContents = useOrderedObservableCollection(centralContentCollection);
 
@@ -834,8 +833,7 @@ export function MakeShellServiceDefinition({
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
-                    topLeftPanes,
-                    bottomLeftPanes,
+                    sidePanes,
                     onSelectSidePane,
                     toolbarMode,
                     topBarLeftItems,
@@ -846,8 +844,7 @@ export function MakeShellServiceDefinition({
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
-                    topRightPanes,
-                    bottomRightPanes,
+                    sidePanes,
                     onSelectSidePane,
                     toolbarMode,
                     topBarRightItems,
@@ -861,7 +858,7 @@ export function MakeShellServiceDefinition({
                             <>
                                 <div className={classes.barDiv}>
                                     {leftPaneTabList}
-                                    <Toolbar location="top" components={topBarItems} />
+                                    <Toolbar location="top" components={topToolBarItems} />
                                     {rightPaneTabList}
                                 </div>
                             </>
@@ -887,7 +884,7 @@ export function MakeShellServiceDefinition({
                         {toolbarMode === "full" && (
                             <>
                                 <div className={classes.barDiv}>
-                                    <Toolbar location="bottom" components={bottomBarItems} />
+                                    <Toolbar location="bottom" components={bottomToolBarItems} />
                                 </div>
                             </>
                         )}
@@ -902,11 +899,7 @@ export function MakeShellServiceDefinition({
                         entry.component.displayName = `${entry.key} | ${entry.verticalLocation} ${entry.horizontalLocation} bar item`;
                     }
 
-                    if (entry.verticalLocation === "top") {
-                        return topBarItemCollection.add(entry);
-                    } else {
-                        return bottomBarItemCollection.add(entry);
-                    }
+                    return toolbarItemCollection.add(entry);
                 },
                 addSidePane: (entry) => {
                     if (!entry.content.displayName) {
@@ -928,35 +921,23 @@ export function MakeShellServiceDefinition({
                                 verticalLocation = "top";
                             }
                         }
-                        return { horizontalLocation, verticalLocation };
+                        return {
+                            ...sidePane,
+                            horizontalLocation,
+                            verticalLocation,
+                        } satisfies SidePaneDefinition;
                     };
 
-                    const { horizontalLocation, verticalLocation } = coerceSidePaneLocation(entry);
-
-                    if (horizontalLocation === "left") {
-                        if (verticalLocation === "top") {
-                            return topLeftPaneCollection.add(entry);
-                        } else {
-                            return bottomLeftPaneCollection.add(entry);
-                        }
-                    } else {
-                        if (verticalLocation === "top") {
-                            return topRightPaneCollection.add(entry);
-                        } else {
-                            return bottomRightPaneCollection.add(entry);
-                        }
-                    }
+                    return sidePaneCollection.add(coerceSidePaneLocation(entry));
                 },
                 addCentralContent: (entry) => centralContentCollection.add(entry),
                 get sidePanes() {
-                    return [...topLeftPaneCollection.items, ...bottomLeftPaneCollection.items, ...topRightPaneCollection.items, ...bottomRightPaneCollection.items].map(
-                        (sidePaneDefinition) => {
-                            return {
-                                key: sidePaneDefinition.key,
-                                select: () => onSelectSidePane.notifyObservers(sidePaneDefinition.key),
-                            };
-                        }
-                    );
+                    return [...sidePaneCollection.items].map((sidePaneDefinition) => {
+                        return {
+                            key: sidePaneDefinition.key,
+                            select: () => onSelectSidePane.notifyObservers(sidePaneDefinition.key),
+                        };
+                    });
                 },
                 rootComponent,
             };
