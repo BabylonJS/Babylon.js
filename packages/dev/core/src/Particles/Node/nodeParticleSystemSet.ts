@@ -168,7 +168,7 @@ export class NodeParticleSystemSet {
     }
 
     /**
-     * Gets the current class name of the geometry e.g. "NodeParticleSystemSet"
+     * Gets the current class name of the node particle set e.g. "NodeParticleSystemSet"
      * @returns the class name
      */
     public getClassName(): string {
@@ -285,7 +285,7 @@ export class NodeParticleSystemSet {
     }
 
     /**
-     * Clear the current geometry
+     * Clear the current node particle set
      */
     public clear() {
         this.attachedBlocks.length = 0;
@@ -477,8 +477,8 @@ export class NodeParticleSystemSet {
     }
 
     /**
-     * Serializes this geometry in a JSON representation
-     * @param selectedBlocks defines the list of blocks to save (if null the whole geometry will be saved)
+     * Serializes this node particle set in a JSON representation
+     * @param selectedBlocks defines the list of blocks to save (if null the whole node particle set will be saved)
      * @returns the serialized particle system set object
      */
     public serialize(selectedBlocks?: NodeParticleBlock[]): any {
@@ -569,10 +569,44 @@ export class NodeParticleSystemSet {
     }
 
     /**
-     * Creates a node particle set from a snippet saved by the node geometry editor
+     * Creates a node particle set from a snippet saved in a remote file
+     * @param name defines the name of the node particle set to create
+     * @param url defines the url to load from
+     * @param nodeParticleSet defines a node particle set to update (instead of creating a new one)
+     * @returns a promise that will resolve to the new node particle set
+     */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public static ParseFromFileAsync(name: string, url: string, nodeParticleSet?: NodeParticleSystemSet): Promise<NodeParticleSystemSet> {
+        return new Promise((resolve, reject) => {
+            const request = new WebRequest();
+            request.addEventListener("readystatechange", () => {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        const serializationObject = JSON.parse(request.responseText);
+                        if (!nodeParticleSet) {
+                            nodeParticleSet = SerializationHelper.Parse(() => new NodeParticleSystemSet(name), serializationObject, null);
+                        }
+
+                        nodeParticleSet.parseSerializedObject(serializationObject);
+
+                        resolve(nodeParticleSet);
+                    } else {
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                        reject("Unable to load the node particle system set");
+                    }
+                }
+            });
+
+            request.open("GET", url);
+            request.send();
+        });
+    }
+
+    /**
+     * Creates a node particle set from a snippet saved by the node particle editor
      * @param snippetId defines the snippet to load
      * @param nodeParticleSet defines a node particle set to update (instead of creating a new one)
-     * @returns a promise that will resolve to the new node geometry
+     * @returns a promise that will resolve to the new node particle set
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public static ParseFromSnippetAsync(snippetId: string, nodeParticleSet?: NodeParticleSystemSet): Promise<NodeParticleSystemSet> {
