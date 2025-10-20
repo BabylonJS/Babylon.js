@@ -6,6 +6,7 @@ import type { IService, ServiceDefinition } from "../modularity/serviceDefinitio
 import { Button, Divider, Toolbar as FluentToolbar, makeStyles, mergeClasses, Subtitle2Stronger, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
 import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
 import { Observable } from "core/Misc/observable";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
@@ -15,7 +16,6 @@ import { useOrderedObservableCollection } from "../hooks/observableHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
-import { useLocalStorage } from "usehooks-ts";
 
 type HorizontalLocation = "left" | "right";
 type VerticalLocation = "top" | "bottom";
