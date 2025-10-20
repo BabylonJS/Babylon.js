@@ -844,42 +844,47 @@ export function MakeShellServiceDefinition({
                 >("Babylon/Settings/SidePaneDockOverrides", {});
 
                 const toolbarItems = useOrderedObservableCollection(toolbarItemCollection);
-                const sidePanes = useOrderedObservableCollection(sidePaneCollection).map((entry) => {
-                    const override = sidePaneDockOverrides[entry.key];
-                    if (override) {
-                        // Override (user manually re-docked) has the highest priority.
-                        entry = {
-                            ...entry,
-                            horizontalLocation: override.horizontalLocation,
-                            verticalLocation: override.verticalLocation,
-                        };
-                    } else {
-                        // Otherwise, when we are in "right" side pane mode, we need to coerce all left panes to be right panes.
-                        let { horizontalLocation, verticalLocation } = entry;
-                        if (sidePaneMode === "right") {
-                            // All right panes go to right bottom.
-                            if (horizontalLocation === "right") {
-                                verticalLocation = "bottom";
+                const sidePanes = useOrderedObservableCollection(sidePaneCollection);
+                const coercedSidePanes = useMemo(
+                    () =>
+                        sidePanes.map((entry) => {
+                            const override = sidePaneDockOverrides[entry.key];
+                            if (override) {
+                                // Override (user manually re-docked) has the highest priority.
+                                entry = {
+                                    ...entry,
+                                    horizontalLocation: override.horizontalLocation,
+                                    verticalLocation: override.verticalLocation,
+                                };
+                            } else {
+                                // Otherwise, when we are in "right" side pane mode, we need to coerce all left panes to be right panes.
+                                let { horizontalLocation, verticalLocation } = entry;
+                                if (sidePaneMode === "right") {
+                                    // All right panes go to right bottom.
+                                    if (horizontalLocation === "right") {
+                                        verticalLocation = "bottom";
+                                    }
+
+                                    // All left panes go to right top.
+                                    if (horizontalLocation === "left") {
+                                        horizontalLocation = "right";
+                                        verticalLocation = "top";
+                                    }
+                                }
+                                entry = {
+                                    ...entry,
+                                    horizontalLocation,
+                                    verticalLocation,
+                                };
                             }
 
-                            // All left panes go to right top.
-                            if (horizontalLocation === "left") {
-                                horizontalLocation = "right";
-                                verticalLocation = "top";
-                            }
-                        }
-                        entry = {
-                            ...entry,
-                            horizontalLocation,
-                            verticalLocation,
-                        };
-                    }
+                            return entry;
+                        }),
+                    [sidePanes, sidePaneDockOverrides, sidePaneMode]
+                );
 
-                    return entry;
-                });
-
-                const hasLeftPanes = sidePanes.some((entry) => entry.horizontalLocation === "left");
-                const hasRightPanes = sidePanes.some((entry) => entry.horizontalLocation === "right");
+                const hasLeftPanes = coercedSidePanes.some((entry) => entry.horizontalLocation === "left");
+                const hasRightPanes = coercedSidePanes.some((entry) => entry.horizontalLocation === "right");
 
                 const updateSidePaneDockOverride = useCallback(
                     (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => {
@@ -921,7 +926,7 @@ export function MakeShellServiceDefinition({
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
-                    sidePanes,
+                    coercedSidePanes,
                     onSelectSidePane,
                     updateSidePaneDockOverride,
                     toolbarMode,
@@ -933,7 +938,7 @@ export function MakeShellServiceDefinition({
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
-                    sidePanes,
+                    coercedSidePanes,
                     onSelectSidePane,
                     updateSidePaneDockOverride,
                     toolbarMode,
