@@ -10,12 +10,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { EncodeArrayBufferToBase64 } from "./stringTools";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-declare const _native: {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    EncodeImage?: (pixelData: Uint8Array, width: number, height: number, mimeType: string, invertY: boolean) => Promise<ArrayBuffer>;
-};
+import { nativeOverride } from "./decorators";
 
 type DumpResources = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -89,44 +84,48 @@ async function _GetDumpResourcesAsync() {
     return await ResourcesPromise;
 }
 
-async function _EncodeImageAsync(pixelData: Uint8Array, width: number, height: number, mimeType: string, invertY: boolean, quality?: number): Promise<ArrayBuffer> {
-    if (typeof _native !== "undefined" && _native.EncodeImage) {
-        return await _native.EncodeImage(pixelData as Uint8Array, width, height, mimeType, invertY);
+class EncodingHelper {
+    /**
+     * Encodes image data to the given mime type. If the requested MIME type is not supported, an error will be thrown.
+     * This is put into a helper class so we can apply the nativeOverride decorator to it.
+     * @internal
+     */
+    @nativeOverride
+    public static async EncodeImageAsync(pixelData: Uint8Array, width: number, height: number, mimeType: string, invertY: boolean, quality?: number): Promise<ArrayBuffer> {
+        const resources = await _GetDumpResourcesAsync();
+
+        // Keep the async render + read from the shared canvas atomic
+        return await new Promise<ArrayBuffer>((resolve, reject) => {
+            const dumpEngine = resources.dumpEngine;
+            dumpEngine.engine.setSize(width, height, true);
+
+            // Create the image
+            const texture = dumpEngine.engine.createRawTexture(pixelData, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+
+            dumpEngine.renderer.setViewport();
+            dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
+            dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
+            dumpEngine.renderer.draw();
+
+            texture.dispose();
+
+            Tools.ToBlob(
+                resources.canvas,
+                (blob) => {
+                    if (!blob) {
+                        reject(new Error("DumpData: Failed to convert canvas to blob."));
+                    } else if (blob.type !== mimeType) {
+                        // The MIME type of a canvas.toBlob() output can be different from the one requested if the browser does not support the requested format
+                        reject(new Error(`DumpData: Failed to convert canvas to blob as ${mimeType}. Got ${blob.type} instead.`));
+                    } else {
+                        resolve(blob.arrayBuffer());
+                    }
+                },
+                mimeType,
+                quality
+            );
+        });
     }
-
-    const resources = await _GetDumpResourcesAsync();
-
-    // Keep the async render + read from the shared canvas atomic
-    return await new Promise<ArrayBuffer>((resolve, reject) => {
-        const dumpEngine = resources.dumpEngine;
-        dumpEngine.engine.setSize(width, height, true);
-
-        // Create the image
-        const texture = dumpEngine.engine.createRawTexture(pixelData, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
-
-        dumpEngine.renderer.setViewport();
-        dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
-        dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
-        dumpEngine.renderer.draw();
-
-        texture.dispose();
-
-        Tools.ToBlob(
-            resources.canvas,
-            (blob) => {
-                if (!blob) {
-                    reject(new Error("DumpData: Failed to convert canvas to blob."));
-                } else if (blob.type !== mimeType) {
-                    // The MIME type of a canvas.toBlob() output can be different from the one requested if the browser does not support the requested format
-                    reject(new Error(`DumpData: Failed to convert canvas to blob as ${mimeType}. Got ${blob.type} instead.`));
-                } else {
-                    resolve(blob.arrayBuffer());
-                }
-            },
-            mimeType,
-            quality
-        );
-    });
 }
 
 /**
@@ -212,7 +211,7 @@ export async function DumpDataAsync(
         data = data2;
     }
 
-    const buffer = await _EncodeImageAsync(data as Uint8Array, width, height, mimeType, invertY, quality);
+    const buffer = await EncodingHelper.EncodeImageAsync(data as Uint8Array, width, height, mimeType, invertY, quality);
 
     if (fileName !== undefined) {
         // Note: On web, this creates a Blob -> ArrayBuffer -> Blob round-trip.
