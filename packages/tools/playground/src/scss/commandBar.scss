@@ -101,7 +101,6 @@
     .command-dropdown-root {
         position: relative;
         text-transform: uppercase;
-        z-index: 1;
     }
 
     .command-dropdown {
@@ -150,7 +149,7 @@
         width: 100%;
         height: 100%;
         transform: scale(1);
-        z-index: 1;
+        z-index: 3;
     }
 
     &.background-js {

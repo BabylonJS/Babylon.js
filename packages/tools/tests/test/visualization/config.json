@@ -3036,6 +3036,10 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "Specular Reflectance with IOR V2 Manifest",
+            "playgroundId": "#KQYNYS#49"
+        },
+        {
             "title": "OpenPBR Coat Roughness vs Coat Ior - Analytic Lights",
             "playgroundId": "#GRQHVV#80",
             "excludedEngines": ["webgl1"]
