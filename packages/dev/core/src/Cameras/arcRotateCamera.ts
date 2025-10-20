@@ -1448,7 +1448,7 @@ export class ArcRotateCamera extends TargetCamera {
         meshes = meshes || this.getScene().meshes;
 
         const minMaxVector = Mesh.MinMax(meshes);
-        let distance = this._calculateLowerRadiusFromModelBoundingInfo(minMaxVector.min, minMaxVector.max);
+        let distance = this._calculateLowerRadiusFromModelBoundingSphere(minMaxVector.min, minMaxVector.max);
 
         // If there are defined limits, we need to take them into account
         distance = Math.max(Math.min(distance, this.upperRadiusLimit || Number.MAX_VALUE), this.lowerRadiusLimit || 0);
@@ -1561,43 +1561,31 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * @internal
      */
-    public _calculateLowerRadiusFromModelBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, mode: string = "sphere", radiusScale: number = 1): number {
+    public _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3, radiusScale: number = 1): number {
+        const boxVectorGlobalDiagonal = Vector3.Distance(minimumWorld, maximumWorld);
+
+        // Get aspect ratio in order to calculate frustum slope
         const engine = this.getScene().getEngine();
         const aspectRatio = engine.getAspectRatio(this);
         const frustumSlopeY = Math.tan(this.fov / 2);
         const frustumSlopeX = frustumSlopeY * aspectRatio;
-        const oldRadius = this.radius;
-        let distance = oldRadius;
-        let distanceForHorizontalFrustum: number = 0;
-        let distanceForVerticalFrustum: number = 0;
+
+        // Formula for setting distance
+        // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
+        const radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
+
+        // Horizon distance
+        const radius = radiusWithoutFraming * radiusScale;
+        const distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeX * frustumSlopeX));
+        const distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeY * frustumSlopeY));
+
+        // Setting orthographic extents
         const height = (maximumWorld.y - minimumWorld.y) * 0.5;
-        const widht = (maximumWorld.x - minimumWorld.x) * 0.5;
-        if (mode === "sphere") {
-            const boxVectorGlobalDiagonal = Vector3.Distance(minimumWorld, maximumWorld);
-            // Get aspect ratio in order to calculate frustum slope
+        const width = (maximumWorld.x - minimumWorld.x) * 0.5;
 
-            // Formula for setting distance
-            // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
-            const radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
-
-            // Horizon distance
-            const radius = radiusWithoutFraming * radiusScale;
-            distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeX * frustumSlopeX));
-            distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeY * frustumSlopeY));
-            distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
-        } else if (mode === "bounding box") {
-            // Setting the distance according to the bounding box (centring the first face of the bounding box)
-            const depth = (maximumWorld.z - minimumWorld.z) * 0.5;
-            distanceForHorizontalFrustum = (radiusScale * widht) / frustumSlopeX + depth;
-            distanceForVerticalFrustum = (radiusScale * height) / frustumSlopeY + depth;
-            distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
-        } else {
-            return this.radius;
-        }
-        //Adding a check for orthographic Camera
         if (this.mode === Camera.ORTHOGRAPHIC_CAMERA) {
-            if (aspectRatio < widht / height) {
-                this.orthoRight = widht * radiusScale;
+            if (aspectRatio < width / height) {
+                this.orthoRight = width * radiusScale;
                 this.orthoLeft = -this.orthoRight;
                 this.orthoTop = this.orthoRight / aspectRatio;
                 this.orthoBottom = this.orthoLeft / aspectRatio;
@@ -1607,7 +1595,44 @@ export class ArcRotateCamera extends TargetCamera {
                 this.orthoTop = height;
                 this.orthoBottom = -this.orthoTop;
             }
-            console.log("ciao", this.orthoBottom, this.orthoTop, this.orthoLeft, this.orthoRight);
+        }
+        return Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
+    }
+    /**
+     * @internal
+     */
+    public _calculateLowerRadiusFromModelBoundingBox(minimumWorld: Vector3, maximumWorld: Vector3, radiusScale: number = 1): number {
+        // Get aspect ratio in order to calculate frustum slope
+        const engine = this.getScene().getEngine();
+        const aspectRatio = engine.getAspectRatio(this);
+        const frustumSlopeY = Math.tan(this.fov / 2);
+        const frustumSlopeX = frustumSlopeY * aspectRatio;
+        const oldRadius = this.radius;
+        let distance = oldRadius;
+
+        // Formula for setting distance
+        let distanceForHorizontalFrustum: number = 0;
+        let distanceForVerticalFrustum: number = 0;
+        const height = (maximumWorld.y - minimumWorld.y) * 0.5;
+        const width = (maximumWorld.x - minimumWorld.x) * 0.5;
+        const depth = (maximumWorld.z - minimumWorld.z) * 0.5;
+        // Setting the distance according to the bounding box (centring the first face of the bounding box)
+        distanceForHorizontalFrustum = (radiusScale * width) / frustumSlopeX + depth;
+        distanceForVerticalFrustum = (radiusScale * height) / frustumSlopeY + depth;
+        distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
+        //Adding a check for orthographic Camera
+        if (this.mode === Camera.ORTHOGRAPHIC_CAMERA) {
+            if (aspectRatio < width / height) {
+                this.orthoRight = width * radiusScale;
+                this.orthoLeft = -this.orthoRight;
+                this.orthoTop = this.orthoRight / aspectRatio;
+                this.orthoBottom = this.orthoLeft / aspectRatio;
+            } else {
+                this.orthoRight = height * aspectRatio * radiusScale;
+                this.orthoLeft = -this.orthoRight;
+                this.orthoTop = height * radiusScale;
+                this.orthoBottom = -this.orthoTop;
+            }
         }
         return distance;
     }
