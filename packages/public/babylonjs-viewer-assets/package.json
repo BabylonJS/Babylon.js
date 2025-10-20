@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-viewer-assets",
     "description": "Compiled resources for the Babylon viewer.",
-    "version": "8.32.1",
+    "version": "8.32.2",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
