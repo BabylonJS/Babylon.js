@@ -211,7 +211,8 @@ let checkBabylonVersionAsync = async function () {
 };
 
 checkBabylonVersionAsync().then((version) => {
-    loadScriptAsync("babylon.playground.js").then(() => {
+    const bundle = (globalThis && globalThis.__PLAYGROUND_BUNDLE__) || "babylon.playground.js";
+    loadScriptAsync(bundle).then(() => {
         var hostElement = document.getElementById("host-element");
         let mode = undefined;
         if (window.location.href.includes("full.html")) {

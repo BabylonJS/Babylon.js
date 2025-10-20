@@ -55,6 +55,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
             this.forceUpdate();
         });
 
+        this.props.globalState.onEngineChangedObservable.add(() => {
+            this.forceUpdate();
+        });
+
         if (typeof WebGPUEngine !== "undefined") {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             WebGPUEngine.IsSupportedAsync.then((result) => {
