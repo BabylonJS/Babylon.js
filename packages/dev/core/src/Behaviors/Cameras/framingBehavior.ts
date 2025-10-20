@@ -322,7 +322,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         maximumWorld: Vector3,
         focusOnOriginXZ: boolean = false,
         onAnimationEnd: Nullable<() => void> = null,
-        mode: string = "sphere",
+        mode: BoundingInfoMode = "sphere",
         radiusScaling: number = this._radiusScale
     ): boolean {
         let zoomTarget: Vector3;
