@@ -22,6 +22,9 @@ import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Nullable } from "../../types";
 import { Color4 } from "core/Maths/math.color";
+import { SPSCreateBlock, SPSInitBlock, SPSMeshShapeType, SPSMeshSourceBlock, SPSSystemBlock, SPSUpdateBlock } from "./Blocks";
+import { ParticleSystem } from "..";
+import { Vector3 } from "../../Maths";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;
@@ -45,7 +48,7 @@ export interface INodeParticleEditorOptions {
  * PG: #ZT509U#1
  */
 export class NodeParticleSystemSet {
-    private _systemBlocks: SystemBlock[] = [];
+    private _systemBlocks: (SystemBlock | SPSSystemBlock)[] = [];
     private _buildId: number = 0;
 
     /** Define the Url to load node editor script */
@@ -90,7 +93,7 @@ export class NodeParticleSystemSet {
     /**
      * Gets the system blocks
      */
-    public get systemBlocks(): SystemBlock[] {
+    public get systemBlocks(): (SystemBlock | SPSSystemBlock)[] {
         return this._systemBlocks;
     }
 
@@ -269,13 +272,13 @@ export class NodeParticleSystemSet {
                 state.verbose = verbose;
 
                 const system = block.createSystem(state);
-                system._source = this;
-                system._blockReference = block._internalId;
-
+                if (system instanceof ParticleSystem) {
+                    system._source = this;
+                    system._blockReference = block._internalId;
+                    output.systems.push(system);
+                }
                 // Errors
                 state.emitErrors();
-
-                output.systems.push(system);
             }
 
             this.onBuildObservable.notifyObservers(this);
@@ -334,6 +337,61 @@ export class NodeParticleSystemSet {
         textureBlock.url = "https://assets.babylonjs.com/textures/flare.png";
 
         this._systemBlocks.push(system);
+    }
+
+    public setToDefaultSPS() {
+        this.clear();
+        this.editorData = null;
+        const spsSystem = new SPSSystemBlock("SPS System");
+        spsSystem.capacity = 1000;
+        spsSystem.billboard = false;
+
+        const spsCreateBox = new SPSCreateBlock("Create Box Particles");
+        const spsCreateSphere = new SPSCreateBlock("Create Sphere Particles");
+
+        spsCreateBox.count.value = 5;
+        spsCreateSphere.count.value = 1;
+
+        spsCreateBox.solidParticle.connectTo(spsSystem.solidParticle);
+        spsCreateSphere.solidParticle.connectTo(spsSystem.solidParticle);
+
+        const meshSourceBox = new SPSMeshSourceBlock("Box Mesh");
+        const meshSourceSphere = new SPSMeshSourceBlock("Sphere Mesh");
+
+        meshSourceBox.shapeType = SPSMeshShapeType.Box;
+        meshSourceSphere.shapeType = SPSMeshShapeType.Sphere;
+
+        meshSourceBox.size = 1;
+        meshSourceSphere.size = 1;
+
+        meshSourceBox.mesh.connectTo(spsCreateBox.mesh);
+        meshSourceSphere.mesh.connectTo(spsCreateSphere.mesh);
+
+        const spsInitBox = new SPSInitBlock("Initialize Box Particles");
+        const spsInitSphere = new SPSInitBlock("Initialize Sphere Particles");
+
+        spsInitBox.initData.connectTo(spsCreateBox.initBlock);
+        spsInitSphere.initData.connectTo(spsCreateSphere.initBlock);
+
+        const positionBlockBox = new ParticleInputBlock("Position");
+        positionBlockBox.value = new Vector3(1, 1, 1);
+        positionBlockBox.output.connectTo(spsInitBox.position);
+
+        const rotationBlockBox = new ParticleInputBlock("Rotation");
+        rotationBlockBox.value = new Vector3(3, 0, 0);
+        rotationBlockBox.output.connectTo(spsInitBox.rotation);
+
+        const positionBlockSphere = new ParticleInputBlock("Position");
+        positionBlockSphere.value = new Vector3(0, 0, 0);
+        positionBlockSphere.output.connectTo(spsInitSphere.position);
+
+        const spsUpdateBox = new SPSUpdateBlock("Update Box Particles");
+        const spsUpdateSphere = new SPSUpdateBlock("Update Sphere Particles");
+
+        spsUpdateBox.updateData.connectTo(spsCreateBox.updateBlock);
+        spsUpdateSphere.updateData.connectTo(spsCreateSphere.updateBlock);
+
+        this._systemBlocks.push(spsSystem);
     }
 
     /**
