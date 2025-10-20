@@ -5,7 +5,7 @@ import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnect
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { Vector3 } from "core/Maths/math.vector";
 import { Color4 } from "core/Maths/math.color";
-import type { ISPSInitData } from "./ISPSData";
+import type { ISPSUpdateData } from "./ISPSData";
 
 /**
  * Block used to generate initialization function for SPS particles
@@ -52,51 +52,71 @@ export class SPSInitBlock extends NodeParticleBlock {
     }
 
     public override _build(state: NodeParticleBuildState) {
-        const initData: ISPSInitData = {};
-
-        if (this.position.isConnected) {
-            initData.position = () => {
-                return this.position.getConnectedValue(state) as Vector3;
-            };
-        } else {
-            initData.position = new Vector3(0, 0, 0);
-        }
-
-        if (this.velocity.isConnected) {
-            initData.velocity = () => {
-                return this.velocity.getConnectedValue(state) as Vector3;
-            };
-        } else {
-            initData.velocity = new Vector3(0, 0, 0);
-        }
-
-        if (this.color.isConnected) {
-            initData.color = () => {
-                return this.color.getConnectedValue(state) as Color4;
-            };
-        } else {
-            initData.color = new Color4(1, 1, 1, 1);
-        }
-
-        if (this.scaling.isConnected) {
-            initData.scaling = () => {
-                return this.scaling.getConnectedValue(state) as Vector3;
-            };
-        } else {
-            initData.scaling = new Vector3(1, 1, 1);
-        }
-
-        if (this.rotation.isConnected) {
-            initData.rotation = () => {
-                return this.rotation.getConnectedValue(state) as Vector3;
-            };
-        } else {
-            initData.rotation = new Vector3(0, 0, 0);
-        }
+        const initData = {} as ISPSUpdateData;
+        initData.position = () => {
+            return this.getPosition(state);
+        };
+        initData.velocity = () => {
+            return this.getVelocity(state);
+        };
+        initData.color = () => {
+            return this.getColor(state);
+        };
+        initData.scaling = () => {
+            return this.getScaling(state);
+        };
+        initData.rotation = () => {
+            return this.getRotation(state);
+        };
 
         this.initData._storedValue = initData;
     }
 
+    private getPosition(state: NodeParticleBuildState) {
+        if (this.position.isConnected) {
+            if (this.position._storedFunction) {
+                return this.position._storedFunction!(state);
+            }
+            return this.position.getConnectedValue(state);
+        }
+        return new Vector3(0, 0, 0);
+    }
+    private getVelocity(state: NodeParticleBuildState) {
+        if (this.velocity.isConnected) {
+            if (this.velocity._storedFunction) {
+                return this.velocity._storedFunction!(state);
+            }
+            return this.velocity.getConnectedValue(state);
+        }
+        return new Vector3(0, 0, 0);
+    }
+    private getColor(state: NodeParticleBuildState) {
+        if (this.color.isConnected) {
+            if (this.color._storedFunction) {
+                return this.color._storedFunction!(state);
+            }
+            return this.color.getConnectedValue(state);
+        }
+        return new Color4(1, 1, 1, 1);
+    }
+    private getScaling(state: NodeParticleBuildState) {
+        if (this.scaling.isConnected) {
+            if (this.scaling._storedFunction) {
+                return this.scaling._storedFunction!(state);
+            }
+            return this.scaling.getConnectedValue(state);
+        }
+        return new Vector3(1, 1, 1);
+    }
+    private getRotation(state: NodeParticleBuildState) {
+        if (this.rotation.isConnected) {
+            if (this.rotation._storedFunction) {
+                return this.rotation._storedFunction!(state);
+            }
+            return this.rotation.getConnectedValue(state);
+        }
+        return new Vector3(0, 0, 0);
+    }
     public override serialize(): any {
         const serializationObject = super.serialize();
         return serializationObject;

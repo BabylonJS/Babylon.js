@@ -15,6 +15,7 @@ import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import type { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import type { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import type { Scene } from "core/scene";
+import { NodeParticleModes } from "./nodeParticleModes";
 
 export class GlobalState {
     nodeParticleSet: NodeParticleSystemSet;
@@ -44,6 +45,7 @@ export class GlobalState {
     updateState: (left: string, right: string) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
+    mode: NodeParticleModes = NodeParticleModes.Standard;
 
     public constructor() {
         this.stateManager = new StateManager();
