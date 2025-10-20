@@ -16,7 +16,6 @@ import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Tools } from "core/Misc/tools";
 import { RenderingManager } from "core/Rendering/renderingManager";
-import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
@@ -62,7 +61,6 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
                     selectionService={selectionService}
                 />
             )}
-            <ButtonLine label="Dispose" onClick={() => mesh.dispose()} />
         </>
     );
 };
