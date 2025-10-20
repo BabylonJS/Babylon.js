@@ -1565,6 +1565,7 @@ export class SolidParticleSystem implements IDisposable {
         }
         this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
         this._onBeforeRenderObserver = null;
+        this.mesh.dispose();
         this.isStarted = false;
     }
 
@@ -1573,9 +1574,6 @@ export class SolidParticleSystem implements IDisposable {
      */
     public dispose(): void {
         this.stop();
-        if (this.mesh) {
-            this.mesh.dispose();
-        }
         this.vars = null;
         // drop references to internal big arrays for the GC
         (<any>this._positions) = null;

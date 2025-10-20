@@ -300,9 +300,11 @@ export class NodeParticleBlock {
                 continue;
             }
 
-            const block = input.connectedPoint.ownerBlock;
-            if (block && block !== this && !block.isSystem) {
-                block.build(state);
+            const blocks = input.allowMultipleConnections ? input.connectedPoints.map((p) => p.ownerBlock) : [input.connectedPoint.ownerBlock];
+            for (const block of blocks) {
+                if (block && block !== this && !block.isSystem) {
+                    block.build(state);
+                }
             }
         }
 
