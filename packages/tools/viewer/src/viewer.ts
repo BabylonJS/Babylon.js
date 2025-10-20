@@ -3,6 +3,7 @@ import type {
     AbstractEngine,
     AbstractMesh,
     AnimationGroup,
+    ArcRotateCameraKeyboardMoveInput,
     AssetContainer,
     AutoRotationBehavior,
     BaseTexture,
@@ -11,6 +12,7 @@ import type {
     Engine,
     HDRCubeTexture,
     HotSpotQuery,
+    IblCdfGenerator,
     IblShadowsRenderPipeline,
     IDisposable,
     IMeshDataCache,
@@ -21,7 +23,6 @@ import type {
     PickingInfo,
     ShaderMaterial,
     ShadowGenerator,
-    IblCdfGenerator,
     SSAO2RenderingPipeline,
 } from "core/index";
 
@@ -30,8 +31,8 @@ import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
+import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
@@ -49,15 +50,15 @@ import { BuildTuple } from "core/Misc/arrayTools";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
+import { Lazy } from "core/Misc/lazy";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
-import { _RetryWithInterval } from "core/Misc/timingTools";
-import { Lazy } from "core/Misc/lazy";
 
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 const LazySSAODependenciesPromise = new Lazy(() =>
@@ -963,6 +964,7 @@ export class Viewer implements IDisposable {
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             camera.useInputToRestoreState = false;
             camera.useAutoRotationBehavior = true;
+
             camera.onViewMatrixChangedObservable.add(() => {
                 this._markSceneMutated();
             });
@@ -2750,9 +2752,15 @@ export class Viewer implements IDisposable {
                     this._sceneMutated = false;
                     this._scene.render();
 
-                    // Update the camera panning sensitivity related properties based on the camera's distance from the target.
+                    // Update the camera panning sensitivity based on the camera's distance from the target.
                     this._camera.panningSensibility = 5000 / this._camera.radius;
+
+                    // Update the camera speed based on the camera's distance from the target.
+                    // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
                     this._camera.speed = this._camera.radius * 0.2;
+
+                    // Update the keyboard zooming sensitivity based on the camera's distance from the target.
+                    (this._camera.inputs.attached["keyboard"] as ArcRotateCameraKeyboardMoveInput).zoomingSensibility = 500 / this._camera.radius;
 
                     if (this.isAnimationPlaying) {
                         this.onAnimationProgressChanged.notifyObservers();
