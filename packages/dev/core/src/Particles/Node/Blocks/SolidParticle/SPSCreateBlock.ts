@@ -13,7 +13,7 @@ export class SPSCreateBlock extends NodeParticleBlock {
         super(name);
 
         this.registerInput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
-        this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 100);
+        this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 1);
         this.registerInput("material", NodeParticleBlockConnectionPointTypes.Material, true);
         this.registerInput("initBlock", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("updateBlock", NodeParticleBlockConnectionPointTypes.System, true);
@@ -51,7 +51,7 @@ export class SPSCreateBlock extends NodeParticleBlock {
 
     public override _build(state: NodeParticleBuildState) {
         const mesh = this.mesh.getConnectedValue(state);
-        const count = (this.count.getConnectedValue(state) as number) || 100;
+        const count = (this.count.getConnectedValue(state) as number) || 1;
         const material = this.material.getConnectedValue(state);
 
         const initBlock = this.initBlock.isConnected ? this.initBlock.getConnectedValue(state) : null;

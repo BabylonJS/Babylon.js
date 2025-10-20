@@ -1546,23 +1546,14 @@ export class SolidParticleSystem implements IDisposable {
      * Starts the SPS by subscribing to the scene's before render observable
      */
     public start(): void {
-        if (this.mesh && this.mesh.getScene()) {
-            // Stop any existing observer first
-            this.stop();
-
-            const scene = this.mesh.getScene();
-            this.buildMesh();
-
-            if (this.initParticles) {
-                this.initParticles();
-            }
-
+        this.stop();
+        this.buildMesh();
+        this.initParticles();
+        this.setParticles();
+        this._onBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             this.setParticles();
-            this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
-                this.setParticles();
-            });
-            this.isStarted = true;
-        }
+        });
+        this.isStarted = true;
     }
 
     /**
@@ -1572,13 +1563,9 @@ export class SolidParticleSystem implements IDisposable {
         if (!this.isStarted) {
             return;
         }
-        if (this._onBeforeRenderObserver && this.mesh && this.mesh.getScene()) {
-            const scene = this.mesh.getScene();
-            scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
-            this._onBeforeRenderObserver = null;
-            this.mesh.dispose();
-            this.isStarted = false;
-        }
+        this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+        this._onBeforeRenderObserver = null;
+        this.isStarted = false;
     }
 
     /**
