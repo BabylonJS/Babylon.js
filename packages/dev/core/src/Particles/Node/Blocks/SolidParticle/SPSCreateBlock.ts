@@ -4,7 +4,6 @@ import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import type { ISPSCreateData } from "./ISPSData";
-import { SPSSystemBlock } from "./SPSSystemBlock";
 
 /**
  * Block used to configure SPS parameters (mesh, count, initBlocks)
@@ -67,15 +66,6 @@ export class SPSCreateBlock extends NodeParticleBlock {
         };
 
         this.solidParticle._storedValue = solidParticle;
-
-        // If connected to SPSSystemBlock, add this create block to its particle sources
-        if (this.solidParticle.isConnected && this.solidParticle.connectedPoint?.ownerBlock instanceof SPSSystemBlock) {
-            const systemBlock = this.solidParticle.connectedPoint.ownerBlock as SPSSystemBlock;
-            // Remove existing source if it exists
-            systemBlock.removeParticleSource(solidParticle);
-            // Add the new source
-            systemBlock.addParticleSource(solidParticle);
-        }
     }
 }
 
