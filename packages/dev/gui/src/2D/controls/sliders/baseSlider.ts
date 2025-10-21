@@ -157,7 +157,7 @@ export class BaseSlider extends Control {
 
         this._value = value;
         this._markAsDirty();
-        this.onValueChangedObservable.notifyObservers(this._value);
+        this.onValueChangedObservable.notifyObservers(this._value, undefined, this, this);
     }
 
     /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
@@ -342,3 +342,4 @@ export class BaseSlider extends Control {
         super._onCanvasBlur();
     }
 }
+
