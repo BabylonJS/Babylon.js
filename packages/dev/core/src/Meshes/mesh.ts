@@ -2170,6 +2170,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     }
                 }
                 world.copyToArray(instanceStorage.instancesData, offset);
+
+                // Apply floatingOriginOffset to underlying data sent to buffer
+                instanceStorage.instancesData[offset + 12] -= this._scene.floatingOriginOffset.x;
+                instanceStorage.instancesData[offset + 13] -= this._scene.floatingOriginOffset.y;
+                instanceStorage.instancesData[offset + 14] -= this._scene.floatingOriginOffset.z;
+
                 offset += 16;
                 instancesCount++;
             }
@@ -2199,6 +2205,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                             instance._previousWorldMatrix.copyFrom(matrix);
                         }
                     }
+
+                    // Apply floatingOriginOffset to underlying data sent to buffer
+                    instanceStorage.instancesData[offset + 12] -= this._scene.floatingOriginOffset.x;
+                    instanceStorage.instancesData[offset + 13] -= this._scene.floatingOriginOffset.y;
+                    instanceStorage.instancesData[offset + 14] -= this._scene.floatingOriginOffset.z;
 
                     offset += 16;
                     instancesCount++;
