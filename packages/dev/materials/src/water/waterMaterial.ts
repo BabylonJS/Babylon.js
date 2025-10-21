@@ -405,7 +405,7 @@ export class WaterMaterial extends PushMaterial {
             undefined,
             undefined,
             undefined,
-            this._setVertexOutputInvariant
+            this._isVertexOutputInvariant
         );
 
         if (defines._areMiscDirty) {

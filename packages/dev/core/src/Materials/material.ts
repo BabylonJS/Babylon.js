@@ -228,6 +228,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public static OnEventObservable = new Observable<Material>();
 
     /**
+     * If true, all materials will have their vertex output set to invariant (see the vertexOutputInvariant property).
+     */
+    public static ForceVertexOutputInvariant = false;
+
+    /**
      * Custom callback helping to override the default shader used in the material.
      */
     public customShaderNameResolve: (
@@ -887,7 +892,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     @serialize()
-    protected _setVertexOutputInvariant = false;
+    protected _isVertexOutputInvariant = Material.ForceVertexOutputInvariant;
     /**
      * Gets or sets the vertex output invariant state
      * Setting this property to true will force the shader compiler to disable some optimization to make sure the vertex output is always calculated
@@ -895,16 +900,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * You may need to enable this option if you are seeing some depth artifacts when using a depth pre-pass, for e.g.
      * Note that this may have an impact on performance, so leave this option disabled if not needed.
      */
-    public get setVertexOutputInvariant(): boolean {
-        return this._setVertexOutputInvariant;
+    public get isVertexOutputInvariant(): boolean {
+        return this._isVertexOutputInvariant;
     }
 
-    public set setVertexOutputInvariant(value: boolean) {
-        if (this._setVertexOutputInvariant === value) {
+    public set isVertexOutputInvariant(value: boolean) {
+        if (this._isVertexOutputInvariant === value) {
             return;
         }
 
-        this._setVertexOutputInvariant = value;
+        this._isVertexOutputInvariant = value;
         this._markAllSubMeshesAsMiscDirty();
     }
 

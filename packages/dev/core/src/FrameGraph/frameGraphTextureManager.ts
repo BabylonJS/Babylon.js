@@ -443,6 +443,23 @@ export class FrameGraphTextureManager {
     }
 
     /**
+     * Gets the absolute dimensions of a texture from its handle or creation options.
+     * @param handleOrCreationOptions The handle or creation options of the texture
+     * @returns The absolute dimensions of the texture
+     */
+    public getTextureAbsoluteDimensions(handleOrCreationOptions: FrameGraphTextureHandle | FrameGraphTextureCreationOptions): { width: number; height: number } {
+        if (typeof handleOrCreationOptions === "number") {
+            handleOrCreationOptions = this.getTextureCreationOptions(handleOrCreationOptions);
+        }
+
+        return !handleOrCreationOptions.sizeIsPercentage
+            ? textureSizeIsObject(handleOrCreationOptions.size)
+                ? handleOrCreationOptions.size
+                : { width: handleOrCreationOptions.size, height: handleOrCreationOptions.size }
+            : this.getAbsoluteDimensions(handleOrCreationOptions.size);
+    }
+
+    /**
      * Calculates the total byte size of all textures used by the frame graph texture manager (including external textures)
      * @param optimizedSize True if the calculation should not factor in aliased textures
      * @param outputWidth The output width of the frame graph. Will be used to calculate the size of percentage-based textures
