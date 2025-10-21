@@ -9,7 +9,6 @@ import {
     Toolbar as FluentToolbar,
     makeStyles,
     Menu,
-    MenuDivider,
     MenuGroup,
     MenuGroupHeader,
     MenuItem,
