@@ -33,19 +33,19 @@ import {
     PanelRightExpandRegular,
 } from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 
 import { Observable } from "core/Misc/observable";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { TeachingMoment } from "../components/teachingMoment";
 import { Theme } from "../components/theme";
 import { useOrderedObservableCollection } from "../hooks/observableHooks";
+import { useSidePaneDockOverrides } from "../hooks/settingsHooks";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { useResizeHandle } from "../hooks/useResizeHandle";
 import { ObservableCollection } from "../misc/observableCollection";
 
-type HorizontalLocation = "left" | "right";
-type VerticalLocation = "top" | "bottom";
+export type HorizontalLocation = "left" | "right";
+export type VerticalLocation = "top" | "bottom";
 
 type DockLocation = `${VerticalLocation}-${HorizontalLocation}`;
 
@@ -208,6 +208,8 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
      * @param content Defines the content area to add.
      */
     addCentralContent(content: CentralContentDefinition): IDisposable;
+
+    resetSidePaneLayout(): void;
 
     /**
      * The side panes currently present in the shell.
@@ -907,9 +909,7 @@ export function MakeShellServiceDefinition({
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
 
-                const [sidePaneDockOverrides, setSidePaneDockOverrides] = useLocalStorage<
-                    Record<string, Readonly<{ horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }> | undefined>
-                >("Babylon/Settings/SidePaneDockOverrides", {});
+                const [sidePaneDockOverrides, setSidePaneDockOverrides] = useSidePaneDockOverrides();
 
                 const toolbarItems = useOrderedObservableCollection(toolbarItemCollection);
                 const sidePanes = useOrderedObservableCollection(sidePaneCollection);
@@ -1072,6 +1072,7 @@ export function MakeShellServiceDefinition({
                     return sidePaneCollection.add(entry);
                 },
                 addCentralContent: (entry) => centralContentCollection.add(entry),
+                resetSidePaneLayout: () => localStorage.removeItem("Babylon/Settings/SidePaneDockOverrides"),
                 get sidePanes() {
                     return [...sidePaneCollection.items].map((sidePaneDefinition) => {
                         return {

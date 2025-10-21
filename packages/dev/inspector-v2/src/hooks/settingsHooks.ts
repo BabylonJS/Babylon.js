@@ -1,4 +1,7 @@
+import type { Dispatch, SetStateAction } from "react";
+
 import type { ISettingsContext } from "../services/settingsContext";
+import type { HorizontalLocation, VerticalLocation } from "../services/shellService";
 
 import { useCallback } from "react";
 import { useLocalStorage } from "usehooks-ts";
@@ -6,8 +9,9 @@ import { useLocalStorage } from "usehooks-ts";
 import { useObservableState } from "./observableHooks";
 
 const CompactModeStorageKey = "Babylon/Settings/IsCompactMode";
+const SidePaneDockOverridesStorageKey = "Babylon/Settings/SidePaneDockOverrides";
 
-function useSetting<T>(storageKey: string, defaultValue: T): [T, (value: T) => void, () => void] {
+function useSetting<T>(storageKey: string, defaultValue: T): [T, Dispatch<SetStateAction<T>>, () => void] {
     const [value, setValue, resetValue] = useLocalStorage<T>(storageKey, defaultValue);
 
     if (!localStorage.getItem(storageKey)) {
@@ -23,6 +27,14 @@ function useSetting<T>(storageKey: string, defaultValue: T): [T, (value: T) => v
  */
 export function useCompactMode() {
     return useSetting<boolean>(CompactModeStorageKey, !matchMedia("(pointer: coarse)").matches);
+}
+
+/**
+ * Gets the side pane dock overrides configuration.
+ * @returns A record mapping side pane IDs to their dock locations.
+ */
+export function useSidePaneDockOverrides() {
+    return useSetting<Record<string, Readonly<{ horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }> | undefined>>(SidePaneDockOverridesStorageKey, {});
 }
 
 const RadiansToDegrees = 180 / Math.PI;
