@@ -326,7 +326,6 @@ export class BaseSlider extends Control {
         if (this._pointerIsDown && !this.isReadOnly) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
-
         super._onPointerMove(target, coordinates, pointerId, pi);
     }
 
@@ -342,4 +341,5 @@ export class BaseSlider extends Control {
         super._onCanvasBlur();
     }
 }
+
 
