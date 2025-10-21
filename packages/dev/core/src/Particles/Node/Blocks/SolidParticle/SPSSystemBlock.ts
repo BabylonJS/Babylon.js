@@ -7,6 +7,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/
 import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import type { ISPSCreateData } from "./ISPSData";
 import { SolidParticle } from "../../../solidParticle";
+import { Observable } from "../../../../Misc/observable";
 
 /**
  * Block used to create SolidParticleSystem and collect all Create blocks
@@ -30,6 +31,14 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
     public _internalId = SPSSystemBlock._IdCounter++;
 
+    /**
+     * Gets or sets the list of particle sources
+     */
+    public particleSources: ISPSCreateData[] = [];
+
+    /** Gets an observable raised when the particle sources are changed */
+    public onParticleSourcesChangedObservable = new Observable<SPSSystemBlock>();
+
     public constructor(name: string) {
         super(name);
 
@@ -51,6 +60,35 @@ export class SPSSystemBlock extends NodeParticleBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Add a particle source to the system
+     * @param source The particle source data
+     */
+    public addParticleSource(source: ISPSCreateData): void {
+        this.particleSources.push(source);
+        this.onParticleSourcesChangedObservable.notifyObservers(this);
+    }
+
+    /**
+     * Remove a particle source from the system
+     * @param source The particle source data to remove
+     */
+    public removeParticleSource(source: ISPSCreateData): void {
+        const index = this.particleSources.indexOf(source);
+        if (index !== -1) {
+            this.particleSources.splice(index, 1);
+            this.onParticleSourcesChangedObservable.notifyObservers(this);
+        }
+    }
+
+    /**
+     * Clear all particle sources
+     */
+    public clearParticleSources(): void {
+        this.particleSources.length = 0;
+        this.onParticleSourcesChangedObservable.notifyObservers(this);
+    }
+
     public createSystem(state: NodeParticleBuildState): SolidParticleSystem {
         state.capacity = this.capacity;
         state.buildId = this._buildId++;
@@ -65,7 +103,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
         sps.billboard = this.billboard;
         sps.name = this.name;
 
-        const createBlocks: ISPSCreateData[] = this.solidParticle.connectedPoints.map((connectedPoint) => connectedPoint._storedValue);
+        const createBlocks: ISPSCreateData[] = this.particleSources;
 
         for (const createBlock of createBlocks) {
             if (createBlock.mesh && createBlock.count) {
@@ -119,6 +157,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
         const serializationObject = super.serialize();
         serializationObject.capacity = this.capacity;
         serializationObject.billboard = this.billboard;
+        serializationObject.particleSources = this.particleSources;
         return serializationObject;
     }
 
@@ -126,6 +165,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
         super._deserialize(serializationObject);
         this.capacity = serializationObject.capacity;
         this.billboard = !!serializationObject.billboard;
+        this.particleSources = serializationObject.particleSources || [];
     }
 }
 

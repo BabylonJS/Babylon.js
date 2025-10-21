@@ -218,18 +218,9 @@ export class NodeParticleBlock {
      * @param value value to return if there is no connection
      * @param valueMin min value accepted for value
      * @param valueMax max value accepted for value
-     * @param allowMultipleConnections defines if this input allows multiple connections
      * @returns the current block
      */
-    public registerInput(
-        name: string,
-        type: NodeParticleBlockConnectionPointTypes,
-        isOptional: boolean = false,
-        value?: any,
-        valueMin?: any,
-        valueMax?: any,
-        allowMultipleConnections: boolean = false
-    ) {
+    public registerInput(name: string, type: NodeParticleBlockConnectionPointTypes, isOptional: boolean = false, value?: any, valueMin?: any, valueMax?: any) {
         const point = new NodeParticleConnectionPoint(name, this, NodeParticleConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
@@ -237,7 +228,6 @@ export class NodeParticleBlock {
         point.value = value;
         point.valueMin = valueMin;
         point.valueMax = valueMax;
-        point.allowMultipleConnections = allowMultipleConnections;
 
         this._inputs.push(point);
 
@@ -300,11 +290,9 @@ export class NodeParticleBlock {
                 continue;
             }
 
-            const blocks = input.allowMultipleConnections ? input.connectedPoints.map((p) => p.ownerBlock) : [input.connectedPoint.ownerBlock];
-            for (const block of blocks) {
-                if (block && block !== this && !block.isSystem) {
-                    block.build(state);
-                }
+            const block = input.connectedPoint.ownerBlock;
+            if (block && block !== this && !block.isSystem) {
+                block.build(state);
             }
         }
 

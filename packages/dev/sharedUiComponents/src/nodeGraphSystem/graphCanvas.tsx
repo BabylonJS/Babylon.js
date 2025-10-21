@@ -1354,7 +1354,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         let linksToNotifyForDispose: Nullable<NodeLink[]> = null;
 
-        if (pointB.isConnected && !pointB.allowMultipleConnections) {
+        if (pointB.isConnected) {
             const links = nodeB.getLinksForPortData(pointB);
 
             linksToNotifyForDispose = links.slice();

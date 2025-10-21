@@ -35,8 +35,6 @@ export class NodeParticleConnectionPoint {
     public _ownerBlock: NodeParticleBlock;
     /** @internal */
     public _connectedPoint: Nullable<NodeParticleConnectionPoint> = null;
-    /** @internal */
-    public _connectedPoints = new Array<NodeParticleConnectionPoint>();
 
     /** @internal */
     public _storedValue: any = null;
@@ -121,11 +119,6 @@ export class NodeParticleConnectionPoint {
     public valueMax: Nullable<any> = null;
 
     /**
-     * Gets or sets a boolean indicating that this connection point allows multiple connections
-     */
-    public allowMultipleConnections: boolean = false;
-
-    /**
      * Gets or sets the connection point type (default is float)
      */
     public get type(): NodeParticleBlockConnectionPointTypes {
@@ -198,11 +191,6 @@ export class NodeParticleConnectionPoint {
     /** Get the other side of the connection (if any) */
     public get connectedPoint(): Nullable<NodeParticleConnectionPoint> {
         return this._connectedPoint;
-    }
-
-    /** Get the other side of the connection (if any) */
-    public get connectedPoints(): Array<NodeParticleConnectionPoint> {
-        return this._connectedPoints;
     }
 
     /** Get the block that owns this connection point */
@@ -342,11 +330,6 @@ export class NodeParticleConnectionPoint {
 
         this._endpoints.push(connectionPoint);
         connectionPoint._connectedPoint = this;
-        if (connectionPoint.allowMultipleConnections) {
-            connectionPoint._connectedPoints.push(this);
-        } else {
-            connectionPoint._connectedPoints = [this];
-        }
 
         this.onConnectionObservable.notifyObservers(connectionPoint);
         connectionPoint.onConnectionObservable.notifyObservers(this);
@@ -368,11 +351,6 @@ export class NodeParticleConnectionPoint {
 
         this._endpoints.splice(index, 1);
         endpoint._connectedPoint = null;
-        if (endpoint.allowMultipleConnections) {
-            endpoint._connectedPoints.splice(endpoint._connectedPoints.indexOf(this), 1);
-        } else {
-            endpoint._connectedPoints = [];
-        }
 
         this.onDisconnectionObservable.notifyObservers(endpoint);
         endpoint.onDisconnectionObservable.notifyObservers(this);

@@ -352,6 +352,7 @@ export class NodeParticleSystemSet {
         spsCreateBox.count.value = 5;
         spsCreateSphere.count.value = 1;
 
+        // Connect create blocks to system (this will automatically add them to particleSources)
         spsCreateBox.solidParticle.connectTo(spsSystem.solidParticle);
         spsCreateSphere.solidParticle.connectTo(spsSystem.solidParticle);
 
