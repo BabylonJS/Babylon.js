@@ -279,6 +279,9 @@ export class MorphTargetManager implements IDisposable {
      * Gets the number of influencers (ie. the number of targets with influences > 0)
      */
     public get numInfluencers(): number {
+        if (this._influencesAreDirty) {
+            this._syncActiveTargets();
+        }
         return this._activeTargets.length;
     }
 
@@ -286,6 +289,9 @@ export class MorphTargetManager implements IDisposable {
      * Gets the list of influences (one per target)
      */
     public get influences(): Float32Array {
+        if (this._influencesAreDirty) {
+            this._syncActiveTargets();
+        }
         return this._influences;
     }
 
@@ -330,6 +336,9 @@ export class MorphTargetManager implements IDisposable {
      * @returns the requested target
      */
     public getActiveTarget(index: number): MorphTarget {
+        if (this._influencesAreDirty) {
+            this._syncActiveTargets();
+        }
         return this._activeTargets.data[index];
     }
 
@@ -357,6 +366,9 @@ export class MorphTargetManager implements IDisposable {
         return null;
     }
 
+    private _influencesAreDirty = false;
+    private _needUpdateInfluences = false;
+
     /**
      * Add a new target to this manager
      * @param target defines the target to add
@@ -368,7 +380,8 @@ export class MorphTargetManager implements IDisposable {
                 if (this.areUpdatesFrozen && needUpdate) {
                     this._forceUpdateWhenUnfrozen = true;
                 }
-                this._syncActiveTargets(needUpdate);
+                this._influencesAreDirty = true;
+                this._needUpdateInfluences = this._needUpdateInfluences || needUpdate;
             })
         );
         this._targetDataLayoutChangedObservers.push(
@@ -405,6 +418,9 @@ export class MorphTargetManager implements IDisposable {
      * @internal
      */
     public _bind(effect: Effect) {
+        if (this._influencesAreDirty) {
+            this._syncActiveTargets();
+        }
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
         effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
         effect.setTexture("morphTargets", this._targetStoreTexture);
@@ -460,6 +476,11 @@ export class MorphTargetManager implements IDisposable {
         if (this.areUpdatesFrozen) {
             return;
         }
+
+        needUpdate = needUpdate || this._needUpdateInfluences;
+
+        this._needUpdateInfluences = false;
+        this._influencesAreDirty = false;
 
         const wasUsingTextureForTargets = !!this._targetStoreTexture;
         const isUsingTextureForTargets = this.isUsingTextureForTargets;
