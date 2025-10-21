@@ -1,5 +1,3 @@
-import type { Dispatch, SetStateAction } from "react";
-
 import type { ISettingsContext } from "../services/settingsContext";
 import type { HorizontalLocation, VerticalLocation } from "../services/shellService";
 
@@ -11,7 +9,7 @@ import { useObservableState } from "./observableHooks";
 const CompactModeStorageKey = "Babylon/Settings/IsCompactMode";
 const SidePaneDockOverridesStorageKey = "Babylon/Settings/SidePaneDockOverrides";
 
-function useSetting<T>(storageKey: string, defaultValue: T): [T, Dispatch<SetStateAction<T>>, () => void] {
+function useSetting<T>(storageKey: string, defaultValue: T) {
     const [value, setValue, resetValue] = useLocalStorage<T>(storageKey, defaultValue);
 
     if (!localStorage.getItem(storageKey)) {
