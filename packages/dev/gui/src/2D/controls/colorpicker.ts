@@ -1518,4 +1518,3 @@ export class ColorPicker extends Control {
     }
 }
 RegisterClass("BABYLON.GUI.ColorPicker", ColorPicker);
-
