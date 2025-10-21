@@ -437,7 +437,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             varying vec2 vPosition;
             void main(void) {
                 float A = -dot(vPosition, vPosition);
-                if (A < -4.) discard;
+                if (A < -1.) discard;
             }`;
 
         const splatFragmentWGPU = `
@@ -446,7 +446,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             @fragment
             fn main(input: FragmentInputs) -> FragmentOutputs {
                 var A : f32 = -dot(inPosition, inPosition);
-                if (A < -4.) discard;
+                if (A < -1.) discard;
             }`;
 
         const isWebGPU = shaderLanguage === ShaderLanguage.WGSL;
@@ -488,7 +488,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             const projection = scene.getProjectionMatrix();
             const t = projection.m[5];
-            const focal = (shadowmapWidth * t) / 20.0;
+            const focal = (shadowmapWidth * t) / 2.0;
 
             effect.setFloat2("focal", focal, focal);
             effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
