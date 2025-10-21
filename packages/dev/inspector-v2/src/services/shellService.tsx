@@ -966,27 +966,42 @@ export function MakeShellServiceDefinition({
 
                 // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
                 // depending on whether there are any side panes on that side.
-                const coerceToolBarItemHorizontalLocation = (item: ToolbarItemDefinition) => {
-                    let horizontalLocation = item.horizontalLocation;
-                    // Coercion is only needed in compact toolbar mode since there might not be a left or right pane.
-                    if (toolbarMode === "compact") {
-                        if (horizontalLocation === "left" && !hasLeftPanes) {
-                            horizontalLocation = "right";
+                const coerceToolBarItemHorizontalLocation = useMemo(
+                    () => (item: ToolbarItemDefinition) => {
+                        let horizontalLocation = item.horizontalLocation;
+                        // Coercion is only needed in compact toolbar mode since there might not be a left or right pane.
+                        if (toolbarMode === "compact") {
+                            if (horizontalLocation === "left" && !hasLeftPanes) {
+                                horizontalLocation = "right";
+                            }
+                            if (horizontalLocation === "right" && !hasRightPanes) {
+                                horizontalLocation = "left";
+                            }
                         }
-                        if (horizontalLocation === "right" && !hasRightPanes) {
-                            horizontalLocation = "left";
-                        }
-                    }
-                    return horizontalLocation;
-                };
+                        return horizontalLocation;
+                    },
+                    [toolbarMode, hasLeftPanes, hasRightPanes]
+                );
 
                 const topToolBarItems = useMemo(() => toolbarItems.filter((entry) => entry.verticalLocation === "top"), [toolbarItems]);
                 const bottomToolBarItems = useMemo(() => toolbarItems.filter((entry) => entry.verticalLocation === "bottom"), [toolbarItems]);
 
-                const topBarLeftItems = useMemo(() => topToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [topToolBarItems]);
-                const topBarRightItems = useMemo(() => topToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [topToolBarItems]);
-                const bottomBarLeftItems = useMemo(() => bottomToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"), [bottomToolBarItems]);
-                const bottomBarRightItems = useMemo(() => bottomToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"), [bottomToolBarItems]);
+                const topBarLeftItems = useMemo(
+                    () => topToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"),
+                    [topToolBarItems, coerceToolBarItemHorizontalLocation]
+                );
+                const topBarRightItems = useMemo(
+                    () => topToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"),
+                    [topToolBarItems, coerceToolBarItemHorizontalLocation]
+                );
+                const bottomBarLeftItems = useMemo(
+                    () => bottomToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "left"),
+                    [bottomToolBarItems, coerceToolBarItemHorizontalLocation]
+                );
+                const bottomBarRightItems = useMemo(
+                    () => bottomToolBarItems.filter((entry) => coerceToolBarItemHorizontalLocation(entry) === "right"),
+                    [bottomToolBarItems, coerceToolBarItemHorizontalLocation]
+                );
 
                 const centralContents = useOrderedObservableCollection(centralContentCollection);
 
