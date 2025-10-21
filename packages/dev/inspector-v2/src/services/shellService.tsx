@@ -609,7 +609,7 @@ function usePane(
     topPaneContainerRef: (element: HTMLElement | null) => void,
     bottomPaneContainerRef: (element: HTMLElement | null) => void,
     onSelectSidePane: Observable<string>,
-    updateSidePaneDockOverride: (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => Promise<void>,
+    redock: (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => Promise<void>,
     toolbarMode: ToolbarMode,
     topBarItems: ToolbarItemDefinition[],
     bottomBarItems: ToolbarItemDefinition[]
@@ -637,7 +637,7 @@ function usePane(
                 for (const candidateVerticalLocation of ["top", "bottom"] as const) {
                     if (!(verticalLocation === candidateVerticalLocation && location === candidateHorizontalLocation)) {
                         options.set(`${candidateVerticalLocation}-${candidateHorizontalLocation}`, async (sidePaneKey) => {
-                            await updateSidePaneDockOverride(sidePaneKey, candidateHorizontalLocation, candidateVerticalLocation);
+                            await redock(sidePaneKey, candidateHorizontalLocation, candidateVerticalLocation);
                             onSelectSidePane.notifyObservers(sidePaneKey);
                         });
                     }
@@ -645,7 +645,7 @@ function usePane(
             }
             return options;
         },
-        [topPanes, bottomPanes, location, updateSidePaneDockOverride, onSelectSidePane]
+        [topPanes, bottomPanes, location, redock, onSelectSidePane]
     );
 
     let validTopDockOptions = useMemo(() => getValidDockOptions("top"), [getValidDockOptions]);
