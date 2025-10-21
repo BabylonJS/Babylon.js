@@ -1,6 +1,7 @@
-import type { IDisposable } from "core/index";
-
+import type { MenuTriggerProps } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
+
+import type { IDisposable } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import {
@@ -412,13 +413,46 @@ const useStyles = makeStyles({
     },
 });
 
-const PaneHeader: FunctionComponent<{ id: string; title: string; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }> = (props) => {
-    const { id, title, dockOptions } = props;
+const DockMenu: FunctionComponent<
+    Pick<MenuTriggerProps, "children"> & { openOnContext?: boolean; sidePaneId: string; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }
+> = (props) => {
+    const { openOnContext, sidePaneId, dockOptions, children } = props;
 
     const dockTopLeft = dockOptions.get("top-left");
     const dockBottomLeft = dockOptions.get("bottom-left");
     const dockTopRight = dockOptions.get("top-right");
     const dockBottomRight = dockOptions.get("bottom-right");
+
+    return (
+        <Menu openOnContext={openOnContext}>
+            <MenuTrigger disableButtonEnhancement>{children}</MenuTrigger>
+            <Theme>
+                <MenuPopover>
+                    <MenuList>
+                        <MenuGroup>
+                            <MenuGroupHeader>Dock</MenuGroupHeader>
+                            <MenuItem disabled={!dockTopLeft} icon={<LayoutColumnTwoSplitLeftFocusTopLeftFilled />} onClick={() => dockTopLeft?.(sidePaneId)}>
+                                Top Left
+                            </MenuItem>
+                            <MenuItem disabled={!dockBottomLeft} icon={<LayoutColumnTwoSplitLeftFocusBottomLeftFilled />} onClick={() => dockBottomLeft?.(sidePaneId)}>
+                                Bottom Left
+                            </MenuItem>
+                            <MenuItem disabled={!dockTopRight} icon={<LayoutColumnTwoSplitRightFocusTopRightFilled />} onClick={() => dockTopRight?.(sidePaneId)}>
+                                Top Right
+                            </MenuItem>
+                            <MenuItem disabled={!dockBottomRight} icon={<LayoutColumnTwoSplitRightFocusBottomRightFilled />} onClick={() => dockBottomRight?.(sidePaneId)}>
+                                Bottom Right
+                            </MenuItem>
+                        </MenuGroup>
+                    </MenuList>
+                </MenuPopover>
+            </Theme>
+        </Menu>
+    );
+};
+
+const PaneHeader: FunctionComponent<{ id: string; title: string; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }> = (props) => {
+    const { id, title, dockOptions } = props;
 
     const classes = useStyles();
 
@@ -426,32 +460,9 @@ const PaneHeader: FunctionComponent<{ id: string; title: string; dockOptions: Ma
         <Theme invert>
             <div className={classes.paneHeaderDiv}>
                 <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
-                <Menu>
-                    <MenuTrigger disableButtonEnhancement>
-                        <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
-                    </MenuTrigger>
-                    <Theme>
-                        <MenuPopover>
-                            <MenuList>
-                                <MenuGroup>
-                                    <MenuGroupHeader>Dock</MenuGroupHeader>
-                                    <MenuItem disabled={!dockTopLeft} icon={<LayoutColumnTwoSplitLeftFocusTopLeftFilled />} onClick={() => dockTopLeft?.(id)}>
-                                        Top Left
-                                    </MenuItem>
-                                    <MenuItem disabled={!dockBottomLeft} icon={<LayoutColumnTwoSplitLeftFocusBottomLeftFilled />} onClick={() => dockBottomLeft?.(id)}>
-                                        Bottom Left
-                                    </MenuItem>
-                                    <MenuItem disabled={!dockTopRight} icon={<LayoutColumnTwoSplitRightFocusTopRightFilled />} onClick={() => dockTopRight?.(id)}>
-                                        Top Right
-                                    </MenuItem>
-                                    <MenuItem disabled={!dockBottomRight} icon={<LayoutColumnTwoSplitRightFocusBottomRightFilled />} onClick={() => dockBottomRight?.(id)}>
-                                        Bottom Right
-                                    </MenuItem>
-                                </MenuGroup>
-                            </MenuList>
-                        </MenuPopover>
-                    </Theme>
-                </Menu>
+                <DockMenu sidePaneId={id} dockOptions={dockOptions}>
+                    <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
+                </DockMenu>
             </div>
         </Theme>
     );
@@ -532,13 +543,17 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Toolb
 };
 
 // This is a wrapper for a tab in a side pane that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
-const SidePaneTab: FunctionComponent<{ location: HorizontalLocation; id: string; isSelected: boolean } & Pick<SidePaneDefinition, "title" | "icon" | "suppressTeachingMoment">> = (
-    props
-) => {
+const SidePaneTab: FunctionComponent<
+    { location: HorizontalLocation; id: string; isSelected: boolean; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> } & Pick<
+        SidePaneDefinition,
+        "title" | "icon" | "suppressTeachingMoment"
+    >
+> = (props) => {
     const {
         location,
         id,
         isSelected,
+        dockOptions,
         // eslint-disable-next-line @typescript-eslint/naming-convention
         icon: Icon,
         title,
@@ -559,18 +574,20 @@ const SidePaneTab: FunctionComponent<{ location: HorizontalLocation; id: string;
                 description={`The "${title ?? id}" extension can be accessed here.`}
             />
             <Theme className={tabClass} invert={isSelected}>
-                <ToolbarRadioButton
-                    ref={teachingMoment.targetRef}
-                    title={title ?? id}
-                    appearance="transparent"
-                    className={classes.tabRadioButton}
-                    name="selectedTab"
-                    value={id}
-                    icon={{
-                        className: isSelected ? classes.selectedTabIcon : undefined,
-                        children: <Icon />,
-                    }}
-                />
+                <DockMenu openOnContext sidePaneId={id} dockOptions={dockOptions}>
+                    <ToolbarRadioButton
+                        ref={teachingMoment.targetRef}
+                        title={title ?? id}
+                        appearance="transparent"
+                        className={classes.tabRadioButton}
+                        name="selectedTab"
+                        value={id}
+                        icon={{
+                            className: isSelected ? classes.selectedTabIcon : undefined,
+                            children: <Icon />,
+                        }}
+                    />
+                </DockMenu>
             </Theme>
         </>
     );
@@ -682,7 +699,8 @@ function usePane(
             paneComponents: SidePaneDefinition[],
             toolbarMode: "full" | "compact",
             selectedTab: SidePaneDefinition | undefined,
-            setSelectedTab: (tab: SidePaneDefinition | undefined) => void
+            setSelectedTab: (tab: SidePaneDefinition | undefined) => void,
+            dockOptions: Map<DockLocation, (sidePaneKey: string) => void>
         ) => {
             return (
                 <>
@@ -711,6 +729,7 @@ function usePane(
                                                     icon={entry.icon}
                                                     suppressTeachingMoment={entry.suppressTeachingMoment}
                                                     isSelected={isSelected && !collapsed}
+                                                    dockOptions={dockOptions}
                                                 />
                                             );
                                         })}
@@ -740,9 +759,12 @@ function usePane(
     );
 
     // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
-    const topPaneTabList = useMemo(() => createPaneTabList(topPanes, toolbarMode, topSelectedTab, setTopSelectedTab), [createPaneTabList, topPanes, toolbarMode, topSelectedTab]);
+    const topPaneTabList = useMemo(
+        () => createPaneTabList(topPanes, toolbarMode, topSelectedTab, setTopSelectedTab, validTopDockOptions),
+        [createPaneTabList, topPanes, toolbarMode, topSelectedTab]
+    );
     const bottomPaneTabList = useMemo(
-        () => createPaneTabList(bottomPanes, "compact", bottomSelectedTab, setBottomSelectedTab),
+        () => createPaneTabList(bottomPanes, "compact", bottomSelectedTab, setBottomSelectedTab, validBottomDockOptions),
         [createPaneTabList, bottomPanes, bottomSelectedTab]
     );
 
