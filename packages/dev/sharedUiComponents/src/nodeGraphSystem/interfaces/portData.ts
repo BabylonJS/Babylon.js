@@ -54,7 +54,6 @@ export interface IPortData {
     hasEndpoints: boolean;
     endpoints: Nullable<IPortData[]>;
     directValueDefinition?: IPortDirectValueDefinition;
-    allowMultipleConnections?: boolean;
 
     updateDisplayName: (newName: string) => void;
     canConnectTo: (port: IPortData) => boolean;
