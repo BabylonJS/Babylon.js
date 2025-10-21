@@ -274,7 +274,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      */
     public environmentBRDFTexture: BaseTexture;
 
-    /** @internal */
+    /**
+     * This stores the brdf lookup for the fuzz layer of PBR materials in your scene.
+     */
     public environmentFuzzBRDFTexture: BaseTexture;
 
     /**

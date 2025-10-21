@@ -2426,7 +2426,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         const samplers = [
             "environmentBrdfSampler",
-            "environmentFuzzBrdfSampler",
             "blueNoiseSampler",
             "boneSampler",
             "morphTargets",
@@ -2435,6 +2434,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "areaLightsLTC1Sampler",
             "areaLightsLTC2Sampler",
         ];
+
+        if (defines.FUZZENVIRONMENTBRDF) {
+            samplers.push("environmentFuzzBrdfSampler");
+        }
 
         for (const key in this._samplersList) {
             const sampler = this._samplersList[key];
@@ -2706,6 +2709,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             this._environmentFuzzBRDFTexture = GetEnvironmentFuzzBRDFTexture(this.getScene());
         } else {
             this._environmentFuzzBRDFTexture = null;
+            defines.FUZZENVIRONMENTBRDF = false;
         }
 
         // Misc.
