@@ -13,7 +13,6 @@ import type { Nullable } from "../../../types";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { ThinTAAPostProcess } from "core/PostProcesses/thinTAAPostProcess";
-import { TAAMaterialManager } from "./taaMaterialManager";
 import type { PrePassEffectConfiguration } from "core/Rendering/prePassEffectConfiguration";
 import { Logger } from "core/Misc/logger";
 

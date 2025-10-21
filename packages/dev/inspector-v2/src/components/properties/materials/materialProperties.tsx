@@ -132,7 +132,7 @@ export const MaterialGeneralProperties: FunctionComponent<{ material: Material }
                 component={SwitchPropertyLine}
                 label="Set vertex output invariant"
                 target={material}
-                propertyKey="setVertexOutputInvariant"
+                propertyKey="isVertexOutputInvariant"
                 description="Setting this property to true will force the shader compiler to disable some optimization to make sure the vertex output is always calculated the same way across different compilation units."
             />
         </>

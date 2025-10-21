@@ -155,7 +155,7 @@ export class GradientMaterial extends PushMaterial {
             undefined,
             undefined,
             undefined,
-            this._setVertexOutputInvariant
+            this._isVertexOutputInvariant
         );
 
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
