@@ -1812,7 +1812,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                 this._applyDecalMapAfterDetailMap,
                 this._useVertexPulling,
                 renderingMesh,
-                this._vertexOutputInvariant
+                this._isVertexOutputInvariant
             );
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;

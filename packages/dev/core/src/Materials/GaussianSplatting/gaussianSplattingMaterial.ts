@@ -173,7 +173,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             undefined,
             undefined,
             undefined,
-            this._vertexOutputInvariant
+            this._isVertexOutputInvariant
         );
 
         // Values that need to be evaluated on every frame

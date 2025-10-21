@@ -1009,7 +1009,7 @@ export class StandardMaterial extends StandardMaterialBase {
             this._applyDecalMapAfterDetailMap,
             this._useVertexPulling,
             subMesh.getRenderingMesh(),
-            this._vertexOutputInvariant
+            this._isVertexOutputInvariant
         );
 
         // Values that need to be evaluated on every frame
