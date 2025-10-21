@@ -261,12 +261,27 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
      * Tells the shader to apply anisotropy to the coat layer
      */
     public ANISOTROPIC_COAT = false;
+
+    /**
+     * Number of samples to use for the fuzz IBL lighting calculations
+     */
+    public FUZZ_IBL_SAMPLES = 4;
+
     /**
      * Tells the shader to enable the fuzz layer
      */
     public FUZZ = false;
-    public THIN_FILM = false; // Enables thin film layer
-    public IRIDESCENCE = false; // Enables legacy iridescence code
+
+    /**
+     * Tells the shader to enable the thin film layer
+     */
+    public THIN_FILM = false;
+
+    /**
+     * Tells the shader to enable the legacy iridescence code
+     * Iridescence is the name of thin film interference in the PBR material.
+     */
+    public IRIDESCENCE = false;
 
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -1397,6 +1412,20 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     }
     public set realTimeFilteringQuality(n: number) {
         this._realTimeFilteringQuality = n;
+        this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private _fuzzSamplingQuality: number = 4;
+
+    /**
+     * Quality level for fuzz rendering. This only applies to IBL lighting.
+     * It is essentially the number of samples used to compute the fuzz IBL lighting.
+     */
+    public get fuzzSamplingQuality(): number {
+        return this._fuzzSamplingQuality;
+    }
+    public set fuzzSamplingQuality(n: number) {
+        this._fuzzSamplingQuality = n;
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
@@ -2707,9 +2736,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.MAINUV1 = true;
             }
             this._environmentFuzzBRDFTexture = GetEnvironmentFuzzBRDFTexture(this.getScene());
+            defines.FUZZ_IBL_SAMPLES = this.fuzzSamplingQuality;
         } else {
             this._environmentFuzzBRDFTexture = null;
             defines.FUZZENVIRONMENTBRDF = false;
+            defines.FUZZ_IBL_SAMPLES = 0;
         }
 
         // Misc.

@@ -124,11 +124,10 @@
         // We'll do a simple approximation by sampling the environment multiple times around an imaginary fiber.
         // This will be scaled by the anisotropy value from the LUT so that, for isotropic fuzz, we just use the surface normal.
         var fuzzEnvironmentLight = vec3f(0.0f, 0.0f, 0.0f);
-        const samples = 4.0f;
         var totalWeight = 0.0f;
         let fuzzIblFresnel: f32 = sqrt(environmentFuzzBrdf.z);
-        for (var i: i32 = 0; i < i32(samples); i++) {
-            var angle: f32 = f32(i) * (3.141592f * 2.0f / samples);
+        for (var i: i32 = 0; i < i32(FUZZ_IBL_SAMPLES); i++) {
+            var angle: f32 = f32(i) * (3.141592f * 2.0f / f32(FUZZ_IBL_SAMPLES));
             // Normal of the fiber is a simple rotation of the tangent and bitangent around the surface normal
             var fiberCylinderNormal: vec3f = normalize(cos(angle) * fuzzTangent + sin(angle) * fuzzBitangent);
             // Then, we mix it with the fuzz surface normal based on the anisotropy from the LUT and the fuzz
