@@ -645,7 +645,7 @@ function usePane(
             }
             return options;
         },
-        [topPanes, bottomPanes, location, redock, onSelectSidePane]
+        [location, redock, onSelectSidePane]
     );
 
     let validTopDockOptions = useMemo(() => getValidDockOptions("top"), [getValidDockOptions]);
