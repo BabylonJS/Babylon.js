@@ -237,6 +237,28 @@ export class NodeParticleBlock {
     }
 
     /**
+     * Unregister an input. Used for dynamic input management
+     * @param name defines the connection point name to remove
+     * @returns the current block
+     */
+    public unregisterInput(name: string) {
+        const index = this._inputs.findIndex((input) => input.name === name);
+        if (index !== -1) {
+            const point = this._inputs[index];
+
+            if (point.isConnected) {
+                point.disconnectFrom(point.connectedPoint!);
+            }
+
+            this._inputs.splice(index, 1);
+
+            this.onInputChangedObservable.notifyObservers(point);
+        }
+
+        return this;
+    }
+
+    /**
      * Register a new output. Must be called inside a block constructor
      * @param name defines the connection point name
      * @param type defines the connection point type

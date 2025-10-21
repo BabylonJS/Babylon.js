@@ -7,13 +7,15 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/
 import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import type { ISPSCreateData } from "./ISPSData";
 import { SolidParticle } from "../../../solidParticle";
-import { Observable } from "../../../../Misc/observable";
+import { Observer } from "../../../../Misc";
 
 /**
  * Block used to create SolidParticleSystem and collect all Create blocks
  */
 export class SPSSystemBlock extends NodeParticleBlock {
     private static _IdCounter = 0;
+    private _connectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
+    private _disconnectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
 
     @editableInPropertyPage("Capacity", PropertyTypeForEdition.Int, "ADVANCED", {
         embedded: true,
@@ -31,62 +33,82 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
     public _internalId = SPSSystemBlock._IdCounter++;
 
-    /**
-     * Gets or sets the list of particle sources
-     */
-    public particleSources: ISPSCreateData[] = [];
-
-    /** Gets an observable raised when the particle sources are changed */
-    public onParticleSourcesChangedObservable = new Observable<SPSSystemBlock>();
-
     public constructor(name: string) {
         super(name);
 
         this._isSystem = true;
 
-        this.registerInput("solidParticle", NodeParticleBlockConnectionPointTypes.SolidParticle, true, null, null, null, true);
+        this.registerInput(`solidParticle-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticle);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.SolidParticleSystem);
+
+        this._manageExtendedInputs(0);
     }
 
     public override getClassName() {
         return "SPSSystemBlock";
     }
 
+    private _entryCount = 1;
+
+    private _extend() {
+        this._entryCount++;
+        this.registerInput(`solidParticle-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticle, true);
+        this._manageExtendedInputs(this._entryCount - 1);
+    }
+
+    private _shrink() {
+        if (this._entryCount > 1) {
+            this._unmanageExtendedInputs(this._entryCount - 1);
+            this._entryCount--;
+            this.unregisterInput(`solidParticle-${this._entryCount}`);
+        }
+    }
+
+    private _manageExtendedInputs(index: number) {
+        const connectionObserver = this._inputs[index].onConnectionObservable.add(() => {
+            console.log("connectionObserver solidParticle", index);
+            console.log(" connectionObserver this._entryCount", this._entryCount);
+            if (this._entryCount - 1 > index) {
+                return;
+            }
+            this._extend();
+        });
+
+        const disconnectionObserver = this._inputs[index].onDisconnectionObservable.add(() => {
+            console.log("solidParticle", index);
+            console.log("this._entryCount", this._entryCount);
+            if (this._entryCount - 1 > index) {
+                return;
+            }
+            this._shrink();
+        });
+
+        // Store observers for later removal
+        this._connectionObservers.set(index, connectionObserver);
+        this._disconnectionObservers.set(index, disconnectionObserver);
+    }
+
+    private _unmanageExtendedInputs(index: number) {
+        const connectionObserver = this._connectionObservers.get(index);
+        const disconnectionObserver = this._disconnectionObservers.get(index);
+
+        if (connectionObserver) {
+            this._inputs[index].onConnectionObservable.remove(connectionObserver);
+            this._connectionObservers.delete(index);
+        }
+
+        if (disconnectionObserver) {
+            this._inputs[index].onDisconnectionObservable.remove(disconnectionObserver);
+            this._disconnectionObservers.delete(index);
+        }
+    }
+
     public get solidParticle(): NodeParticleConnectionPoint {
-        return this._inputs[0];
+        return this._inputs[this._entryCount - 1];
     }
 
     public get system(): NodeParticleConnectionPoint {
         return this._outputs[0];
-    }
-
-    /**
-     * Add a particle source to the system
-     * @param source The particle source data
-     */
-    public addParticleSource(source: ISPSCreateData): void {
-        this.particleSources.push(source);
-        this.onParticleSourcesChangedObservable.notifyObservers(this);
-    }
-
-    /**
-     * Remove a particle source from the system
-     * @param source The particle source data to remove
-     */
-    public removeParticleSource(source: ISPSCreateData): void {
-        const index = this.particleSources.indexOf(source);
-        if (index !== -1) {
-            this.particleSources.splice(index, 1);
-            this.onParticleSourcesChangedObservable.notifyObservers(this);
-        }
-    }
-
-    /**
-     * Clear all particle sources
-     */
-    public clearParticleSources(): void {
-        this.particleSources.length = 0;
-        this.onParticleSourcesChangedObservable.notifyObservers(this);
     }
 
     public createSystem(state: NodeParticleBuildState): SolidParticleSystem {
@@ -103,7 +125,13 @@ export class SPSSystemBlock extends NodeParticleBlock {
         sps.billboard = this.billboard;
         sps.name = this.name;
 
-        const createBlocks: ISPSCreateData[] = this.particleSources;
+        // Collect data from all connected solidParticle inputs
+        const createBlocks: ISPSCreateData[] = [];
+        for (let i = 0; i < this._inputs.length; i++) {
+            if (this._inputs[i].isConnected && this._inputs[i]._storedValue) {
+                createBlocks.push(this._inputs[i]._storedValue);
+            }
+        }
 
         for (const createBlock of createBlocks) {
             if (createBlock.mesh && createBlock.count) {
@@ -157,7 +185,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
         const serializationObject = super.serialize();
         serializationObject.capacity = this.capacity;
         serializationObject.billboard = this.billboard;
-        serializationObject.particleSources = this.particleSources;
+        serializationObject._entryCount = this._entryCount;
         return serializationObject;
     }
 
@@ -165,7 +193,12 @@ export class SPSSystemBlock extends NodeParticleBlock {
         super._deserialize(serializationObject);
         this.capacity = serializationObject.capacity;
         this.billboard = !!serializationObject.billboard;
-        this.particleSources = serializationObject.particleSources || [];
+
+        if (serializationObject._entryCount && serializationObject._entryCount > 1) {
+            for (let i = 1; i < serializationObject._entryCount; i++) {
+                this._extend();
+            }
+        }
     }
 }
 
