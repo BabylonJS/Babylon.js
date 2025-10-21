@@ -812,10 +812,14 @@ function usePane(
                                 )}
 
                                 {/* Render the top pane content. */}
-                                {topSelectedTab && topPanes.length > 0 && (
+                                {topPanes.length > 0 && (
                                     <div className={classes.paneContent}>
-                                        <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
-                                        <topSelectedTab.content />
+                                        {topSelectedTab && (
+                                            <>
+                                                <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
+                                                <topSelectedTab.content />
+                                            </>
+                                        )}
                                     </div>
                                 )}
 
@@ -830,14 +834,18 @@ function usePane(
                                 )}
 
                                 {/* Render the bottom pane content. This is the element that can be resized vertically. */}
-                                {bottomSelectedTab && bottomPanes.length > 0 && (
+                                {bottomPanes.length > 0 && (
                                     <div
                                         ref={paneVerticalResizeElementRef}
                                         className={classes.paneContent}
                                         style={{ height: `clamp(200px, calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
                                     >
-                                        <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
-                                        <bottomSelectedTab.content />
+                                        {bottomSelectedTab && (
+                                            <>
+                                                <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
+                                                <bottomSelectedTab.content />
+                                            </>
+                                        )}
                                     </div>
                                 )}
 
