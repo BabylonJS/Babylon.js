@@ -1,4 +1,4 @@
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";

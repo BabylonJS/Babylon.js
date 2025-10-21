@@ -7,7 +7,7 @@ import type { Color4 } from "../../Maths/math.color";
 import { Color3 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Texture } from "../../Materials/Textures/texture";
+import { Texture } from "../Textures/texture";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
 import { SerializationHelper } from "../../Misc/decorators.serialization";

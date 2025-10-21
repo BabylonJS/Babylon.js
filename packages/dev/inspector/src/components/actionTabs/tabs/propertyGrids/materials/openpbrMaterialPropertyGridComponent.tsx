@@ -17,7 +17,7 @@ import type { GlobalState } from "../../../../globalState";
 import "core/Materials/material.decalMap";
 import "core/Rendering/prePassRendererSceneComponent";
 import "core/Rendering/subSurfaceSceneComponent";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 interface IOpenPBRMaterialPropertyGridComponentProps {
     globalState: GlobalState;
