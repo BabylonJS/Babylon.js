@@ -33,7 +33,7 @@ import {
     PanelRightContractRegular,
     PanelRightExpandRegular,
 } from "@fluentui/react-icons";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Observable } from "core/Misc/observable";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
@@ -602,7 +602,7 @@ function usePane(
     minWidth: number,
     sidePanes: SidePaneDefinition[],
     onSelectSidePane: Observable<string>,
-    updateSidePaneDockOverride: (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => void,
+    updateSidePaneDockOverride: (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => Promise<void>,
     toolbarMode: ToolbarMode,
     topBarItems: ToolbarItemDefinition[],
     bottomBarItems: ToolbarItemDefinition[]
@@ -620,8 +620,8 @@ function usePane(
     const widthStorageKey = `Babylon/Settings/${location}Pane/WidthAdjust`;
     const heightStorageKey = `Babylon/Settings/${location}Pane/HeightAdjust`;
 
-    let topPanes = sidePanes.filter((entry) => entry.horizontalLocation === location && entry.verticalLocation === "top");
-    let bottomPanes = sidePanes.filter((entry) => entry.horizontalLocation === location && entry.verticalLocation === "bottom");
+    let topPanes = useMemo(() => sidePanes.filter((entry) => entry.horizontalLocation === location && entry.verticalLocation === "top"), [sidePanes, location]);
+    let bottomPanes = useMemo(() => sidePanes.filter((entry) => entry.horizontalLocation === location && entry.verticalLocation === "bottom"), [sidePanes, location]);
 
     const getValidDockOptions = useCallback(
         (verticalLocation: VerticalLocation) => {
@@ -629,15 +629,16 @@ function usePane(
             for (const candidateHorizontalLocation of ["left", "right"] as const) {
                 for (const candidateVerticalLocation of ["top", "bottom"] as const) {
                     if (!(verticalLocation === candidateVerticalLocation && location === candidateHorizontalLocation)) {
-                        options.set(`${candidateVerticalLocation}-${candidateHorizontalLocation}`, (sidePaneKey) =>
-                            updateSidePaneDockOverride(sidePaneKey, candidateHorizontalLocation, candidateVerticalLocation)
-                        );
+                        options.set(`${candidateVerticalLocation}-${candidateHorizontalLocation}`, async (sidePaneKey) => {
+                            await updateSidePaneDockOverride(sidePaneKey, candidateHorizontalLocation, candidateVerticalLocation);
+                            onSelectSidePane.notifyObservers(sidePaneKey);
+                        });
                     }
                 }
             }
             return options;
         },
-        [topPanes, bottomPanes, location]
+        [topPanes, bottomPanes, location, updateSidePaneDockOverride, onSelectSidePane]
     );
 
     let validTopDockOptions = useMemo(() => getValidDockOptions("top"), [getValidDockOptions]);
@@ -907,7 +908,7 @@ function usePane(
         collapsed,
     ]);
 
-    return [topPaneTabList, pane];
+    return [topPaneTabList, pane] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -976,15 +977,27 @@ export function MakeShellServiceDefinition({
                 const hasLeftPanes = coercedSidePanes.some((entry) => entry.horizontalLocation === "left");
                 const hasRightPanes = coercedSidePanes.some((entry) => entry.horizontalLocation === "right");
 
+                // This function returns a promise that resolves after the dock change takes effect so that
+                // we can then select the re-docked pane.
+                const pendingDockOverridePromiseResolvers = useRef<(() => void)[]>([]);
                 const updateSidePaneDockOverride = useCallback(
-                    (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => {
+                    async (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => {
                         setSidePaneDockOverrides((current) => ({
                             ...current,
                             [key]: { horizontalLocation, verticalLocation },
                         }));
+
+                        await new Promise<void>((resolve) => {
+                            pendingDockOverridePromiseResolvers.current.push(resolve);
+                        });
                     },
                     [setSidePaneDockOverrides]
                 );
+                useEffect(() => {
+                    for (const resolver of pendingDockOverridePromiseResolvers.current.splice(0)) {
+                        resolver();
+                    }
+                }, [sidePaneDockOverrides]);
 
                 // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
                 // depending on whether there are any side panes on that side.
