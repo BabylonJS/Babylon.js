@@ -2651,7 +2651,7 @@
         },
         {
             "title": "FrameGraph nrge TAA",
-            "playgroundId": "#IG8NRC#33",
+            "playgroundId": "#IG8NRC#77",
             "renderCount": 15
         },
         {
@@ -2735,6 +2735,12 @@
         {
             "title": "FrameGraph custom post process",
             "playgroundId": "#R33LVG"
+        },
+        {
+            "title": "FrameGraph TAA reproject history",
+            "playgroundId": "#OWGOUN#1",
+            "renderCount": 40,
+            "errorRatio": 5
         },
         {
             "title": "Render target texture with clustered lights",

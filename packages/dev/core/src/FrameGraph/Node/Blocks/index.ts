@@ -29,13 +29,13 @@ export * from "./PostProcesses/sharpenPostProcessBlock";
 export * from "./PostProcesses/screenSpaceCurvaturePostProcessBlock";
 export * from "./PostProcesses/ssao2PostProcessBlock";
 export * from "./PostProcesses/ssrPostProcessBlock";
+export * from "./PostProcesses/taaPostProcessBlock";
 export * from "./PostProcesses/tonemapPostProcessBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";
 export * from "./Rendering/geometryRendererBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/shadowGeneratorBlock";
-export * from "./Rendering/taaObjectRendererBlock";
 export * from "./Rendering/utilityLayerRendererBlock";
 
 export * from "./Teleport/teleportInBlock";
