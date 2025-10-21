@@ -87,7 +87,7 @@ export class ColorPicker extends Control {
             this._value.b = 1.0;
         }
 
-        this.onValueChangedObservable.notifyObservers(this._value);
+        this.onValueChangedObservable.notifyObservers(this._value, undefined, this, this);
     }
 
     /**
@@ -1518,3 +1518,4 @@ export class ColorPicker extends Control {
     }
 }
 RegisterClass("BABYLON.GUI.ColorPicker", ColorPicker);
+
