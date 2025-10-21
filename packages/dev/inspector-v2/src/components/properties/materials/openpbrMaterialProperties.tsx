@@ -253,7 +253,7 @@ export const OpenPBRMaterialFuzzProperties: FunctionComponent<{ material: OpenPB
                     }
                 }}
             />
-            <BoundProperty component={SyncedSliderPropertyLine} label="Number of Samples" target={material} propertyKey="fuzzSamplingQuality" min={4} max={64} step={1} />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Number of Samples" target={material} propertyKey="fuzzSampleNumber" min={4} max={64} step={1} />
         </>
     );
 };
