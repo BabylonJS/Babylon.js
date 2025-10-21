@@ -3,8 +3,36 @@ import type { IDisposable } from "core/index";
 import type { ComponentType, FunctionComponent } from "react";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
-import { Button, Divider, Toolbar as FluentToolbar, makeStyles, mergeClasses, Subtitle2Stronger, tokens, ToolbarRadioButton, Tooltip } from "@fluentui/react-components";
-import { PanelLeftContractRegular, PanelLeftExpandRegular, PanelRightContractRegular, PanelRightExpandRegular } from "@fluentui/react-icons";
+import {
+    Button,
+    Divider,
+    Toolbar as FluentToolbar,
+    makeStyles,
+    Menu,
+    MenuDivider,
+    MenuGroup,
+    MenuGroupHeader,
+    MenuItem,
+    MenuList,
+    MenuPopover,
+    MenuTrigger,
+    mergeClasses,
+    Subtitle2Stronger,
+    tokens,
+    ToolbarRadioButton,
+    Tooltip,
+} from "@fluentui/react-components";
+import {
+    LayoutColumnTwoSplitLeftFocusBottomLeftFilled,
+    LayoutColumnTwoSplitLeftFocusTopLeftFilled,
+    LayoutColumnTwoSplitRightFocusBottomRightFilled,
+    LayoutColumnTwoSplitRightFocusTopRightFilled,
+    MoreHorizontalRegular,
+    PanelLeftContractRegular,
+    PanelLeftExpandRegular,
+    PanelRightContractRegular,
+    PanelRightExpandRegular,
+} from "@fluentui/react-icons";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
@@ -107,9 +135,9 @@ export type SidePaneDefinition = Readonly<{
     verticalLocation: VerticalLocation;
 
     /**
-     * An optional title for the side pane, displayed as a standardized header at the top of the pane.
+     * The title of the side pane, displayed as a standardized header at the top of the pane.
      */
-    title?: string;
+    title: string;
 
     /**
      * An optional flag to suppress the teaching moment for this side pane.
@@ -323,14 +351,16 @@ const useStyles = makeStyles({
     },
     paneHeaderDiv: {
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        backgroundColor: tokens.colorNeutralBackgroundInverted,
+        flexDirection: "row",
+        alignItems: "center",
         height: "36px",
     },
     paneHeaderText: {
+        flex: 1,
         marginLeft: tokens.spacingHorizontalM,
-        color: tokens.colorNeutralForegroundInverted,
+    },
+    paneHeaderButton: {
+        color: "inherit",
     },
     paneDivider: {
         flex: "0 0 auto",
@@ -381,19 +411,48 @@ const useStyles = makeStyles({
     },
 });
 
-const PaneHeader: FunctionComponent<{ title?: string; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }> = (props) => {
-    const { title, dockOptions } = props;
+const PaneHeader: FunctionComponent<{ id: string; title: string; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> }> = (props) => {
+    const { id, title, dockOptions } = props;
+
+    const dockTopLeft = dockOptions.get("top-left");
+    const dockBottomLeft = dockOptions.get("bottom-left");
+    const dockTopRight = dockOptions.get("top-right");
+    const dockBottomRight = dockOptions.get("bottom-right");
 
     const classes = useStyles();
 
-    if (!title) {
-        return null;
-    }
-
     return (
-        <div className={classes.paneHeaderDiv}>
-            <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
-        </div>
+        <Theme invert>
+            <div className={classes.paneHeaderDiv}>
+                <Subtitle2Stronger className={classes.paneHeaderText}>{title}</Subtitle2Stronger>
+                <Menu>
+                    <MenuTrigger disableButtonEnhancement>
+                        <Button className={classes.paneHeaderButton} appearance="transparent" icon={<MoreHorizontalRegular />} />
+                    </MenuTrigger>
+                    <Theme>
+                        <MenuPopover>
+                            <MenuList>
+                                <MenuGroup>
+                                    <MenuGroupHeader>Dock</MenuGroupHeader>
+                                    <MenuItem disabled={!dockTopLeft} icon={<LayoutColumnTwoSplitLeftFocusTopLeftFilled />} onClick={() => dockTopLeft?.(id)}>
+                                        Top Left
+                                    </MenuItem>
+                                    <MenuItem disabled={!dockBottomLeft} icon={<LayoutColumnTwoSplitLeftFocusBottomLeftFilled />} onClick={() => dockBottomLeft?.(id)}>
+                                        Bottom Left
+                                    </MenuItem>
+                                    <MenuItem disabled={!dockTopRight} icon={<LayoutColumnTwoSplitRightFocusTopRightFilled />} onClick={() => dockTopRight?.(id)}>
+                                        Top Right
+                                    </MenuItem>
+                                    <MenuItem disabled={!dockBottomRight} icon={<LayoutColumnTwoSplitRightFocusBottomRightFilled />} onClick={() => dockBottomRight?.(id)}>
+                                        Bottom Right
+                                    </MenuItem>
+                                </MenuGroup>
+                            </MenuList>
+                        </MenuPopover>
+                    </Theme>
+                </Menu>
+            </div>
+        </Theme>
     );
 };
 
@@ -754,10 +813,12 @@ function usePane(
                                 )}
 
                                 {/* Render the top pane content. */}
-                                <div className={classes.paneContent}>
-                                    <PaneHeader title={topSelectedTab?.title} dockOptions={validTopDockOptions} />
-                                    {topSelectedTab?.content && <topSelectedTab.content />}
-                                </div>
+                                {topSelectedTab && topPanes.length > 0 && (
+                                    <div className={classes.paneContent}>
+                                        <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
+                                        <topSelectedTab.content />
+                                    </div>
+                                )}
 
                                 {/* If we have both top and bottom panes, show a divider. This divider is also the resizer for the bottom pane. */}
                                 {topPanes.length > 0 && bottomPanes.length > 0 && <Divider ref={paneVerticalResizeHandleRef} className={classes.paneDivider} />}
@@ -770,14 +831,14 @@ function usePane(
                                 )}
 
                                 {/* Render the bottom pane content. This is the element that can be resized vertically. */}
-                                {bottomPanes.length > 0 && (
+                                {bottomSelectedTab && bottomPanes.length > 0 && (
                                     <div
                                         ref={paneVerticalResizeElementRef}
                                         className={classes.paneContent}
                                         style={{ height: `clamp(200px, calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
                                     >
-                                        <PaneHeader title={bottomSelectedTab?.title} dockOptions={validBottomDockOptions} />
-                                        {bottomSelectedTab?.content && <bottomSelectedTab.content />}
+                                        <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
+                                        <bottomSelectedTab.content />
                                     </div>
                                 )}
 
