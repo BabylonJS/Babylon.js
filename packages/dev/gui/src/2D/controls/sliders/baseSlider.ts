@@ -341,5 +341,3 @@ export class BaseSlider extends Control {
         super._onCanvasBlur();
     }
 }
-
-
