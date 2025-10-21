@@ -152,7 +152,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             undefined,
             undefined,
             undefined,
-            this._setVertexOutputInvariant
+            this._isVertexOutputInvariant
         );
 
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, 1);
