@@ -261,12 +261,27 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
      * Tells the shader to apply anisotropy to the coat layer
      */
     public ANISOTROPIC_COAT = false;
+
+    /**
+     * Number of samples to use for the fuzz IBL lighting calculations
+     */
+    public FUZZ_IBL_SAMPLES = 4;
+
     /**
      * Tells the shader to enable the fuzz layer
      */
     public FUZZ = false;
-    public THIN_FILM = false; // Enables thin film layer
-    public IRIDESCENCE = false; // Enables legacy iridescence code
+
+    /**
+     * Tells the shader to enable the thin film layer
+     */
+    public THIN_FILM = false;
+
+    /**
+     * Tells the shader to enable the legacy iridescence code
+     * Iridescence is the name of thin film interference in the PBR material.
+     */
+    public IRIDESCENCE = false;
 
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -1397,6 +1412,19 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     }
     public set realTimeFilteringQuality(n: number) {
         this._realTimeFilteringQuality = n;
+        this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private _fuzzSampleNumber: number = 4;
+
+    /**
+     * The number of samples used to compute the fuzz IBL lighting.
+     */
+    public get fuzzSampleNumber(): number {
+        return this._fuzzSampleNumber;
+    }
+    public set fuzzSampleNumber(n: number) {
+        this._fuzzSampleNumber = n;
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
@@ -2707,9 +2735,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.MAINUV1 = true;
             }
             this._environmentFuzzBRDFTexture = GetEnvironmentFuzzBRDFTexture(this.getScene());
+            defines.FUZZ_IBL_SAMPLES = this.fuzzSampleNumber;
         } else {
             this._environmentFuzzBRDFTexture = null;
             defines.FUZZENVIRONMENTBRDF = false;
+            defines.FUZZ_IBL_SAMPLES = 0;
         }
 
         // Misc.
