@@ -1,6 +1,6 @@
 import type { Behavior } from "../../Behaviors/behavior";
 import type { Camera } from "../../Cameras/camera";
-import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
+import type { ArcRotateCamera, BoundingInfoMode } from "../../Cameras/arcRotateCamera";
 import { ExponentialEase, EasingFunction } from "../../Animations/easing";
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
@@ -310,9 +310,18 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      * @param maximumWorld Determines the bigger position of the bounding box extend
      * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
      * @param onAnimationEnd Callback triggered at the end of the framing animation
+     * @param mode Defines the method used to compute the lower radius ("sphere" or "box"). Default is 'sphere. Pass explicit mode if you want orthographic framing
+     * @param radiusScaling Defines a scaling factor to apply to the computed radius. Defaults to this._radiusScale
      * @returns true if the zoom was done
      */
-    public zoomOnBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, focusOnOriginXZ: boolean = false, onAnimationEnd: Nullable<() => void> = null): boolean {
+    public zoomOnBoundingInfo(
+        minimumWorld: Vector3,
+        maximumWorld: Vector3,
+        focusOnOriginXZ: boolean = false,
+        onAnimationEnd: Nullable<() => void> = null,
+        mode?: BoundingInfoMode,
+        radiusScaling?: number
+    ): boolean {
         let zoomTarget: Vector3;
 
         if (!this._attachedCamera) {
@@ -350,13 +359,12 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         // Small delta ensures camera is not always at lower zoom limit.
         let radius = 0;
         if (this._mode === FramingBehavior.FitFrustumSidesMode) {
-            const position = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
+            radius = this._calculateLowerRadiusFromModelBoundingInfo(minimumWorld, maximumWorld, mode, radiusScaling);
             if (this.autoCorrectCameraLimitsAndSensibility) {
                 this._attachedCamera.lowerRadiusLimit = radiusWorld.length() + this._attachedCamera.minZ;
             }
-            radius = position;
         } else if (this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
-            radius = this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld);
+            radius = this._calculateLowerRadiusFromModelBoundingInfo(minimumWorld, maximumWorld, mode, radiusScaling);
             if (this.autoCorrectCameraLimitsAndSensibility && this._attachedCamera.lowerRadiusLimit === null) {
                 this._attachedCamera.lowerRadiusLimit = this._attachedCamera.minZ;
             }
@@ -393,20 +401,40 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     }
 
     /**
-     * Calculates the lowest radius for the camera based on the bounding box of the mesh.
+     * Calculates the lowest radius for the camera based on the bounding sphere of the mesh.
      * @param minimumWorld
      * @param maximumWorld
      * @returns The minimum distance from the primary mesh's center point at which the camera must be kept in order
      *		 to fully enclose the mesh in the viewing frustum.
      */
     protected _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3): number {
+        return this._calculateLowerRadiusFromModelBoundingInfo(minimumWorld, maximumWorld);
+    }
+
+    /**
+     * Calculates the lowest radius for the camera based on the bounding sphere or box of the mesh.
+     * @param minimumWorld
+     * @param maximumWorld
+     * @param mode defines whether we calculate lowerradius from bounding sphere or box. If undefined, defaults to old spherical behavior. If defined, uses cameras boundingInfo fn
+     * @param radiusScale Defines a scaling factor to apply to the computed radius. Defaults to this._radiusScale
+     * @returns The minimum distance from the primary mesh's center point at which the camera must be kept in order
+     *		 to fully enclose the mesh in the viewing frustum.
+     */
+    protected _calculateLowerRadiusFromModelBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, mode?: BoundingInfoMode, radiusScale?: number): number {
         const camera = this._attachedCamera;
 
         if (!camera) {
             return 0;
         }
 
-        let distance = camera._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld, this._radiusScale);
+        let distance = 0;
+        if (mode === undefined) {
+            // For backcompat, call directly into the boundingsphere function if mode is undefined
+            distance = camera._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld, radiusScale ?? this._radiusScale);
+        } else {
+            // If mode is explicitly defined, use new camera function which includes orthographic framing
+            distance = camera._calculateLowerRadiusFromModelBoundingInfo(minimumWorld, maximumWorld, mode, radiusScale ?? this._radiusScale);
+        }
         if (camera.lowerRadiusLimit && this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
             // Don't exceed the requested limit
             distance = distance < camera.lowerRadiusLimit ? camera.lowerRadiusLimit : distance;
