@@ -157,7 +157,7 @@ export class BaseSlider extends Control {
 
         this._value = value;
         this._markAsDirty();
-        this.onValueChangedObservable.notifyObservers(this._value);
+        this.onValueChangedObservable.notifyObservers(this._value, undefined, this, this);
     }
 
     /**Gets or sets a boolean indicating if the slider should be vertical or horizontal */
@@ -326,7 +326,6 @@ export class BaseSlider extends Control {
         if (this._pointerIsDown && !this.isReadOnly) {
             this._updateValueFromPointer(coordinates.x, coordinates.y);
         }
-
         super._onPointerMove(target, coordinates, pointerId, pi);
     }
 
