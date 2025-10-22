@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting Shadows",
+            "playgroundId": "#OE54M5#16",
+            "referenceImage": "gsplat-shadows.png"
+        },
+        {
             "title": "NPE - Angle align",
             "playgroundId": "#H5RP91",
             "referenceImage": "npe-angle-align.png"
@@ -2738,9 +2743,8 @@
         },
         {
             "title": "FrameGraph TAA reproject history",
-            "playgroundId": "#OWGOUN#1",
+            "playgroundId": "#OWGOUN#14",
             "renderCount": 40,
-            "errorRatio": 5,
             "excludeFromAutomaticTesting": true
         },
         {
