@@ -1234,20 +1234,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
-        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
-
-        TmpVectors.Vector4[1].copyFromFloats(
-            TmpVectors.Vector4[0].x - this.floatingOriginOffset.x,
-            TmpVectors.Vector4[0].y - this.floatingOriginOffset.y,
-            TmpVectors.Vector4[0].z - this.floatingOriginOffset.z,
-            TmpVectors.Vector4[0].w
-        );
+        const offset = TmpVectors.Vector3[6].copyFrom(this.floatingOriginOffset);
+        const finalEyePos = TmpVectors.Vector4[0].set(eyePosition.x - offset.x, eyePosition.y - offset.y, eyePosition.z - offset.z, invertNormal ? -1 : 1);
 
         if (effect) {
             if (isVector3) {
-                effect.setFloat3(variableName, TmpVectors.Vector4[1].x, TmpVectors.Vector4[1].y, TmpVectors.Vector4[1].z);
+                effect.setFloat3(variableName, finalEyePos.x, finalEyePos.y, finalEyePos.z);
             } else {
-                effect.setVector4(variableName, TmpVectors.Vector4[1]);
+                effect.setVector4(variableName, finalEyePos);
             }
         }
 
@@ -1262,13 +1256,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const ubo = this.getSceneUniformBuffer();
         const eyePosition = this.bindEyePosition(null);
 
-        ubo.updateFloat4(
-            "vEyePosition",
-            eyePosition.x - this.floatingOriginOffset.x,
-            eyePosition.y - this.floatingOriginOffset.y,
-            eyePosition.z - this.floatingOriginOffset.z,
-            eyePosition.w
-        );
+        const offset = TmpVectors.Vector3[6].copyFrom(this.floatingOriginOffset);
+
+        ubo.updateFloat4("vEyePosition", eyePosition.x - offset.x, eyePosition.y - offset.y, eyePosition.z - offset.z, eyePosition.w);
 
         ubo.update();
 
