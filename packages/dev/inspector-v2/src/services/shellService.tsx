@@ -217,6 +217,9 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
      */
     addCentralContent(content: Readonly<CentralContentDefinition>): IDisposable;
 
+    /**
+     * Resets the side pane layout to the default configuration.
+     */
     resetSidePaneLayout(): void;
 
     /**
