@@ -629,6 +629,7 @@ export class BoundingBoxRenderer implements ISceneComponent {
         this.onBeforeBoxRenderingObservable.notifyObservers(DummyBoundingBox);
 
         let instancesCount = 0;
+        const floatingOriginOffset = this.scene.floatingOriginOffset;
 
         for (let boundingBoxIndex = 0; boundingBoxIndex < this.renderList.length; boundingBoxIndex++) {
             const boundingBox = this.renderList.data[boundingBoxIndex];
@@ -657,9 +658,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
             const offset = instancesCount * 16;
             TempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), matrices, offset);
 
-            matrices[offset + 12] -= this.scene.floatingOriginOffset.x;
-            matrices[offset + 13] -= this.scene.floatingOriginOffset.y;
-            matrices[offset + 14] -= this.scene.floatingOriginOffset.z;
+            matrices[offset + 12] -= floatingOriginOffset.x;
+            matrices[offset + 13] -= floatingOriginOffset.y;
+            matrices[offset + 14] -= floatingOriginOffset.z;
             instancesCount++;
         }
 
