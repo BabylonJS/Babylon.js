@@ -2,7 +2,7 @@ import { Scene } from "../scene";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
-import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { SmartArray } from "../Misc/smartArray";
 import type { Nullable, FloatArray, IndicesArray } from "../types";
 import type { ISceneComponent } from "../sceneComponent";
