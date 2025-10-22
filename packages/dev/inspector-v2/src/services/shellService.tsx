@@ -56,7 +56,7 @@ type DockLocation = `${VerticalLocation}-${HorizontalLocation}` | `full-${Horizo
 /**
  * Describes an item that can be added to one of the shell's toolbars.
  */
-export type ToolbarItemDefinition = Readonly<{
+export type ToolbarItemDefinition = {
     /**
      * A unique key for the toolbar item.
      */
@@ -98,12 +98,12 @@ export type ToolbarItemDefinition = Readonly<{
      * Teaching moments are more helpful for dynamically added items, possibly from extensions.
      */
     suppressTeachingMoment?: boolean;
-}>;
+};
 
 /**
  * Describes a side pane that can be added to the shell's left or right side.
  */
-export type SidePaneDefinition = Readonly<{
+export type SidePaneDefinition = {
     /**
      * A unique key for the side pane.
      */
@@ -148,7 +148,7 @@ export type SidePaneDefinition = Readonly<{
      * Teaching moments are more helpful for dynamically added panes, possibly from extensions.
      */
     suppressTeachingMoment?: boolean;
-}>;
+};
 
 type SidePaneEntry = SidePaneDefinition & {
     container: HTMLElement;
@@ -162,7 +162,7 @@ type RegisteredSidePane = {
 /**
  * Describes content that can be added to the shell's central area (between the side panes and toolbars - e.g. the main content).
  */
-export type CentralContentDefinition = Readonly<{
+export type CentralContentDefinition = {
     /**
      * A unique key for the central content.
      */
@@ -178,7 +178,7 @@ export type CentralContentDefinition = Readonly<{
      * Defaults to 0.
      */
     order?: number;
-}>;
+};
 
 export const RootComponentServiceIdentity = Symbol("RootComponent");
 
@@ -203,19 +203,19 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
      * Adds a new item to one of the shell's toolbars.
      * @param item Defines the item to add.
      */
-    addToolbarItem(item: ToolbarItemDefinition): IDisposable;
+    addToolbarItem(item: Readonly<ToolbarItemDefinition>): IDisposable;
 
     /**
      * Adds a new side pane to the shell.
      * @param pane Defines the side pane to add.
      */
-    addSidePane(pane: SidePaneDefinition): IDisposable;
+    addSidePane(pane: Readonly<SidePaneDefinition>): IDisposable;
 
     /**
      * Adds new central content to the shell.
      * @param content Defines the content area to add.
      */
-    addCentralContent(content: CentralContentDefinition): IDisposable;
+    addCentralContent(content: Readonly<CentralContentDefinition>): IDisposable;
 
     resetSidePaneLayout(): void;
 
@@ -527,7 +527,7 @@ const ToolbarItem: FunctionComponent<{
 
 // TODO: Handle overflow, possibly via https://react.fluentui.dev/?path=/docs/components-overflow--docs with priority.
 // This component just renders a toolbar with left aligned toolbar items on the left and right aligned toolbar items on the right.
-const Toolbar: FunctionComponent<{ location: VerticalLocation; components: ToolbarItemDefinition[] }> = ({ location, components }) => {
+const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Readonly<ToolbarItemDefinition[]> }> = ({ location, components }) => {
     const classes = useStyles();
 
     const leftComponents = useMemo(() => components.filter((entry) => entry.horizontalLocation === "left"), [components]);
@@ -572,7 +572,7 @@ const Toolbar: FunctionComponent<{ location: VerticalLocation; components: Toolb
 // This is a wrapper for a tab in a side pane that simply adds a teaching moment, which is useful for dynamically added items, possibly from extensions.
 const SidePaneTab: FunctionComponent<
     { location: HorizontalLocation; id: string; isSelected: boolean; dockOptions: Map<DockLocation, (sidePaneKey: string) => void> } & Pick<
-        SidePaneDefinition,
+        Readonly<SidePaneDefinition>,
         "title" | "icon" | "suppressTeachingMoment"
     >
 > = (props) => {
@@ -633,8 +633,8 @@ function usePane(
     onSelectSidePane: Observable<string>,
     dockOperations: Map<DockLocation, (sidePaneKey: string) => void>,
     toolbarMode: ToolbarMode,
-    topBarItems: ToolbarItemDefinition[],
-    bottomBarItems: ToolbarItemDefinition[]
+    topBarItems: Readonly<ToolbarItemDefinition[]>,
+    bottomBarItems: Readonly<ToolbarItemDefinition[]>
 ) {
     const classes = useStyles();
 
@@ -949,11 +949,11 @@ export function MakeShellServiceDefinition({
         friendlyName: "MainView",
         produces: [ShellServiceIdentity, RootComponentServiceIdentity],
         factory: () => {
-            const toolbarItemCollection = new ObservableCollection<ToolbarItemDefinition>();
-            const sidePaneCollection = new ObservableCollection<SidePaneDefinition>();
-            const centralContentCollection = new ObservableCollection<CentralContentDefinition>();
+            const toolbarItemCollection = new ObservableCollection<Readonly<ToolbarItemDefinition>>();
+            const sidePaneCollection = new ObservableCollection<Readonly<SidePaneDefinition>>();
+            const centralContentCollection = new ObservableCollection<Readonly<CentralContentDefinition>>();
 
-            const onSelectSidePane = new Observable<string>(/*undefined, true*/);
+            const onSelectSidePane = new Observable<string>(undefined, true);
 
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
@@ -977,22 +977,33 @@ export function MakeShellServiceDefinition({
 
                 const toolbarItems = useOrderedObservableCollection(toolbarItemCollection);
 
-                const sidePaneContainers = useRef(new Map<string, HTMLElement>());
                 const sidePanes = useOrderedObservableCollection(sidePaneCollection);
+                const coercedSidePaneCache = useRef(new Map<string, SidePaneEntry>());
                 const coercedSidePanes = useMemo(() => {
                     // First pass - apply overrides and respect the side pane mode.
-                    const coercedSidePanes = sidePanes.map((entry) => {
-                        const override = sidePaneDockOverrides[entry.key];
+                    const coercedSidePanes = sidePanes.map((sidePaneDefinition) => {
+                        let sidePaneEntry = coercedSidePaneCache.current.get(sidePaneDefinition.key);
+                        if (!sidePaneEntry) {
+                            // Manually create html element containers outside the React tree to prevent unmounting/mounting
+                            // when panes are re-docked or the selected tabs change. This preserves state within the side panes.
+                            // This is combined with the usage of React portals to make it all work.
+                            const sidePaneContainer = document.createElement("div");
+                            sidePaneContainer.style.display = "flex";
+                            sidePaneContainer.style.flex = "1";
+                            sidePaneContainer.style.flexDirection = "column";
+                            sidePaneContainer.style.overflow = "hidden";
+                            sidePaneEntry = { ...sidePaneDefinition, container: sidePaneContainer };
+                            coercedSidePaneCache.current.set(sidePaneDefinition.key, sidePaneEntry);
+                        }
+
+                        const override = sidePaneDockOverrides[sidePaneDefinition.key];
                         if (override) {
                             // Override (user manually re-docked) has the highest priority.
-                            entry = {
-                                ...entry,
-                                horizontalLocation: override.horizontalLocation,
-                                verticalLocation: override.verticalLocation,
-                            };
+                            sidePaneEntry.horizontalLocation = override.horizontalLocation;
+                            sidePaneEntry.verticalLocation = override.verticalLocation;
                         } else {
                             // Otherwise, when we are in "right" side pane mode, we need to coerce all left panes to be right panes.
-                            let { horizontalLocation, verticalLocation } = entry;
+                            let { horizontalLocation, verticalLocation } = sidePaneDefinition;
                             if (sidePaneMode === "right") {
                                 // All right panes go to right bottom.
                                 if (horizontalLocation === "right") {
@@ -1005,27 +1016,11 @@ export function MakeShellServiceDefinition({
                                     verticalLocation = "top";
                                 }
                             }
-                            entry = {
-                                ...entry,
-                                horizontalLocation,
-                                verticalLocation,
-                            };
+                            sidePaneEntry.horizontalLocation = horizontalLocation;
+                            sidePaneEntry.verticalLocation = verticalLocation;
                         }
 
-                        // Manually create html element containers outside the React tree to prevent unmounting/mounting
-                        // when panes are re-docked or the selected tabs change. This preserves state within the side panes.
-                        // This is combined with the usage of React portals to make it all work.
-                        let sidePaneContainer = sidePaneContainers.current.get(entry.key);
-                        if (!sidePaneContainer) {
-                            sidePaneContainer = document.createElement("div");
-                            sidePaneContainer.style.display = "flex";
-                            sidePaneContainer.style.flex = "1";
-                            sidePaneContainer.style.flexDirection = "column";
-                            sidePaneContainer.style.overflow = "hidden";
-                            sidePaneContainers.current.set(entry.key, sidePaneContainer);
-                        }
-
-                        return Object.assign(entry, { container: sidePaneContainer }) satisfies SidePaneEntry;
+                        return sidePaneEntry;
                     });
 
                     // Second pass - correct any invalid state, specifically if there are only bottom panes, force them to be top panes.
@@ -1034,28 +1029,21 @@ export function MakeShellServiceDefinition({
                         const bottomPanes = coercedSidePanes.filter((entry) => entry.horizontalLocation === side && entry.verticalLocation === "bottom");
                         if (bottomPanes.length > 0 && topPanes.length === 0) {
                             for (const pane of bottomPanes) {
-                                const index = coercedSidePanes.indexOf(pane);
-                                coercedSidePanes[index] = {
-                                    ...pane,
-                                    verticalLocation: "top",
-                                };
-                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                                pane.verticalLocation = "top";
                                 updateSidePaneDockOverride(pane.key, side, "top");
                             }
                         }
                     }
 
-                    return coercedSidePanes;
-                }, [sidePanes, sidePaneDockOverrides, updateSidePaneDockOverride, sidePaneMode]);
-
-                // Clean up any removed side pane containers.
-                useEffect(() => {
-                    for (const key of sidePaneContainers.current.keys()) {
-                        if (!coercedSidePanes.find((entry) => entry.key === key)) {
-                            sidePaneContainers.current.delete(key);
+                    // Cleanup any cached panes that are no longer present.
+                    for (const key of coercedSidePaneCache.current.keys()) {
+                        if (!coercedSidePanes.some((entry) => entry.key === key)) {
+                            coercedSidePaneCache.current.delete(key);
                         }
                     }
-                }, [coercedSidePanes]);
+
+                    return coercedSidePanes;
+                }, [sidePanes, sidePaneDockOverrides, updateSidePaneDockOverride, sidePaneMode]);
 
                 useEffect(() => {
                     for (const paneKey of pendingPaneReselects.current.splice(0)) {
@@ -1097,7 +1085,7 @@ export function MakeShellServiceDefinition({
                 // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
                 // depending on whether there are any side panes on that side.
                 const coerceToolBarItemHorizontalLocation = useMemo(
-                    () => (item: ToolbarItemDefinition) => {
+                    () => (item: Readonly<ToolbarItemDefinition>) => {
                         let horizontalLocation = item.horizontalLocation;
                         // Coercion is only needed in compact toolbar mode since there might not be a left or right pane.
                         if (toolbarMode === "compact") {
