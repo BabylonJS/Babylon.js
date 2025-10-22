@@ -24,6 +24,8 @@ import {
     Tooltip,
 } from "@fluentui/react-components";
 import {
+    LayoutColumnTwoFocusLeftFilled,
+    LayoutColumnTwoFocusRightFilled,
     LayoutColumnTwoSplitLeftFocusBottomLeftFilled,
     LayoutColumnTwoSplitLeftFocusTopLeftFilled,
     LayoutColumnTwoSplitRightFocusBottomRightFilled,
@@ -49,7 +51,7 @@ import { ObservableCollection } from "../misc/observableCollection";
 export type HorizontalLocation = "left" | "right";
 export type VerticalLocation = "top" | "bottom";
 
-type DockLocation = `${VerticalLocation}-${HorizontalLocation}`;
+type DockLocation = `${VerticalLocation}-${HorizontalLocation}` | `full-${HorizontalLocation}`;
 
 /**
  * Describes an item that can be added to one of the shell's toolbars.
@@ -423,8 +425,10 @@ const DockMenu: FunctionComponent<
 > = (props) => {
     const { openOnContext, sidePaneId, dockOptions, children } = props;
 
+    const dockLeft = dockOptions.get("full-left");
     const dockTopLeft = dockOptions.get("top-left");
     const dockBottomLeft = dockOptions.get("bottom-left");
+    const dockRight = dockOptions.get("full-right");
     const dockTopRight = dockOptions.get("top-right");
     const dockBottomRight = dockOptions.get("bottom-right");
 
@@ -436,18 +440,36 @@ const DockMenu: FunctionComponent<
                     <MenuList>
                         <MenuGroup>
                             <MenuGroupHeader>Dock</MenuGroupHeader>
-                            <MenuItem disabled={!dockTopLeft} icon={<LayoutColumnTwoSplitLeftFocusTopLeftFilled />} onClick={() => dockTopLeft?.(sidePaneId)}>
-                                Top Left
-                            </MenuItem>
-                            <MenuItem disabled={!dockBottomLeft} icon={<LayoutColumnTwoSplitLeftFocusBottomLeftFilled />} onClick={() => dockBottomLeft?.(sidePaneId)}>
-                                Bottom Left
-                            </MenuItem>
-                            <MenuItem disabled={!dockTopRight} icon={<LayoutColumnTwoSplitRightFocusTopRightFilled />} onClick={() => dockTopRight?.(sidePaneId)}>
-                                Top Right
-                            </MenuItem>
-                            <MenuItem disabled={!dockBottomRight} icon={<LayoutColumnTwoSplitRightFocusBottomRightFilled />} onClick={() => dockBottomRight?.(sidePaneId)}>
-                                Bottom Right
-                            </MenuItem>
+                            {dockLeft && (
+                                <MenuItem icon={<LayoutColumnTwoFocusLeftFilled />} onClick={() => dockLeft(sidePaneId)}>
+                                    Left
+                                </MenuItem>
+                            )}
+                            {dockTopLeft && (
+                                <MenuItem icon={<LayoutColumnTwoSplitLeftFocusTopLeftFilled />} onClick={() => dockTopLeft(sidePaneId)}>
+                                    Top Left
+                                </MenuItem>
+                            )}
+                            {dockBottomLeft && (
+                                <MenuItem icon={<LayoutColumnTwoSplitLeftFocusBottomLeftFilled />} onClick={() => dockBottomLeft(sidePaneId)}>
+                                    Bottom Left
+                                </MenuItem>
+                            )}
+                            {dockRight && (
+                                <MenuItem icon={<LayoutColumnTwoFocusRightFilled />} onClick={() => dockRight(sidePaneId)}>
+                                    Right
+                                </MenuItem>
+                            )}
+                            {dockTopRight && (
+                                <MenuItem icon={<LayoutColumnTwoSplitRightFocusTopRightFilled />} onClick={() => dockTopRight(sidePaneId)}>
+                                    Top Right
+                                </MenuItem>
+                            )}
+                            {dockBottomRight && (
+                                <MenuItem icon={<LayoutColumnTwoSplitRightFocusBottomRightFilled />} onClick={() => dockBottomRight(sidePaneId)}>
+                                    Bottom Right
+                                </MenuItem>
+                            )}
                         </MenuGroup>
                     </MenuList>
                 </MenuPopover>
@@ -609,7 +631,7 @@ function usePane(
     topPaneContainerRef: (element: HTMLElement | null) => void,
     bottomPaneContainerRef: (element: HTMLElement | null) => void,
     onSelectSidePane: Observable<string>,
-    redock: (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => Promise<void>,
+    dockOperations: Map<DockLocation, (sidePaneKey: string) => void>,
     toolbarMode: ToolbarMode,
     topBarItems: ToolbarItemDefinition[],
     bottomBarItems: ToolbarItemDefinition[]
@@ -627,35 +649,32 @@ function usePane(
     const widthStorageKey = `Babylon/Settings/${location}Pane/WidthAdjust`;
     const heightStorageKey = `Babylon/Settings/${location}Pane/HeightAdjust`;
 
-    let topPanes = useMemo(() => sidePanes.filter((entry) => entry.horizontalLocation === location && entry.verticalLocation === "top"), [sidePanes, location]);
-    let bottomPanes = useMemo(() => sidePanes.filter((entry) => entry.horizontalLocation === location && entry.verticalLocation === "bottom"), [sidePanes, location]);
+    const currentSidePanes = useMemo(() => sidePanes.filter((entry) => entry.horizontalLocation === location), [sidePanes, location]);
+    const topPanes = useMemo(() => currentSidePanes.filter((entry) => entry.verticalLocation === "top"), [currentSidePanes]);
+    const bottomPanes = useMemo(() => currentSidePanes.filter((entry) => entry.verticalLocation === "bottom"), [currentSidePanes]);
 
-    const getValidDockOptions = useCallback(
+    const getValidDockOperations = useCallback(
         (verticalLocation: VerticalLocation) => {
-            const options = new Map<DockLocation, (sidePaneKey: string) => void>();
-            for (const candidateHorizontalLocation of ["left", "right"] as const) {
-                for (const candidateVerticalLocation of ["top", "bottom"] as const) {
-                    if (!(verticalLocation === candidateVerticalLocation && location === candidateHorizontalLocation)) {
-                        options.set(`${candidateVerticalLocation}-${candidateHorizontalLocation}`, async (sidePaneKey) => {
-                            await redock(sidePaneKey, candidateHorizontalLocation, candidateVerticalLocation);
-                            onSelectSidePane.notifyObservers(sidePaneKey);
-                        });
-                    }
-                }
+            const validDockOperations = new Map(dockOperations);
+
+            // Can't re-dock to the current location.
+            validDockOperations.delete(`${verticalLocation}-${location}`);
+
+            // Full would mean there are no bottom panes, so this is also re-docking to the current location.
+            validDockOperations.delete(`full-${location}`);
+
+            // If there is only one pane left, it can't be docked to the bottom (as this would leave no top panes).
+            if (currentSidePanes.length === 1) {
+                validDockOperations.delete(`bottom-${location}`);
             }
-            return options;
+
+            return validDockOperations;
         },
-        [location, redock, onSelectSidePane]
+        [location, dockOperations, currentSidePanes]
     );
 
-    let validTopDockOptions = useMemo(() => getValidDockOptions("top"), [getValidDockOptions]);
-    let validBottomDockOptions = useMemo(() => getValidDockOptions("bottom"), [getValidDockOptions]);
-
-    // If there are no top panes, then swap the top and bottom panes.
-    if (topPanes.length === 0) {
-        [topPanes, bottomPanes] = [bottomPanes, topPanes];
-        [validTopDockOptions, validBottomDockOptions] = [validBottomDockOptions, validTopDockOptions];
-    }
+    const validTopDockOptions = useMemo(() => getValidDockOperations("top"), [getValidDockOperations]);
+    const validBottomDockOptions = useMemo(() => getValidDockOperations("bottom"), [getValidDockOperations]);
 
     // Selects a default top tab (during initialization or if the selected tab is removed).
     useEffect(() => {
@@ -934,64 +953,100 @@ export function MakeShellServiceDefinition({
             const sidePaneCollection = new ObservableCollection<SidePaneDefinition>();
             const centralContentCollection = new ObservableCollection<CentralContentDefinition>();
 
-            const onSelectSidePane = new Observable<string>();
+            const onSelectSidePane = new Observable<string>(/*undefined, true*/);
 
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
 
                 const [sidePaneDockOverrides, setSidePaneDockOverrides] = useSidePaneDockOverrides();
 
+                // This function returns a promise that resolves after the dock change takes effect so that
+                // we can then select the re-docked pane.
+                const pendingPaneReselects = useRef<string[]>([]);
+                const updateSidePaneDockOverride = useCallback(
+                    (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => {
+                        setSidePaneDockOverrides((current) => ({
+                            ...current,
+                            [key]: { horizontalLocation, verticalLocation },
+                        }));
+
+                        pendingPaneReselects.current.push(key);
+                    },
+                    [setSidePaneDockOverrides]
+                );
+
                 const toolbarItems = useOrderedObservableCollection(toolbarItemCollection);
 
                 const sidePaneContainers = useRef(new Map<string, HTMLElement>());
                 const sidePanes = useOrderedObservableCollection(sidePaneCollection);
-                const coercedSidePanes = useMemo(
-                    () =>
-                        sidePanes.map((entry) => {
-                            const override = sidePaneDockOverrides[entry.key];
-                            if (override) {
-                                // Override (user manually re-docked) has the highest priority.
-                                entry = {
-                                    ...entry,
-                                    horizontalLocation: override.horizontalLocation,
-                                    verticalLocation: override.verticalLocation,
-                                };
-                            } else {
-                                // Otherwise, when we are in "right" side pane mode, we need to coerce all left panes to be right panes.
-                                let { horizontalLocation, verticalLocation } = entry;
-                                if (sidePaneMode === "right") {
-                                    // All right panes go to right bottom.
-                                    if (horizontalLocation === "right") {
-                                        verticalLocation = "bottom";
-                                    }
-
-                                    // All left panes go to right top.
-                                    if (horizontalLocation === "left") {
-                                        horizontalLocation = "right";
-                                        verticalLocation = "top";
-                                    }
+                const coercedSidePanes = useMemo(() => {
+                    // First pass - apply overrides and respect the side pane mode.
+                    const coercedSidePanes = sidePanes.map((entry) => {
+                        const override = sidePaneDockOverrides[entry.key];
+                        if (override) {
+                            // Override (user manually re-docked) has the highest priority.
+                            entry = {
+                                ...entry,
+                                horizontalLocation: override.horizontalLocation,
+                                verticalLocation: override.verticalLocation,
+                            };
+                        } else {
+                            // Otherwise, when we are in "right" side pane mode, we need to coerce all left panes to be right panes.
+                            let { horizontalLocation, verticalLocation } = entry;
+                            if (sidePaneMode === "right") {
+                                // All right panes go to right bottom.
+                                if (horizontalLocation === "right") {
+                                    verticalLocation = "bottom";
                                 }
-                                entry = {
-                                    ...entry,
-                                    horizontalLocation,
-                                    verticalLocation,
+
+                                // All left panes go to right top.
+                                if (horizontalLocation === "left") {
+                                    horizontalLocation = "right";
+                                    verticalLocation = "top";
+                                }
+                            }
+                            entry = {
+                                ...entry,
+                                horizontalLocation,
+                                verticalLocation,
+                            };
+                        }
+
+                        // Manually create html element containers outside the React tree to prevent unmounting/mounting
+                        // when panes are re-docked or the selected tabs change. This preserves state within the side panes.
+                        // This is combined with the usage of React portals to make it all work.
+                        let sidePaneContainer = sidePaneContainers.current.get(entry.key);
+                        if (!sidePaneContainer) {
+                            sidePaneContainer = document.createElement("div");
+                            sidePaneContainer.style.display = "flex";
+                            sidePaneContainer.style.flex = "1";
+                            sidePaneContainer.style.flexDirection = "column";
+                            sidePaneContainer.style.overflow = "hidden";
+                            sidePaneContainers.current.set(entry.key, sidePaneContainer);
+                        }
+
+                        return Object.assign(entry, { container: sidePaneContainer }) satisfies SidePaneEntry;
+                    });
+
+                    // Second pass - correct any invalid state, specifically if there are only bottom panes, force them to be top panes.
+                    for (const side of ["left", "right"] as const) {
+                        const topPanes = coercedSidePanes.filter((entry) => entry.horizontalLocation === side && entry.verticalLocation === "top");
+                        const bottomPanes = coercedSidePanes.filter((entry) => entry.horizontalLocation === side && entry.verticalLocation === "bottom");
+                        if (bottomPanes.length > 0 && topPanes.length === 0) {
+                            for (const pane of bottomPanes) {
+                                const index = coercedSidePanes.indexOf(pane);
+                                coercedSidePanes[index] = {
+                                    ...pane,
+                                    verticalLocation: "top",
                                 };
+                                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                                updateSidePaneDockOverride(pane.key, side, "top");
                             }
+                        }
+                    }
 
-                            let sidePaneContainer = sidePaneContainers.current.get(entry.key);
-                            if (!sidePaneContainer) {
-                                sidePaneContainer = document.createElement("div");
-                                sidePaneContainer.style.display = "flex";
-                                sidePaneContainer.style.flex = "1";
-                                sidePaneContainer.style.flexDirection = "column";
-                                sidePaneContainer.style.overflow = "hidden";
-                                sidePaneContainers.current.set(entry.key, sidePaneContainer);
-                            }
-
-                            return Object.assign(entry, { container: sidePaneContainer }) satisfies SidePaneEntry;
-                        }),
-                    [sidePanes, sidePaneDockOverrides, sidePaneMode]
-                );
+                    return coercedSidePanes;
+                }, [sidePanes, sidePaneDockOverrides, updateSidePaneDockOverride, sidePaneMode]);
 
                 // Clean up any removed side pane containers.
                 useEffect(() => {
@@ -1002,30 +1057,42 @@ export function MakeShellServiceDefinition({
                     }
                 }, [coercedSidePanes]);
 
+                useEffect(() => {
+                    for (const paneKey of pendingPaneReselects.current.splice(0)) {
+                        onSelectSidePane.notifyObservers(paneKey);
+                    }
+                }, [coercedSidePanes]);
+
+                const sidePaneDockOperations = useMemo(() => {
+                    const sidePaneDockOperations = new Map<DockLocation, (sidePaneKey: string) => void>();
+                    for (const side of ["left", "right"] as const) {
+                        const currentSidePanes = coercedSidePanes.filter((entry) => entry.horizontalLocation === side);
+
+                        const dockTop = (sidePaneKey: string) => {
+                            updateSidePaneDockOverride(sidePaneKey, side, "top");
+                        };
+                        const dockBottom = (sidePaneKey: string) => {
+                            updateSidePaneDockOverride(sidePaneKey, side, "bottom");
+                        };
+
+                        if (currentSidePanes.some((entry) => entry.verticalLocation === "bottom")) {
+                            // If there are bottom panes, there must also be top panes, and so top and bottom are valid locations.
+                            sidePaneDockOperations.set(`top-${side}`, dockTop);
+                            sidePaneDockOperations.set(`bottom-${side}`, dockBottom);
+                        } else if (currentSidePanes.length > 0) {
+                            // If there are only top panes, then full and bottom are valid locations.
+                            sidePaneDockOperations.set(`full-${side}`, dockTop);
+                            sidePaneDockOperations.set(`bottom-${side}`, dockBottom);
+                        } else {
+                            // If there are no panes, then only full is a valid location.
+                            sidePaneDockOperations.set(`full-${side}`, dockTop);
+                        }
+                    }
+                    return sidePaneDockOperations;
+                }, [coercedSidePanes]);
+
                 const hasLeftPanes = coercedSidePanes.some((entry) => entry.horizontalLocation === "left");
                 const hasRightPanes = coercedSidePanes.some((entry) => entry.horizontalLocation === "right");
-
-                // This function returns a promise that resolves after the dock change takes effect so that
-                // we can then select the re-docked pane.
-                const pendingDockOverridePromiseResolvers = useRef<(() => void)[]>([]);
-                const updateSidePaneDockOverride = useCallback(
-                    async (key: string, horizontalLocation: HorizontalLocation, verticalLocation: VerticalLocation) => {
-                        setSidePaneDockOverrides((current) => ({
-                            ...current,
-                            [key]: { horizontalLocation, verticalLocation },
-                        }));
-
-                        await new Promise<void>((resolve) => {
-                            pendingDockOverridePromiseResolvers.current.push(resolve);
-                        });
-                    },
-                    [setSidePaneDockOverrides]
-                );
-                useEffect(() => {
-                    for (const resolver of pendingDockOverridePromiseResolvers.current.splice(0)) {
-                        resolver();
-                    }
-                }, [sidePaneDockOverrides]);
 
                 // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
                 // depending on whether there are any side panes on that side.
@@ -1081,7 +1148,7 @@ export function MakeShellServiceDefinition({
                     setTopLeftPaneContainer,
                     setBottomLeftPaneContainer,
                     onSelectSidePane,
-                    updateSidePaneDockOverride,
+                    sidePaneDockOperations,
                     toolbarMode,
                     topBarLeftItems,
                     bottomBarLeftItems
@@ -1095,7 +1162,7 @@ export function MakeShellServiceDefinition({
                     setTopRightPaneContainer,
                     setBottomRightPaneContainer,
                     onSelectSidePane,
-                    updateSidePaneDockOverride,
+                    sidePaneDockOperations,
                     toolbarMode,
                     topBarRightItems,
                     bottomBarRightItems
