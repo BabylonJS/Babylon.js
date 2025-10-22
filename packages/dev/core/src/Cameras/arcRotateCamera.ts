@@ -27,9 +27,6 @@ Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
     return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
 });
 
-// Used to indicate boundingInfo for the calculateLowerRadius methods
-export type BoundingInfoMode = "sphere" | "box";
-
 /**
  * Computes the alpha angle based on the source position and the target position.
  * @param offset The directional offset between the source position and the target position
@@ -1582,45 +1579,6 @@ export class ArcRotateCamera extends TargetCamera {
         const distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeX * frustumSlopeX));
         const distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeY * frustumSlopeY));
         return Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
-    }
-
-    /**
-     * @internal
-     * This expands functionality beyond what _calculateLowerRadiusFromModelBoundingSphere does by
-     * 1. Offering boundingBox mode which calculates distance according to the bounding box
-     * 2. Setting orthographic extents on the class
-     */
-    public _calculateLowerRadiusFromModelBoundingInfo(minimumWorld: Vector3, maximumWorld: Vector3, mode: BoundingInfoMode = "sphere", radiusScale: number = 1): number {
-        // Setting orthographic extents -- this is done regardless of mode
-        const height = (maximumWorld.y - minimumWorld.y) * 0.5;
-        const width = (maximumWorld.x - minimumWorld.x) * 0.5;
-        const depth = (maximumWorld.z - minimumWorld.z) * 0.5;
-        const aspectRatio = this.getScene().getEngine().getAspectRatio(this);
-
-        if (this.mode === Camera.ORTHOGRAPHIC_CAMERA) {
-            if (aspectRatio < width / height) {
-                this.orthoRight = width * radiusScale;
-                this.orthoLeft = -this.orthoRight;
-                this.orthoTop = this.orthoRight / aspectRatio;
-                this.orthoBottom = this.orthoLeft / aspectRatio;
-            } else {
-                this.orthoRight = height * aspectRatio * radiusScale;
-                this.orthoLeft = -this.orthoRight * radiusScale;
-                this.orthoTop = height;
-                this.orthoBottom = -this.orthoTop;
-            }
-        }
-
-        if (mode === "box") {
-            // Formula for setting distance according to the bounding box (centring the first face of the bounding box)
-            const frustumSlopeY = Math.tan(this.fov / 2);
-            const frustumSlopeX = frustumSlopeY * aspectRatio;
-            const distanceForHorizontalFrustum = (radiusScale * width) / frustumSlopeX + depth;
-            const distanceForVerticalFrustum = (radiusScale * height) / frustumSlopeY + depth;
-            return Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
-        } else {
-            return this._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld, radiusScale);
-        }
     }
 
     /**
