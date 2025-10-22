@@ -204,7 +204,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
         if (this.reprojectHistory && this._taaMaterialManager) {
             // Applying jitter to the projection matrix messes with the velocity buffer,
             // so we do it as a final vertex step in a material plugin instead
-            this._nextJitterOffset(/*this._taaMaterialManager.jitter*/);
+            this._nextJitterOffset(this._taaMaterialManager.jitter);
         } else {
             // Use the projection matrix by default since it supports most materials
             this._updateProjectionMatrix();
