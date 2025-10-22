@@ -12,7 +12,7 @@ import { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import { ScenePerformancePriority } from "../scene";
 import type { Vector4 } from "../Maths/math.vector";
-import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
+import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import type { Color4 } from "../Maths/math.color";
 import { Color3 } from "../Maths/math.color";
 import { Node } from "../node";

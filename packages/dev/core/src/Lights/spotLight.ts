@@ -1,7 +1,7 @@
 import { serialize, serializeAsTexture } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Effect } from "../Materials/effect";

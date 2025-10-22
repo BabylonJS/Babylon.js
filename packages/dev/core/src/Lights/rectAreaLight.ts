@@ -1,4 +1,4 @@
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Light } from "./light";
 import type { Effect } from "core/Materials/effect";
