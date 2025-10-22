@@ -2738,9 +2738,8 @@
         },
         {
             "title": "FrameGraph TAA reproject history",
-            "playgroundId": "#OWGOUN#1",
+            "playgroundId": "#OWGOUN#14",
             "renderCount": 40,
-            "errorRatio": 5,
             "excludeFromAutomaticTesting": true
         },
         {
