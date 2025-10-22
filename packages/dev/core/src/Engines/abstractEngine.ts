@@ -52,6 +52,7 @@ import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _LoadFile } from "./abstractEngine.functions";
 import type { Material } from "core/Materials/material";
 import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
+import { ResetMatrixFunctions } from "../Materials/floatingOriginMatrixOverrides";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -132,9 +133,20 @@ export interface AbstractEngineOptions {
     doNotHandleTouchAction?: boolean;
 
     /**
-     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default.
+     * Note that setting useFloatingOriginMode will also set high precision matrices
      */
     useHighPrecisionMatrix?: boolean;
+
+    /**
+     * @experimental
+     * FloatingOriginMode helps avoid floating point imprecision of rendering large worlds by
+     * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)--
+     * 2. Telling all scenes to offset uniform values before passing to shader so that camera is centered at origin and world is offset by camera position
+     *
+     * NOTE that the offset will be determined by the most recently created scene's active camera world position. In future the feature should evolve
+     */
+    readonly useFloatingOriginMode?: boolean;
 
     /**
      * Defines whether to adapt to the device's viewport characteristics (default: false)
@@ -2019,6 +2031,7 @@ export abstract class AbstractEngine {
 
     /**
      * Gets the options used for engine creation
+     * NOTE that modifying the object after engine creation will have no effect
      * @returns EngineOptions object
      */
     public getCreationOptions() {
@@ -2037,7 +2050,8 @@ export abstract class AbstractEngine {
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
-        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+        // FloatingOriginMode set to true will set high precision matrix, regardless of useHighPrecisionMatrix value
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useFloatingOriginMode || !!options.useHighPrecisionMatrix);
 
         if (IsNavigatorAvailable() && navigator.userAgent) {
             // Detect if we are running on a faulty buggy OS.
@@ -2660,6 +2674,8 @@ export abstract class AbstractEngine {
 
         this._isDisposed = true;
         this.stopRenderLoop();
+
+        ResetMatrixFunctions();
 
         // Empty texture
         if (this._emptyTexture) {

@@ -21,7 +21,7 @@ import type { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import type { IOfflineProvider } from "./Offline/IOfflineProvider";
-import { OverrideMatrixFunctions, ResetMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
+import { OverrideMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
 import type { RenderingGroupInfo, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { RenderingManager } from "./Rendering/renderingManager";
 import type {
@@ -104,7 +104,6 @@ import { _RetryWithInterval } from "./Misc/timingTools";
 import type { ObjectRenderer } from "./Rendering/objectRenderer";
 import type { BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
 import type { BoundingBox } from "./Culling/boundingBox";
-import { PerformanceConfigurator } from "./Engines/performanceConfigurator";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -139,14 +138,6 @@ export interface SceneOptions {
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
-
-    /**
-     * @experimental
-     * FloatingOriginMode helps avoid floating point imprecision of rendering large worlds by
-     * 1. Forcing the engine to use doublePrecision mode
-     * 2. Offsetting uniform values before passing to shader so that camera is centered at origin and world is offset by camera position
-     */
-    floatingOriginMode?: boolean;
 }
 
 /**
@@ -2010,18 +2001,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             engine.scenes.push(this);
         }
 
-        // We cannot have a mix of scenes with and without FloatingOriginMode because the mode
-        // 1. Relies on prototype overrides which will impact all scenes, and
-        // 2. Sets engine matrixPrecision to high, so we must ensure no matrices have been created before this point
-        // Note the feature is experimental and in future I can add it as an engine creation option, however I like the
-        // simplicity of being able to pass the mode in scene creation (for example, in playground where engine is not exposed)
-        if (engine.scenes.some((scene) => scene != this && scene.floatingOriginMode != options?.floatingOriginMode)) {
-            throw new Error("All scenes must have the same floatingOriginMode");
-        }
-
-        if (options?.floatingOriginMode) {
-            engine.getCreationOptions().useHighPrecisionMatrix = true;
-            PerformanceConfigurator.SetMatrixPrecision(true);
+        if (engine.getCreationOptions().useFloatingOriginMode) {
             OverrideMatrixFunctions(this);
             this._floatingOriginMode = true;
         }
@@ -5762,8 +5742,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onClearColorChangedObservable.clear();
         this.onEnvironmentTextureChangedObservable.clear();
         this.onMeshUnderPointerUpdatedObservable.clear();
-
-        ResetMatrixFunctions();
         this._isDisposed = true;
     }
 
