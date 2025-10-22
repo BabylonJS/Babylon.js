@@ -265,12 +265,11 @@ export type ShellServiceOptions = {
     toolbarMode?: ToolbarMode;
 
     /**
-     * The mode of the side panes.
-     * Can be either "both" (default) or "right".
-     * In "both" mode, side panes can be added to both the left and right sides.
-     * In "right" mode, all left panes are moved to the upper right, and all right panes are moved to the lower right.
+     * A function that can remap the default location of side panes.
+     * @param sidePane The side pane to remap.
+     * @returns The new location for the side pane.
      */
-    sidePaneMode?: SidePaneMode;
+    sidePaneRemapper?: (sidePane: Readonly<SidePaneDefinition>) => { horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation };
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -946,7 +945,7 @@ export function MakeShellServiceDefinition({
     rightPaneDefaultWidth = 350,
     rightPaneMinWidth = 350,
     toolbarMode = "full",
-    sidePaneMode = "both",
+    sidePaneRemapper = undefined,
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
     return {
         friendlyName: "MainView",
@@ -1004,23 +1003,15 @@ export function MakeShellServiceDefinition({
                             // Override (user manually re-docked) has the highest priority.
                             sidePaneEntry.horizontalLocation = override.horizontalLocation;
                             sidePaneEntry.verticalLocation = override.verticalLocation;
-                        } else {
-                            // Otherwise, when we are in "right" side pane mode, we need to coerce all left panes to be right panes.
-                            let { horizontalLocation, verticalLocation } = sidePaneDefinition;
-                            if (sidePaneMode === "right") {
-                                // All right panes go to right bottom.
-                                if (horizontalLocation === "right") {
-                                    verticalLocation = "bottom";
-                                }
-
-                                // All left panes go to right top.
-                                if (horizontalLocation === "left") {
-                                    horizontalLocation = "right";
-                                    verticalLocation = "top";
-                                }
-                            }
+                        } else if (sidePaneRemapper) {
+                            // A side pane remapper has the next highest priority.
+                            const { horizontalLocation, verticalLocation } = sidePaneRemapper(sidePaneDefinition);
                             sidePaneEntry.horizontalLocation = horizontalLocation;
                             sidePaneEntry.verticalLocation = verticalLocation;
+                        } else {
+                            // Otherwise use the default defined location.
+                            sidePaneEntry.horizontalLocation = sidePaneDefinition.horizontalLocation;
+                            sidePaneEntry.verticalLocation = sidePaneDefinition.verticalLocation;
                         }
 
                         return sidePaneEntry;
@@ -1046,7 +1037,7 @@ export function MakeShellServiceDefinition({
                     }
 
                     return coercedSidePanes;
-                }, [sidePanes, sidePaneDockOverrides, updateSidePaneDockOverride, sidePaneMode]);
+                }, [sidePanes, sidePaneDockOverrides, updateSidePaneDockOverride, sidePaneRemapper]);
 
                 useEffect(() => {
                     for (const paneKey of pendingPaneReselects.current.splice(0)) {
