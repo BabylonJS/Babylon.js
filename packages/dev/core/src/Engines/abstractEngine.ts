@@ -52,7 +52,6 @@ import { Observable } from "../Misc/observable";
 import { EngineFunctionContext, _LoadFile } from "./abstractEngine.functions";
 import type { Material } from "core/Materials/material";
 import { _GetCompatibleTextureLoader } from "core/Materials/Textures/Loaders/textureLoaderManager";
-import { ResetMatrixFunctions } from "../Materials/floatingOriginMatrixOverrides";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -2674,8 +2673,6 @@ export abstract class AbstractEngine {
 
         this._isDisposed = true;
         this.stopRenderLoop();
-
-        ResetMatrixFunctions();
 
         // Empty texture
         if (this._emptyTexture) {

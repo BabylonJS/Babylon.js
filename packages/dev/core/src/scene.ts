@@ -21,7 +21,7 @@ import type { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import type { IOfflineProvider } from "./Offline/IOfflineProvider";
-import { OverrideMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
+import { OverrideMatrixFunctions, ResetMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
 import type { RenderingGroupInfo, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { RenderingManager } from "./Rendering/renderingManager";
 import type {
@@ -5666,6 +5666,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         if (index > -1) {
             this._engine.scenes.splice(index, 1);
+        }
+
+        if (this._engine.scenes.length === 0) {
+            // If this is the last scene to be disposed, reset matrix overrides
+            // Cannot reset from within engine class due floatingOriginMatrixOverrides file import side effects
+            ResetMatrixFunctions();
         }
 
         if (EngineStore._LastCreatedScene === this) {
