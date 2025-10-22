@@ -22,7 +22,9 @@ ivec2 getDataUVint(float index, vec2 textureSize) {
 
 struct Splat {
     vec4 center;
+#ifndef GS_DISABLE_COLOR
     vec4 color;
+#endif
     vec4 covA;
     vec4 covB;
 #if SH_DEGREE > 0
@@ -41,7 +43,9 @@ Splat readSplat(float splatIndex)
     Splat splat;
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
     splat.center = texture2D(centersTexture, splatUV);
+#ifndef GS_DISABLE_COLOR
     splat.color = texture2D(colorsTexture, splatUV);
+#endif
     splat.covA = texture2D(covariancesATexture, splatUV) * splat.center.w;
     splat.covB = texture2D(covariancesBTexture, splatUV) * splat.center.w;
 #if SH_DEGREE > 0
