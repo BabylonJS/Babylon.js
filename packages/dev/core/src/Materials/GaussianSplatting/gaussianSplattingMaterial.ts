@@ -1,17 +1,17 @@
 import type { SubMesh } from "../../Meshes/subMesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
-import { Effect, type IEffectCreationOptions } from "../../Materials/effect";
+import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
-import type { GaussianSplattingMesh } from "core/Meshes";
+import type { GaussianSplattingMesh } from "../../Meshes";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import { AddClipPlaneUniforms, BindClipPlane } from "../clipPlaneMaterialHelper";
-import { Camera } from "core/Cameras/camera";
+import { Camera } from "../../Cameras/camera";
 import { ShadowDepthWrapper } from "../../Materials/shadowDepthWrapper";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 
@@ -19,6 +19,10 @@ import "../../Shaders/gaussianSplatting.fragment";
 import "../../Shaders/gaussianSplatting.vertex";
 import "../../ShadersWGSL/gaussianSplatting.fragment";
 import "../../ShadersWGSL/gaussianSplatting.vertex";
+import "../../Shaders/gaussianSplattingDepth.fragment";
+import "../../Shaders/gaussianSplattingDepth.vertex";
+import "../../ShadersWGSL/gaussianSplattingDepth.fragment";
+import "../../ShadersWGSL/gaussianSplattingDepth.vertex";
 import {
     BindFogParameters,
     BindLogDepth,
@@ -376,83 +380,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     protected static _MakeGaussianSplattingShadowDepthWrapper(scene: Scene, shaderLanguage: ShaderLanguage): ShadowDepthWrapper {
-        const splatVertexWGL = `
-            #include<__decl__gaussianSplattingVertex>
-            attribute float splatIndex;
-
-            uniform vec2 invViewport;
-            uniform vec2 dataTextureSize;
-            uniform vec2 focal;
-            uniform float kernelSize;
-            
-            uniform sampler2D covariancesATexture;
-            uniform sampler2D covariancesBTexture;
-            uniform sampler2D centersTexture;
-            uniform sampler2D colorsTexture;
-
-            varying vec2 vPosition;
-            #include<gaussianSplatting>
-            
-            void main(void) {
-                Splat splat = readSplat(splatIndex);
-                vec3 covA = splat.covA.xyz;
-                vec3 covB = vec3(splat.covA.w, splat.covB.xy);
-                vec4 worldPosGS = world * vec4(splat.center.xyz, 1.0);
-                vPosition = position.xy;
-                gl_Position = gaussianSplatting(position.xy, worldPosGS.xyz, vec2(1.,1.), covA, covB, world, view, projection);
-            }`;
-
-        const splatVertexWGPU = `
-            #include<sceneUboDeclaration>
-            #include<meshUboDeclaration>
-            attribute splatIndex: f32;
-            attribute position: vec2f;
-
-            uniform invViewport: vec2f;
-            uniform dataTextureSize: vec2f;
-            uniform focal: vec2f;
-            uniform kernelSize: f32;
-
-            var covariancesATexture: texture_2d<f32>;
-            var covariancesBTexture: texture_2d<f32>;
-            var centersTexture: texture_2d<f32>;
-            var colorsTexture: texture_2d<f32>;
-
-            varying vPosition: vec2f;
-
-            #include<gaussianSplatting>
-
-            @vertex
-            fn main(input : VertexInputs) -> FragmentInputs {
-                var splat: Splat = readSplat(input.splatIndex, uniforms.dataTextureSize);
-                var covA: vec3f = splat.covA.xyz;
-                var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
-                let worldPos: vec4f = mesh.world * vec4f(splat.center.xyz, 1.0);
-                vertexOutputs.vPosition = input.position;
-                vertexOutputs.position = gaussianSplatting(input.position, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
-            }`;
-
-        const splatFragmentWGL = `
-            precision highp float;
-            varying vec2 vPosition;
-            void main(void) {
-                float A = -dot(vPosition, vPosition);
-                if (A < -1.) discard;
-            }`;
-
-        const splatFragmentWGPU = `
-            #include<gaussianSplattingFragmentDeclaration>
-            varying vPosition: vec2f;
-            @fragment
-            fn main(input: FragmentInputs) -> FragmentOutputs {
-                var A : f32 = -dot(inPosition, inPosition);
-                if (A < -1.) discard;
-            }`;
-
-        const isWebGPU = shaderLanguage === ShaderLanguage.WGSL;
-        Effect.ShadersStore["gaussianSplattingDepthVertexShader"] = isWebGPU ? splatVertexWGPU : splatVertexWGL;
-        Effect.ShadersStore["gaussianSplattingDepthFragmentShader"] = isWebGPU ? splatFragmentWGPU : splatFragmentWGL;
-
         const shaderMaterial = new ShaderMaterial(
             "gaussianSplattingDepth",
             scene,
@@ -466,6 +393,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 samplers: GaussianSplattingMaterial._Samplers,
                 uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
                 shaderLanguage: shaderLanguage,
+                defines: ["#define GS_DISABLE_COLOR"],
             }
         );
 
