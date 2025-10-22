@@ -230,8 +230,6 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
 
 type ToolbarMode = "full" | "compact";
 
-type SidePaneMode = "both" | "right";
-
 /**
  * Options for configuring the shell service.
  */
