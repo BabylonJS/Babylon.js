@@ -120,7 +120,7 @@
         float totalWeight = 0.0;
         float fuzzIblFresnel = sqrt(environmentFuzzBrdf.z);
         for (int i = 0; i < FUZZ_IBL_SAMPLES; ++i) {
-            float angle = float(i) * (3.141592 * 2.0 / float(FUZZ_IBL_SAMPLES));
+            float angle = (float(i) + noise.x) * (3.141592 * 2.0 / float(FUZZ_IBL_SAMPLES));
             // Normal of the fiber is a simple rotation of the tangent and bitangent around the surface normal
             vec3 fiberCylinderNormal = normalize(cos(angle) * fuzzTangent + sin(angle) * fuzzBitangent);
             // Then, we mix it with the fuzz surface normal based on the anisotropy from the LUT and the fuzz
@@ -129,7 +129,7 @@
             fiberCylinderNormal = normalize(mix(fiberCylinderNormal, fuzzNormalW, fiberBend));
             float sampleWeight = max(dot(viewDirectionW, fiberCylinderNormal), 0.0);
             vec3 fuzzReflectionCoords = createReflectionCoords(vPositionW, fiberCylinderNormal);
-            vec3 radianceSample = sampleWeight * sampleRadiance(modifiedFuzzRoughness, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+            vec3 radianceSample = sampleRadiance(modifiedFuzzRoughness, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                 , fuzzGeoInfo
                 , reflectionSampler
                 , fuzzReflectionCoords
@@ -139,7 +139,7 @@
             );
             // As we get closer to bending the normal back towards the regular surface normal, the fuzz is
             // also rougher, so we blend more towards the diffuse environment light.
-            fuzzEnvironmentLight += mix(radianceSample, baseDiffuseEnvironmentLight, fiberBend * fiberBend);
+            fuzzEnvironmentLight += sampleWeight * mix(radianceSample, baseDiffuseEnvironmentLight, fiberBend);
             totalWeight += sampleWeight;
         }
         fuzzEnvironmentLight /= totalWeight;

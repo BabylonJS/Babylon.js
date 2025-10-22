@@ -265,7 +265,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     /**
      * Number of samples to use for the fuzz IBL lighting calculations
      */
-    public FUZZ_IBL_SAMPLES = 4;
+    public FUZZ_IBL_SAMPLES = 6;
 
     /**
      * Tells the shader to enable the fuzz layer

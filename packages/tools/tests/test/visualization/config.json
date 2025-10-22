@@ -3147,6 +3147,11 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Furnace Test",
+            "playgroundId": "#GRQHVV#115",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
         }
