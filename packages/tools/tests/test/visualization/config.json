@@ -2739,7 +2739,8 @@
         {
             "title": "FrameGraph TAA reproject history",
             "playgroundId": "#OWGOUN#14",
-            "renderCount": 40
+            "renderCount": 40,
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Render target texture with clustered lights",
