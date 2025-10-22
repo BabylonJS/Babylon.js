@@ -104,6 +104,7 @@ import { _RetryWithInterval } from "./Misc/timingTools";
 import type { ObjectRenderer } from "./Rendering/objectRenderer";
 import type { BoundingBoxRenderer } from "./Rendering/boundingBoxRenderer";
 import type { BoundingBox } from "./Culling/boundingBox";
+import { PerformanceConfigurator } from "./Engines/performanceConfigurator";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -2009,8 +2010,18 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             engine.scenes.push(this);
         }
 
+        // We cannot have a mix of scenes with and without FloatingOriginMode because the mode
+        // 1. Relies on prototype overrides which will impact all scenes, and
+        // 2. Sets engine matrixPrecision to high, so we must ensure no matrices have been created before this point
+        // Note the feature is experimental and in future I can add it as an engine creation option, however I like the
+        // simplicity of being able to pass the mode in scene creation (for example, in playground where engine is not exposed)
+        if (engine.scenes.some((scene) => scene != this && scene.floatingOriginMode != options?.floatingOriginMode)) {
+            throw new Error("All scenes must have the same floatingOriginMode");
+        }
+
         if (options?.floatingOriginMode) {
             engine.getCreationOptions().useHighPrecisionMatrix = true;
+            PerformanceConfigurator.SetMatrixPrecision(true);
             OverrideMatrixFunctions(this);
             this._floatingOriginMode = true;
         }
