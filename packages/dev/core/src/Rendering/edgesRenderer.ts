@@ -990,6 +990,9 @@ export class EdgesRenderer implements IEdgesRenderer {
 
                     for (let i = 0; i < instanceCount; ++i) {
                         this.customInstances.data[i].copyToArray(instanceStorage.instancesData, offset);
+                        instanceStorage.instancesData[offset + 12] -= scene.floatingOriginOffset.x;
+                        instanceStorage.instancesData[offset + 13] -= scene.floatingOriginOffset.y;
+                        instanceStorage.instancesData[offset + 14] -= scene.floatingOriginOffset.z;
                         offset += 16;
                     }
 

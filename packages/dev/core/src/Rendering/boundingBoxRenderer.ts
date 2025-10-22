@@ -653,8 +653,13 @@ export class BoundingBoxRenderer implements ISceneComponent {
 
             m[10] = diff._z; // Scale Z
             m[11] = median._z; // Translate Z
-            TempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), matrices, instancesCount * 16);
 
+            const offset = instancesCount * 16;
+            TempMatrix.multiplyToArray(boundingBox.getWorldMatrix(), matrices, offset);
+
+            matrices[offset + 12] -= this.scene.floatingOriginOffset.x;
+            matrices[offset + 13] -= this.scene.floatingOriginOffset.y;
+            matrices[offset + 14] -= this.scene.floatingOriginOffset.z;
             instancesCount++;
         }
 
