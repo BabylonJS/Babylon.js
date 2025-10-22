@@ -1,4 +1,4 @@
-import { TmpVectors, Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import { Light } from "./light";
 import type { Effect } from "core/Materials/effect";
@@ -114,7 +114,7 @@ export class RectAreaLight extends AreaLight {
      * @returns The point light
      */
     public transferToEffect(effect: Effect, lightIndex: string): RectAreaLight {
-        const offset = TmpVectors.Vector3[6].copyFrom(this._scene.floatingOriginOffset);
+        const offset = this._scene.floatingOriginOffset;
 
         if (this._computeTransformedInformation()) {
             this._uniformBuffer.updateFloat4(
@@ -143,7 +143,7 @@ export class RectAreaLight extends AreaLight {
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
-        const offset = TmpVectors.Vector3[6].copyFrom(this._scene.floatingOriginOffset);
+        const offset = this._scene.floatingOriginOffset;
 
         if (this._computeTransformedInformation()) {
             effect.setFloat3(

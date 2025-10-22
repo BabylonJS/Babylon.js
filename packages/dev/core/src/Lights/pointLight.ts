@@ -1,6 +1,6 @@
 import { serialize } from "../Misc/decorators";
 import type { Scene } from "../scene";
-import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
@@ -188,8 +188,7 @@ export class PointLight extends ShadowLight {
      * @returns The point light
      */
     public transferToEffect(effect: Effect, lightIndex: string): PointLight {
-        const offset = TmpVectors.Vector3[6].copyFrom(this._scene.floatingOriginOffset);
-
+        const offset = this._scene.floatingOriginOffset;
         if (this.computeTransformedInformation()) {
             this._uniformBuffer.updateFloat4(
                 "vLightData",
@@ -208,7 +207,7 @@ export class PointLight extends ShadowLight {
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
-        const offset = TmpVectors.Vector3[6].copyFrom(this._scene.floatingOriginOffset);
+        const offset = this._scene.floatingOriginOffset;
         if (this.computeTransformedInformation()) {
             effect.setFloat3(lightDataUniformName, this.transformedPosition.x - offset.x, this.transformedPosition.y - offset.y, this.transformedPosition.z - offset.z);
         } else {

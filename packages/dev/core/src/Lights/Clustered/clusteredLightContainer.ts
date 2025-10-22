@@ -394,7 +394,7 @@ export class ClusteredLightContainer extends Light {
         let minSlice = -1;
 
         const buf = this._lightDataBuffer;
-        const offset = TmpVectors.Vector3[6].copyFrom(this._scene.floatingOriginOffset);
+        const offset = this._scene.floatingOriginOffset;
 
         for (let i = 0; i < this._sortedLights.length; i += 1) {
             const light = this._sortedLights[i];
