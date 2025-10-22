@@ -80,7 +80,7 @@
     var environmentFuzzBrdfSampler: texture_2d<f32>;
 #endif
 
-#ifdef ANISOTROPIC
+#if defined(ANISOTROPIC) || defined(FUZZ)
     var blueNoiseSamplerSampler: sampler;
     var blueNoiseSampler: texture_2d<f32>;
 #endif

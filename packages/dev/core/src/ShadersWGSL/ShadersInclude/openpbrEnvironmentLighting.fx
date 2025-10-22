@@ -133,7 +133,7 @@
             // Then, we mix it with the fuzz surface normal based on the anisotropy from the LUT and the fuzz
             // roughness. When the fibers are more aligned, we get higher anisotropy.
             let fiberBend = min(environmentFuzzBrdf.x * environmentFuzzBrdf.x * modifiedFuzzRoughness, 1.0f);
-            fiberCylinderNormal = normalize(mix(fiberCylinderNormal, fuzzNormalW, environmentFuzzBrdf.x * environmentFuzzBrdf.x));
+            fiberCylinderNormal = normalize(mix(fiberCylinderNormal, fuzzNormalW, fiberBend));
             let sampleWeight = max(dot(viewDirectionW, fiberCylinderNormal), 0.0f);
             var fuzzReflectionCoords = createReflectionCoords(fragmentInputs.vPositionW, fiberCylinderNormal);
             let radianceSample: vec3f = sampleWeight * sampleRadiance(modifiedFuzzRoughness, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
