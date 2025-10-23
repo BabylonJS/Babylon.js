@@ -138,13 +138,13 @@ export interface SceneOptions {
 
     /**
      * @experimental
-     * When enabled, the scene can handle large world coordinate rendering without jittering caused by floating point imprecision.
-     * This mode offsets matrices and position-related attribute values before passing to shader, centering camera at origin and offsetting other scene objects by camera active position.
+     * When enabled, the scene can handle large world coordinate rendering without jittering caused by floating point imprecision on the GPU.
+     * This mode offsets matrices and position-related attribute values before passing to shaders, centering camera at origin and offsetting other scene objects by camera active position.
      *
      * IMPORTANT: Only use this scene-level option if you intend to enable floating origin on a per-scene basis. Must use in conjunction with engine creation option 'useHighPrecisionMatrix' to fix CPU-side floating point imprecision.
-     * HOWEVER if you want floatingOriginMode on ALL scenes, set the useFloatingOriginMode flag on the engine instead of this scene-level flag. Doing so will automatically set useHighPrecisionMatrix on the engine as well.
+     * HOWEVER if you want largeWorldRendering on ALL scenes, set the useLargeWorldRendering flag on the engine instead of this scene-level flag. Doing so will automatically set useHighPrecisionMatrix on the engine as well.
      */
-    useFloatingOriginMode?: boolean;
+    useFloatingOrigin?: boolean;
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
@@ -2018,7 +2018,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             engine.scenes.push(this);
         }
 
-        if (engine.getCreationOptions().useFloatingOriginMode || options?.useFloatingOriginMode) {
+        if (engine.getCreationOptions().useLargeWorldRendering || options?.useFloatingOrigin) {
             OverrideMatrixFunctions();
             this._floatingOriginScene = this;
         }
@@ -2783,7 +2783,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     private _floatingOriginScene: Scene | undefined = undefined;
     /**
      * @experimental
-     * True if useFloatingOriginMode was passed to engine or this scene creation otions.
+     * True if floatingOriginMode was passed to engine or this scene creation otions.
      * This mode avoids floating point imprecision in huge coordinate system by offsetting uniform values before passing to shader, centering camera at origin and displacing rest of scene by camera position
      */
     public get floatingOriginMode(): boolean {

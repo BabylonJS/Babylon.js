@@ -133,20 +133,20 @@ export interface AbstractEngineOptions {
 
     /**
      * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default.
-     * Note that setting useFloatingOriginMode will also set high precision matrices
+     * Note that setting useLargeWorldRendering will also set high precision matrices
      */
     useHighPrecisionMatrix?: boolean;
 
     /**
      * @experimental
-     * FloatingOriginMode helps avoid floating point imprecision of rendering large worlds by
+     * LargeWorldRendering helps avoid floating point imprecision of rendering large worlds by
      * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)
-     * 2. Offset position-related uniform and attribute values before passing to shader so that active camera is centered at origin and world is offset by active camera position
+     * 2. Enabling floatingOriginMode in all scenes -- offsetting position-related uniform and attribute values before passing to shader so that active camera is centered at origin and world is offset by active camera position
      *
-     * NOTE that if this mode is set during engineCreation, all scenes will have floatingOrigin offset and you do not need to send this option to each scene creation.
-     * If you'd like to have only specific scenes using the offset logic, you can set the flag on those scenes directly -- however, you must also set the useHighPrecisionMatrix option on engine.
+     * NOTE that if this mode is set during engineCreation, all scenes will have floatingOrigin offset and you do not need to send floatingOriginMode option to each scene creation.
+     * If you'd like to have only specific scenes using the offset logic, you can set the flag on those scenes directly -- however, to achieve proper large world rendering, you must also set the useHighPrecisionMatrix option on engine.
      */
-    readonly useFloatingOriginMode?: boolean;
+    readonly useLargeWorldRendering?: boolean;
 
     /**
      * Defines whether to adapt to the device's viewport characteristics (default: false)
@@ -2050,8 +2050,9 @@ export abstract class AbstractEngine {
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
-        // FloatingOriginMode set to true will set high precision matrix, regardless of useHighPrecisionMatrix value
-        PerformanceConfigurator.SetMatrixPrecision(!!options.useFloatingOriginMode || !!options.useHighPrecisionMatrix);
+        // LargeWorldRendering set to true will set high precision matrix, regardless of useHighPrecisionMatrix value
+        // It will also set all scenes to use floatingOriginMode upon their creation
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useLargeWorldRendering || !!options.useHighPrecisionMatrix);
 
         if (IsNavigatorAvailable() && navigator.userAgent) {
             // Detect if we are running on a faulty buggy OS.
