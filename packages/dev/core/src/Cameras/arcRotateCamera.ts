@@ -1590,10 +1590,10 @@ export class ArcRotateCamera extends TargetCamera {
                 this.orthoTop = this.orthoRight / aspectRatio;
                 this.orthoBottom = this.orthoLeft / aspectRatio;
             } else {
-                this.orthoRight = height * aspectRatio * radiusScale;
-                this.orthoLeft = -this.orthoRight * radiusScale;
-                this.orthoTop = height;
+                this.orthoTop = height * radiusScale;
                 this.orthoBottom = -this.orthoTop;
+                this.orthoRight = this.orthoTop * aspectRatio;
+                this.orthoLeft = -this.orthoRight;
             }
         }
         return Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
@@ -1628,10 +1628,10 @@ export class ArcRotateCamera extends TargetCamera {
                 this.orthoTop = this.orthoRight / aspectRatio;
                 this.orthoBottom = this.orthoLeft / aspectRatio;
             } else {
-                this.orthoRight = height * aspectRatio * radiusScale;
-                this.orthoLeft = -this.orthoRight;
                 this.orthoTop = height * radiusScale;
                 this.orthoBottom = -this.orthoTop;
+                this.orthoRight = this.orthoTop * aspectRatio;
+                this.orthoLeft = -this.orthoRight;
             }
         }
         return distance;
