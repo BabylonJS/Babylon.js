@@ -83,6 +83,12 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
         };
 
         this._monacoManager = new MonacoManager(gs);
+
+        // NOTE: This is a workaround currently needed when using Fluent. Specifically, Fluent currently manages focus (handling tab key events),
+        // and only excludes elements with `contentEditable` set to `"true"`. Monaco does not set this attribute on its text editor elements by default.
+        // Probably Fluent should be checking `isContentEditable` instead as `contentEditable` can be set to `"inherit"`, in which case `isContentEditable`
+        // is inherited from the parent element. If it worked this way, then we could simply set `contentEditable` to `"true"` on the monacoHost
+        // div in this file (which maybe it should be doing itself by default to be semantically correct).
         this._mutationObserver = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
                 for (const node of mutation.addedNodes) {
@@ -91,6 +97,8 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps, ICom
                             (node as HTMLTextAreaElement).contentEditable = "true";
                         }
                         (node as HTMLElement).querySelectorAll?.("textarea").forEach((textArea) => ((textArea as HTMLTextAreaElement).contentEditable = "true"));
+                        // In newer versions of Monaco, the actual editable element is inside a div with class "native-edit-context".
+                        (node as HTMLElement).querySelector(".native-edit-context")?.setAttribute("contenteditable", "true");
                     }
                 }
             }
