@@ -951,12 +951,12 @@ function usePane(
                         {topSelectedTab && (
                             <>
                                 <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
+                                {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
                                 {topPanes.map((pane) => (
                                     <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
                                         <pane.content />
                                     </div>
                                 ))}
-                                {/* <div ref={topPaneContainerRef} className={classes.paneContent} /> */}
                             </>
                         )}
                     </div>
@@ -982,12 +982,12 @@ function usePane(
                         {bottomSelectedTab && (
                             <>
                                 <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
+                                {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
                                 {bottomPanes.map((pane) => (
                                     <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
                                         <pane.content />
                                     </div>
                                 ))}
-                                {/* <div ref={bottomPaneContainerRef} className={classes.paneContent} /> */}
                             </>
                         )}
                     </div>
@@ -1017,6 +1017,7 @@ function usePane(
         undocked,
     ]);
 
+    // This deals with docked vs undocked state, where undocked is rendered into a separate window via a portal.
     const pane = useMemo(() => {
         if (!windowState) {
             return (
