@@ -155,10 +155,6 @@ export type SidePaneDefinition = {
     suppressTeachingMoment?: boolean;
 };
 
-type SidePaneEntry = SidePaneDefinition & {
-    container: HTMLElement;
-};
-
 type RegisteredSidePane = {
     key: string;
     select(): void;
@@ -337,7 +333,7 @@ const useStyles = makeStyles({
         flexDirection: "row",
     },
     paneCollapseButton: {
-        margin: `0 ${tokens.spacingVerticalXS}`,
+        margin: `0 0 0 ${tokens.spacingHorizontalXS}`,
     },
     collapseMenuPopover: {
         minWidth: 0,
@@ -430,9 +426,7 @@ const useStyles = makeStyles({
         display: "flex",
         overflow: "hidden",
     },
-    expandButton: {
-        // minWidth: "48px",
-    },
+    expandButton: {},
 });
 
 const DockMenu: FunctionComponent<
@@ -642,9 +636,7 @@ function usePane(
     location: HorizontalLocation,
     defaultWidth: number,
     minWidth: number,
-    sidePanes: SidePaneEntry[],
-    topPaneContainerRef: (element: HTMLElement | null) => void,
-    bottomPaneContainerRef: (element: HTMLElement | null) => void,
+    sidePanes: SidePaneDefinition[],
     onSelectSidePane: Observable<string>,
     dockOperations: Map<DockLocation, (sidePaneKey: string) => void>,
     toolbarMode: ToolbarMode,
@@ -653,8 +645,8 @@ function usePane(
 ) {
     const classes = useStyles();
 
-    const [topSelectedTab, setTopSelectedTab] = useState<SidePaneEntry>();
-    const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneEntry>();
+    const [topSelectedTab, setTopSelectedTab] = useState<SidePaneDefinition>();
+    const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneDefinition>();
     const [collapsed, setCollapsed] = useState(false);
     const [undocked, setUndocked] = useState(false);
 
@@ -762,10 +754,10 @@ function usePane(
 
     const createPaneTabList = useCallback(
         (
-            paneComponents: SidePaneEntry[],
+            paneComponents: SidePaneDefinition[],
             toolbarMode: "full" | "compact",
-            selectedTab: SidePaneEntry | undefined,
-            setSelectedTab: (tab: SidePaneEntry | undefined) => void,
+            selectedTab: SidePaneDefinition | undefined,
+            setSelectedTab: (tab: SidePaneDefinition | undefined) => void,
             dockOptions: Map<DockLocation, (sidePaneKey: string) => void>
         ) => {
             return (
@@ -1064,7 +1056,7 @@ function usePane(
         }
     }, [collapsed, corePane, windowState]);
 
-    return [topPaneTabList, pane, collapsed, setCollapsed, topSelectedTab, bottomSelectedTab] as const;
+    return [topPaneTabList, pane, collapsed, setCollapsed] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -1108,41 +1100,33 @@ export function MakeShellServiceDefinition({
                 const toolbarItems = useOrderedObservableCollection(toolbarItemCollection);
 
                 const sidePanes = useOrderedObservableCollection(sidePaneCollection);
-                const coercedSidePaneCache = useRef(new Map<string, SidePaneEntry>());
+                const coercedSidePaneCache = useRef(new Map<string, SidePaneDefinition>());
                 const coercedSidePanes = useMemo(() => {
                     // First pass - apply overrides and respect the side pane mode.
                     const coercedSidePanes = sidePanes.map((sidePaneDefinition) => {
-                        let sidePaneEntry = coercedSidePaneCache.current.get(sidePaneDefinition.key);
-                        if (!sidePaneEntry) {
-                            // Manually create html element containers outside the React tree to prevent unmounting/mounting
-                            // when panes are re-docked or the selected tabs change. This preserves state within the side panes.
-                            // This is combined with the usage of React portals to make it all work.
-                            const sidePaneContainer = document.createElement("div");
-                            sidePaneContainer.style.display = "flex";
-                            sidePaneContainer.style.flex = "1";
-                            sidePaneContainer.style.flexDirection = "column";
-                            sidePaneContainer.style.overflow = "hidden";
-                            sidePaneEntry = { ...sidePaneDefinition, container: sidePaneContainer };
-                            coercedSidePaneCache.current.set(sidePaneDefinition.key, sidePaneEntry);
+                        let coercedSidePane = coercedSidePaneCache.current.get(sidePaneDefinition.key);
+                        if (!coercedSidePane) {
+                            coercedSidePane = { ...sidePaneDefinition };
+                            coercedSidePaneCache.current.set(sidePaneDefinition.key, coercedSidePane);
                         }
 
                         const override = sidePaneDockOverrides[sidePaneDefinition.key];
                         if (override) {
                             // Override (user manually re-docked) has the highest priority.
-                            sidePaneEntry.horizontalLocation = override.horizontalLocation;
-                            sidePaneEntry.verticalLocation = override.verticalLocation;
+                            coercedSidePane.horizontalLocation = override.horizontalLocation;
+                            coercedSidePane.verticalLocation = override.verticalLocation;
                         } else if (sidePaneRemapper) {
                             // A side pane remapper has the next highest priority.
                             const { horizontalLocation, verticalLocation } = sidePaneRemapper(sidePaneDefinition);
-                            sidePaneEntry.horizontalLocation = horizontalLocation;
-                            sidePaneEntry.verticalLocation = verticalLocation;
+                            coercedSidePane.horizontalLocation = horizontalLocation;
+                            coercedSidePane.verticalLocation = verticalLocation;
                         } else {
                             // Otherwise use the default defined location.
-                            sidePaneEntry.horizontalLocation = sidePaneDefinition.horizontalLocation;
-                            sidePaneEntry.verticalLocation = sidePaneDefinition.verticalLocation;
+                            coercedSidePane.horizontalLocation = sidePaneDefinition.horizontalLocation;
+                            coercedSidePane.verticalLocation = sidePaneDefinition.verticalLocation;
                         }
 
-                        return sidePaneEntry;
+                        return coercedSidePane;
                     });
 
                     // Second pass - correct any invalid state, specifically if there are only bottom panes, force them to be top panes.
@@ -1245,19 +1229,11 @@ export function MakeShellServiceDefinition({
 
                 const centralContents = useOrderedObservableCollection(centralContentCollection);
 
-                const [topLeftPaneContainer, setTopLeftPaneContainer] = useState<HTMLElement | null>(null);
-                const [bottomLeftPaneContainer, setBottomLeftPaneContainer] = useState<HTMLElement | null>(null);
-                const [topRightPaneContainer, setTopRightPaneContainer] = useState<HTMLElement | null>(null);
-                const [bottomRightPaneContainer, setBottomRightPaneContainer] = useState<HTMLElement | null>(null);
-
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, topLeftSelectedPane, bottomLeftSelectedPane] = usePane(
+                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
                     coercedSidePanes,
-                    setTopLeftPaneContainer,
-                    setBottomLeftPaneContainer,
                     onSelectSidePane,
                     sidePaneDockOperations,
                     toolbarMode,
@@ -1265,40 +1241,17 @@ export function MakeShellServiceDefinition({
                     bottomBarLeftItems
                 );
 
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, topRightSelectedPane, bottomRightSelectedPane] = usePane(
+                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
                     coercedSidePanes,
-                    setTopRightPaneContainer,
-                    setBottomRightPaneContainer,
                     onSelectSidePane,
                     sidePaneDockOperations,
                     toolbarMode,
                     topBarRightItems,
                     bottomBarRightItems
                 );
-
-                // Update the content of the top left pane container.
-                // useEffect(() => {
-                //     topLeftPaneContainer?.replaceChildren(...(topLeftSelectedPane ? [topLeftSelectedPane.container] : []));
-                // }, [topLeftPaneContainer, topLeftSelectedPane]);
-
-                // // Update the content of the bottom left pane container.
-                // useEffect(() => {
-                //     bottomLeftPaneContainer?.replaceChildren(...(bottomLeftSelectedPane ? [bottomLeftSelectedPane.container] : []));
-                // }, [bottomLeftPaneContainer, bottomLeftSelectedPane]);
-
-                // // Update the content of the top right pane container.
-                // useEffect(() => {
-                //     topRightPaneContainer?.replaceChildren(...(topRightSelectedPane ? [topRightSelectedPane.container] : []));
-                // }, [topRightPaneContainer, topRightSelectedPane]);
-
-                // // Update the content of the bottom right pane container.
-                // useEffect(() => {
-                //     bottomRightPaneContainer?.replaceChildren(...(bottomRightSelectedPane ? [bottomRightSelectedPane.container] : []));
-                // }, [bottomRightPaneContainer, bottomRightSelectedPane]);
 
                 return (
                     <div className={classes.mainView}>
@@ -1347,15 +1300,6 @@ export function MakeShellServiceDefinition({
                                 </div>
                             </>
                         )}
-
-                        {/* Always render all side panes, but render them into portals so we can relocate them (undock/redock) without losing their state. */}
-                        {/* {coercedSidePanes.map((sidePaneDefinition) => {
-                            return (
-                                <Portal key={sidePaneDefinition.key} mountNode={sidePaneDefinition.container}>
-                                    <sidePaneDefinition.content />
-                                </Portal>
-                            );
-                        })} */}
                     </div>
                 );
             };
