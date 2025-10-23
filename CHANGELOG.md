@@ -1,5 +1,29 @@
 # Changelog
 
+## 8.33.1
+
+### Playground
+
+- Playground: Fix tab handling regression from Monaco update - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17337](https://github.com/BabylonJS/Babylon.js/pull/17337))
+
+## 8.33.0
+
+### Core
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Inspector
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Loaders
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
+### Serializers
+
+- OpenPBR Fuzz layer - by [MiiBond](https://github.com/MiiBond) ([#17308](https://github.com/BabylonJS/Babylon.js/pull/17308))
+
 ## 8.32.3
 
 ### Core
