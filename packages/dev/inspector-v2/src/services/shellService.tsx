@@ -1,4 +1,4 @@
-import type { ButtonProps, MenuTriggerProps } from "@fluentui/react-components";
+import type { MenuTriggerProps } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable } from "core/index";
@@ -18,6 +18,7 @@ import {
     MenuTrigger,
     mergeClasses,
     Portal,
+    SplitButton,
     Subtitle2Stronger,
     tokens,
     ToolbarRadioButton,
@@ -35,6 +36,7 @@ import {
     PanelLeftExpandRegular,
     PanelRightContractRegular,
     PanelRightExpandRegular,
+    PictureInPictureEnterRegular,
 } from "@fluentui/react-icons";
 import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -333,7 +335,10 @@ const useStyles = makeStyles({
         flexDirection: "row",
     },
     paneCollapseButton: {
-        margin: `0 ${tokens.spacingHorizontalSNudge}`,
+        margin: `0 ${tokens.spacingVerticalXS}`,
+    },
+    collapseMenuPopover: {
+        minWidth: 0,
     },
     pane: {
         backgroundColor: tokens.colorNeutralBackground2,
@@ -418,6 +423,9 @@ const useStyles = makeStyles({
         flexGrow: 1,
         display: "flex",
         overflow: "hidden",
+    },
+    expandButton: {
+        // minWidth: "48px",
     },
 });
 
@@ -645,7 +653,7 @@ function usePane(
 
     const onExpandCollapseClick = useCallback(() => {
         setCollapsed((collapsed) => !collapsed);
-    }, [collapsed]);
+    }, []);
 
     const widthStorageKey = `Babylon/Settings/${location}Pane/WidthAdjust`;
     const heightStorageKey = `Babylon/Settings/${location}Pane/HeightAdjust`;
@@ -714,30 +722,34 @@ function usePane(
         return () => observer.remove();
     }, [topPanes, bottomPanes, onSelectSidePane]);
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ExpandCollapseButton = useCallback(
-        (props: Pick<ButtonProps, "appearance">) => {
-            const expandCollapseIcon =
-                location === "left" ? (
-                    collapsed ? (
-                        <PanelLeftExpandRegular />
-                    ) : (
-                        <PanelLeftContractRegular />
-                    )
-                ) : collapsed ? (
-                    <PanelRightExpandRegular />
-                ) : (
-                    <PanelRightContractRegular />
-                );
+    const expandCollapseButton = useMemo(() => {
+        const expandCollapseIcon =
+            location === "left" ? collapsed ? <PanelLeftExpandRegular /> : <PanelLeftContractRegular /> : collapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />;
 
-            return (
-                <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
-                    <Button className={classes.paneCollapseButton} appearance={props.appearance} icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
-                </Tooltip>
-            );
-        },
-        [collapsed, location]
-    );
+        return (
+            <Menu positioning="below-end">
+                <MenuTrigger disableButtonEnhancement={true}>
+                    {(triggerProps) => (
+                        <Tooltip content="Select Theme" relationship="label">
+                            <SplitButton
+                                className={classes.paneCollapseButton}
+                                menuButton={triggerProps}
+                                primaryActionButton={{ onClick: onExpandCollapseClick }}
+                                size="small"
+                                appearance="transparent"
+                                icon={expandCollapseIcon}
+                            />
+                        </Tooltip>
+                    )}
+                </MenuTrigger>
+                <MenuPopover className={classes.collapseMenuPopover}>
+                    <MenuList>
+                        <MenuItem icon={<PictureInPictureEnterRegular />}>Undock</MenuItem>
+                    </MenuList>
+                </MenuPopover>
+            </Menu>
+        );
+    }, [collapsed, onExpandCollapseClick, location]);
 
     const createPaneTabList = useCallback(
         (
@@ -790,7 +802,7 @@ function usePane(
                                             <Divider vertical inset style={{ minHeight: 0 }} />{" "}
                                         </>
                                     )}
-                                    <ExpandCollapseButton appearance="subtle" />
+                                    {expandCollapseButton}
                                 </>
                             )}
                         </div>
@@ -872,10 +884,10 @@ function usePane(
                                     <>
                                         <div className={classes.barDiv}>
                                             {/* The tablist gets merged in with the toolbar. */}
-                                            {location === "left" && <ExpandCollapseButton appearance="subtle" />}
+                                            {location === "left" && expandCollapseButton}
                                             {topPaneTabList}
                                             <Toolbar location="top" components={topBarItems} />
-                                            {location === "right" && <ExpandCollapseButton appearance="subtle" />}
+                                            {location === "right" && expandCollapseButton}
                                         </div>
                                     </>
                                 )}
@@ -952,7 +964,7 @@ function usePane(
         collapsed,
     ]);
 
-    return [topPaneTabList, pane, collapsed, ExpandCollapseButton, topSelectedTab, bottomSelectedTab] as const;
+    return [topPaneTabList, pane, collapsed, setCollapsed, topSelectedTab, bottomSelectedTab] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -1139,7 +1151,7 @@ export function MakeShellServiceDefinition({
                 const [bottomRightPaneContainer, setBottomRightPaneContainer] = useState<HTMLElement | null>(null);
 
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                const [leftPaneTabList, leftPane, leftPaneCollapsed, LeftExpandCollapseButton, topLeftSelectedPane, bottomLeftSelectedPane] = usePane(
+                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, topLeftSelectedPane, bottomLeftSelectedPane] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
@@ -1154,7 +1166,7 @@ export function MakeShellServiceDefinition({
                 );
 
                 // eslint-disable-next-line @typescript-eslint/naming-convention
-                const [rightPaneTabList, rightPane, rightPaneCollapsed, RightExpandCollapseButton, topRightSelectedPane, bottomRightSelectedPane] = usePane(
+                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, topRightSelectedPane, bottomRightSelectedPane] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
@@ -1211,14 +1223,14 @@ export function MakeShellServiceDefinition({
                                 {centralContents.map((entry) => (
                                     <entry.component key={entry.key} />
                                 ))}
-                                <FluentFade visible={leftPaneCollapsed}>
+                                <FluentFade visible={leftPaneCollapsed} delay={50}>
                                     <div style={{ position: "absolute", left: 0 }}>
-                                        <LeftExpandCollapseButton appearance="secondary" />
+                                        <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
                                     </div>
                                 </FluentFade>
-                                <FluentFade visible={rightPaneCollapsed}>
+                                <FluentFade visible={rightPaneCollapsed} delay={50}>
                                     <div style={{ position: "absolute", right: 0 }}>
-                                        <RightExpandCollapseButton appearance="secondary" />
+                                        <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />
                                     </div>
                                 </FluentFade>
                             </div>
