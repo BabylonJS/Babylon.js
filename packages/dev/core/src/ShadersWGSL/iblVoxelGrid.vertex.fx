@@ -20,7 +20,6 @@ uniform invWorldScale: mat4x4f;
 
 varying vNormalizedPosition : vec3f;
 flat varying f_swizzle: i32;
-varying vNormal : vec3f;
 
 fn readVertexPosition(index : u32)->vec3f {
   var pos : vec3f;
@@ -68,7 +67,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #include <morphTargetsVertexGlobal>
 let inputPosition: vec3f = positionUpdated;
-#include <morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+#include <morphTargetsVertex>("vertexInputs.position\\),inputPosition\\)")[0..maxSimultaneousMorphTargets]
 
 #include <instancesVertex>
 

@@ -9,11 +9,7 @@
 			vertexID = f32(vertexInputs.vertexIndex) * uniforms.morphTargetTextureInfo.x;
 
 			#ifdef MORPHTARGETS_POSITION
-				#ifdef USE_VERTEX_PULLING
-				positionUpdated = positionUpdated + (readVector3FromRawSampler(i, vertexID) - inputPosition) * uniforms.morphTargetInfluences[i];
-				#else
 				positionUpdated = positionUpdated + (readVector3FromRawSampler(i, vertexID) - vertexInputs.position) * uniforms.morphTargetInfluences[i];
-				#endif
 			#endif
 			#ifdef MORPHTARGETTEXTURE_HASPOSITIONS
 				vertexID = vertexID + 1.0;
@@ -51,11 +47,7 @@
 		#endif
 	#else
 		#ifdef MORPHTARGETS_POSITION
-			#ifdef USE_VERTEX_PULLING
-				positionUpdated = positionUpdated + (vertexInputs.position{X} - inputPosition) * uniforms.morphTargetInfluences[{X}];
-			#else
-				positionUpdated = positionUpdated + (vertexInputs.position{X} - vertexInputs.position) * uniforms.morphTargetInfluences[{X}];
-			#endif
+			positionUpdated = positionUpdated + (vertexInputs.position{X} - vertexInputs.position) * uniforms.morphTargetInfluences[{X}];
 		#endif
 		
 		#ifdef MORPHTARGETS_NORMAL
