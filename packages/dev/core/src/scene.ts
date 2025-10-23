@@ -1236,21 +1236,22 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             : this._mirroredCameraPosition
               ? this._mirroredCameraPosition
               : (this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly);
-
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
         const offset = this.floatingOriginOffset;
-        const finalEyePos = TmpVectors.Vector4[0].set(eyePosition.x - offset.x, eyePosition.y - offset.y, eyePosition.z - offset.z, invertNormal ? -1 : 1);
+        const eyePos = TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+        const offsetEyePos = eyePos.subtractFromFloatsToRef(offset.x, offset.y, offset.z, 0, TmpVectors.Vector4[1]);
 
         if (effect) {
             if (isVector3) {
-                effect.setFloat3(variableName, finalEyePos.x, finalEyePos.y, finalEyePos.z);
+                effect.setFloat3(variableName, offsetEyePos.x, offsetEyePos.y, offsetEyePos.z);
             } else {
-                effect.setVector4(variableName, finalEyePos);
+                effect.setVector4(variableName, offsetEyePos);
             }
         }
 
-        return TmpVectors.Vector4[0];
+        // Return the non-offset position
+        return eyePos;
     }
 
     /**
