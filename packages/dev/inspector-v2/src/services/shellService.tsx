@@ -870,7 +870,7 @@ function usePane(
 
     const paneContainerRef = useRef<HTMLDivElement>(null);
 
-    const [windowState, setWindowState] = useState<{ mountNode: HTMLElement; renderer: GriffelRenderer }>();
+    const [windowState, setWindowState] = useState<{ window: Window; mountNode: HTMLElement; renderer: GriffelRenderer }>();
 
     useEffect(() => {
         const disposeActions: (() => void)[] = [];
@@ -898,10 +898,10 @@ function usePane(
                 childWindow.document.title = location === "left" ? "Left" : "Right";
 
                 if (childWindow.document.readyState === "complete") {
-                    setWindowState({ mountNode: body, renderer });
+                    setWindowState({ window: childWindow, mountNode: body, renderer });
                 } else {
                     const onChildWindowLoad = () => {
-                        setWindowState({ mountNode: body, renderer });
+                        setWindowState({ window: childWindow, mountNode: body, renderer });
                     };
                     childWindow.addEventListener("load", onChildWindowLoad, { once: true });
                     disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
@@ -927,6 +927,13 @@ function usePane(
 
         return () => disposeActions.reverse().forEach((dispose) => dispose());
     }, [undocked]);
+
+    // This effect closes the window if all panes have been removed.
+    useEffect(() => {
+        if (windowState && topPanes.length === 0 && bottomPanes.length === 0) {
+            windowState.window.close();
+        }
+    }, [windowState, topPanes, bottomPanes]);
 
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
     const corePane = useMemo(() => {
