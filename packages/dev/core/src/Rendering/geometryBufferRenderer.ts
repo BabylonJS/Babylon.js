@@ -24,7 +24,7 @@ import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareDefinesAndAtt
 
 import "../Engines/Extensions/engine.multiRender";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { OpenPBRMaterial } from "../Materials/PBR/openPbrMaterial";
+import type { OpenPBRMaterial } from "../Materials/PBR/openpbrMaterial";
 
 /** @internal */
 interface ISavedTransformationMatrix {
