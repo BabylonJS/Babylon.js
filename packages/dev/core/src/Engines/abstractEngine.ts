@@ -140,10 +140,11 @@ export interface AbstractEngineOptions {
     /**
      * @experimental
      * FloatingOriginMode helps avoid floating point imprecision of rendering large worlds by
-     * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)--
-     * 2. Telling all scenes to offset uniform values before passing to shader so that camera is centered at origin and world is offset by camera position
+     * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)
+     * 2. Offset position-related uniform and attribute values before passing to shader so that active camera is centered at origin and world is offset by active camera position
      *
-     * NOTE that the offset will be determined by the most recently created scene's active camera world position. In future the feature should evolve
+     * NOTE that if this mode is set during engineCreation, all scenes will have floatingOrigin offset and you do not need to send this option to each scene creation.
+     * If you'd like to have only specific scenes using the offset logic, you can set the flag on those scenes directly -- however, you must also set the useHighPrecisionMatrix option on engine.
      */
     readonly useFloatingOriginMode?: boolean;
 
