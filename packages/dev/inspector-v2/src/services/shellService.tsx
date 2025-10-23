@@ -367,6 +367,9 @@ const useStyles = makeStyles({
         flexDirection: "column",
         overflow: "hidden",
     },
+    unselectedPane: {
+        display: "none",
+    },
     paneHeaderDiv: {
         display: "flex",
         flexDirection: "row",
@@ -882,30 +885,31 @@ function usePane(
 
         if (undocked) {
             const bounds = paneContainerRef.current?.getBoundingClientRect();
-            const width = bounds?.width ?? defaultWidth;
-            const height = (bounds?.height ?? 800) * 0.9;
-            const left = bounds?.left ?? 200;
-            const top = bounds?.top ?? 200;
+            const width = bounds ? bounds.width : defaultWidth;
+            const height = bounds ? bounds.height - 100 : 800;
+            const left = bounds ? bounds.left + window.screenX : 200;
+            const top = bounds ? bounds.top + window.screenY + 100 : 200;
 
             const childWindow = window.open("", "", `width=${width},height=${height},left=${left},top=${top},location=no`);
             if (childWindow) {
-                childWindow.document.body.style.width = "100%";
-                childWindow.document.body.style.height = "100%";
-                childWindow.document.body.style.margin = "0";
-                childWindow.document.body.style.padding = "0";
-                childWindow.document.body.style.overflow = "hidden";
+                const body = childWindow.document.body;
+                body.style.width = "100%";
+                body.style.height = "100%";
+                body.style.margin = "0";
+                body.style.padding = "0";
+                body.style.display = "flex";
+                body.style.overflowY = "hidden";
+                body.style.overflowX = "auto";
 
                 const renderer = createDOMRenderer(childWindow.document);
 
                 childWindow.document.title = location === "left" ? "Left" : "Right";
-                const container = childWindow.document.createElement("div");
-                childWindow.document.body.appendChild(container);
 
                 if (childWindow.document.readyState === "complete") {
-                    setWindowState({ mountNode: container, renderer });
+                    setWindowState({ mountNode: body, renderer });
                 } else {
                     const onChildWindowLoad = () => {
-                        setWindowState({ mountNode: container, renderer });
+                        setWindowState({ mountNode: body, renderer });
                     };
                     childWindow.addEventListener("load", onChildWindowLoad, { once: true });
                     disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
@@ -916,6 +920,7 @@ function usePane(
                     () => {
                         setWindowState(undefined);
                         setUndocked(false);
+                        // setPaneWidthAdjust(childWindow.innerWidth - defaultWidth);
                     },
                     { once: true }
                 );
@@ -940,10 +945,10 @@ function usePane(
                     <>
                         <div className={classes.barDiv}>
                             {/* The tablist gets merged in with the toolbar. */}
-                            {location === "left" && expandCollapseButton}
+                            {!undocked && location === "left" && expandCollapseButton}
                             {topPaneTabList}
                             <Toolbar location="top" components={topBarItems} />
-                            {location === "right" && expandCollapseButton}
+                            {!undocked && location === "right" && expandCollapseButton}
                         </div>
                     </>
                 )}
@@ -954,7 +959,12 @@ function usePane(
                         {topSelectedTab && (
                             <>
                                 <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
-                                <div ref={topPaneContainerRef} className={classes.paneContent} />
+                                {topPanes.map((pane) => (
+                                    <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
+                                        <pane.content />
+                                    </div>
+                                ))}
+                                {/* <div ref={topPaneContainerRef} className={classes.paneContent} /> */}
                             </>
                         )}
                     </div>
@@ -980,7 +990,12 @@ function usePane(
                         {bottomSelectedTab && (
                             <>
                                 <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
-                                <div ref={bottomPaneContainerRef} className={classes.paneContent} />
+                                {bottomPanes.map((pane) => (
+                                    <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
+                                        <pane.content />
+                                    </div>
+                                ))}
+                                {/* <div ref={bottomPaneContainerRef} className={classes.paneContent} /> */}
                             </>
                         )}
                     </div>
@@ -996,7 +1011,19 @@ function usePane(
                 )}
             </>
         );
-    }, [topPanes, topSelectedTab, validTopDockOptions, bottomPanes, bottomSelectedTab, validBottomDockOptions, topBarItems, bottomBarItems, topPaneTabList, bottomPaneTabList]);
+    }, [
+        topPanes,
+        topSelectedTab,
+        validTopDockOptions,
+        bottomPanes,
+        bottomSelectedTab,
+        validBottomDockOptions,
+        topBarItems,
+        bottomBarItems,
+        topPaneTabList,
+        bottomPaneTabList,
+        undocked,
+    ]);
 
     const pane = useMemo(() => {
         if (!windowState) {
@@ -1028,7 +1055,9 @@ function usePane(
             return (
                 <Portal mountNode={mountNode}>
                     <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
-                        <Theme targetDocument={mountNode.ownerDocument}>{corePane}</Theme>
+                        <Theme className={classes.paneContent} style={{ minWidth }} targetDocument={mountNode.ownerDocument}>
+                            {corePane}
+                        </Theme>
                     </RendererProvider>
                 </Portal>
             );
@@ -1252,24 +1281,24 @@ export function MakeShellServiceDefinition({
                 );
 
                 // Update the content of the top left pane container.
-                useEffect(() => {
-                    topLeftPaneContainer?.replaceChildren(...(topLeftSelectedPane ? [topLeftSelectedPane.container] : []));
-                }, [topLeftPaneContainer, topLeftSelectedPane]);
+                // useEffect(() => {
+                //     topLeftPaneContainer?.replaceChildren(...(topLeftSelectedPane ? [topLeftSelectedPane.container] : []));
+                // }, [topLeftPaneContainer, topLeftSelectedPane]);
 
-                // Update the content of the bottom left pane container.
-                useEffect(() => {
-                    bottomLeftPaneContainer?.replaceChildren(...(bottomLeftSelectedPane ? [bottomLeftSelectedPane.container] : []));
-                }, [bottomLeftPaneContainer, bottomLeftSelectedPane]);
+                // // Update the content of the bottom left pane container.
+                // useEffect(() => {
+                //     bottomLeftPaneContainer?.replaceChildren(...(bottomLeftSelectedPane ? [bottomLeftSelectedPane.container] : []));
+                // }, [bottomLeftPaneContainer, bottomLeftSelectedPane]);
 
-                // Update the content of the top right pane container.
-                useEffect(() => {
-                    topRightPaneContainer?.replaceChildren(...(topRightSelectedPane ? [topRightSelectedPane.container] : []));
-                }, [topRightPaneContainer, topRightSelectedPane]);
+                // // Update the content of the top right pane container.
+                // useEffect(() => {
+                //     topRightPaneContainer?.replaceChildren(...(topRightSelectedPane ? [topRightSelectedPane.container] : []));
+                // }, [topRightPaneContainer, topRightSelectedPane]);
 
-                // Update the content of the bottom right pane container.
-                useEffect(() => {
-                    bottomRightPaneContainer?.replaceChildren(...(bottomRightSelectedPane ? [bottomRightSelectedPane.container] : []));
-                }, [bottomRightPaneContainer, bottomRightSelectedPane]);
+                // // Update the content of the bottom right pane container.
+                // useEffect(() => {
+                //     bottomRightPaneContainer?.replaceChildren(...(bottomRightSelectedPane ? [bottomRightSelectedPane.container] : []));
+                // }, [bottomRightPaneContainer, bottomRightSelectedPane]);
 
                 return (
                     <div className={classes.mainView}>
@@ -1320,13 +1349,13 @@ export function MakeShellServiceDefinition({
                         )}
 
                         {/* Always render all side panes, but render them into portals so we can relocate them (undock/redock) without losing their state. */}
-                        {coercedSidePanes.map((sidePaneDefinition) => {
+                        {/* {coercedSidePanes.map((sidePaneDefinition) => {
                             return (
                                 <Portal key={sidePaneDefinition.key} mountNode={sidePaneDefinition.container}>
                                     <sidePaneDefinition.content />
                                 </Portal>
                             );
-                        })}
+                        })} */}
                     </div>
                 );
             };
