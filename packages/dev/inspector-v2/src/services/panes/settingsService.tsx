@@ -9,11 +9,12 @@ import { SettingsRegular } from "@fluentui/react-icons";
 
 import { DataStorage } from "core/Misc/dataStorage";
 import { Observable } from "core/Misc/observable";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ExtensibleAccordion } from "../../components/extensibleAccordion";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
-import { useCompactMode } from "../../hooks/settingsHooks";
+import { useCompactMode, useSidePaneDockOverrides } from "../../hooks/settingsHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
 import { SettingsContextIdentity } from "../settingsContext";
@@ -108,6 +109,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
 
                 const [compactMode, setCompactMode] = useCompactMode();
+                const [, , resetSidePaneLayout] = useSidePaneDockOverrides();
 
                 return (
                     <>
@@ -146,6 +148,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                             settings.showPropertiesOnEntitySelection = checked;
                                         }}
                                     />
+                                    <ButtonLine label="Reset Layout" onClick={resetSidePaneLayout} />
                                 </AccordionSection>
                             </ExtensibleAccordion>
                         )}

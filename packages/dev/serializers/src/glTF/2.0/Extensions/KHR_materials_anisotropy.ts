@@ -6,7 +6,7 @@ import type { Nullable } from "core/types";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Texture } from "core/Materials/Textures/texture";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { Constants } from "core/Engines/constants";
 import { Effect } from "core/Materials/effect";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";

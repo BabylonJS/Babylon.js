@@ -9,8 +9,8 @@ import type { ISmartArrayLike } from "./Misc/smartArray";
 import { SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import type { Vector2, Vector4 } from "./Maths/math.vector";
-import { Vector3, Matrix, TmpVectors } from "./Maths/math.vector";
+import type { Vector2 } from "./Maths/math.vector";
+import { Vector3, Vector4, Matrix, TmpVectors } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
@@ -242,6 +242,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
 
+    private _tempVect4 = new Vector4();
     /**
      * Observable triggered when the performance priority is changed
      */
@@ -275,6 +276,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * The material properties need to be setup according to the type of texture in use.
      */
     public environmentBRDFTexture: BaseTexture;
+
+    /**
+     * This stores the brdf lookup for the fuzz layer of PBR materials in your scene.
+     */
+    public environmentFuzzBRDFTexture: BaseTexture;
 
     /**
      * Intensity of the environment (i.e. all indirect lighting) in all pbr material.
@@ -1233,11 +1239,10 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             : this._mirroredCameraPosition
               ? this._mirroredCameraPosition
               : (this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly);
-
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
         const offset = this.floatingOriginOffset;
-        const eyePos = TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+        const eyePos = this._tempVect4.set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
         const offsetEyePos = eyePos.subtractFromFloatsToRef(offset.x, offset.y, offset.z, 0, TmpVectors.Vector4[1]);
 
         if (effect) {

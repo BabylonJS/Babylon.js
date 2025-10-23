@@ -2,7 +2,7 @@ import type { IMaterial, IKHRMaterialsClearcoatIor } from "babylonjs-gltf2interf
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Nullable } from "core/types";
 

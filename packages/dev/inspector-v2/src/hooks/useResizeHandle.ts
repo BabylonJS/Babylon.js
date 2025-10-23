@@ -4,7 +4,7 @@
 // 1. https://github.com/microsoft/fluentui-contrib/issues/523
 // 2. React 19 compatibility
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Clamp } from "core/Maths/math.scalar.functions";
 
@@ -43,19 +43,31 @@ export type UseResizeHandleParams = {
 export function useResizeHandle(params: UseResizeHandleParams) {
     const { growDirection, variableName, onChange } = params;
 
-    // const [value, setValue] = useState(0);
+    const valueRef = useRef(0);
     const [elementRef, setElementRef] = useState<HTMLElement | null>(null);
     const [handleRef, setHandleRef] = useState<HTMLElement | null>(null);
 
-    const setValue = useCallback(
+    const updateElementStyle = useCallback(
         (value: number) => {
             if (elementRef) {
                 elementRef.style.setProperty(variableName, `${value}px`);
             }
+        },
+        [elementRef, variableName]
+    );
+
+    const setValue = useCallback(
+        (value: number) => {
+            valueRef.current = value;
+            updateElementStyle(value);
             onChange?.(value);
         },
-        [elementRef, variableName, onChange]
+        [updateElementStyle, onChange]
     );
+
+    useEffect(() => {
+        updateElementStyle(valueRef.current);
+    }, [updateElementStyle]);
 
     useEffect(() => {
         if (handleRef) {
@@ -84,6 +96,7 @@ export function useResizeHandle(params: UseResizeHandleParams) {
 
             const onPointerDown = (event: PointerEvent) => {
                 event.preventDefault();
+                delta = valueRef.current;
                 handleRef.setPointerCapture(event.pointerId);
                 handleRef.addEventListener("pointermove", onPointerMove);
             };
@@ -92,13 +105,13 @@ export function useResizeHandle(params: UseResizeHandleParams) {
                 event.preventDefault();
                 handleRef.releasePointerCapture(event.pointerId);
                 handleRef.removeEventListener("pointermove", onPointerMove);
-                delta = coerceDelta(delta);
+                valueRef.current = coerceDelta(valueRef.current);
             };
 
             handleRef.addEventListener("pointerdown", onPointerDown);
             handleRef.addEventListener("pointerup", onPointerUp);
         }
-    }, [handleRef]);
+    }, [handleRef, setValue]);
 
     return {
         elementRef: setElementRef,

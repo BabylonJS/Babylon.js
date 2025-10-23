@@ -26,7 +26,7 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
 import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { GetMimeType } from "core/Misc/fileTools";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 const Epsilon = 1e-6;
 const DielectricSpecular = new Color3(0.04, 0.04, 0.04) as DeepImmutable<Color3>;
