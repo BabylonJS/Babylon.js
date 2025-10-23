@@ -876,6 +876,7 @@ function usePane(
         const disposeActions: (() => void)[] = [];
 
         if (undocked) {
+            // Create the child window with approximately the same location and size as the side pane.
             const bounds = paneContainerRef.current?.getBoundingClientRect();
             const width = bounds ? bounds.width : defaultWidth;
             const height = bounds ? bounds.height - 100 : 800;
@@ -893,20 +894,25 @@ function usePane(
                 body.style.overflowY = "hidden";
                 body.style.overflowX = "auto";
 
-                const renderer = createDOMRenderer(childWindow.document);
-
                 childWindow.document.title = location === "left" ? "Left" : "Right";
 
+                const applyWindowState = () => {
+                    // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
+                    setWindowState({ window: childWindow, mountNode: body, renderer: createDOMRenderer(childWindow.document) });
+                };
+
+                // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
                 if (childWindow.document.readyState === "complete") {
-                    setWindowState({ window: childWindow, mountNode: body, renderer });
+                    applyWindowState();
                 } else {
                     const onChildWindowLoad = () => {
-                        setWindowState({ window: childWindow, mountNode: body, renderer });
+                        applyWindowState();
                     };
                     childWindow.addEventListener("load", onChildWindowLoad, { once: true });
                     disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
                 }
 
+                // When the child window is closed for any reason, transition back to a docked state.
                 childWindow.addEventListener(
                     "unload",
                     () => {
@@ -917,6 +923,7 @@ function usePane(
                     { once: true }
                 );
 
+                // If the main window closes, close any undocked child windows as well (don't leave them orphaned).
                 const onParentWindowUnload = () => childWindow.close();
                 window.addEventListener("unload", onParentWindowUnload);
                 disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
@@ -1027,6 +1034,7 @@ function usePane(
     // This deals with docked vs undocked state, where undocked is rendered into a separate window via a portal.
     const pane = useMemo(() => {
         if (!windowState) {
+            // If there is no window state, then we are docked, so render the resizable div and the collapse container.
             return (
                 <div ref={paneContainerRef} className={classes.paneContainer}>
                     {(topPanes.length > 0 || bottomPanes.length > 0) && (
@@ -1051,10 +1059,14 @@ function usePane(
                 </div>
             );
         } else {
+            // Otherwise we are undocked, so render into the portal that targets the body of the child window.
             const { mountNode, renderer } = windowState;
             return (
+                // Portal targets the body of the child window.
                 <Portal mountNode={mountNode}>
+                    {/* RenderProvider manages Fluent style/class state. */}
                     <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
+                        {/* Theme gives us the Fluent Provider, needed for managing other Fluent state and applying the current theme mode. */}
                         <Theme className={classes.paneContent} style={{ minWidth }} targetDocument={mountNode.ownerDocument}>
                             {corePane}
                         </Theme>
