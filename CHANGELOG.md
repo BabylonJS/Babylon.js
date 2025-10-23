@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.33.1
+
+### Playground
+
+- Playground: Fix tab handling regression from Monaco update - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#17337](https://github.com/BabylonJS/Babylon.js/pull/17337))
+
 ## 8.33.0
 
 ### Core
