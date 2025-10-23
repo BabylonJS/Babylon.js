@@ -275,6 +275,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public environmentBRDFTexture: BaseTexture;
 
     /**
+     * This stores the brdf lookup for the fuzz layer of PBR materials in your scene.
+     */
+    public environmentFuzzBRDFTexture: BaseTexture;
+
+    /**
      * Intensity of the environment (i.e. all indirect lighting) in all pbr material.
      * This dims or reinforces the indirect lighting overall (reflection and diffuse).
      * As in the majority of the scene they are the same (exception for multi room and so on),

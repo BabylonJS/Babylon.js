@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, expandToProperty, addAccessorsForMaterialProperty } from "../../Misc/decorators";
-import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
+import { GetEnvironmentBRDFTexture, GetEnvironmentFuzzBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import { Scene } from "../../scene";
 import type { Color4 } from "../../Maths/math.color";
 import { Color3 } from "../../Maths/math.color";
 import { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import { Texture } from "../../Materials/Textures/texture";
+import { Texture } from "../Textures/texture";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
@@ -236,6 +236,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
+    public FUZZENVIRONMENTBRDF = false;
 
     public NORMAL = false;
     public TANGENT = false;
@@ -244,12 +245,43 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public PARALLAX_RHS = false;
     public PARALLAXOCCLUSION = false;
     public NORMALXYSCALE = true;
-    public ANISOTROPIC = false; // Enables anisotropic logic. Still needed because it's used in pbrHelperFunctions
-    public ANISOTROPIC_OPENPBR = true; // Tells the shader to use OpenPBR's anisotropic roughness remapping
-    public ANISOTROPIC_BASE = false; // Tells the shader to apply anisotropy to the base layer
-    public ANISOTROPIC_COAT = false; // Tells the shader to apply anisotropy to the coat layer
-    public THIN_FILM = false; // Enables thin film layer
-    public IRIDESCENCE = false; // Enables iridescence layer
+    /**
+     * Enables anisotropic logic. Still needed because it's used in pbrHelperFunctions
+     */
+    public ANISOTROPIC = false;
+    /**
+     * Tells the shader to use OpenPBR's anisotropic roughness remapping
+     */
+    public ANISOTROPIC_OPENPBR = true;
+    /**
+     * Tells the shader to apply anisotropy to the base layer
+     */
+    public ANISOTROPIC_BASE = false;
+    /**
+     * Tells the shader to apply anisotropy to the coat layer
+     */
+    public ANISOTROPIC_COAT = false;
+
+    /**
+     * Number of samples to use for the fuzz IBL lighting calculations
+     */
+    public FUZZ_IBL_SAMPLES = 6;
+
+    /**
+     * Tells the shader to enable the fuzz layer
+     */
+    public FUZZ = false;
+
+    /**
+     * Tells the shader to enable the thin film layer
+     */
+    public THIN_FILM = false;
+
+    /**
+     * Tells the shader to enable the legacy iridescence code
+     * Iridescence is the name of thin film interference in the PBR material.
+     */
+    public IRIDESCENCE = false;
 
     public REFLECTION = false;
     public REFLECTIONMAP_3D = false;
@@ -664,6 +696,60 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * same texture as the coat_weight.
      */
     public useCoatRoughnessFromWeightTexture: boolean = false;
+
+    /**
+     * Defines the weight of the fuzz layer on the surface.
+     * See OpenPBR's specs for fuzz_weight
+     */
+    public fuzzWeight: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzWeight")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _fuzzWeight: Property<number> = new Property<number>("fuzz_weight", 0.0, "vFuzzWeight", 1, 0);
+
+    /**
+     * Weight texture of the fuzz layer.
+     * See OpenPBR's specs for fuzz_weight
+     */
+    public fuzzWeightTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzWeightTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _fuzzWeightTexture: Sampler = new Sampler("fuzz_weight", "fuzzWeight", "FUZZ_WEIGHT");
+
+    /**
+     * Defines the color of the fuzz layer on the surface.
+     * See OpenPBR's specs for fuzz_color
+     */
+    public fuzzColor: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzColor")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _fuzzColor: Property<Color3> = new Property<Color3>("fuzz_color", Color3.White(), "vFuzzColor", 3, 0);
+
+    /**
+     * Color texture of the fuzz layer.
+     * See OpenPBR's specs for fuzz_color
+     */
+    public fuzzColorTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzColorTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _fuzzColorTexture: Sampler = new Sampler("fuzz_color", "fuzzColor", "FUZZ_COLOR");
+
+    /**
+     * Defines the roughness of the fuzz layer on the surface.
+     * See OpenPBR's specs for fuzz_roughness
+     */
+    public fuzzRoughness: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzRoughness")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _fuzzRoughness: Property<number> = new Property<number>("fuzz_roughness", 0.5, "vFuzzRoughness", 1, 0);
+
+    /**
+     * Roughness texture of the fuzz layer.
+     * See OpenPBR's specs for fuzz_roughness
+     */
+    public fuzzRoughnessTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "fuzzRoughnessTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _fuzzRoughnessTexture: Sampler = new Sampler("fuzz_roughness", "fuzzRoughness", "FUZZ_ROUGHNESS");
 
     /**
      * Defines the normal of the material's geometry.
@@ -1292,6 +1378,14 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _environmentBRDFTexture: Nullable<BaseTexture> = null;
 
     /**
+     * Specifies the environment BRDF texture used to compute the scale and offset roughness values
+     * from cos theta and roughness for the fuzz layer:
+     * https://github.com/tizian/ltc-sheen?tab=readme-ov-file
+     * @internal
+     */
+    public _environmentFuzzBRDFTexture: Nullable<BaseTexture> = null;
+
+    /**
      * Force the shader to compute irradiance in the fragment shader in order to take normal mapping into account.
      * @internal
      */
@@ -1318,6 +1412,19 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     }
     public set realTimeFilteringQuality(n: number) {
         this._realTimeFilteringQuality = n;
+        this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private _fuzzSampleNumber: number = 4;
+
+    /**
+     * The number of samples used to compute the fuzz IBL lighting.
+     */
+    public get fuzzSampleNumber(): number {
+        return this._fuzzSampleNumber;
+    }
+    public set fuzzSampleNumber(n: number) {
+        this._fuzzSampleNumber = n;
         this.markAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
@@ -1441,6 +1548,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         };
 
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
+        this._environmentFuzzBRDFTexture = GetEnvironmentFuzzBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
 
         // Build the internal property list that can be used to generate and update the uniform buffer
@@ -1513,6 +1621,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._coatIor;
         this._coatDarkening;
         this._coatDarkeningTexture;
+        this._fuzzWeight;
+        this._fuzzWeightTexture;
+        this._fuzzColor;
+        this._fuzzColorTexture;
+        this._fuzzRoughness;
+        this._fuzzRoughnessTexture;
         this._geometryNormalTexture;
         this._geometryTangent;
         this._geometryTangentTexture;
@@ -1763,6 +1877,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
+                if (this._environmentFuzzBRDFTexture && MaterialFlags.ReflectionTextureEnabled) {
+                    // This is blocking.
+                    if (!this._environmentFuzzBRDFTexture.isReady()) {
+                        return false;
+                    }
+                }
+
                 if (OpenPBRMaterial._noiseTextures[scene.uniqueId]) {
                     if (!OpenPBRMaterial._noiseTextures[scene.uniqueId].isReady()) {
                         return false;
@@ -2005,7 +2126,11 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     ubo.setTexture("environmentBrdfSampler", this._environmentBRDFTexture);
                 }
 
-                if (defines.ANISOTROPIC) {
+                if (defines.FUZZENVIRONMENTBRDF) {
+                    ubo.setTexture("environmentFuzzBrdfSampler", this._environmentFuzzBRDFTexture);
+                }
+
+                if (defines.ANISOTROPIC || defines.FUZZ) {
                     ubo.setTexture("blueNoiseSampler", OpenPBRMaterial._noiseTextures[this.getScene().uniqueId]);
                 }
             }
@@ -2151,6 +2276,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         if (forceDisposeTextures) {
             if (this._environmentBRDFTexture && this.getScene().environmentBRDFTexture !== this._environmentBRDFTexture) {
                 this._environmentBRDFTexture.dispose();
+            }
+            if (this._environmentFuzzBRDFTexture && this.getScene().environmentFuzzBRDFTexture !== this._environmentFuzzBRDFTexture) {
+                this._environmentFuzzBRDFTexture.dispose();
             }
 
             // Loop through samplers and dispose the textures
@@ -2335,6 +2463,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "areaLightsLTC2Sampler",
         ];
 
+        if (defines.FUZZENVIRONMENTBRDF) {
+            samplers.push("environmentFuzzBrdfSampler");
+        }
+
         for (const key in this._samplersList) {
             const sampler = this._samplersList[key];
             samplers.push(sampler.samplerName);
@@ -2516,6 +2648,12 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     defines.ENVIRONMENTBRDF_RGBD = false;
                 }
 
+                if (this._environmentFuzzBRDFTexture) {
+                    defines.FUZZENVIRONMENTBRDF = true;
+                } else {
+                    defines.FUZZENVIRONMENTBRDF = false;
+                }
+
                 if (this._shouldUseAlphaFromBaseColorTexture()) {
                     defines.ALPHA_FROM_BASE_COLOR_TEXTURE = true;
                 } else {
@@ -2589,6 +2727,20 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
+
+        defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
+        if (defines.FUZZ) {
+            if (!mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                defines._needUVs = true;
+                defines.MAINUV1 = true;
+            }
+            this._environmentFuzzBRDFTexture = GetEnvironmentFuzzBRDFTexture(this.getScene());
+            defines.FUZZ_IBL_SAMPLES = this.fuzzSampleNumber;
+        } else {
+            this._environmentFuzzBRDFTexture = null;
+            defines.FUZZENVIRONMENTBRDF = false;
+            defines.FUZZ_IBL_SAMPLES = 0;
+        }
 
         // Misc.
         if (defines._areMiscDirty) {
