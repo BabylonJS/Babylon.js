@@ -1,7 +1,7 @@
 import type { SmartArray } from "../../Misc/smartArray";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Matrix, Vector3, Vector2, TmpVectors } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Buffers/buffer";
 import type { SubMesh } from "../../Meshes/subMesh";
@@ -1887,7 +1887,9 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         if (!light.needCube()) {
-            effect.setMatrix("lightMatrix" + lightIndex, this.getTransformMatrix());
+            const offset = scene.floatingOriginOffset;
+            const lightMatrix = TmpVectors.Matrix[0].copyFrom(this.getTransformMatrix()).addTranslationFromFloats(-offset.x, -offset.y, -offset.z);
+            effect.setMatrix("lightMatrix" + lightIndex, lightMatrix);
         }
 
         // Only PCF uses depth stencil texture.
