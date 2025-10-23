@@ -12,7 +12,7 @@ import { ShellServiceIdentity } from "../services/shellService";
 
 const useStyles = makeStyles({
     themeButton: {
-        margin: `${tokens.spacingVerticalXXS} 0`,
+        margin: 0,
     },
     themeMenuPopover: {
         minWidth: 0,
