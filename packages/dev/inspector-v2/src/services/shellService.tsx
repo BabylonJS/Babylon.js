@@ -1,4 +1,4 @@
-import type { MenuTriggerProps } from "@fluentui/react-components";
+import type { ButtonProps, MenuTriggerProps } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable } from "core/index";
@@ -36,6 +36,7 @@ import {
     PanelRightContractRegular,
     PanelRightExpandRegular,
 } from "@fluentui/react-icons";
+import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Observable } from "core/Misc/observable";
@@ -713,13 +714,30 @@ function usePane(
         return () => observer.remove();
     }, [topPanes, bottomPanes, onSelectSidePane]);
 
-    const expandCollapseIcon = useMemo(() => {
-        if (location === "left") {
-            return collapsed ? <PanelLeftExpandRegular /> : <PanelLeftContractRegular />;
-        } else {
-            return collapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />;
-        }
-    }, [collapsed, location]);
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const ExpandCollapseButton = useCallback(
+        (props: Pick<ButtonProps, "appearance">) => {
+            const expandCollapseIcon =
+                location === "left" ? (
+                    collapsed ? (
+                        <PanelLeftExpandRegular />
+                    ) : (
+                        <PanelLeftContractRegular />
+                    )
+                ) : collapsed ? (
+                    <PanelRightExpandRegular />
+                ) : (
+                    <PanelRightContractRegular />
+                );
+
+            return (
+                <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
+                    <Button className={classes.paneCollapseButton} appearance={props.appearance} icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
+                </Tooltip>
+            );
+        },
+        [collapsed, location]
+    );
 
     const createPaneTabList = useCallback(
         (
@@ -772,9 +790,7 @@ function usePane(
                                             <Divider vertical inset style={{ minHeight: 0 }} />{" "}
                                         </>
                                     )}
-                                    <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
-                                        <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
-                                    </Tooltip>
+                                    <ExpandCollapseButton appearance="subtle" />
                                 </>
                             )}
                         </div>
@@ -856,8 +872,10 @@ function usePane(
                                     <>
                                         <div className={classes.barDiv}>
                                             {/* The tablist gets merged in with the toolbar. */}
+                                            {location === "left" && <ExpandCollapseButton appearance="subtle" />}
                                             {topPaneTabList}
                                             <Toolbar location="top" components={topBarItems} />
+                                            {location === "right" && <ExpandCollapseButton appearance="subtle" />}
                                         </div>
                                     </>
                                 )}
@@ -934,7 +952,7 @@ function usePane(
         collapsed,
     ]);
 
-    return [topPaneTabList, pane, topSelectedTab, bottomSelectedTab] as const;
+    return [topPaneTabList, pane, collapsed, ExpandCollapseButton, topSelectedTab, bottomSelectedTab] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -1120,7 +1138,8 @@ export function MakeShellServiceDefinition({
                 const [topRightPaneContainer, setTopRightPaneContainer] = useState<HTMLElement | null>(null);
                 const [bottomRightPaneContainer, setBottomRightPaneContainer] = useState<HTMLElement | null>(null);
 
-                const [leftPaneTabList, leftPane, topLeftSelectedPane, bottomLeftSelectedPane] = usePane(
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                const [leftPaneTabList, leftPane, leftPaneCollapsed, LeftExpandCollapseButton, topLeftSelectedPane, bottomLeftSelectedPane] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
@@ -1134,7 +1153,8 @@ export function MakeShellServiceDefinition({
                     bottomBarLeftItems
                 );
 
-                const [rightPaneTabList, rightPane, topRightSelectedPane, bottomRightSelectedPane] = usePane(
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                const [rightPaneTabList, rightPane, rightPaneCollapsed, RightExpandCollapseButton, topRightSelectedPane, bottomRightSelectedPane] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
@@ -1191,6 +1211,16 @@ export function MakeShellServiceDefinition({
                                 {centralContents.map((entry) => (
                                     <entry.component key={entry.key} />
                                 ))}
+                                <FluentFade visible={leftPaneCollapsed}>
+                                    <div style={{ position: "absolute", left: 0 }}>
+                                        <LeftExpandCollapseButton appearance="secondary" />
+                                    </div>
+                                </FluentFade>
+                                <FluentFade visible={rightPaneCollapsed}>
+                                    <div style={{ position: "absolute", right: 0 }}>
+                                        <RightExpandCollapseButton appearance="secondary" />
+                                    </div>
+                                </FluentFade>
                             </div>
 
                             {/* Render the right pane container. */}
