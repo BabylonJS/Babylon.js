@@ -5,12 +5,9 @@ import type { Material } from "core/Materials/material";
 import type { Nullable } from "core/types";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import type { Texture } from "core/Materials/Textures/texture";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
-import { Constants } from "core/Engines/constants";
-import { Effect } from "core/Materials/effect";
-import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import type { IProceduralTextureCreationOptions } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
+import { TextureMerger } from "core/Materials/Textures/textureMerger";
 
 const NAME = "KHR_materials_anisotropy";
 
@@ -25,64 +22,9 @@ function OpenpbrAnisotropyStrengthToGltf(baseRoughness: number, anisotropy: numb
     return { newBaseRoughness, newAnisotropyStrength };
 }
 
-function CopyTextureTransform(source: Texture, destination: Texture) {
-    destination.uOffset = source.uOffset;
-    destination.vOffset = source.vOffset;
-    destination.uScale = source.uScale;
-    destination.vScale = source.vScale;
-    destination.uAng = source.uAng;
-    destination.vAng = source.vAng;
-    destination.wAng = source.wAng;
-    destination.uRotationCenter = source.uRotationCenter;
-    destination.vRotationCenter = source.vRotationCenter;
-}
-
-// Custom shader for merging anisotropy into tangent texture
-const AnisotropyMergeFragment = `
-    precision highp float;
-#ifdef HAS_TANGENT_TEXTURE
-    uniform sampler2D tangentTexture;
-#endif
-#ifdef HAS_ANISOTROPY_TEXTURE
-    uniform sampler2D anisotropyTexture;
-#endif
-    uniform int useRoughnessFromMetallicGreen;
-    uniform int useAnisotropyFromTangentBlue;
-
-    varying vec2 vUV;
-
-    void main() {
-        vec2 tangent = vec2(1.0, 0.0);
-        float anisotropy = 1.0;
-        #ifdef HAS_TANGENT_TEXTURE
-            // Tangent texture is present
-            vec4 tangentSample = texture2D(tangentTexture, vUV);
-            tangent = tangentSample.rg;
-
-            if (useAnisotropyFromTangentBlue > 0) {
-                anisotropy = tangentSample.b;
-            }
-        #endif
-        #ifdef HAS_ANISOTROPY_TEXTURE
-            // Anisotropy texture is present
-            vec4 anisotropySample = texture2D(anisotropyTexture, vUV);
-            anisotropy = anisotropySample.r;
-        #endif
-        
-        // Output: RG = tangent XY, B = anisotropy strength
-        vec4 anisotropyData = vec4(tangent.x, tangent.y, anisotropy, 1.0);
-        gl_FragColor = anisotropyData;
-    }
-`;
-
 // In your postExportMaterialAsync method:
 async function CreateMergedAnisotropyTexture(babylonMaterial: OpenPBRMaterial): Promise<Nullable<ProceduralTexture>> {
     const scene = babylonMaterial.getScene();
-
-    // Register the custom shader if not already done
-    if (!Effect.ShadersStore["anisotropyMergeFragmentShader"]) {
-        Effect.ShadersStore["anisotropyMergeFragmentShader"] = AnisotropyMergeFragment;
-    }
 
     const anisoStrengthTexture: Nullable<BaseTexture> = babylonMaterial.specularRoughnessAnisotropyTexture;
     const tangentTexture = babylonMaterial.geometryTangentTexture;
@@ -92,55 +34,15 @@ async function CreateMergedAnisotropyTexture(babylonMaterial: OpenPBRMaterial): 
         return null;
     }
 
-    const width = Math.max(anisoStrengthTexture ? anisoStrengthTexture.getSize().width : 1, tangentTexture ? tangentTexture.getSize().width : 1);
-    const height = Math.max(anisoStrengthTexture ? anisoStrengthTexture.getSize().height : 1, tangentTexture ? tangentTexture.getSize().height : 1);
-    const textureOptions: IProceduralTextureCreationOptions = {
-        type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-        format: Constants.TEXTUREFORMAT_RGBA,
-        samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-        generateDepthBuffer: false,
-        generateStencilBuffer: false,
-        generateMipMaps: false,
-    };
-    const rtTexture = new ProceduralTexture(
-        babylonMaterial.name + "_anisotropy",
-        {
-            width,
-            height,
-        },
-        "anisotropyMerge",
-        scene,
-        textureOptions
+    return await TextureMerger.MergeTexturesAsync(
+        "AnisotropyTexture",
+        TextureMerger.CreateRGBAConfiguration(
+            tangentTexture ? TextureMerger.CreateTextureInput(tangentTexture, 0) : TextureMerger.CreateConstantInput(1.0), // tangent x from red channel
+            tangentTexture ? TextureMerger.CreateTextureInput(tangentTexture, 1) : TextureMerger.CreateConstantInput(0.0), // tangent y from green channel
+            anisoStrengthTexture ? TextureMerger.CreateTextureInput(anisoStrengthTexture, 0) : TextureMerger.CreateConstantInput(1.0) // Anisotropy from red channel
+        ),
+        scene
     );
-    rtTexture.refreshRate = -1;
-
-    // Set uniforms and defines
-    let defines = "";
-    if (tangentTexture) {
-        defines += "#define HAS_TANGENT_TEXTURE\n";
-        rtTexture.setTexture("tangentTexture", tangentTexture);
-        CopyTextureTransform(tangentTexture as Texture, rtTexture);
-    }
-    rtTexture.setVector2("tangentVector", babylonMaterial.geometryTangent);
-    if (anisoStrengthTexture) {
-        defines += "#define HAS_ANISOTROPY_TEXTURE\n";
-        rtTexture.setTexture("anisotropyTexture", anisoStrengthTexture);
-        CopyTextureTransform(anisoStrengthTexture as Texture, rtTexture);
-    }
-    rtTexture.setInt("useAnisotropyFromTangentBlue", babylonMaterial._useSpecularRoughnessAnisotropyFromTangentTexture ? 1 : 0);
-    rtTexture.defines = defines;
-
-    return await new Promise<ProceduralTexture>((resolve, reject) => {
-        // Compile and render
-        rtTexture.executeWhenReady(() => {
-            try {
-                rtTexture.render();
-                resolve(rtTexture);
-            } catch (error) {
-                reject(error instanceof Error ? error : new Error(String(error)));
-            }
-        });
-    });
 }
 
 /**
