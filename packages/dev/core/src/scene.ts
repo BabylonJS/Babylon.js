@@ -21,7 +21,7 @@ import type { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import type { IOfflineProvider } from "./Offline/IOfflineProvider";
-import { OverrideMatrixFunctions, ResetMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
+import { FloatingOriginCurrentScene, OverrideMatrixFunctions, ResetMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
 import type { RenderingGroupInfo, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { RenderingManager } from "./Rendering/renderingManager";
 import type {
@@ -136,16 +136,18 @@ export interface SceneOptions {
      */
     useClonedMeshMap?: boolean;
 
-    /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
-    virtual?: boolean;
-
     /**
      * @experimental
-     * FloatingOriginMode helps avoid floating point imprecision of rendering large worlds by
-     * 1. Forcing the engine to use doublePrecision mode
-     * 2. Offsetting uniform values before passing to shader so that camera is centered at origin and world is offset by camera position
+     * When enabled, the scene can handle large world coordinate rendering without jittering caused by floating point imprecision on the GPU.
+     * This mode offsets matrices and position-related attribute values before passing to shaders, centering camera at origin and offsetting other scene objects by camera active position.
+     *
+     * IMPORTANT: Only use this scene-level option if you intend to enable floating origin on a per-scene basis. Must use in conjunction with engine creation option 'useHighPrecisionMatrix' to fix CPU-side floating point imprecision.
+     * HOWEVER if you want largeWorldRendering on ALL scenes, set the useLargeWorldRendering flag on the engine instead of this scene-level flag. Doing so will automatically set useHighPrecisionMatrix on the engine as well.
      */
-    floatingOriginMode?: boolean;
+    useFloatingOrigin?: boolean;
+
+    /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
+    virtual?: boolean;
 }
 
 /**
@@ -2016,10 +2018,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             engine.scenes.push(this);
         }
 
-        if (options?.floatingOriginMode) {
-            engine.getCreationOptions().useHighPrecisionMatrix = true;
-            OverrideMatrixFunctions(this);
-            this._floatingOriginMode = true;
+        if (engine.getCreationOptions().useLargeWorldRendering || options?.useFloatingOrigin) {
+            OverrideMatrixFunctions();
+            this._floatingOriginScene = this;
         }
 
         this._uid = null;
@@ -2779,15 +2780,14 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._projectionUpdateFlag = -1;
     }
 
-    private _floatingOriginMode: boolean = false;
+    private _floatingOriginScene: Scene | undefined = undefined;
     /**
      * @experimental
-     * When true, enables floatingOriginMode which helps avoid floating point imprecision when using huge coordinate system by
-     * 1. Forcing the engine to use doublePrecision mode
-     * 2. Offsetting uniform values before passing to shader so that camera is centered at origin and world is offset by camera position
+     * True if floatingOriginMode was passed to engine or this scene creation otions.
+     * This mode avoids floating point imprecision in huge coordinate system by offsetting uniform values before passing to shader, centering camera at origin and displacing rest of scene by camera position
      */
     public get floatingOriginMode(): boolean {
-        return this._floatingOriginMode;
+        return this._floatingOriginScene !== undefined;
     }
 
     private _floatingOriginOffsetDefault: Vector3 = Vector3.Zero();
@@ -5340,6 +5340,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._intermediateRendering = false;
     }
 
+    private _getFloatingOriginScene = (): Scene | undefined => {
+        return this._floatingOriginScene;
+    };
     /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -5353,6 +5356,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
+
+        // Ensures that the floatingOriginOffset is grabbed from the correct scene
+        FloatingOriginCurrentScene.getScene = this._getFloatingOriginScene;
 
         this._frameId++;
         this._defaultFrameBufferCleared = false;
@@ -5684,6 +5690,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             this._engine.scenes.splice(index, 1);
         }
 
+        this._floatingOriginScene = undefined;
+        if (this._engine.scenes.length === 0) {
+            // If this is the last scene to be disposed, reset matrix overrides
+            // Cannot reset from within engine class due floatingOriginMatrixOverrides file import side effects
+            ResetMatrixFunctions();
+        }
+
         if (EngineStore._LastCreatedScene === this) {
             EngineStore._LastCreatedScene = null;
             let engineIndex = EngineStore.Instances.length - 1;
@@ -5758,8 +5771,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this.onClearColorChangedObservable.clear();
         this.onEnvironmentTextureChangedObservable.clear();
         this.onMeshUnderPointerUpdatedObservable.clear();
-
-        ResetMatrixFunctions();
         this._isDisposed = true;
     }
 
