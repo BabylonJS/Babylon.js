@@ -167,6 +167,10 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
     const max = props.useDegrees ? 360 : undefined;
     const [quat, setQuat] = useState(props.value);
 
+    useEffect(() => {
+        setQuat(props.value);
+    }, [props.value]);
+
     // Extract only the properties that exist on QuaternionPropertyLineProps
     const { useDegrees, ...restProps } = props;
 
@@ -177,8 +181,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
 
     const onEulerChange = (val: Vector3) => {
         const quat = Quaternion.FromEulerAngles(val.x, val.y, val.z);
-        setQuat(quat);
-        props.onChange(quat);
+        onQuatChange(quat);
     };
 
     return useDegrees ? (
@@ -194,7 +197,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
             unit="deg"
         />
     ) : (
-        <QuaternionPropertyLineInternal {...props} unit={"rad"} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
+        <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
     );
 };
 export const Vector2PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector2>>;
