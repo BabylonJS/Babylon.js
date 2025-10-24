@@ -91,7 +91,7 @@ class TAAJitterMaterialPlugin extends MaterialPluginBase {
             return {
                 CUSTOM_VERTEX_MAIN_END: `
                     #ifdef TAA_JITTER
-                    vertexOutputs.position += vec4f(uniforms.taa_jitter * vertexOutputs.position.w, 0, 1);
+                    vertexOutputs.position += vec4f(uniforms.taa_jitter * vertexOutputs.position.w, 0.0, 0.0);
                     #endif
                 `,
             };

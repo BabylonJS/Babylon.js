@@ -1,10 +1,11 @@
 import { SpinButton as FluentSpinButton, mergeClasses, useId } from "@fluentui/react-components";
 import type { SpinButtonOnChangeData, SpinButtonChangeEvent } from "@fluentui/react-components";
 import type { FunctionComponent, KeyboardEvent } from "react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
-import { HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
+import { CalculatePrecision, HandleKeyDown, HandleOnBlur, useInputStyles } from "./utils";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 export type SpinButtonProps = PrimitiveProps<number> & {
     min?: number;
@@ -20,6 +21,7 @@ export type SpinButtonProps = PrimitiveProps<number> & {
 export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     SpinButton.displayName = "SpinButton";
     const classes = useInputStyles();
+    const { size } = useContext(ToolContext);
 
     const { min, max } = props;
 
@@ -27,6 +29,7 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
     const lastCommittedValue = useRef(props.value);
     // step and forceInt are not mutually exclusive since there could be cases where you want to forceInt but have spinButton jump >1 int per spin
     const step = props.step != undefined ? props.step : props.forceInt ? 1 : undefined;
+    const precision = Math.min(4, step !== undefined ? Math.max(0, CalculatePrecision(step)) : 2); // If no step, set precision to 2. Regardless, cap precision at 4 to avoid wild numbers
 
     useEffect(() => {
         if (props.value !== lastCommittedValue.current) {
@@ -80,9 +83,9 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
                 input={{ className: classes.inputSlot }}
                 step={step}
                 id={id}
-                size="medium"
-                precision={CalculatePrecision(step ?? 1.01)}
-                displayValue={props.unit ? `${PrecisionRound(value, CalculatePrecision(step ?? 1.01))} ${props.unit}` : undefined}
+                size={size}
+                precision={precision}
+                displayValue={`${value.toFixed(precision)}${props.unit ? " " + props.unit : ""}`}
                 value={value}
                 onChange={handleChange}
                 onKeyUp={handleKeyUp}
@@ -93,47 +96,3 @@ export const SpinButton: FunctionComponent<SpinButtonProps> = (props) => {
         </div>
     );
 };
-
-/**
- * Fluent's CalculatePrecision function
- * https://github.com/microsoft/fluentui/blob/dcbf775d37938eacffa37922fc0b43a3cdd5753f/packages/utilities/src/math.ts#L91C1
- *
- * Calculates a number's precision based on the number of trailing
- * zeros if the number does not have a decimal indicated by a negative
- * precision. Otherwise, it calculates the number of digits after
- * the decimal point indicated by a positive precision.
- *
- * @param value - the value to determine the precision of
- * @returns the calculated precision
- */
-export function CalculatePrecision(value: number) {
-    /**
-     * Group 1:
-     * [1-9]([0]+$) matches trailing zeros
-     * Group 2:
-     * \.([0-9]*) matches all digits after a decimal point.
-     */ const groups = /[1-9]([0]+$)|\.([0-9]*)/.exec(String(value));
-    if (!groups) {
-        return 0;
-    }
-    if (groups[1]) {
-        return -groups[1].length;
-    }
-    if (groups[2]) {
-        return groups[2].length;
-    }
-    return 0;
-}
-/**
- * Fluent's PrecisionRound function
- * https://github.com/microsoft/fluentui/blob/dcbf775d37938eacffa37922fc0b43a3cdd5753f/packages/utilities/src/math.ts#L116
- *
- * Rounds a number to a certain level of precision. Accepts negative precision.
- * @param value - The value that is being rounded.
- * @param precision - The number of decimal places to round the number to
- * @returns The rounded number.
- */
-function PrecisionRound(value: number, precision: number) {
-    const exp = Math.pow(10, precision);
-    return Math.round(value * exp) / exp;
-}

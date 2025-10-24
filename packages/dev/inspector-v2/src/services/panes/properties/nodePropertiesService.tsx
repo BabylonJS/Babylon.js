@@ -19,7 +19,7 @@ import { GaussianSplattingDisplayProperties } from "../../../components/properti
 import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
-import { GaussianSplattingMesh } from "core/Meshes";
+import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 
 export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",

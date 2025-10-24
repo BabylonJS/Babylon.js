@@ -1,7 +1,6 @@
 import type { FrameGraph, FrameGraphTextureHandle, DrawWrapper, FrameGraphRenderPass, FrameGraphRenderContext, EffectWrapper, IStencilState } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { FrameGraphTask } from "../../frameGraphTask";
-import { textureSizeIsObject } from "../../../Materials/Textures/textureCreationOptions";
 
 /**
  * Task which applies a post process.
@@ -112,12 +111,6 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
         this.outputDepthAttachmentTexture = this._frameGraph.textureManager.createDanglingHandle();
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            if (this.sourceTexture !== undefined) {
-                context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
-            }
-        });
     }
 
     public override isReady() {
@@ -144,11 +137,7 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         }
 
         if (sourceTextureCreationOptions) {
-            const sourceSize = !sourceTextureCreationOptions.sizeIsPercentage
-                ? textureSizeIsObject(sourceTextureCreationOptions.size)
-                    ? sourceTextureCreationOptions.size
-                    : { width: sourceTextureCreationOptions.size, height: sourceTextureCreationOptions.size }
-                : this._frameGraph.textureManager.getAbsoluteDimensions(sourceTextureCreationOptions.size);
+            const sourceSize = this._frameGraph.textureManager.getTextureAbsoluteDimensions(sourceTextureCreationOptions);
 
             this._sourceWidth = sourceSize.width;
             this._sourceHeight = sourceSize.height;
@@ -169,6 +158,9 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         pass.setRenderTarget(this.outputTexture);
         pass.setRenderTargetDepth(this.depthAttachmentTexture);
         pass.setExecuteFunc((context) => {
+            if (this.sourceTexture !== undefined) {
+                context.setTextureSamplingMode(this.sourceTexture, this.sourceSamplingMode);
+            }
             additionalExecute?.(context);
             context.applyFullScreenEffect(
                 this._postProcessDrawWrapper,

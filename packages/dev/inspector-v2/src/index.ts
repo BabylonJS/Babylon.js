@@ -1,7 +1,7 @@
 // Export the parts of inspector that are intended to be part of the public API.
 export * from "./components/properties/boundProperty";
 export * from "./components/properties/linkToEntityPropertyLine";
-export { EntityBase, EntityDisplayInfo, SceneExplorerCommand, SceneExplorerCommandProvider, SceneExplorerSection } from "./components/scene/sceneExplorer";
+export type { EntityBase, EntityDisplayInfo, SceneExplorerCommand, SceneExplorerCommandProvider, SceneExplorerSection } from "./components/scene/sceneExplorer";
 export * from "./components/extensibleAccordion";
 export { SidePaneContainer } from "./components/pane";
 export * from "./components/teachingMoment";
@@ -18,16 +18,27 @@ export * from "./instrumentation/functionInstrumentation";
 export * from "./instrumentation/propertyInstrumentation";
 export * from "./misc/observableCollection";
 export * from "./modularity/serviceDefinition";
-export { IPropertiesService, PropertiesServiceIdentity } from "./services/panes/properties/propertiesService";
-export { ISceneExplorerService, SceneExplorerServiceIdentity } from "./services/panes/scene/sceneExplorerService";
-export { IDebugService, DebugServiceIdentity } from "./services/panes/debugService";
-export { ISettingsService, SettingsServiceIdentity } from "./services/panes/settingsService";
-export { IStatsService, StatsServiceIdentity } from "./services/panes/statsService";
-export { IToolsService, ToolsServiceIdentity } from "./services/panes/toolsService";
+export type { IPropertiesService } from "./services/panes/properties/propertiesService";
+export { PropertiesServiceIdentity } from "./services/panes/properties/propertiesService";
+export type { ISceneExplorerService } from "./services/panes/scene/sceneExplorerService";
+export { SceneExplorerServiceIdentity } from "./services/panes/scene/sceneExplorerService";
+export type { IDebugService } from "./services/panes/debugService";
+export { DebugServiceIdentity } from "./services/panes/debugService";
+
+export type { ISettingsService } from "./services/panes/settingsService";
+export { SettingsServiceIdentity } from "./services/panes/settingsService";
+
+export type { IStatsService } from "./services/panes/statsService";
+export { StatsServiceIdentity } from "./services/panes/statsService";
+
+export type { IToolsService } from "./services/panes/toolsService";
+export { ToolsServiceIdentity } from "./services/panes/toolsService";
+
 export * from "./services/sceneContext";
 export * from "./services/selectionService";
 export * from "./services/settingsContext";
-export { IShellService, ToolbarItem, SidePane, CentralContent, ShellServiceIdentity } from "./services/shellService";
+export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition } from "./services/shellService";
+export { ShellServiceIdentity } from "./services/shellService";
 export * from "./inspector";
 
 // Export the shared primitive UI controls that can be used for extending the inspector.

@@ -18,17 +18,21 @@ import {
     MenuList,
     MenuPopover,
     MenuTrigger,
+    mergeClasses,
     SearchBox,
     tokens,
     Tooltip,
     TreeItemLayout,
+    treeItemLevelToken,
 } from "@fluentui/react-components";
 import { ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
+import { CustomTokens } from "shared-ui-components/fluent/primitives/utils";
 import { useObservableState } from "../../hooks/observableHooks";
 import { useResource } from "../../hooks/resourceHooks";
+import { useCompactMode } from "../../hooks/settingsHooks";
 import { TraverseGraph } from "../../misc/graphUtils";
 
 export type EntityBase = Readonly<{
@@ -204,6 +208,20 @@ const useStyles = makeStyles({
     sceneTreeItemLayout: {
         padding: 0,
     },
+    treeItemLayoutAside: {
+        gap: 0,
+        paddingLeft: tokens.spacingHorizontalS,
+        paddingRight: tokens.spacingHorizontalS,
+    },
+    treeItemLayoutMain: {
+        flex: "1 1 0",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+    },
+    treeItemLayoutCompact: {
+        minHeight: CustomTokens.lineHeightSmall,
+        maxHeight: CustomTokens.lineHeightSmall,
+    },
 });
 
 const ActionCommand: FunctionComponent<{ command: ActionCommand }> = (props) => {
@@ -266,12 +284,14 @@ const SceneTreeItem: FunctionComponent<{
     const { isSelected, select } = props;
 
     const classes = useStyles();
+    const [compactMode] = useCompactMode();
+    const treeItemLayoutClass = mergeClasses(classes.sceneTreeItemLayout, compactMode ? classes.treeItemLayoutCompact : undefined);
 
     return (
         <FlatTreeItem key="scene" value="scene" itemType="leaf" parentValue={undefined} aria-level={1} aria-setsize={1} aria-posinset={1} onClick={select}>
             <TreeItemLayout
                 iconBefore={<GlobeRegular />}
-                className={classes.sceneTreeItemLayout}
+                className={treeItemLayoutClass}
                 style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
             >
                 <Body1Strong wrap={false} truncate>
@@ -291,6 +311,9 @@ const SectionTreeItem: FunctionComponent<{
 }> = (props) => {
     const { section, isFiltering, expandAll, collapseAll } = props;
 
+    const classes = useStyles();
+    const [compactMode] = useCompactMode();
+
     return (
         <Menu openOnContext>
             <MenuTrigger disableButtonEnhancement>
@@ -304,7 +327,7 @@ const SectionTreeItem: FunctionComponent<{
                     aria-setsize={1}
                     aria-posinset={1}
                 >
-                    <TreeItemLayout>
+                    <TreeItemLayout className={compactMode ? classes.treeItemLayoutCompact : undefined}>
                         <Body1Strong wrap={false} truncate>
                             {section.sectionName.substring(0, 100)}
                         </Body1Strong>
@@ -336,6 +359,9 @@ const EntityTreeItem: FunctionComponent<{
     collapseAll: () => void;
 }> = (props) => {
     const { entityItem, isSelected, select, isFiltering, commandProviders, expandAll, collapseAll } = props;
+
+    const classes = useStyles();
+    const [compactMode] = useCompactMode();
 
     const hasChildren = !!entityItem.children?.length;
 
@@ -443,19 +469,21 @@ const EntityTreeItem: FunctionComponent<{
                     aria-setsize={1}
                     aria-posinset={1}
                     onClick={select}
+                    style={{ [treeItemLevelToken]: entityItem.depth }}
                 >
                     <TreeItemLayout
                         iconBefore={entityItem.icon ? <entityItem.icon entity={entityItem.entity} /> : null}
+                        className={compactMode ? classes.treeItemLayoutCompact : undefined}
                         style={isSelected ? { backgroundColor: tokens.colorNeutralBackground1Selected } : undefined}
                         actions={actions}
                         aside={{
                             // Match the gap and padding of the actions.
-                            style: { gap: 0, paddingLeft: tokens.spacingHorizontalS, paddingRight: tokens.spacingHorizontalS },
+                            className: classes.treeItemLayoutAside,
                             children: aside,
                         }}
                         main={{
                             // Prevent the "main" content (the Body1 below) from growing too large and pushing the actions/aside out of view.
-                            style: { flex: "1 1 0", overflow: "hidden", textOverflow: "ellipsis" },
+                            className: classes.treeItemLayoutMain,
                         }}
                     >
                         <Body1 wrap={false} truncate>

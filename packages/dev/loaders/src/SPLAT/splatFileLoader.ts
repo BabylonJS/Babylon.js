@@ -176,20 +176,24 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax, @typescript-eslint/naming-convention
     private async _unzipWithFFlateAsync(data: Uint8Array): Promise<Map<string, Uint8Array>> {
-        // ensure fflate is loaded
-        if (typeof (window as any).fflate === "undefined") {
-            await Tools.LoadScriptAsync("https://unpkg.com/fflate/umd/index.js");
-        }
-
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const { unzipSync } = (window as any).fflate as typeof import("fflate");
+        let fflate = this._loadingOptions.fflate as typeof import("fflate");
+        // ensure fflate is loaded
+        if (!fflate) {
+            if (typeof (window as any).fflate === "undefined") {
+                await Tools.LoadScriptAsync(this._loadingOptions.deflateURL ?? "https://unpkg.com/fflate/umd/index.js");
+            }
+            fflate = (window as any).fflate as typeof fflate;
+        }
 
-        const unzipped = unzipSync(data); // { [filename: string]: Uint8Array }
+        const { unzipSync } = fflate;
+
+        const unzipped = unzipSync(data) as Record<string, Uint8Array>; // { [filename: string]: Uint8Array }
 
         const files = new Map<string, Uint8Array>();
         for (const [name, content] of Object.entries(unzipped)) {
-            files.set(name, content as Uint8Array);
+            files.set(name, content);
         }
         return files;
     }

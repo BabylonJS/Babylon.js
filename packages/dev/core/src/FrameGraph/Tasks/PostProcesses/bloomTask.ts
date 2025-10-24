@@ -109,13 +109,6 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, this.bloom._blurY);
         this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this.bloom._merge);
 
-        this.onTexturesAllocatedObservable.add((context) => {
-            this._downscale.onTexturesAllocatedObservable.notifyObservers(context);
-            this._blurX.onTexturesAllocatedObservable.notifyObservers(context);
-            this._blurY.onTexturesAllocatedObservable.notifyObservers(context);
-            this._merge.onTexturesAllocatedObservable.notifyObservers(context);
-        });
-
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 

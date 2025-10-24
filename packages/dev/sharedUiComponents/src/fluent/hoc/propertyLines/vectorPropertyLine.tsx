@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FunctionComponent } from "react";
 
 import { Body1 } from "@fluentui/react-components";
@@ -10,7 +10,7 @@ import { SyncedSliderPropertyLine } from "./syncedSliderPropertyLine";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Quaternion, Vector2, Vector4 } from "core/Maths/math.vector";
 import { Tools } from "core/Misc/tools";
-import { CalculatePrecision } from "../../primitives/spinButton";
+import { CalculatePrecision } from "../../primitives/utils";
 
 export type TensorPropertyLineProps<V extends Vector2 | Vector3 | Vector4 | Quaternion> = PropertyLineProps<V> &
     PrimitiveProps<V> & {
@@ -58,7 +58,7 @@ const HasW = (vector: Vector2 | Vector3 | Vector4 | Quaternion): vector is Vecto
 const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Vector3 | Vector4 | Quaternion>> = (props) => {
     TensorPropertyLine.displayName = "TensorPropertyLine";
     const converted = (val: number) => (props.valueConverter ? props.valueConverter.from(val) : val);
-    const formatted = (val: number) => converted(val).toFixed(props.step !== undefined ? CalculatePrecision(props.step) : 2);
+    const formatted = (val: number) => converted(val).toFixed(props.step !== undefined ? Math.max(0, CalculatePrecision(props.step)) : 2);
 
     const [vector, setVector] = useState(props.value);
     const { min, max } = props;
@@ -72,10 +72,14 @@ const TensorPropertyLine: FunctionComponent<TensorPropertyLineProps<Vector2 | Ve
         props.onChange(newVector);
     };
 
+    useEffect(() => {
+        setVector(props.value);
+    }, [props.value, props.expandedContent]);
+
     return (
         <PropertyLine
             {...props}
-            onCopy={() => `new ${props.value.constructor.name}(${vector.x},${vector.y} ${HasZ(vector) ? `,${vector.z}` : ""}${HasW(vector) ? `,${vector.w}` : ""})`}
+            onCopy={() => `new ${props.value.getClassName()}(${vector.x},${vector.y}${HasZ(vector) ? `,${vector.z}` : ""}${HasW(vector) ? `,${vector.w}` : ""})`}
             expandedContent={
                 <>
                     <SyncedSliderPropertyLine
@@ -163,6 +167,10 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
     const max = props.useDegrees ? 360 : undefined;
     const [quat, setQuat] = useState(props.value);
 
+    useEffect(() => {
+        setQuat(props.value);
+    }, [props.value]);
+
     // Extract only the properties that exist on QuaternionPropertyLineProps
     const { useDegrees, ...restProps } = props;
 
@@ -173,8 +181,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
 
     const onEulerChange = (val: Vector3) => {
         const quat = Quaternion.FromEulerAngles(val.x, val.y, val.z);
-        setQuat(quat);
-        props.onChange(quat);
+        onQuatChange(quat);
     };
 
     return useDegrees ? (
@@ -190,7 +197,7 @@ export const QuaternionPropertyLine: FunctionComponent<QuaternionPropertyLinePro
             unit="deg"
         />
     ) : (
-        <QuaternionPropertyLineInternal {...props} unit={"rad"} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
+        <QuaternionPropertyLineInternal {...props} nullable={false} value={quat} min={min} max={max} onChange={onQuatChange} />
     );
 };
 export const Vector2PropertyLine = TensorPropertyLine as FunctionComponent<TensorPropertyLineProps<Vector2>>;

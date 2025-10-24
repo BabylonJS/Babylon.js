@@ -1,7 +1,5 @@
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import type { Effect } from "../Materials/effect";
-import { Texture } from "../Materials/Textures/texture";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Camera } from "../Cameras/camera";
 
@@ -11,6 +9,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 
 import type { Scene } from "../scene";
+import { ThinColorCorrectionPostProcess } from "./thinColorCorrectionPostProcess";
 
 /**
  *
@@ -28,13 +27,13 @@ import type { Scene } from "../scene";
  *
  */
 export class ColorCorrectionPostProcess extends PostProcess {
-    private _colorTableTexture: Texture;
-
     /**
      * Gets the color table url used to create the LUT texture
      */
     @serialize()
-    public colorTableUrl: string;
+    public get colorTableUrl() {
+        return this._effectWrapper.colorTableUrl;
+    }
 
     /**
      * Gets a string identifying the name of the class
@@ -43,6 +42,8 @@ export class ColorCorrectionPostProcess extends PostProcess {
     public override getClassName(): string {
         return "ColorCorrectionPostProcess";
     }
+
+    protected override _effectWrapper: ThinColorCorrectionPostProcess;
 
     constructor(
         name: string,
@@ -53,30 +54,22 @@ export class ColorCorrectionPostProcess extends PostProcess {
         engine?: AbstractEngine,
         reusable?: boolean
     ) {
-        super(name, "colorCorrection", null, ["colorTable"], options, camera, samplingMode, engine, reusable);
+        const localOptions = {
+            samplers: ThinColorCorrectionPostProcess.Samplers,
+            size: typeof options === "number" ? options : undefined,
+            camera,
+            samplingMode,
+            engine,
+            reusable,
+            ...(options as PostProcessOptions),
+        };
 
         const scene = camera?.getScene() || null;
-        this._colorTableTexture = new Texture(colorTableUrl, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
-        this._colorTableTexture.anisotropicFilteringLevel = 1;
-        this._colorTableTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._colorTableTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
-        this.colorTableUrl = colorTableUrl;
-
-        this.onApply = (effect: Effect) => {
-            effect.setTexture("colorTable", this._colorTableTexture);
-        };
-    }
-
-    protected override _gatherImports(useWebGPU: boolean, list: Promise<any>[]) {
-        if (useWebGPU) {
-            this._webGPUReady = true;
-            list.push(Promise.all([import("../ShadersWGSL/colorCorrection.fragment")]));
-        } else {
-            list.push(Promise.all([import("../Shaders/colorCorrection.fragment")]));
-        }
-
-        super._gatherImports(useWebGPU, list);
+        super(name, ThinColorCorrectionPostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinColorCorrectionPostProcess(name, scene, colorTableUrl, localOptions) : undefined,
+            ...localOptions,
+        });
     }
 
     /**

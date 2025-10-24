@@ -50,6 +50,9 @@ uniform Material {
     float vCoatRoughnessAnisotropy;
     float vCoatIor;
     float vCoatDarkening;
+    float vFuzzWeight;
+    vec3 vFuzzColor;
+    float vFuzzRoughness;
     vec2 vGeometryCoatTangent;
     vec3 vEmissionColor;
     float vThinFilmWeight;
@@ -82,6 +85,12 @@ uniform Material {
     mat4 coatRoughnessAnisotropyMatrix;
     vec2 vCoatDarkeningInfos;
     mat4 coatDarkeningMatrix;
+    vec2 vFuzzWeightInfos;
+    mat4 fuzzWeightMatrix;
+    vec2 vFuzzColorInfos;
+    mat4 fuzzColorMatrix;
+    vec2 vFuzzRoughnessInfos;
+    mat4 fuzzRoughnessMatrix;
     vec2 vGeometryNormalInfos;
     mat4 geometryNormalMatrix;
     vec2 vGeometryTangentInfos;

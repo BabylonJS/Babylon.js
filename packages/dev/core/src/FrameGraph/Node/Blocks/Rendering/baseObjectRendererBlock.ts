@@ -21,6 +21,8 @@ import { FrameGraphObjectRendererTask } from "core/FrameGraph/Tasks/Rendering/ob
 export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphObjectRendererTask;
 
+    public override _additionalConstructionParameters: [boolean, boolean];
+
     /**
      * Gets the frame graph task associated with this block
      */

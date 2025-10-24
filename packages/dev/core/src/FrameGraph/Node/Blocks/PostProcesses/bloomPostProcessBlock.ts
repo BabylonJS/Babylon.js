@@ -10,6 +10,8 @@ import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphBloomTask;
 
+    public override _additionalConstructionParameters: [boolean, number];
+
     /**
      * Gets the frame graph task associated with this block
      */

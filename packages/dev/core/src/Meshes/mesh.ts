@@ -2151,6 +2151,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let instancesCount = 0;
 
         const renderSelf = batch.renderSelf[subMesh._id];
+        const floatingOriginOffset = this._scene.floatingOriginOffset;
 
         const needUpdateBuffer =
             !instancesBuffer ||
@@ -2170,6 +2171,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     }
                 }
                 world.copyToArray(instanceStorage.instancesData, offset);
+
+                // Apply floatingOriginOffset to underlying data sent to buffer
+                instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
+                instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
+                instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+
                 offset += 16;
                 instancesCount++;
             }
@@ -2199,6 +2206,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                             instance._previousWorldMatrix.copyFrom(matrix);
                         }
                     }
+
+                    // Apply floatingOriginOffset to underlying data sent to buffer
+                    instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
+                    instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
+                    instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
 
                     offset += 16;
                     instancesCount++;
@@ -4877,8 +4889,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             const boundingBox = boundingInfo.boundingBox;
             if (!minVector || !maxVector) {
-                minVector = boundingBox.minimumWorld;
-                maxVector = boundingBox.maximumWorld;
+                minVector = boundingBox.minimumWorld.clone();
+                maxVector = boundingBox.maximumWorld.clone();
             } else {
                 minVector.minimizeInPlace(boundingBox.minimumWorld);
                 maxVector.maximizeInPlace(boundingBox.maximumWorld);

@@ -30,7 +30,7 @@ export const CountStats: FunctionComponent<{ context: Scene }> = ({ context: sce
         <>
             <StringifiedPropertyLine key="TotalMeshes" label="Total Meshes" value={totalMeshes} />
             <StringifiedPropertyLine key="ActiveMeshes" label="Active Meshes" value={activeMeshes} />
-            <StringifiedPropertyLine key="ActiveIndices" label="Active Indeces" value={activeIndices} />
+            <StringifiedPropertyLine key="ActiveIndices" label="Active Indices" value={activeIndices} />
             <StringifiedPropertyLine key="ActiveFaces" label="Active Faces" value={activeIndices / 3} />
             <StringifiedPropertyLine key="ActiveBones" label="Active Bones" value={activeBones} />
             <StringifiedPropertyLine key="ActiveParticles" label="Active Particles" value={activeParticles} />

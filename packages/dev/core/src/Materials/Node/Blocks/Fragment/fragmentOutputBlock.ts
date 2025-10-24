@@ -134,6 +134,13 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return this._inputs[3];
     }
 
+    /**
+     * Gets the glow input component
+     */
+    public get glow(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
     protected _getOutputString(state: NodeMaterialBuildState): string {
         return state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentOutputsColor" : "gl_FragColor";
     }

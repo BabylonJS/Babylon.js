@@ -44,6 +44,25 @@
     }
 #endif
 
+#ifdef FUZZENVIRONMENTBRDF
+    fn getFuzzBRDFLookup(NdotV: f32, perceptualRoughness: f32) -> vec3f {
+        // Indexed on cos(theta) and roughness
+        let UV: vec2f = vec2f(perceptualRoughness, NdotV);
+
+        // We can find the scale and offset to apply to the specular value.
+        var brdfLookup: vec4f = textureSample(environmentFuzzBrdfSampler, environmentFuzzBrdfSamplerSampler, UV);
+
+        const RiRange: vec2f = vec2f(0.0f, 0.75f);
+        const ARange: vec2f = vec2f(0.005f, 0.88f);
+        const BRange: vec2f = vec2f(-0.18f, 0.002f);
+        brdfLookup.r = mix(ARange.x,  ARange.y,  brdfLookup.r);
+        brdfLookup.g = mix(BRange.x,  BRange.y,  brdfLookup.g);
+        brdfLookup.b = mix(RiRange.x, RiRange.y, brdfLookup.b);
+
+        return brdfLookup.rgb;
+    }
+#endif
+
 #ifdef ENVIRONMENTBRDF
     fn getBRDFLookup(NdotV: f32, perceptualRoughness: f32) -> vec3f {
         // Indexed on cos(theta) and roughness

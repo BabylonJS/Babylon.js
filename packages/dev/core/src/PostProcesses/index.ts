@@ -39,9 +39,11 @@ export * from "./thinBloomEffect";
 export * from "./thinBlurPostProcess";
 export * from "./thinChromaticAberrationPostProcess";
 export * from "./thinCircleOfConfusionPostProcess";
+export * from "./thinColorCorrectionPostProcess";
 export * from "./thinConvolutionPostProcess";
 export * from "./thinDepthOfFieldEffect";
 export * from "./thinExtractHighlightsPostProcess";
+export * from "./thinFilterPostProcess";
 export * from "./thinFXAAPostProcess";
 export * from "./thinGrainPostProcess";
 export * from "./thinImageProcessingPostProcess";
@@ -49,6 +51,7 @@ export * from "./thinMotionBlurPostProcess";
 export * from "./thinPassPostProcess";
 export * from "./thinSharpenPostProcess";
 export * from "./thinScreenSpaceCurvaturePostProcess";
+export * from "./thinTonemapPostProcess";
 
 // Postprocess
 export * from "../Shaders/postprocess.vertex";

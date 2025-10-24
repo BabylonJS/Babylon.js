@@ -238,12 +238,6 @@ class _InternalAbstractMeshDataInfo {
      * We use that as a clue to force the material to sideOrientation = null
      */
     public _sideOrientationHint = false;
-
-    /**
-     * @internal
-     * if this is set to true, the mesh will be visible only if its parent(s) are also visible
-     */
-    public _inheritVisibility = false;
     /**
      * Used in frame graph mode only, to know which meshes to update when in frozen mode
      */
@@ -557,42 +551,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering#alpha-index
      */
     public alphaIndex = Number.MAX_VALUE;
-
-    /**
-     * If set to true, a mesh will only be visible only if its parent(s) are also visible (default is false)
-     */
-    public get inheritVisibility(): boolean {
-        return this._internalAbstractMeshDataInfo._inheritVisibility;
-    }
-
-    public set inheritVisibility(value: boolean) {
-        this._internalAbstractMeshDataInfo._inheritVisibility = value;
-    }
-
-    private _isVisible = true;
-    /**
-     * Gets or sets a boolean indicating if the mesh is visible (renderable). Default is true
-     */
-    public get isVisible(): boolean {
-        if (!this._isVisible || !this.inheritVisibility || !this._parentNode) {
-            return this._isVisible;
-        }
-        if (this._isVisible) {
-            let parent: Nullable<Node> = this._parentNode;
-            while (parent) {
-                const parentVisible = (parent as AbstractMesh).isVisible;
-                if (typeof parentVisible !== "undefined") {
-                    return parentVisible;
-                }
-                parent = parent.parent;
-            }
-        }
-        return this._isVisible;
-    }
-
-    public set isVisible(value: boolean) {
-        this._isVisible = value;
-    }
 
     /**
      * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true

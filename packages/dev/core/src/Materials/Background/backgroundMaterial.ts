@@ -668,7 +668,7 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
             undefined,
             undefined,
             undefined,
-            this._setVertexOutputInvariant
+            this._isVertexOutputInvariant
         );
 
         // Values that need to be evaluated on every frame

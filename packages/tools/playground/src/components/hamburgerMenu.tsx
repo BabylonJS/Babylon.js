@@ -32,6 +32,10 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
                 this.forceUpdate();
             });
         }
+
+        this.props.globalState.onEngineChangedObservable.add(() => {
+            this.forceUpdate();
+        });
     }
 
     onPlay() {
@@ -60,7 +64,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
     }
 
     onInspector() {
-        this.props.globalState.onInspectorRequiredObservable.notifyObservers();
+        this.props.globalState.onInspectorRequiredObservable.notifyObservers("toggle");
         this.setState({ isExpanded: false });
     }
 

@@ -21,7 +21,7 @@ export const UserFeedbackServiceDefinition: ServiceDefinition<[], [IShellService
                         appearance="subtle"
                         icon={PersonFeedbackRegular}
                         title="Give Feedback on Inspector v2"
-                        onClick={() => window.open("https://forum.babylonjs.com/", "_blank")} // TODO: Replace this with a direct link to the announcement post.
+                        onClick={() => window.open("https://forum.babylonjs.com/t/introducing-inspector-v2/60937", "_blank")} // TODO: Replace this with a direct link to the announcement post.
                     />
                 );
             },

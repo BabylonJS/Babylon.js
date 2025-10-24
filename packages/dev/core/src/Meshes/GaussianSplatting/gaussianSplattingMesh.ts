@@ -755,13 +755,15 @@ export class GaussianSplattingMesh extends Mesh {
                 const [, typeName, name] = prop.split(" ");
 
                 const value = GaussianSplattingMesh._ValueNameToEnum(name);
-                // SH degree 1,2 or 3 for 9, 24 or 45 values
-                if (value >= PLYValue.SH_44) {
-                    shDegree = 3;
-                } else if (value >= PLYValue.SH_24) {
-                    shDegree = 2;
-                } else if (value >= PLYValue.SH_8) {
-                    shDegree = 1;
+                if (value != PLYValue.UNDEFINED) {
+                    // SH degree 1,2 or 3 for 9, 24 or 45 values
+                    if (value >= PLYValue.SH_44) {
+                        shDegree = 3;
+                    } else if (value >= PLYValue.SH_24) {
+                        shDegree = 2;
+                    } else if (value >= PLYValue.SH_8) {
+                        shDegree = 1;
+                    }
                 }
                 const type = GaussianSplattingMesh._TypeNameToEnum(typeName);
                 if (chunkMode == ElementMode.Chunk) {

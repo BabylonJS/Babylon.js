@@ -2,10 +2,11 @@ import type { SliderOnChangeData } from "@fluentui/react-components";
 import { makeStyles, Slider } from "@fluentui/react-components";
 import { SpinButton } from "./spinButton";
 import type { ChangeEvent, FunctionComponent } from "react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import type { PrimitiveProps } from "./primitive";
 import { InfoLabel } from "./infoLabel";
 import { CustomTokens } from "./utils";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 const useSyncedSliderStyles = makeStyles({
     container: { display: "flex" },
@@ -43,6 +44,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     SyncedSliderInput.displayName = "SyncedSliderInput";
     const { infoLabel, ...passthroughProps } = props;
     const classes = useSyncedSliderStyles();
+    const { size } = useContext(ToolContext);
     const [value, setValue] = useState<number>(props.value);
     const pendingValueRef = useRef<number>(undefined);
     const isDraggingRef = useRef(false);
@@ -96,6 +98,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                     <Slider
                         {...passthroughProps}
                         className={classes.slider}
+                        size={size}
                         min={min / step}
                         max={max / step}
                         step={undefined}
@@ -105,7 +108,7 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
                         onPointerUp={handleSliderPointerUp}
                     />
                 )}
-                <SpinButton {...passthroughProps} value={Math.round(value / step) * step} onChange={handleInputChange} step={props.step} />
+                <SpinButton {...passthroughProps} value={value} onChange={handleInputChange} step={props.step} />
             </div>
         </div>
     );

@@ -123,8 +123,8 @@ export class SpritePacker {
         this._variables = variables;
         this._configuration = configuration;
         this._isDirty = false;
-        this._currentX = 0;
-        this._currentY = 0;
+        this._currentX = this._configuration.gapSize;
+        this._currentY = this._configuration.gapSize;
         this._maxRowHeight = 0;
 
         if (isHtmlCanvas) {
@@ -175,8 +175,9 @@ export class SpritePacker {
 
         // Check if the sprite fits in the current row
         if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasWidth) {
-            this._currentX = 0;
-            this._currentY += this._maxRowHeight; // Add a gap between sprites to avoid bleeding
+            // Add a gap between sprites to avoid bleeding issues
+            this._currentX = this._configuration.gapSize;
+            this._currentY += this._maxRowHeight + this._configuration.gapSize;
             this._maxRowHeight = 0;
         }
 
@@ -191,8 +192,8 @@ export class SpritePacker {
         this._spriteAtlasInfo.widthPx = boundingBox.width;
         this._spriteAtlasInfo.heightPx = boundingBox.height;
 
-        this._spriteAtlasInfo.centerX = boundingBox.centerX;
-        this._spriteAtlasInfo.centerY = boundingBox.centerY;
+        this._spriteAtlasInfo.centerX = boundingBox.offsetX;
+        this._spriteAtlasInfo.centerY = boundingBox.offsetY;
 
         // Advance the current position for the next sprite
         this._currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
@@ -229,8 +230,9 @@ export class SpritePacker {
         // Find the position to draw the text
         // If the text doesn't fit in the current row, move to the next row
         if (this._currentX + this._spriteAtlasInfo.cellWidth > this._configuration.spriteAtlasWidth) {
-            this._currentX = 0;
-            this._currentY += this._maxRowHeight; // Add a gap between sprites to avoid bleeding
+            // Add a gap between sprites to avoid bleeding issues
+            this._currentX = this._configuration.gapSize;
+            this._currentY += this._maxRowHeight + this._configuration.gapSize;
             this._maxRowHeight = 0;
         }
 
@@ -245,8 +247,8 @@ export class SpritePacker {
         this._spriteAtlasInfo.widthPx = boundingBox.width;
         this._spriteAtlasInfo.heightPx = boundingBox.height;
 
-        this._spriteAtlasInfo.centerX = boundingBox.centerX;
-        this._spriteAtlasInfo.centerY = boundingBox.centerY;
+        this._spriteAtlasInfo.centerX = boundingBox.offsetX;
+        this._spriteAtlasInfo.centerY = boundingBox.offsetY;
 
         // Advance the current position for the next sprite
         this._currentX += this._spriteAtlasInfo.cellWidth + this._configuration.gapSize; // Add a gap between sprites to avoid bleeding
@@ -278,11 +280,13 @@ export class SpritePacker {
 
     private _drawVectorShape(rawElements: RawElement[], boundingBox: BoundingBox, scalingFactor: IVector2Like): void {
         this._spritesCanvasContext.save();
+        this._spritesCanvasContext.globalCompositeOperation = "destination-over";
 
         this._spritesCanvasContext.translate(this._currentX + Math.ceil(boundingBox.strokeInset / 2), this._currentY + Math.ceil(boundingBox.strokeInset / 2));
         this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
 
         this._spritesCanvasContext.beginPath();
+
         for (let i = 0; i < rawElements.length; i++) {
             const shape = rawElements[i];
             switch (shape.ty) {
@@ -318,10 +322,8 @@ export class SpritePacker {
             return;
         }
 
-        const ctx = this._spritesCanvasContext;
-
-        ctx.translate(this._currentX, this._currentY);
-        ctx.scale(scalingFactor.x, scalingFactor.y);
+        this._spritesCanvasContext.translate(this._currentX, this._currentY);
+        this._spritesCanvasContext.scale(scalingFactor.x, scalingFactor.y);
 
         let textInfo: RawTextDocument | undefined = undefined;
         textInfo = textData.d.k[0].s as RawTextDocument;
@@ -330,18 +332,18 @@ export class SpritePacker {
             const rawFillStyle = textInfo.fc;
             if (Array.isArray(rawFillStyle)) {
                 // If the fill style is an array, we assume it's a color array
-                ctx.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
+                this._spritesCanvasContext.fillStyle = this._lottieColorToCSSColor(rawFillStyle, 1);
             } else {
                 // If it's a string, we need to get the value from the variables map
                 const variableFillStyle = this._variables.get(rawFillStyle);
                 if (variableFillStyle !== undefined) {
-                    ctx.fillStyle = variableFillStyle;
+                    this._spritesCanvasContext.fillStyle = variableFillStyle;
                 }
             }
         }
 
         if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0) {
-            ctx.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
+            this._spritesCanvasContext.strokeStyle = this._lottieColorToCSSColor(textInfo.sc, 1);
         }
 
         // Text is supported as a possible variable (for localization for example)
@@ -352,12 +354,12 @@ export class SpritePacker {
             text = variableText;
         }
 
-        ctx.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
+        this._spritesCanvasContext.fillText(text, 0, boundingBox.actualBoundingBoxAscent!);
         if (textInfo.sc !== undefined && textInfo.sc.length >= 3 && textInfo.sw !== undefined && textInfo.sw > 0 && textInfo.of === true) {
-            ctx.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
+            this._spritesCanvasContext.strokeText(text, 0, boundingBox.actualBoundingBoxAscent!);
         }
 
-        ctx.restore();
+        this._spritesCanvasContext.restore();
     }
 
     private _drawRectangle(shape: RawRectangleShape): void {
@@ -375,8 +377,8 @@ export class SpritePacker {
         // The path data has to be translated to the center of the bounding box
         // If the paths have stroke, we need to account for the stroke width
         const pathData = shape.ks.k as RawBezier;
-        const xTranslate = boundingBox.width / 2 - boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
-        const yTranslate = boundingBox.height / 2 - boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
+        const xTranslate = boundingBox.centerX - Math.ceil(boundingBox.strokeInset);
+        const yTranslate = boundingBox.centerY - Math.ceil(boundingBox.strokeInset);
 
         const vertices = pathData.v;
         const inTangents = pathData.i;
@@ -507,8 +509,8 @@ export class SpritePacker {
 
     private _drawLinearGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
         // We need to translate the gradient to the center of the bounding box
-        const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
-        const yTranslate = boundingBox.height / 2 - boundingBox.centerY;
+        const xTranslate = boundingBox.centerX;
+        const yTranslate = boundingBox.centerY;
 
         // Create the gradient
         const startPoint = fill.s.k as number[];
@@ -528,21 +530,17 @@ export class SpritePacker {
 
     private _drawRadialGradientFill(fill: RawGradientFillShape, boundingBox: BoundingBox): void {
         // We need to translate the gradient to the center of the bounding box
-        const xTranslate = boundingBox.width / 2 - boundingBox.centerX;
-        const yTranslate = boundingBox.height / 2 - boundingBox.centerY;
+        const xTranslate = boundingBox.centerX;
+        const yTranslate = boundingBox.centerY;
 
         // Create the gradient
         const startPoint = fill.s.k as number[];
         const endPoint = fill.e.k as number[];
 
-        const gradient = this._spritesCanvasContext.createRadialGradient(
-            startPoint[0] + xTranslate,
-            startPoint[1] + yTranslate,
-            0,
-            endPoint[0] + xTranslate,
-            endPoint[1] + yTranslate,
-            Math.hypot(endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]) // End radius
-        );
+        const centerX = startPoint[0] + xTranslate;
+        const centerY = startPoint[1] + yTranslate;
+        const outerRadius = Math.hypot(endPoint[0] - startPoint[0], endPoint[1] - startPoint[1]);
+        const gradient = this._spritesCanvasContext.createRadialGradient(centerX, centerY, 0, centerX, centerY, outerRadius);
 
         this._addColorStops(gradient, fill);
 
@@ -556,8 +554,10 @@ export class SpritePacker {
 
         let stopsData: GradientStop[] | undefined = undefined;
         if (rawColors.length / stops === 4) {
+            // Offset + RGB
             stopsData = this._gradientColorsToCssColor(rawColors, stops, false);
         } else if (rawColors.length / stops === 6) {
+            // Offset + RGB + Offset + Alpha
             stopsData = this._gradientColorsToCssColor(rawColors, stops, true);
         } else {
             return;
@@ -569,13 +569,12 @@ export class SpritePacker {
     }
 
     private _gradientColorsToCssColor(colors: number[], stops: number, hasAlpha: boolean): GradientStop[] {
-        const skipElement = hasAlpha ? 0 : 1;
         const result: GradientStop[] = [];
         for (let i = 0; i < stops; i++) {
             const index = i * 4;
             result.push({
                 offset: colors[index],
-                color: this._lottieColorToCSSColor(colors.slice(index + skipElement, index + 4), 1),
+                color: this._lottieColorToCSSColor(colors.slice(index + 1, index + 4), hasAlpha ? colors[stops * 4 + i * 2 + 1] : 1),
             });
         }
 

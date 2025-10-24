@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting Shadows",
+            "playgroundId": "#OE54M5#16",
+            "referenceImage": "gsplat-shadows.png"
+        },
+        {
             "title": "NPE - Angle align",
             "playgroundId": "#H5RP91",
             "referenceImage": "npe-angle-align.png"
@@ -1197,7 +1202,7 @@
         },
         {
             "title": "GLTF Node visibility test",
-            "playgroundId": "#80DN99#3",
+            "playgroundId": "#80DN99#6",
             "referenceImage": "gltfNodeVisibility.png"
         },
         {
@@ -1918,7 +1923,7 @@
         {
             "title": "Multi cameras and output render target",
             "renderCount": 2,
-            "playgroundId": "#BCYE7J#31",
+            "playgroundId": "#BCYE7J#46",
             "referenceImage": "multiCamerasOutputRenderTarget.png"
         },
         {
@@ -2651,7 +2656,7 @@
         },
         {
             "title": "FrameGraph nrge TAA",
-            "playgroundId": "#IG8NRC#33",
+            "playgroundId": "#IG8NRC#77",
             "renderCount": 15
         },
         {
@@ -2666,6 +2671,15 @@
         {
             "title": "FrameGraph nrge clustered lights (simple)",
             "playgroundId": "#1QCA2M#26"
+        },
+        {
+            "title": "FrameGraph nrge multiple post processes",
+            "playgroundId": "#SYQW69#1339"
+        },
+        {
+            "title": "FrameGraph nrge SSAO",
+            "playgroundId": "#SYQW69#1350",
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "FrameGraph nrg gui bloom",
@@ -2726,6 +2740,12 @@
         {
             "title": "FrameGraph custom post process",
             "playgroundId": "#R33LVG"
+        },
+        {
+            "title": "FrameGraph TAA reproject history",
+            "playgroundId": "#OWGOUN#14",
+            "renderCount": 40,
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Render target texture with clustered lights",
@@ -2837,7 +2857,7 @@
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
-            "playgroundId": "#VO1Z0C#10",
+            "playgroundId": "#VO1Z0C#30",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
@@ -2851,7 +2871,7 @@
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
-            "playgroundId": "#VO1Z0C#11",
+            "playgroundId": "#VO1Z0C#31",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
@@ -2865,7 +2885,7 @@
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
-            "playgroundId": "#VO1Z0C#12",
+            "playgroundId": "#VO1Z0C#32",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
@@ -3027,6 +3047,10 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "Specular Reflectance with IOR V2 Manifest",
+            "playgroundId": "#KQYNYS#49"
+        },
+        {
             "title": "OpenPBR Coat Roughness vs Coat Ior - Analytic Lights",
             "playgroundId": "#GRQHVV#80",
             "excludedEngines": ["webgl1"]
@@ -3096,6 +3120,36 @@
             "playgroundId": "#GRQHVV#101",
             "excludedEngines": ["webgl1"],
             "renderCount": 2
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - IBL",
+            "playgroundId": "#GRQHVV#111",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#112",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Coat Weight with Normal Maps - Analytic Lights",
+            "playgroundId": "#GRQHVV#109",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Coat Weight with Normal Maps - IBL",
+            "playgroundId": "#GRQHVV#108",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Realtime IBL",
+            "playgroundId": "#GRQHVV#110",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Furnace Test",
+            "playgroundId": "#GRQHVV#115",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Background material blur",
