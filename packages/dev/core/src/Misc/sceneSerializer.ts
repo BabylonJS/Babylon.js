@@ -338,7 +338,10 @@ export class SceneSerializer {
         // Particles Systems
         serializationObject.particleSystems = [];
         for (index = 0; index < scene.particleSystems.length; index++) {
-            serializationObject.particleSystems.push(scene.particleSystems[index].serialize(false));
+            const particleSystem = scene.particleSystems[index];
+            if (!particleSystem.doNotSerialize) {
+                serializationObject.particleSystems.push(particleSystem.serialize(false));
+            }
         }
 
         // Post processes
