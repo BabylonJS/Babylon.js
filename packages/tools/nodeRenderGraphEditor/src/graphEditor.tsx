@@ -455,6 +455,8 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         let customBlockData: any;
 
+        blockType = blockType.replace(/ /g, "_");
+
         // Dropped something that is not a node
         if (blockType === "") {
             return;
@@ -498,7 +500,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (blockType.indexOf("Block") === -1) {
             newNode = this.addValueNode(blockType);
         } else {
-            const block = BlockTools.GetBlockFromString(blockType, this.props.globalState.nodeRenderGraph.frameGraph, this.props.globalState.scene)!;
+            let block: NodeRenderGraphBlock = BlockTools.GetBlockFromString(blockType, this.props.globalState.nodeRenderGraph.frameGraph, this.props.globalState.scene)!;
+            if (block === null) {
+                const customBlock = this.props.globalState.customBlockDescriptions?.find((d) => {
+                    const name = d.name.endsWith("Block") ? d.name : d.name + "Block";
+                    return name === blockType;
+                });
+                if (customBlock) {
+                    block = customBlock.factory(this.props.globalState.nodeRenderGraph.frameGraph, this.props.globalState.scene);
+                }
+            }
 
             if (block.isUnique) {
                 const className = block.getClassName();

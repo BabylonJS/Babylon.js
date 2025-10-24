@@ -1,4 +1,4 @@
-import type { MenuTriggerProps } from "@fluentui/react-components";
+import type { GriffelRenderer, MenuTriggerProps } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 
 import type { IDisposable } from "core/index";
@@ -6,6 +6,7 @@ import type { IService, ServiceDefinition } from "../modularity/serviceDefinitio
 
 import {
     Button,
+    createDOMRenderer,
     Divider,
     Toolbar as FluentToolbar,
     makeStyles,
@@ -18,6 +19,8 @@ import {
     MenuTrigger,
     mergeClasses,
     Portal,
+    RendererProvider,
+    SplitButton,
     Subtitle2Stronger,
     tokens,
     ToolbarRadioButton,
@@ -35,7 +38,9 @@ import {
     PanelLeftExpandRegular,
     PanelRightContractRegular,
     PanelRightExpandRegular,
+    PictureInPictureEnterRegular,
 } from "@fluentui/react-icons";
+import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Observable } from "core/Misc/observable";
@@ -148,10 +153,6 @@ export type SidePaneDefinition = {
      * Teaching moments are more helpful for dynamically added panes, possibly from extensions.
      */
     suppressTeachingMoment?: boolean;
-};
-
-type SidePaneEntry = SidePaneDefinition & {
-    container: HTMLElement;
 };
 
 type RegisteredSidePane = {
@@ -332,11 +333,15 @@ const useStyles = makeStyles({
         flexDirection: "row",
     },
     paneCollapseButton: {
-        margin: `0 ${tokens.spacingHorizontalSNudge}`,
+        margin: `0 0 0 ${tokens.spacingHorizontalXS}`,
+    },
+    collapseMenuPopover: {
+        minWidth: 0,
     },
     pane: {
         backgroundColor: tokens.colorNeutralBackground2,
         display: "flex",
+        flex: 1,
         alignItems: "stretch",
         overflow: "hidden",
     },
@@ -357,6 +362,9 @@ const useStyles = makeStyles({
         flexGrow: 1,
         flexDirection: "column",
         overflow: "hidden",
+    },
+    unselectedPane: {
+        display: "none",
     },
     paneHeaderDiv: {
         display: "flex",
@@ -418,6 +426,16 @@ const useStyles = makeStyles({
         display: "flex",
         overflow: "hidden",
     },
+    expandButtonContainer: {
+        position: "absolute",
+    },
+    expandButtonContainerLeft: {
+        left: 0,
+    },
+    expandButtonContainerRight: {
+        right: 0,
+    },
+    expandButton: {},
 });
 
 const DockMenu: FunctionComponent<
@@ -627,9 +645,7 @@ function usePane(
     location: HorizontalLocation,
     defaultWidth: number,
     minWidth: number,
-    sidePanes: SidePaneEntry[],
-    topPaneContainerRef: (element: HTMLElement | null) => void,
-    bottomPaneContainerRef: (element: HTMLElement | null) => void,
+    sidePanes: SidePaneDefinition[],
     onSelectSidePane: Observable<string>,
     dockOperations: Map<DockLocation, (sidePaneKey: string) => void>,
     toolbarMode: ToolbarMode,
@@ -638,13 +654,14 @@ function usePane(
 ) {
     const classes = useStyles();
 
-    const [topSelectedTab, setTopSelectedTab] = useState<SidePaneEntry>();
-    const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneEntry>();
+    const [topSelectedTab, setTopSelectedTab] = useState<SidePaneDefinition>();
+    const [bottomSelectedTab, setBottomSelectedTab] = useState<SidePaneDefinition>();
     const [collapsed, setCollapsed] = useState(false);
+    const [undocked, setUndocked] = useState(false);
 
     const onExpandCollapseClick = useCallback(() => {
         setCollapsed((collapsed) => !collapsed);
-    }, [collapsed]);
+    }, []);
 
     const widthStorageKey = `Babylon/Settings/${location}Pane/WidthAdjust`;
     const heightStorageKey = `Babylon/Settings/${location}Pane/HeightAdjust`;
@@ -713,20 +730,43 @@ function usePane(
         return () => observer.remove();
     }, [topPanes, bottomPanes, onSelectSidePane]);
 
-    const expandCollapseIcon = useMemo(() => {
-        if (location === "left") {
-            return collapsed ? <PanelLeftExpandRegular /> : <PanelLeftContractRegular />;
-        } else {
-            return collapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />;
-        }
-    }, [collapsed, location]);
+    const expandCollapseButton = useMemo(() => {
+        const expandCollapseIcon =
+            location === "left" ? collapsed ? <PanelLeftExpandRegular /> : <PanelLeftContractRegular /> : collapsed ? <PanelRightExpandRegular /> : <PanelRightContractRegular />;
+
+        return (
+            <Menu positioning="below-end">
+                <MenuTrigger disableButtonEnhancement={true}>
+                    {(triggerProps) => (
+                        <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
+                            <SplitButton
+                                className={classes.paneCollapseButton}
+                                menuButton={triggerProps}
+                                primaryActionButton={{ onClick: onExpandCollapseClick }}
+                                size="small"
+                                appearance="transparent"
+                                icon={expandCollapseIcon}
+                            />
+                        </Tooltip>
+                    )}
+                </MenuTrigger>
+                <MenuPopover className={classes.collapseMenuPopover}>
+                    <MenuList>
+                        <MenuItem icon={<PictureInPictureEnterRegular />} onClick={() => setUndocked(true)}>
+                            Undock
+                        </MenuItem>
+                    </MenuList>
+                </MenuPopover>
+            </Menu>
+        );
+    }, [collapsed, onExpandCollapseClick, location]);
 
     const createPaneTabList = useCallback(
         (
-            paneComponents: SidePaneEntry[],
+            paneComponents: SidePaneDefinition[],
             toolbarMode: "full" | "compact",
-            selectedTab: SidePaneEntry | undefined,
-            setSelectedTab: (tab: SidePaneEntry | undefined) => void,
+            selectedTab: SidePaneDefinition | undefined,
+            setSelectedTab: (tab: SidePaneDefinition | undefined) => void,
             dockOptions: Map<DockLocation, (sidePaneKey: string) => void>
         ) => {
             return (
@@ -772,9 +812,9 @@ function usePane(
                                             <Divider vertical inset style={{ minHeight: 0 }} />{" "}
                                         </>
                                     )}
-                                    <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
-                                        <Button className={classes.paneCollapseButton} appearance="subtle" icon={expandCollapseIcon} onClick={onExpandCollapseClick} />
-                                    </Tooltip>
+                                    <Collapse visible={!undocked} orientation="horizontal">
+                                        {expandCollapseButton}
+                                    </Collapse>
                                 </>
                             )}
                         </div>
@@ -782,7 +822,7 @@ function usePane(
                 </>
             );
         },
-        [location, collapsed]
+        [location, collapsed, undocked, expandCollapseButton]
     );
 
     // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
@@ -839,84 +879,162 @@ function usePane(
         }
     }, []);
 
+    const paneContainerRef = useRef<HTMLDivElement>(null);
+
+    const [windowState, setWindowState] = useState<{ window: Window; mountNode: HTMLElement; renderer: GriffelRenderer }>();
+
+    useEffect(() => {
+        const disposeActions: (() => void)[] = [];
+
+        if (undocked) {
+            const paneContainer = paneContainerRef.current;
+            if (!paneContainer) {
+                // It shouldn't be possible to get here and have this ref be null, but just in case,
+                // bail out of the undock operation.
+                setUndocked(false);
+            } else {
+                // This is the extra buffer needed on top of minWidth to account for window chrome to avoid a horizontal scrollbar.
+                const widthBuffer = 4;
+                // This offsets the window's top position to account for window chrome/title bar.
+                const topOffset = 100;
+
+                // Create the child window with approximately the same location and size as the side pane.
+                const bounds = paneContainer.getBoundingClientRect();
+                const top = bounds.top + window.screenY + topOffset;
+                const left = bounds.left + window.screenX;
+                const width = Math.max(bounds.width, minWidth + widthBuffer);
+                const height = bounds.height - topOffset;
+
+                const childWindow = window.open("", "", `width=${width},height=${height},left=${left},top=${top},location=no`);
+                if (childWindow) {
+                    const body = childWindow.document.body;
+                    body.style.width = "100%";
+                    body.style.height = "100%";
+                    body.style.margin = "0";
+                    body.style.padding = "0";
+                    body.style.display = "flex";
+                    body.style.overflowY = "hidden";
+                    body.style.overflowX = "auto";
+
+                    childWindow.document.title = location === "left" ? "Left" : "Right";
+
+                    const applyWindowState = () => {
+                        // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
+                        setWindowState({ window: childWindow, mountNode: body, renderer: createDOMRenderer(childWindow.document) });
+                    };
+
+                    // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
+                    if (childWindow.document.readyState === "complete") {
+                        applyWindowState();
+                    } else {
+                        const onChildWindowLoad = () => {
+                            applyWindowState();
+                        };
+                        childWindow.addEventListener("load", onChildWindowLoad, { once: true });
+                        disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
+                    }
+
+                    // When the child window is closed for any reason, transition back to a docked state.
+                    childWindow.addEventListener(
+                        "unload",
+                        () => {
+                            setWindowState(undefined);
+                            setUndocked(false);
+                        },
+                        { once: true }
+                    );
+
+                    // If the main window closes, close any undocked child windows as well (don't leave them orphaned).
+                    const onParentWindowUnload = () => childWindow.close();
+                    window.addEventListener("unload", onParentWindowUnload);
+                    disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
+                }
+                disposeActions.push(() => childWindow?.close());
+            }
+        }
+
+        return () => disposeActions.reverse().forEach((dispose) => dispose());
+    }, [undocked]);
+
+    // This effect closes the window if all panes have been removed.
+    useEffect(() => {
+        if (windowState && topPanes.length === 0 && bottomPanes.length === 0) {
+            windowState.window.close();
+        }
+    }, [windowState, topPanes, bottomPanes]);
+
     // This memoizes the pane itself, which may or may not include the tab list, depending on the toolbar mode.
-    const pane = useMemo(() => {
+    const corePane = useMemo(() => {
         return (
             <>
-                {(topPanes.length > 0 || bottomPanes.length > 0) && (
-                    <div className={`${classes.pane} ${location === "left" ? classes.paneLeft : classes.paneRight}`}>
-                        <Collapse orientation="horizontal" visible={!collapsed}>
-                            <div
-                                ref={paneHorizontalResizeElementRef}
-                                className={classes.paneContainer}
-                                style={{ width: `clamp(${minWidth}px, calc(${defaultWidth}px + var(${paneWidthAdjustCSSVar}, 0px)), 1000px)` }}
-                            >
-                                {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
-                                {toolbarMode === "compact" && (topPanes.length > 1 || topBarItems.length > 0) && (
-                                    <>
-                                        <div className={classes.barDiv}>
-                                            {/* The tablist gets merged in with the toolbar. */}
-                                            {topPaneTabList}
-                                            <Toolbar location="top" components={topBarItems} />
-                                        </div>
-                                    </>
-                                )}
+                {/* If toolbar mode is "compact" then the top toolbar is embedded at the top of the pane. */}
+                {toolbarMode === "compact" && (topPanes.length > 1 || topBarItems.length > 0) && (
+                    <>
+                        <div className={classes.barDiv}>
+                            {/* The tablist gets merged in with the toolbar. */}
+                            {!undocked && location === "left" && expandCollapseButton}
+                            {topPaneTabList}
+                            <Toolbar location="top" components={topBarItems} />
+                            {!undocked && location === "right" && expandCollapseButton}
+                        </div>
+                    </>
+                )}
 
-                                {/* Render the top pane content. */}
-                                {topPanes.length > 0 && (
-                                    <div className={classes.paneContent}>
-                                        {topSelectedTab && (
-                                            <>
-                                                <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
-                                                <div ref={topPaneContainerRef} className={classes.paneContent} />
-                                            </>
-                                        )}
+                {/* Render the top pane content. */}
+                {topPanes.length > 0 && (
+                    <div className={classes.paneContent}>
+                        {topSelectedTab && (
+                            <>
+                                <PaneHeader id={topSelectedTab.key} title={topSelectedTab.title} dockOptions={validTopDockOptions} />
+                                {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
+                                {topPanes.map((pane) => (
+                                    <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== topSelectedTab.key ? classes.unselectedPane : undefined)}>
+                                        <pane.content />
                                     </div>
-                                )}
-
-                                {/* If we have both top and bottom panes, show a divider. This divider is also the resizer for the bottom pane. */}
-                                {topPanes.length > 0 && bottomPanes.length > 0 && <Divider ref={paneVerticalResizeHandleRef} className={classes.paneDivider} />}
-
-                                {/* Render the bottom pane tablist. */}
-                                {bottomPanes.length > 1 && (
-                                    <>
-                                        <div className={classes.barDiv}>{bottomPaneTabList}</div>
-                                    </>
-                                )}
-
-                                {/* Render the bottom pane content. This is the element that can be resized vertically. */}
-                                {bottomPanes.length > 0 && (
-                                    <div
-                                        ref={paneVerticalResizeElementRef}
-                                        className={classes.paneContent}
-                                        style={{ height: `clamp(200px, calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
-                                    >
-                                        {bottomSelectedTab && (
-                                            <>
-                                                <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
-                                                <div ref={bottomPaneContainerRef} className={classes.paneContent} />
-                                            </>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the bottom of the pane. */}
-                                {toolbarMode === "compact" && bottomBarItems.length > 0 && (
-                                    <>
-                                        <div className={classes.barDiv}>
-                                            <Toolbar location="bottom" components={bottomBarItems} />
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </Collapse>
-                        {/* This is the resizer (width) for the pane container. */}
-                        <div
-                            ref={paneHorizontalResizeHandleRef}
-                            className={`${classes.resizer} ${location === "left" ? classes.resizerLeft : classes.resizerRight}`}
-                            style={{ pointerEvents: `${collapsed ? "none" : "auto"}` }}
-                        />
+                                ))}
+                            </>
+                        )}
                     </div>
+                )}
+
+                {/* If we have both top and bottom panes, show a divider. This divider is also the resizer for the bottom pane. */}
+                {topPanes.length > 0 && bottomPanes.length > 0 && <Divider ref={paneVerticalResizeHandleRef} className={classes.paneDivider} />}
+
+                {/* Render the bottom pane tablist. */}
+                {bottomPanes.length > 1 && (
+                    <>
+                        <div className={classes.barDiv}>{bottomPaneTabList}</div>
+                    </>
+                )}
+
+                {/* Render the bottom pane content. This is the element that can be resized vertically. */}
+                {bottomPanes.length > 0 && (
+                    <div
+                        ref={paneVerticalResizeElementRef}
+                        className={classes.paneContent}
+                        style={{ height: `clamp(200px, calc(45% + var(${paneHeightAdjustCSSVar}, 0px)), 100% - 300px)`, flex: "0 0 auto" }}
+                    >
+                        {bottomSelectedTab && (
+                            <>
+                                <PaneHeader id={bottomSelectedTab.key} title={bottomSelectedTab.title} dockOptions={validBottomDockOptions} />
+                                {/* Render all panes to retain their state even when they are not selected, but only display the selected pane. */}
+                                {bottomPanes.map((pane) => (
+                                    <div key={pane.key} className={mergeClasses(classes.paneContent, pane.key !== bottomSelectedTab.key ? classes.unselectedPane : undefined)}>
+                                        <pane.content />
+                                    </div>
+                                ))}
+                            </>
+                        )}
+                    </div>
+                )}
+
+                {/* If toolbar mode is "compact" then the bottom toolbar is embedded at the bottom of the pane. */}
+                {toolbarMode === "compact" && bottomBarItems.length > 0 && (
+                    <>
+                        <div className={classes.barDiv}>
+                            <Toolbar location="bottom" components={bottomBarItems} />
+                        </div>
+                    </>
                 )}
             </>
         );
@@ -931,10 +1049,55 @@ function usePane(
         bottomBarItems,
         topPaneTabList,
         bottomPaneTabList,
-        collapsed,
+        undocked,
     ]);
 
-    return [topPaneTabList, pane, topSelectedTab, bottomSelectedTab] as const;
+    // This deals with docked vs undocked state, where undocked is rendered into a separate window via a portal.
+    const pane = useMemo(() => {
+        if (!windowState) {
+            // If there is no window state, then we are docked, so render the resizable div and the collapse container.
+            return (
+                <div ref={paneContainerRef} className={classes.paneContainer}>
+                    {(topPanes.length > 0 || bottomPanes.length > 0) && (
+                        <div className={`${classes.pane} ${location === "left" ? classes.paneLeft : classes.paneRight}`}>
+                            <Collapse orientation="horizontal" visible={!collapsed}>
+                                <div
+                                    ref={paneHorizontalResizeElementRef}
+                                    className={classes.paneContainer}
+                                    style={{ width: `clamp(${minWidth}px, calc(${defaultWidth}px + var(${paneWidthAdjustCSSVar}, 0px)), 1000px)` }}
+                                >
+                                    {corePane}
+                                </div>
+                            </Collapse>
+                            {/* This is the resizer (width) for the pane container. */}
+                            <div
+                                ref={paneHorizontalResizeHandleRef}
+                                className={`${classes.resizer} ${location === "left" ? classes.resizerLeft : classes.resizerRight}`}
+                                style={{ pointerEvents: `${collapsed ? "none" : "auto"}` }}
+                            />
+                        </div>
+                    )}
+                </div>
+            );
+        } else {
+            // Otherwise we are undocked, so render into the portal that targets the body of the child window.
+            const { mountNode, renderer } = windowState;
+            return (
+                // Portal targets the body of the child window.
+                <Portal mountNode={mountNode}>
+                    {/* RenderProvider manages Fluent style/class state. */}
+                    <RendererProvider renderer={renderer} targetDocument={mountNode.ownerDocument}>
+                        {/* Theme gives us the Fluent Provider, needed for managing other Fluent state and applying the current theme mode. */}
+                        <Theme className={classes.paneContent} style={{ minWidth }} targetDocument={mountNode.ownerDocument}>
+                            {corePane}
+                        </Theme>
+                    </RendererProvider>
+                </Portal>
+            );
+        }
+    }, [collapsed, corePane, windowState]);
+
+    return [topPaneTabList, pane, collapsed, setCollapsed] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -978,41 +1141,33 @@ export function MakeShellServiceDefinition({
                 const toolbarItems = useOrderedObservableCollection(toolbarItemCollection);
 
                 const sidePanes = useOrderedObservableCollection(sidePaneCollection);
-                const coercedSidePaneCache = useRef(new Map<string, SidePaneEntry>());
+                const coercedSidePaneCache = useRef(new Map<string, SidePaneDefinition>());
                 const coercedSidePanes = useMemo(() => {
                     // First pass - apply overrides and respect the side pane mode.
                     const coercedSidePanes = sidePanes.map((sidePaneDefinition) => {
-                        let sidePaneEntry = coercedSidePaneCache.current.get(sidePaneDefinition.key);
-                        if (!sidePaneEntry) {
-                            // Manually create html element containers outside the React tree to prevent unmounting/mounting
-                            // when panes are re-docked or the selected tabs change. This preserves state within the side panes.
-                            // This is combined with the usage of React portals to make it all work.
-                            const sidePaneContainer = document.createElement("div");
-                            sidePaneContainer.style.display = "flex";
-                            sidePaneContainer.style.flex = "1";
-                            sidePaneContainer.style.flexDirection = "column";
-                            sidePaneContainer.style.overflow = "hidden";
-                            sidePaneEntry = { ...sidePaneDefinition, container: sidePaneContainer };
-                            coercedSidePaneCache.current.set(sidePaneDefinition.key, sidePaneEntry);
+                        let coercedSidePane = coercedSidePaneCache.current.get(sidePaneDefinition.key);
+                        if (!coercedSidePane) {
+                            coercedSidePane = { ...sidePaneDefinition };
+                            coercedSidePaneCache.current.set(sidePaneDefinition.key, coercedSidePane);
                         }
 
                         const override = sidePaneDockOverrides[sidePaneDefinition.key];
                         if (override) {
                             // Override (user manually re-docked) has the highest priority.
-                            sidePaneEntry.horizontalLocation = override.horizontalLocation;
-                            sidePaneEntry.verticalLocation = override.verticalLocation;
+                            coercedSidePane.horizontalLocation = override.horizontalLocation;
+                            coercedSidePane.verticalLocation = override.verticalLocation;
                         } else if (sidePaneRemapper) {
                             // A side pane remapper has the next highest priority.
                             const { horizontalLocation, verticalLocation } = sidePaneRemapper(sidePaneDefinition);
-                            sidePaneEntry.horizontalLocation = horizontalLocation;
-                            sidePaneEntry.verticalLocation = verticalLocation;
+                            coercedSidePane.horizontalLocation = horizontalLocation;
+                            coercedSidePane.verticalLocation = verticalLocation;
                         } else {
                             // Otherwise use the default defined location.
-                            sidePaneEntry.horizontalLocation = sidePaneDefinition.horizontalLocation;
-                            sidePaneEntry.verticalLocation = sidePaneDefinition.verticalLocation;
+                            coercedSidePane.horizontalLocation = sidePaneDefinition.horizontalLocation;
+                            coercedSidePane.verticalLocation = sidePaneDefinition.verticalLocation;
                         }
 
-                        return sidePaneEntry;
+                        return coercedSidePane;
                     });
 
                     // Second pass - correct any invalid state, specifically if there are only bottom panes, force them to be top panes.
@@ -1115,18 +1270,11 @@ export function MakeShellServiceDefinition({
 
                 const centralContents = useOrderedObservableCollection(centralContentCollection);
 
-                const [topLeftPaneContainer, setTopLeftPaneContainer] = useState<HTMLElement | null>(null);
-                const [bottomLeftPaneContainer, setBottomLeftPaneContainer] = useState<HTMLElement | null>(null);
-                const [topRightPaneContainer, setTopRightPaneContainer] = useState<HTMLElement | null>(null);
-                const [bottomRightPaneContainer, setBottomRightPaneContainer] = useState<HTMLElement | null>(null);
-
-                const [leftPaneTabList, leftPane, topLeftSelectedPane, bottomLeftSelectedPane] = usePane(
+                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed] = usePane(
                     "left",
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
                     coercedSidePanes,
-                    setTopLeftPaneContainer,
-                    setBottomLeftPaneContainer,
                     onSelectSidePane,
                     sidePaneDockOperations,
                     toolbarMode,
@@ -1134,39 +1282,17 @@ export function MakeShellServiceDefinition({
                     bottomBarLeftItems
                 );
 
-                const [rightPaneTabList, rightPane, topRightSelectedPane, bottomRightSelectedPane] = usePane(
+                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed] = usePane(
                     "right",
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
                     coercedSidePanes,
-                    setTopRightPaneContainer,
-                    setBottomRightPaneContainer,
                     onSelectSidePane,
                     sidePaneDockOperations,
                     toolbarMode,
                     topBarRightItems,
                     bottomBarRightItems
                 );
-
-                // Update the content of the top left pane container.
-                useEffect(() => {
-                    topLeftPaneContainer?.replaceChildren(...(topLeftSelectedPane ? [topLeftSelectedPane.container] : []));
-                }, [topLeftPaneContainer, topLeftSelectedPane]);
-
-                // Update the content of the bottom left pane container.
-                useEffect(() => {
-                    bottomLeftPaneContainer?.replaceChildren(...(bottomLeftSelectedPane ? [bottomLeftSelectedPane.container] : []));
-                }, [bottomLeftPaneContainer, bottomLeftSelectedPane]);
-
-                // Update the content of the top right pane container.
-                useEffect(() => {
-                    topRightPaneContainer?.replaceChildren(...(topRightSelectedPane ? [topRightSelectedPane.container] : []));
-                }, [topRightPaneContainer, topRightSelectedPane]);
-
-                // Update the content of the bottom right pane container.
-                useEffect(() => {
-                    bottomRightPaneContainer?.replaceChildren(...(bottomRightSelectedPane ? [bottomRightSelectedPane.container] : []));
-                }, [bottomRightPaneContainer, bottomRightSelectedPane]);
 
                 return (
                     <div className={classes.mainView}>
@@ -1191,6 +1317,24 @@ export function MakeShellServiceDefinition({
                                 {centralContents.map((entry) => (
                                     <entry.component key={entry.key} />
                                 ))}
+                                {toolbarMode === "compact" && (
+                                    <>
+                                        <FluentFade visible={leftPaneCollapsed} delay={50}>
+                                            <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerLeft)}>
+                                                <Tooltip content="Show Side Pane" relationship="label">
+                                                    <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
+                                                </Tooltip>
+                                            </div>
+                                        </FluentFade>
+                                        <FluentFade visible={rightPaneCollapsed} delay={50}>
+                                            <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerRight)}>
+                                                <Tooltip content="Show Side Pane" relationship="label">
+                                                    <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />
+                                                </Tooltip>
+                                            </div>
+                                        </FluentFade>
+                                    </>
+                                )}
                             </div>
 
                             {/* Render the right pane container. */}
@@ -1205,15 +1349,6 @@ export function MakeShellServiceDefinition({
                                 </div>
                             </>
                         )}
-
-                        {/* Always render all side panes, but render them into portals so we can relocate them (undock/redock) without losing their state. */}
-                        {coercedSidePanes.map((sidePaneDefinition) => {
-                            return (
-                                <Portal key={sidePaneDefinition.key} mountNode={sidePaneDefinition.container}>
-                                    <sidePaneDefinition.content />
-                                </Portal>
-                            );
-                        })}
                     </div>
                 );
             };

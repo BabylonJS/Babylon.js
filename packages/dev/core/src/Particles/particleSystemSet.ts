@@ -137,7 +137,9 @@ export class ParticleSystemSet implements IDisposable {
 
         result.systems = [];
         for (const system of this.systems) {
-            result.systems.push(system.serialize(serializeTexture));
+            if (!system.doNotSerialize) {
+                result.systems.push(system.serialize(serializeTexture));
+            }
         }
 
         if (this._emitterNode) {

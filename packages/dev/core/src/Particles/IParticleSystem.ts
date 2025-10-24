@@ -300,6 +300,11 @@ export interface IParticleSystem {
     isNodeGenerated: boolean;
 
     /**
+     * Specifies if the particle system should be serialized
+     */
+    doNotSerialize?: boolean;
+
+    /**
      * Gets the maximum number of particles active at the same time.
      * @returns The max number of active particles.
      */

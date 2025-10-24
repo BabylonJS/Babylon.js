@@ -46,9 +46,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
       if (outBounds) {
         voxel =  vec3f(0.15, 0.0, 0.0);
       } else {
-        if (voxel.r > 0.001) {
-          voxel.g = 1.0;
-        }
+        // if (voxel.r > 0.001) {
+        //   voxel.g = 1.0;
+        // }
         voxel.r += mip_separator;
       }
       fragmentOutputs.color = vec4f(mix(background.rgb, voxelSlab.rgb, voxelSlab.a) + voxel, 1.0);
