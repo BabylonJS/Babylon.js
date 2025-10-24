@@ -40,7 +40,7 @@ import {
     PanelRightExpandRegular,
     PictureInPictureEnterRegular,
 } from "@fluentui/react-icons";
-import { Collapse as FluentCollapse, Fade as FluentFade } from "@fluentui/react-motion-components-preview";
+import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Observable } from "core/Misc/observable";
@@ -803,10 +803,9 @@ function usePane(
                                             <Divider vertical inset style={{ minHeight: 0 }} />{" "}
                                         </>
                                     )}
-                                    {/* TODO: Replace with shared components Collapse, but that one needs to accept div props to apply to the root div.*/}
-                                    <FluentCollapse visible={!undocked} orientation="horizontal">
-                                        <div style={{ display: "flex", flex: 1 }}>{expandCollapseButton}</div>
-                                    </FluentCollapse>
+                                    <Collapse visible={!undocked} orientation="horizontal">
+                                        {expandCollapseButton}
+                                    </Collapse>
                                 </>
                             )}
                         </div>

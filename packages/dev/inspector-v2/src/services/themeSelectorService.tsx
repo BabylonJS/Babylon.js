@@ -3,7 +3,7 @@ import type { TernaryDarkMode } from "usehooks-ts";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IShellService } from "../services/shellService";
 
-import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, tokens, Tooltip } from "@fluentui/react-components";
+import { makeStyles, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, SplitButton, Tooltip } from "@fluentui/react-components";
 import { WeatherMoonRegular, WeatherSunnyRegular } from "@fluentui/react-icons";
 import { useCallback } from "react";
 
