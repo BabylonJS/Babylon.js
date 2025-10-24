@@ -1,14 +1,8 @@
-import { Body1 } from "@fluentui/react-components";
 import { PropertyLine } from "./propertyLine";
 import { Link } from "../../primitives/link";
-import type { ImmutablePrimitiveProps } from "../../primitives/primitive";
+import type { LinkProps } from "../../primitives/link";
 import type { PropertyLineProps } from "./propertyLine";
 import type { FunctionComponent } from "react";
-
-type LinkProps = ImmutablePrimitiveProps<string> & {
-    onLink?: () => void;
-    url?: string;
-};
 
 /**
  * Wraps a link in a property line
@@ -19,9 +13,7 @@ export const LinkPropertyLine: FunctionComponent<PropertyLineProps<string> & Lin
     LinkPropertyLine.displayName = "LinkPropertyLine";
     return (
         <PropertyLine {...props}>
-            <Link inline onClick={() => props.onLink?.()} href={props.url} title={props.title}>
-                <Body1>{props.value}</Body1>
-            </Link>
+            <Link {...props} />
         </PropertyLine>
     );
 };
