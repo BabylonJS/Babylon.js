@@ -878,7 +878,7 @@ function usePane(
         if (undocked) {
             // Create the child window with approximately the same location and size as the side pane.
             const bounds = paneContainerRef.current?.getBoundingClientRect();
-            const width = bounds ? bounds.width : defaultWidth;
+            const width = Math.max(bounds?.width ?? 0, defaultWidth + 4);
             const height = bounds ? bounds.height - 100 : 800;
             const left = bounds ? bounds.left + window.screenX : 200;
             const top = bounds ? bounds.top + window.screenY + 100 : 200;
