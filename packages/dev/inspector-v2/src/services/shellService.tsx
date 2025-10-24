@@ -40,7 +40,7 @@ import {
     PanelRightExpandRegular,
     PictureInPictureEnterRegular,
 } from "@fluentui/react-icons";
-import { Fade as FluentFade } from "@fluentui/react-motion-components-preview";
+import { Collapse as FluentCollapse, Fade as FluentFade } from "@fluentui/react-motion-components-preview";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { Observable } from "core/Misc/observable";
@@ -803,7 +803,10 @@ function usePane(
                                             <Divider vertical inset style={{ minHeight: 0 }} />{" "}
                                         </>
                                     )}
-                                    {expandCollapseButton}
+                                    {/* TODO: Replace with shared components Collapse, but that one needs to accept div props to apply to the root div.*/}
+                                    <FluentCollapse visible={!undocked} orientation="horizontal">
+                                        <div style={{ display: "flex", flex: 1 }}>{expandCollapseButton}</div>
+                                    </FluentCollapse>
                                 </>
                             )}
                         </div>
@@ -811,7 +814,7 @@ function usePane(
                 </>
             );
         },
-        [location, collapsed]
+        [location, collapsed, undocked]
     );
 
     // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
