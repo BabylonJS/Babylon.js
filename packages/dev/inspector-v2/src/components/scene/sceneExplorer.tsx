@@ -729,37 +729,40 @@ export const SceneExplorer: FunctionComponent<{
         [allTreeItems]
     );
 
-    const selectEntity = useCallback(() => {
-        const entity = selectedEntity as EntityBase;
-        if (entity && entity.uniqueId != undefined) {
-            const parentStack = getParentStack(entity);
-            if (parentStack.length > 0) {
-                const newOpenItems = new Set<TreeItemValue>(openItems);
-                for (const parent of parentStack) {
-                    newOpenItems.add(parent);
+    const selectEntity = useCallback(
+        (selectedEntity: unknown) => {
+            const entity = selectedEntity as EntityBase;
+            if (entity && entity.uniqueId != undefined) {
+                const parentStack = getParentStack(entity);
+                if (parentStack.length > 0) {
+                    const newOpenItems = new Set<TreeItemValue>(openItems);
+                    for (const parent of parentStack) {
+                        newOpenItems.add(parent);
+                    }
+                    setOpenItems(newOpenItems);
+                    setIsScrollToPending(true);
                 }
-                setOpenItems(newOpenItems);
-                setIsScrollToPending(true);
             }
-        }
 
-        previousSelectedEntity.current = selectedEntity;
-    }, [selectedEntity, getParentStack, openItems]);
+            previousSelectedEntity.current = selectedEntity;
+        },
+        [getParentStack, openItems]
+    );
 
     const [isScrollToPending, setIsScrollToPending] = useState(false);
 
     useEffect(() => {
         if (selectedEntity && selectedEntity !== previousSelectedEntity.current) {
-            selectEntity();
+            selectEntity(selectedEntity);
         }
-    }, [selectedEntity]);
+    }, [selectedEntity, selectEntity]);
 
     useEffect(() => {
         // If there are no open items, then it should mean scene explorer has only just mounted, so we should select the already selected entity.
         if (openItems.size === 0) {
-            selectEntity();
+            selectEntity(selectedEntity);
         }
-    }, [allTreeItems]);
+    }, [openItems, selectEntity, selectedEntity]);
 
     // We need to wait for a render to complete before we can scroll to the item, hence the isScrollToPending.
     useEffect(() => {

@@ -426,6 +426,15 @@ const useStyles = makeStyles({
         display: "flex",
         overflow: "hidden",
     },
+    expandButtonContainer: {
+        position: "absolute",
+    },
+    expandButtonContainerLeft: {
+        left: 0,
+    },
+    expandButtonContainerRight: {
+        right: 0,
+    },
     expandButton: {},
 });
 
@@ -813,7 +822,7 @@ function usePane(
                 </>
             );
         },
-        [location, collapsed, undocked]
+        [location, collapsed, undocked, expandCollapseButton]
     );
 
     // This memos the TabList to make it easy for the JSX to be inserted at the top of the pane (in "compact" mode) or returned to the caller to be used in the toolbar (in "full" mode).
@@ -878,60 +887,70 @@ function usePane(
         const disposeActions: (() => void)[] = [];
 
         if (undocked) {
-            // Create the child window with approximately the same location and size as the side pane.
-            const bounds = paneContainerRef.current?.getBoundingClientRect();
-            const width = Math.max(bounds?.width ?? 0, defaultWidth + 4);
-            const height = bounds ? bounds.height - 100 : 800;
-            const left = bounds ? bounds.left + window.screenX : 200;
-            const top = bounds ? bounds.top + window.screenY + 100 : 200;
+            const paneContainer = paneContainerRef.current;
+            if (!paneContainer) {
+                // It shouldn't be possible to get here and have this ref be null, but just in case,
+                // bail out of the undock operation.
+                setUndocked(false);
+            } else {
+                // This is the extra buffer needed on top of minWidth to account for window chrome to avoid a horizontal scrollbar.
+                const widthBuffer = 4;
+                // This offsets the window's top position to account for window chrome/title bar.
+                const topOffset = 100;
 
-            const childWindow = window.open("", "", `width=${width},height=${height},left=${left},top=${top},location=no`);
-            if (childWindow) {
-                const body = childWindow.document.body;
-                body.style.width = "100%";
-                body.style.height = "100%";
-                body.style.margin = "0";
-                body.style.padding = "0";
-                body.style.display = "flex";
-                body.style.overflowY = "hidden";
-                body.style.overflowX = "auto";
+                // Create the child window with approximately the same location and size as the side pane.
+                const bounds = paneContainer.getBoundingClientRect();
+                const top = bounds.top + window.screenY + topOffset;
+                const left = bounds.left + window.screenX;
+                const width = Math.max(bounds.width, minWidth + widthBuffer);
+                const height = bounds.height - topOffset;
 
-                childWindow.document.title = location === "left" ? "Left" : "Right";
+                const childWindow = window.open("", "", `width=${width},height=${height},left=${left},top=${top},location=no`);
+                if (childWindow) {
+                    const body = childWindow.document.body;
+                    body.style.width = "100%";
+                    body.style.height = "100%";
+                    body.style.margin = "0";
+                    body.style.padding = "0";
+                    body.style.display = "flex";
+                    body.style.overflowY = "hidden";
+                    body.style.overflowX = "auto";
 
-                const applyWindowState = () => {
-                    // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
-                    setWindowState({ window: childWindow, mountNode: body, renderer: createDOMRenderer(childWindow.document) });
-                };
+                    childWindow.document.title = location === "left" ? "Left" : "Right";
 
-                // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
-                if (childWindow.document.readyState === "complete") {
-                    applyWindowState();
-                } else {
-                    const onChildWindowLoad = () => {
-                        applyWindowState();
+                    const applyWindowState = () => {
+                        // Setup the window state, including creating a Fluent/Griffel "renderer" for managing runtime styles/classes in the child window.
+                        setWindowState({ window: childWindow, mountNode: body, renderer: createDOMRenderer(childWindow.document) });
                     };
-                    childWindow.addEventListener("load", onChildWindowLoad, { once: true });
-                    disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
+
+                    // Once the child window document is ready, setup the window state which will trigger another effect that renders into the child window.
+                    if (childWindow.document.readyState === "complete") {
+                        applyWindowState();
+                    } else {
+                        const onChildWindowLoad = () => {
+                            applyWindowState();
+                        };
+                        childWindow.addEventListener("load", onChildWindowLoad, { once: true });
+                        disposeActions.push(() => childWindow.removeEventListener("load", onChildWindowLoad));
+                    }
+
+                    // When the child window is closed for any reason, transition back to a docked state.
+                    childWindow.addEventListener(
+                        "unload",
+                        () => {
+                            setWindowState(undefined);
+                            setUndocked(false);
+                        },
+                        { once: true }
+                    );
+
+                    // If the main window closes, close any undocked child windows as well (don't leave them orphaned).
+                    const onParentWindowUnload = () => childWindow.close();
+                    window.addEventListener("unload", onParentWindowUnload);
+                    disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
                 }
-
-                // When the child window is closed for any reason, transition back to a docked state.
-                childWindow.addEventListener(
-                    "unload",
-                    () => {
-                        setWindowState(undefined);
-                        setUndocked(false);
-                        // setPaneWidthAdjust(childWindow.innerWidth - defaultWidth);
-                    },
-                    { once: true }
-                );
-
-                // If the main window closes, close any undocked child windows as well (don't leave them orphaned).
-                const onParentWindowUnload = () => childWindow.close();
-                window.addEventListener("unload", onParentWindowUnload);
-                disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
+                disposeActions.push(() => childWindow?.close());
             }
-
-            disposeActions.push(() => childWindow?.close());
         }
 
         return () => disposeActions.reverse().forEach((dispose) => dispose());
@@ -1301,14 +1320,14 @@ export function MakeShellServiceDefinition({
                                 {toolbarMode === "compact" && (
                                     <>
                                         <FluentFade visible={leftPaneCollapsed} delay={50}>
-                                            <div style={{ position: "absolute", left: 0 }}>
+                                            <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerLeft)}>
                                                 <Tooltip content="Show Side Pane" relationship="label">
                                                     <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
                                                 </Tooltip>
                                             </div>
                                         </FluentFade>
                                         <FluentFade visible={rightPaneCollapsed} delay={50}>
-                                            <div style={{ position: "absolute", right: 0 }}>
+                                            <div className={mergeClasses(classes.expandButtonContainer, classes.expandButtonContainerRight)}>
                                                 <Tooltip content="Show Side Pane" relationship="label">
                                                     <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />
                                                 </Tooltip>
