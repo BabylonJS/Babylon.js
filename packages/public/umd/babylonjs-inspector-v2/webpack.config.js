@@ -6,6 +6,7 @@ module.exports = (env) => {
         mode: env.production ? "production" : "development",
         devPackageAliasPath: `../../../dev/inspector-v2/dist`, // not really needed?
         devPackageName: "inspector",
+        overrideFilename: "babylon.inspector-v2",
         namespace: "INSPECTOR",
         outputPath: path.resolve(__dirname),
         maxMode: true,

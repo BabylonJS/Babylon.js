@@ -1,8 +1,7 @@
 {
     "name": "babylonjs-inspector-v2",
     "version": "1.0.0",
-    "main": "babylon.inspector.bundle.js",
-    "types": "babylon.inspector.module.d.ts",
+    "main": "babylon.inspector-v2.bundle.js",
     "files": [
         "*"
     ],
