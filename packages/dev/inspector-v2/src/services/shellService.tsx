@@ -729,7 +729,7 @@ function usePane(
             <Menu positioning="below-end">
                 <MenuTrigger disableButtonEnhancement={true}>
                     {(triggerProps) => (
-                        <Tooltip content="Select Theme" relationship="label">
+                        <Tooltip content={collapsed ? "Show Side Pane" : "Hide Side Pane"} relationship="label">
                             <SplitButton
                                 className={classes.paneCollapseButton}
                                 menuButton={triggerProps}
@@ -1298,16 +1298,24 @@ export function MakeShellServiceDefinition({
                                 {centralContents.map((entry) => (
                                     <entry.component key={entry.key} />
                                 ))}
-                                <FluentFade visible={leftPaneCollapsed} delay={50}>
-                                    <div style={{ position: "absolute", left: 0 }}>
-                                        <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
-                                    </div>
-                                </FluentFade>
-                                <FluentFade visible={rightPaneCollapsed} delay={50}>
-                                    <div style={{ position: "absolute", right: 0 }}>
-                                        <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />
-                                    </div>
-                                </FluentFade>
+                                {toolbarMode === "compact" && (
+                                    <>
+                                        <FluentFade visible={leftPaneCollapsed} delay={50}>
+                                            <div style={{ position: "absolute", left: 0 }}>
+                                                <Tooltip content="Show Side Pane" relationship="label">
+                                                    <Button className={classes.expandButton} icon={<PanelLeftExpandRegular />} onClick={() => setLeftPaneCollapsed(false)} />
+                                                </Tooltip>
+                                            </div>
+                                        </FluentFade>
+                                        <FluentFade visible={rightPaneCollapsed} delay={50}>
+                                            <div style={{ position: "absolute", right: 0 }}>
+                                                <Tooltip content="Show Side Pane" relationship="label">
+                                                    <Button className={classes.expandButton} icon={<PanelRightExpandRegular />} onClick={() => setRightPaneCollapsed(false)} />
+                                                </Tooltip>
+                                            </div>
+                                        </FluentFade>
+                                    </>
+                                )}
                             </div>
 
                             {/* Render the right pane container. */}
