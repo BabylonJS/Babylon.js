@@ -1,4 +1,4 @@
-import { Body1, InfoLabel, Link, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses } from "@fluentui/react-components";
+import { Body1, InfoLabel, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses } from "@fluentui/react-components";
 import {
     ChevronCircleDown20Regular,
     ChevronCircleDown16Regular,
@@ -13,6 +13,7 @@ import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
 import type { PrimitiveProps } from "../../primitives/primitive";
+import { Link } from "../../primitives/link";
 import { ToggleButton } from "../../primitives/toggleButton";
 import { Button } from "../../primitives/button";
 import { CustomTokens } from "../../primitives/utils";
@@ -136,7 +137,7 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
 
-    const description = props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description;
+    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
