@@ -391,7 +391,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         toolkit:
             enable.toolkit ??
             ((autoProbe &&
-                (/\bBABYLON\.Toolkit\.SceneManager\.InitializePlayground\b/.test(allSource) ||
+                (/TOOLKIT\.SceneManager/u.test(allSource) ||
                     /\bSM\.InitializePlayground\b/.test(allSource) ||
                     location.href.includes("BabylonToolkit") ||
                     ((): boolean => {
@@ -411,7 +411,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         toolkit: "https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.js",
     };
 
-    async function initRuntime(engine: ThinEngine) {
+    async function initRuntime(): Promise<void> {
         // AMMO
         if (want.ammo) {
             const hasFactory = typeof (window as any).Ammo === "function";
@@ -451,23 +451,6 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
             }
         }
 
-        // SOUND
-        if (want.sound) {
-            try {
-                const anyB = (window as any).BABYLON as any;
-                const opts = (engine as any).getCreationOptions?.();
-                if (!opts || opts.audioEngine !== false) {
-                    anyB.AbstractEngine.audioEngine = anyB.AbstractEngine.AudioEngineFactory(
-                        engine.getRenderingCanvas(),
-                        engine.getAudioContext?.(),
-                        engine.getAudioDestination?.()
-                    );
-                }
-            } catch {
-                /* ignore */
-            }
-        }
-
         // TOOLKIT
         if (want.toolkit) {
             await loadScriptOnce(urls.toolkit || defaults.toolkit);
@@ -486,6 +469,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
                 return await import(/* webpackIgnore: true */ s);
             });
         const entrySpec = specKey(entryPath);
+        await initRuntime();
         const mod = await importFn(entrySpec);
         let engine: ThinEngine | null = null;
         if (typeof mod.createEngine === "function") {
@@ -505,8 +489,23 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         if (!engine) {
             throw new Error("Failed to create engine.");
         }
+        // Sound post-creation init
+        if (want.sound) {
+            try {
+                const anyB = (window as any).BABYLON as any;
+                const opts = (engine as any).getCreationOptions?.();
+                if (!opts || opts.audioEngine !== false) {
+                    anyB.AbstractEngine.audioEngine = anyB.AbstractEngine.AudioEngineFactory(
+                        engine.getRenderingCanvas(),
+                        engine.getAudioContext?.(),
+                        engine.getAudioDestination?.()
+                    );
+                }
+            } catch {
+                /* ignore */
+            }
+        }
         (window as any).engine = engine;
-        await initRuntime(engine);
 
         let createScene: any = null;
         if (mod.default?.CreateScene) {
