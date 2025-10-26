@@ -1,9 +1,9 @@
 ﻿#if NUM_BONE_INFLUENCERS > 0
-	attribute matricesIndices : vec4<f32>;
-	attribute matricesWeights : vec4<f32>;
+	attribute matricesIndices : vec4f;
+	attribute matricesWeights : vec4f;
 	#if NUM_BONE_INFLUENCERS > 4
-		attribute matricesIndicesExtra : vec4<f32>;
-		attribute matricesWeightsExtra : vec4<f32>;
+		attribute matricesIndicesExtra : vec4f;
+		attribute matricesWeightsExtra : vec4f;
 	#endif
 
     #ifndef BAKED_VERTEX_ANIMATION_TEXTURE
