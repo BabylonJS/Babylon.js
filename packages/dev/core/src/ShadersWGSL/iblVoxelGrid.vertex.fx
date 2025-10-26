@@ -1,5 +1,5 @@
 #include <bakedVertexAnimationDeclaration>
-#include <bonesDeclaration>
+#include <bonesDeclaration>(attribute matricesIndices : vec4f;,,attribute matricesWeights : vec4f;,,attribute matricesIndicesExtra : vec4f;,,attribute matricesWeightsExtra : vec4f;,)
 #include <helperFunctions>
 #include <instancesDeclaration>
 
@@ -13,7 +13,15 @@
 #ifdef VERTEX_PULLING_USE_INDEX_BUFFER
 var<storage, read> indices : array<u32>;
 #endif
-var<storage, read> position : array<f32>;
+var<storage, read> position : array<vec3f>;
+#if NUM_BONE_INFLUENCERS > 0
+  var<storage, read> matricesIndices : array<vec4f>;
+  var<storage, read> matricesWeights : array<vec4f>;
+  #if NUM_BONE_INFLUENCERS > 4
+    var<storage, read> matricesIndicesExtra : array<vec4f>;
+    var<storage, read> matricesWeightsExtra : array<vec4f>;
+  #endif
+#endif
 
 uniform world : mat4x4f;
 uniform invWorldScale: mat4x4f;
@@ -86,7 +94,16 @@ let inputPosition: vec3f = positionUpdated;
 #include <instancesVertex>
 
 #include <bakedVertexAnimation>
-#include <bonesVertex>
+
+#if NUM_BONE_INFLUENCERS > 0
+  let matrixIndex = matricesIndices[vertIdx];
+  let matrixWeight = matricesWeights[vertIdx];
+  #if NUM_BONE_INFLUENCERS > 4
+    let matrixIndexExtra = matricesIndicesExtra[vertIdx];
+    let matrixWeightExtra = matricesWeightsExtra[vertIdx];
+  #endif
+#endif
+#include <bonesVertex>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight)
 
   let worldPos = finalWorld * vec4f(positionUpdated, 1.0);
 
