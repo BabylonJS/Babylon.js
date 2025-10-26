@@ -738,6 +738,7 @@ export class _IblShadowsVoxelRenderer {
             if (axis === 1) {
                 upDirection = new Vector3(1, 0, 0);
             }
+            mrt.onBeforeRenderObservable.clear();
             mrt.onBeforeRenderObservable.add(() => {
                 voxelMaterial.setMatrix("viewMatrix", Matrix.LookAtLH(cameraPosition, targetPosition, upDirection));
                 voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
