@@ -22,6 +22,14 @@ function OpenpbrAnisotropyStrengthToGltf(baseRoughness: number, anisotropy: numb
     return { newBaseRoughness, newAnisotropyStrength };
 }
 
+function GetAnisoTextureId(babylonMaterial: OpenPBRMaterial): string {
+    const anisoStrengthTexture: Nullable<BaseTexture> = babylonMaterial.specularRoughnessAnisotropyTexture;
+    const tangentTexture = babylonMaterial.geometryTangentTexture;
+    const strengthId = anisoStrengthTexture && anisoStrengthTexture.getInternalTexture() ? anisoStrengthTexture!.getInternalTexture()!.uniqueId : "NoStrength";
+    const tangentId = tangentTexture && tangentTexture.getInternalTexture() ? tangentTexture!.getInternalTexture()!.uniqueId : "NoTangent";
+    return `${strengthId}_${tangentId}`;
+}
+
 // In your postExportMaterialAsync method:
 async function CreateMergedAnisotropyTexture(babylonMaterial: OpenPBRMaterial): Promise<Nullable<ProceduralTexture>> {
     const scene = babylonMaterial.getScene();
@@ -94,10 +102,15 @@ export class KHR_materials_anisotropy implements IGLTFExporterExtensionV2 {
             }
         } else if (babylonMaterial instanceof OpenPBRMaterial) {
             if (babylonMaterial.specularRoughnessAnisotropy > 0) {
-                const anisoTexture = await CreateMergedAnisotropyTexture(babylonMaterial);
-                if (anisoTexture) {
-                    additionalTextures.push(anisoTexture);
-                    this._anisoTexturesMap[babylonMaterial.id] = anisoTexture;
+                const texId = GetAnisoTextureId(babylonMaterial);
+                if (this._anisoTexturesMap[texId]) {
+                    additionalTextures.push(this._anisoTexturesMap[texId]);
+                } else {
+                    const anisoTexture = await CreateMergedAnisotropyTexture(babylonMaterial);
+                    if (anisoTexture) {
+                        additionalTextures.push(anisoTexture);
+                        this._anisoTexturesMap[texId] = anisoTexture;
+                    }
                 }
                 return additionalTextures;
             }
