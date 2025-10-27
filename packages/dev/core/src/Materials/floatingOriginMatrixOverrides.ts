@@ -15,7 +15,7 @@ const TempMat2: Matrix = new Matrix();
  */
 export const FloatingOriginCurrentScene = {
     getScene: () => undefined as Scene | undefined,
-    target: undefined as string | undefined,
+    eyeAtCamera: true, // When true, we can assume viewMatrix translation is at origin. Otherwise, we must do full offset calculations
 };
 
 function OffsetWorldToRef(offset: IVector3Like, world: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
@@ -32,6 +32,10 @@ function OffsetWorldToRef(offset: IVector3Like, world: DeepImmutable<IMatrixLike
 }
 
 function OffsetViewToRef(view: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
+    // When eye is not at camera, we cannot assume the translation of view matrix is at origin, so we perform full offset calculation
+    if (!FloatingOriginCurrentScene.eyeAtCamera) {
+        return GetFullOffsetView(FloatingOriginCurrentScene.getScene()!.floatingOriginOffset, view, ref);
+    }
     const refArray = ref.asArray();
     const viewArray = view.asArray();
     for (let i = 0; i < 16; i++) {
@@ -68,11 +72,29 @@ export function OffsetLightTransformMatrix(
     projectionMatrix: DeepImmutable<IMatrixLike>,
     ref: IMatrixLike
 ): DeepImmutable<IMatrixLike> {
+    GetFullOffsetView(offset, viewMatrix, TempMat2);
+    MultiplyMatricesToRef(TempMat2, projectionMatrix, ref);
+    return ref;
+}
+
+export function GetFullOffsetView(offset: IVector3Like, viewMatrix: DeepImmutable<IMatrixLike>, ref: IMatrixLike) {
     InvertMatrixToRef(viewMatrix, TempMat1); // TempMat1 = light world matrix (inverse of view)
     OffsetWorldToRef(offset, TempMat1, TempMat2); // TempMat2 = offset light world matrix
-    InvertMatrixToRef(TempMat2, TempMat1); // TempMat1 = offset view matrix
-    MultiplyMatricesToRef(TempMat1, projectionMatrix, ref);
+    InvertMatrixToRef(TempMat2, ref); // TempMat1 = offset view matrix
     return ref;
+}
+export function GetOffsetLightTransformMatrices(
+    offset: IVector3Like,
+    viewMatrices: Array<Matrix>,
+    projectionMatrices: Array<Matrix>,
+    numCascades: number,
+    resultArray: Float32Array
+): Float32Array {
+    for (let cascadeIndex = 0; cascadeIndex < numCascades; ++cascadeIndex) {
+        OffsetLightTransformMatrix(offset, viewMatrices[cascadeIndex], projectionMatrices[cascadeIndex], TempMat1);
+        TempMat1.copyToArray(resultArray, cascadeIndex * 16);
+    }
+    return resultArray;
 }
 
 function OffsetWorldViewProjectionToRef(
@@ -100,7 +122,7 @@ function GetOffsetMatrix(uniformName: string, mat: IMatrixLike): IMatrixLike {
     TempFinalMat.updateFlag = mat.updateFlag;
     const scene = FloatingOriginCurrentScene.getScene();
     // Early out for scenes that don't have floatingOriginMode enabled, or if call originates from a renderTarget (and not the main scene)
-    if (!scene || FloatingOriginCurrentScene.target) {
+    if (!scene) {
         return mat;
     }
     const offset = scene.floatingOriginOffset;
@@ -116,6 +138,9 @@ function GetOffsetMatrix(uniformName: string, mat: IMatrixLike): IMatrixLike {
         case "worldViewProjection":
             return OffsetWorldViewProjectionToRef(offset, mat, scene.getTransformMatrix(), scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
         default:
+            // if (uniformName.startsWith("lightMatrix")) {
+            //     return OffsetLightTransformMatrix(offset, scene.getViewMatrix(), scene.getProjectionMatrix, TempFinalMat);
+            // }
             return mat;
     }
 }

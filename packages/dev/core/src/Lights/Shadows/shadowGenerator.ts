@@ -1060,7 +1060,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(false);
             }
             this.getTransformMatrix(); // generate the view/projection matrix
-            FloatingOriginCurrentScene.target = "shadow";
+            FloatingOriginCurrentScene.eyeAtCamera = false;
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
             if (this._useUBO) {
                 this._scene.getSceneUniformBuffer().unbindEffect();
@@ -1073,7 +1073,7 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this._sceneUBOs) {
                 this._scene.setSceneUniformBuffer(this._currentSceneUBO);
             }
-            FloatingOriginCurrentScene.target = undefined;
+            FloatingOriginCurrentScene.eyeAtCamera = true;
             this._scene.updateTransformMatrix(); // restore the view/projection matrices of the active camera
 
             if (this._filter === ShadowGenerator.FILTER_PCF) {
