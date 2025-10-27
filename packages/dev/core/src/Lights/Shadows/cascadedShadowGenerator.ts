@@ -264,6 +264,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _projectionMatrices: Array<Matrix>;
     private _transformMatrices: Array<Matrix>;
     private _transformMatricesAsArray: Float32Array;
+    private _tempTransformMatricesAsArray: Float32Array;
     private _frustumLengths: Array<number>;
     private _lightSizeUVCorrection: Array<number>;
     private _depthCorrection: Array<number>;
@@ -840,6 +841,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         this._transformMatricesAsArray = new Float32Array(this._numCascades * 16);
+        this._tempTransformMatricesAsArray = new Float32Array(this._numCascades * 16);
         this._viewSpaceFrustumsZ = new Array(this._numCascades);
         this._frustumLengths = new Array(this._numCascades);
         this._lightSizeUVCorrection = new Array(this._numCascades * 2);
@@ -976,13 +978,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         const transform = this._transformMatricesAsArray;
         // Doing the check for floatingOrigin here to avoid unnecessary matrix operations when offset is 0
         const lightMatrix = scene.floatingOriginMode
-            ? GetOffsetTransformMatrices(
-                  this._scene.floatingOriginOffset,
-                  this._viewMatrices,
-                  this._projectionMatrices,
-                  this._numCascades,
-                  new Float32Array(this._numCascades * 16)
-              )
+            ? GetOffsetTransformMatrices(this._scene.floatingOriginOffset, this._viewMatrices, this._projectionMatrices, this._numCascades, this._tempTransformMatricesAsArray)
             : transform;
 
         effect.setMatrices("lightMatrix" + lightIndex, lightMatrix);

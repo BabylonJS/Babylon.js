@@ -27,7 +27,7 @@ function OffsetWorldToRef(offset: IVector3Like, world: DeepImmutable<IMatrixLike
     refArray[12] -= offset.x;
     refArray[13] -= offset.y;
     refArray[14] -= offset.z;
-    Matrix.FromArrayToRef(refArray, 0, ref);
+    ref.markAsUpdated();
     return ref;
 }
 
@@ -51,7 +51,7 @@ function OffsetViewToRef(offset: IVector3Like, view: DeepImmutable<IMatrixLike>,
     refArray[12] = 0;
     refArray[13] = 0;
     refArray[14] = 0;
-    Matrix.FromArrayToRef(refArray, 0, ref);
+    ref.markAsUpdated();
     return ref;
 }
 
@@ -122,7 +122,7 @@ function OffsetWorldViewProjectionToRef(
 function GetOffsetMatrix(uniformName: string, mat: IMatrixLike): IMatrixLike {
     TempFinalMat.updateFlag = mat.updateFlag;
     const scene = FloatingOriginCurrentScene.getScene();
-    // Early out for scenes that don't have floatingOriginMode enabled, or if call originates from a renderTarget (and not the main scene)
+    // Early out for scenes that don't have floatingOriginMode enabled
     if (!scene) {
         return mat;
     }
