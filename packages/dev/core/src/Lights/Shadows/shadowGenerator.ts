@@ -1,7 +1,7 @@
 import type { SmartArray } from "../../Misc/smartArray";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
-import { Matrix, Vector3, Vector2 } from "../../Maths/math.vector";
+import { Matrix, Vector3, Vector2, TmpVectors } from "../../Maths/math.vector";
 import { Color4 } from "../../Maths/math.color";
 import { VertexBuffer } from "../../Buffers/buffer";
 import type { SubMesh } from "../../Meshes/subMesh";
@@ -35,6 +35,7 @@ import {
     PushAttributesForInstances,
 } from "../../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { FloatingOriginCurrentScene, GetFullOffsetViewProjectionToRef } from "../../Materials/floatingOriginMatrixOverrides";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -1059,6 +1060,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(false);
             }
             this.getTransformMatrix(); // generate the view/projection matrix
+            FloatingOriginCurrentScene.eyeAtCamera = false;
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
             if (this._useUBO) {
                 this._scene.getSceneUniformBuffer().unbindEffect();
@@ -1071,6 +1073,7 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this._sceneUBOs) {
                 this._scene.setSceneUniformBuffer(this._currentSceneUBO);
             }
+            FloatingOriginCurrentScene.eyeAtCamera = true;
             this._scene.updateTransformMatrix(); // restore the view/projection matrices of the active camera
 
             if (this._filter === ShadowGenerator.FILTER_PCF) {
@@ -1328,7 +1331,7 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
                 effect.setVector3("lightDataSM", this._cachedDirection);
             } else {
-                effect.setVector3("lightDataSM", this._cachedPosition);
+                effect.setVector3("lightDataSM", this._cachedPosition.subtractToRef(this._scene.floatingOriginOffset, TmpVectors.Vector3[0]));
             }
 
             const camera = this._getCamera();
@@ -1887,7 +1890,11 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         if (!light.needCube()) {
-            effect.setMatrix("lightMatrix" + lightIndex, this.getTransformMatrix());
+            const offset = scene.floatingOriginOffset;
+            const transform = this.getTransformMatrix(); // ensures updated view/projection
+            // Doing the check for floatingOrigin here to avoid unnecessary matrix operations when offset is 0
+            const lightMatrix = scene.floatingOriginMode ? GetFullOffsetViewProjectionToRef(offset, this._viewMatrix, this._projectionMatrix, TmpVectors.Matrix[0]) : transform;
+            effect.setMatrix("lightMatrix" + lightIndex, lightMatrix);
         }
 
         // Only PCF uses depth stencil texture.
