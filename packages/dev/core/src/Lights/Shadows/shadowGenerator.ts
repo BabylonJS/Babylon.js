@@ -35,7 +35,7 @@ import {
     PushAttributesForInstances,
 } from "../../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { FloatingOriginCurrentScene, OffsetLightTransformMatrix } from "../../Materials/floatingOriginMatrixOverrides";
+import { FloatingOriginCurrentScene, GetFullOffsetViewProjectionToRef } from "../../Materials/floatingOriginMatrixOverrides";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -1891,9 +1891,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (!light.needCube()) {
             const offset = scene.floatingOriginOffset;
-            this.getTransformMatrix(); // ensures updated view/projection
-
-            const lightMatrix = OffsetLightTransformMatrix(offset, this._viewMatrix, this._projectionMatrix, TmpVectors.Matrix[0]);
+            const transform = this.getTransformMatrix(); // ensures updated view/projection
+            // Doing the check for floatingOrigin here to avoid unnecessary matrix operations when offset is 0
+            const lightMatrix = scene.floatingOriginMode ? GetFullOffsetViewProjectionToRef(offset, this._viewMatrix, this._projectionMatrix, TmpVectors.Matrix[0]) : transform;
             effect.setMatrix("lightMatrix" + lightIndex, lightMatrix);
         }
 

@@ -19,7 +19,7 @@ import { DepthReducer } from "../../Misc/depthReducer";
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Camera } from "../../Cameras/camera";
-import { FloatingOriginCurrentScene, GetOffsetLightTransformMatrices } from "../../Materials/floatingOriginMatrixOverrides";
+import { FloatingOriginCurrentScene, GetOffsetTransformMatrices } from "../../Materials/floatingOriginMatrixOverrides";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -973,16 +973,19 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         const width = shadowMap.getSize().width;
 
-        effect.setMatrices(
-            "lightMatrix" + lightIndex,
-            GetOffsetLightTransformMatrices(
-                this._scene.floatingOriginOffset,
-                this._viewMatrices,
-                this._projectionMatrices,
-                this._numCascades,
-                new Float32Array(this._numCascades * 16)
-            )
-        );
+        const transform = this._transformMatricesAsArray;
+        // Doing the check for floatingOrigin here to avoid unnecessary matrix operations when offset is 0
+        const lightMatrix = scene.floatingOriginMode
+            ? GetOffsetTransformMatrices(
+                  this._scene.floatingOriginOffset,
+                  this._viewMatrices,
+                  this._projectionMatrices,
+                  this._numCascades,
+                  new Float32Array(this._numCascades * 16)
+              )
+            : transform;
+
+        effect.setMatrices("lightMatrix" + lightIndex, lightMatrix);
         effect.setArray("viewFrustumZ" + lightIndex, this._viewSpaceFrustumsZ);
         effect.setFloat("cascadeBlendFactor" + lightIndex, this.cascadeBlendPercentage === 0 ? 10000 : 1 / this.cascadeBlendPercentage);
         effect.setArray("frustumLengths" + lightIndex, this._frustumLengths);
