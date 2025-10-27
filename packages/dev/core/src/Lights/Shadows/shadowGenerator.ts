@@ -1263,7 +1263,6 @@ export class ShadowGenerator implements IShadowGenerator {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void {
-        // todo _bindCustomEffectForRenderSubMeshForShadowMap
         effect.setMatrix("viewProjection", this.getTransformMatrix());
     }
 
