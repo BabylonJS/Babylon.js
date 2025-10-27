@@ -313,14 +313,14 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
 
         const trackedAnchors = frame.trackedAnchors;
         if (trackedAnchors) {
-            const toRemove = this._trackedAnchors.filter((anchor) => anchor._removed);
-            let idxTracker = 0;
-            for (const anchor of toRemove) {
+            for (const anchor of this._trackedAnchors) {
+                if (!anchor._removed) {
+                    continue;
+                }
                 const index = this._trackedAnchors.indexOf(anchor);
-                this._trackedAnchors.splice(index - idxTracker, 1);
+                this._trackedAnchors.splice(index, 1);
                 anchor.xrAnchor.delete();
                 this.onAnchorRemovedObservable.notifyObservers(anchor);
-                idxTracker++;
             }
             // now check for new ones
             trackedAnchors.forEach((xrAnchor) => {
@@ -343,24 +343,17 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                         result.resolved = true;
                     }
                 } else {
-                    for (const anchor of toRemove) {
-                        if (anchor.xrAnchor === xrAnchor) {
-                            return;
-                        }
-                    }
                     const index = this._findIndexInAnchorArray(xrAnchor);
-                    const anchor = this._trackedAnchors[index];
-                    try {
-                        // anchors update every frame
-                        this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
-                        if (anchor.attachedNode) {
-                            anchor.attachedNode.rotationQuaternion = anchor.attachedNode.rotationQuaternion || new Quaternion();
-                            anchor.transformationMatrix.decompose(anchor.attachedNode.scaling, anchor.attachedNode.rotationQuaternion, anchor.attachedNode.position);
-                        }
-                        this.onAnchorUpdatedObservable.notifyObservers(anchor);
-                    } catch (e) {
-                        Tools.Warn(`Anchor could not be updated`);
+                    if (index < 0) {
+                        return;
                     }
+                    const anchor = this._trackedAnchors[index];
+                    this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
+                    if (anchor.attachedNode) {
+                        anchor.attachedNode.rotationQuaternion = anchor.attachedNode.rotationQuaternion || new Quaternion();
+                        anchor.transformationMatrix.decompose(anchor.attachedNode.scaling, anchor.attachedNode.rotationQuaternion, anchor.attachedNode.position);
+                    }
+                    this.onAnchorUpdatedObservable.notifyObservers(anchor);
                 }
             });
             this._lastFrameDetected = trackedAnchors;
