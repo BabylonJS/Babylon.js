@@ -9,6 +9,7 @@ import { MultiMaterial } from "core/Materials/multiMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { PBRBaseSimpleMaterial } from "core/Materials/PBR/pbrBaseSimpleMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { SkyMaterial } from "materials/sky/skyMaterial";
 import { MaterialGeneralProperties, MaterialStencilProperties, MaterialTransparencyProperties } from "../../../components/properties/materials/materialProperties";
@@ -21,6 +22,15 @@ import {
     PBRBaseMaterialSheenProperties,
 } from "../../../components/properties/materials/pbrBaseMaterialProperties";
 import { PBRMaterialLightingAndColorProperties } from "../../../components/properties/materials/pbrMaterialProperties";
+import {
+    OpenPBRMaterialBaseProperties,
+    OpenPBRMaterialCoatProperties,
+    OpenPBRMaterialEmissionProperties,
+    OpenPBRMaterialFuzzProperties,
+    OpenPBRMaterialGeometryProperties,
+    OpenPBRMaterialSpecularProperties,
+    OpenPBRMaterialThinFilmProperties,
+} from "../../../components/properties/materials/openpbrMaterialProperties";
 import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
 import {
     StandardMaterialLevelsProperties,
@@ -122,6 +132,41 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
             ],
         });
 
+        const openPBRMaterialPropertiesRegistration = propertiesService.addSectionContent({
+            key: "OpenPBR Material Properties",
+            predicate: (entity: unknown) => entity instanceof OpenPBRMaterial,
+            content: [
+                {
+                    section: "Base",
+                    component: ({ context }) => <OpenPBRMaterialBaseProperties material={context} />,
+                },
+                {
+                    section: "Specular",
+                    component: ({ context }) => <OpenPBRMaterialSpecularProperties material={context} />,
+                },
+                {
+                    section: "Coat",
+                    component: ({ context }) => <OpenPBRMaterialCoatProperties material={context} />,
+                },
+                {
+                    section: "Fuzz",
+                    component: ({ context }) => <OpenPBRMaterialFuzzProperties material={context} />,
+                },
+                {
+                    section: "Emission",
+                    component: ({ context }) => <OpenPBRMaterialEmissionProperties material={context} />,
+                },
+                {
+                    section: "Thin Film",
+                    component: ({ context }) => <OpenPBRMaterialThinFilmProperties material={context} />,
+                },
+                {
+                    section: "Geometry",
+                    component: ({ context }) => <OpenPBRMaterialGeometryProperties material={context} />,
+                },
+            ],
+        });
+
         const skyMaterialRegistration = propertiesService.addSectionContent({
             key: "Sky Material Properties",
             predicate: (entity: unknown) => entity instanceof SkyMaterial,
@@ -151,6 +196,7 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 pbrBaseMaterialPropertiesRegistration.dispose();
                 pbrMaterialPropertiesRegistration.dispose();
                 pbrMaterialNormalMapsContentRegistration.dispose();
+                openPBRMaterialPropertiesRegistration.dispose();
                 skyMaterialRegistration.dispose();
                 multiMaterialContentRegistration.dispose();
             },

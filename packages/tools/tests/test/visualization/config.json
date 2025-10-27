@@ -2857,7 +2857,7 @@
         },
         {
             "title": "Atmosphere Day (Planet Origin)",
-            "playgroundId": "#VO1Z0C#10",
+            "playgroundId": "#VO1Z0C#30",
             "referenceImage": "atmosphere-day.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
@@ -2871,7 +2871,7 @@
         },
         {
             "title": "Atmosphere Sunset (Planet Origin)",
-            "playgroundId": "#VO1Z0C#11",
+            "playgroundId": "#VO1Z0C#31",
             "referenceImage": "atmosphere-sunset.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
@@ -2885,7 +2885,7 @@
         },
         {
             "title": "Atmosphere Night (Planet Origin)",
-            "playgroundId": "#VO1Z0C#12",
+            "playgroundId": "#VO1Z0C#32",
             "referenceImage": "atmosphere-night.png",
             "excludedEngines": ["webgl1", "webgpu"],
             "renderCount": 2
@@ -3120,6 +3120,36 @@
             "playgroundId": "#GRQHVV#101",
             "excludedEngines": ["webgl1"],
             "renderCount": 2
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - IBL",
+            "playgroundId": "#GRQHVV#111",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#112",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Coat Weight with Normal Maps - Analytic Lights",
+            "playgroundId": "#GRQHVV#109",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Coat Weight with Normal Maps - IBL",
+            "playgroundId": "#GRQHVV#108",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Realtime IBL",
+            "playgroundId": "#GRQHVV#110",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Fuzz Weight vs Fuzz Roughness - Furnace Test",
+            "playgroundId": "#GRQHVV#115",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Background material blur",

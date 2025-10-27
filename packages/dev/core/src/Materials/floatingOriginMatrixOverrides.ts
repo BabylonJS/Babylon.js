@@ -9,6 +9,12 @@ import { UniformBuffer } from "./uniformBuffer";
 const TempFinalMat: Matrix = new Matrix();
 const TempMat1: Matrix = new Matrix();
 const TempMat2: Matrix = new Matrix();
+/**
+ * When rendering, each scene will reset this to ensure the correct floating origin offset is when overriding the below functions
+ */
+export const FloatingOriginCurrentScene = {
+    getScene: () => undefined as Scene | undefined,
+};
 
 function OffsetWorldToRef(offset: IVector3Like, world: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
     const refArray = ref.asArray();
@@ -75,19 +81,25 @@ function OffsetWorldViewProjectionToRef(
     return ref;
 }
 
-function GetOffsetMatrix(uniformName: string, mat: IMatrixLike, scene: Scene): IMatrixLike {
+function GetOffsetMatrix(uniformName: string, mat: IMatrixLike): IMatrixLike {
     TempFinalMat.updateFlag = mat.updateFlag;
+    const scene = FloatingOriginCurrentScene.getScene();
+    // Early out for scenes that don't have floatingOriginMode enabled
+    if (!scene) {
+        return mat;
+    }
+    const offset = scene.floatingOriginOffset;
     switch (uniformName) {
         case "world":
-            return OffsetWorldToRef(scene.floatingOriginOffset, mat, TempFinalMat);
+            return OffsetWorldToRef(offset, mat, TempFinalMat);
         case "view":
             return OffsetViewToRef(mat, TempFinalMat);
         case "worldView":
-            return OffsetWorldViewToRef(scene.floatingOriginOffset, mat, scene.getViewMatrix(), TempFinalMat);
+            return OffsetWorldViewToRef(offset, mat, scene.getViewMatrix(), TempFinalMat);
         case "viewProjection":
             return OffsetViewProjectionToRef(scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
         case "worldViewProjection":
-            return OffsetWorldViewProjectionToRef(scene.floatingOriginOffset, mat, scene.getTransformMatrix(), scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
+            return OffsetWorldViewProjectionToRef(offset, mat, scene.getTransformMatrix(), scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
         default:
             return mat;
     }
@@ -106,14 +118,14 @@ export function ResetMatrixFunctions() {
     UniformBufferInternal.prototype._updateMatrixForUniformOverride = undefined;
 }
 
-export function OverrideMatrixFunctions(scene: Scene) {
-    EffectInternal.prototype._setMatrixOverride = Effect.prototype.setMatrix;
+export function OverrideMatrixFunctions() {
+    EffectInternal.prototype._setMatrixOverride = OriginalSetMatrix;
     EffectInternal.prototype.setMatrix = function (uniformName: string, matrix: IMatrixLike) {
-        this._setMatrixOverride(uniformName, GetOffsetMatrix(uniformName, matrix, scene));
+        this._setMatrixOverride(uniformName, GetOffsetMatrix(uniformName, matrix));
         return this;
     };
-    UniformBufferInternal.prototype._updateMatrixForUniformOverride = UniformBufferInternal.prototype._updateMatrixForUniform;
+    UniformBufferInternal.prototype._updateMatrixForUniformOverride = OriginalUpdateMatrixForUniform;
     UniformBufferInternal.prototype._updateMatrixForUniform = function (uniformName: string, matrix: IMatrixLike) {
-        this._updateMatrixForUniformOverride(uniformName, GetOffsetMatrix(uniformName, matrix, scene));
+        this._updateMatrixForUniformOverride(uniformName, GetOffsetMatrix(uniformName, matrix));
     };
 }
