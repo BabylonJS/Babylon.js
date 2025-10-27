@@ -30,9 +30,7 @@ export const MessageBar: FunctionComponent<MessageBarProps> = (props) => {
                     {docLink && (
                         <>
                             {" - "}
-                            <Link href={docLink} target="_blank" rel="noopener noreferrer">
-                                Learn More
-                            </Link>
+                            <Link url={docLink} value="Learn More" />
                         </>
                     )}
                 </MessageBarBody>
