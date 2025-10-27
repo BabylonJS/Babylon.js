@@ -7,7 +7,7 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
-import { TextureMerger } from "core/Materials/Textures/textureMerger";
+import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 
 const NAME = "KHR_materials_anisotropy";
 
@@ -34,12 +34,12 @@ async function CreateMergedAnisotropyTexture(babylonMaterial: OpenPBRMaterial): 
         return null;
     }
 
-    return await TextureMerger.MergeTexturesAsync(
+    return await MergeTexturesAsync(
         "AnisotropyTexture",
-        TextureMerger.CreateRGBAConfiguration(
-            tangentTexture ? TextureMerger.CreateTextureInput(tangentTexture, 0) : TextureMerger.CreateConstantInput(1.0), // tangent x from red channel
-            tangentTexture ? TextureMerger.CreateTextureInput(tangentTexture, 1) : TextureMerger.CreateConstantInput(0.0), // tangent y from green channel
-            anisoStrengthTexture ? TextureMerger.CreateTextureInput(anisoStrengthTexture, 0) : TextureMerger.CreateConstantInput(1.0) // Anisotropy from red channel
+        CreateRGBAConfiguration(
+            tangentTexture ? CreateTextureInput(tangentTexture, 0) : CreateConstantInput(1.0), // tangent x from red channel
+            tangentTexture ? CreateTextureInput(tangentTexture, 1) : CreateConstantInput(0.0), // tangent y from green channel
+            anisoStrengthTexture ? CreateTextureInput(anisoStrengthTexture, 0) : CreateConstantInput(1.0) // Anisotropy from red channel
         ),
         scene
     );

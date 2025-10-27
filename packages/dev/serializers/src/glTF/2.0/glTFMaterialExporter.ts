@@ -27,7 +27,7 @@ import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper"
 import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { GetMimeType } from "core/Misc/fileTools";
 import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
-import { TextureMerger } from "core/Materials/Textures/textureMerger";
+import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 
 const Epsilon = 1e-6;
 const DielectricSpecular = new Color3(0.04, 0.04, 0.04) as DeepImmutable<Color3>;
@@ -612,13 +612,13 @@ export class GLTFMaterialExporter {
                         glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                     } else {
                         promises.push(
-                            TextureMerger.MergeTexturesAsync(
+                            MergeTexturesAsync(
                                 "baseColorOpacityTexture",
-                                TextureMerger.CreateRGBAConfiguration(
-                                    albedoTexture ? TextureMerger.CreateTextureInput(albedoTexture, 0) : TextureMerger.CreateConstantInput(1.0),
-                                    albedoTexture ? TextureMerger.CreateTextureInput(albedoTexture, 1) : TextureMerger.CreateConstantInput(1.0),
-                                    albedoTexture ? TextureMerger.CreateTextureInput(albedoTexture, 2) : TextureMerger.CreateConstantInput(1.0),
-                                    TextureMerger.CreateTextureInput(babylonPBRMaterial.geometryOpacityTexture, 0)
+                                CreateRGBAConfiguration(
+                                    albedoTexture ? CreateTextureInput(albedoTexture, 0) : CreateConstantInput(1.0),
+                                    albedoTexture ? CreateTextureInput(albedoTexture, 1) : CreateConstantInput(1.0),
+                                    albedoTexture ? CreateTextureInput(albedoTexture, 2) : CreateConstantInput(1.0),
+                                    CreateTextureInput(babylonPBRMaterial.geometryOpacityTexture, 0)
                                 ),
                                 babylonPBRMaterial.getScene()
                             ).then(async (mergedTexture) => {
@@ -657,14 +657,12 @@ export class GLTFMaterialExporter {
                         glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
                     } else {
                         promises.push(
-                            TextureMerger.MergeTexturesAsync(
+                            MergeTexturesAsync(
                                 "MetalRoughTexture",
-                                TextureMerger.CreateRGBAConfiguration(
-                                    babylonPBRMaterial.ambientOcclusionTexture
-                                        ? TextureMerger.CreateTextureInput(babylonPBRMaterial.ambientOcclusionTexture, 0)
-                                        : TextureMerger.CreateConstantInput(1.0),
-                                    roughnessTexture ? TextureMerger.CreateTextureInput(roughnessTexture, 0) : TextureMerger.CreateConstantInput(1.0),
-                                    metallicTexture ? TextureMerger.CreateTextureInput(metallicTexture, 0) : TextureMerger.CreateConstantInput(1.0)
+                                CreateRGBAConfiguration(
+                                    babylonPBRMaterial.ambientOcclusionTexture ? CreateTextureInput(babylonPBRMaterial.ambientOcclusionTexture, 0) : CreateConstantInput(1.0),
+                                    roughnessTexture ? CreateTextureInput(roughnessTexture, 0) : CreateConstantInput(1.0),
+                                    metallicTexture ? CreateTextureInput(metallicTexture, 0) : CreateConstantInput(1.0)
                                 ),
                                 babylonPBRMaterial.getScene()
                             ).then(async (mergedTexture) => {
