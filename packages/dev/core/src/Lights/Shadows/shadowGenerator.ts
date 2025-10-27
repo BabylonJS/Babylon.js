@@ -35,6 +35,7 @@ import {
     PushAttributesForInstances,
 } from "../../Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { FloatingOriginCurrentScene, OffsetLightTransformMatrix } from "../../Materials/floatingOriginMatrixOverrides";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -1059,6 +1060,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 engine.setColorWrite(false);
             }
             this.getTransformMatrix(); // generate the view/projection matrix
+            FloatingOriginCurrentScene.target = "shadow";
             this._scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
             if (this._useUBO) {
                 this._scene.getSceneUniformBuffer().unbindEffect();
@@ -1071,6 +1073,7 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this._sceneUBOs) {
                 this._scene.setSceneUniformBuffer(this._currentSceneUBO);
             }
+            FloatingOriginCurrentScene.target = undefined;
             this._scene.updateTransformMatrix(); // restore the view/projection matrices of the active camera
 
             if (this._filter === ShadowGenerator.FILTER_PCF) {
@@ -1260,6 +1263,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect, mesh: AbstractMesh): void {
+        // todo _bindCustomEffectForRenderSubMeshForShadowMap
         effect.setMatrix("viewProjection", this.getTransformMatrix());
     }
 
@@ -1328,7 +1332,7 @@ export class ShadowGenerator implements IShadowGenerator {
             if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
                 effect.setVector3("lightDataSM", this._cachedDirection);
             } else {
-                effect.setVector3("lightDataSM", this._cachedPosition);
+                effect.setVector3("lightDataSM", this._cachedPosition.subtractToRef(this._scene.floatingOriginOffset, TmpVectors.Vector3[0]));
             }
 
             const camera = this._getCamera();
@@ -1888,7 +1892,9 @@ export class ShadowGenerator implements IShadowGenerator {
 
         if (!light.needCube()) {
             const offset = scene.floatingOriginOffset;
-            const lightMatrix = TmpVectors.Matrix[0].copyFrom(this.getTransformMatrix()).addTranslationFromFloats(-offset.x, -offset.y, -offset.z);
+            this.getTransformMatrix(); // ensures updated view/projection
+
+            const lightMatrix = OffsetLightTransformMatrix(offset, this._viewMatrix, this._projectionMatrix, TmpVectors.Matrix[0]);
             effect.setMatrix("lightMatrix" + lightIndex, lightMatrix);
         }
 

@@ -9,11 +9,13 @@ import { UniformBuffer } from "./uniformBuffer";
 const TempFinalMat: Matrix = new Matrix();
 const TempMat1: Matrix = new Matrix();
 const TempMat2: Matrix = new Matrix();
+
 /**
  * When rendering, each scene will reset this to ensure the correct floating origin offset is when overriding the below functions
  */
 export const FloatingOriginCurrentScene = {
     getScene: () => undefined as Scene | undefined,
+    target: undefined as string | undefined,
 };
 
 function OffsetWorldToRef(offset: IVector3Like, world: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
@@ -60,6 +62,19 @@ function OffsetWorldViewToRef(offset: IVector3Like, worldView: DeepImmutable<IMa
     return ref;
 }
 
+export function OffsetLightTransformMatrix(
+    offset: IVector3Like,
+    viewMatrix: DeepImmutable<IMatrixLike>,
+    projectionMatrix: DeepImmutable<IMatrixLike>,
+    ref: IMatrixLike
+): DeepImmutable<IMatrixLike> {
+    InvertMatrixToRef(viewMatrix, TempMat1); // TempMat1 = light world matrix (inverse of view)
+    OffsetWorldToRef(offset, TempMat1, TempMat2); // TempMat2 = offset light world matrix
+    InvertMatrixToRef(TempMat2, TempMat1); // TempMat1 = offset view matrix
+    MultiplyMatricesToRef(TempMat1, projectionMatrix, ref);
+    return ref;
+}
+
 function OffsetWorldViewProjectionToRef(
     offset: IVector3Like,
     worldViewProjection: DeepImmutable<IMatrixLike>,
@@ -84,8 +99,8 @@ function OffsetWorldViewProjectionToRef(
 function GetOffsetMatrix(uniformName: string, mat: IMatrixLike): IMatrixLike {
     TempFinalMat.updateFlag = mat.updateFlag;
     const scene = FloatingOriginCurrentScene.getScene();
-    // Early out for scenes that don't have floatingOriginMode enabled
-    if (!scene) {
+    // Early out for scenes that don't have floatingOriginMode enabled, or if call originates from a renderTarget (and not the main scene)
+    if (!scene || FloatingOriginCurrentScene.target) {
         return mat;
     }
     const offset = scene.floatingOriginOffset;
