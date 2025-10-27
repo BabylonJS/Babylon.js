@@ -51,6 +51,7 @@ export interface ITextureMergeConfiguration {
 const _ShaderName = "textureMerger";
 
 /**
+ * @internal
  * Check if a channel input is a texture input
  * @param input The channel input to check
  * @returns True if the input is a texture input, false otherwise
@@ -60,6 +61,7 @@ function IsTextureInput(input: ChannelInput): input is ITextureChannelInput {
 }
 
 /**
+ * @internal
  * Check if a channel input is a constant input
  * @param input The channel input to check
  * @returns True if the input is a constant input, false otherwise
@@ -68,6 +70,12 @@ function IsConstantInput(input: ChannelInput): input is IConstantChannelInput {
     return "value" in input;
 }
 
+/**
+ * @internal
+ * Copy texture transformation properties from one texture to another
+ * @param source The source texture
+ * @param destination The destination texture
+ */
 function CopyTextureTransform(source: Texture, destination: Texture) {
     destination.uOffset = source.uOffset;
     destination.vOffset = source.vOffset;
@@ -81,6 +89,7 @@ function CopyTextureTransform(source: Texture, destination: Texture) {
 }
 
 /**
+ * @internal
  * Merge multiple texture channels into a single texture
  * @param name Name for the resulting texture
  * @param config Merge configuration
@@ -223,6 +232,7 @@ export async function MergeTexturesAsync(name: string, config: ITextureMergeConf
 }
 
 /**
+ * @internal
  * Create a texture input configuration
  * @param texture The texture to read from
  * @param sourceChannel The channel to read (0=R, 1=G, 2=B, 3=A)
@@ -233,6 +243,7 @@ export function CreateTextureInput(texture: BaseTexture, sourceChannel: number):
 }
 
 /**
+ * @internal
  * Create a constant value input configuration
  * @param value The constant value (0.0-1.0)
  * @returns Constant channel input configuration
@@ -242,6 +253,7 @@ export function CreateConstantInput(value: number): IConstantChannelInput {
 }
 
 /**
+ * @internal
  * Create a simple RGBA channel packing configuration
  * @param red Input for red channel
  * @param green Input for green channel (optional, defaults to 0)
