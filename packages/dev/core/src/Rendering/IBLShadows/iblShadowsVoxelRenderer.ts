@@ -30,24 +30,34 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
 export class _IblShadowsVoxelRenderer {
     private _scene: Scene;
     private _engine: Engine;
-    private _voxelGridRT: ProceduralTexture;
+
+    // WebGPU, single-pass voxelization.
+    // See https://playground.babylonjs.com/#XSNYAU#133
+    private _voxelGrid: RenderTargetTexture;
+    private _voxelGridRT: RenderTargetTexture;
+
+    // WebGL voxelization, including tri-planar voxelization.
+    private _combinedVoxelGridPT: ProceduralTexture;
     private _voxelGridXaxis: RenderTargetTexture;
     private _voxelGridYaxis: RenderTargetTexture;
     private _voxelGridZaxis: RenderTargetTexture;
     private _voxelMrtsXaxis: MultiRenderTarget[] = [];
     private _voxelMrtsYaxis: MultiRenderTarget[] = [];
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
-    private _isVoxelGrid3D: boolean = true;
+
     private _voxelMaterial: ShaderMaterial;
     private _voxelSlabDebugMaterial: ShaderMaterial;
+    private _voxelClearColor: Color4 = new Color4(0, 0, 0, 1);
 
     /**
      * Return the voxel grid texture.
      * @returns The voxel grid texture.
      */
     public getVoxelGrid(): ProceduralTexture | RenderTargetTexture {
-        if (this._triPlanarVoxelization) {
-            return this._voxelGridRT;
+        if (this._engine.isWebGPU) {
+            return this._voxelGrid;
+        } else if (this._triPlanarVoxelization) {
+            return this._combinedVoxelGridPT;
         } else {
             return this._voxelGridZaxis;
         }
@@ -85,6 +95,11 @@ export class _IblShadowsVoxelRenderer {
      * Whether to use tri-planar voxelization. More expensive, but can help with artifacts.
      */
     public set triPlanarVoxelization(enabled: boolean) {
+        if (this._engine.isWebGPU) {
+            // WebGPU only supports tri-planar voxelization.
+            this._triPlanarVoxelization = true;
+            return;
+        }
         if (this._triPlanarVoxelization === enabled) {
             return;
         }
@@ -238,22 +253,14 @@ export class _IblShadowsVoxelRenderer {
                 reusable: false,
                 shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
                 extraInitializations: (useWebGPU: boolean, list: Promise<any>[]) => {
-                    if (this._isVoxelGrid3D) {
-                        if (useWebGPU) {
-                            list.push(import("../../ShadersWGSL/iblVoxelGrid3dDebug.fragment"));
-                        } else {
-                            list.push(import("../../Shaders/iblVoxelGrid3dDebug.fragment"));
-                        }
-                        return;
-                    }
                     if (useWebGPU) {
-                        list.push(import("../../ShadersWGSL/iblVoxelGrid2dArrayDebug.fragment"));
+                        list.push(import("../../ShadersWGSL/iblVoxelGrid3dDebug.fragment"));
                     } else {
-                        list.push(import("../../Shaders/iblVoxelGrid2dArrayDebug.fragment"));
+                        list.push(import("../../Shaders/iblVoxelGrid3dDebug.fragment"));
                     }
                 },
             };
-            this._voxelDebugPass = new PostProcess(this.debugPassName, this._isVoxelGrid3D ? "iblVoxelGrid3dDebug" : "iblVoxelGrid2dArrayDebug", debugOptions);
+            this._voxelDebugPass = new PostProcess(this.debugPassName, "iblVoxelGrid3dDebug", debugOptions);
             this._voxelDebugPass.onApplyObservable.add((effect) => {
                 if (this._voxelDebugAxis === 0) {
                     effect.setTexture("voxelTexture", this._voxelGridXaxis);
@@ -276,13 +283,13 @@ export class _IblShadowsVoxelRenderer {
      * @param scene Scene to attach to
      * @param iblShadowsRenderPipeline The render pipeline this pass is associated with
      * @param resolutionExp Resolution of the voxel grid. The final resolution will be 2^resolutionExp.
-     * @param triPlanarVoxelization Whether to use tri-planar voxelization. More expensive, but can help with artifacts.
+     * @param triPlanarVoxelization Whether to use tri-planar voxelization. Only applies to WebGL. Voxelization will take longer but will reduce missing geometry.
      * @returns The voxel renderer
      */
     constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline, resolutionExp: number = 6, triPlanarVoxelization: boolean = true) {
         this._scene = scene;
         this._engine = scene.getEngine() as Engine;
-        this._triPlanarVoxelization = triPlanarVoxelization;
+        this._triPlanarVoxelization = this._engine.isWebGPU || triPlanarVoxelization;
         if (!this._engine.getCaps().drawBuffersExtension) {
             Logger.Error("Can't do voxel rendering without the draw buffers extension.");
         }
@@ -374,14 +381,13 @@ export class _IblShadowsVoxelRenderer {
         const size: TextureSize = {
             width: this._voxelResolution,
             height: this._voxelResolution,
-            layers: this._isVoxelGrid3D ? undefined : this._voxelResolution,
-            depth: this._isVoxelGrid3D ? this._voxelResolution : undefined,
+            depth: this._voxelResolution,
         };
         const voxelAxisOptions: RenderTargetTextureOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            format: Constants.TEXTUREFORMAT_R,
+            format: Constants.TEXTUREFORMAT_RGBA,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
@@ -403,7 +409,19 @@ export class _IblShadowsVoxelRenderer {
                 }
             },
         };
-        if (this._triPlanarVoxelization) {
+        if (this._engine.isWebGPU) {
+            this._voxelGrid = new RenderTargetTexture("voxelGrid", size, this._scene, {
+                ...voxelCombinedOptions,
+                format: Constants.TEXTUREFORMAT_RGBA,
+                creationFlags: Constants.TEXTURE_CREATIONFLAG_STORAGE,
+            });
+            this._voxelGridRT = new RenderTargetTexture(
+                "voxelGridRT",
+                { width: Math.min(size.width * 2.0, 2048), height: Math.min(size.height * 2.0, 2048) },
+                this._scene,
+                voxelAxisOptions
+            );
+        } else if (this._triPlanarVoxelization) {
             this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, voxelAxisOptions);
             this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, voxelAxisOptions);
             this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelAxisOptions);
@@ -411,16 +429,16 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMrtsYaxis = this._createVoxelMRTs("y_axis_", this._voxelGridYaxis, numSlabs);
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
 
-            this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "iblCombineVoxelGrids", this._scene, voxelCombinedOptions, false);
-            this._scene.proceduralTextures.splice(this._scene.proceduralTextures.indexOf(this._voxelGridRT), 1);
-            this._voxelGridRT.setFloat("layer", 0.0);
-            this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
-            this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
-            this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
+            this._combinedVoxelGridPT = new ProceduralTexture("combinedVoxelGrid", size, "iblCombineVoxelGrids", this._scene, voxelCombinedOptions, false);
+            this._scene.proceduralTextures.splice(this._scene.proceduralTextures.indexOf(this._combinedVoxelGridPT), 1);
+            this._combinedVoxelGridPT.setFloat("layer", 0.0);
+            this._combinedVoxelGridPT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
+            this._combinedVoxelGridPT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
+            this._combinedVoxelGridPT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
             // We will render this only after voxelization is completed for the 3 axes.
-            this._voxelGridRT.autoClear = false;
-            this._voxelGridRT.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this._voxelGridRT.wrapV = Texture.CLAMP_ADDRESSMODE;
+            this._combinedVoxelGridPT.autoClear = false;
+            this._combinedVoxelGridPT.wrapU = Texture.CLAMP_ADDRESSMODE;
+            this._combinedVoxelGridPT.wrapV = Texture.CLAMP_ADDRESSMODE;
         } else {
             this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelCombinedOptions);
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
@@ -464,7 +482,7 @@ export class _IblShadowsVoxelRenderer {
         voxelRT.wrapV = Texture.CLAMP_ADDRESSMODE;
         voxelRT.noPrePassRenderer = true;
         const mrtArray: MultiRenderTarget[] = [];
-        const targetTypes = new Array(this._maxDrawBuffers).fill(this._isVoxelGrid3D ? Constants.TEXTURE_3D : Constants.TEXTURE_2D_ARRAY);
+        const targetTypes = new Array(this._maxDrawBuffers).fill(Constants.TEXTURE_3D);
 
         for (let mrtIndex = 0; mrtIndex < numSlabs; mrtIndex++) {
             let layerIndices = new Array(this._maxDrawBuffers).fill(0);
@@ -475,7 +493,7 @@ export class _IblShadowsVoxelRenderer {
 
             const mrt = new MultiRenderTarget(
                 "mrt_" + name + mrtIndex,
-                { width: this._voxelResolution, height: this._voxelResolution, depth: this._isVoxelGrid3D ? this._voxelResolution : undefined },
+                { width: this._voxelResolution, height: this._voxelResolution, depth: this._voxelResolution },
                 this._maxDrawBuffers, // number of draw buffers
                 this._scene,
                 {
@@ -516,7 +534,7 @@ export class _IblShadowsVoxelRenderer {
         if (this._triPlanarVoxelization) {
             this._voxelGridXaxis?.dispose();
             this._voxelGridYaxis?.dispose();
-            this._voxelGridRT?.dispose();
+            this._combinedVoxelGridPT?.dispose();
         }
         this._voxelGridZaxis?.dispose();
         for (const mip of this._mipArray) {
@@ -533,7 +551,7 @@ export class _IblShadowsVoxelRenderer {
     private _createVoxelMaterials(): void {
         const isWebGPU = this._engine.isWebGPU;
         this._voxelMaterial = new ShaderMaterial("voxelization", this._scene, "iblVoxelGrid", {
-            uniforms: ["world", "viewMatrix", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
+            uniforms: ["world", "viewMatrix", "invTransWorld", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
             defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
             extraInitializationsAsync: async () => {
@@ -594,6 +612,7 @@ export class _IblShadowsVoxelRenderer {
         this._removeVoxelRTs(this._voxelMrtsXaxis);
         this._removeVoxelRTs(this._voxelMrtsYaxis);
         this._removeVoxelRTs(this._voxelMrtsZaxis);
+        this._removeVoxelRTs([this._voxelGridRT]);
     }
 
     private _removeVoxelRTs(rts: RenderTargetTexture[]) {
@@ -628,7 +647,10 @@ export class _IblShadowsVoxelRenderer {
         this._includedMeshes = includedMeshes;
         this._voxelizationInProgress = true;
 
-        if (this._triPlanarVoxelization) {
+        if (this._engine.isWebGPU) {
+            this._voxelGridRT.renderList = includedMeshes;
+            this._addRTsForRender([this._voxelGridRT], includedMeshes, 0);
+        } else if (this._triPlanarVoxelization) {
             this._addRTsForRender(this._voxelMrtsXaxis, includedMeshes, 0);
             this._addRTsForRender(this._voxelMrtsYaxis, includedMeshes, 1);
             this._addRTsForRender(this._voxelMrtsZaxis, includedMeshes, 2);
@@ -656,13 +678,25 @@ export class _IblShadowsVoxelRenderer {
                 allReady &&= rttReady;
             }
             if (allReady) {
+                if (this._engine.isWebGPU) {
+                    // Clear the voxel grid storage texture.
+                    // Need to clear each layer individually.
+                    // Would a compute shader be faster here to clear all layers in one go?
+                    if (this._voxelGrid && this._voxelGrid.renderTarget) {
+                        for (let layer = 0; layer < this._voxelResolution; layer++) {
+                            this._engine.bindFramebuffer(this._voxelGrid.renderTarget, 0, undefined, undefined, true, 0, layer);
+                            this._engine.clear(this._voxelClearColor, true, false, false);
+                            this._engine.unBindFramebuffer(this._voxelGrid.renderTarget, true);
+                        }
+                    }
+                }
                 for (const rt of this._renderTargets) {
                     rt.render();
                 }
                 this._stopVoxelization();
 
-                if (this._triPlanarVoxelization) {
-                    this._voxelGridRT.render();
+                if (this._triPlanarVoxelization && !this._engine.isWebGPU) {
+                    this._combinedVoxelGridPT.render();
                 }
                 this._generateMipMaps();
                 // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
@@ -710,6 +744,10 @@ export class _IblShadowsVoxelRenderer {
                 voxelMaterial.setFloat("nearPlane", nearPlane);
                 voxelMaterial.setFloat("farPlane", farPlane);
                 voxelMaterial.setFloat("stepSize", stepSize);
+                if (this._engine.isWebGPU) {
+                    this._voxelMaterial.useVertexPulling = true;
+                    this._voxelMaterial.setTexture("voxel_storage", this.getVoxelGrid());
+                }
             });
 
             // Set this material on every mesh in the scene (for this RT)

@@ -110,6 +110,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _rebuildingAfterContextLost = false;
 
     /**
+     * Specifies if the particle system should be serialized
+     */
+    public doNotSerialize = false;
+
+    /**
      * Gets a boolean indicating if the GPU particles can be rendered on current browser
      */
     public static get IsSupported(): boolean {
