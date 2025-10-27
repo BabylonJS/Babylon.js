@@ -312,17 +312,12 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         }
 
         const trackedAnchors = frame.trackedAnchors;
-        const removedAnchors: XRAnchor[] = [];
         if (trackedAnchors) {
-            const toRemove = this._trackedAnchors
-                .filter((anchor) => anchor._removed)
-                .map((anchor) => {
-                    return this._trackedAnchors.indexOf(anchor);
-                });
+            const toRemove = this._trackedAnchors.filter((anchor) => anchor._removed);
             let idxTracker = 0;
-            for (const index of toRemove) {
-                const anchor = this._trackedAnchors.splice(index - idxTracker, 1)[0];
-                removedAnchors.push(anchor.xrAnchor);
+            for (const anchor of toRemove) {
+                const index = this._trackedAnchors.indexOf(anchor);
+                this._trackedAnchors.splice(index - idxTracker, 1);
                 anchor.xrAnchor.delete();
                 this.onAnchorRemovedObservable.notifyObservers(anchor);
                 idxTracker++;
@@ -348,8 +343,10 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                         result.resolved = true;
                     }
                 } else {
-                    if (removedAnchors.indexOf(xrAnchor) !== -1) {
-                        return;
+                    for (const anchor of toRemove) {
+                        if (anchor.xrAnchor === xrAnchor) {
+                            return;
+                        }
                     }
                     const index = this._findIndexInAnchorArray(xrAnchor);
                     const anchor = this._trackedAnchors[index];
