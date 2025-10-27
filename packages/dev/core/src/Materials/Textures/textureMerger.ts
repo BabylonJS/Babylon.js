@@ -171,7 +171,7 @@ export class TextureMerger {
         }
 
         // Add texture defines for used textures
-        for (const textureIndex of usedTextures) {
+        for (const textureIndex in usedTextures) {
             defines.push(`USE_TEXTURE${textureIndex}`);
         }
 
