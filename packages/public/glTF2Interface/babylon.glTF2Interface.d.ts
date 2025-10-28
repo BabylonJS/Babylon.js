@@ -1449,7 +1449,6 @@ declare module BABYLON.GLTF2 {
         type: EXTLightsArea_LightType;
         color?: number[];
         intensity?: number;
-        type?: "area";
         size?: number;
         rect?: {
             aspect: number;
