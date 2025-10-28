@@ -6,9 +6,7 @@ fn getDataUV(index: f32, dataTextureSize: vec2f) -> vec2<f32> {
 
 struct Splat {
     center: vec4f,
-#ifndef GS_DISABLE_COLOR
     color: vec4f,
-#endif
     covA: vec4f,
     covB: vec4f,
 #if SH_DEGREE > 0
@@ -27,9 +25,7 @@ fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     let splatUV = getDataUV(splatIndex, dataTextureSize);
     let splatUVi32 = vec2<i32>(i32(splatUV.x), i32(splatUV.y));
     splat.center = textureLoad(centersTexture, splatUVi32, 0);
-#ifndef GS_DISABLE_COLOR
     splat.color = textureLoad(colorsTexture, splatUVi32, 0);
-#endif
     splat.covA = textureLoad(covariancesATexture, splatUVi32, 0) * splat.center.w;
     splat.covB = textureLoad(covariancesBTexture, splatUVi32, 0) * splat.center.w;
 #if SH_DEGREE > 0

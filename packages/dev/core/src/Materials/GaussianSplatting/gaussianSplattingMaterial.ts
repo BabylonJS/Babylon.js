@@ -393,7 +393,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 samplers: GaussianSplattingMaterial._Samplers,
                 uniformBuffers: GaussianSplattingMaterial._UniformBuffers,
                 shaderLanguage: shaderLanguage,
-                defines: ["#define GS_DISABLE_COLOR"],
             }
         );
 
@@ -428,6 +427,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 effect.setTexture("covariancesATexture", gsMesh.covariancesATexture);
                 effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
                 effect.setTexture("centersTexture", gsMesh.centersTexture);
+                effect.setTexture("colorsTexture", gsMesh.colorsTexture);
             }
         });
 
