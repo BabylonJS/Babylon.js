@@ -80,6 +80,11 @@ export interface ISpriteManager extends IDisposable {
     _wasDispatched: boolean;
 
     /**
+     * Specifies if the sprite manager should be serialized
+     */
+    doNotSerialize?: boolean;
+
+    /**
      * Tests the intersection of a sprite with a specific ray.
      * @param ray The ray we are sending to test the collision
      * @param camera The camera space we are sending rays in
@@ -170,6 +175,11 @@ export class SpriteManager implements ISpriteManager {
      * Gets or sets the unique id of the sprite
      */
     public uniqueId: number;
+
+    /**
+     * Specifies if the sprite manager should be serialized
+     */
+    public doNotSerialize = false;
 
     /**
      * Gets the array of sprites
