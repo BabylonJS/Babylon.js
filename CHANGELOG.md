@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.33.4
+
+### Core
+
+- Add shadow generator / cascaded shadow generator support - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#17348](https://github.com/BabylonJS/Babylon.js/pull/17348))
+
 ## 8.33.3
 
 ### Core
