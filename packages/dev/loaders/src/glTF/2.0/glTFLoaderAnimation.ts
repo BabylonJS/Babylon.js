@@ -42,7 +42,7 @@ export abstract class AnimationPropertyInfo {
 
     protected _buildAnimation(name: string, fps: number, keys: any[]): Animation {
         const babylonAnimation = new Animation(name, this.name, fps, this.type);
-        babylonAnimation.setKeys(keys);
+        babylonAnimation.setKeys(keys, true);
         return babylonAnimation;
     }
 
@@ -74,7 +74,8 @@ export class WeightAnimationPropertyInfo extends AnimationPropertyInfo {
                         value: key.value[targetIndex],
                         outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined,
                         interpolation: key.interpolation,
-                    }))
+                    })),
+                    true
                 );
 
                 if (target._primitiveBabylonMeshes) {
