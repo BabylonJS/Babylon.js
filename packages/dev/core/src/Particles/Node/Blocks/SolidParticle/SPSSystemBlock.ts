@@ -8,14 +8,19 @@ import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import type { ISPSCreateData } from "./ISPSData";
 import { SolidParticle } from "../../../solidParticle";
 import { Observer } from "../../../../Misc";
+import { Nullable } from "../../../../types";
+import { Scene } from "../../../..";
 
 /**
  * Block used to create SolidParticleSystem and collect all Create blocks
  */
 export class SPSSystemBlock extends NodeParticleBlock {
     private static _IdCounter = 0;
+    private _sps: SolidParticleSystem | null = null;
     private _connectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
     private _disconnectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
+    private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    private _disposeHandlerAdded = false;
 
     @editableInPropertyPage("Capacity", PropertyTypeForEdition.Int, "ADVANCED", {
         embedded: true,
@@ -35,9 +40,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
     public constructor(name: string) {
         super(name);
-
         this._isSystem = true;
-
         this.registerInput(`solidParticle-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticle);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.SolidParticleSystem);
 
@@ -66,8 +69,6 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
     private _manageExtendedInputs(index: number) {
         const connectionObserver = this._inputs[index].onConnectionObservable.add(() => {
-            console.log("connectionObserver solidParticle", index);
-            console.log(" connectionObserver this._entryCount", this._entryCount);
             if (this._entryCount - 1 > index) {
                 return;
             }
@@ -75,8 +76,6 @@ export class SPSSystemBlock extends NodeParticleBlock {
         });
 
         const disconnectionObserver = this._inputs[index].onDisconnectionObservable.add(() => {
-            console.log("solidParticle", index);
-            console.log("this._entryCount", this._entryCount);
             if (this._entryCount - 1 > index) {
                 return;
             }
@@ -113,72 +112,121 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
     public createSystem(state: NodeParticleBuildState): SolidParticleSystem {
         state.capacity = this.capacity;
-        state.buildId = this._buildId++;
+        state.buildId = this._buildId ? this._buildId + 1 : 0;
 
         this.build(state);
 
         if (!state.scene) {
             throw new Error("Scene is not initialized in NodeParticleBuildState");
         }
+        if (this._sps) {
+            // dispose is not working correctly
+            // this._sps.dispose();
+            this._sps = null;
+        }
 
-        const sps = new SolidParticleSystem(this.name, state.scene);
-        sps.billboard = this.billboard;
-        sps.name = this.name;
+        if (this._onBeforeRenderObserver) {
+            state.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
 
-        // Collect data from all connected solidParticle inputs
-        const createBlocks: ISPSCreateData[] = [];
+        this._sps = new SolidParticleSystem(this.name, state.scene, {
+            useModelMaterial: true,
+        });
+        this._sps.billboard = this.billboard;
+        this._sps.name = this.name;
+
+        const createBlocks = new Map<number, ISPSCreateData>();
         for (let i = 0; i < this._inputs.length; i++) {
-            if (this._inputs[i].isConnected && this._inputs[i]._storedValue) {
-                createBlocks.push(this._inputs[i]._storedValue);
+            const creatData = this._inputs[i].getConnectedValue(state) as ISPSCreateData;
+            if (this._inputs[i].isConnected && creatData) {
+                if (creatData.mesh && creatData.count) {
+                    const shapeId = this._sps.addShape(creatData.mesh, creatData.count);
+                    createBlocks.set(shapeId, creatData);
+                    creatData.mesh.isVisible = false;
+                }
             }
         }
 
-        for (const createBlock of createBlocks) {
-            if (createBlock.mesh && createBlock.count) {
-                createBlock.shapeId = sps.addShape(createBlock.mesh, createBlock.count);
-                createBlock.mesh.isVisible = false;
+        this._sps.initParticles = () => {
+            if (!this._sps) {
+                return;
             }
-        }
-
-        sps.initParticles = () => {
-            for (const createBlock of createBlocks) {
-                if (createBlock.initBlock && createBlock.shapeId !== undefined) {
-                    const particles = sps.getParticlesByShapeId(createBlock.shapeId);
-
-                    particles.forEach((particle) => {
-                        if (createBlock.initBlock) {
-                            particle.position.copyFrom(createBlock.initBlock.position());
-                            particle.velocity.copyFrom(createBlock.initBlock.velocity());
-                            particle.color?.copyFrom(createBlock.initBlock.color());
-                            particle.scaling.copyFrom(createBlock.initBlock.scaling());
-                            particle.rotation.copyFrom(createBlock.initBlock.rotation());
-                        }
-                    });
+            for (let p = 0; p < this._sps.nbParticles; p++) {
+                const particle = this._sps.particles[p];
+                const particleCreateData = createBlocks.get(particle.shapeId);
+                const initBlock = particleCreateData?.initBlock;
+                if (!initBlock) {
+                    continue;
+                }
+                if (initBlock.position) {
+                    particle.position.copyFrom(initBlock.position());
+                }
+                if (initBlock.velocity) {
+                    particle.velocity.copyFrom(initBlock.velocity());
+                }
+                if (initBlock.color) {
+                    particle.color?.copyFrom(initBlock.color());
+                }
+                if (initBlock.scaling) {
+                    particle.scaling.copyFrom(initBlock.scaling());
+                }
+                if (initBlock.rotation) {
+                    particle.rotation.copyFrom(initBlock.rotation());
                 }
             }
         };
 
-        sps.updateParticle = (particle: SolidParticle) => {
-            const createBlock = createBlocks.find((createBlock) => createBlock.shapeId === particle.shapeId);
-            if (createBlock && createBlock.updateBlock) {
-                particle.position.copyFrom(createBlock.updateBlock.position());
-                particle.velocity.copyFrom(createBlock.updateBlock.velocity());
-                particle.color?.copyFrom(createBlock.updateBlock.color());
-                particle.scaling.copyFrom(createBlock.updateBlock.scaling());
-                particle.rotation.copyFrom(createBlock.updateBlock.rotation());
+        this._sps.updateParticle = (particle: SolidParticle) => {
+            if (!this._sps) {
+                return particle;
+            }
+            const particleCreateData = createBlocks.get(particle.shapeId);
+            const updateBlock = particleCreateData?.updateBlock;
+            if (!updateBlock) {
+                return particle;
+            }
+            if (updateBlock.position) {
+                particle.position.copyFrom(updateBlock.position());
+            }
+            if (updateBlock.velocity) {
+                particle.velocity.copyFrom(updateBlock.velocity());
+            }
+            if (updateBlock.color) {
+                particle.color?.copyFrom(updateBlock.color());
+            }
+            if (updateBlock.scaling) {
+                particle.scaling.copyFrom(updateBlock.scaling());
+            }
+            if (updateBlock.rotation) {
+                particle.rotation.copyFrom(updateBlock.rotation());
             }
             return particle;
         };
 
-        sps.start();
+        this._sps.buildMesh();
+        this._sps.initParticles();
+        this._sps.setParticles();
+
+        this._onBeforeRenderObserver = state.scene.onBeforeRenderObservable.add(() => {
+            this._sps?.setParticles();
+        });
 
         this.system._storedValue = this;
 
-        this.onDisposeObservable.addOnce(() => {
-            sps.dispose();
-        });
-
-        return sps;
+        if (!this._disposeHandlerAdded) {
+            this.onDisposeObservable.addOnce(() => {
+                this._sps?.dispose();
+                this._sps = null;
+                if (this._onBeforeRenderObserver) {
+                    state.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+                    this._onBeforeRenderObserver = null;
+                }
+            });
+            this._disposeHandlerAdded = true;
+        }
+        console.log("SPSSystemBlock#createSystem", this._sps.mesh.getScene().meshes.length);
+        return this._sps;
     }
 
     public override serialize(): any {

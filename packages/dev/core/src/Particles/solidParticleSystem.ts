@@ -7,7 +7,6 @@ import { Mesh } from "../Meshes/mesh";
 import { CreateDisc } from "../Meshes/Builders/discBuilder";
 import { EngineStore } from "../Engines/engineStore";
 import type { Scene, IDisposable } from "../scene";
-import type { Observer } from "../Misc/observable";
 import { DepthSortedParticle, SolidParticle, ModelShape, SolidParticleVertex } from "./solidParticle";
 import type { TargetCamera } from "../Cameras/targetCamera";
 import { BoundingInfo } from "../Culling/boundingInfo";
@@ -92,11 +91,6 @@ export class SolidParticleSystem implements IDisposable {
      * Each element of this array is an instance of the class DepthSortedParticle.
      */
     public depthSortedParticles: DepthSortedParticle[];
-
-    /**
-     * If the SPS has been started.
-     */
-    public isStarted: boolean = false;
 
     /**
      * If the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster). (Internal use only)
@@ -1540,40 +1534,11 @@ export class SolidParticleSystem implements IDisposable {
         return this;
     }
 
-    private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
-
-    /**
-     * Starts the SPS by subscribing to the scene's before render observable
-     */
-    public start(): void {
-        this.stop();
-        this.buildMesh();
-        this.initParticles();
-        this.setParticles();
-        this._onBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
-            this.setParticles();
-        });
-        this.isStarted = true;
-    }
-
-    /**
-     * Stops the SPS by unsubscribing from the scene's before render observable
-     */
-    public stop(): void {
-        if (!this.isStarted) {
-            return;
-        }
-        this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
-        this._onBeforeRenderObserver = null;
-        this.mesh.dispose();
-        this.isStarted = false;
-    }
-
     /**
      * Disposes the SPS.
      */
     public dispose(): void {
-        this.stop();
+        this.mesh.dispose();
         this.vars = null;
         // drop references to internal big arrays for the GC
         (<any>this._positions) = null;

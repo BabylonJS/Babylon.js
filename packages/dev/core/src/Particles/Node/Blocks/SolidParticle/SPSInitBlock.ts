@@ -3,8 +3,6 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { Vector3 } from "core/Maths/math.vector";
-import { Color4 } from "core/Maths/math.color";
 import type { ISPSUpdateData } from "./ISPSData";
 
 /**
@@ -53,70 +51,70 @@ export class SPSInitBlock extends NodeParticleBlock {
 
     public override _build(state: NodeParticleBuildState) {
         const initData = {} as ISPSUpdateData;
-        initData.position = () => {
-            return this.getPosition(state);
-        };
-        initData.velocity = () => {
-            return this.getVelocity(state);
-        };
-        initData.color = () => {
-            return this.getColor(state);
-        };
-        initData.scaling = () => {
-            return this.getScaling(state);
-        };
-        initData.rotation = () => {
-            return this.getRotation(state);
-        };
+        if (this.position.isConnected) {
+            initData.position = () => {
+                return this.getPosition(state);
+            };
+        }
+        if (this.velocity.isConnected) {
+            initData.velocity = () => {
+                return this.getVelocity(state);
+            };
+        }
+        if (this.color.isConnected) {
+            initData.color = () => {
+                return this.getColor(state);
+            };
+        }
+        if (this.scaling.isConnected) {
+            initData.scaling = () => {
+                return this.getScaling(state);
+            };
+        }
+        if (this.rotation.isConnected) {
+            initData.rotation = () => {
+                return this.getRotation(state);
+            };
+        }
 
         this.initData._storedValue = initData;
     }
 
     private getPosition(state: NodeParticleBuildState) {
-        if (this.position.isConnected) {
-            if (this.position._storedFunction) {
-                return this.position._storedFunction!(state);
-            }
-            return this.position.getConnectedValue(state);
+        if (this.position._storedFunction) {
+            return this.position._storedFunction(state);
         }
-        return new Vector3(0, 0, 0);
+        return this.position.getConnectedValue(state);
     }
+
     private getVelocity(state: NodeParticleBuildState) {
-        if (this.velocity.isConnected) {
-            if (this.velocity._storedFunction) {
-                return this.velocity._storedFunction!(state);
-            }
-            return this.velocity.getConnectedValue(state);
+        if (this.velocity._storedFunction) {
+            return this.velocity._storedFunction(state);
         }
-        return new Vector3(0, 0, 0);
+        return this.velocity.getConnectedValue(state);
     }
+
     private getColor(state: NodeParticleBuildState) {
-        if (this.color.isConnected) {
-            if (this.color._storedFunction) {
-                return this.color._storedFunction!(state);
-            }
-            return this.color.getConnectedValue(state);
+        if (this.color._storedFunction) {
+            return this.color._storedFunction(state);
         }
-        return new Color4(1, 1, 1, 1);
+        return this.color.getConnectedValue(state);
     }
+
     private getScaling(state: NodeParticleBuildState) {
-        if (this.scaling.isConnected) {
-            if (this.scaling._storedFunction) {
-                return this.scaling._storedFunction!(state);
-            }
-            return this.scaling.getConnectedValue(state);
+        if (this.scaling._storedFunction) {
+            return this.scaling._storedFunction(state);
         }
-        return new Vector3(1, 1, 1);
+        return this.scaling.getConnectedValue(state);
     }
+
     private getRotation(state: NodeParticleBuildState) {
-        if (this.rotation.isConnected) {
-            if (this.rotation._storedFunction) {
-                return this.rotation._storedFunction!(state);
-            }
-            return this.rotation.getConnectedValue(state);
+        if (this.rotation._storedFunction) {
+            return this.rotation._storedFunction(state);
         }
-        return new Vector3(0, 0, 0);
+        return this.rotation.getConnectedValue(state);
     }
+
     public override serialize(): any {
         const serializationObject = super.serialize();
         return serializationObject;
