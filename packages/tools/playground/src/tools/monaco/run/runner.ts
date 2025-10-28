@@ -520,7 +520,115 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         if (!createScene) {
             throw new Error("No createScene export (createScene / default / Playground.CreateScene) found in entry module.");
         }
-        return [await (createScene(engine, canvas) ?? createScene()), engine];
+
+        // This accounts for legacy JS using this to refer to global namespace or closure e.g.
+        // const scene = new BABYLON.Scene(...);
+        // const camera = new BABYLON.FreeCamera("cam", ... this.scene);
+        // We can bind a proxy for contextual lookup of undefined globals.
+
+        let sceneResult: Scene;
+        createScene = createScene.bind(
+            new Proxy(
+                {},
+                {
+                    get(target, prop) {
+                        if (prop === "scene") {
+                            return sceneResult;
+                        } // will be set later
+                        if (prop === "engine") {
+                            return engine;
+                        }
+                        if (prop === "canvas") {
+                            return canvas;
+                        }
+                        if (prop === "document") {
+                            return document;
+                        }
+                        if (prop === "window") {
+                            return window;
+                        }
+                        return (window as any)[prop]; // fallback to global
+                    },
+                    set(target, prop, value) {
+                        if (prop === "scene") {
+                            sceneResult = value;
+                            return true;
+                        }
+                        (window as any)[prop] = value;
+                        return true;
+                    },
+                }
+            )
+        );
+
+        let createSceneResult;
+        try {
+            createSceneResult = await (createScene(engine, canvas) ?? createScene());
+        } catch (e) {
+            Logger.Warn("Initial scene creation failed: " + (e as Error).message);
+
+            const shimmed = new Set<string>();
+            const maxShims = 30;
+
+            const extractUnbound = (msg: string | undefined): string | null => {
+                if (!msg) {
+                    return null;
+                }
+                // Chrome/Firefox: "foo is not defined"
+                let m = msg.match(/^([A-Za-z_$][\w$]*) is not defined/);
+                if (m) {
+                    return m[1];
+                }
+                // Safari: "Can't find variable: foo"
+                m = msg.match(/^Can't find variable: ([A-Za-z_$][\w$]*)/);
+                if (m) {
+                    return m[1];
+                }
+                return null;
+            };
+
+            const isSafeIdent = (n: string) => /^[A-Za-z_$][\w$]*$/.test(n) && n !== "__proto__" && n !== "prototype" && n !== "constructor";
+
+            let lastErr: unknown = e;
+
+            for (let i = 0; i < maxShims; i++) {
+                const err = lastErr as Error;
+                if (!(err instanceof ReferenceError)) {
+                    break;
+                }
+
+                const name = extractUnbound(err.message);
+                if (!name || shimmed.has(name) || !isSafeIdent(name)) {
+                    break;
+                }
+
+                // Define a global, writable binding so the next run can assign to it.
+                Object.defineProperty(globalThis as any, name, {
+                    value: undefined,
+                    writable: true,
+                    configurable: true,
+                    enumerable: false,
+                });
+                shimmed.add(name);
+                Logger.Warn(`Legacy global detected. Defining globalThis.${name} = undefined and retrying…`);
+
+                try {
+                    createSceneResult = await (createScene(engine, canvas) ?? createScene());
+                    break; // success
+                } catch (e2) {
+                    lastErr = e2;
+                    continue; // see if there’s another missing global
+                }
+            }
+
+            if (!createSceneResult) {
+                if (shimmed.size) {
+                    Logger.Warn(`Shims created: ${Array.from(shimmed).join(", ")}`);
+                }
+                throw lastErr;
+            }
+        }
+        return [createSceneResult, engine];
     }
 
     function dispose() {

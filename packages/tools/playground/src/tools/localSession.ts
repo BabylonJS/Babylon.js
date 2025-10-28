@@ -2,7 +2,7 @@
 import { Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { PackSnippetData } from "./snippet";
-import type { V2Manifest } from "./snippet";
+import type { V2Manifest, ExtraSnippetOptions } from "./snippet";
 import { Utilities } from "./utilities";
 
 declare let JSZip: any;
@@ -198,10 +198,10 @@ export function ReadLastLocal(globalState: GlobalState): string | undefined {
     const bundle = LoadBundleForToken(token);
     return bundle.lastLocal;
 }
-export function WriteLastLocal(globalState: GlobalState) {
+export function WriteLastLocal(globalState: GlobalState, extraSnippetOptions: ExtraSnippetOptions = {}) {
     const token = GetDefaultToken(globalState);
     const bundle = LoadBundleForToken(token);
-    bundle.lastLocal = PackSnippetData(globalState);
+    bundle.lastLocal = PackSnippetData(globalState, extraSnippetOptions);
     StoreBundleForToken(token, bundle);
 }
 
