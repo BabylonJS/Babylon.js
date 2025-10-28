@@ -42,7 +42,7 @@ export abstract class AnimationPropertyInfo {
 
     protected _buildAnimation(name: string, fps: number, keys: any[]): Animation {
         const babylonAnimation = new Animation(name, this.name, fps, this.type);
-        babylonAnimation.setKeys(keys);
+        babylonAnimation.setKeys(keys, true);
         return babylonAnimation;
     }
 
