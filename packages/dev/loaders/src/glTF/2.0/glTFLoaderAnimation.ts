@@ -74,7 +74,8 @@ export class WeightAnimationPropertyInfo extends AnimationPropertyInfo {
                         value: key.value[targetIndex],
                         outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined,
                         interpolation: key.interpolation,
-                    }))
+                    })),
+                    true
                 );
 
                 if (target._primitiveBabylonMeshes) {
