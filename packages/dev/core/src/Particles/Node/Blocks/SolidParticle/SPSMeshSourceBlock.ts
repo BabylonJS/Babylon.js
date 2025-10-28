@@ -9,11 +9,15 @@ import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "core/Meshes/Builders/cylinderBuilder";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { SPSMeshShapeType } from "./SPSMeshShapeType";
+import { Mesh } from "../../../../Meshes";
 
 /**
  * Block used to provide mesh source for SPS
  */
 export class SPSMeshSourceBlock extends NodeParticleBlock {
+    private _mesh: Mesh | null = null;
+    private _disposeHandlerAdded = false;
+
     @editableInPropertyPage("Shape Type", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { rebuild: true },
         embedded: true,
@@ -59,40 +63,52 @@ export class SPSMeshSourceBlock extends NodeParticleBlock {
     }
 
     public override _build(state: NodeParticleBuildState) {
-        let mesh;
-
+        if (this._mesh) {
+            this._mesh.dispose();
+            this._mesh = null;
+        }
         if (this.shapeType === SPSMeshShapeType.Custom) {
             if (this.customMesh.isConnected) {
                 const customMesh = this.customMesh.getConnectedValue(state);
                 if (customMesh) {
-                    mesh = customMesh;
+                    this._mesh = customMesh;
                 } else {
-                    mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
+                    this._mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
                 }
             } else {
-                mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
+                this._mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
             }
         } else {
             switch (this.shapeType) {
                 case SPSMeshShapeType.Box:
-                    mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
+                    this._mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
                     break;
                 case SPSMeshShapeType.Sphere:
-                    mesh = CreateSphere("sps_mesh_source", { diameter: this.size, segments: this.segments }, state.scene);
+                    this._mesh = CreateSphere("sps_mesh_source", { diameter: this.size, segments: this.segments }, state.scene);
                     break;
                 case SPSMeshShapeType.Cylinder:
-                    mesh = CreateCylinder("sps_mesh_source", { height: this.size, diameter: this.size, tessellation: this.segments }, state.scene);
+                    this._mesh = CreateCylinder("sps_mesh_source", { height: this.size, diameter: this.size, tessellation: this.segments }, state.scene);
                     break;
                 case SPSMeshShapeType.Plane:
-                    mesh = CreatePlane("sps_mesh_source", { size: this.size }, state.scene);
+                    this._mesh = CreatePlane("sps_mesh_source", { size: this.size }, state.scene);
                     break;
                 default:
-                    mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
+                    this._mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
                     break;
             }
         }
+        if (this._mesh) {
+            this._mesh.isVisible = false;
+        }
 
-        this.mesh._storedValue = mesh;
+        if (!this._disposeHandlerAdded) {
+            this.onDisposeObservable.addOnce(() => {
+                this._mesh?.dispose();
+                this._mesh = null;
+            });
+            this._disposeHandlerAdded = true;
+        }
+        this.mesh._storedValue = this._mesh;
     }
 
     public override serialize(): any {
