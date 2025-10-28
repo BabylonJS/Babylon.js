@@ -556,6 +556,9 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public set coatRoughnessTexture(value: Nullable<BaseTexture>) {
         this._material.coatRoughnessTexture = value;
+        if (value) {
+            this._material._useCoatRoughnessFromGreenChannel = true;
+        }
     }
 
     /**

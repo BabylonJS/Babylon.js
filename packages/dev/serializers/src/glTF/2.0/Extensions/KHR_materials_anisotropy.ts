@@ -194,12 +194,11 @@ export class KHR_materials_anisotropy implements IGLTFExporterExtensionV2 {
                     };
 
                     if (!babylonMaterial._useGltfStyleAnisotropy) {
-                        anisotropyInfo.extensions!["EXT_materials_anisotropy_openpbr"] = {
-                            openPbrAnisotropyEnabled: true,
-                        };
+                        // Enable OpenPBR extension on this material.
+                        node.extensions!["KHR_materials_openpbr"] = {};
                         this._exporter._glTF.extensionsUsed ||= [];
-                        if (this._exporter._glTF.extensionsUsed.indexOf("EXT_materials_anisotropy_openpbr") === -1) {
-                            this._exporter._glTF.extensionsUsed.push("EXT_materials_anisotropy_openpbr");
+                        if (this._exporter._glTF.extensionsUsed.indexOf("KHR_materials_openpbr") === -1) {
+                            this._exporter._glTF.extensionsUsed.push("KHR_materials_openpbr");
                         }
                     }
 
