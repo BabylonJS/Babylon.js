@@ -5,7 +5,6 @@ import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { IWebXRHitResult } from "./WebXRHitTest";
-import { Tools } from "../../Misc/tools";
 
 /**
  * Configuration options of the anchor system
