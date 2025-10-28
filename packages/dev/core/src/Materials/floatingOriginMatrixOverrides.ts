@@ -120,12 +120,13 @@ function OffsetWorldViewProjectionToRef(
 }
 
 function GetOffsetMatrix(uniformName: string, mat: IMatrixLike): IMatrixLike {
-    TempFinalMat.updateFlag = mat.updateFlag;
     const scene = FloatingOriginCurrentScene.getScene();
     // Early out for scenes that don't have floatingOriginMode enabled
-    if (!scene) {
+    // Effect.setMatrix will call pipelineContext.setMatrix. In WebGPU, this will in turn call ubo.updateMatrix. To avoid double offset, early out if mat is TempFinalMat
+    if (!scene || TempFinalMat === mat) {
         return mat;
     }
+    TempFinalMat.updateFlag = mat.updateFlag;
     const offset = scene.floatingOriginOffset;
     switch (uniformName) {
         case "world":
