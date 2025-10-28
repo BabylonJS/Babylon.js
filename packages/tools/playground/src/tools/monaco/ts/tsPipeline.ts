@@ -76,6 +76,9 @@ declare module "*.fx"   { const content: string; export default content; }`;
         const shaderTsDisposable = monaco.languages.typescript.typescriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
         const shaderJsDisposable = monaco.languages.typescript.javascriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
         this._extraLibDisposables.push(shaderTsDisposable, shaderJsDisposable);
+
+        // Global shim for legacy PG with less strict checking
+        this._addGlobalAnyStub();
     }
     addPathsFor(raw: string, canonical: string) {
         if (!raw || raw === canonical) {
@@ -181,6 +184,33 @@ declare module "*.fx"   { const content: string; export default content; }`;
             this._workspaceDecls = undefined;
         }
         this.forceSyncModels();
+    }
+
+    private _addGlobalAnyStub() {
+        const stub = `
+/**
+ *  Playground “any-variable” shim.
+ *  Every identifier that is not found in the current program
+ *  is treated as a global variable of type \`any\`.
+ */
+declare global {
+    interface GlobalAny {
+        [name: string]: any;
+    }
+    var globalThis: GlobalAny;
+}
+export {};
+`;
+
+        const uri = "file:///pg/__playground_any_shim.d.ts";
+
+        if (!this._extraLibUris.has(uri)) {
+            const disp = monaco.languages.typescript.typescriptDefaults.addExtraLib(stub, uri);
+            const dispJs = monaco.languages.typescript.javascriptDefaults.addExtraLib(stub, uri);
+            this._extraLibDisposables.push(disp);
+            this._extraLibDisposables.push(dispJs);
+            this._extraLibUris.add(uri);
+        }
     }
 
     dispose() {
