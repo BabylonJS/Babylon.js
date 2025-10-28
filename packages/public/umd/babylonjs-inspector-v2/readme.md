@@ -1,36 +1,37 @@
-Babylon.js inspector module
-=====================
+# BabylonJS Inspector
 
-For usage documentation please visit https://doc.babylonjs.com/how_to/debug_layer.
+The Babylon Inspector is a diagnostic tool that makes it possible to view and edit the scene graph, properties of entities within the scene, and more.
 
-# Installation instructions
+If you are bundling your app, we recommend using the `@babylonjs/inspector@preview` ESM package instead of this UMD package. This package can be useful if you are trying to use Inspector directly in a web page without running your own bundler.
 
-The inspector will be **automatically** (async) loaded when starting the debug layer, if not already included. So technically, nothing needs to be done!
+You can learn more in the Inspector [documentation](https://doc.babylonjs.com/toolsAndResources/inspectorv2/).
 
-If you wish however to use a different version of the inspector or host it on your own, follow these instructions:
+## Installation
 
-## CDN
+Install the package using npm:
 
-> ⚠️ WARNING: The CDN should not be used in production environments. The purpose of our CDN is to serve Babylon packages to users learning how to use the platform or running small experiments. Once you've built an application and are ready to share it with the world at large, you should serve all packages from your own CDN.
-
-The latest compiled js file is offered on our public CDN here:
-
-* https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js
-
-## NPM
-
-To install using npm :
-
-```
-npm install --save babylonjs babylonjs-inspector
-```
-Afterwards it can be imported to the project using:
-
-```
-import * as BABYLON from 'babylonjs';
-import 'babylonjs-inspector';
+```bash
+npm install babylonjs-inspector@preview
 ```
 
-This will create a global INSPECTOR variable that will be used bay BabylonJS
+The simplest way to use `Inspector` is to call the `BABYLON.ShowInspector` function, passing in your scene:
 
-Webpack is supported.
+```ts
+// Your code that sets up a Babylon.js scene...
+
+BABYLON.ShowInspector(scene);
+```
+
+```html
+<html>
+    <body>
+        <canvas id="renderCanvas"></canvas>
+        <script src="babylon.inspector-v2.bundle.js"></script>
+        <script>
+            // Your code that sets up a Babylon.js scene...
+
+            BABYLON.ShowInspector(scene);
+        </script>
+    </body>
+</html>
+```
