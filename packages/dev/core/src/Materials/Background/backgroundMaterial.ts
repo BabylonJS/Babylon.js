@@ -987,18 +987,6 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
 
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     BindIBLSamplers(scene, defines, this._uniformBuffer, reflectionTexture);
-
-                    if (defines.REFLECTIONFRESNEL || defines.OPACITYFRESNEL) {
-                        const center = TmpVectors.Vector3[0].copyFrom(this.sceneCenter).subtractInPlace(scene.floatingOriginOffset);
-                        this._uniformBuffer.updateFloat3("vBackgroundCenter", center.x, center.y, center.z);
-                        this._uniformBuffer.updateFloat4(
-                            "vReflectionControl",
-                            this._reflectionControls.x,
-                            this._reflectionControls.y,
-                            this._reflectionControls.z,
-                            this._reflectionControls.w
-                        );
-                    }
                 }
 
                 if (defines.PROJECTED_GROUND) {
