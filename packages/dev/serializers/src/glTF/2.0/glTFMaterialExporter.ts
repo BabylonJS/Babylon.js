@@ -87,9 +87,16 @@ function GetFileExtensionFromMimeType(mimeType: ImageMimeType): string {
  * @returns true if the given mime type is compatible with glTF
  */
 function IsSupportedMimeType(mimeType?: string): mimeType is ImageMimeType {
-    return (
-        mimeType === ImageMimeType.JPEG || mimeType === ImageMimeType.PNG || mimeType === ImageMimeType.WEBP || mimeType === ImageMimeType.AVIF || mimeType === ImageMimeType.KTX2
-    );
+    switch (mimeType) {
+        case ImageMimeType.JPEG:
+        case ImageMimeType.PNG:
+        case ImageMimeType.WEBP:
+        case ImageMimeType.AVIF:
+        case ImageMimeType.KTX2:
+            return true;
+        default:
+            return false;
+    }
 }
 
 /**
