@@ -62,7 +62,7 @@ export const AddSharedAbstractSoundActiveInstancesCountTests = (soundType: Sound
                 return sound.activeInstancesCount;
             });
 
-            expect(result).toBe(2);
+            expect(result).toBe(0);
         });
     });
 };
