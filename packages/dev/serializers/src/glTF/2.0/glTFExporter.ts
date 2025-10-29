@@ -15,7 +15,6 @@ import type {
     ITextureInfo,
     ISkin,
     ICamera,
-    ImageMimeType,
 } from "babylonjs-gltf2interface";
 import { AccessorComponentType, AccessorType, CameraType } from "babylonjs-gltf2interface";
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
@@ -38,6 +37,7 @@ import { EngineStore } from "core/Engines/engineStore";
 
 import type { IGLTFExporterExtensionV2 } from "./glTFExporterExtension";
 import { GLTFMaterialExporter } from "./glTFMaterialExporter";
+import type { IImageData } from "./glTFMaterialExporter";
 import type { IExportOptions } from "./glTFSerializer";
 import { GLTFData } from "./glTFData";
 import {
@@ -243,7 +243,7 @@ export class GLTFExporter {
     public readonly _textures: ITexture[] = [];
 
     public readonly _babylonScene: Scene;
-    public readonly _imageData: { [fileName: string]: { data: ArrayBuffer; mimeType: ImageMimeType } } = {};
+    public readonly _imageData: { [fileName: string]: IImageData } = {};
 
     /**
      * Baked animation sample rate
