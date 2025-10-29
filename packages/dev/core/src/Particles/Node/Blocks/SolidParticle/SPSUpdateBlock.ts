@@ -3,8 +3,6 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { Vector3 } from "core/Maths/math.vector";
-import { Color4 } from "core/Maths/math.color";
 import type { ISPSUpdateData } from "./ISPSData";
 
 /**
