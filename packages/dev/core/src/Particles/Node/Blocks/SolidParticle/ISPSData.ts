@@ -17,7 +17,7 @@ export interface ISPSUpdateData {
 /**
  * Interface for SPS create block data
  */
-export interface ISPSCreateData {
+export interface ISPSParticleConfigData {
     mesh: Mesh;
     count: number;
     material?: Material;

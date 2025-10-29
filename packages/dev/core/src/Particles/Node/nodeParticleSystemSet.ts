@@ -22,7 +22,7 @@ import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Nullable } from "../../types";
 import { Color4 } from "core/Maths/math.color";
-import { SPSCreateBlock, SPSInitBlock, SPSMeshShapeType, SPSMeshSourceBlock, SPSSystemBlock, SPSUpdateBlock } from "./Blocks";
+import { SPSParticleConfigBlock, SPSInitBlock, SPSMeshShapeType, SPSMeshSourceBlock, SPSSystemBlock, SPSUpdateBlock, SPSCreateBlock } from "./Blocks";
 import { ParticleSystem } from "..";
 import { Vector3 } from "../../Maths";
 
@@ -343,17 +343,19 @@ export class NodeParticleSystemSet {
         this.clear();
         this.editorData = null;
         const spsSystem = new SPSSystemBlock("SPS System");
-        spsSystem.capacity = 1000;
         spsSystem.billboard = false;
 
-        const spsCreateBox = new SPSCreateBlock("Create Box Particles");
-        const spsCreateSphere = new SPSCreateBlock("Create Sphere Particles");
+        const spsCreateBlock = new SPSCreateBlock("Create Particles System");
+        spsCreateBlock.solidParticleSystem.connectTo(spsSystem.solidParticleSystem);
+
+        const spsCreateBox = new SPSParticleConfigBlock("Create Box Particles");
+        const spsCreateSphere = new SPSParticleConfigBlock("Create Sphere Particles");
 
         spsCreateBox.count.value = 5;
         spsCreateSphere.count.value = 1;
 
-        spsCreateBox.solidParticle.connectTo(spsSystem.solidParticle);
-        spsCreateSphere.solidParticle.connectTo(spsSystem.solidParticle);
+        spsCreateBox.particleConfig.connectTo(spsCreateBlock.particleConfig);
+        spsCreateSphere.particleConfig.connectTo(spsCreateBlock.particleConfig);
 
         const meshSourceBox = new SPSMeshSourceBlock("Box Mesh");
         const meshSourceSphere = new SPSMeshSourceBlock("Sphere Mesh");

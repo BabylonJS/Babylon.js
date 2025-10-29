@@ -14,8 +14,8 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutPropertyTabComponent;
     PropertyLedger.RegisteredControls["MeshShapeBlock"] = MeshShapePropertyTabComponent;
 
-    // SPS Blocks - use default GenericPropertyComponent
     PropertyLedger.RegisteredControls["SPSMeshSourceBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSParticleConfigBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSCreateBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSSystemBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSInitBlock"] = GenericPropertyComponent;
