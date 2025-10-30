@@ -16,6 +16,7 @@ export * from "./KHR_materials_iridescence";
 export * from "./KHR_materials_anisotropy";
 export * from "./KHR_materials_emissive_strength";
 export * from "./KHR_materials_sheen";
+export * from "./KHR_materials_fuzz";
 export * from "./KHR_materials_specular";
 export * from "./KHR_materials_ior";
 export * from "./KHR_materials_variants";

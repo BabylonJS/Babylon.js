@@ -233,6 +233,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
     public USE_GLTF_STYLE_ANISOTROPY = false;
     public THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = false;
+    public FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = false;
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
@@ -1240,6 +1241,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _useGltfStyleAnisotropy = false;
+
+    /**
+     * Specifies that the fuzz roughness is stored in the alpha channel of the texture.
+     * This is for compatibility with glTF where the fuzz roughness is often stored in
+     * the alpha channel of the fuzz color texture.
+     */
+    public _useFuzzRoughnessFromTextureAlpha = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
@@ -2621,6 +2629,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useSpecularRoughnessAnisotropyFromTangentTexture;
                 defines.COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useCoatRoughnessAnisotropyFromTangentTexture;
                 defines.ROUGHNESSSTOREINMETALMAPGREEN = this._useRoughnessFromMetallicTextureGreen;
+                defines.FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = this._useFuzzRoughnessFromTextureAlpha;
                 defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallicFromMetallicTextureBlue;
                 defines.THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = this._useThinFilmThicknessFromTextureGreen;
 
