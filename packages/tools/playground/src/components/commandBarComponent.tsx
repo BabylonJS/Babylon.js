@@ -237,14 +237,25 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         ];
 
         // Procedural Code Generator Options (build from procedural.json)
+        const isJavaScript = this.props.globalState.language === "JS" || this.props.globalState.language === "JavaScript";
+
         let proceduralOptions: any[] = [];
-        proceduralOptions = this._procedural.map((item) => ({
-            ...item,
-            onClick: () => {},
-            onInsert: (snippetKey: string) => {
-                this.onInsertSnippet(snippetKey);
-            },
-        }));
+        proceduralOptions = this._procedural.map((item) => {
+            const obj: any = {
+                ...item,
+                onClick: () => {},
+                onInsert: (snippetKey: string) => {
+                    this.onInsertSnippet(snippetKey);
+                },
+            };
+            if (isJavaScript) {
+                delete obj.subItemsTS;
+            } else if (obj.subItemsTS) {
+                obj.subItems = obj.subItemsTS;
+                delete obj.subItemsTS;
+            }
+            return obj;
+        });
 
         // Engine Version Options
         const activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);

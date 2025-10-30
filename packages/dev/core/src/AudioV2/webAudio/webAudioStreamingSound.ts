@@ -239,7 +239,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         if (restart) {
             this._mediaElement.pause();
-            this._setState(SoundState.Stopped);
+            this._state = SoundState.Stopped;
         }
 
         this._options.startOffset = value;

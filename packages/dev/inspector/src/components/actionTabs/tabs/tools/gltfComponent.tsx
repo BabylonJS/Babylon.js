@@ -290,6 +290,11 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps, IGLTFCom
                                 onSelect={(value) => (extensionStates["KHR_lights_punctual"].enabled = value)}
                             />
                             <CheckBoxLineComponent
+                                label="EXT_lights_area"
+                                isSelected={() => extensionStates["EXT_lights_area"].enabled}
+                                onSelect={(value) => (extensionStates["EXT_lights_area"].enabled = value)}
+                            />
+                            <CheckBoxLineComponent
                                 label="KHR_texture_basisu"
                                 isSelected={() => extensionStates["KHR_texture_basisu"].enabled}
                                 onSelect={(value) => (extensionStates["KHR_texture_basisu"].enabled = value)}

@@ -18,13 +18,14 @@ import { CompletionService } from "./completion/completionService";
 import { CodeAnalysisService } from "./analysis/codeAnalysisService";
 import { DefinitionService } from "./navigation/definitionService";
 import type { V2RunnerOptions } from "./run/runner";
+import type { SnippetData } from "../snippet";
 import { ManifestVersion, type V2Manifest } from "../snippet";
 import { CreateV2Runner } from "./run/runner";
 import { CompilationError } from "../../components/errorDisplayComponent";
 import { ParseSpec } from "./typings/utils";
 import { CodeLensService } from "./codeLens/codeLensProvider";
 import type { RequestLocalResolve } from "./typings/types";
-import { WriteLastLocal } from "../localSession";
+import { WriteLastLocal, ReadLastLocal } from "../localSession";
 
 interface IRunConfig {
     manifest: V2Manifest;
@@ -164,6 +165,21 @@ export class MonacoManager {
 
             globalState.onRunRequiredObservable.notifyObservers();
             this._hydrating = false;
+
+            const lastLocalJson = ReadLastLocal(this.globalState);
+            if (lastLocalJson) {
+                try {
+                    const lastLocal = JSON.parse(lastLocalJson) as SnippetData;
+                    if (lastLocal.sessionData) {
+                        this.globalState.openEditors = lastLocal.sessionData.openFiles;
+                        this.globalState.onOpenEditorsChangedObservable?.notifyObservers();
+                        this.switchActiveFile(lastLocal.sessionData.activeFile);
+                        this.editorHost.editor?.setPosition(lastLocal.sessionData.cursorPosition);
+                        this.editorHost.editor?.focus();
+                        this.editorHost.editor?.revealPositionInCenter(lastLocal.sessionData.cursorPosition);
+                    }
+                } catch {}
+            }
         });
 
         this.globalState.onFilesChangedObservable.add(() => {
@@ -454,7 +470,11 @@ export class MonacoManager {
         }, 500);
         const refreshStubsDebounced = debounce(async () => await this._syncBareImportStubsAsync(), 300);
         const serializeSessionDebounced = debounce(() => {
-            WriteLastLocal(this.globalState);
+            const positionJson = this._editorHost?.editor?.getPosition()?.toJSON();
+            WriteLastLocal(this.globalState, {
+                includeSessionData: true,
+                lastCursorPosition: positionJson ? positionJson : { lineNumber: 0, column: 0 },
+            });
         }, 500);
 
         this._editorHost.editor.onDidChangeModelContent(() => {
