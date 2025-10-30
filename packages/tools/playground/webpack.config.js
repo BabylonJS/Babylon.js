@@ -109,6 +109,30 @@ module.exports = (env) => {
         plugins: [
             ...plugins,
             new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, "debug.html"),
+                filename: "debug.html",
+                templateParameters: (compilation) => ({
+                    PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
+                }),
+                inject: false,
+            }),
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, "frame.html"),
+                filename: "frame.html",
+                templateParameters: (compilation) => ({
+                    PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
+                }),
+                inject: false,
+            }),
+            new HtmlWebpackPlugin({
+                template: path.resolve(__dirname, "full.html"),
+                filename: "full.html",
+                templateParameters: (compilation) => ({
+                    PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
+                }),
+                inject: false,
+            }),
+            new HtmlWebpackPlugin({
                 template: path.resolve(__dirname, "index.html"),
                 templateParameters: (compilation) => ({
                     PLAYGROUND_BUNDLE: `babylon.playground.${compilation.hash}.js`,
