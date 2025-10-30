@@ -341,14 +341,22 @@ export class KHR_materials_coat implements IGLTFExporterExtensionV2 {
                 let coatWeightTexture: Nullable<BaseTexture> = null;
                 let coatTextureInfo;
                 if (babylonMaterial.coatWeightTexture) {
-                    coatWeightTexture = this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId];
+                    if (this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId]) {
+                        coatWeightTexture = this._mergedTexturesMap[babylonMaterial.coatWeightTexture.uniqueId];
+                    } else {
+                        coatWeightTexture = babylonMaterial.coatWeightTexture;
+                    }
                     coatTextureInfo = this._exporter._materialExporter.getTextureInfo(coatWeightTexture);
                 }
 
                 let coatRoughnessTexture: Nullable<BaseTexture> = null;
                 let coatRoughnessTextureInfo;
                 if (babylonMaterial.coatRoughnessTexture) {
-                    coatRoughnessTexture = this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId];
+                    if (this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId]) {
+                        coatRoughnessTexture = this._mergedTexturesMap[babylonMaterial.coatRoughnessTexture.uniqueId];
+                    } else {
+                        coatRoughnessTexture = babylonMaterial.coatRoughnessTexture;
+                    }
                     coatRoughnessTextureInfo = this._exporter._materialExporter.getTextureInfo(coatRoughnessTexture);
                 }
 

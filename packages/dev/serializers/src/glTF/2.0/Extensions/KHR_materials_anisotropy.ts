@@ -22,6 +22,13 @@ function OpenpbrAnisotropyStrengthToGltf(baseRoughness: number, anisotropy: numb
     return { newBaseRoughness, newAnisotropyStrength };
 }
 
+/**
+ * Generate a unique ID for the merged anisotropy textures based on the internal texture data.
+ * This is used for caching merged textures.
+ * @param babylonMaterial Source OpenPBR material
+ * @returns A unique ID string for the merged anisotropy textures
+ * @internal
+ */
 function GetAnisoTextureId(babylonMaterial: OpenPBRMaterial): string {
     const anisoStrengthTexture: Nullable<BaseTexture> = babylonMaterial.specularRoughnessAnisotropyTexture;
     const tangentTexture = babylonMaterial.geometryTangentTexture;
