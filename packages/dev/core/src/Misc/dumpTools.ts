@@ -91,7 +91,7 @@ class EncodingHelper {
      * @internal
      */
     @nativeOverride
-    public static async EncodeImageAsync(pixelData: Uint8Array, width: number, height: number, mimeType: string, invertY: boolean, quality?: number): Promise<ArrayBuffer> {
+    public static async EncodeImageAsync(pixelData: ArrayBufferView, width: number, height: number, mimeType: string, invertY: boolean, quality?: number): Promise<ArrayBuffer> {
         const resources = await _GetDumpResourcesAsync();
 
         // Keep the async render + read from the shared canvas atomic
@@ -211,7 +211,7 @@ export async function DumpDataAsync(
         data = data2;
     }
 
-    const buffer = await EncodingHelper.EncodeImageAsync(data as Uint8Array, width, height, mimeType, invertY, quality);
+    const buffer = await EncodingHelper.EncodeImageAsync(data, width, height, mimeType, invertY, quality);
 
     if (fileName !== undefined) {
         // Note: On web, this creates a Blob -> ArrayBuffer -> Blob round-trip.
