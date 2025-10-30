@@ -1,5 +1,38 @@
 # Changelog
 
+## 8.34.0
+
+### Core
+
+- Add sound `activeInstancesCount` property - [_New Feature_] by [docEdub](https://github.com/docEdub) ([#17368](https://github.com/BabylonJS/Babylon.js/pull/17368))
+- Mirror class: Fix resizing the mirror texture - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17367](https://github.com/BabylonJS/Babylon.js/pull/17367))
+- Fix old audio engine mute button showing when `useCustomUnlockedButton` is set - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#17363](https://github.com/BabylonJS/Babylon.js/pull/17363))
+- bug: do not attempt to update removed xr anchors - by [kv-ebender](https://github.com/kv-ebender) ([#17349](https://github.com/BabylonJS/Babylon.js/pull/17349))
+- Web GPU Fix - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#17356](https://github.com/BabylonJS/Babylon.js/pull/17356))
+- Standard material: Fix wrong normal when in right handed mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17354](https://github.com/BabylonJS/Babylon.js/pull/17354))
+- ISpriteManager: add doNotSerialize - by [kzhsw](https://github.com/kzhsw) ([#17353](https://github.com/BabylonJS/Babylon.js/pull/17353))
+- Merging textures on export - by [MiiBond](https://github.com/MiiBond) ([#17339](https://github.com/BabylonJS/Babylon.js/pull/17339))
+
+### Inspector
+
+- EXT_lights_area updates and export support - by [MiiBond](https://github.com/MiiBond) ([#17312](https://github.com/BabylonJS/Babylon.js/pull/17312))
+
+### Loaders
+
+- EXT_lights_area updates and export support - by [MiiBond](https://github.com/MiiBond) ([#17312](https://github.com/BabylonJS/Babylon.js/pull/17312))
+- glTFLoaderAnimation: do not clone animation keys - by [kzhsw](https://github.com/kzhsw) ([#17352](https://github.com/BabylonJS/Babylon.js/pull/17352))
+
+### Playground
+
+- Playground: Add fluent code for frame graphs - by [Popov72](https://github.com/Popov72) ([#17277](https://github.com/BabylonJS/Babylon.js/pull/17277))
+- Editor v2: Snippet session state and bug fixes - by [knervous](https://github.com/knervous) ([#17358](https://github.com/BabylonJS/Babylon.js/pull/17358))
+
+### Serializers
+
+- EXT_lights_area updates and export support - by [MiiBond](https://github.com/MiiBond) ([#17312](https://github.com/BabylonJS/Babylon.js/pull/17312))
+- glTFLoaderAnimation: do not clone animation keys - by [kzhsw](https://github.com/kzhsw) ([#17352](https://github.com/BabylonJS/Babylon.js/pull/17352))
+- Merging textures on export - by [MiiBond](https://github.com/MiiBond) ([#17339](https://github.com/BabylonJS/Babylon.js/pull/17339))
+
 ## 8.33.4
 
 ### Core
