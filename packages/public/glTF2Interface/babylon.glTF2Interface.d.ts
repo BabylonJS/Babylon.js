@@ -1448,9 +1448,9 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    const enum EXTLightsArea_LightShape {
+    const enum EXTLightsArea_LightType {
         RECT = "rect",
-        DISK = "disk"
+        DISK = "disk",
     }
 
     /** @internal */
@@ -1460,13 +1460,13 @@ declare module BABYLON.GLTF2 {
 
     /** @internal */
     interface IEXTLightsArea_Light extends IChildRootProperty {
-        shape: EXTLightsArea_LightShape;
+        type: EXTLightsArea_LightType;
         color?: number[];
         intensity?: number;
-        type?: "area";
-        width?: number;
-        height?: number;
-        radius?: number;
+        size?: number;
+        rect?: {
+            aspect: number;
+        };
     }
 
     /** @internal */

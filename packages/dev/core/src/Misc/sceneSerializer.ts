@@ -347,7 +347,10 @@ export class SceneSerializer {
         // Post processes
         serializationObject.postProcesses = [];
         for (index = 0; index < scene.postProcesses.length; index++) {
-            serializationObject.postProcesses.push(scene.postProcesses[index].serialize());
+            const postProcess = scene.postProcesses[index];
+            if (!postProcess.doNotSerialize) {
+                serializationObject.postProcesses.push(postProcess.serialize());
+            }
         }
 
         // Action Manager

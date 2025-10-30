@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./objectModelMapping";
-export * from "./EXT_lights_area";
 export * from "./EXT_lights_image_based";
 export * from "./EXT_mesh_gpu_instancing";
 export * from "./EXT_meshopt_compression";
@@ -9,6 +8,7 @@ export * from "./EXT_texture_avif";
 export * from "./EXT_lights_ies";
 export * from "./KHR_draco_mesh_compression";
 export * from "./KHR_lights_punctual";
+export * from "./EXT_lights_area";
 export * from "./KHR_materials_pbrSpecularGlossiness";
 export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_clearcoat";

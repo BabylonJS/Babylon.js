@@ -5,7 +5,6 @@ import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
 import type { TransformNode } from "../../Meshes/transformNode";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { IWebXRHitResult } from "./WebXRHitTest";
-import { Tools } from "../../Misc/tools";
 
 /**
  * Configuration options of the anchor system
@@ -313,17 +312,14 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
 
         const trackedAnchors = frame.trackedAnchors;
         if (trackedAnchors) {
-            const toRemove = this._trackedAnchors
-                .filter((anchor) => anchor._removed)
-                .map((anchor) => {
-                    return this._trackedAnchors.indexOf(anchor);
-                });
-            let idxTracker = 0;
-            for (const index of toRemove) {
-                const anchor = this._trackedAnchors.splice(index - idxTracker, 1)[0];
+            for (const anchor of this._trackedAnchors) {
+                if (!anchor._removed) {
+                    continue;
+                }
+                const index = this._trackedAnchors.indexOf(anchor);
+                this._trackedAnchors.splice(index, 1);
                 anchor.xrAnchor.delete();
                 this.onAnchorRemovedObservable.notifyObservers(anchor);
-                idxTracker++;
             }
             // now check for new ones
             trackedAnchors.forEach((xrAnchor) => {
@@ -347,18 +343,16 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                     }
                 } else {
                     const index = this._findIndexInAnchorArray(xrAnchor);
-                    const anchor = this._trackedAnchors[index];
-                    try {
-                        // anchors update every frame
-                        this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
-                        if (anchor.attachedNode) {
-                            anchor.attachedNode.rotationQuaternion = anchor.attachedNode.rotationQuaternion || new Quaternion();
-                            anchor.transformationMatrix.decompose(anchor.attachedNode.scaling, anchor.attachedNode.rotationQuaternion, anchor.attachedNode.position);
-                        }
-                        this.onAnchorUpdatedObservable.notifyObservers(anchor);
-                    } catch (e) {
-                        Tools.Warn(`Anchor could not be updated`);
+                    if (index < 0) {
+                        return;
                     }
+                    const anchor = this._trackedAnchors[index];
+                    this._updateAnchorWithXRFrame(xrAnchor, anchor, frame);
+                    if (anchor.attachedNode) {
+                        anchor.attachedNode.rotationQuaternion = anchor.attachedNode.rotationQuaternion || new Quaternion();
+                        anchor.transformationMatrix.decompose(anchor.attachedNode.scaling, anchor.attachedNode.rotationQuaternion, anchor.attachedNode.position);
+                    }
+                    this.onAnchorUpdatedObservable.notifyObservers(anchor);
                 }
             });
             this._lastFrameDetected = trackedAnchors;
