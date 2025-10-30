@@ -2,7 +2,7 @@
 import type { Nullable } from "core/types";
 import { serializeAsVector2, serializeAsTexture, serialize, expandToProperty, serializeAsColor3 } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Plane } from "core/Maths/math.plane";
 import type { IAnimatable } from "core/Animations/animatable.interface";
@@ -21,7 +21,6 @@ import { VertexBuffer } from "core/Buffers/buffer";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { SubMesh } from "core/Meshes/subMesh";
 import type { Mesh } from "core/Meshes/mesh";
-import type { Camera } from "core/Cameras/camera";
 import { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 
@@ -715,7 +714,7 @@ export class WaterMaterial extends PushMaterial {
                 clipPlane = scene.clipPlane;
 
                 const positiony = this._mesh ? this._mesh.absolutePosition.y : 0.0;
-                scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
+                scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0).subtractInPlace(scene.floatingOriginOffset), new Vector3(0, 1, 0));
             }
         };
 
@@ -744,6 +743,10 @@ export class WaterMaterial extends PushMaterial {
                 scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
 
                 Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
+
+                if (scene.floatingOriginMode) {
+                    scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0).subtractInPlace(scene.floatingOriginOffset), new Vector3(0, -1, 0));
+                }
             }
 
             // Transform
@@ -751,7 +754,13 @@ export class WaterMaterial extends PushMaterial {
 
             mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
             scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
-            scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
+            scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera!.position, mirrorMatrix);
+
+            if (scene.floatingOriginMode) {
+                const mat = TmpVectors.Matrix[1].copyFrom(savedViewMatrix);
+                mat.setRowFromFloats(3, 0, 0, 0, 1); // we remove translation
+                Matrix.ReflectionToRef(scene.clipPlane!, TmpVectors.Matrix[0]).multiplyToRef(mat, this._reflectionTransform);
+            }
         };
 
         this._reflectionRTT.onAfterRender = () => {
