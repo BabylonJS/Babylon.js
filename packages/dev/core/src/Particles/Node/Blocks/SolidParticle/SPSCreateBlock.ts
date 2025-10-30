@@ -7,8 +7,6 @@ import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import type { ISPSParticleConfigData } from "./ISPSData";
 import { SolidParticle } from "../../../solidParticle";
 import { Observer } from "../../../../Misc";
-import { Nullable } from "../../../../types";
-import { Scene } from "../../../..";
 
 /**
  * Block used to create SolidParticleSystem and collect all Create blocks
@@ -16,8 +14,6 @@ import { Scene } from "../../../..";
 export class SPSCreateBlock extends NodeParticleBlock {
     private _connectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
     private _disconnectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
-    private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
-    private _disposeHandlerAdded = false;
 
     public constructor(name: string) {
         super(name);
@@ -93,11 +89,6 @@ export class SPSCreateBlock extends NodeParticleBlock {
     public override _build(state: NodeParticleBuildState) {
         if (!state.scene) {
             throw new Error("Scene is not initialized in NodeParticleBuildState");
-        }
-
-        if (this._onBeforeRenderObserver) {
-            state.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
-            this._onBeforeRenderObserver = null;
         }
 
         const sps = new SolidParticleSystem(this.name, state.scene, {
@@ -176,24 +167,7 @@ export class SPSCreateBlock extends NodeParticleBlock {
         sps.initParticles();
         sps.setParticles();
 
-        this._onBeforeRenderObserver = state.scene.onBeforeRenderObservable.add(() => {
-            sps?.setParticles();
-        });
-
-        // this.solidParticleSystem._storedValue?.dispose();
         this.solidParticleSystem._storedValue = sps;
-
-        if (!this._disposeHandlerAdded) {
-            this.onDisposeObservable.addOnce(() => {
-                sps?.dispose();
-                if (this._onBeforeRenderObserver) {
-                    state.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
-                    this._onBeforeRenderObserver = null;
-                }
-            });
-            this._disposeHandlerAdded = true;
-        }
-        return sps;
     }
 
     public override serialize(): any {

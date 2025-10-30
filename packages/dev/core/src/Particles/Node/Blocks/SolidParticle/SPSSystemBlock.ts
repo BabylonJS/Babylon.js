@@ -11,11 +11,6 @@ import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
  */
 export class SPSSystemBlock extends NodeParticleBlock {
     private static _IdCounter = 0;
-    // private _sps: SolidParticleSystem | null = null;
-    // private _connectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
-    // private _disconnectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
-    // private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
-    // private _disposeHandlerAdded = false;
 
     @editableInPropertyPage("Billboard", PropertyTypeForEdition.Boolean, "ADVANCED", {
         embedded: true,
@@ -49,17 +44,19 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
         this.build(state);
 
-        const sps = this.solidParticleSystem.getConnectedValue(state) as SolidParticleSystem;
+        const solidParticleSystem = this.solidParticleSystem.getConnectedValue(state) as SolidParticleSystem;
 
-        if (!sps) {
+        if (!solidParticleSystem) {
             throw new Error("No SolidParticleSystem connected to SPSSystemBlock");
         }
 
-        sps.billboard = this.billboard;
-        sps.name = this.name;
+        solidParticleSystem.billboard = this.billboard;
+        solidParticleSystem.name = this.name;
 
-        this.system._storedValue = this;
-        return sps;
+        this.onDisposeObservable.addOnce(() => {
+            solidParticleSystem.dispose();
+        });
+        return solidParticleSystem;
     }
 
     public override serialize(): any {
