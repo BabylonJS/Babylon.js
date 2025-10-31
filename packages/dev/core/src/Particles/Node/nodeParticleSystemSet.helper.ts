@@ -22,7 +22,10 @@ import { CylinderShapeBlock } from "./Blocks/Emitters/cylinderShapeBlock";
 import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { ParticleRandomBlock } from "./Blocks/particleRandomBlock";
-import { ParticleConverterBlock, ParticleMathBlock, ParticleMathBlockOperations, UpdateColorBlock, UpdatePositionBlock } from "./Blocks";
+import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
+import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
+import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
+import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 
 /**
