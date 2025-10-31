@@ -86,16 +86,16 @@ async function _GetDumpResourcesAsync() {
 
 class EncodingHelper {
     /**
-     * Encodes image data to the given mime type. If the requested MIME type is not supported, an error will be thrown.
+     * Encodes image data to the given mime type.
      * This is put into a helper class so we can apply the nativeOverride decorator to it.
      * @internal
      */
     @nativeOverride
-    public static async EncodeImageAsync(pixelData: ArrayBufferView, width: number, height: number, mimeType: string, invertY: boolean, quality?: number): Promise<ArrayBuffer> {
+    public static async EncodeImageAsync(pixelData: ArrayBufferView, width: number, height: number, mimeType?: string, invertY?: boolean, quality?: number): Promise<Blob> {
         const resources = await _GetDumpResourcesAsync();
 
-        // Keep the async render + read from the shared canvas atomic
-        return await new Promise<ArrayBuffer>((resolve, reject) => {
+        // TODO: No need to promisify this whole thing
+        return await new Promise<Blob>((resolve, reject) => {
             const dumpEngine = resources.dumpEngine;
             dumpEngine.engine.setSize(width, height, true);
 
@@ -113,12 +113,9 @@ class EncodingHelper {
                 resources.canvas,
                 (blob) => {
                     if (!blob) {
-                        reject(new Error("DumpData: Failed to convert canvas to blob."));
-                    } else if (blob.type !== mimeType) {
-                        // The MIME type of a canvas.toBlob() output can be different from the one requested if the browser does not support the requested format
-                        reject(new Error(`DumpData: Failed to convert canvas to blob as ${mimeType}. Got ${blob.type} instead.`));
+                        reject(new Error("EncodeImageAsync: Failed to convert canvas to blob."));
                     } else {
-                        resolve(blob.arrayBuffer());
+                        resolve(blob);
                     }
                 },
                 mimeType,
@@ -127,6 +124,18 @@ class EncodingHelper {
         });
     }
 }
+
+/**
+ * Encodes pixel data to an image
+ * @param pixelData 8-bit RGBA pixel data
+ * @param width the width of the image
+ * @param height the height of the image
+ * @param mimeType the requested MIME type
+ * @param invertY true to invert the image in the Y direction
+ * @param quality the quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @returns a promise that resolves to the encoded image data. Note that the `blob.type` may differ from `mimeType` if it was not supported.
+ */
+export const EncodeImageAsync = EncodingHelper.EncodeImageAsync;
 
 /**
  * Dumps the current bound framebuffer
@@ -211,14 +220,17 @@ export async function DumpDataAsync(
         data = data2;
     }
 
-    const buffer = await EncodingHelper.EncodeImageAsync(data, width, height, mimeType, invertY, quality);
+    const blob = await EncodingHelper.EncodeImageAsync(data, width, height, mimeType, invertY, quality);
 
     if (fileName !== undefined) {
-        // Note: On web, this creates a Blob -> ArrayBuffer -> Blob round-trip.
-        // This trade-off keeps the native implementation simple while maintaining
-        // a consistent interface. I'm hoping the overhead is negligible for typical image sizes.
-        Tools.DownloadBlob(new Blob([buffer], { type: mimeType }), fileName);
+        Tools.DownloadBlob(blob, fileName);
     }
+
+    if (blob.type !== mimeType) {
+        Logger.Warn(`DumpData: The requested mimeType '${mimeType}' is not supported. The result has mimeType '${blob.type}' instead.`);
+    }
+
+    const buffer = await blob.arrayBuffer();
 
     if (toArrayBuffer) {
         return buffer;
