@@ -1,4 +1,4 @@
-import type { VertexBuffer } from "../../Buffers/buffer";
+import { VertexBuffer } from "../../Buffers/buffer";
 import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import type { Nullable } from "../../types";
@@ -170,6 +170,11 @@ export class WebGPUDrawContext implements IDrawContext {
         this._bufferManager.setRawData(this.indirectDrawBuffer, 0, this._indirectDrawData, 0, 20);
     }
 
+    /**
+     * Metadata storage for vertex buffer configurations (stride, offset, etc.)
+     */
+    public vertexBufferMetadata: { [name: string]: { strideInFloats: number; offsetInFloats: number; componentCount: number } } = {};
+
     public setVertexPulling(
         useVertexPulling: boolean,
         webgpuPipelineContext: WebGPUPipelineContext,
@@ -186,6 +191,9 @@ export class WebGPUDrawContext implements IDrawContext {
 
         const bufferNames = webgpuPipelineContext.shaderProcessingContext.bufferNames;
 
+        // Clear previous metadata
+        this.vertexBufferMetadata = {};
+
         if (overrideVertexBuffers) {
             for (const attributeName in overrideVertexBuffers) {
                 const vertexBuffer = overrideVertexBuffers[attributeName];
@@ -196,6 +204,17 @@ export class WebGPUDrawContext implements IDrawContext {
                 const buffer = vertexBuffer.effectiveBuffer as Nullable<WebGPUDataBuffer>;
 
                 this.setBuffer(attributeName, useVertexPulling ? buffer : null);
+
+                // Store metadata for vertex pulling
+                if (useVertexPulling) {
+                    const bytesPerElement =
+                        vertexBuffer.type === VertexBuffer.FLOAT ? 4 : vertexBuffer.type === VertexBuffer.UNSIGNED_INT || vertexBuffer.type === VertexBuffer.INT ? 4 : 2;
+                    this.vertexBufferMetadata[attributeName] = {
+                        strideInFloats: vertexBuffer.effectiveByteStride / bytesPerElement, // Convert bytes to float32 elements
+                        offsetInFloats: vertexBuffer.effectiveByteOffset / bytesPerElement, // Convert bytes to float32 elements
+                        componentCount: vertexBuffer.getSize(),
+                    };
+                }
             }
         }
 
@@ -212,6 +231,17 @@ export class WebGPUDrawContext implements IDrawContext {
             const buffer = vertexBuffer.effectiveBuffer as Nullable<WebGPUDataBuffer>;
 
             this.setBuffer(attributeName, useVertexPulling ? buffer : null);
+
+            // Store metadata for vertex pulling
+            if (useVertexPulling) {
+                const bytesPerElement =
+                    vertexBuffer.type === VertexBuffer.FLOAT ? 4 : vertexBuffer.type === VertexBuffer.UNSIGNED_INT || vertexBuffer.type === VertexBuffer.INT ? 4 : 2;
+                this.vertexBufferMetadata[attributeName] = {
+                    strideInFloats: vertexBuffer.effectiveByteStride / bytesPerElement, // Convert bytes to float32 elements
+                    offsetInFloats: vertexBuffer.effectiveByteOffset / bytesPerElement, // Convert bytes to float32 elements
+                    componentCount: vertexBuffer.getSize(),
+                };
+            }
         }
 
         if (bufferNames.indexOf("indices") !== -1) {

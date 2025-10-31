@@ -599,6 +599,44 @@ export function GetFogState(mesh: AbstractMesh, scene: Scene) {
 }
 
 /**
+ * Helper used to prepare vertex pulling metadata defines (stride, offset, component count)
+ * This should be called when USE_VERTEX_PULLING is enabled to properly configure buffer access
+ * @param mesh The mesh being rendered
+ * @param defines The defines object to update
+ * @param attributeNames Array of attribute names to configure (e.g., ["position", "normal"])
+ */
+export function PrepareDefinesForVertexPullingMetadata(mesh: AbstractMesh, defines: any, attributeNames: string[] = ["position"]): void {
+    if (!defines["USE_VERTEX_PULLING"]) {
+        return;
+    }
+
+    const geometry = mesh.geometry;
+    if (!geometry) {
+        return;
+    }
+
+    for (const attributeName of attributeNames) {
+        const vertexBuffer = geometry.getVertexBuffer(attributeName);
+        if (!vertexBuffer) {
+            continue;
+        }
+
+        const upperName = attributeName.toUpperCase();
+
+        // Calculate stride in float32 elements
+        const strideInFloats = vertexBuffer.effectiveByteStride / 4;
+        defines[`${upperName}_STRIDE_IN_FLOATS`] = strideInFloats || vertexBuffer.getSize();
+
+        // Calculate offset in float32 elements
+        const offsetInFloats = vertexBuffer.effectiveByteOffset / 4;
+        defines[`${upperName}_OFFSET_IN_FLOATS`] = offsetInFloats;
+
+        // Component count
+        defines[`${upperName}_COMPONENT_COUNT`] = vertexBuffer.getSize();
+    }
+}
+
+/**
  * Helper used to prepare the list of defines associated with misc. values for shader compilation
  * @param mesh defines the current mesh
  * @param scene defines the current scene
