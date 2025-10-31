@@ -28,6 +28,8 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { NodeParticleSystemSet } from "core/Particles";
+import { NodeParticleModes } from "../../nodeParticleModes";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPropertyTabComponentProps {
     globalState: GlobalState;
@@ -210,6 +212,33 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             });
     }
 
+    changeMode(value: NodeParticleModes, force = false, loadDefault = true): boolean {
+        if (this.props.globalState.mode === value) {
+            return false;
+        }
+
+        if (!force && !this.props.globalState.hostDocument.defaultView!.confirm("Are your sure? You will lose your current changes (if any) if they are not saved!")) {
+            return false;
+        }
+
+        if (loadDefault) {
+            switch (value) {
+                case NodeParticleModes.Standard:
+                    this.props.globalState.nodeParticleSet.setToDefault();
+                    break;
+                case NodeParticleModes.SPS:
+                    this.props.globalState.nodeParticleSet.setToDefaultSPS();
+                    break;
+            }
+        }
+
+        this.props.globalState.mode = value;
+        this.props.globalState.onResetRequiredObservable.notifyObservers(true);
+        this.props.globalState.onClearUndoStack.notifyObservers();
+
+        return true;
+    }
+
     override render() {
         if (this.state.currentNode) {
             return (
@@ -253,6 +282,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 <div>
                     <LineContainerComponent title="GENERAL">
                         <TextInputLineComponent label="Name" lockObject={this.props.globalState.lockObject} target={this.props.globalState.nodeParticleSet} propertyName="name" />
+                        <OptionsLine
+                            label="Mode"
+                            options={[
+                                { label: "Standard", value: NodeParticleModes.Standard },
+                                { label: "SPS", value: NodeParticleModes.SPS },
+                            ]}
+                            target={this.props.globalState}
+                            propertyName="mode"
+                            noDirectUpdate={true}
+                            onSelect={(value: number | string) => this.changeMode(value as NodeParticleModes)}
+                        />
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent
                             label="Help"
