@@ -163,10 +163,6 @@ export class SPSCreateBlock extends NodeParticleBlock {
             return particle;
         };
 
-        sps.buildMesh();
-        sps.initParticles();
-        sps.setParticles();
-
         this.solidParticleSystem._storedValue = sps;
     }
 

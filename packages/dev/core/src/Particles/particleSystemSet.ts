@@ -9,6 +9,7 @@ import { ParticleSystem } from "../Particles/particleSystem";
 import type { Scene, IDisposable } from "../scene";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { Vector3 } from "../Maths/math.vector";
+import type { SolidParticleSystem } from "./solidParticleSystem";
 
 /** Internal class used to store shapes for emitters */
 class ParticleSystemSetEmitterCreationOptions {
@@ -34,7 +35,7 @@ export class ParticleSystemSet implements IDisposable {
     /**
      * Gets the particle system list
      */
-    public systems: IParticleSystem[] = [];
+    public systems: (IParticleSystem | SolidParticleSystem)[] = [];
 
     /**
      * Gets or sets the emitter node used with this set
@@ -52,7 +53,9 @@ export class ParticleSystemSet implements IDisposable {
         }
 
         for (const system of this.systems) {
-            system.emitter = value;
+            if (system instanceof ParticleSystem) {
+                system.emitter = value;
+            }
         }
 
         this._emitterNode = value;
@@ -90,7 +93,9 @@ export class ParticleSystemSet implements IDisposable {
         emitterMesh.material = material;
 
         for (const system of this.systems) {
-            system.emitter = emitterMesh;
+            if (system instanceof ParticleSystem) {
+                system.emitter = emitterMesh;
+            }
         }
 
         this._emitterNode = emitterMesh;
@@ -103,7 +108,9 @@ export class ParticleSystemSet implements IDisposable {
     public start(emitter?: AbstractMesh): void {
         for (const system of this.systems) {
             if (emitter) {
-                system.emitter = emitter;
+                if (system instanceof ParticleSystem) {
+                    system.emitter = emitter;
+                }
             }
             system.start();
         }
@@ -137,7 +144,9 @@ export class ParticleSystemSet implements IDisposable {
 
         result.systems = [];
         for (const system of this.systems) {
-            result.systems.push(system.serialize(serializeTexture));
+            if (system instanceof ParticleSystem) {
+                result.systems.push(system.serialize(serializeTexture));
+            }
         }
 
         if (this._emitterNode) {

@@ -17,6 +17,7 @@ import { StandardMaterial } from "../Materials/standardMaterial";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
+import type { Observer } from "../Misc/observable";
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces of this big mesh.
@@ -152,7 +153,7 @@ export class SolidParticleSystem implements IDisposable {
     protected _autoUpdateSubMeshes: boolean = false;
     protected _tmpVertex: SolidParticleVertex;
     protected _recomputeInvisibles: boolean = false;
-
+    protected _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
     /**
      * Creates a SPS (Solid Particle System) object.
      * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -1538,7 +1539,13 @@ export class SolidParticleSystem implements IDisposable {
      * Disposes the SPS.
      */
     public dispose(): void {
-        this.mesh.dispose();
+        if (this._onBeforeRenderObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
+        if (this.mesh) {
+            this.mesh.dispose();
+        }
         this.vars = null;
         // drop references to internal big arrays for the GC
         (<any>this._positions) = null;
@@ -1997,6 +2004,15 @@ export class SolidParticleSystem implements IDisposable {
      * doc : https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/manage_sps_particles
      */
     public initParticles(): void {}
+
+    public start(): void {
+        this.buildMesh();
+        this.initParticles();
+        this.setParticles();
+        this._onBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
+            this.setParticles();
+        });
+    }
 
     /**
      * This function does nothing. It may be overwritten to recycle a particle.
