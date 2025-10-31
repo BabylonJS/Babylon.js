@@ -13,6 +13,7 @@ import type { Nullable } from "core/types";
 import { Observable } from "core/Misc/observable";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
+import { Vector3Dot } from "core/Maths/math.vector.functions";
 import "./Shaders/fullscreenTriangle.vertex";
 import "./Shaders/transmittance.fragment";
 
@@ -162,8 +163,7 @@ export class TransmittanceLut {
      */
     public getTransmittedColorToRef<T extends IColor3Like>(directionToLight: IVector3Like, pointRadius: number, pointGeocentricNormal: IVector3Like, result: T): T {
         if (this._lutData[0] !== undefined) {
-            const cosAngleLightToZenith =
-                directionToLight.x * pointGeocentricNormal.x + directionToLight.y * pointGeocentricNormal.y + directionToLight.z * pointGeocentricNormal.z;
+            const cosAngleLightToZenith = Vector3Dot(directionToLight, pointGeocentricNormal);
             SampleLutToRef(this._atmosphere.physicalProperties, this._lutData, pointRadius, cosAngleLightToZenith, Color4Temp);
             result.r = Color4Temp.r;
             result.g = Color4Temp.g;
