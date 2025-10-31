@@ -21,6 +21,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { GetTypeByteLength } from "../Buffers/bufferUtils";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
 import {
@@ -900,14 +901,14 @@ export class ShaderMaterial extends PushMaterial {
                     for (const attributeName in vertexBuffers) {
                         const vertexBuffer = vertexBuffers[attributeName];
                         if (vertexBuffer) {
+                            const componentBytes = GetTypeByteLength(vertexBuffer.type);
                             const upperName = attributeName.toUpperCase();
-                            const strideInFloats = vertexBuffer.effectiveByteStride / 4;
-                            const offsetInFloats = vertexBuffer.effectiveByteOffset / 4;
-                            const componentCount = vertexBuffer.getSize();
+                            const stride = vertexBuffer.effectiveByteStride / 4;
+                            const offset = vertexBuffer.effectiveByteOffset / 4;
 
-                            defines.push(`#define ${upperName}_STRIDE_IN_FLOATS ${strideInFloats || componentCount}`);
-                            defines.push(`#define ${upperName}_OFFSET_IN_FLOATS ${offsetInFloats}`);
-                            defines.push(`#define ${upperName}_COMPONENT_COUNT ${componentCount}`);
+                            defines.push(`#define ${upperName}_STRIDE ${stride}`);
+                            defines.push(`#define ${upperName}_OFFSET ${offset}`);
+                            defines.push(`#define ${upperName}_COMPONENT_BYTES ${componentBytes}`);
                         }
                     }
                 }
