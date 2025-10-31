@@ -10,6 +10,7 @@ import type {
     Scene,
     WritableObject,
     IShadowLight,
+    INodeRenderGraphCustomBlockDescription,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
@@ -48,6 +49,9 @@ export class NodeRenderGraph {
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
+
+    /** Description of custom blocks to use in the node render graph editor */
+    public static CustomBlockDescriptions: INodeRenderGraphCustomBlockDescription[] = [];
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSNODERENDERGRAPHEDITOR = this._getGlobalNodeRenderGraphEditor();
@@ -272,6 +276,7 @@ export class NodeRenderGraph {
     private _createNodeEditor(additionalConfig?: any) {
         const nodeEditorConfig: any = {
             nodeRenderGraph: this,
+            customBlockDescriptions: NodeRenderGraph.CustomBlockDescriptions,
             ...additionalConfig,
         };
         this.BJSNODERENDERGRAPHEDITOR.NodeRenderGraphEditor.Show(nodeEditorConfig);

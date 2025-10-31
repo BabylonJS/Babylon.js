@@ -10,6 +10,8 @@ import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
 import { Plane } from "../../Maths/math.plane";
 import type { UniformBuffer } from "../uniformBuffer";
+import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+
 /**
  * Mirror texture can be used to simulate the view from a mirror in a scene.
  * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -100,6 +102,15 @@ export class MirrorTexture extends RenderTargetTexture {
         const dh = this.getRenderHeight() / engine.getRenderHeight();
         this.blurKernelX = this._adaptiveBlurKernel * dw;
         this.blurKernelY = this._adaptiveBlurKernel * dh;
+    }
+
+    public override resize(size: TextureSize | { ratio: number }): void {
+        super.resize(size);
+        if (!this._adaptiveBlurKernel) {
+            this._preparePostProcesses();
+        } else {
+            this._autoComputeBlurKernel();
+        }
     }
 
     protected override _onRatioRescale(): void {

@@ -319,7 +319,9 @@ export class SmartFilterOptimizer {
             // Test to see if this function accesses any uniforms
             let uniformsAccessed: string[] = [];
             for (const sampler of samplerList) {
-                if (func.code.includes(sampler)) {
+                // Use word boundary check to ensure the sampler name is not part of another variable name
+                const regex = new RegExp(`(?<!\\w)${sampler}(?!\\w)`);
+                if (regex.test(func.code)) {
                     uniformsAccessed.push(sampler);
                 }
             }

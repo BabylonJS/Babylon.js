@@ -26,7 +26,8 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { SpecularPowerToRoughness } from "core/Helpers/materialConversionHelper";
 import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import { GetMimeType } from "core/Misc/fileTools";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { MergeTexturesAsync, CreateRGBAConfiguration, CreateTextureInput, CreateConstantInput } from "core/Materials/Textures/textureMerger";
 
 const Epsilon = 1e-6;
 const DielectricSpecular = new Color3(0.04, 0.04, 0.04) as DeepImmutable<Color3>;
@@ -201,7 +202,7 @@ function ConvertPixelArrayToFloat32(pixels: ArrayBufferView): Float32Array {
  */
 export class GLTFMaterialExporter {
     // Mapping to store textures
-    private _textureMap = new Map<BaseTexture, ITextureInfo>();
+    private _textureMap = new Map<number, ITextureInfo>();
 
     // Mapping of internal textures to images to avoid exporting duplicate images
     private _internalTextureToImage: { [uniqueId: number]: { [mimeType: string]: Promise<number> } } = {};
@@ -209,7 +210,7 @@ export class GLTFMaterialExporter {
     constructor(private readonly _exporter: GLTFExporter) {}
 
     public getTextureInfo(babylonTexture: Nullable<BaseTexture>): Nullable<ITextureInfo> {
-        return babylonTexture ? (this._textureMap.get(babylonTexture) ?? null) : null;
+        return babylonTexture ? (this._textureMap.get(babylonTexture.uniqueId) ?? null) : null;
     }
 
     public async exportStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, hasUVs: boolean): Promise<number> {
@@ -597,25 +598,101 @@ export class GLTFMaterialExporter {
         };
 
         if (hasUVs) {
-            if (albedoTexture) {
-                promises.push(
-                    this.exportTextureAsync(albedoTexture).then((glTFTexture) => {
-                        if (glTFTexture) {
-                            glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
-                        }
-                    })
-                );
-            }
-            // OpenPBRMaterial can have separate metallic and roughness textures so something
-            // should be done here to merge them for glTF in that case.
-            if (metallicTexture) {
-                promises.push(
-                    this.exportTextureAsync(metallicTexture).then((glTFTexture) => {
-                        if (glTFTexture) {
-                            glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
-                        }
-                    })
-                );
+            if (babylonPBRMaterial instanceof OpenPBRMaterial) {
+                if (babylonPBRMaterial.geometryOpacityTexture) {
+                    // Merge baseColor and opacity
+                    const albedoId = albedoTexture && albedoTexture.getInternalTexture() ? albedoTexture.getInternalTexture()!.uniqueId : 0;
+                    const opacityId =
+                        babylonPBRMaterial.geometryOpacityTexture && babylonPBRMaterial.geometryOpacityTexture.getInternalTexture()
+                            ? babylonPBRMaterial.geometryOpacityTexture.getInternalTexture()!.uniqueId
+                            : 0;
+                    const mergedId = Number(`${albedoId}${opacityId}`);
+                    const glTFTexture = this._textureMap.get(mergedId);
+                    if (glTFTexture) {
+                        glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                    } else {
+                        promises.push(
+                            MergeTexturesAsync(
+                                "baseColorOpacityTexture",
+                                CreateRGBAConfiguration(
+                                    albedoTexture ? CreateTextureInput(albedoTexture, 0) : CreateConstantInput(1.0),
+                                    albedoTexture ? CreateTextureInput(albedoTexture, 1) : CreateConstantInput(1.0),
+                                    albedoTexture ? CreateTextureInput(albedoTexture, 2) : CreateConstantInput(1.0),
+                                    CreateTextureInput(babylonPBRMaterial.geometryOpacityTexture, 0)
+                                ),
+                                babylonPBRMaterial.getScene()
+                            ).then(async (mergedTexture) => {
+                                const glTFTexture = await this.exportTextureAsync(mergedTexture, mergedId);
+                                if (glTFTexture) {
+                                    glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                                }
+                            })
+                        );
+                    }
+                } else {
+                    if (albedoTexture) {
+                        promises.push(
+                            this.exportTextureAsync(albedoTexture).then((glTFTexture) => {
+                                if (glTFTexture) {
+                                    glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                                }
+                            })
+                        );
+                    }
+                }
+                if (babylonPBRMaterial._useMetallicFromMetallicTextureBlue && metallicTexture) {
+                    promises.push(
+                        this.exportTextureAsync(metallicTexture).then((glTFTexture) => {
+                            if (glTFTexture) {
+                                glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
+                            }
+                        })
+                    );
+                } else if (roughnessTexture || metallicTexture) {
+                    const metallicId = metallicTexture && metallicTexture.getInternalTexture() ? metallicTexture.getInternalTexture()!.uniqueId : 0;
+                    const roughnessId = roughnessTexture && roughnessTexture.getInternalTexture() ? roughnessTexture.getInternalTexture()!.uniqueId : 0;
+                    const mergedId = Number(`${metallicId}${roughnessId}`);
+                    const glTFTexture = this._textureMap.get(mergedId);
+                    if (glTFTexture) {
+                        glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
+                    } else {
+                        promises.push(
+                            MergeTexturesAsync(
+                                "MetalRoughTexture",
+                                CreateRGBAConfiguration(
+                                    babylonPBRMaterial.ambientOcclusionTexture ? CreateTextureInput(babylonPBRMaterial.ambientOcclusionTexture, 0) : CreateConstantInput(1.0),
+                                    roughnessTexture ? CreateTextureInput(roughnessTexture, 0) : CreateConstantInput(1.0),
+                                    metallicTexture ? CreateTextureInput(metallicTexture, 0) : CreateConstantInput(1.0)
+                                ),
+                                babylonPBRMaterial.getScene()
+                            ).then(async (mergedTexture) => {
+                                const glTFTexture = await this.exportTextureAsync(mergedTexture, mergedId);
+                                if (glTFTexture) {
+                                    glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
+                                }
+                            })
+                        );
+                    }
+                }
+            } else {
+                if (albedoTexture) {
+                    promises.push(
+                        this.exportTextureAsync(albedoTexture).then((glTFTexture) => {
+                            if (glTFTexture) {
+                                glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                            }
+                        })
+                    );
+                }
+                if (metallicTexture) {
+                    promises.push(
+                        this.exportTextureAsync(metallicTexture).then((glTFTexture) => {
+                            if (glTFTexture) {
+                                glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFTexture;
+                            }
+                        })
+                    );
+                }
             }
         }
 
@@ -863,7 +940,20 @@ export class GLTFMaterialExporter {
             const ambientTexture = babylonPBRMaterial instanceof PBRBaseMaterial ? babylonPBRMaterial._ambientTexture : babylonPBRMaterial.ambientOcclusionTexture;
             if (ambientTexture) {
                 promises.push(
-                    this.exportTextureAsync(ambientTexture).then((glTFTexture) => {
+                    new Promise<Nullable<ITextureInfo>>(async (resolve) => {
+                        if (babylonPBRMaterial instanceof OpenPBRMaterial && glTFPbrMetallicRoughness.metallicRoughnessTexture) {
+                            // The metallicRoughnessTexture already contains the ambient occlusion data in its red channel, we don't need to export it again
+                            // However, we still need to set the texture info on the material.
+                            const samplerIndex = this._exportTextureSampler(ambientTexture);
+                            const imageIndex = this._exporter._textures[glTFPbrMetallicRoughness.metallicRoughnessTexture.index].source!;
+                            const textureInfo = this._exportTextureInfo(imageIndex, samplerIndex, ambientTexture.coordinatesIndex);
+                            this._textureMap.set(ambientTexture.uniqueId, textureInfo);
+                            this._exporter._extensionsPostExportTextures("exporter", textureInfo, ambientTexture);
+                            return resolve(textureInfo);
+                        } else {
+                            return resolve(await this.exportTextureAsync(ambientTexture));
+                        }
+                    }).then(async (glTFTexture) => {
                         if (glTFTexture) {
                             const occlusionTexture: IMaterialOcclusionTextureInfo = {
                                 index: glTFTexture.index,
@@ -940,8 +1030,8 @@ export class GLTFMaterialExporter {
         return materials.length - 1;
     }
 
-    public async exportTextureAsync(babylonTexture: BaseTexture): Promise<Nullable<ITextureInfo>> {
-        let textureInfo = this._textureMap.get(babylonTexture);
+    public async exportTextureAsync(babylonTexture: BaseTexture, overrideId: Nullable<number> = null): Promise<Nullable<ITextureInfo>> {
+        let textureInfo = this._textureMap.get(overrideId ?? babylonTexture.uniqueId);
         if (textureInfo) {
             return textureInfo;
         }
@@ -950,7 +1040,7 @@ export class GLTFMaterialExporter {
         const imageIndex = await this._exportTextureImageAsync(babylonTexture);
 
         textureInfo = this._exportTextureInfo(imageIndex, samplerIndex, babylonTexture.coordinatesIndex);
-        this._textureMap.set(babylonTexture, textureInfo);
+        this._textureMap.set(overrideId ?? babylonTexture.uniqueId, textureInfo);
 
         this._exporter._extensionsPostExportTextures("exporter", textureInfo, babylonTexture);
         return textureInfo;

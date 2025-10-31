@@ -141,6 +141,11 @@ export class NodeParticleBuildState {
                 return this.systemContext.startSpriteCellID;
             case NodeParticleContextualSources.InitialDirection:
                 return this.particleContext._initialDirection;
+            case NodeParticleContextualSources.ColorStep:
+                return this.particleContext.colorStep;
+            case NodeParticleContextualSources.ScaledColorStep:
+                this.particleContext.colorStep.scaleToRef(this.systemContext._scaledUpdateSpeed, this.systemContext._scaledColorStep);
+                return this.systemContext._scaledColorStep;
         }
 
         return null;
