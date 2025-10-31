@@ -13,7 +13,7 @@
 #ifdef VERTEX_PULLING_USE_INDEX_BUFFER
 var<storage, read> indices : array<u32>;
 #endif
-var<storage, read> position : array<vec3f>;
+var<storage, read> position : array<f32>;
 #if NUM_BONE_INFLUENCERS > 0
   var<storage, read> matricesIndices : array<vec4f>;
   var<storage, read> matricesWeights : array<vec4f>;
