@@ -4,7 +4,7 @@ const commonConfigGenerator = require("@dev/build-tools").webpackTools.commonUMD
 module.exports = (env) => {
     const commonConfig = commonConfigGenerator({
         mode: env.production ? "production" : "development",
-        devPackageAliasPath: `../../../dev/inspector-v2/dist`, // not really needed?
+        devPackageAliasPath: `../../../dev/inspector-v2/dist`,
         devPackageName: "inspector",
         overrideFilename: "babylon.inspector-v2",
         namespace: "INSPECTOR",
