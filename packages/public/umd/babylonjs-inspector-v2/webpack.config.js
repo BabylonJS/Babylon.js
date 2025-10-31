@@ -5,8 +5,7 @@ module.exports = (env) => {
     const commonConfig = commonConfigGenerator({
         mode: env.production ? "production" : "development",
         devPackageAliasPath: `../../../dev/inspector-v2/dist`,
-        devPackageName: "inspector",
-        overrideFilename: "babylon.inspector-v2",
+        devPackageName: "inspector-v2",
         namespace: "INSPECTOR",
         outputPath: path.resolve(__dirname),
         maxMode: true,
