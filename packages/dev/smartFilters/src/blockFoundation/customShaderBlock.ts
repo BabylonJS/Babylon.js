@@ -10,6 +10,7 @@ import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
 import { ShaderBlock } from "./shaderBlock.js";
 import type { RuntimeData } from "../connection/connectionPoint.js";
 import type { Nullable } from "core/types.js";
+import { EditableInPropertyPage, type IEditablePropertyOption, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
 
 /**
  * The binding for a CustomShaderBlock
@@ -165,10 +166,7 @@ export class CustomShaderBlock extends ShaderBlock {
         for (const input of inputConnectionPoints) {
             this._registerSerializedInputConnectionPointV1(input);
         }
-
-        for (const define of defines) {
-            this._registerDefine(define);
-        }
+        this._createDynamicProperty();
         this._shaderProgram = shaderProgram;
 
         shaderProgram.fragment.defines;
@@ -186,8 +184,27 @@ export class CustomShaderBlock extends ShaderBlock {
         return copy;
     }
 
-    private _registerDefine(define: DefineMetadata): void {
-        this._defines[define.name] = define;
+    /**
+     * Creates a dynamic property with EditableInPropertyPage decorator for a define with options.
+     */
+    private _createDynamicProperty(): void {
+        const options: IEditablePropertyOption = {
+            notifiers: { rebuild: true },
+            options: [
+                { label: "Disable", value: 0 },
+                { label: "Add", value: 1 },
+                { label: "Combine", value: 2 },
+                { label: "Subtract", value: 3 },
+                { label: "Multiply", value: 4 },
+            ],
+        };
+
+        const decoratorApplier = EditableInPropertyPage("Dynamic Prop", PropertyTypeForEdition.List, "PROPERTIES", options);
+
+        // Set the initial value
+        (this as any)["dynamicProp"] = 1;
+
+        decoratorApplier(this, "dynamicProp");
     }
 
     /**

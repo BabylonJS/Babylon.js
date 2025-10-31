@@ -258,6 +258,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         namespace,
         shaderCode,
         uniforms,
+        defines: [],
         disableOptimization: !!header?.disableOptimization,
         blockDisableStrategy: header?.blockDisableStrategy,
     };
