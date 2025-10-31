@@ -36,7 +36,7 @@ function GetCoatTextureId(babylonMaterial: OpenPBRMaterial): string {
  * @returns A new, internal texture with the coat weight in the red channel and coat roughness in the green channel
  * @internal
  */
-async function CreateMergedCoatInternalTexture(babylonMaterial: OpenPBRMaterial): Promise<Nullable<InternalTexture>> {
+async function CreateMergedCoatInternalTextureAsync(babylonMaterial: OpenPBRMaterial): Promise<Nullable<InternalTexture>> {
     const scene = babylonMaterial.getScene();
     const coatTexture: Nullable<BaseTexture> = babylonMaterial.coatWeightTexture;
     const coatRoughnessTexture: Nullable<BaseTexture> = babylonMaterial.coatRoughnessTexture;
@@ -178,7 +178,7 @@ export class KHR_materials_clearcoat implements IGLTFExporterExtensionV2 {
                     // have the original texture's transforms/sampling info.
                     const texId = GetCoatTextureId(babylonMaterial);
                     if (!this._cachedInternalTexturesMap[texId]) {
-                        const internalTexture = await CreateMergedCoatInternalTexture(babylonMaterial);
+                        const internalTexture = await CreateMergedCoatInternalTextureAsync(babylonMaterial);
                         if (internalTexture) {
                             this._cachedInternalTexturesMap[texId] = internalTexture;
                         }
