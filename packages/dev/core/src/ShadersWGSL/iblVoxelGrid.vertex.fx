@@ -8,7 +8,7 @@
 
 // This shader uses vertex pulling to determine the
 // provoked vertex and calculate the normal. Then, based on
-// the direction of teh normal, it swizzles the position to
+// the direction of the normal, it swizzles the position to
 // maximize the rasterized area.
 #ifdef VERTEX_PULLING_USE_INDEX_BUFFER
 var<storage, read> indices : array<u32>;
@@ -21,11 +21,25 @@ uniform invWorldScale: mat4x4f;
 varying vNormalizedPosition : vec3f;
 flat varying f_swizzle: i32;
 
+// Vertex buffer metadata (set via defines or defaults)
+#ifndef POSITION_STRIDE_IN_FLOATS
+#define POSITION_STRIDE_IN_FLOATS 3
+#endif
+
+#ifndef POSITION_OFFSET_IN_FLOATS
+#define POSITION_OFFSET_IN_FLOATS 0
+#endif
+
+#ifndef POSITION_COMPONENT_COUNT
+#define POSITION_COMPONENT_COUNT 3
+#endif
+
 fn readVertexPosition(index : u32)->vec3f {
   var pos : vec3f;
-  pos.x = position[index * 3];
-  pos.y = position[index * 3 + 1];
-  pos.z = position[index * 3 + 2];
+  let baseOffset = POSITION_OFFSET_IN_FLOATS + index * POSITION_STRIDE_IN_FLOATS;
+  pos.x = position[baseOffset];
+  pos.y = position[baseOffset + 1u];
+  pos.z = position[baseOffset + 2u];
   return pos;
 }
 

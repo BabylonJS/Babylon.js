@@ -891,6 +891,27 @@ export class ShaderMaterial extends PushMaterial {
                     defines.push("#define VERTEX_PULLING_INDEX_BUFFER_32BITS");
                 }
             }
+
+            // Add vertex buffer metadata defines for proper stride/offset handling
+            const geometry = renderingMesh.geometry;
+            if (geometry) {
+                const vertexBuffers = geometry.getVertexBuffers();
+                if (vertexBuffers) {
+                    for (const attributeName in vertexBuffers) {
+                        const vertexBuffer = vertexBuffers[attributeName];
+                        if (vertexBuffer) {
+                            const upperName = attributeName.toUpperCase();
+                            const strideInFloats = vertexBuffer.effectiveByteStride / 4;
+                            const offsetInFloats = vertexBuffer.effectiveByteOffset / 4;
+                            const componentCount = vertexBuffer.getSize();
+
+                            defines.push(`#define ${upperName}_STRIDE_IN_FLOATS ${strideInFloats || componentCount}`);
+                            defines.push(`#define ${upperName}_OFFSET_IN_FLOATS ${offsetInFloats}`);
+                            defines.push(`#define ${upperName}_COMPONENT_COUNT ${componentCount}`);
+                        }
+                    }
+                }
+            }
         }
 
         const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper(undefined, true) : this._drawWrapper;
