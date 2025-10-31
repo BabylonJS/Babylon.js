@@ -22,6 +22,7 @@ import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
 import type { CubeTexture } from "./Textures/cubeTexture";
 import type { Color3 } from "core/Maths/math.color";
+import { GetTypeByteLength } from "../Buffers/bufferUtils";
 
 // For backwards compatibility, we export everything from the pure version of this file.
 export * from "./materialHelper.functions.pure";
@@ -622,17 +623,14 @@ export function PrepareDefinesForVertexPullingMetadata(mesh: AbstractMesh, defin
         }
 
         const upperName = attributeName.toUpperCase();
-
+        const sizeInBytes = GetTypeByteLength(vertexBuffer.type);
         // Calculate stride in float32 elements
-        const strideInFloats = vertexBuffer.effectiveByteStride / 4;
-        defines[`${upperName}_STRIDE_IN_FLOATS`] = strideInFloats || vertexBuffer.getSize();
+        const stride = vertexBuffer.effectiveByteStride / sizeInBytes;
+        defines[`${upperName}_STRIDE`] = stride || vertexBuffer.getSize();
 
         // Calculate offset in float32 elements
-        const offsetInFloats = vertexBuffer.effectiveByteOffset / 4;
-        defines[`${upperName}_OFFSET_IN_FLOATS`] = offsetInFloats;
-
-        // Component count
-        defines[`${upperName}_COMPONENT_COUNT`] = vertexBuffer.getSize();
+        const offset = vertexBuffer.effectiveByteOffset / sizeInBytes;
+        defines[`${upperName}_OFFSET`] = offset;
     }
 }
 
