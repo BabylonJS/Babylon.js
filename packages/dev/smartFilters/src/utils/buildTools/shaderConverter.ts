@@ -36,6 +36,16 @@ export type UniformMetadataProperties = {
 };
 
 /**
+ * Describes the supported metadata properties for a define
+ */
+export type DefineMetadataProperties = {
+    /**
+     * If supplied, the possible values to present to the user for this define
+     */
+    possibleValues?: { [key: number]: string };
+};
+
+/**
  * Describes a uniform in a shader
  */
 export type UniformMetadata = {
@@ -53,6 +63,21 @@ export type UniformMetadata = {
      * Optional properties of the uniform
      */
     properties?: UniformMetadataProperties;
+};
+
+/**
+ * Describes a define in a shader
+ */
+export type DefinesMetadata = {
+    /**
+     * The original name of the define (not renamed)
+     */
+    name: string;
+
+    /**
+     * Optional properties of the define
+     */
+    properties?: DefineMetadataProperties;
 };
 
 /**
@@ -88,6 +113,11 @@ export type FragmentShaderInfo = {
      * The set of uniforms
      */
     uniforms: UniformMetadata[];
+
+    /**
+     * The set of defines
+     */
+    defines: DefinesMetadata[];
 };
 
 /**

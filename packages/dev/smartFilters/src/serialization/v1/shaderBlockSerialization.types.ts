@@ -8,6 +8,12 @@ import type { Nullable } from "core/types.js";
 import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connection/connectionPointType.js";
 import type { ShaderProgram } from "../../utils/shaderCodeUtils.js";
 
+export type DefineMetadata = {
+    name: string;
+    defaultValue: number;
+    options?: { [key: number]: string };
+};
+
 /**
  * The V1 definition of a serialized shader block. This block definition is loaded by a CustomShaderBlock and defines how a
  * blockType works. This should not be confused with an ISerializedBockV1, which is a serialized instance of a block in a
@@ -47,6 +53,8 @@ export type SerializedShaderBlockDefinitionV1 = {
      * The input connection points of the block.
      */
     inputConnectionPoints: SerializedInputConnectionPointV1[];
+
+    defines?: DefineMetadata[];
 
     /**
      * If true, the optimizer will not attempt to optimize this block.

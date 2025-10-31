@@ -257,6 +257,10 @@ export class SmartFilterOptimizer {
                 continue;
             }
 
+            // NOTE: this assumes that defines are always the same for all instances
+            // of a block type. We would need to change this if we want to support
+            // setting them as properties in custom shader blocks.
+
             // See if we have already processed this define for this block type
             const existingRemapped = this._remappedSymbols.find((s) => s.type === "define" && s.name === defName && s.owners[0] && s.owners[0].blockType === block.blockType);
 
@@ -854,6 +858,8 @@ export class SmartFilterOptimizer {
             Logger.Log(`remappedSymbols=${this._remappedSymbols}`);
             Logger.Log(`samplers=${samplers}`);
         }
+
+        codeConsts += "\nconst float cacheBuster = " + Math.random().toString() + ";\n";
 
         optimizedBlock.setShaderProgram({
             vertex: this._vertexShaderCode,

@@ -4,7 +4,7 @@ import { ConnectionPointType, type ConnectionPointValue } from "../connection/co
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
 import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
-import type { SerializedInputConnectionPointV1 } from "../serialization/v1/shaderBlockSerialization.types.js";
+import type { SerializedInputConnectionPointV1, DefineMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
 import type { SmartFilter } from "../smartFilter.js";
 import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
 import { ShaderBlock } from "./shaderBlock.js";
@@ -107,6 +107,7 @@ export class CustomShaderBlock extends ShaderBlock {
             blockDefinition.blockType,
             blockDefinition.namespace,
             blockDefinition.inputConnectionPoints,
+            blockDefinition.defines || [],
             blockDefinition.shaderProgram
         );
     }
@@ -144,6 +145,7 @@ export class CustomShaderBlock extends ShaderBlock {
      * @param blockType - The type of the block
      * @param namespace - The namespace of the block
      * @param inputConnectionPoints - The input connection points of the
+     * @param defines - The defines for the block
      * @param shaderProgram - The shader program for the block
      */
     private constructor(
@@ -153,6 +155,7 @@ export class CustomShaderBlock extends ShaderBlock {
         blockType: string,
         namespace: Nullable<string>,
         inputConnectionPoints: SerializedInputConnectionPointV1[],
+        defines: DefineMetadata[],
         shaderProgram: ShaderProgram
     ) {
         super(smartFilter, name, disableOptimization);
@@ -163,7 +166,12 @@ export class CustomShaderBlock extends ShaderBlock {
             this._registerSerializedInputConnectionPointV1(input);
         }
 
+        for (const define of defines) {
+            this._registerDefine(define);
+        }
         this._shaderProgram = shaderProgram;
+
+        shaderProgram.fragment.defines;
     }
 
     /**
@@ -171,7 +179,15 @@ export class CustomShaderBlock extends ShaderBlock {
      * @returns The shader program to use to render the block
      */
     public override getShaderProgram() {
-        return this._shaderProgram;
+        // Cache buster
+        const copy = JSON.parse(JSON.stringify(this._shaderProgram));
+        copy.fragment.const = copy.fragment.const || "";
+        copy.fragment.const += "\nconst float cacheBuster2 = " + Math.random().toString() + ";\n";
+        return copy;
+    }
+
+    private _registerDefine(define: DefineMetadata): void {
+        this._defines[define.name] = define;
     }
 
     /**
