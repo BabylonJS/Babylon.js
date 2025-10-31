@@ -275,8 +275,8 @@ export class NodeParticleSystemSet {
                 if (system instanceof ParticleSystem) {
                     system._source = this;
                     system._blockReference = block._internalId;
-                    output.systems.push(system);
                 }
+                output.systems.push(system);
                 // Errors
                 state.emitErrors();
             }
