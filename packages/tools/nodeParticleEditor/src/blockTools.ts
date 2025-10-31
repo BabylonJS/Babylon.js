@@ -238,6 +238,16 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.SpriteCellStart;
                 return block;
             }
+            case "ColorStepBlock": {
+                const block = new ParticleInputBlock("Color Step");
+                block.contextualValue = NodeParticleContextualSources.ColorStep;
+                return block;
+            }
+            case "ScaledColorStepBlock": {
+                const block = new ParticleInputBlock("Scaled Color Step");
+                block.contextualValue = NodeParticleContextualSources.ScaledColorStep;
+                return block;
+            }
             case "TimeBlock": {
                 const block = new ParticleInputBlock("Time");
                 block.systemSource = NodeParticleSystemSources.Time;

@@ -120,6 +120,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         VectorLengthBlock: "Block used to get the length of a vector",
         LocalVariableBlock: "Block used to store local values (eg. within a loop)",
         FresnelBlock: "Block used to compute the Fresnel term",
+        ColorStepBlock: "Contextual block to get the expected color step of a particle",
+        ScaledColorStepBlock: "Contextual block to get the expected scaled color step of a particle",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -275,6 +277,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "SpriteCellStartBlock",
                 "SpriteCellIndexBlock",
                 "InitialDirectionBlock",
+                "ColorStepBlock",
+                "ScaledColorStepBlock",
             ],
         };
 
