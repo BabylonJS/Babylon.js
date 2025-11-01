@@ -170,6 +170,14 @@ export class WebGPUDrawContext implements IDrawContext {
         this._bufferManager.setRawData(this.indirectDrawBuffer, 0, this._indirectDrawData, 0, 20);
     }
 
+    /**
+     * Setup or disable vertex pulling as needed.
+     * @param useVertexPulling Use vertex pulling or not
+     * @param webgpuPipelineContext The WebGPU pipeline context
+     * @param vertexBuffers The current vertex buffers
+     * @param indexBuffer The current index buffer
+     * @param overrideVertexBuffers The vertex buffers to override
+     */
     public setVertexPulling(
         useVertexPulling: boolean,
         webgpuPipelineContext: WebGPUPipelineContext,

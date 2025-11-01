@@ -1,5 +1,5 @@
 #include <bakedVertexAnimationDeclaration>
-#include <bonesDeclaration>
+#include <bonesDeclaration>(attribute matricesIndices : vec4f;,,attribute matricesWeights : vec4f;,,attribute matricesIndicesExtra : vec4f;,,attribute matricesWeightsExtra : vec4f;,)
 #include <helperFunctions>
 #include <instancesDeclaration>
 
@@ -8,12 +8,20 @@
 
 // This shader uses vertex pulling to determine the
 // provoked vertex and calculate the normal. Then, based on
-// the direction of teh normal, it swizzles the position to
+// the direction of the normal, it swizzles the position to
 // maximize the rasterized area.
 #ifdef VERTEX_PULLING_USE_INDEX_BUFFER
 var<storage, read> indices : array<u32>;
 #endif
 var<storage, read> position : array<f32>;
+#if NUM_BONE_INFLUENCERS > 0
+  var<storage, read> matricesIndices : array<u32>;
+  var<storage, read> matricesWeights : array<f32>;
+  #if NUM_BONE_INFLUENCERS > 4
+    var<storage, read> matricesIndicesExtra : array<u32>;
+    var<storage, read> matricesWeightsExtra : array<f32>;
+  #endif
+#endif
 
 uniform world : mat4x4f;
 uniform invWorldScale: mat4x4f;
@@ -21,13 +29,101 @@ uniform invWorldScale: mat4x4f;
 varying vNormalizedPosition : vec3f;
 flat varying f_swizzle: i32;
 
+// Vertex buffer metadata (set via defines or defaults)
+#ifndef POSITION_STRIDE
+#define POSITION_STRIDE 3
+#endif
+
+#ifndef POSITION_OFFSET
+#define POSITION_OFFSET 0
+#endif
+
+#ifndef POSITION_COMPONENT_COUNT
+#define POSITION_COMPONENT_COUNT 3
+#endif
+
 fn readVertexPosition(index : u32)->vec3f {
   var pos : vec3f;
-  pos.x = position[index * 3];
-  pos.y = position[index * 3 + 1];
-  pos.z = position[index * 3 + 2];
+  let baseOffset = POSITION_OFFSET + index * POSITION_STRIDE;
+  pos.x = position[baseOffset];
+  pos.y = position[baseOffset + 1u];
+  pos.z = position[baseOffset + 2u];
   return pos;
 }
+
+#if NUM_BONE_INFLUENCERS > 0
+// Matrix indices are stored as UNSIGNED_BYTE (4 bytes packed into u32)
+#ifndef MATRICESINDICES_STRIDE
+#define MATRICESINDICES_STRIDE 1
+#endif
+#ifndef MATRICESINDICES_OFFSET
+#define MATRICESINDICES_OFFSET 0
+#endif
+
+fn readMatrixIndices(index : u32) -> vec4f {
+  let baseOffset = MATRICESINDICES_OFFSET + index * MATRICESINDICES_STRIDE;
+  #if MATRICESINDICES_COMPONENT_BYTES == 1
+    let packed = matricesIndices[baseOffset];
+    // Extract 4 bytes from u32 and convert to floats
+    return vec4f(
+      f32(packed & 0xFFu),
+      f32((packed >> 8u) & 0xFFu),
+      f32((packed >> 16u) & 0xFFu),
+      f32((packed >> 24u) & 0xFFu)
+    );
+  #elif MATRICESINDICES_COMPONENT_BYTES == 2
+    let packed1 = matricesIndices[baseOffset];
+    let packed2 = matricesIndices[baseOffset + 1u];
+    // Extract 4 bytes from two u32 and convert to floats
+    return vec4f(
+      f32(packed1 & 0xFFFFu),
+      f32((packed1 >> 16u) & 0xFFFFu),
+      f32(packed2 & 0xFFFFu),
+      f32((packed2 >> 16u) & 0xFFFFu)
+    );
+  #endif
+}
+
+#ifndef MATRICESWEIGHTS_STRIDE
+#define MATRICESWEIGHTS_STRIDE 4
+#endif
+#ifndef MATRICESWEIGHTS_OFFSET
+#define MATRICESWEIGHTS_OFFSET 0
+#endif
+
+fn readMatrixWeights(index : u32) -> vec4f {
+  let baseOffset = MATRICESWEIGHTS_OFFSET + index * MATRICESWEIGHTS_STRIDE;
+  return vec4f(
+    matricesWeights[baseOffset],
+    matricesWeights[baseOffset + 1u],
+    matricesWeights[baseOffset + 2u],
+    matricesWeights[baseOffset + 3u]
+  );
+}
+
+#if NUM_BONE_INFLUENCERS > 4
+fn readMatrixIndicesExtra(index : u32) -> vec4f {
+  let baseOffset = MATRICESINDICESEXTRA_OFFSET + index * MATRICESINDICESEXTRA_STRIDE;
+  let packed = matricesIndicesExtra[baseOffset];
+  return vec4f(
+    f32(packed & 0xFFu),
+    f32((packed >> 8u) & 0xFFu),
+    f32((packed >> 16u) & 0xFFu),
+    f32((packed >> 24u) & 0xFFu)
+  );
+}
+
+fn readMatrixWeightsExtra(index : u32) -> vec4f {
+  let baseOffset = MATRICESWEIGHTSEXTRA_OFFSET + index * MATRICESWEIGHTSEXTRA_STRIDE;
+  return vec4f(
+    matricesWeightsExtra[baseOffset],
+    matricesWeightsExtra[baseOffset + 1u],
+    matricesWeightsExtra[baseOffset + 2u],
+    matricesWeightsExtra[baseOffset + 3u]
+  );
+}
+#endif
+#endif
 
 fn readVertexIndex(index : u32)->u32 {
 #ifndef VERTEX_PULLING_USE_INDEX_BUFFER
@@ -72,7 +168,16 @@ let inputPosition: vec3f = positionUpdated;
 #include <instancesVertex>
 
 #include <bakedVertexAnimation>
-#include <bonesVertex>
+
+#if NUM_BONE_INFLUENCERS > 0
+  let matrixIndex = readMatrixIndices(vertIdx);
+  let matrixWeight = readMatrixWeights(vertIdx);
+  #if NUM_BONE_INFLUENCERS > 4
+    let matrixIndexExtra = readMatrixIndicesExtra(vertIdx);
+    let matrixWeightExtra = readMatrixWeightsExtra(vertIdx);
+  #endif
+#endif
+#include <bonesVertex>(vertexInputs.matricesIndices,matrixIndex,vertexInputs.matricesWeights,matrixWeight)
 
   let worldPos = finalWorld * vec4f(positionUpdated, 1.0);
 
