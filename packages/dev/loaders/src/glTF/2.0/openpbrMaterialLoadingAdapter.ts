@@ -2,7 +2,8 @@ import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
-import type { Color3 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color";
+import { Vector3 } from "core/Maths/math.vector";
 import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 /**
@@ -10,6 +11,7 @@ import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
  */
 export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     private _material: OpenPBRMaterial;
+    private _extinctionCoefficient: Vector3 = Vector3.Zero();
 
     /**
      * Creates a new instance of the OpenPBRMaterialLoadingAdapter.
@@ -675,6 +677,22 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the transmission scatter coefficient.
+     * @param value The scatter coefficient as a Vector3
+     */
+    public set transmissionScatter(value: Vector3) {
+        // this._material.subSurface.scatterColor = value;
+    }
+
+    /**
+     * Sets the transmission scattering anisotropy.
+     * @param value The anisotropy intensity value (-1 to 1)
+     */
+    public set transmissionScatterAnisotropy(value: number) {
+        // No direct mapping in PBRMaterial
+    }
+
+    /**
      * Gets the transmission dispersion Abbe number.
      * @param value The Abbe number value
      */
@@ -746,6 +764,21 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the extinction coefficient of the volume.
+     * @param value The extinction coefficient as a Vector3
+     */
+    public set extinctionCoefficient(value: Vector3) {
+        this._extinctionCoefficient = value;
+    }
+
+    /**
+     * Gets the extinction coefficient of the volume.
+     */
+    public get extinctionCoefficient(): Vector3 {
+        return this._extinctionCoefficient;
+    }
+
+    /**
      * Sets the subsurface weight
      */
     public set subsurfaceWeight(value: number) {
@@ -777,6 +810,73 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The subsurface tint texture or null
      */
     public set subsurfaceColorTexture(value: Nullable<BaseTexture>) {
+        // TODO
+    }
+
+    /**
+     * Sets the surface tint of the material (when using subsurface scattering)
+     */
+    public set subsurfaceConstantTint(value: Color3) {
+        // There is no equivalent in OpenPBR
+        // Maybe multiply this by subsurfaceColor?
+    }
+
+    /**
+     * Gets the surface tint of the material (when using subsurface scattering)
+     */
+    public get subsurfaceConstantTint(): Color3 {
+        return Color3.White();
+    }
+
+    /**
+     * Sets the surface tint texture of the material (when using subsurface scattering)
+     */
+    public set subsurfaceConstantTintTexture(value: Nullable<BaseTexture>) {
+        // There is no equivalent in OpenPBR
+        // Maybe multiply this by subsurfaceColorTexture?
+    }
+
+    /**
+     * Gets the subsurface radius for subsurface scattering.
+     * subsurfaceRadiusScale * subsurfaceRadius gives the mean free path per color channel.
+     */
+    public get subsurfaceRadius(): number {
+        // TODO
+        return 0;
+    }
+
+    /**
+     * Sets the subsurface radius for subsurface scattering.
+     * subsurfaceRadiusScale * subsurfaceRadius gives the mean free path per color channel.
+     * @param value The subsurface radius value
+     */
+    public set subsurfaceRadius(value: number) {
+        // TODO
+    }
+
+    /**
+     * Gets the subsurface radius scale for subsurface scattering.
+     * subsurfaceRadiusScale * subsurfaceRadius gives the mean free path per color channel.
+     */
+    public get subsurfaceRadiusScale(): Color3 {
+        // TODO
+        return Color3.White();
+    }
+
+    /**
+     * Sets the subsurface radius scale for subsurface scattering.
+     * subsurfaceRadiusScale * subsurfaceRadius gives the mean free path per color channel.
+     * @param value The subsurface radius scale as a Color3
+     */
+    public set subsurfaceRadiusScale(value: Color3) {
+        // TODO
+    }
+
+    /**
+     * Sets the subsurface scattering anisotropy.
+     * @param value The anisotropy intensity value
+     */
+    public set subsurfaceScatterAnisotropy(value: number) {
         // TODO
     }
 
