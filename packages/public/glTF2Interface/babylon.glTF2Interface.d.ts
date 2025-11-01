@@ -1080,21 +1080,29 @@ declare module BABYLON.GLTF2 {
         };
     }
 
+    /**
+     * Interfaces from the KHR_materials_clearcoat extension
+     */
     /** @internal */
-    interface IKHRMaterialsClearcoatIor {
-        clearcoatIor?: number;
-    }
-
-    /** @internal */
-    interface IKHRMaterialsClearcoatDarkening {
-        clearcoatDarkeningFactor?: number;
-        clearcoatDarkeningTexture?: ITextureInfo;
-    }
-
-    /** @internal */
-    interface IKHRMaterialsClearcoatColor {
-        clearcoatColorFactor?: number[];
-        clearcoatColorTexture?: ITextureInfo;
+    interface IKHRMaterialsCoat {
+        coatFactor?: number;
+        coatTexture?: ITextureInfo;
+        coatRoughnessFactor?: number;
+        coatRoughnessTexture?: ITextureInfo;
+        coatNormalTexture?: IMaterialNormalTextureInfo;
+        coatIor?: number;
+        coatDarkeningFactor?: number;
+        coatColorFactor?: number[];
+        coatColorTexture?: ITextureInfo;
+        coatAnisotropyStrength?: number;
+        coatAnisotropyRotation?: number;
+        coatAnisotropyTexture?: ITextureInfo;
+        /**
+         * Dictionary object with extension-specific objects
+         */
+        extensions?: {
+            [key: string]: any;
+        };
     }
 
     /** @internal */

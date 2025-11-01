@@ -12,6 +12,7 @@ export * from "./EXT_lights_area";
 export * from "./KHR_materials_pbrSpecularGlossiness";
 export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_clearcoat";
+export * from "./KHR_materials_coat";
 export * from "./KHR_materials_iridescence";
 export * from "./KHR_materials_anisotropy";
 export * from "./KHR_materials_emissive_strength";

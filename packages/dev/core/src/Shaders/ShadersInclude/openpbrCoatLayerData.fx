@@ -59,7 +59,11 @@ geometry_coat_tangent = vGeometryCoatTangent.rg;
 #endif
 
 #ifdef COAT_ROUGHNESS
-    coat_roughness *= coatRoughnessFromTexture.r;
+    #ifdef COAT_ROUGHNESS_FROM_GREEN_CHANNEL
+        coat_roughness *= coatRoughnessFromTexture.g;
+    #else
+        coat_roughness *= coatRoughnessFromTexture.r;
+    #endif
 #endif
 
 #if defined(GEOMETRY_COAT_TANGENT) && defined(COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE)
