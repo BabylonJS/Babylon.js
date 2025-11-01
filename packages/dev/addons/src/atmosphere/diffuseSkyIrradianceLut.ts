@@ -11,6 +11,7 @@ import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like } from "core/
 import type { Nullable } from "core/types";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Sample2DRgbaToRef } from "./sampling";
+import { Vector3Dot } from "core/Maths/math.vector.functions";
 import "./Shaders/diffuseSkyIrradiance.fragment";
 import "./Shaders/fullscreenTriangle.vertex";
 
@@ -161,7 +162,7 @@ export class DiffuseSkyIrradianceLut {
             return result;
         }
 
-        const cosAngleLightToZenith = directionToLight.x * cameraGeocentricNormal.x + directionToLight.y * cameraGeocentricNormal.y + directionToLight.z * cameraGeocentricNormal.z;
+        const cosAngleLightToZenith = Vector3Dot(directionToLight, cameraGeocentricNormal);
         ComputeLutUVToRef(properties, radius, cosAngleLightToZenith, UvTemp);
         Sample2DRgbaToRef(UvTemp.x, UvTemp.y, LutWidthPx, LutHeightPx, this._lutData, Color4Temp, FromHalfFloat);
 

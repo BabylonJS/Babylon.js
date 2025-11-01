@@ -86,6 +86,10 @@ export class AtmospherePerCameraVariables {
 
     /**
      * The camera position in global space kilometers.
+     *
+     * The behavior of this value depends on whether floating origin mode is enabled:
+     * - If floating origin mode is enabled, this is simply the camera's global position scaled to kilometers. The atmosphere's origin height is used to offset the camera position along its geocentric normal.
+     * - If floating origin mode is disabled, the camera's y position is offset by the planet radius plus any origin height.
      */
     public get cameraPositionGlobal(): IVector3Like {
         return this._cameraPositionGlobal;
@@ -93,6 +97,7 @@ export class AtmospherePerCameraVariables {
 
     /**
      * The camera position, clamped to the planet radius offset, in global space kilometers.
+     * See {@link cameraPositionGlobal} for details on how the value is computed.
      */
     public get clampedCameraPositionGlobal(): IVector3Like {
         return this._clampedCameraPositionGlobal;
@@ -114,6 +119,7 @@ export class AtmospherePerCameraVariables {
 
     /**
      * The geocentric normal of the camera in global space i.e., the normalization of {@link cameraPositionGlobal}.
+     * Note the behavior of this value depends on whether floating origin mode is enabled. See {@link cameraPositionGlobal} for details.
      */
     public get cameraGeocentricNormal(): IVector3Like {
         return this._cameraGeocentricNormal;
@@ -160,37 +166,51 @@ export class AtmospherePerCameraVariables {
         this._cameraNearPlane = camera.minZ;
         this._cameraForward.copyFrom(camera.getForwardRayToRef(TempRay, 1).direction);
 
-        const engine = camera.getScene().getEngine();
+        const scene = camera.getScene();
+        const engine = scene.getEngine();
         this._viewport.copyFromFloats(0.0, 0.0, engine.getRenderWidth(), engine.getRenderHeight());
 
         // Compute inverse view projection matrix, but remove the translational component to increase precision.
         const viewMatrix = camera.getViewMatrix();
         const projectionMatrix = camera.getProjectionMatrix();
-        if (!this._lastViewMatrix.equals(viewMatrix) || !this._lastProjectionMatrix.equals(projectionMatrix)) {
-            this._lastViewMatrix.copyFrom(viewMatrix);
-            this._lastViewMatrix.setTranslation(Vector3.ZeroReadOnly);
-            this._lastViewMatrix.invertToRef(this._inverseViewMatrixWithoutTranslation);
+        const lastViewMatrix = this._lastViewMatrix;
+        const lastProjectionMatrix = this._lastProjectionMatrix;
+        if (!lastViewMatrix.equals(viewMatrix) || !lastProjectionMatrix.equals(projectionMatrix)) {
+            lastViewMatrix.copyFrom(viewMatrix);
+            lastViewMatrix.setTranslation(Vector3.ZeroReadOnly);
+            lastViewMatrix.invertToRef(this._inverseViewMatrixWithoutTranslation);
 
-            this._lastProjectionMatrix.copyFrom(projectionMatrix);
-            this._lastProjectionMatrix.invertToRef(this._inverseProjectionMatrix);
+            lastProjectionMatrix.copyFrom(projectionMatrix);
+            lastProjectionMatrix.invertToRef(this._inverseProjectionMatrix);
             this._inverseProjectionMatrix.multiplyToRef(this._inverseViewMatrixWithoutTranslation, this._inverseViewProjectionMatrixWithoutTranslation);
         }
 
         // Compute the global space position of the camera in kilometers.
-        this._cameraPosition.copyFrom(camera.globalPosition);
-        this._cameraPosition.scaleToRef(1.0 / 1000.0, this._cameraPositionGlobal);
-        this._cameraPositionGlobal.y += planetRadius + originHeight;
-        this._cameraHeight = this._cameraPositionGlobal.y - planetRadius;
+        const cameraPositionGlobal = this._cameraPosition.copyFrom(camera.globalPosition).scaleToRef(0.001, this._cameraPositionGlobal); // scale to kilometers
+
+        // Apply the origin height to the camera position, and in doing so, compute the camera geocentric normal.
+        if (scene.floatingOriginMode) {
+            // When in floating origin mode, assume world space origin is at the planet center.
+            // Therefore "up" is away from the planet center (0, 0, 0).
+            cameraPositionGlobal.normalizeToRef(this._cameraGeocentricNormal);
+            this._cameraGeocentricNormal.scaleAndAddToRef(originHeight, cameraPositionGlobal);
+        } else {
+            // If not in floating origin mode, offset the camera position by the origin height.
+            // Assume the origin is directly above the planet surface along the up axis (y axis).
+            cameraPositionGlobal.y += planetRadius + originHeight;
+            cameraPositionGlobal.normalizeToRef(this._cameraGeocentricNormal);
+        }
+
+        this._cameraRadius = cameraPositionGlobal.length(); // distance from planet center
+        this._cameraHeight = this._cameraRadius - planetRadius; // height above planet surface
 
         // Clamp the camera parameters.
-        this._cameraRadius = this._cameraPositionGlobal.length();
         this._clampedCameraRadius = this._cameraRadius;
-        this._cameraPositionGlobal.normalizeToRef(this._cameraGeocentricNormal);
         if (this._clampedCameraRadius < planetRadiusWithOffset) {
             this._clampedCameraRadius = planetRadiusWithOffset;
             this._cameraGeocentricNormal.scaleToRef(planetRadiusWithOffset, this._clampedCameraPositionGlobal);
         } else {
-            this._clampedCameraPositionGlobal.copyFrom(this._cameraPositionGlobal);
+            this._clampedCameraPositionGlobal.copyFrom(cameraPositionGlobal);
         }
 
         this._cosCameraHorizonAngleFromZenith = ComputeCosHorizonAngleFromZenith(planetRadius, this._clampedCameraRadius);
