@@ -185,7 +185,6 @@ function _CreateShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             break;
         }
         case "ConeParticleEmitter": {
-            // Cone emitter is not supported in nodes yet
             const source = emitter as ConeParticleEmitter;
             shapeBlock = new ConeShapeBlock("Cone Shape");
 
@@ -260,9 +259,9 @@ function _CreateAndConnectInput(
     inputBlockName: string,
     value: number | Vector3 | Color4,
     targetToConnectTo: NodeParticleConnectionPoint,
-    type?: NodeParticleBlockConnectionPointTypes
+    inputType?: NodeParticleBlockConnectionPointTypes
 ): void {
-    const input = new ParticleInputBlock(inputBlockName, type);
+    const input = new ParticleInputBlock(inputBlockName, inputType);
     input.value = value;
     input.output.connectTo(targetToConnectTo);
 }
