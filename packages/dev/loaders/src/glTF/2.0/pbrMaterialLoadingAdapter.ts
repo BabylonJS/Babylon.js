@@ -849,6 +849,20 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the fuzz weight texture.
+     * @param value The fuzz weight texture or null
+     */
+    public set fuzzWeightTexture(value: Nullable<BaseTexture>) {
+        // PBRMaterial sheen supports glTF-style sheen which doesn't
+        // use a separate texture for intensity. So we'll only set the
+        // weight texture if none is already assigned. If one's already
+        // assigned, we assume it contains the sheen color data.
+        if (!this._material.sheen.texture) {
+            this._material.sheen.texture = value;
+        }
+    }
+
+    /**
      * Sets the sheen color (mapped to PBR sheen.color).
      * Automatically enables sheen.
      * @param value The sheen color as a Color3
@@ -864,7 +878,6 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The sheen color texture or null
      */
     public set fuzzColorTexture(value: Nullable<BaseTexture>) {
-        this._material.sheen.isEnabled = true;
         this._material.sheen.texture = value;
     }
 

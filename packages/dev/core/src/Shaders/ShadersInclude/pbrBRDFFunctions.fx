@@ -50,7 +50,7 @@
         vec2 UV = vec2(perceptualRoughness, NdotV);
         
         // We can find the scale and offset to apply to the specular value.
-        vec4 brdfLookup = texture(environmentFuzzBrdfSampler, UV);
+        vec4 brdfLookup = texture2D(environmentFuzzBrdfSampler, UV);
 
         const vec2 RiRange = vec2(0.0, 0.75);
         const vec2 ARange  = vec2(0.005, 0.88);

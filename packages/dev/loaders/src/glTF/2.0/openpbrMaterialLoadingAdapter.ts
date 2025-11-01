@@ -801,6 +801,14 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the fuzz weight texture.
+     * @param value The fuzz weight texture or null
+     */
+    public set fuzzWeightTexture(value: Nullable<BaseTexture>) {
+        this._material.fuzzWeightTexture = value;
+    }
+
+    /**
      * Sets the fuzz color.
      * @param value The fuzz color as a Color3
      */
@@ -830,6 +838,7 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public set fuzzRoughnessTexture(value: Nullable<BaseTexture>) {
         this._material.fuzzRoughnessTexture = value;
+        this._material._useFuzzRoughnessFromTextureAlpha = true;
     }
 
     // ========================================

@@ -39,7 +39,7 @@ fuzz_roughness = vFuzzRoughness;
     fuzz_color *= vFuzzColorInfos.y;
 #endif
 
-#if defined(FUZZ_ROUGHNESS) && defined(FUZZ_ROUGHNESS_FROM_COLOR_TEXTURE_ALPHA)
+#if defined(FUZZ_ROUGHNESS) && defined(FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA)
     fuzz_roughness *= fuzzRoughnessFromTexture.a;
 #elif defined(FUZZ_ROUGHNESS)
     fuzz_roughness *= fuzzRoughnessFromTexture.r;
