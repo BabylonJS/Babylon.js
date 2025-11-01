@@ -8,9 +8,23 @@ import type { Nullable } from "core/types.js";
 import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connection/connectionPointType.js";
 import type { ShaderProgram } from "../../utils/shaderCodeUtils.js";
 
-export type DefineMetadata = {
+/**
+ * Description of a define property exposed by a shader block.
+ */
+export type DefinePropertyMetadata = {
+    /**
+     * The name of the property
+     */
     name: string;
+
+    /**
+     * The default value of the property
+     */
     defaultValue: number;
+
+    /**
+     * Optional mapping of values to strings to be displayed in the Smart Filters Editor UI for this property.
+     */
     options?: { [key: number]: string };
 };
 
@@ -54,7 +68,10 @@ export type SerializedShaderBlockDefinitionV1 = {
      */
     inputConnectionPoints: SerializedInputConnectionPointV1[];
 
-    defines?: DefineMetadata[];
+    /**
+     * Defines which are to be exposed as properties on the block.
+     */
+    propertyDefines?: DefinePropertyMetadata[];
 
     /**
      * If true, the optimizer will not attempt to optimize this block.

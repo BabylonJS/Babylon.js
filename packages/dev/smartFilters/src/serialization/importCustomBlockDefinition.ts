@@ -81,6 +81,7 @@ function ImportAnnotatedGlsl(fragmentShader: string): SerializedShaderBlockDefin
             fragment: fragmentShaderInfo.shaderCode,
         },
         inputConnectionPoints,
+        propertyDefines: fragmentShaderInfo.defineProperties,
         disableOptimization: !!fragmentShaderInfo.disableOptimization,
     };
 }

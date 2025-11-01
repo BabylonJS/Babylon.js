@@ -36,13 +36,23 @@ export type UniformMetadataProperties = {
 };
 
 /**
- * Describes the supported metadata properties for a define
+ * The metadata for a define which is to be exposed as a property on a CustomShaderBlock instance
  */
-export type DefineMetadataProperties = {
+export type DefinePropertyMetadata = {
     /**
-     * If supplied, the possible values to present to the user for this define
+     * The name of the define
      */
-    possibleValues?: { [key: number]: string };
+    name: string;
+
+    /**
+     * The default value of the define
+     */
+    defaultValue: number;
+
+    /**
+     * The values to be used as the EditableInPropertyPage options
+     */
+    possibleValues: { [key: number]: string };
 };
 
 /**
@@ -63,21 +73,6 @@ export type UniformMetadata = {
      * Optional properties of the uniform
      */
     properties?: UniformMetadataProperties;
-};
-
-/**
- * Describes a define in a shader
- */
-export type DefinesMetadata = {
-    /**
-     * The original name of the define (not renamed)
-     */
-    name: string;
-
-    /**
-     * Optional properties of the define
-     */
-    properties?: DefineMetadataProperties;
 };
 
 /**
@@ -115,9 +110,9 @@ export type FragmentShaderInfo = {
     uniforms: UniformMetadata[];
 
     /**
-     * The set of defines
+     * The set of defines to be exposed as properties
      */
-    defines: DefinesMetadata[];
+    defineProperties: DefinePropertyMetadata[];
 };
 
 /**
@@ -194,6 +189,44 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         }
     }
 
+    // Read the property defines (defines to be exposed as properties)
+    const defineProperties: DefinePropertyMetadata[] = [];
+    const defineRegExp = new RegExp(/(\/\/\s*\{.*\}\s*(?:\r\n|\r|\n)+)?(#define .*)/gm);
+    const defineGroups = fragmentShader.matchAll(defineRegExp);
+    for (const matches of defineGroups) {
+        const annotationJSON = matches[1];
+        const defineLine = matches[2];
+
+        if (!defineLine) {
+            throw new Error("Define line not found");
+        }
+
+        const defineLineMatches = new RegExp(/^#define\s+(\w+)\s+(\w+)\s*\n?/gm).exec(defineLine);
+        if (!defineLineMatches || defineLineMatches.length < 3) {
+            throw new Error(`Defines must have a name and a default value: '${defineLine}'`);
+        }
+        const name = defineLineMatches[1];
+        const defaultValue = Number.parseInt(defineLineMatches[2]);
+
+        if (!name) {
+            throw new Error(`Defines must have a name: '${defineLine}'`);
+        }
+        if (isNaN(defaultValue)) {
+            throw new Error(`Defines must have a default value: '${defineLine}'`);
+        }
+
+        defineProperties.push({
+            name,
+            defaultValue,
+            possibleValues: annotationJSON ? JSON.parse(annotationJSON.replace("//", "").trim()) : undefined,
+        });
+
+        if (annotationJSON) {
+            // Strip out any annotation so it isn't mistaken for function bodies
+            fragmentShader = fragmentShader.replace(annotationJSON, "");
+        }
+    }
+
     const fragmentShaderWithNoFunctionBodies = RemoveFunctionBodies(fragmentShader);
 
     // Collect uniform, const, and function names which need to be decorated
@@ -258,7 +291,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         namespace,
         shaderCode,
         uniforms,
-        defines: [],
+        defineProperties,
         disableOptimization: !!header?.disableOptimization,
         blockDisableStrategy: header?.blockDisableStrategy,
     };

@@ -4,7 +4,7 @@ import { ConnectionPointType, type ConnectionPointValue } from "../connection/co
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
 import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
-import type { SerializedInputConnectionPointV1, DefineMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
+import type { SerializedInputConnectionPointV1, DefinePropertyMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
 import type { SmartFilter } from "../smartFilter.js";
 import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
 import { ShaderBlock } from "./shaderBlock.js";
@@ -108,7 +108,7 @@ export class CustomShaderBlock extends ShaderBlock {
             blockDefinition.blockType,
             blockDefinition.namespace,
             blockDefinition.inputConnectionPoints,
-            blockDefinition.defines || [],
+            blockDefinition.propertyDefines || [],
             blockDefinition.shaderProgram
         );
     }
@@ -156,7 +156,7 @@ export class CustomShaderBlock extends ShaderBlock {
         blockType: string,
         namespace: Nullable<string>,
         inputConnectionPoints: SerializedInputConnectionPointV1[],
-        defines: DefineMetadata[],
+        defines: DefinePropertyMetadata[],
         shaderProgram: ShaderProgram
     ) {
         super(smartFilter, name, disableOptimization);
