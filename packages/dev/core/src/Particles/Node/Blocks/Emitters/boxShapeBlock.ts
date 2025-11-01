@@ -107,6 +107,7 @@ export class BoxShapeBlock extends NodeParticleBlock implements IShapeBlock {
         system._positionCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
+
             const minEmitBox = this.minEmitBox.getConnectedValue(state) as Vector3;
             const maxEmitBox = this.maxEmitBox.getConnectedValue(state) as Vector3;
 

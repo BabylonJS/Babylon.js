@@ -30,11 +30,12 @@ import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlow
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
-import { SphereShapeBlock } from "core/Particles/Node/Blocks/Emitters/sphereShapeBlock";
-import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeBlock";
-import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
+import { ConeShapeBlock } from "core/Particles/Node/Blocks/Emitters/coneShapeBlock";
 import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinderShapeBlock";
+import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
 import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
+import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeBlock";
+import { SphereShapeBlock } from "core/Particles/Node/Blocks/Emitters/sphereShapeBlock";
 import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
 import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlock";
 import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicColorUpdateBlock";
@@ -153,16 +154,18 @@ export class BlockTools {
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":
                 return new BoxShapeBlock("Box shape");
-            case "SphereShapeBlock":
-                return new SphereShapeBlock("Sphere shape");
-            case "PointShapeBlock":
-                return new PointShapeBlock("Point shape");
+            case "ConeShapeBlock":
+                return new ConeShapeBlock("Cone shape");
             case "CustomShapeBlock":
                 return new CustomShapeBlock("Custom shape");
             case "CylinderShapeBlock":
                 return new CylinderShapeBlock("Cylinder shape");
             case "MeshShapeBlock":
                 return new MeshShapeBlock("Mesh shape");
+            case "PointShapeBlock":
+                return new PointShapeBlock("Point shape");
+            case "SphereShapeBlock":
+                return new SphereShapeBlock("Sphere shape");
             case "PositionBlock": {
                 const block = new ParticleInputBlock("Position");
                 block.contextualValue = NodeParticleContextualSources.Position;
