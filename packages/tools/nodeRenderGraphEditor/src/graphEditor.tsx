@@ -362,6 +362,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         try {
             nodeRenderGraph.build();
+            if (this.props.globalState.hostScene) {
+                // We wait for the graph to be ready only if the editor is linked to a host scene (most probabaly a playground).
+                // Else, the node render graph is a dummy one for editing purpose only.
+
+                nodeRenderGraph.frameGraph.pausedExecution = true;
+                // eslint-disable-next-line github/no-then
+                void nodeRenderGraph.whenReadyAsync(16, 5000).then(() => {
+                    nodeRenderGraph.frameGraph.pausedExecution = false;
+                });
+            }
         } catch (err) {
             if (LogErrorTrace) {
                 (console as any).log(err);
