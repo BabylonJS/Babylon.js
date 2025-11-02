@@ -246,10 +246,10 @@ export class FrameGraph implements IDisposable {
      * Returns a promise that resolves when the frame graph is ready to be executed
      * This method must be called after the graph has been built (FrameGraph.build called)!
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 5000)
      * @returns The promise that resolves when the graph is ready
      */
-    public async whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
         return await new Promise((resolve) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
