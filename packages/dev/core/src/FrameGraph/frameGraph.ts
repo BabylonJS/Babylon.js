@@ -306,11 +306,7 @@ export class FrameGraph implements IDisposable {
         this.textureManager._updateHistoryTextures();
 
         for (const task of this._tasks) {
-            const passes = task._getPasses();
-
-            for (const pass of passes) {
-                pass._execute();
-            }
+            task._execute();
         }
 
         this._renderContext.bindRenderTarget(undefined, undefined, true); // restore default framebuffer
