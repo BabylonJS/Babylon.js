@@ -2590,7 +2590,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const engine = scene.getEngine();
         let oldCameraMaxZ = 0;
         let oldCamera: Nullable<Camera> = null;
-        if (this.ignoreCameraMaxZ && scene.activeCamera) {
+        if (this.ignoreCameraMaxZ && scene.activeCamera && !scene._isInIntermediateRendering()) {
             oldCameraMaxZ = scene.activeCamera.maxZ;
             oldCamera = scene.activeCamera;
             scene.activeCamera.maxZ = 0;
