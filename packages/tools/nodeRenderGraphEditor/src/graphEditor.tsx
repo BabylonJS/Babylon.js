@@ -222,22 +222,22 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
-        this.props.globalState.stateManager.onRebuildRequiredObservable.add(() => {
+        this.props.globalState.stateManager.onRebuildRequiredObservable.add(async () => {
             if (this.props.globalState.nodeRenderGraph) {
-                this.buildRenderGraph();
+                await this.buildRenderGraphAsync();
             }
         });
 
-        this.props.globalState.onResetRequiredObservable.add((isDefault) => {
+        this.props.globalState.onResetRequiredObservable.add(async (isDefault) => {
             if (isDefault) {
                 if (this.props.globalState.nodeRenderGraph) {
-                    this.buildRenderGraph();
+                    await this.buildRenderGraphAsync();
                 }
                 this.build(true);
             } else {
                 this.build();
                 if (this.props.globalState.nodeRenderGraph) {
-                    this.buildRenderGraph();
+                    await this.buildRenderGraphAsync();
                 }
             }
         });
@@ -340,7 +340,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
     }
 
-    buildRenderGraph() {
+    async buildRenderGraphAsync() {
         if (!this.props.globalState.nodeRenderGraph) {
             return;
         }
@@ -365,12 +365,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             if (this.props.globalState.hostScene) {
                 // We wait for the graph to be ready only if the editor is linked to a host scene (most probabaly a playground).
                 // Else, the node render graph is a dummy one for editing purpose only.
-
-                nodeRenderGraph.frameGraph.pausedExecution = true;
-                // eslint-disable-next-line github/no-then
-                void nodeRenderGraph.whenReadyAsync(16, 5000).then(() => {
-                    nodeRenderGraph.frameGraph.pausedExecution = false;
-                });
+                await nodeRenderGraph.whenReadyAsync();
             }
         } catch (err) {
             if (LogErrorTrace) {

@@ -431,9 +431,7 @@ export class PreviewManager {
 
         try {
             this._nodeRenderGraph.build();
-            this._nodeRenderGraph.frameGraph.pausedExecution = true;
-            await this._nodeRenderGraph.whenReadyAsync(16, 5000);
-            this._nodeRenderGraph.frameGraph.pausedExecution = false;
+            await this._nodeRenderGraph.whenReadyAsync();
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
             if (LogErrorTrace) {

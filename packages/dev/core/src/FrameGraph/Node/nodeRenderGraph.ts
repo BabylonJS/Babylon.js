@@ -371,7 +371,11 @@ export class NodeRenderGraph {
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     public whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
-        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
+        this._frameGraph.pausedExecution = true;
+        // eslint-disable-next-line github/no-then
+        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout).then(() => {
+            this._frameGraph.pausedExecution = false;
+        });
     }
 
     /**
