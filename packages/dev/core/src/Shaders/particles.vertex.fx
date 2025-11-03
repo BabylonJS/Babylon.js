@@ -68,7 +68,7 @@ vec3 rotateAlign(vec3 toCamera, vec3 rotatedCorner) {
 	vec3 row2 = vec3(normalizedToCamera.x, normalizedToCamera.y, normalizedToCamera.z);
 
 #ifdef BILLBOARDSTRETCHED_LOCAL
-	vec3 row1 = direction;
+	vec3 row1 = normalize(direction);
 #else
 	vec3 crossProduct = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
 	vec3 row1 = vec3(crossProduct.x, crossProduct.y, crossProduct.z);
