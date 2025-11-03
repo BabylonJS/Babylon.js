@@ -299,6 +299,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     private _blurHPostProcess: PostProcess;
     private _blurVPostProcess: PostProcess;
     private _ssaoCombinePostProcess: PostProcess;
+    private _currentCameraMode = -1;
 
     /**
      * Gets active scene
@@ -362,6 +363,13 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         }
 
         this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), undefined, this._textureType);
+        this._originalColorPostProcess.onBeforeRenderObservable.add(() => {
+            const camera = this._scene.activeCamera;
+            if (camera && this._currentCameraMode !== camera.mode) {
+                this._currentCameraMode = camera.mode;
+                this._thinSSAORenderingPipeline._ssaoPostProcess.updateEffect();
+            }
+        });
         this._originalColorPostProcess.samples = this.textureSamples;
         this._createSSAOPostProcess(1.0, textureType);
         this._createBlurPostProcess(ssaoRatio, blurRatio, this._textureType);
