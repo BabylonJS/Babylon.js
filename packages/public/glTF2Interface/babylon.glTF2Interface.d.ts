@@ -1242,6 +1242,20 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the KHR_materials_fuzz extension
+     */
+
+    /** @internal */
+    interface IKHRMaterialsFuzz {
+        fuzzFactor?: number;
+        fuzzTexture?: ITextureInfo;
+        fuzzColorFactor?: number[];
+        fuzzColorTexture?: ITextureInfo;
+        fuzzRoughnessFactor?: number;
+        fuzzRoughnessTexture?: ITextureInfo;
+    }
+
+    /**
      * Interfaces from the KHR_materials_diffuse_transmission extension
      * !!! Experimental Extension Subject to Changes !!!
      */
