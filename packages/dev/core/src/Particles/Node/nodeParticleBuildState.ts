@@ -152,21 +152,6 @@ export class NodeParticleBuildState {
     }
 
     /**
-     * Gets a boolean indicating if the emitter is a transform node (or a simple vector3)
-     */
-    public get isEmitterTransformNode() {
-        if (!this.systemContext) {
-            return false;
-        }
-
-        if ((<AbstractMesh>this.systemContext.emitter).position) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Gets the emitter world matrix
      */
     public get emitterWorldMatrix() {
