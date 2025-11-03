@@ -366,7 +366,7 @@ export class Camera extends Node {
     public isStereoscopicSideBySide: boolean;
 
     /**
-     * Ignores the cameraZ when computing the projection matrix (ie. use 0 instead of cameraZ), meaning objects won't be culled by the far plane
+     * Ignores camera maxZ when computing the projection matrix (ie. use 0 instead of maxZ), meaning objects won't be culled by the far plane
      */
     @serialize()
     public ignoreCameraMaxZ = false;
