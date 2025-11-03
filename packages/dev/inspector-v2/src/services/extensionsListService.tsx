@@ -1,16 +1,16 @@
 import type { SelectTabData, SelectTabEvent } from "@fluentui/react-components";
+import type { TriggerProps } from "@fluentui/react-utilities";
 import type { FunctionComponent } from "react";
+import type { PersonMetadata } from "../extensibility/extensionFeed";
 import type { IExtension } from "../extensibility/extensionManager";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IShellService } from "./shellService";
-import type { PersonMetadata } from "../extensibility/extensionFeed";
 
 import {
     Accordion,
     AccordionHeader,
     AccordionItem,
     AccordionPanel,
-    Avatar,
     AvatarGroup,
     AvatarGroupItem,
     Body1,
@@ -27,9 +27,11 @@ import {
     DialogSurface,
     DialogTitle,
     DialogTrigger,
-    Divider,
     makeStyles,
     Persona,
+    Popover,
+    PopoverSurface,
+    PopoverTrigger,
     PresenceBadge,
     Spinner,
     Tab,
@@ -37,29 +39,27 @@ import {
     tokens,
     Tooltip,
 } from "@fluentui/react-components";
-import { Fade } from "@fluentui/react-motion-components-preview";
 import {
-    AddRegular,
     AppsAddInRegular,
     ArrowDownloadRegular,
     BranchForkRegular,
     BugRegular,
-    CheckmarkCircleFilled,
-    CheckmarkCircleRegular,
     DeleteRegular,
     DismissRegular,
     LinkRegular,
-    PresenceAvailableRegular,
+    MailRegular,
+    PeopleCommunityRegular,
 } from "@fluentui/react-icons";
+import { Fade } from "@fluentui/react-motion-components-preview";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Logger } from "core/Misc/logger";
 
+import { Link } from "shared-ui-components/fluent/primitives/link";
 import { TeachingMoment } from "../components/teachingMoment";
 import { useExtensionManager } from "../contexts/extensionManagerContext";
 import { MakePopoverTeachingMoment } from "../hooks/teachingMomentHooks";
 import { ShellServiceIdentity } from "./shellService";
-import { Link } from "shared-ui-components/fluent/primitives/link";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -86,7 +86,6 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column",
         rowGap: tokens.spacingVerticalL,
-        //backgroundColor: tokens.colorNeutralBackground2,
     },
     extensionIntro: {
         display: "flex",
@@ -97,7 +96,6 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "row",
         columnGap: tokens.spacingHorizontalS,
-        // padding: `${tokens.spacingVerticalM} 0`,
     },
     extensionButtonContainer: {
         marginLeft: "auto",
@@ -119,58 +117,88 @@ function AsPersonMetadata(person: string | PersonMetadata): PersonMetadata {
     return person;
 }
 
-function userPeopleMetadata(people: readonly (string | PersonMetadata)[] = []) {
-    const [peopleMetadataEx, setPeopleMetadataEx] = useState<(PersonMetadata & { avatarUrl?: string })[]>(people.map(AsPersonMetadata));
+function usePeopleMetadata(people?: readonly (string | PersonMetadata | undefined)[]) {
+    const definedPeople = useMemo(() => (people ? people.filter((person): person is string | PersonMetadata => !!person) : []), [people]);
 
-    useEffect(() => {
-        people.forEach(async (person, index) => {
-            const personMetadata = AsPersonMetadata(person);
-            if (personMetadata.forumUserName) {
-                try {
-                    const json = await (await fetch(`https://forum.babylonjs.com/u/${personMetadata.forumUserName}.json`)).json();
-                    const avatarRelativeUrl = json.user?.avatar_template?.replace("{size}", "96");
-                    if (avatarRelativeUrl) {
-                        const avatarUrl = `https://forum.babylonjs.com${avatarRelativeUrl}`;
-                        setPeopleMetadataEx((prev) => {
-                            const newMetadata = [...prev];
-                            newMetadata[index] = { ...newMetadata[index], avatarUrl };
-                            return newMetadata;
-                        });
-                    }
-                } catch {
-                    // Ignore, non-fatal
-                }
-            }
-        });
-    }, [people]);
+    //const [peopleMetadataEx, setPeopleMetadataEx] = useState<(PersonMetadata & { avatarUrl?: string })[]>(definedPeople.map(AsPersonMetadata));
+    const [peopleMetadataEx] = useState(definedPeople.map(AsPersonMetadata));
 
-    return peopleMetadataEx;
+    // TODO: Would be nice if we could pull author/contributor profile pictures from the forum, but need to see if this is ok and whether we want to adjust CORS to allow it.
+    // useEffect(() => {
+    //     definedPeople.forEach(async (person, index) => {
+    //         const personMetadata = AsPersonMetadata(person);
+    //         if (personMetadata.forumUserName) {
+    //             try {
+    //                 const json = await (await fetch(`https://forum.babylonjs.com/u/${personMetadata.forumUserName}.json`)).json();
+    //                 const avatarRelativeUrl = json.user?.avatar_template?.replace("{size}", "96");
+    //                 if (avatarRelativeUrl) {
+    //                     const avatarUrl = `https://forum.babylonjs.com${avatarRelativeUrl}`;
+    //                     setPeopleMetadataEx((prev) => {
+    //                         const newMetadata = [...prev];
+    //                         newMetadata[index] = { ...personMetadata, avatarUrl };
+    //                         return newMetadata;
+    //                     });
+    //                 }
+    //             } catch {
+    //                 // Ignore, non-fatal
+    //             }
+    //         }
+    //     });
+    // }, [definedPeople]);
+
+    return peopleMetadataEx.filter(Boolean);
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useTeachingMoment = MakePopoverTeachingMoment("Extensions");
 
-const WebSiteResource: FunctionComponent<{ url: string; icon: JSX.Element; label: string }> = (props) => {
-    const { url, icon, label } = props;
+const WebResource: FunctionComponent<{ url: string; urlDisplay?: string; icon: JSX.Element; label: string }> = (props) => {
+    const { url, urlDisplay, icon, label } = props;
     return (
         <div style={{ display: "flex", flexDirection: "column" }}>
             {/* <Body1 underline>{label}</Body1> */}
             <Tooltip content={label} relationship="label" positioning="before" withArrow>
                 <div style={{ display: "flex", flexDirection: "row", columnGap: tokens.spacingHorizontalS, alignItems: "center" }}>
                     {icon}
-                    <Link url={url} value={url} />
+                    <Link url={url} value={urlDisplay || url} />
                 </div>
             </Tooltip>
         </div>
     );
 };
 
+const PersonDetailsPopover: FunctionComponent<TriggerProps & { person: PersonMetadata; title: string; disabled?: boolean }> = (props) => {
+    const { person, title, disabled, children } = props;
+
+    if (disabled) {
+        return <>{children}</>;
+    }
+
+    return (
+        <Popover withArrow>
+            <PopoverTrigger disableButtonEnhancement>{children}</PopoverTrigger>
+            <PopoverSurface>
+                <div style={{ display: "flex", flexDirection: "column", rowGap: tokens.spacingVerticalS }}>
+                    <Persona name={person.name} secondaryText={title} />
+                    {person.email && <WebResource url={`mailto:${person.email}`} urlDisplay={person.email} icon={<MailRegular />} label="Email" />}
+                    {person.url && <WebResource url={person.url} urlDisplay={person.url} icon={<LinkRegular />} label="Website" />}
+                    {person.forumUserName && (
+                        <WebResource
+                            url={`https://forum.babylonjs.com/u/${person.forumUserName}`}
+                            urlDisplay={person.forumUserName}
+                            icon={<PeopleCommunityRegular />}
+                            label="Forum"
+                        />
+                    )}
+                </div>
+            </PopoverSurface>
+        </Popover>
+    );
+};
+
 const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((props) => {
     const { extension } = props;
     const { metadata } = extension;
-
-    const hasPreviewDetails = metadata.homepage || metadata.repository || metadata.bugs || metadata.author || (metadata.contributors && metadata.contributors.length > 0);
-    const subHeader = [metadata.version ? `${metadata.version}` : null, metadata.license ? `${metadata.license}` : null].filter(Boolean).join(" | ");
 
     const classes = useStyles();
 
@@ -191,8 +219,14 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
         return stateChangedHandlerRegistration.dispose;
     }, [extension]);
 
-    const [author] = userPeopleMetadata(useMemo(() => (metadata.author ? [metadata.author] : []), [metadata.author]));
-    const contributors = userPeopleMetadata(metadata.contributors);
+    const [author] = usePeopleMetadata(useMemo(() => [metadata.author], [metadata.author]));
+    const contributors = usePeopleMetadata(metadata.contributors);
+
+    const hasResourceDetails = metadata.homepage || metadata.repository || metadata.bugs;
+    const hasPeopleDetails = author || contributors.length > 0;
+    const hasPreviewDetails = hasResourceDetails || hasPeopleDetails;
+    const hasAuthorDetails = author?.email || author?.url || author?.forumUserName;
+    const subHeader = [metadata.version ? `${metadata.version}` : null, metadata.license ? `${metadata.license}` : null].filter(Boolean).join(" | ");
 
     const install = useCallback(async () => {
         try {
@@ -227,37 +261,35 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                     <CardHeader header={<Body1>{metadata.description}</Body1>} description={<Caption1 italic>{subHeader}</Caption1>} />
                     {hasPreviewDetails && (
                         <CardPreview className={classes.extensionCardPreview}>
-                            <div style={{ display: "flex", flexDirection: "column", rowGap: tokens.spacingVerticalS }}>
-                                {metadata.homepage && <WebSiteResource url={metadata.homepage} icon={<LinkRegular />} label="Homepage" />}
-                                {metadata.repository && <WebSiteResource url={metadata.repository} icon={<BranchForkRegular />} label="Repository" />}
-                                {metadata.bugs && <WebSiteResource url={metadata.bugs} icon={<BugRegular />} label="Report Issues" />}
-                            </div>
-                            {/* <div style={{ display: "flex", flexDirection: "column", rowGap: tokens.spacingVerticalS }}> */}
-                            <div style={{ display: "flex", flexDirection: "row", columnGap: tokens.spacingHorizontalXL }}>
-                                {author && (
-                                    <>
-                                        {/* <Body1 underline>Author</Body1>
-                                        <div style={{ display: "flex", flexDirection: "row", columnGap: tokens.spacingHorizontalS, alignItems: "center" }}>
-                                            <Avatar name={metadata.author} />
-                                            <Body1>{metadata.author}</Body1>
-                                        </div> */}
-                                        <Persona name={author.name} secondaryText="Author" />
-                                    </>
-                                )}
-                                {contributors.length > 0 && (
-                                    <>
-                                        {/* <Body1 underline>Contributors</Body1> */}
-                                        <AvatarGroup layout="stack">
-                                            {contributors.map((contributor) => (
-                                                <Tooltip key={contributor.name} content={contributor.name} relationship="label" withArrow>
-                                                    <AvatarGroupItem name={contributor.name} />
-                                                </Tooltip>
-                                            ))}
-                                        </AvatarGroup>
-                                    </>
-                                )}
-                            </div>
-                            {/* {subHeader && <Caption1>{subHeader}</Caption1>} */}
+                            {hasResourceDetails && (
+                                <div style={{ display: "flex", flexDirection: "column", rowGap: tokens.spacingVerticalS }}>
+                                    {metadata.homepage && <WebResource url={metadata.homepage} icon={<LinkRegular />} label="Website" />}
+                                    {metadata.repository && <WebResource url={metadata.repository} icon={<BranchForkRegular />} label="Repository" />}
+                                    {metadata.bugs && <WebResource url={metadata.bugs} icon={<BugRegular />} label="Report Issues" />}
+                                </div>
+                            )}
+                            {hasPeopleDetails && (
+                                <div style={{ display: "flex", flexDirection: "row", columnGap: tokens.spacingHorizontalXL }}>
+                                    {author && (
+                                        <PersonDetailsPopover person={author} title="Author" disabled={!hasAuthorDetails}>
+                                            <Persona name={author.name} secondaryText="Author" style={{ cursor: hasAuthorDetails ? "pointer" : "default" }} />
+                                        </PersonDetailsPopover>
+                                    )}
+                                    {contributors.length > 0 && (
+                                        <>
+                                            <AvatarGroup layout="stack">
+                                                {contributors.map((contributor) => {
+                                                    return (
+                                                        <PersonDetailsPopover key={contributor.name} person={contributor} title="Contributor">
+                                                            <AvatarGroupItem name={contributor.name} style={{ cursor: "pointer" }} />
+                                                        </PersonDetailsPopover>
+                                                    );
+                                                })}
+                                            </AvatarGroup>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </CardPreview>
                     )}
                     <CardFooter>
@@ -276,29 +308,6 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                 </Card>
             </AccordionPanel>
         </AccordionItem>
-
-        // <div style={{ display: "flex", flexDirection: "column", rowGap: tokens.spacingVerticalM }}>
-        //     <div className={classes.extensionDescription}>
-        //         <Body1>{metadata.description}</Body1>
-        //         <div className={classes.extensionButtonContainer}>
-        //             {canInstall && (
-        //                 <Button appearance="primary" size="small" icon={<AddRegular />} onClick={install}>
-        //                     Get
-        //                 </Button>
-        //             )}
-        //             {canUninstall && (
-        //                 <Button appearance="secondary" size="small" icon={<DeleteRegular />} onClick={uninstall}>
-        //                     Remove
-        //                 </Button>
-        //             )}
-        //             {isStateChanging && <Spinner className={classes.spinner} size="extra-small" />}
-        //         </div>
-        //     </div>
-
-        //     {metadata.homepage && <WebSiteResource url={metadata.homepage} icon={<LinkRegular />} label="Homepage" />}
-        //     {metadata.repository && <WebSiteResource url={metadata.repository} icon={<BranchForkRegular />} label="Repository" />}
-        //     {metadata.bugs && <WebSiteResource url={metadata.bugs} icon={<BugRegular />} label="Report Issues" />}
-        // </div>
     );
 });
 
