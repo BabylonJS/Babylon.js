@@ -1,158 +1,82 @@
 import type { Nullable } from "core/types";
-import type { ParticleSystem } from "../particleSystem";
-import type { IShapeBlock } from "./Blocks/Emitters/IShapeBlock";
-import type { Vector3 } from "core/Maths/math.vector";
 import type { Color4 } from "core/Maths/math.color";
-import type { NodeParticleConnectionPoint } from "./nodeParticleBlockConnectionPoint";
-import type { BoxParticleEmitter } from "../EmitterTypes/boxParticleEmitter";
-import type { PointParticleEmitter } from "../EmitterTypes/pointParticleEmitter";
-import type { SphereParticleEmitter } from "../EmitterTypes/sphereParticleEmitter";
-import type { CylinderParticleEmitter, MeshParticleEmitter } from "../EmitterTypes";
-import type { Mesh } from "core/Meshes/mesh";
+import type { Vector3 } from "core/Maths/math.vector";
 import type { Texture } from "core/Materials/Textures/texture";
+import type { Mesh } from "core/Meshes/mesh";
+import type { ParticleSystem } from "core/Particles/particleSystem";
+import type { IParticleSystem } from "core/Particles/IParticleSystem";
+import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
+import type { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
+import type { CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
+import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
+import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
+import type { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
+import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
+import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
+import { ParticleInputBlock } from "./Blocks/particleInputBlock";
+import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
+import { ParticleRandomBlock } from "./Blocks/particleRandomBlock";
+import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { SystemBlock } from "./Blocks/systemBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
-import { ParticleInputBlock } from "./Blocks/particleInputBlock";
-import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
-import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
+import { ConeShapeBlock } from "./Blocks/Emitters/coneShapeBlock";
 import { CylinderShapeBlock } from "./Blocks/Emitters/cylinderShapeBlock";
 import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
-import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
-import { ParticleRandomBlock } from "./Blocks/particleRandomBlock";
-import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
-import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
+import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
+import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
-import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 
 /**
  * Converts a ParticleSystem to a NodeParticleSystemSet.
  * @param name The name of the node particle system set.
- * @param particleSystems The particle systems to convert.
+ * @param particleSystemsList The particle systems to convert.
  * @returns The converted node particle system set or null if conversion failed.
- * #0K3AQ2#3670
+ * #0K3AQ2#3672
+ * #7J0NXA#4
  */
-export async function ConvertToNodeParticleSystemSetAsync(name: string, particleSystems: ParticleSystem[]): Promise<Nullable<NodeParticleSystemSet>> {
-    if (!particleSystems || !particleSystems.length) {
+export async function ConvertToNodeParticleSystemSetAsync(name: string, particleSystemsList: ParticleSystem[]): Promise<Nullable<NodeParticleSystemSet>> {
+    if (!particleSystemsList || !particleSystemsList.length) {
         return null;
     }
 
     const nodeParticleSystemSet = new NodeParticleSystemSet(name);
     const promises: Promise<void>[] = [];
 
-    for (const particleSystem of particleSystems) {
-        promises.push(_ExtractDatafromParticleSystemAsync(particleSystem, nodeParticleSystemSet));
+    for (const particleSystem of particleSystemsList) {
+        promises.push(_ExtractDatafromParticleSystemAsync(nodeParticleSystemSet, particleSystem));
     }
 
     await Promise.all(promises);
     return nodeParticleSystemSet;
 }
 
-async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSystem, target: NodeParticleSystemSet) {
-    // Main system
-    const system = new SystemBlock(particleSystem.name);
-    system.capacity = particleSystem.getCapacity();
-    system.emitRate = particleSystem.emitRate;
+async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet, oldSystem: ParticleSystem): Promise<void> {
+    // System block
+    const newSystem = _CreateSystemBlock(oldSystem);
 
-    // Create particle
-    const createParticleBlock = new CreateParticleBlock("Create Particle");
+    // Shape block
+    const shapeBlock = _CreateShapeBlock(oldSystem);
 
-    // Shape
-    let shapeBlock: Nullable<IShapeBlock> = null;
-    switch (particleSystem.particleEmitterType.getClassName()) {
-        case "BoxParticleEmitter": {
-            const source = particleSystem.particleEmitterType as BoxParticleEmitter;
-            shapeBlock = new BoxShapeBlock("Box Shape");
-
-            const target = shapeBlock as BoxShapeBlock;
-            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
-            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
-            _CreateAndConnectInput("Min Emit Box", source.minEmitBox, target.minEmitBox);
-            _CreateAndConnectInput("Max Emit Box", source.maxEmitBox, target.maxEmitBox);
-            break;
-        }
-        case "PointParticleEmitter": {
-            const source = particleSystem.particleEmitterType as PointParticleEmitter;
-            shapeBlock = new PointShapeBlock("Point Shape");
-
-            const target = shapeBlock as PointShapeBlock;
-            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
-            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
-            break;
-        }
-        case "SphereParticleEmitter": {
-            const source = particleSystem.particleEmitterType as SphereParticleEmitter;
-            shapeBlock = new SphereShapeBlock("Sphere Shape");
-
-            const target = shapeBlock as SphereShapeBlock;
-            _CreateAndConnectInput("Radius", source.radius, target.radius);
-            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
-            _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
-            break;
-        }
-        case "CylinderParticleEmitter": {
-            const source = particleSystem.particleEmitterType as CylinderParticleEmitter;
-            shapeBlock = new CylinderShapeBlock("Cylinder Shape");
-
-            const target = shapeBlock as CylinderShapeBlock;
-            _CreateAndConnectInput("Height", source.height, target.height);
-            _CreateAndConnectInput("Radius", source.radius, target.radius);
-            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
-            _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
-            break;
-        }
-        case "MeshParticleEmitter": {
-            const source = particleSystem.particleEmitterType as MeshParticleEmitter;
-            shapeBlock = new MeshShapeBlock("Mesh Shape");
-
-            const target = shapeBlock as MeshShapeBlock;
-            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
-            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
-
-            target.mesh = source.mesh as Mesh;
-            break;
-        }
-    }
-
-    if (!shapeBlock) {
-        throw new Error(`Unsupported particle emitter type: ${particleSystem.particleEmitterType.getClassName()}`);
-    }
-
+    // CreateParticle block
+    const createParticleBlock = _CreateCreateParticleBlock(oldSystem);
     createParticleBlock.particle.connectTo(shapeBlock.particle);
-
-    // Dead color
-    _CreateAndConnectInput("Dead Color", particleSystem.colorDead, createParticleBlock.colorDead);
-
-    // Color
-    const randomColorBlock = new ParticleRandomBlock("Random Color");
-    _CreateAndConnectInput("Color 1", particleSystem.color1, randomColorBlock.min);
-    _CreateAndConnectInput("Color 2", particleSystem.color2, randomColorBlock.max);
-    randomColorBlock.output.connectTo(createParticleBlock.color);
-
-    // Emit power
-    const randomEmitPowerBlock = new ParticleRandomBlock("Random Emit Power");
-    _CreateAndConnectInput("Min Emit Power", particleSystem.minEmitPower, randomEmitPowerBlock.min);
-    _CreateAndConnectInput("Max Emit Power", particleSystem.maxEmitPower, randomEmitPowerBlock.max);
-    randomEmitPowerBlock.output.connectTo(createParticleBlock.emitPower);
-
-    // Lifetime
-    const randomLifetimeBlock = new ParticleRandomBlock("Random Lifetime");
-    _CreateAndConnectInput("Min Lifetime", particleSystem.minLifeTime, randomLifetimeBlock.min);
-    _CreateAndConnectInput("Max Lifetime", particleSystem.maxLifeTime, randomLifetimeBlock.max);
-    randomLifetimeBlock.output.connectTo(createParticleBlock.lifeTime);
 
     // Texture
     const textureBlock = new ParticleTextureSourceBlock("Texture");
-    const url = (particleSystem.particleTexture as Texture).url || "";
+    const url = (oldSystem.particleTexture as Texture).url || "";
     if (url) {
         textureBlock.url = url;
     } else {
-        textureBlock.sourceTexture = particleSystem.particleTexture;
+        textureBlock.sourceTexture = oldSystem.particleTexture;
     }
-    textureBlock.texture.connectTo(system.texture);
+    textureBlock.texture.connectTo(newSystem.texture);
 
     // Default position update
     const positionUpdateblock = new UpdatePositionBlock("Position update");
@@ -188,20 +112,162 @@ async function _ExtractDatafromParticleSystemAsync(particleSystem: ParticleSyste
     maxAlphaBlock.output.connectTo(composeColorBlock.wIn);
     composeColorBlock.colorOut.connectTo(colorUpdateblock.color);
 
-    colorUpdateblock.output.connectTo(system.particle);
+    colorUpdateblock.output.connectTo(newSystem.particle);
 
     // Register
-    target.systemBlocks.push(system);
+    newSet.systemBlocks.push(newSystem);
 }
 
-function _CreateAndConnectInput(inputBlockName: string, value: number | Vector3 | Color4, outputToConnectTo: NodeParticleConnectionPoint) {
-    const input = new ParticleInputBlock(inputBlockName);
+function _CreateSystemBlock(oldSystem: IParticleSystem): SystemBlock {
+    const newSystem = new SystemBlock(oldSystem.name);
+
+    newSystem.blendMode = oldSystem.blendMode;
+    newSystem.capacity = oldSystem.getCapacity();
+    newSystem.emitRate = oldSystem.emitRate;
+    newSystem.targetStopDuration = oldSystem.targetStopDuration;
+    newSystem.startDelay = oldSystem.startDelay;
+    newSystem.updateSpeed = oldSystem.updateSpeed;
+
+    return newSystem;
+}
+
+function _CreateCreateParticleBlock(oldSystem: IParticleSystem): CreateParticleBlock {
+    // Create particle
+    const createParticleBlock = new CreateParticleBlock("Create Particle");
+
+    // Color
+    const randomColorBlock = new ParticleRandomBlock("Random Color");
+    _CreateAndConnectInput("Color 1", oldSystem.color1, randomColorBlock.min);
+    _CreateAndConnectInput("Color 2", oldSystem.color2, randomColorBlock.max);
+    randomColorBlock.output.connectTo(createParticleBlock.color);
+
+    // Dead color
+    _CreateAndConnectInput("Dead Color", oldSystem.colorDead, createParticleBlock.colorDead);
+
+    // Emit power
+    const randomEmitPowerBlock = new ParticleRandomBlock("Random Emit Power");
+    _CreateAndConnectInput("Min Emit Power", oldSystem.minEmitPower, randomEmitPowerBlock.min);
+    _CreateAndConnectInput("Max Emit Power", oldSystem.maxEmitPower, randomEmitPowerBlock.max);
+    randomEmitPowerBlock.output.connectTo(createParticleBlock.emitPower);
+
+    // Scale
+    const randomScaleBlock = new ParticleRandomBlock("Random Scale");
+    _CreateAndConnectInput("Min Scale", oldSystem.minSize, randomScaleBlock.min);
+    _CreateAndConnectInput("Max Scale", oldSystem.maxSize, randomScaleBlock.max);
+    randomScaleBlock.output.connectTo(createParticleBlock.scale);
+
+    // Lifetime
+    const randomLifetimeBlock = new ParticleRandomBlock("Random Lifetime");
+    _CreateAndConnectInput("Min Lifetime", oldSystem.minLifeTime, randomLifetimeBlock.min);
+    _CreateAndConnectInput("Max Lifetime", oldSystem.maxLifeTime, randomLifetimeBlock.max);
+    randomLifetimeBlock.output.connectTo(createParticleBlock.lifeTime);
+
+    return createParticleBlock;
+}
+
+function _CreateShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
+    const emitter = oldSystem.particleEmitterType;
+    if (!emitter) {
+        throw new Error("Particle system has no emitter type.");
+    }
+
+    let shapeBlock: Nullable<IShapeBlock> = null;
+    switch (emitter.getClassName()) {
+        case "BoxParticleEmitter": {
+            const source = emitter as BoxParticleEmitter;
+            shapeBlock = new BoxShapeBlock("Box Shape");
+
+            const target = shapeBlock as BoxShapeBlock;
+            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
+            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
+            _CreateAndConnectInput("Min Emit Box", source.minEmitBox, target.minEmitBox);
+            _CreateAndConnectInput("Max Emit Box", source.maxEmitBox, target.maxEmitBox);
+            break;
+        }
+        case "ConeParticleEmitter": {
+            const source = emitter as ConeParticleEmitter;
+            shapeBlock = new ConeShapeBlock("Cone Shape");
+
+            const target = shapeBlock as ConeShapeBlock;
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Angle", source.angle, target.angle);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Height Range", source.heightRange, target.heightRange);
+            _CreateAndConnectInput("Emit From Spawn Point Only", source.emitFromSpawnPointOnly ? 1 : 0, target.emitFromSpawnPointOnly, NodeParticleBlockConnectionPointTypes.Int);
+            _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
+            break;
+        }
+        case "CustomParticleEmitter": {
+            // Custom emitter is not supported in nodes yet
+            throw new Error("CustomParticleEmitter is not supported in Node Particle System.");
+        }
+        case "CylinderParticleEmitter": {
+            const source = emitter as CylinderParticleEmitter;
+            shapeBlock = new CylinderShapeBlock("Cylinder Shape");
+
+            const target = shapeBlock as CylinderShapeBlock;
+            _CreateAndConnectInput("Height", source.height, target.height);
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
+            break;
+        }
+        case "HemisphericParticleEmitter": {
+            // Hemispheric emitter is not supported in nodes yet
+            throw new Error("HemisphericParticleEmitter is not supported in Node Particle System.");
+        }
+        case "MeshParticleEmitter": {
+            const source = emitter as MeshParticleEmitter;
+            shapeBlock = new MeshShapeBlock("Mesh Shape");
+
+            const target = shapeBlock as MeshShapeBlock;
+            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
+            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
+
+            target.mesh = source.mesh as Mesh;
+            break;
+        }
+        case "PointParticleEmitter": {
+            const source = emitter as PointParticleEmitter;
+            shapeBlock = new PointShapeBlock("Point Shape");
+
+            const target = shapeBlock as PointShapeBlock;
+            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
+            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
+            break;
+        }
+        case "SphereParticleEmitter": {
+            const source = emitter as SphereParticleEmitter;
+            shapeBlock = new SphereShapeBlock("Sphere Shape");
+
+            const target = shapeBlock as SphereShapeBlock;
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
+            break;
+        }
+    }
+
+    if (!shapeBlock) {
+        throw new Error(`Unsupported particle emitter type: ${emitter.getClassName()}`);
+    }
+
+    return shapeBlock;
+}
+
+function _CreateAndConnectInput(
+    inputBlockName: string,
+    value: number | Vector3 | Color4,
+    targetToConnectTo: NodeParticleConnectionPoint,
+    inputType?: NodeParticleBlockConnectionPointTypes
+): void {
+    const input = new ParticleInputBlock(inputBlockName, inputType);
     input.value = value;
-    input.output.connectTo(outputToConnectTo);
+    input.output.connectTo(targetToConnectTo);
 }
 
-function _CreateAndConnectContextual(contextualBlockName: string, contextValue: NodeParticleContextualSources, outputToConnectTo: NodeParticleConnectionPoint): void {
+function _CreateAndConnectContextual(contextualBlockName: string, contextValue: NodeParticleContextualSources, targetToConnectTo: NodeParticleConnectionPoint): void {
     const input = new ParticleInputBlock(contextualBlockName);
     input.contextualValue = contextValue;
-    input.output.connectTo(outputToConnectTo);
+    input.output.connectTo(targetToConnectTo);
 }
