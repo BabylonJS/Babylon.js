@@ -886,7 +886,7 @@ export class ShaderMaterial extends PushMaterial {
             defines.push("#define USE_VERTEX_PULLING");
 
             const indexBuffer = renderingMesh.geometry?.getIndexBuffer();
-            if (indexBuffer) {
+            if (indexBuffer && !(renderingMesh as Mesh).isUnIndexed) {
                 defines.push("#define VERTEX_PULLING_USE_INDEX_BUFFER");
                 if (indexBuffer.is32Bits) {
                     defines.push("#define VERTEX_PULLING_INDEX_BUFFER_32BITS");

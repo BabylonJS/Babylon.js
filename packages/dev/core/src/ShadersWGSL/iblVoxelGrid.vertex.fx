@@ -163,7 +163,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #include <morphTargetsVertexGlobal>
 let inputPosition: vec3f = positionUpdated;
-#include <morphTargetsVertex>(vertexInputs.position\\),inputPosition))[0..maxSimultaneousMorphTargets]
+#include <morphTargetsVertex>(vertexInputs.position\\),inputPosition),vertexInputs.vertexIndex,vertIdx)[0..maxSimultaneousMorphTargets]
 
 #include <instancesVertex>
 
