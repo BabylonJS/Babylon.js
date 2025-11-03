@@ -48,7 +48,7 @@ To validate your PR, please follow these steps:
 
 -   Run `npm run build:dev` locally and make sure that no error is generated
 -   Make sure that all public functions and classes are commented using JSDoc/TSDoc syntax
--   Run `npm run test:unit` for unit tests, and check the buildSystem.md file for information regarding the visualization tests.
+-   Run `npm run test:unit` for unit tests, and check the [how to contribute documentation: Visualization tests](https://doc.babylonjs.com/contribute/toBabylon/HowToContribute/#visualization-tests) section for information on how to run the visualization tests.
 
 ## What should go where
 
