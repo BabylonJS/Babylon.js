@@ -55,6 +55,12 @@ export class SystemBlock extends NodeParticleBlock {
     public startDelay = 0;
 
     /**
+     * Gets or sets the target stop duration for the particle system
+     */
+    @editableInPropertyPage("updateSpeed", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0, max: 0.1 })
+    public updateSpeed = 0.0167;
+
+    /**
      * Gets or sets a boolean indicating if the system should not start automatically
      */
     @editableInPropertyPage("Do no start", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
@@ -136,6 +142,7 @@ export class SystemBlock extends NodeParticleBlock {
         const particleSystem = this.particle.getConnectedValue(state) as ParticleSystem;
         particleSystem.particleTexture = this.texture.getConnectedValue(state);
         particleSystem.emitRate = this.emitRate;
+        particleSystem.updateSpeed = this.updateSpeed;
         particleSystem.blendMode = this.blendMode;
         particleSystem.name = this.name;
         particleSystem._targetStopDuration = this.targetStopDuration;

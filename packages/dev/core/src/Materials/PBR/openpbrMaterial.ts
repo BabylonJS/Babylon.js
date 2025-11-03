@@ -230,6 +230,7 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public SPECULAR_WEIGHT_IN_ALPHA = false;
     public SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = false;
     public SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
+    public COAT_ROUGHNESS_FROM_GREEN_CHANNEL = false;
     public COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
     public USE_GLTF_STYLE_ANISOTROPY = false;
     public THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = false;
@@ -1233,6 +1234,13 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      * @internal
      */
     public _useCoatRoughnessAnisotropyFromTangentTexture = false;
+
+    /**
+     * Specifies whether the coat roughness is taken from the green channel of the coat texture.
+     * This is for compatibility with glTF's KHR_materials_clearcoat and KHR_materials_coat extensions.
+     * @internal
+     */
+    public _useCoatRoughnessFromGreenChannel = false;
 
     /**
      * Assume the anisotropy data is stored in the format specified by
@@ -2620,6 +2628,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = this._useSpecularWeightFromSpecularColorTexture;
                 defines.SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useSpecularRoughnessAnisotropyFromTangentTexture;
                 defines.COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useCoatRoughnessAnisotropyFromTangentTexture;
+                defines.COAT_ROUGHNESS_FROM_GREEN_CHANNEL = this._useCoatRoughnessFromGreenChannel;
                 defines.ROUGHNESSSTOREINMETALMAPGREEN = this._useRoughnessFromMetallicTextureGreen;
                 defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallicFromMetallicTextureBlue;
                 defines.THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = this._useThinFilmThicknessFromTextureGreen;
