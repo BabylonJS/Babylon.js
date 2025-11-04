@@ -80,7 +80,7 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
     public set samples(n: number) {
         this._samples = n;
-        this.updateEffect(this._getDefinesForSSAO());
+        this.updateEffect();
         this._sampleSphere = this._generateHemisphere();
     }
     public get samples(): number {
@@ -101,10 +101,14 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
     public set epsilon(n: number) {
         this._epsilon = n;
-        this.updateEffect(this._getDefinesForSSAO());
+        this.updateEffect();
     }
     public get epsilon(): number {
         return this._epsilon;
+    }
+
+    public override updateEffect() {
+        super.updateEffect(this._getDefinesForSSAO());
     }
 
     private _scene: Scene;
@@ -129,7 +133,7 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
         this._createRandomTexture();
 
-        this.updateEffect(this._getDefinesForSSAO());
+        this.updateEffect();
         this._sampleSphere = this._generateHemisphere();
     }
 
@@ -247,7 +251,10 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
     }
 
     private _getDefinesForSSAO() {
-        let defines = `#define SSAO\n#define SAMPLES ${this.samples}\n#define EPSILON ${this.epsilon.toFixed(4)}`;
+        const epsilon = this._epsilon ?? 0.02;
+        const samples = this._samples ?? 8;
+
+        let defines = `#define SSAO\n#define SAMPLES ${samples}\n#define EPSILON ${epsilon.toFixed(4)}`;
 
         if (this.camera?.mode === Camera.ORTHOGRAPHIC_CAMERA) {
             defines += `\n#define ORTHOGRAPHIC_CAMERA`;

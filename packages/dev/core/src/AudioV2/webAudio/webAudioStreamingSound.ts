@@ -221,6 +221,8 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             this._initFromUrls(sound._source);
         } else if (sound._source instanceof HTMLMediaElement) {
             this._initFromMediaElement(sound._source);
+        } else {
+            throw new Error(`Invalid streaming sound source (${sound._source}).`);
         }
     }
 

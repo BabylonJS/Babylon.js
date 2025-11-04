@@ -1,5 +1,38 @@
 # Changelog
 
+## 8.34.1
+
+### Core
+
+- Add KHR_materials_fuzz extension support - by [MiiBond](https://github.com/MiiBond) ([#17373](https://github.com/BabylonJS/Babylon.js/pull/17373))
+- SSAO2: Fix rendering artifacts when switching camera mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17383](https://github.com/BabylonJS/Babylon.js/pull/17383))
+- Normalize particle direction in shader for billboardmode_stretchedlocal - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17384](https://github.com/BabylonJS/Babylon.js/pull/17384))
+- Throw error on invalid sound source - by [docEdub](https://github.com/docEdub) ([#17382](https://github.com/BabylonJS/Babylon.js/pull/17382))
+- Adding cone shape and other fixes - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17380](https://github.com/BabylonJS/Babylon.js/pull/17380))
+- Support KHR_materials_coat extension - by [MiiBond](https://github.com/MiiBond) ([#17360](https://github.com/BabylonJS/Babylon.js/pull/17360))
+- Replacing basic update blocks on Particles to NPE converter - by [VicenteCartas](https://github.com/VicenteCartas) ([#17375](https://github.com/BabylonJS/Babylon.js/pull/17375))
+- PBRMetallicRoughnessMaterial: Fix wrong lighting when two sided lighting enabled - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17374](https://github.com/BabylonJS/Babylon.js/pull/17374))
+- Background material: Fix material not working with floating origin mode + fix use of the sceneCenter property - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17362](https://github.com/BabylonJS/Babylon.js/pull/17362))
+- PostProcess: add doNotSerialize - by [kzhsw](https://github.com/kzhsw) ([#17369](https://github.com/BabylonJS/Babylon.js/pull/17369))
+
+### GUI
+
+- GUI 2D: Fix shadowOffsetX and shadowOffsetY to respect adaptive scaling - by [AmoebaChant](https://github.com/AmoebaChant) ([#17377](https://github.com/BabylonJS/Babylon.js/pull/17377))
+
+### Loaders
+
+- Add KHR_materials_fuzz extension support - by [MiiBond](https://github.com/MiiBond) ([#17373](https://github.com/BabylonJS/Babylon.js/pull/17373))
+- Support KHR_materials_coat extension - by [MiiBond](https://github.com/MiiBond) ([#17360](https://github.com/BabylonJS/Babylon.js/pull/17360))
+
+### Playground
+
+- Playground fixes for debug.html, frame.html and full.html - by [docEdub](https://github.com/docEdub) ([#17372](https://github.com/BabylonJS/Babylon.js/pull/17372))
+
+### Serializers
+
+- Add KHR_materials_fuzz extension support - by [MiiBond](https://github.com/MiiBond) ([#17373](https://github.com/BabylonJS/Babylon.js/pull/17373))
+- Support KHR_materials_coat extension - by [MiiBond](https://github.com/MiiBond) ([#17360](https://github.com/BabylonJS/Babylon.js/pull/17360))
+
 ## 8.34.0
 
 ### Core
