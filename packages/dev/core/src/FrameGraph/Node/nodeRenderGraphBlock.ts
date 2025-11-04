@@ -287,6 +287,14 @@ export class NodeRenderGraphBlock {
 
         const dependencies = this.getInputByName("dependencies")!;
 
+        Object.defineProperty(this, "dependencies", {
+            get: function (this: FrameGraphTask) {
+                return dependencies;
+            },
+            enumerable: true,
+            configurable: true,
+        });
+
         dependencies.addExcludedConnectionPointFromAllowedTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
                 NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |

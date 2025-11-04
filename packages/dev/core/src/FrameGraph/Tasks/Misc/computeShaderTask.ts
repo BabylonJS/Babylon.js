@@ -16,11 +16,13 @@ import { FrameGraphTask } from "../../frameGraphTask";
 import { ComputeShader } from "core/Compute/computeShader";
 import { Vector3 } from "core/Maths/math.vector";
 import { UniformBuffer } from "core/Materials/uniformBuffer";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Task used to execute a compute shader (WebGPU only)
  */
 export class FrameGraphComputeShaderTask extends FrameGraphTask {
+    private readonly _notSupported: boolean;
     private readonly _cs: ComputeShader;
     private readonly _ubo: { [name: string]: { ubo: UniformBuffer; autoUpdate: boolean } };
 
@@ -71,12 +73,19 @@ export class FrameGraphComputeShaderTask extends FrameGraphTask {
     constructor(name: string, frameGraph: FrameGraph, shaderPath: IComputeShaderPath | string, options: Partial<IComputeShaderOptions> = {}) {
         super(name, frameGraph);
 
+        if (!frameGraph.engine.getCaps().supportComputeShaders) {
+            this._notSupported = true;
+            Logger.Error("This engine does not support compute shaders!");
+            return;
+        }
+
+        this._notSupported = false;
         this._cs = new ComputeShader(name + "_cs", frameGraph.engine, shaderPath, options);
         this._ubo = {};
     }
 
     public override isReady(): boolean {
-        return this._cs.isReady();
+        return this._notSupported ? true : this._cs.isReady();
     }
 
     /**
@@ -177,22 +186,30 @@ export class FrameGraphComputeShaderTask extends FrameGraphTask {
     public record(skipCreationOfDisabledPasses?: boolean): FrameGraphPass<FrameGraphContext> {
         const pass = this._frameGraph.addPass(this.name);
 
-        pass.setExecuteFunc((context) => {
-            this.execute?.(context);
+        if (this._notSupported) {
+            pass.setExecuteFunc(() => {});
+        } else {
+            pass.setExecuteFunc((context) => {
+                this.execute?.(context);
 
-            for (const key in this._ubo) {
-                const uboEntry = this._ubo[key];
-                if (uboEntry.autoUpdate) {
-                    uboEntry.ubo.update();
+                for (const key in this._ubo) {
+                    const uboEntry = this._ubo[key];
+                    if (uboEntry.autoUpdate) {
+                        uboEntry.ubo.update();
+                    }
                 }
-            }
 
-            if (this.indirectDispatch) {
-                this._cs.dispatchIndirect(this.indirectDispatch.buffer, this.indirectDispatch.offset);
-            } else {
-                this._cs.dispatch(this.dispatchSize.x, this.dispatchSize.y, this.dispatchSize.z);
-            }
-        });
+                if (this.indirectDispatch) {
+                    context.pushDebugGroup(`Indirect dispatch compute shader (${this.name})`);
+                    this._cs.dispatchIndirect(this.indirectDispatch.buffer, this.indirectDispatch.offset);
+                    context.popDebugGroup();
+                } else {
+                    context.pushDebugGroup(`Dispatch compute shader (${this.name})`);
+                    this._cs.dispatch(this.dispatchSize.x, this.dispatchSize.y, this.dispatchSize.z);
+                    context.popDebugGroup();
+                }
+            });
+        }
 
         if (!skipCreationOfDisabledPasses) {
             const passDisabled = this._frameGraph.addPass(this.name + "_disabled", true);
