@@ -310,17 +310,15 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                                         </PersonDetailsPopover>
                                     )}
                                     {contributors.length > 0 && (
-                                        <>
-                                            <AvatarGroup layout="stack">
-                                                {contributors.map((contributor) => {
-                                                    return (
-                                                        <PersonDetailsPopover key={contributor.name} person={contributor} title="Contributor">
-                                                            <AvatarGroupItem name={contributor.name} className={classes.avatarGroupItem} />
-                                                        </PersonDetailsPopover>
-                                                    );
-                                                })}
-                                            </AvatarGroup>
-                                        </>
+                                        <AvatarGroup layout="stack">
+                                            {contributors.map((contributor) => {
+                                                return (
+                                                    <PersonDetailsPopover key={contributor.name} person={contributor} title="Contributor">
+                                                        <AvatarGroupItem name={contributor.name} className={classes.avatarGroupItem} />
+                                                    </PersonDetailsPopover>
+                                                );
+                                            })}
+                                        </AvatarGroup>
                                     )}
                                 </div>
                             )}
