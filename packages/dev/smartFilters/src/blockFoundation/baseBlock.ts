@@ -113,7 +113,7 @@ export abstract class BaseBlock implements ICommandOwner {
      * Returns if the block is an input block.
      */
     public get isInput(): boolean {
-        return this._inputs.length === 0;
+        return false;
     }
 
     /**
