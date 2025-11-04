@@ -569,6 +569,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /**
      * The list of sounds used in the scene.
+     * @deprecated please use AudioEngineV2 instead
      */
     public sounds: Nullable<Array<Sound>> = null;
 
