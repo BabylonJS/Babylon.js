@@ -1,10 +1,11 @@
 import { Effect } from "../Materials/effect";
-import { Matrix } from "../Maths/math.vector";
+import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { IMatrixLike, IVector3Like } from "../Maths/math.like";
 import { InvertMatrixToRef, MultiplyMatricesToRef } from "../Maths/ThinMaths/thinMath.matrix.functions";
 import type { Scene } from "../scene";
 import type { DeepImmutable } from "../types";
 import { UniformBuffer } from "./uniformBuffer";
+import type { Plane } from "../Maths/math.plane";
 
 const TempFinalMat: Matrix = new Matrix();
 const TempMat1: Matrix = new Matrix();
@@ -38,7 +39,7 @@ function GetFullOffsetView(offset: IVector3Like, viewMatrix: DeepImmutable<IMatr
     return ref;
 }
 
-function OffsetViewToRef(offset: IVector3Like, view: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
+export function OffsetViewToRef(offset: IVector3Like, view: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
     // When eye is not at camera, we cannot assume the translation of view matrix is at origin, so we perform full offset calculation
     if (!FloatingOriginCurrentScene.eyeAtCamera) {
         return GetFullOffsetView(offset, view, ref);
@@ -57,6 +58,19 @@ function OffsetViewToRef(offset: IVector3Like, view: DeepImmutable<IMatrixLike>,
 
 function OffsetViewProjectionToRef(offset: IVector3Like, view: DeepImmutable<IMatrixLike>, projection: DeepImmutable<IMatrixLike>, ref: Matrix): DeepImmutable<IMatrixLike> {
     MultiplyMatricesToRef(OffsetViewToRef(offset, view, ref), projection, ref);
+    return ref;
+}
+
+export function OffsetClipPlaneToRef(offset: Vector3, plane: Plane, ref: Plane): Plane {
+    // Original clipplane is using equation normal.dot(p) + d = 0
+    // Assume we have p' = p - offset, that means normal.dot(p') + d' = 0
+    // So to get the offset plane,
+    // normal.dot(p' + offset) + d = 0
+    // normal.dot(p') + normal.dot(offset) + d = 0
+    // -d' + normal.dot(offset) + d = 0
+    // d' = d + normal.dot(offset)
+    ref.normal.copyFrom(plane.normal);
+    ref.d = plane.d + Vector3.Dot(plane.normal, offset);
     return ref;
 }
 
