@@ -328,7 +328,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         super(scene.getEngine(), name);
 
         this._thinSSAORenderingPipeline = new ThinSSAO2RenderingPipeline(name, scene);
-        this._thinSSAORenderingPipeline._ssaoPostProcess.camera = scene.activeCamera;
 
         this._scene = scene;
         this._ratio = ratio;
@@ -366,6 +365,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), undefined, this._textureType);
         this._originalColorPostProcess.onBeforeRenderObservable.add(() => {
             const camera = this._scene.activeCamera;
+            this._thinSSAORenderingPipeline._ssaoPostProcess.camera = camera;
             if (camera && this._currentCameraMode !== camera.mode) {
                 this._currentCameraMode = camera.mode;
                 this._thinSSAORenderingPipeline._ssaoPostProcess.updateEffect();
@@ -545,8 +545,6 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         this._ssaoPostProcess.autoClear = false;
 
         this._ssaoPostProcess.onApply = (effect: Effect) => {
-            this._thinSSAORenderingPipeline._ssaoPostProcess.camera = this._scene.activeCamera;
-
             if (this._geometryBufferRenderer) {
                 effect.setTexture("depthSampler", this._geometryBufferRenderer.getGBuffer().textures[0]);
                 effect.setTexture("normalSampler", this._geometryBufferRenderer.getGBuffer().textures[1]);
