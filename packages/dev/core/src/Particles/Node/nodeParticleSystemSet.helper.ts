@@ -126,7 +126,9 @@ function _CreateSystemBlock(oldSystem: IParticleSystem): SystemBlock {
     newSystem.emitRate = oldSystem.emitRate;
     newSystem.targetStopDuration = oldSystem.targetStopDuration;
     newSystem.startDelay = oldSystem.startDelay;
+    newSystem.targetStopDuration = oldSystem.targetStopDuration;
     newSystem.updateSpeed = oldSystem.updateSpeed;
+    newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
     return newSystem;
 }

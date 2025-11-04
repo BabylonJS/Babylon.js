@@ -61,6 +61,18 @@ export class SystemBlock extends NodeParticleBlock {
     public updateSpeed = 0.0167;
 
     /**
+     * Gets or sets a boolean indicating if the system coordinate space is local or global
+     */
+    @editableInPropertyPage("Is local", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public isLocal = false;
+
+    /**
+     * Gets or sets a boolean indicating if the system should be disposed when stopped
+     */
+    @editableInPropertyPage("Dispose on stop", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public disposeOnStop = false;
+
+    /**
      * Gets or sets a boolean indicating if the system should not start automatically
      */
     @editableInPropertyPage("Do no start", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
@@ -147,6 +159,8 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.name = this.name;
         particleSystem._targetStopDuration = this.targetStopDuration;
         particleSystem.startDelay = this.startDelay;
+        particleSystem.isLocal = this.isLocal;
+        particleSystem.disposeOnStop = this.disposeOnStop;
 
         this.system._storedValue = this;
 
@@ -197,6 +211,8 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.capacity = this.capacity;
         serializationObject.emitRate = this.emitRate;
         serializationObject.blendMode = this.blendMode;
+        serializationObject.isLocal = this.isLocal;
+        serializationObject.disposeOnStop = this.disposeOnStop;
         serializationObject.doNoStart = this.doNoStart;
         serializationObject.targetStopDuration = this.targetStopDuration;
         serializationObject.startDelay = this.startDelay;
@@ -209,6 +225,8 @@ export class SystemBlock extends NodeParticleBlock {
 
         this.capacity = serializationObject.capacity;
         this.emitRate = serializationObject.emitRate;
+        this.isLocal = serializationObject.isLocal ?? false;
+        this.disposeOnStop = serializationObject.disposeOnStop ?? false;
         this.doNoStart = !!serializationObject.doNoStart;
 
         if (serializationObject.blendMode !== undefined) {

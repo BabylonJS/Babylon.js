@@ -174,16 +174,20 @@ export class NodeParticleBuildState {
     /**
      * Gets the emitter position
      */
-    public get emitterPosition() {
+    public get emitterPosition(): Nullable<Vector3> {
         if (!this.systemContext) {
             return null;
         }
 
-        if (this.isEmitterTransformNode) {
-            return (<AbstractMesh>this.systemContext.emitter).absolutePosition;
+        if (!this.systemContext.emitter) {
+            return null;
         }
 
-        return this.systemContext.emitter as Vector3;
+        if (this.systemContext.emitter instanceof Vector3) {
+            return this.systemContext.emitter;
+        }
+
+        return (<AbstractMesh>this.systemContext.emitter).absolutePosition;
     }
 
     /**
@@ -202,12 +206,7 @@ export class NodeParticleBuildState {
             case NodeParticleSystemSources.Delta:
                 return this.systemContext._scaledUpdateSpeed;
             case NodeParticleSystemSources.Emitter:
-                if (this.isEmitterTransformNode) {
-                    const emitterMesh = <AbstractMesh>this.systemContext.emitter;
-                    return emitterMesh.absolutePosition;
-                } else {
-                    return this.systemContext.emitter;
-                }
+                return this.emitterPosition;
             case NodeParticleSystemSources.CameraPosition:
                 return this.scene.activeCamera?.globalPosition || Vector3.Zero();
         }
