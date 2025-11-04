@@ -1,6 +1,7 @@
 import type { Nullable } from "../../types";
 import type { IAudioParameterRampOptions } from "../audioParameter";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
+import type { AbstractSound } from "./abstractSound";
 import type { AbstractSoundSource, ISoundSourceOptions } from "./abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "./audioBus";
 import type { IMainAudioBusOptions, MainAudioBus } from "./mainAudioBus";
@@ -51,6 +52,7 @@ export type AudioEngineV2State = "closed" | "interrupted" | "running" | "suspend
 export abstract class AudioEngineV2 {
     /** Not owned, but all items should be in `_nodes` container, too, which is owned. */
     private readonly _mainBuses = new Set<MainAudioBus>();
+    private readonly _sounds = new Array<AbstractSound>();
 
     /** Owned top-level sound and bus nodes. */
     private readonly _nodes = new Set<AbstractNamedAudioNode>();
@@ -130,6 +132,13 @@ export abstract class AudioEngineV2 {
 
     public set parameterRampDuration(value: number) {
         this._parameterRampDuration = Math.max(0, value);
+    }
+
+    /**
+     * The list of static and streaming sounds created by the audio engine.
+     */
+    public get sounds(): ReadonlyArray<AbstractSound> {
+        return this._sounds;
     }
 
     /**
@@ -213,6 +222,7 @@ export abstract class AudioEngineV2 {
 
         this._mainBuses.clear();
         this._nodes.clear();
+        this._sounds.length = 0;
 
         this._defaultMainBus = null;
     }
@@ -274,6 +284,19 @@ export abstract class AudioEngineV2 {
 
     protected _removeNode(node: AbstractNamedAudioNode): void {
         this._nodes.delete(node);
+    }
+
+    protected _addSound(sound: AbstractSound): void {
+        this._sounds.push(sound);
+        this._addNode(sound);
+    }
+
+    protected _removeSound(sound: AbstractSound): void {
+        const index = this._sounds.indexOf(sound);
+        if (index !== -1) {
+            this._sounds.splice(index, 1);
+        }
+        this._removeNode(sound);
     }
 }
 
