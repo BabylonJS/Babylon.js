@@ -242,6 +242,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
 
+    private _tempVect3 = new Vector3();
     private _tempVect4 = new Vector4();
     /**
      * Observable triggered when the performance priority is changed
@@ -2797,7 +2798,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * When floatingOriginMode is enabled, offset is equal to the active camera position in world space. If no active camera or floatingOriginMode is disabled, offset is 0.
      */
     public get floatingOriginOffset(): Vector3 {
-        return this.floatingOriginMode && this.activeCamera ? this.activeCamera.getWorldMatrix().getTranslation() : this._floatingOriginOffsetDefault;
+        return this.floatingOriginMode
+            ? this._mirroredCameraPosition
+                ? this._mirroredCameraPosition
+                : this.activeCamera
+                  ? this.activeCamera.getWorldMatrix().getTranslationToRef(this._tempVect3)
+                  : this._floatingOriginOffsetDefault
+            : this._floatingOriginOffsetDefault;
     }
 
     /**

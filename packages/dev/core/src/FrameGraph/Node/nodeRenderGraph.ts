@@ -366,12 +366,16 @@ export class NodeRenderGraph {
      * Returns a promise that resolves when the node render graph is ready to be executed
      * This method must be called after the graph has been built (NodeRenderGraph.build called)!
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 5000)
      * @returns The promise that resolves when the graph is ready
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
-        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
+    public whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
+        this._frameGraph.pausedExecution = true;
+        // eslint-disable-next-line github/no-then
+        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout).then(() => {
+            this._frameGraph.pausedExecution = false;
+        });
     }
 
     /**

@@ -181,15 +181,11 @@ export class DirectionalLight extends ShadowLight {
     protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix): void {
         const activeCamera = this.getScene().activeCamera;
 
-        if (!activeCamera) {
-            return;
-        }
-
         Matrix.OrthoLHToRef(
             this.shadowFrustumSize,
             this.shadowFrustumSize,
-            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ,
-            this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ,
+            this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera ? activeCamera.minZ : Constants.ShadowMinZ,
+            this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera ? activeCamera.maxZ : Constants.ShadowMaxZ,
             matrix,
             this.getScene().getEngine().isNDCHalfZRange
         );

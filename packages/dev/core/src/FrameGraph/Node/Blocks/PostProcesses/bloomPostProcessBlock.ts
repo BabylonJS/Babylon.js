@@ -72,7 +72,7 @@ export class NodeRenderGraphBloomPostProcessBlock extends NodeRenderGraphBasePos
     }
 
     /** The luminance threshold to find bright areas of the image to bloom. */
-    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 2 })
+    @editableInPropertyPage("Threshold", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
     public get threshold(): number {
         return this._frameGraphTask.bloom.threshold;
     }

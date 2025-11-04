@@ -63,6 +63,7 @@ export class NodeRenderGraphEditor {
         globalState.nodeRenderGraph = options.nodeRenderGraph;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
+        globalState.hostScene = options.hostScene;
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;

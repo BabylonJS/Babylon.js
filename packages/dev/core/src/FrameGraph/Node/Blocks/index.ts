@@ -1,3 +1,4 @@
+export * from "./computeShaderBlock";
 export * from "./cullObjectsBlock";
 export * from "./elbowBlock";
 export * from "./executeBlock";
