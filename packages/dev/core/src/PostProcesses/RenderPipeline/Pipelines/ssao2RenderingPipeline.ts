@@ -328,6 +328,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         super(scene.getEngine(), name);
 
         this._thinSSAORenderingPipeline = new ThinSSAO2RenderingPipeline(name, scene);
+        this._thinSSAORenderingPipeline._ssaoPostProcess.camera = this._scene.activeCamera;
 
         this._scene = scene;
         this._ratio = ratio;
