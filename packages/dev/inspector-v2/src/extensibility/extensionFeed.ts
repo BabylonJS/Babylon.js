@@ -1,12 +1,24 @@
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 
 export type PersonMetadata = {
+    /**
+     * The name of the person.
+     */
     readonly name: string;
 
+    /**
+     * The email address of the person.
+     */
     readonly email?: string;
 
+    /**
+     * The URL to the person's website.
+     */
     readonly url?: string;
 
+    /**
+     * The Babylon forum username of the person.
+     */
     readonly forumUserName?: string;
 };
 

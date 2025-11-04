@@ -1,4 +1,12 @@
+import type { ExtensionMetadata } from "./extensionFeed";
+
 import { BuiltInsExtensionFeed } from "./builtInsExtensionFeed";
+
+const BabylonWebResources = {
+    homepage: "https://www.babylonjs.com",
+    repository: "https://github.com/BabylonJS/Babylon.js",
+    bugs: "https://github.com/BabylonJS/Babylon.js/issues",
+} as const satisfies Partial<ExtensionMetadata>;
 
 /**
  * Well-known default built in extensions for the Inspector.
@@ -14,25 +22,24 @@ export const DefaultInspectorExtensionFeed = new BuiltInsExtensionFeed("Inspecto
         name: "Export Tools",
         description: "Adds new features to enable exporting Babylon assets such as .gltf, .glb, .babylon, and more.",
         keywords: ["export", "gltf", "glb", "babylon", "exporter", "tools"],
-        homepage: "https://www.bing.com",
-        repository: "https://www.bing.com",
-        bugs: "https://www.bing.com",
-        author: { name: "Alex Chuber", forumUserName: "alexchuber", url: "https://www.babylonjs.com", email: "alex@chuber.com" },
-        contributors: ["Contributor One", { name: "Contributor Two", forumUserName: "contributorTwo" }],
-        license: "Apache-2.0",
-        version: "1.0.0",
+        ...BabylonWebResources,
+        author: { name: "Alex Chuber", forumUserName: "alexchuber" },
         getExtensionModuleAsync: async () => await import("../services/panes/tools/exportService"),
     },
     {
         name: "Capture Tools",
         description: "Adds new features to enable capturing screenshots, GIFs, videos, and more.",
         keywords: ["capture", "screenshot", "gif", "video", "tools"],
+        ...BabylonWebResources,
+        author: { name: "Alex Chuber", forumUserName: "alexchuber" },
         getExtensionModuleAsync: async () => await import("../services/panes/tools/captureService"),
     },
     {
         name: "Import Tools",
         description: "Adds new features related to importing Babylon assets.",
         keywords: ["import", "tools"],
+        ...BabylonWebResources,
+        author: { name: "Alex Chuber", forumUserName: "alexchuber" },
         getExtensionModuleAsync: async () => await import("../services/panes/tools/importService"),
     },
 ]);

@@ -108,6 +108,40 @@ const useStyles = makeStyles({
             to: { opacity: 1 },
         },
     },
+    webResourceDiv: {
+        display: "flex",
+        flexDirection: "column",
+    },
+    webResourceLink: {
+        display: "flex",
+        flexDirection: "row",
+        columnGap: tokens.spacingHorizontalS,
+        alignItems: "center",
+    },
+    personPopoverSurfaceDiv: {
+        display: "flex",
+        flexDirection: "column",
+        rowGap: tokens.spacingVerticalS,
+    },
+    accordionHeaderDiv: {
+        display: "flex",
+        flexDirection: "row",
+        columnGap: tokens.spacingHorizontalS,
+        alignItems: "center",
+    },
+    resourceDetailsDiv: {
+        display: "flex",
+        flexDirection: "column",
+        rowGap: tokens.spacingVerticalS,
+    },
+    peopleDetailsDiv: {
+        display: "flex",
+        flexDirection: "row",
+        columnGap: tokens.spacingHorizontalXL,
+    },
+    avatarGroupItem: {
+        cursor: "pointer",
+    },
 });
 
 function AsPersonMetadata(person: string | PersonMetadata): PersonMetadata {
@@ -154,11 +188,12 @@ const useTeachingMoment = MakePopoverTeachingMoment("Extensions");
 
 const WebResource: FunctionComponent<{ url: string; urlDisplay?: string; icon: JSX.Element; label: string }> = (props) => {
     const { url, urlDisplay, icon, label } = props;
+    const classes = useStyles();
+
     return (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-            {/* <Body1 underline>{label}</Body1> */}
+        <div className={classes.webResourceDiv}>
             <Tooltip content={label} relationship="label" positioning="before" withArrow>
-                <div style={{ display: "flex", flexDirection: "row", columnGap: tokens.spacingHorizontalS, alignItems: "center" }}>
+                <div className={classes.webResourceLink}>
                     {icon}
                     <Link url={url} value={urlDisplay || url} />
                 </div>
@@ -169,6 +204,7 @@ const WebResource: FunctionComponent<{ url: string; urlDisplay?: string; icon: J
 
 const PersonDetailsPopover: FunctionComponent<TriggerProps & { person: PersonMetadata; title: string; disabled?: boolean }> = (props) => {
     const { person, title, disabled, children } = props;
+    const classes = useStyles();
 
     if (disabled) {
         return <>{children}</>;
@@ -178,7 +214,7 @@ const PersonDetailsPopover: FunctionComponent<TriggerProps & { person: PersonMet
         <Popover withArrow>
             <PopoverTrigger disableButtonEnhancement>{children}</PopoverTrigger>
             <PopoverSurface>
-                <div style={{ display: "flex", flexDirection: "column", rowGap: tokens.spacingVerticalS }}>
+                <div className={classes.personPopoverSurfaceDiv}>
                     <Persona name={person.name} secondaryText={title} />
                     {person.email && <WebResource url={`mailto:${person.email}`} urlDisplay={person.email} icon={<MailRegular />} label="Email" />}
                     {person.url && <WebResource url={person.url} urlDisplay={person.url} icon={<LinkRegular />} label="Website" />}
@@ -247,10 +283,8 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
     return (
         <AccordionItem className={classes.extensionItem} value={extension.metadata.name}>
             <AccordionHeader className={classes.extensionHeader} expandIconPosition="end">
-                <div style={{ display: "flex", flexDirection: "row", columnGap: tokens.spacingHorizontalS, alignItems: "center" }}>
+                <div className={classes.accordionHeaderDiv}>
                     <Body1Strong>{extension.metadata.name}</Body1Strong>
-                    {/* <CheckmarkCircleFilled /> */}
-                    {/* <PresenceAvailableRegular /> */}
                     <Fade visible={extension.isInstalled}>
                         <PresenceBadge size="small" />
                     </Fade>
@@ -262,14 +296,14 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                     {hasPreviewDetails && (
                         <CardPreview className={classes.extensionCardPreview}>
                             {hasResourceDetails && (
-                                <div style={{ display: "flex", flexDirection: "column", rowGap: tokens.spacingVerticalS }}>
+                                <div className={classes.resourceDetailsDiv} style={{ display: "flex" }}>
                                     {metadata.homepage && <WebResource url={metadata.homepage} icon={<LinkRegular />} label="Website" />}
                                     {metadata.repository && <WebResource url={metadata.repository} icon={<BranchForkRegular />} label="Repository" />}
                                     {metadata.bugs && <WebResource url={metadata.bugs} icon={<BugRegular />} label="Report Issues" />}
                                 </div>
                             )}
                             {hasPeopleDetails && (
-                                <div style={{ display: "flex", flexDirection: "row", columnGap: tokens.spacingHorizontalXL }}>
+                                <div className={classes.peopleDetailsDiv} style={{ display: "flex" }}>
                                     {author && (
                                         <PersonDetailsPopover person={author} title="Author" disabled={!hasAuthorDetails}>
                                             <Persona name={author.name} secondaryText="Author" style={{ cursor: hasAuthorDetails ? "pointer" : "default" }} />
@@ -281,7 +315,7 @@ const ExtensionDetails: FunctionComponent<{ extension: IExtension }> = memo((pro
                                                 {contributors.map((contributor) => {
                                                     return (
                                                         <PersonDetailsPopover key={contributor.name} person={contributor} title="Contributor">
-                                                            <AvatarGroupItem name={contributor.name} style={{ cursor: "pointer" }} />
+                                                            <AvatarGroupItem name={contributor.name} className={classes.avatarGroupItem} />
                                                         </PersonDetailsPopover>
                                                     );
                                                 })}
