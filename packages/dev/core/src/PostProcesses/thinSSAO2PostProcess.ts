@@ -161,8 +161,14 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
         effect.setFloat("near", camera.minZ);
         if (camera.mode === Camera.PERSPECTIVE_CAMERA) {
             effect.setMatrix3x3("depthProjection", ThinSSAO2PostProcess.PERSPECTIVE_DEPTH_PROJECTION);
-            effect.setFloat("xViewport", Math.tan(camera.fov / 2) * this._scene.getEngine().getAspectRatio(camera, true));
-            effect.setFloat("yViewport", Math.tan(camera.fov / 2));
+            const viewportSize = Math.tan(camera.fov / 2);
+            if (camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED) {
+                effect.setFloat("xViewport", viewportSize * this._scene.getEngine().getAspectRatio(camera, true));
+                effect.setFloat("yViewport", viewportSize);
+            } else {
+                effect.setFloat("xViewport", viewportSize);
+                effect.setFloat("yViewport", viewportSize / this._scene.getEngine().getAspectRatio(camera, true));
+            }
         } else {
             const halfWidth = this._scene.getEngine().getRenderWidth() / 2.0;
             const halfHeight = this._scene.getEngine().getRenderHeight() / 2.0;
