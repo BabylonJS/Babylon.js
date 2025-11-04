@@ -2119,7 +2119,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         result.reset(from, to);
 
-        const bodyToIgnore = [BigInt(0)];
+        const bodyToIgnore = query?.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
         const hkQuery = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith], shouldHitTriggers, bodyToIgnore];
         this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, hkQuery);
 
