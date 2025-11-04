@@ -181,6 +181,9 @@ export class CustomShaderBlock extends ShaderBlock {
      * @returns The shader program to use to render the block
      */
     public override getShaderProgram() {
+        // TODO: decide how to inject the updated #define values from the custom define properties
+        // Can we safely not have them added upstream, or would they get omitted in some cases then?
+
         // Cache buster
         const copy = JSON.parse(JSON.stringify(this._shaderProgram));
         copy.fragment.const = copy.fragment.const || "";
