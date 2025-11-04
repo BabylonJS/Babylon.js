@@ -94,21 +94,20 @@ class EncodingHelper {
     public static async EncodeImageAsync(pixelData: ArrayBufferView, width: number, height: number, mimeType?: string, invertY?: boolean, quality?: number): Promise<Blob> {
         const resources = await _GetDumpResourcesAsync();
 
-        // TODO: No need to promisify this whole thing
+        const dumpEngine = resources.dumpEngine;
+        dumpEngine.engine.setSize(width, height, true);
+
+        // Create the image
+        const texture = dumpEngine.engine.createRawTexture(pixelData, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+
+        dumpEngine.renderer.setViewport();
+        dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
+        dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
+        dumpEngine.renderer.draw();
+
+        texture.dispose();
+
         return await new Promise<Blob>((resolve, reject) => {
-            const dumpEngine = resources.dumpEngine;
-            dumpEngine.engine.setSize(width, height, true);
-
-            // Create the image
-            const texture = dumpEngine.engine.createRawTexture(pixelData, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
-
-            dumpEngine.renderer.setViewport();
-            dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
-            dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
-            dumpEngine.renderer.draw();
-
-            texture.dispose();
-
             Tools.ToBlob(
                 resources.canvas,
                 (blob) => {
