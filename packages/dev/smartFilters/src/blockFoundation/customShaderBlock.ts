@@ -146,7 +146,7 @@ export class CustomShaderBlock extends ShaderBlock {
      * @param blockType - The type of the block
      * @param namespace - The namespace of the block
      * @param inputConnectionPoints - The input connection points of the
-     * @param defines - The defines for the block
+     * @param defineProperties - The define properties for the block
      * @param shaderProgram - The shader program for the block
      */
     private constructor(
@@ -156,7 +156,7 @@ export class CustomShaderBlock extends ShaderBlock {
         blockType: string,
         namespace: Nullable<string>,
         inputConnectionPoints: SerializedInputConnectionPointV1[],
-        defines: DefinePropertyMetadata[],
+        defineProperties: DefinePropertyMetadata[],
         shaderProgram: ShaderProgram
     ) {
         super(smartFilter, name, disableOptimization);
@@ -166,7 +166,11 @@ export class CustomShaderBlock extends ShaderBlock {
         for (const input of inputConnectionPoints) {
             this._registerSerializedInputConnectionPointV1(input);
         }
-        this._createDynamicProperty();
+
+        for (const defineProperty of defineProperties) {
+            this._createDefinePropertyProperty(defineProperty);
+        }
+
         this._shaderProgram = shaderProgram;
 
         shaderProgram.fragment.defines;
@@ -185,26 +189,27 @@ export class CustomShaderBlock extends ShaderBlock {
     }
 
     /**
-     * Creates a dynamic property with EditableInPropertyPage decorator for a define with options.
+     * Creates a dynamic property for the supplied define with EditableInPropertyPage decorator for a define with options.
+     * @param defineProperty - The define property metadata
      */
-    private _createDynamicProperty(): void {
-        const options: IEditablePropertyOption = {
-            notifiers: { rebuild: true },
-            options: [
-                { label: "Disable", value: 0 },
-                { label: "Add", value: 1 },
-                { label: "Combine", value: 2 },
-                { label: "Subtract", value: 3 },
-                { label: "Multiply", value: 4 },
-            ],
-        };
+    private _createDefinePropertyProperty(defineProperty: DefinePropertyMetadata): void {
+        // Create the property and assign the default value
+        (this as any)[defineProperty.name] = defineProperty.defaultValue;
 
-        const decoratorApplier = EditableInPropertyPage("Dynamic Prop", PropertyTypeForEdition.List, "PROPERTIES", options);
+        // If options were supplied, use the EditableInPropertyPage decorator to allow selection from a list in the
+        // Smart Filters Editor
+        if (defineProperty.options) {
+            const options: IEditablePropertyOption = {
+                notifiers: { rebuild: true },
+            };
+            // Loop  through the keys in defineProperty.options and add them to the options list
+            options.options = Object.keys(defineProperty.options).map((key) => {
+                return { label: (defineProperty.options as any)[key], value: parseInt(key, 10) };
+            });
 
-        // Set the initial value
-        (this as any)["dynamicProp"] = 1;
-
-        decoratorApplier(this, "dynamicProp");
+            const decoratorApplier = EditableInPropertyPage(defineProperty.name, PropertyTypeForEdition.List, "PROPERTIES", options);
+            decoratorApplier(this, defineProperty.name);
+        }
     }
 
     /**

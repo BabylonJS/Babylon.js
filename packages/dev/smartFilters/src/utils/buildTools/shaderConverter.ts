@@ -52,7 +52,7 @@ export type DefinePropertyMetadata = {
     /**
      * The values to be used as the EditableInPropertyPage options
      */
-    possibleValues: { [key: number]: string };
+    options: { [key: number]: string };
 };
 
 /**
@@ -218,7 +218,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         defineProperties.push({
             name,
             defaultValue,
-            possibleValues: annotationJSON ? JSON.parse(annotationJSON.replace("//", "").trim()) : undefined,
+            options: annotationJSON ? JSON.parse(annotationJSON.replace("//", "").trim()).options : undefined,
         });
 
         if (annotationJSON) {
