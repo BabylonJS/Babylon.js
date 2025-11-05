@@ -1,7 +1,13 @@
 import { Clamp } from "./math.scalar.functions";
 import type { DeepImmutable } from "../types";
-import type { IQuaternionLike, IVector2Like, IVector3Like, IVector4Like } from "./math.like";
+import type { IDirtyFlagLike, IQuaternionLike, IVector2Like, IVector3Like, IVector4Like } from "./math.like";
 import { Quaternion, Vector3 } from "./math.vector";
+
+function SetDirtyFlag(x: IDirtyFlagLike) {
+    if (x._isDirty !== undefined) {
+        x._isDirty = true;
+    }
+}
 
 /**
  * Creates a string representation of the IVector2Like
@@ -9,7 +15,7 @@ import { Quaternion, Vector3 } from "./math.vector";
  * @param decimalCount defines the number of decimals to use
  * @returns a string with the IVector2Like coordinates.
  */
-export function Vector2ToFixed(vector: IVector2Like, decimalCount: number): string {
+export function Vector2ToFixed(vector: DeepImmutable<IVector2Like>, decimalCount: number): string {
     return `{X: ${vector.x.toFixed(decimalCount)} Y: ${vector.y.toFixed(decimalCount)}}`;
 }
 
@@ -66,43 +72,49 @@ export function Vector3Distance(a: DeepImmutable<IVector3Like>, b: DeepImmutable
 
 /**
  * Sets the given floats into the result.
+ * Marks the result as dirty if an `_isDirty` flag is defined on the object.
  * @param x defines the x coordinate
  * @param y defines the y coordinate
  * @param z defines the z coordinate
  * @param result defines the target vector
  * @returns the result vector
  */
-export function Vector3FromFloatsToRef<T extends IVector3Like>(x: number, y: number, z: number, result: T): T {
+export function Vector3FromFloatsToRef<T extends IVector3Like & IDirtyFlagLike>(x: number, y: number, z: number, result: T): T {
     result.x = x;
     result.y = y;
     result.z = z;
+    SetDirtyFlag(result);
     return result;
 }
 
 /**
  * Stores the scaled values of a vector into the result.
+ * Marks the result as dirty if an `_isDirty` flag is defined on the object.
  * @param a defines the source vector
  * @param scale defines the scale factor
  * @param result defines the target vector
  * @returns the scaled vector
  */
-export function Vector3ScaleToRef<T extends IVector3Like>(a: DeepImmutable<IVector3Like>, scale: number, result: T): T {
+export function Vector3ScaleToRef<T extends IVector3Like & IDirtyFlagLike>(a: DeepImmutable<IVector3Like>, scale: number, result: T): T {
     result.x = a.x * scale;
     result.y = a.y * scale;
     result.z = a.z * scale;
+    SetDirtyFlag(result);
     return result;
 }
 
 /**
- * Scales the current vector values in place by a factor
+ * Scales the current vector values in place by a factor.
+ * Marks the result as dirty if an `_isDirty` flag is defined on the object.
  * @param vector defines the vector to scale
  * @param scale defines the scale factor
  * @returns the input scaled vector
  */
-export function Vector3ScaleInPlace<T extends IVector3Like>(vector: T, scale: number): T {
+export function Vector3ScaleInPlace<T extends IVector3Like & IDirtyFlagLike>(vector: T, scale: number): T {
     vector.x *= scale;
     vector.y *= scale;
     vector.z *= scale;
+    SetDirtyFlag(vector);
     return vector;
 }
 
