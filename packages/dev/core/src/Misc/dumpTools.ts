@@ -9,10 +9,12 @@ import { Clamp } from "../Maths/math.scalar.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
+import { EncodeArrayBufferToBase64 } from "./stringTools";
+import { nativeOverride } from "./decorators";
 
 type DumpResources = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
-    dumpEngine?: {
+    dumpEngine: {
         engine: ThinEngine;
         renderer: EffectRenderer;
         wrapper: EffectWrapper;
@@ -28,14 +30,11 @@ async function _CreateDumpResourcesAsync(): Promise<DumpResources> {
         Logger.Warn("DumpData: OffscreenCanvas will be used for dumping data. This may result in lossy alpha values.");
     }
 
-    // If WebGL via ThinEngine is not available (e.g. Native), use the BitmapRenderer.
+    // If WebGL via ThinEngine is not available, we cannot encode the data.
     // If https://github.com/whatwg/html/issues/10142 is resolved, we can migrate to just BitmapRenderer and avoid an engine dependency altogether.
     const { ThinEngine: thinEngineClass } = await import("../Engines/thinEngine");
     if (!thinEngineClass.IsSupported) {
-        if (!canvas.getContext("bitmaprenderer")) {
-            throw new Error("DumpData: No WebGL or bitmap rendering context available. Cannot dump data.");
-        }
-        return { canvas };
+        throw new Error("DumpData: No WebGL context available. Cannot dump data.");
     }
 
     const options = {
@@ -84,6 +83,58 @@ async function _GetDumpResourcesAsync() {
     }
     return await ResourcesPromise;
 }
+
+class EncodingHelper {
+    /**
+     * Encodes image data to the given mime type.
+     * This is put into a helper class so we can apply the nativeOverride decorator to it.
+     * @internal
+     */
+    @nativeOverride
+    public static async EncodeImageAsync(pixelData: ArrayBufferView, width: number, height: number, mimeType?: string, invertY?: boolean, quality?: number): Promise<Blob> {
+        const resources = await _GetDumpResourcesAsync();
+
+        const dumpEngine = resources.dumpEngine;
+        dumpEngine.engine.setSize(width, height, true);
+
+        // Create the image
+        const texture = dumpEngine.engine.createRawTexture(pixelData, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+
+        dumpEngine.renderer.setViewport();
+        dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
+        dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
+        dumpEngine.renderer.draw();
+
+        texture.dispose();
+
+        return await new Promise<Blob>((resolve, reject) => {
+            Tools.ToBlob(
+                resources.canvas,
+                (blob) => {
+                    if (!blob) {
+                        reject(new Error("EncodeImageAsync: Failed to convert canvas to blob."));
+                    } else {
+                        resolve(blob);
+                    }
+                },
+                mimeType,
+                quality
+            );
+        });
+    }
+}
+
+/**
+ * Encodes pixel data to an image
+ * @param pixelData 8-bit RGBA pixel data
+ * @param width the width of the image
+ * @param height the height of the image
+ * @param mimeType the requested MIME type
+ * @param invertY true to invert the image in the Y direction
+ * @param quality the quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @returns a promise that resolves to the encoded image data. Note that the `blob.type` may differ from `mimeType` if it was not supported.
+ */
+export const EncodeImageAsync = EncodingHelper.EncodeImageAsync;
 
 /**
  * Dumps the current bound framebuffer
@@ -168,63 +219,23 @@ export async function DumpDataAsync(
         data = data2;
     }
 
-    const resources = await _GetDumpResourcesAsync();
+    const blob = await EncodingHelper.EncodeImageAsync(data, width, height, mimeType, invertY, quality);
 
-    // Keep the async render + read from the shared canvas atomic
-    // eslint-disable-next-line no-async-promise-executor
-    return await new Promise<string | ArrayBuffer>(async (resolve) => {
-        if (resources.dumpEngine) {
-            const dumpEngine = resources.dumpEngine;
-            dumpEngine.engine.setSize(width, height, true);
+    if (fileName !== undefined) {
+        Tools.DownloadBlob(blob, fileName);
+    }
 
-            // Create the image
-            const texture = dumpEngine.engine.createRawTexture(data, width, height, Constants.TEXTUREFORMAT_RGBA, false, !invertY, Constants.TEXTURE_NEAREST_NEAREST);
+    if (blob.type !== mimeType) {
+        Logger.Warn(`DumpData: The requested mimeType '${mimeType}' is not supported. The result has mimeType '${blob.type}' instead.`);
+    }
 
-            dumpEngine.renderer.setViewport();
-            dumpEngine.renderer.applyEffectWrapper(dumpEngine.wrapper);
-            dumpEngine.wrapper.effect._bindTexture("textureSampler", texture);
-            dumpEngine.renderer.draw();
+    const buffer = await blob.arrayBuffer();
 
-            texture.dispose();
-        } else {
-            const ctx = resources.canvas.getContext("bitmaprenderer") as ImageBitmapRenderingContext;
-            resources.canvas.width = width;
-            resources.canvas.height = height;
+    if (toArrayBuffer) {
+        return buffer;
+    }
 
-            const imageData = new ImageData(width, height); // ImageData(data, sw, sh) ctor not yet widely implemented
-            imageData.data.set(data as Uint8ClampedArray);
-            const imageBitmap = await createImageBitmap(imageData, { premultiplyAlpha: "none", imageOrientation: invertY ? "flipY" : "from-image" });
-
-            ctx.transferFromImageBitmap(imageBitmap);
-        }
-
-        Tools.ToBlob(
-            resources.canvas,
-            (blob) => {
-                if (!blob) {
-                    throw new Error("DumpData: Failed to convert canvas to blob.");
-                }
-
-                if (fileName !== undefined) {
-                    Tools.DownloadBlob(blob, fileName);
-                }
-
-                const fileReader = new FileReader();
-                fileReader.onload = (event: any) => {
-                    const result = event.target!.result as string | ArrayBuffer;
-                    resolve(result);
-                };
-
-                if (toArrayBuffer) {
-                    fileReader.readAsArrayBuffer(blob);
-                } else {
-                    fileReader.readAsDataURL(blob);
-                }
-            },
-            mimeType,
-            quality
-        );
-    });
+    return `data:${mimeType};base64,${EncodeArrayBufferToBase64(buffer)}`;
 }
 
 /**

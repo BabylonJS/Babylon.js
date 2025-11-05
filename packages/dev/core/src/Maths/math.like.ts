@@ -34,11 +34,17 @@ export interface IVector3Like extends IVector2Like {
 /**
  * @internal
  */
-export interface IVector3LikeInternal {
+export interface IDirtyFlagLike {
+    _isDirty?: boolean;
+}
+
+/**
+ * @internal
+ */
+export interface IVector3LikeInternal extends IDirtyFlagLike {
     _x: number;
     _y: number;
     _z: number;
-    _isDirty?: boolean;
 }
 
 /**

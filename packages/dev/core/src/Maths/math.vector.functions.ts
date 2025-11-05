@@ -1,8 +1,13 @@
 import { Clamp } from "./math.scalar.functions";
 import type { DeepImmutable } from "../types";
-import type { IVector2Like, IVector3Like } from "./math.like";
+import type { IDirtyFlagLike, IQuaternionLike, IVector2Like, IVector3Like, IVector4Like } from "./math.like";
 import { Quaternion, Vector3 } from "./math.vector";
-import type { Vector4 } from "./math.vector";
+
+function SetDirtyFlag(x: IDirtyFlagLike) {
+    if (x._isDirty !== undefined) {
+        x._isDirty = true;
+    }
+}
 
 /**
  * Creates a string representation of the IVector2Like
@@ -10,7 +15,7 @@ import type { Vector4 } from "./math.vector";
  * @param decimalCount defines the number of decimals to use
  * @returns a string with the IVector2Like coordinates.
  */
-export function Vector2ToFixed(vector: IVector2Like, decimalCount: number): string {
+export function Vector2ToFixed(vector: DeepImmutable<IVector2Like>, decimalCount: number): string {
     return `{X: ${vector.x.toFixed(decimalCount)} Y: ${vector.y.toFixed(decimalCount)}}`;
 }
 
@@ -20,56 +25,126 @@ export function Vector2ToFixed(vector: IVector2Like, decimalCount: number): stri
  * @param b defines the second vector
  * @returns the dot product
  */
-export function Vector3Dot<T extends IVector3Like, U extends IVector3Like>(a: DeepImmutable<T>, b: DeepImmutable<U>) {
+export function Vector3Dot(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
 /**
+ * Computes the squared length of the IVector3Like
+ * @param vector the vector to measure
+ * @returns the squared length of the vector
+ */
+export function Vector3LengthSquared(vector: DeepImmutable<IVector3Like>): number {
+    return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+}
+
+/**
+ * Computes the length of the IVector3Like
+ * @param vector the vector to measure
+ * @returns the length of the vector
+ */
+export function Vector3Length(vector: DeepImmutable<IVector3Like>): number {
+    return Math.sqrt(Vector3LengthSquared(vector));
+}
+
+/**
+ * Computes the squared distance between the IVector3Like objects
+ * @param a defines the first vector
+ * @param b defines the second vector
+ * @returns the squared distance
+ */
+export function Vector3DistanceSquared(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
+    const x = b.x - a.x;
+    const y = b.y - a.y;
+    const z = b.z - a.z;
+    return x * x + y * y + z * z;
+}
+
+/**
+ * Computes the distance between the IVector3Like objects
+ * @param a defines the first vector
+ * @param b defines the second vector
+ * @returns the distance
+ */
+export function Vector3Distance(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
+    return Math.sqrt(Vector3DistanceSquared(a, b));
+}
+
+/**
  * Sets the given floats into the result.
+ * Marks the result as dirty if an `_isDirty` flag is defined on the object.
  * @param x defines the x coordinate
  * @param y defines the y coordinate
  * @param z defines the z coordinate
  * @param result defines the target vector
  * @returns the result vector
  */
-export function Vector3FromFloatsToRef<T extends IVector3Like>(x: number, y: number, z: number, result: T): T {
+export function Vector3FromFloatsToRef<T extends IVector3Like & IDirtyFlagLike>(x: number, y: number, z: number, result: T): T {
     result.x = x;
     result.y = y;
     result.z = z;
+    SetDirtyFlag(result);
     return result;
 }
 
 /**
  * Stores the scaled values of a vector into the result.
+ * Marks the result as dirty if an `_isDirty` flag is defined on the object.
  * @param a defines the source vector
  * @param scale defines the scale factor
  * @param result defines the target vector
  * @returns the scaled vector
  */
-export function Vector3ScaleToRef<T extends IVector3Like, ResultT extends IVector3Like>(a: DeepImmutable<T>, scale: number, result: ResultT): ResultT {
+export function Vector3ScaleToRef<T extends IVector3Like & IDirtyFlagLike>(a: DeepImmutable<IVector3Like>, scale: number, result: T): T {
     result.x = a.x * scale;
     result.y = a.y * scale;
     result.z = a.z * scale;
+    SetDirtyFlag(result);
     return result;
 }
 
 /**
- * Creates a string representation of the Vector3
- * @param vector defines the Vector3 to stringify
- * @param decimalCount defines the number of decimals to use
- * @returns a string with the Vector3 coordinates.
+ * Scales the current vector values in place by a factor.
+ * Marks the result as dirty if an `_isDirty` flag is defined on the object.
+ * @param vector defines the vector to scale
+ * @param scale defines the scale factor
+ * @returns the input scaled vector
  */
-export function Vector3ToFixed(vector: Vector3, decimalCount: number): string {
-    return `{X: ${vector._x.toFixed(decimalCount)} Y: ${vector._y.toFixed(decimalCount)} Z: ${vector._z.toFixed(decimalCount)}}`;
+export function Vector3ScaleInPlace<T extends IVector3Like & IDirtyFlagLike>(vector: T, scale: number): T {
+    vector.x *= scale;
+    vector.y *= scale;
+    vector.z *= scale;
+    SetDirtyFlag(vector);
+    return vector;
 }
 
 /**
- * Creates a string representation of the Vector4
- * @param vector defines the Vector4 to stringify
+ * Creates a string representation of the IVector3Like
+ * @param vector defines the IVector3Like to stringify
  * @param decimalCount defines the number of decimals to use
- * @returns a string with the Vector4 coordinates.
+ * @returns a string with the IVector3Like coordinates.
  */
-export function Vector4ToFixed(vector: Vector4, decimalCount: number): string {
+export function Vector3ToFixed(vector: DeepImmutable<IVector3Like>, decimalCount: number): string {
+    return `{X: ${vector.x.toFixed(decimalCount)} Y: ${vector.y.toFixed(decimalCount)} Z: ${vector.z.toFixed(decimalCount)}}`;
+}
+
+/**
+ * Computes the dot product of two IVector4Like objects
+ * @param a defines the first vector
+ * @param b defines the second vector
+ * @returns the dot product
+ */
+export function Vector4Dot(a: DeepImmutable<IVector4Like>, b: DeepImmutable<IVector4Like>): number {
+    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+/**
+ * Creates a string representation of the IVector4Like
+ * @param vector defines the IVector4Like to stringify
+ * @param decimalCount defines the number of decimals to use
+ * @returns a string with the IVector4Like coordinates.
+ */
+export function Vector4ToFixed(vector: DeepImmutable<IVector4Like>, decimalCount: number): string {
     return `{X: ${vector.x.toFixed(decimalCount)} Y: ${vector.y.toFixed(decimalCount)} Z: ${vector.z.toFixed(decimalCount)} W: ${vector.w.toFixed(decimalCount)}}`;
 }
 
@@ -79,8 +154,8 @@ export function Vector4ToFixed(vector: Vector4, decimalCount: number): string {
  * @param q2 defines the second quaternion
  * @returns the angle in radians between the two quaternions
  */
-export function GetAngleBetweenQuaternions(q1: DeepImmutable<Quaternion>, q2: DeepImmutable<Quaternion>): number {
-    return Math.acos(Clamp(Quaternion.Dot(q1, q2))) * 2;
+export function GetAngleBetweenQuaternions(q1: DeepImmutable<IQuaternionLike>, q2: DeepImmutable<IQuaternionLike>): number {
+    return Math.acos(Clamp(Vector4Dot(q1, q2))) * 2;
 }
 
 /**

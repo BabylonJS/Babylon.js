@@ -111,6 +111,7 @@ interface IGltfExportOptionsState {
     exportSkyboxes: boolean;
     exportCameras: boolean;
     exportLights: boolean;
+    dracoCompression: boolean;
 }
 
 export const ExportGltfTools = MakeLazyComponent(async () => {
@@ -124,6 +125,7 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
             exportSkyboxes: false,
             exportCameras: false,
             exportLights: false,
+            dracoCompression: false,
         });
 
         const exportGLTF = useCallback(async () => {
@@ -164,7 +166,10 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
             };
 
             try {
-                const glb = await GLTF2Export.GLBAsync(props.scene, "scene", { shouldExportNode: (node) => shouldExport(node) });
+                const glb = await GLTF2Export.GLBAsync(props.scene, "scene", {
+                    meshCompressionMethod: gltfExportOptions.dracoCompression ? "Draco" : undefined,
+                    shouldExportNode: (node) => shouldExport(node),
+                });
                 glb.downloadFiles();
             } catch (reason) {
                 Logger.Error(`Failed to export GLB: ${reason}`);
@@ -202,6 +207,13 @@ export const ExportGltfTools = MakeLazyComponent(async () => {
                     description="Whether to export lights in the scene."
                     value={gltfExportOptions.exportLights}
                     onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, exportLights: checked })}
+                />
+                <SwitchPropertyLine
+                    key="GLTFDracoCompression"
+                    label="Draco Compression"
+                    description="Whether to apply Draco compression to geometry."
+                    value={gltfExportOptions.dracoCompression}
+                    onChange={(checked: boolean) => setGltfExportOptions({ ...gltfExportOptions, dracoCompression: checked })}
                 />
                 <ButtonLine label="Export to GLB" icon={ArrowDownloadRegular} onClick={exportGLTF} disabled={isExportingGltf} />
             </>

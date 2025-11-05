@@ -70,6 +70,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FilterBlock: "Applies a kernel filter post process",
         TonemapBlock: "Applies a tonemapping post process",
         SSAO2Block: "Applies a Screen Space Ambient Occlusion post process",
+        ComputeShaderBlock: "Executes a compute shader",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -166,7 +167,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ShadowLightBlock",
             ],
             Layers: ["GlowLayerBlock", "HighlightLayerBlock"],
-            Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock", "CullBlock", "ExecuteBlock"],
+            Misc: ["ComputeShaderBlock", "ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock", "CullBlock", "ExecuteBlock"],
             Post_Processes: [
                 "AnaglyphBlock",
                 "BlackAndWhiteBlock",

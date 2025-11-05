@@ -68,7 +68,7 @@ fn rotateAlign(toCamera: vec3f, rotatedCorner: vec3f) -> vec3f {
 	var row2: vec3f =  vec3f(normalizedToCamera.x, normalizedToCamera.y, normalizedToCamera.z);
 
 #ifdef BILLBOARDSTRETCHED_LOCAL
-	var row1: vec3f = vertexInputs.direction;
+	var row1: vec3f = normalize(vertexInputs.direction);
 #else
 	var crossProduct: vec3f = normalize(cross(normalizedToCamera, normalizedCrossDirToCamera));
 	var row1: vec3f =  vec3f(crossProduct.x, crossProduct.y, crossProduct.z);

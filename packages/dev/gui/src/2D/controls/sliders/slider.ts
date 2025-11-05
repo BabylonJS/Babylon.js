@@ -151,8 +151,8 @@ export class Slider extends BaseSlider {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            context.shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
         }
 
         const thumbPosition = this._getThumbPosition();
@@ -230,8 +230,8 @@ export class Slider extends BaseSlider {
             if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
-                context.shadowOffsetX = this.shadowOffsetX;
-                context.shadowOffsetY = this.shadowOffsetY;
+                context.shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+                context.shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
             }
             if (this._isThumbCircle) {
                 context.beginPath();

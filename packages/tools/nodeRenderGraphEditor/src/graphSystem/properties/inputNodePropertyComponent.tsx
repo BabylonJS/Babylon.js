@@ -14,6 +14,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
 import type { Camera } from "core/Cameras/camera";
 import type { IShadowLight } from "core/Lights/shadowLight";
+import { Constants } from "core/Engines/constants";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<NodeRenderGraphInputBlock>>;
@@ -46,6 +47,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 const creationOptions = inputBlock.creationOptions;
                 if (!isExternal && !inputBlock.creationOptions) {
                     inputBlock.setDefaultValue();
+                }
+                if (!creationOptions.options.creationFlags) {
+                    creationOptions.options.creationFlags = [0];
                 }
                 return (
                     <>
@@ -124,6 +128,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
                                 <CheckBoxLineComponent
+                                    label="Create as storage texture"
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: boolean) => {
+                                        creationOptions.options.creationFlags![0] = value ? Constants.TEXTURE_CREATIONFLAG_STORAGE : 0;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    isSelected={() => creationOptions.options.creationFlags![0] === Constants.TEXTURE_CREATIONFLAG_STORAGE}
+                                />
+                                <CheckBoxLineComponent
                                     label="Create mipmaps"
                                     target={creationOptions.options}
                                     propertyName="createMipMaps"
@@ -137,7 +151,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                         creationOptions.options.useSRGBBuffers![0] = value;
                                         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                                     }}
-                                    extractValue={() => creationOptions.options.useSRGBBuffers![0]}
+                                    isSelected={() => creationOptions.options.useSRGBBuffers![0]}
                                 />
                                 <CheckBoxLineComponent
                                     label="History texture"
@@ -147,7 +161,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                         creationOptions.isHistoryTexture = value;
                                         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                                     }}
-                                    extractValue={() => creationOptions.isHistoryTexture!}
+                                    isSelected={() => creationOptions.isHistoryTexture!}
                                 />
                             </>
                         )}

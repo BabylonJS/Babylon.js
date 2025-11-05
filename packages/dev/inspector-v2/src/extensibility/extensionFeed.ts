@@ -1,10 +1,37 @@
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 
+export type PersonMetadata = {
+    /**
+     * The name of the person.
+     */
+    readonly name: string;
+
+    /**
+     * The email address of the person.
+     */
+    readonly email?: string;
+
+    /**
+     * The URL to the person's website.
+     */
+    readonly url?: string;
+
+    /**
+     * The Babylon forum username of the person.
+     */
+    readonly forumUserName?: string;
+};
+
 export type ExtensionMetadata = {
     /**
      * The name of the extension.
      */
     readonly name: string;
+
+    /**
+     * The version of the extension (as valid semver).
+     */
+    readonly version?: string;
 
     /**
      * The description of the extension.
@@ -14,7 +41,37 @@ export type ExtensionMetadata = {
     /**
      * The keywords of the extension.
      */
-    readonly keywords: readonly string[];
+    readonly keywords?: readonly string[];
+
+    /**
+     * The URL to the extension homepage.
+     */
+    readonly homepage?: string;
+
+    /**
+     * Specify the place where your code lives. This is helpful for people who want to contribute.
+     */
+    readonly repository?: string;
+
+    /**
+     * The URL to your extension's issue tracker and / or the email address to which issues should be reported. These are helpful for people who encounter issues with your extension.
+     */
+    readonly bugs?: string;
+
+    /**
+     * A license for your package so that people know how they are permitted to use it, and any restrictions you're placing on it.
+     */
+    readonly license?: string;
+
+    /**
+     * The primary author of the extension.
+     */
+    readonly author?: string | PersonMetadata;
+
+    /**
+     * The contributors to the extension.
+     */
+    readonly contributors?: readonly (string | PersonMetadata)[];
 };
 
 export type ExtensionModule = {

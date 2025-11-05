@@ -91,10 +91,10 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
             direction.z += randZ;
             direction.normalize();
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
-            } else {
+            if (system.isLocal) {
                 particle.direction.copyFromFloats(randX, randY, randZ);
+            } else {
+                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
             }
 
             particle._initialDirection = particle.direction.clone();
@@ -115,11 +115,11 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
             const randY = randRadius * Math.cos(theta);
             const randZ = randRadius * Math.sin(phi) * Math.sin(theta);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
-            } else {
+            if (system.isLocal) {
                 particle.position.copyFromFloats(randX, randY, randZ);
                 particle.position.addInPlace(state.emitterPosition!);
+            } else {
+                Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
             }
         };
 

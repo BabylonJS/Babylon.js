@@ -114,7 +114,7 @@ declare const _native: any;
 export function nativeOverride<T extends (...params: any[]) => boolean>(
     target: any,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>,
+    descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => any>,
     predicate?: T
 ) {
     // Cache the original JS function for later.
