@@ -2,6 +2,8 @@ import type { Effect } from "./effect";
 import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 import type { Nullable } from "../types";
 import type { Plane } from "../Maths/math.plane";
+import { FloatingOriginCurrentScene } from "./floatingOriginMatrixOverrides";
+import { Vector3 } from "../Maths/math.vector";
 
 /** @internal */
 export function AddClipPlaneUniforms(uniforms: string[]): void {
@@ -112,6 +114,14 @@ export function BindClipPlane(effect: Effect, primaryHolder: IClipPlanesHolder, 
 
 function SetClipPlane(effect: Effect, uniformName: string, clipPlane: Nullable<Plane>): void {
     if (clipPlane) {
-        effect.setFloat4(uniformName, clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+        // Original clipplane is using equation normal.dot(p) + d = 0
+        // Assume we have p' = p - offset, that means normal.dot(p') + d' = 0
+        // So to get the offset plane,
+        // normal.dot(p' + offset) + d = 0
+        // normal.dot(p') + normal.dot(offset) + d = 0
+        // -d' + normal.dot(offset) + d = 0
+        // d' = d + normal.dot(offset)
+        const offset = FloatingOriginCurrentScene.getScene()?.floatingOriginOffset || Vector3.ZeroReadOnly;
+        effect.setFloat4(uniformName, clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d + Vector3.Dot(clipPlane.normal, offset));
     }
 }
