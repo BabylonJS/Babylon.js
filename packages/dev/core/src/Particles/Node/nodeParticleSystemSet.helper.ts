@@ -21,6 +21,7 @@ import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
 import { ParticleGradientBlock } from "./Blocks/particleGradientBlock";
+import { ParticleGradientValueBlock } from "./Blocks/particleGradientValueBlock";
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
@@ -35,7 +36,6 @@ import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
-import { ParticleGradientValueBlock } from "./Blocks";
 
 /**
  * Converts a ParticleSystem to a NodeParticleSystemSet.
