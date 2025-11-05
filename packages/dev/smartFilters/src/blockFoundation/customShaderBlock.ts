@@ -4,7 +4,7 @@ import { ConnectionPointType, type ConnectionPointValue } from "../connection/co
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
 import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
-import type { SerializedInputConnectionPointV1, DefinePropertyMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
+import type { SerializedInputConnectionPointV1, ConstPropertyMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
 import type { SmartFilter } from "../smartFilter.js";
 import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
 import { ShaderBlock } from "./shaderBlock.js";
@@ -108,7 +108,7 @@ export class CustomShaderBlock extends ShaderBlock {
             blockDefinition.blockType,
             blockDefinition.namespace,
             blockDefinition.inputConnectionPoints,
-            blockDefinition.propertyDefines || [],
+            blockDefinition.fragmentConstProperties || [],
             blockDefinition.shaderProgram
         );
     }
@@ -121,6 +121,7 @@ export class CustomShaderBlock extends ShaderBlock {
     private readonly _shaderProgram: ShaderProgram;
     private readonly _blockType: string;
     private readonly _namespace: Nullable<string>;
+    private readonly _fragmentConstProperties: ConstPropertyMetadata[];
     private _autoBoundInputs: Nullable<SerializedInputConnectionPointV1[]> = null;
 
     /**
@@ -146,7 +147,7 @@ export class CustomShaderBlock extends ShaderBlock {
      * @param blockType - The type of the block
      * @param namespace - The namespace of the block
      * @param inputConnectionPoints - The input connection points of the
-     * @param defineProperties - The define properties for the block
+     * @param fragmentConstProperties - The define properties for the block
      * @param shaderProgram - The shader program for the block
      */
     private constructor(
@@ -156,24 +157,23 @@ export class CustomShaderBlock extends ShaderBlock {
         blockType: string,
         namespace: Nullable<string>,
         inputConnectionPoints: SerializedInputConnectionPointV1[],
-        defineProperties: DefinePropertyMetadata[],
+        fragmentConstProperties: ConstPropertyMetadata[],
         shaderProgram: ShaderProgram
     ) {
         super(smartFilter, name, disableOptimization);
         this._blockType = blockType;
         this._namespace = namespace;
+        this._fragmentConstProperties = fragmentConstProperties;
 
         for (const input of inputConnectionPoints) {
             this._registerSerializedInputConnectionPointV1(input);
         }
 
-        for (const defineProperty of defineProperties) {
-            this._createDefinePropertyProperty(defineProperty);
+        for (const constProperty of fragmentConstProperties) {
+            this._createConstProperty(constProperty);
         }
 
         this._shaderProgram = shaderProgram;
-
-        shaderProgram.fragment.defines;
     }
 
     /**
@@ -181,37 +181,54 @@ export class CustomShaderBlock extends ShaderBlock {
      * @returns The shader program to use to render the block
      */
     public override getShaderProgram() {
-        // TODO: decide how to inject the updated #define values from the custom define properties
-        // Can we safely not have them added upstream, or would they get omitted in some cases then?
+        // Inject properties consts into the fragment shader
+
+        // Create a deep copy of the shader program so other instances aren't affected
+        const shaderProgram = JSON.parse(JSON.stringify(this._shaderProgram));
+
+        // Append const properties to the fragment shader consts
+        shaderProgram.fragment.const = shaderProgram.fragment.const || "";
+        shaderProgram.fragment.const +=
+            this._fragmentConstProperties
+                .map((property) => {
+                    switch (property.type) {
+                        case "float": {
+                            const value = (this as any)[property.friendlyName] as number;
+                            const valueStr = Number.isInteger(value) ? value.toString() + "." : value.toString();
+                            return `const float ${property.name} = ${valueStr};`;
+                        }
+                        case "bool":
+                            return `const bool ${property.name} = ${(this as any)[property.friendlyName] ? "true" : "false"};`;
+                    }
+                })
+                .join("\n") + "\n";
 
         // Cache buster
-        const copy = JSON.parse(JSON.stringify(this._shaderProgram));
-        copy.fragment.const = copy.fragment.const || "";
-        copy.fragment.const += "\nconst float cacheBuster2 = " + Math.random().toString() + ";\n";
-        return copy;
+        shaderProgram.fragment.const += "\nconst float cacheBuster2 = " + Math.random().toString() + ";\n";
+
+        return shaderProgram;
     }
 
     /**
-     * Creates a dynamic property for the supplied define with EditableInPropertyPage decorator for a define with options.
-     * @param defineProperty - The define property metadata
+     * Creates a dynamic property for the supplied const property with EditableInPropertyPage decorator.
+     * @param constProperty - The const property metadata
      */
-    private _createDefinePropertyProperty(defineProperty: DefinePropertyMetadata): void {
+    private _createConstProperty(constProperty: ConstPropertyMetadata): void {
         // Create the property and assign the default value
-        (this as any)[defineProperty.name] = defineProperty.defaultValue;
+        (this as any)[constProperty.friendlyName] = constProperty.defaultValue;
 
         // If options were supplied, use the EditableInPropertyPage decorator to allow selection from a list in the
         // Smart Filters Editor
-        if (defineProperty.options) {
-            const options: IEditablePropertyOption = {
+        if (constProperty.options) {
+            const editablePropertyOptions: IEditablePropertyOption = {
                 notifiers: { rebuild: true },
             };
-            // Loop  through the keys in defineProperty.options and add them to the options list
-            options.options = Object.keys(defineProperty.options).map((key) => {
-                return { label: (defineProperty.options as any)[key], value: parseInt(key, 10) };
+            editablePropertyOptions.options = Object.keys(constProperty.options).map((key) => {
+                return { label: key, value: (constProperty.options as any)[key] };
             });
 
-            const decoratorApplier = EditableInPropertyPage(defineProperty.name, PropertyTypeForEdition.List, "PROPERTIES", options);
-            decoratorApplier(this, defineProperty.name);
+            const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, PropertyTypeForEdition.List, "PROPERTIES", editablePropertyOptions);
+            decoratorApplier(this, constProperty.friendlyName);
         }
     }
 

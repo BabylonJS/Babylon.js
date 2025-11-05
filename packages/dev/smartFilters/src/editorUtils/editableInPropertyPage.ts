@@ -88,19 +88,27 @@ export function EditableInPropertyPage(
     options?: IEditablePropertyOption
 ) {
     return (target: any, propertyKey: string) => {
+        if (target._propStoreComplete) {
+            return;
+        }
+
         let propStore: IPropertyDescriptionForEdition[] = target._propStore;
         if (!propStore) {
             propStore = [];
             target._propStore = propStore;
         }
 
-        propStore.push({
-            propertyName: propertyKey,
-            displayName: displayName,
-            type: propertyType,
-            groupName: groupName,
-            options: options ?? {},
-            className: target.constructor.name,
-        });
+        // Only add the property if it does not already exist
+        const existingProp = propStore.find((p) => p.propertyName === propertyKey && p.className === target.constructor.name);
+        if (!existingProp) {
+            propStore.push({
+                propertyName: propertyKey,
+                displayName: displayName,
+                type: propertyType,
+                groupName: groupName,
+                options: options ?? {},
+                className: target.constructor.name,
+            });
+        }
     };
 }

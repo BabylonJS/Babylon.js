@@ -9,13 +9,28 @@ import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connec
 import type { ShaderProgram } from "../../utils/shaderCodeUtils.js";
 
 /**
- * Description of a define property exposed by a shader block.
+ * Description of a const property exposed by a shader block.
  */
-export type DefinePropertyMetadata = {
+type ConstPropertyMetadataBase = {
     /**
-     * The name of the property
+     * The name of the const in the shader code
      */
     name: string;
+
+    /**
+     * A friendly name for the property to be displayed in the Smart Filters Editor UI.
+     * This is the undecorated name of the const in the shader code.
+     */
+    friendlyName: string;
+
+    /**
+     * The type of the property
+     */
+    type: string;
+};
+
+type ConstPropertyMetadataFloat = ConstPropertyMetadataBase & {
+    type: "float";
 
     /**
      * The default value of the property
@@ -25,8 +40,24 @@ export type DefinePropertyMetadata = {
     /**
      * Optional mapping of values to strings to be displayed in the Smart Filters Editor UI for this property.
      */
-    options?: { [key: number]: string };
+    options?: { [key: string]: number };
 };
+
+type BoolPropertyMetadataFloat = ConstPropertyMetadataBase & {
+    type: "bool";
+
+    /**
+     * The default value of the property
+     */
+    defaultValue: boolean;
+
+    /**
+     * Optional mapping of values to strings to be displayed in the Smart Filters Editor UI for this property.
+     */
+    options?: { [key: string]: boolean };
+};
+
+export type ConstPropertyMetadata = ConstPropertyMetadataFloat | BoolPropertyMetadataFloat;
 
 /**
  * The V1 definition of a serialized shader block. This block definition is loaded by a CustomShaderBlock and defines how a
@@ -69,9 +100,9 @@ export type SerializedShaderBlockDefinitionV1 = {
     inputConnectionPoints: SerializedInputConnectionPointV1[];
 
     /**
-     * Defines which are to be exposed as properties on the block.
+     * Properties which map to consts in the fragment shader.
      */
-    propertyDefines?: DefinePropertyMetadata[];
+    fragmentConstProperties?: ConstPropertyMetadata[];
 
     /**
      * If true, the optimizer will not attempt to optimize this block.

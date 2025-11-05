@@ -3,6 +3,8 @@ import { Logger } from "core/Misc/logger.js";
 import type { ShaderCode, ShaderFunction } from "./shaderCode.types.js";
 import { ConnectionPointType } from "../../connection/connectionPointType.js";
 import { BlockDisableStrategy } from "../../blockFoundation/disableableShaderBlock.js";
+import type { ConstPropertyMetadata } from "../../serialization/v1/shaderBlockSerialization.types.js";
+import { DecorateSymbol } from "../shaderCodeUtils.js";
 
 // Note: creating a global RegExp object is risky, because it holds state (e.g. lastIndex) that has to be
 // cleared at the right time to ensure correctness, which is easy to forget to do.
@@ -33,26 +35,6 @@ export type UniformMetadataProperties = {
      * @see InputAutoBindV1 for possible values.
      */
     autoBind?: string;
-};
-
-/**
- * The metadata for a define which is to be exposed as a property on a CustomShaderBlock instance
- */
-export type DefinePropertyMetadata = {
-    /**
-     * The name of the define
-     */
-    name: string;
-
-    /**
-     * The default value of the define
-     */
-    defaultValue: number;
-
-    /**
-     * The values to be used as the EditableInPropertyPage options
-     */
-    options: { [key: number]: string };
 };
 
 /**
@@ -110,9 +92,9 @@ export type FragmentShaderInfo = {
     uniforms: UniformMetadata[];
 
     /**
-     * The set of defines to be exposed as properties
+     * The set of fragment const values to be exposed as properties
      */
-    defineProperties: DefinePropertyMetadata[];
+    fragmentConstProperties: ConstPropertyMetadata[];
 };
 
 /**
@@ -189,42 +171,68 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         }
     }
 
-    // Read the property defines (defines to be exposed as properties)
-    const defineProperties: DefinePropertyMetadata[] = [];
-    const defineRegExp = new RegExp(/(\/\/\s*\{.*\}\s*(?:\r\n|\r|\n)+)?(#define .*)/gm);
-    const defineGroups = fragmentShader.matchAll(defineRegExp);
-    for (const matches of defineGroups) {
+    // Read the property consts (consts to be exposed as properties)
+    const fragmentConstProperties: ConstPropertyMetadata[] = [];
+    const constRegExp = new RegExp(/(\/\/\s*\{.*\}\s*(?:\r\n|\r|\n)+)?(const .*)/gm);
+    const constGroups = fragmentShader.matchAll(constRegExp);
+    for (const matches of constGroups) {
         const annotationJSON = matches[1];
-        const defineLine = matches[2];
 
-        if (!defineLine) {
-            throw new Error("Define line not found");
+        // If it doesn't have any annotation, treat it as a regular const
+        if (!annotationJSON) {
+            continue;
         }
 
-        const defineLineMatches = new RegExp(/^#define\s+(\w+)\s+(\w+)\s*\n?/gm).exec(defineLine);
-        if (!defineLineMatches || defineLineMatches.length < 3) {
-            throw new Error(`Defines must have a name and a default value: '${defineLine}'`);
-        }
-        const name = defineLineMatches[1];
-        const defaultValue = Number.parseInt(defineLineMatches[2]);
+        const constLine = matches[2];
 
-        if (!name) {
-            throw new Error(`Defines must have a name: '${defineLine}'`);
-        }
-        if (isNaN(defaultValue)) {
-            throw new Error(`Defines must have a default value: '${defineLine}'`);
+        if (!constLine) {
+            throw new Error("Const line not found");
         }
 
-        defineProperties.push({
-            name,
-            defaultValue,
-            options: annotationJSON ? JSON.parse(annotationJSON.replace("//", "").trim()).options : undefined,
-        });
-
-        if (annotationJSON) {
-            // Strip out any annotation so it isn't mistaken for function bodies
-            fragmentShader = fragmentShader.replace(annotationJSON, "");
+        const constLineMatches = new RegExp(/^const\s+(\w+)\s+(\w+)\s*=\s*([^\s;]+)\s*;?\s*$/gm).exec(constLine);
+        if (!constLineMatches || constLineMatches.length < 4) {
+            throw new Error(`Consts must have a name, type, and a default value: '${constLine}'`);
         }
+        const type = constLineMatches[1];
+        const friendlyName = constLineMatches[2];
+        const defaultValue = constLineMatches[3];
+
+        if (!friendlyName) {
+            throw new Error(`Consts must have a name: '${constLine}'`);
+        }
+        if (defaultValue === null) {
+            throw new Error(`Consts must have a value: '${constLine}'`);
+        }
+
+        const options = JSON.parse(annotationJSON.replace("//", "").trim()).options;
+
+        const constProperty: Nullable<ConstPropertyMetadata> =
+            type === "float"
+                ? {
+                      name: DecorateSymbol(friendlyName),
+                      friendlyName,
+                      type,
+                      defaultValue: parseFloat(defaultValue),
+                      options,
+                  }
+                : type === "bool"
+                  ? {
+                        name: DecorateSymbol(friendlyName),
+                        friendlyName,
+                        type,
+                        defaultValue: defaultValue === "true",
+                        options,
+                    }
+                  : null;
+
+        if (!constProperty) {
+            throw new Error(`Unsupported const property type: '${type}'`);
+        }
+        fragmentConstProperties.push(constProperty);
+
+        // Strip out the definition from the code - it will be added back in when creating the runtime by the CustomShaderBlock
+        fragmentShader = fragmentShader.replace(annotationJSON, "");
+        fragmentShader = fragmentShader.replace(constLine, "");
     }
 
     const fragmentShaderWithNoFunctionBodies = RemoveFunctionBodies(fragmentShader);
@@ -235,13 +243,15 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
     Logger.Log(`Uniforms found: ${JSON.stringify(uniforms)}`);
     const consts = [...fragmentShader.matchAll(/\S*const\s+\w*\s+(\w*)\s*=.*;/g)].map((match) => match[1]);
     Logger.Log(`Consts found: ${JSON.stringify(consts)}`);
+    const constPropertyFriendlyNames = fragmentConstProperties.map((c) => c.friendlyName);
+    Logger.Log(`Const properties found: ${JSON.stringify(constPropertyFriendlyNames)}`);
     const defineNames = [...fragmentShader.matchAll(new RegExp(GetDefineRegExString, GetDefineRegExOptions))].map((match) => match[1]);
     Logger.Log(`Defines found: ${JSON.stringify(defineNames)}`);
     const functionNames = [...fragmentShaderWithNoFunctionBodies.matchAll(new RegExp(GetFunctionHeaderRegExString, GetFunctionHeaderRegExOptions))].map((match) => match[1]);
     Logger.Log(`Functions found: ${JSON.stringify(functionNames)}`);
 
     // Decorate the uniforms, consts, defines, and functions
-    const symbolsToDecorate = [...uniformNames, ...consts, ...defineNames, ...functionNames];
+    const symbolsToDecorate = [...uniformNames, ...consts, ...constPropertyFriendlyNames, ...defineNames, ...functionNames];
     let fragmentShaderWithRenamedSymbols = fragmentShader;
     for (const symbol of symbolsToDecorate) {
         if (!symbol) {
@@ -251,7 +261,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
             throw new Error(`Symbol "${symbol}" is reserved and cannot be used`);
         }
         const regex = new RegExp(`(?<=\\W+)${symbol}(?=\\W+)`, "gs");
-        fragmentShaderWithRenamedSymbols = fragmentShaderWithRenamedSymbols.replace(regex, `_${symbol}_`);
+        fragmentShaderWithRenamedSymbols = fragmentShaderWithRenamedSymbols.replace(regex, DecorateSymbol(symbol));
     }
     Logger.Log(`${symbolsToDecorate.length} symbol(s) renamed`);
 
@@ -291,7 +301,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         namespace,
         shaderCode,
         uniforms,
-        defineProperties,
+        fragmentConstProperties,
         disableOptimization: !!header?.disableOptimization,
         blockDisableStrategy: header?.blockDisableStrategy,
     };
