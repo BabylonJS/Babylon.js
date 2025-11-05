@@ -71,6 +71,8 @@ export interface IPropertyDescriptionForEdition {
     options: IEditablePropertyOption;
     /** name of the class that contains the property */
     className: string;
+    /** optional block type - used to distinguish properties in different blocks that share the same class */
+    blockType?: string;
 }
 
 /**
@@ -87,11 +89,7 @@ export function EditableInPropertyPage(
     groupName: string = "PROPERTIES",
     options?: IEditablePropertyOption
 ) {
-    return (target: any, propertyKey: string) => {
-        if (target._propStoreComplete) {
-            return;
-        }
-
+    return (target: any, propertyKey: string, blockType?: string) => {
         let propStore: IPropertyDescriptionForEdition[] = target._propStore;
         if (!propStore) {
             propStore = [];
@@ -99,7 +97,7 @@ export function EditableInPropertyPage(
         }
 
         // Only add the property if it does not already exist
-        const existingProp = propStore.find((p) => p.propertyName === propertyKey && p.className === target.constructor.name);
+        const existingProp = propStore.find((p) => p.propertyName === propertyKey && p.className === target.constructor.name && p.blockType === blockType);
         if (!existingProp) {
             propStore.push({
                 propertyName: propertyKey,
@@ -108,6 +106,7 @@ export function EditableInPropertyPage(
                 groupName: groupName,
                 options: options ?? {},
                 className: target.constructor.name,
+                blockType: blockType,
             });
         }
     };

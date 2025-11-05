@@ -228,7 +228,7 @@ export class CustomShaderBlock extends ShaderBlock {
             });
 
             const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, PropertyTypeForEdition.List, "PROPERTIES", editablePropertyOptions);
-            decoratorApplier(this, constProperty.friendlyName);
+            decoratorApplier(this, constProperty.friendlyName, this._blockType);
         }
     }
 

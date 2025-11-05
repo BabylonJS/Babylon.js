@@ -126,7 +126,7 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
         }
 
         for (const propDescription of propStore) {
-            const { displayName, type, groupName, options, className } = propDescription;
+            const { displayName, type, groupName, options, className, blockType } = propDescription;
             let propertyName = propDescription.propertyName;
             let target: unknown = block;
 
@@ -140,6 +140,12 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
 
             if (classes.indexOf(className) === -1) {
                 continue;
+            }
+
+            if (blockType) {
+                if (blockType !== (block as any)._blockType) {
+                    continue;
+                }
             }
 
             if (!components) {
@@ -207,7 +213,6 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
                 }
                 case PropertyTypeForEdition.List: {
                     const props = {
-                        key: `list-${propertyName}`,
                         label: displayName,
                         target,
                         propertyName: propertyName,
@@ -218,9 +223,9 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
                     // Observable options use a different, self-managing component
                     // so that several instances of it can be created
                     if (options.options instanceof Observable) {
-                        components.push(<DynamicOptionsLine {...props} optionsObservable={options.options} />);
+                        components.push(<DynamicOptionsLine key={`list-${propertyName}`} {...props} optionsObservable={options.options} />);
                     } else {
-                        components.push(<OptionsLine {...props} options={options.options ?? []} />);
+                        components.push(<OptionsLine key={`list-${propertyName}`} {...props} options={options.options ?? []} />);
                     }
                     break;
                 }
