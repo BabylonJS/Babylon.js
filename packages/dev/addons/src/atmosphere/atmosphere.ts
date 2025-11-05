@@ -1334,7 +1334,7 @@ export class Atmosphere implements IDisposable {
         ubo.updateVector3("minMultiScattering", this._minimumMultiScattering);
         ubo.updateFloat("diffuseSkyIrradianceIntensity", this._diffuseSkyIrradianceIntensity);
         ubo.updateVector3("cameraPositionGlobal", cameraAtmosphereVariables.cameraPositionGlobal);
-        ubo.updateFloat("lightIntensity", this.lights[0].intensity);
+        ubo.updateFloat("lightIntensity", this.lights[0].getScaledIntensity());
         ubo.updateVector3("clampedCameraPositionGlobal", cameraAtmosphereVariables.clampedCameraPositionGlobal);
         ubo.updateFloat("aerialPerspectiveIntensity", this._aerialPerspectiveIntensity);
         ubo.updateVector3("cameraGeocentricNormal", cameraAtmosphereVariables.cameraGeocentricNormal);
