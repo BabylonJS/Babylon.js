@@ -60,19 +60,16 @@ import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
-let CurrentInspectorToken: Nullable<IDisposable> = null;
-
 type InspectorV2Options = Omit<ModularToolOptions, "containerElement" | "sidePaneRemapper" | "toolbarMode">;
 
-export function IsInspectorVisible(): boolean {
-    return CurrentInspectorToken != null;
-}
+const InspectorTokens = new WeakMap<Scene, IDisposable>();
 
+// TODO: We may not want to expose all of IInspectorOptions in the new Inspector v2 as there may be more general ways of achieving the same thing.
 export function ShowInspector(scene: Scene, options?: Partial<IInspectorOptions & InspectorV2Options>) {
-    _ShowInspector(scene, options ?? {});
+    return _ShowInspector(scene, options ?? {});
 }
 
-function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions & InspectorV2Options>) {
+function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions & InspectorV2Options>): IDisposable {
     // TODO: Lots more work to do to respect all the Inspector v1 options.
     options = {
         overlay: false,
@@ -85,12 +82,16 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         ...options,
     };
 
+    const inspectorToken = {
+        dispose: () => {},
+    };
+
     if (!scene) {
         scene = EngineStore.LastCreatedScene;
     }
 
     if (!scene || scene.isDisposed) {
-        return;
+        return inspectorToken;
     }
 
     let parentElement = options.globalRoot ?? null;
@@ -107,11 +108,13 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     }
 
     if (!parentElement) {
-        return;
+        return inspectorToken;
     }
 
-    if (IsInspectorVisible()) {
-        HideInspector();
+    const existingToken = InspectorTokens.get(scene);
+    if (existingToken) {
+        existingToken.dispose();
+        InspectorTokens.delete(scene);
     }
 
     const disposeActions: (() => void)[] = [];
@@ -290,43 +293,82 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     disposeActions.push(() => modularTool.dispose());
 
     let disposed = false;
-    CurrentInspectorToken = {
-        dispose: () => {
-            if (disposed) {
-                return;
-            }
+    inspectorToken.dispose = () => {
+        if (disposed) {
+            return;
+        }
 
-            disposeActions.reverse().forEach((dispose) => dispose());
-            if (options.handleResize) {
-                scene.getEngine().resize();
-            }
+        disposeActions.reverse().forEach((dispose) => dispose());
+        if (options.handleResize) {
+            scene.getEngine().resize();
+        }
 
-            disposed = true;
-        },
+        disposed = true;
     };
 
     const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
-        HideInspector();
+        inspectorToken.dispose();
     });
 
     disposeActions.push(() => sceneDisposedObserver.remove());
+
+    disposeActions.push(() => {
+        InspectorTokens.delete(scene);
+    });
+
+    return inspectorToken;
 }
 
-export function HideInspector() {
-    CurrentInspectorToken?.dispose();
-    CurrentInspectorToken = null;
-}
+type PropertyChangedEvent = {
+    object: any;
+    property: string;
+    value: any;
+    initialValue: any;
+    allowNullValue?: boolean;
+};
 
+/**
+ * @deprecated This class only exists for backward compatibility. Use the module-level ShowInspector function instead.
+ */
 export class Inspector {
+    private static _CurrentInspectorToken: Nullable<IDisposable> = null;
+
+    public static readonly OnSelectionChangeObservable = new Observable<any>();
+    public static readonly OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
+
+    public static MarkLineContainerTitleForHighlighting(title: string) {
+        throw new Error("Not Implemented");
+    }
+
+    public static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]) {
+        throw new Error("Not Implemented");
+    }
+
+    public static PopupEmbed() {
+        // Show with embed mode on (stacked right panes) and undocked?
+        throw new Error("Not Implemented");
+    }
+
+    public static PopupSceneExplorer() {
+        // Show with all right panes (not stacked), scene explorer tab selected, and undocked?
+        throw new Error("Not Implemented");
+    }
+
+    public static PopupInspector() {
+        // Show with all right panes (not stacked), properties tab selected, and undocked?
+        throw new Error("Not Implemented");
+    }
+
     public static get IsVisible(): boolean {
-        return IsInspectorVisible();
+        return !this._CurrentInspectorToken;
     }
 
     public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
-        _ShowInspector(scene, userOptions);
+        this._CurrentInspectorToken = _ShowInspector(scene, userOptions);
     }
 
     public static Hide() {
-        HideInspector();
+        this._CurrentInspectorToken?.dispose();
+        this._CurrentInspectorToken = null;
     }
 }

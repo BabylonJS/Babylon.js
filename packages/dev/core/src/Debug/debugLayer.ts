@@ -245,10 +245,10 @@ export class DebugLayer {
         enablePopup: true,
     };
 
-    private _scene: Scene;
+    protected _scene: Scene;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    private BJSINSPECTOR = this._getGlobalInspector();
+    protected BJSINSPECTOR = this._getGlobalInspector();
 
     private _onPropertyChangedObservable?: Observable<{ object: any; property: string; value: any; initialValue: any }>;
     /**
