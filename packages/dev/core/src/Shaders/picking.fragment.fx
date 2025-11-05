@@ -15,7 +15,7 @@ void main(void) {
 #endif
 
 #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
-    int castedId = int(id);
+    int castedId = int(id + 0.5); // + 0.5 to avoid precision issues
     //decompose it into 3 bytes
     vec3 color = vec3(
         float((castedId >> 16) & 0xFF),

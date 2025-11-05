@@ -51,7 +51,7 @@ export interface IGPUMultiPickingInfo {
  */
 export class GPUPicker {
     private static readonly _AttributeName = "instanceMeshID";
-    private static readonly _MaxPickingId = 0x00ffffff; // 24 bits unsigned integer max
+    private static readonly _MaxPickingId = 0x003fffff; // 24 bits unsigned integer max - 2 (for handle precision issues)
 
     private _pickingTexture: Nullable<RenderTargetTexture> = null;
 
@@ -218,8 +218,6 @@ export class GPUPicker {
         if (!list || list.length === 0) {
             return;
         }
-
-        this._pickableMeshes = list as Array<AbstractMesh>;
 
         // Prepare target
         const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene();
