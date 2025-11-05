@@ -22,6 +22,48 @@ export function Vector2ToFixed(vector: IVector2Like, decimalCount: number): stri
 export function Vector3Dot(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
+
+/**
+ * Computes the squared length of the IVector3Like
+ * @param vector the vector to measure
+ * @returns the squared length of the vector
+ */
+export function Vector3LengthSquared(vector: DeepImmutable<IVector3Like>): number {
+    return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+}
+
+/**
+ * Computes the length of the IVector3Like
+ * @param vector the vector to measure
+ * @returns the length of the vector
+ */
+export function Vector3Length(vector: DeepImmutable<IVector3Like>): number {
+    return Math.sqrt(Vector3LengthSquared(vector));
+}
+
+/**
+ * Computes the squared distance between the IVector3Like objects
+ * @param a defines the first vector
+ * @param b defines the second vector
+ * @returns the squared distance
+ */
+export function Vector3DistanceSquared(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
+    const x = b.x - a.x;
+    const y = b.y - a.y;
+    const z = b.z - a.z;
+    return x * x + y * y + z * z;
+}
+
+/**
+ * Computes the distance between the IVector3Like objects
+ * @param a defines the first vector
+ * @param b defines the second vector
+ * @returns the distance
+ */
+export function Vector3Distance(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
+    return Math.sqrt(Vector3DistanceSquared(a, b));
+}
+
 /**
  * Sets the given floats into the result.
  * @param x defines the x coordinate
