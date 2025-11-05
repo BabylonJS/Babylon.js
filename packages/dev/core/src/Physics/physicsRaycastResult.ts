@@ -1,5 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
 import { CastingResult } from "./castingResult";
+import type { PhysicsBody } from "./v2/physicsBody";
 
 /**
  * Interface for query parameters in the raycast function.
@@ -12,6 +13,8 @@ export interface IRaycastQuery {
     collideWith?: number;
     /** Should trigger collisions be considered in the query? */
     shouldHitTriggers?: boolean;
+    /** Ignores the body passed if it is in the query */
+    ignoreBody?: PhysicsBody;
 }
 
 /**

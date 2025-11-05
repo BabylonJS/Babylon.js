@@ -44,7 +44,7 @@ export class NodeRenderGraphChromaticAberrationPostProcessBlock extends NodeRend
     }
 
     /** The amount the effect will increase for pixels closer to the edge of the screen */
-    @editableInPropertyPage("Radial intensity", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0.1, max: 5 })
+    @editableInPropertyPage("Radial intensity", PropertyTypeForEdition.Float, "PROPERTIES", { min: -1, max: 5 })
     public get radialIntensity(): number {
         return this._frameGraphTask.postProcess.radialIntensity;
     }

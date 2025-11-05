@@ -62,8 +62,9 @@ export abstract class FrameGraphTask {
 
     /**
      * Records the task in the frame graph. Use this function to add content (render passes, ...) to the task.
+     * @param skipCreationOfDisabledPasses If true, the disabled passe(s) won't be created.
      */
-    public abstract record(): void;
+    public abstract record(skipCreationOfDisabledPasses?: boolean): void;
 
     /**
      * An observable that is triggered after the textures have been allocated.
@@ -185,8 +186,12 @@ export abstract class FrameGraphTask {
     }
 
     /** @internal */
-    public _getPasses(): IFrameGraphPass[] {
-        return this.disabled && this._passesDisabled.length > 0 ? this._passesDisabled : this._passes;
+    public _execute() {
+        const passes = this._disabled && this._passesDisabled.length > 0 ? this._passesDisabled : this._passes;
+
+        for (const pass of passes) {
+            pass._execute();
+        }
     }
 
     private _checkSameRenderTarget(src: Nullable<Nullable<InternalTexture>[]>, dst: Nullable<Nullable<InternalTexture>[]>) {

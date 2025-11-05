@@ -23,6 +23,7 @@ export class GlobalState {
     hostElement: HTMLElement;
     hostDocument: Document;
     hostWindow: Window;
+    hostScene?: Scene;
     stateManager: StateManager;
     onClearUndoStack = new Observable<void>();
     onBuiltObservable = new Observable<void>();
