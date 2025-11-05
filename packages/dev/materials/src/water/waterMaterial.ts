@@ -46,8 +46,8 @@ import {
 } from "core/Materials/materialHelper.functions";
 
 import "core/Rendering/boundingBoxRenderer";
-import { OffsetClipPlaneToRef, OffsetViewToRef } from "core/Materials";
-import { MultiplyMatricesToRef } from "core/Maths";
+import { OffsetClipPlaneToRef, OffsetViewToRef } from "core/Materials/floatingOriginMatrixOverrides";
+import { MultiplyMatricesToRef } from "core/Maths/ThinMaths/thinMath.matrix.functions";
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
