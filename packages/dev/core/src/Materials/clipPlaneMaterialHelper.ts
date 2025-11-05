@@ -3,7 +3,7 @@ import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
 import type { Nullable } from "../types";
 import type { Plane } from "../Maths/math.plane";
 import { FloatingOriginCurrentScene } from "./floatingOriginMatrixOverrides";
-import { Vector3 } from "../Maths";
+import { Vector3 } from "../Maths/math.vector";
 
 /** @internal */
 export function AddClipPlaneUniforms(uniforms: string[]): void {
