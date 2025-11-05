@@ -46,7 +46,7 @@ import {
 } from "core/Materials/materialHelper.functions";
 
 import "core/Rendering/boundingBoxRenderer";
-import { FloatingOriginCurrentScene, OffsetClipPlaneToRef, OffsetViewToRef } from "core/Materials";
+import { OffsetClipPlaneToRef, OffsetViewToRef } from "core/Materials";
 import { MultiplyMatricesToRef } from "core/Maths";
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
@@ -770,7 +770,6 @@ export class WaterMaterial extends PushMaterial {
 
             mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
 
-            FloatingOriginCurrentScene.eyeAtCamera = false;
             scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
             scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
         };
@@ -784,7 +783,6 @@ export class WaterMaterial extends PushMaterial {
             scene.clipPlane = clipPlane;
 
             // Transform
-            FloatingOriginCurrentScene.eyeAtCamera = true;
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
             scene._mirroredCameraPosition = null;
         };
