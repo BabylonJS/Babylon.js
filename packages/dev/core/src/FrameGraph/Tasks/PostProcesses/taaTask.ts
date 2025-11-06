@@ -27,7 +27,7 @@ export class FrameGraphTAATask extends FrameGraphPostProcessTask {
      * The handle to the velocity texture. Only needed if postProcess.reprojectHistory is enabled.
      * Note that you must use the linear velocity texture!
      */
-    public velocityTexture: FrameGraphTextureHandle;
+    public velocityTexture?: FrameGraphTextureHandle;
 
     protected _onBeforeRenderSceneObserver: Observer<Scene>;
     protected _initRenderingObserver: Observer<ObjectRenderer>;
