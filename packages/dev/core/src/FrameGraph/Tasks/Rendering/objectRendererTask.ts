@@ -102,7 +102,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _renderParticles = true;
     /**
-     * Define if particles should be rendered (default is true).
+     * Defines if particles should be rendered (default is true).
      */
     public get renderParticles() {
         return this._renderParticles;
@@ -119,7 +119,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _renderSprites = true;
     /**
-     * Define if sprites should be rendered (default is true).
+     * Defines if sprites should be rendered (default is true).
      */
     public get renderSprites() {
         return this._renderSprites;
@@ -136,7 +136,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _forceLayerMaskCheck = true;
     /**
-     * Force checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined). Default is true.
+     * Forces checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined). Default is true.
      */
     public get forceLayerMaskCheck() {
         return this._forceLayerMaskCheck;
@@ -187,7 +187,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     /**
      * The output texture.
-     * This texture will point to the same texture than the targetTexture property if it is set.
+     * This texture will point to the same texture than the targetTexture property.
      * Note, however, that the handle itself will be different!
      */
     public readonly outputTexture: FrameGraphTextureHandle;

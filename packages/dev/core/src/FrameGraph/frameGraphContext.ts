@@ -1,4 +1,4 @@
-import type { AbstractEngine, FrameGraphTextureManager, Scene, FrameGraphTextureHandle, Nullable, InternalTexture } from "core/index";
+import type { AbstractEngine, FrameGraphTextureManager, Scene, FrameGraphTextureHandle, Nullable, InternalTexture, IViewportLike } from "core/index";
 
 /**
  * Base class for frame graph context.
@@ -90,5 +90,15 @@ export class FrameGraphContext {
     public setDepthStates(depthTest: boolean, depthWrite: boolean): void {
         this._engine.setDepthBuffer(depthTest);
         this._engine.setDepthWrite(depthWrite);
+    }
+
+    /**
+     * Sets the current viewport
+     * @param viewport defines the viewport element to be used
+     * @param requiredWidth defines the width required for rendering. If not provided, the width of the render texture is used.
+     * @param requiredHeight defines the height required for rendering. If not provided the height of the render texture is used.
+     */
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+        this._engine.setViewport(viewport, requiredHeight, requiredWidth);
     }
 }

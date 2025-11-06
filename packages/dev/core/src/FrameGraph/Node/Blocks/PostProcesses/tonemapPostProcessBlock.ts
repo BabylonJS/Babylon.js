@@ -2,13 +2,13 @@ import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphTonemapTask } from "../../../Tasks/PostProcesses/tonemapTask";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 import { ThinTonemapPostProcess, TonemappingOperator } from "../../../../PostProcesses/thinTonemapPostProcess";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the tonemap post process
  */
-export class NodeRenderGraphTonemapPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphTonemapPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphTonemapTask;
 
     public override _additionalConstructionParameters: [TonemappingOperator];

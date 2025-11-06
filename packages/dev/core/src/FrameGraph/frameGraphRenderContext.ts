@@ -212,6 +212,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param disableColorWrite If true, color write will be disabled when applying the effect (optional)
      * @param drawBackFace If true, the fullscreen quad will be drawn as a back face (in CW - optional)
      * @param depthTest If true, depth testing will be enabled when applying the effect (default is false)
+     * @param noViewport If true, the current viewport will be left unchanged (optional). If false or undefined, the viewport will be set to the full render target size.
      * @returns True if the effect was applied, otherwise false (effect not ready)
      */
     public applyFullScreenEffect(
@@ -220,7 +221,8 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         stencilState?: IStencilState,
         disableColorWrite?: boolean,
         drawBackFace?: boolean,
-        depthTest?: boolean
+        depthTest?: boolean,
+        noViewport?: boolean
     ): boolean {
         if (!drawWrapper.effect?.isReady()) {
             return false;
@@ -233,7 +235,9 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         const effectRenderer = drawBackFace ? this._effectRendererBack : this._effectRenderer;
 
         effectRenderer.saveStates();
-        effectRenderer.setViewport();
+        if (!noViewport) {
+            effectRenderer.setViewport();
+        }
 
         this._engine.enableEffect(drawWrapper);
         this._engine.setState(false, undefined, undefined, undefined, undefined, stencilState);
@@ -260,13 +264,26 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * Copies a texture to the current render target
      * @param sourceTexture The source texture to copy from
      * @param forceCopyToBackbuffer If true, the copy will be done to the back buffer regardless of the current render target
+     * @param noViewport If true, the current viewport will be left unchanged (optional). If false or undefined, the viewport will be set to the full render target size.
      */
-    public copyTexture(sourceTexture: FrameGraphTextureHandle, forceCopyToBackbuffer = false): void {
+    public copyTexture(sourceTexture: FrameGraphTextureHandle, forceCopyToBackbuffer = false, noViewport?: boolean): void {
         if (forceCopyToBackbuffer) {
             this.bindRenderTarget();
         }
-        this._applyRenderTarget();
-        this._copyTexture.copy(this._textureManager.getTextureFromHandle(sourceTexture, true)!);
+
+        this._copyTexture.source = this._textureManager.getTextureFromHandle(sourceTexture, true)!;
+
+        this.applyFullScreenEffect(
+            this._copyTexture.effectWrapper.drawWrapper,
+            () => {
+                this._copyTexture.effectWrapper.onApplyObservable.notifyObservers({});
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            noViewport
+        );
     }
 
     /**

@@ -3,12 +3,12 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphSharpenTask } from "core/FrameGraph/Tasks/PostProcesses/sharpenTask";
 import { ThinSharpenPostProcess } from "core/PostProcesses/thinSharpenPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the sharpen post process
  */
-export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphSharpenTask;
 
     /**
@@ -33,7 +33,7 @@ export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBaseP
     }
 
     /** How much of the original color should be applied. Setting this to 0 will display edge detection. */
-    @editableInPropertyPage("Color Amount", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
+    @editableInPropertyPage("Color Amount", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 3 })
     public get colorAmount(): number {
         return this._frameGraphTask.postProcess.colorAmount;
     }
@@ -43,7 +43,7 @@ export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBaseP
     }
 
     /** How much sharpness should be applied. */
-    @editableInPropertyPage("Edge Amount", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
+    @editableInPropertyPage("Edge Amount", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 5 })
     public get edgeAmount(): number {
         return this._frameGraphTask.postProcess.edgeAmount;
     }

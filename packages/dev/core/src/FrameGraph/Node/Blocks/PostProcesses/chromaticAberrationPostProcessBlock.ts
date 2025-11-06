@@ -4,12 +4,12 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphChromaticAberrationTask } from "core/FrameGraph/Tasks/PostProcesses/chromaticAberrationTask";
 import { ThinChromaticAberrationPostProcess } from "core/PostProcesses/thinChromaticAberrationPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the chromatic aberration post process
  */
-export class NodeRenderGraphChromaticAberrationPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphChromaticAberrationPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphChromaticAberrationTask;
 
     /**

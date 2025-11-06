@@ -3,14 +3,14 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphImageProcessingTask } from "core/FrameGraph/Tasks/PostProcesses/imageProcessingTask";
 import { ThinImageProcessingPostProcess } from "core/PostProcesses/thinImageProcessingPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { Color4 } from "../../../../Maths/math.color";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the image processing post process
  */
-export class NodeRenderGraphImageProcessingPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphImageProcessingPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphImageProcessingTask;
 
     /**
@@ -98,7 +98,7 @@ export class NodeRenderGraphImageProcessingPostProcessBlock extends NodeRenderGr
     }
 
     /** Vignette weight or intensity of the vignette effect. */
-    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "VIGNETTE", { min: 0, max: 4 })
+    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "VIGNETTE", { min: 0, max: 200 })
     public get vignetteWeight(): number {
         return this._frameGraphTask.postProcess.vignetteWeight;
     }

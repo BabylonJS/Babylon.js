@@ -4,12 +4,12 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRender
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphScreenSpaceCurvatureTask } from "core/FrameGraph/Tasks/PostProcesses/screenSpaceCurvatureTask";
 import { ThinScreenSpaceCurvaturePostProcess } from "core/PostProcesses/thinScreenSpaceCurvaturePostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the screen space curvature post process
  */
-export class NodeRenderGraphScreenSpaceCurvaturePostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphScreenSpaceCurvaturePostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphScreenSpaceCurvatureTask;
 
     /**
