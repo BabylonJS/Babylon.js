@@ -215,19 +215,18 @@ export class CustomShaderBlock extends ShaderBlock {
         // Create the property and assign the default value
         (this as any)[constProperty.friendlyName] = constProperty.defaultValue;
 
-        // If options were supplied, use the EditableInPropertyPage decorator to allow selection from a list in the
-        // Smart Filters Editor
+        // Use the EditableInPropertyPage decorator to make the property editable in the Smart Filters Editor
+        const editablePropertyOptions: IEditablePropertyOption = {
+            notifiers: { rebuild: true },
+        };
         if (constProperty.options) {
-            const editablePropertyOptions: IEditablePropertyOption = {
-                notifiers: { rebuild: true },
-            };
             editablePropertyOptions.options = Object.keys(constProperty.options).map((key) => {
                 return { label: key, value: (constProperty.options as any)[key] };
             });
-
-            const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, PropertyTypeForEdition.List, "PROPERTIES", editablePropertyOptions);
-            decoratorApplier(this, constProperty.friendlyName, this._blockType);
         }
+
+        const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, PropertyTypeForEdition.List, "PROPERTIES", editablePropertyOptions);
+        decoratorApplier(this, constProperty.friendlyName, this._blockType);
     }
 
     /**
