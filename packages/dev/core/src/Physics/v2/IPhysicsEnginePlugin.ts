@@ -491,7 +491,7 @@ export interface IPhysicsEnginePluginV2 {
     getBodiesUsingConstraint(constraint: PhysicsConstraint): ConstrainedBodyPair[];
 
     // raycast
-    raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void;
+    raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult | Array<PhysicsRaycastResult>, query?: IRaycastQuery): void;
 
     dispose(): void;
 }
