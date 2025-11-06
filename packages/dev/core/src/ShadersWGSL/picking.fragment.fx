@@ -1,6 +1,6 @@
 
 #if defined(INSTANCES)
-varying vMeshID: f32;
+flat varying vMeshID: f32;
 #else
 uniform meshID: f32;
 #endif
@@ -9,9 +9,9 @@ uniform meshID: f32;
 fn main(input: FragmentInputs) -> FragmentOutputs {
     var id: i32;
 #if defined(INSTANCES)
-    id = i32(input.vMeshID + 0.5); // + 0.5 to avoid precision issues
+    id = i32(input.vMeshID); 
 #else
-	id = i32(uniforms.meshID + 0.5); // + 0.5 to avoid precision issues
+	id = i32(uniforms.meshID);
 #endif
     var color = vec3f(
         f32((id >> 16) & 0xFF),

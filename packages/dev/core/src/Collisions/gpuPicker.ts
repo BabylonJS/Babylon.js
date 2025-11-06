@@ -51,7 +51,7 @@ export interface IGPUMultiPickingInfo {
  */
 export class GPUPicker {
     private static readonly _AttributeName = "instanceMeshID";
-    private static readonly _MaxPickingId = 0x003fffff; // 24 bits unsigned integer max - 2 (for handle precision issues)
+    private static readonly _MaxPickingId = 0x00ffffff; // 24 bits unsigned integer max
 
     private _pickingTexture: Nullable<RenderTargetTexture> = null;
 
