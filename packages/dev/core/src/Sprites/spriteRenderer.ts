@@ -14,6 +14,7 @@ import type { ThinEngine } from "../Engines/thinEngine";
 import { Logger } from "../Misc/logger";
 import { BindLogDepth } from "../Materials/materialHelper.functions.pure";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { Vector3 } from "../Maths/math.vector";
 
 /**
  * Options for the SpriteRenderer
@@ -478,9 +479,10 @@ export class SpriteRenderer {
         }
 
         // Positions
-        this._vertexData[arrayOffset] = sprite.position.x;
-        this._vertexData[arrayOffset + 1] = sprite.position.y;
-        this._vertexData[arrayOffset + 2] = sprite.position.z;
+        const floatingOriginOffset = this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly;
+        this._vertexData[arrayOffset] = sprite.position.x - floatingOriginOffset.x;
+        this._vertexData[arrayOffset + 1] = sprite.position.y - floatingOriginOffset.y;
+        this._vertexData[arrayOffset + 2] = sprite.position.z - floatingOriginOffset.z;
         this._vertexData[arrayOffset + 3] = sprite.angle;
         // Options
         this._vertexData[arrayOffset + 4] = sprite.width;
