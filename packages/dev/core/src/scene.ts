@@ -1229,6 +1229,17 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * Gets the current eye position, in order of forcedViewPosition, mirroredCameraPosition, activeCamera world position, ZeroReadonlyVector3
+     */
+    private get _eyePosition(): Vector3 {
+        return this._forcedViewPosition
+            ? this._forcedViewPosition
+            : this._mirroredCameraPosition
+              ? this._mirroredCameraPosition
+              : (this.activeCamera?.getWorldMatrix().getTranslationToRef(this._tempVect3) ?? Vector3.ZeroReadOnly);
+    }
+
+    /**
      * Bind the current view position to an effect.
      * @param effect The effect to be bound
      * @param variableName name of the shader variable that will hold the eye position
@@ -1236,11 +1247,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @returns the computed eye position
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition
-            ? this._forcedViewPosition
-            : this._mirroredCameraPosition
-              ? this._mirroredCameraPosition
-              : (this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly);
+        const eyePosition = this._eyePosition;
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
         const offset = this.floatingOriginOffset;
@@ -2792,19 +2799,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._floatingOriginScene !== undefined;
     }
 
-    private _floatingOriginOffsetDefault: Vector3 = Vector3.Zero();
     /**
      * @experimental
-     * When floatingOriginMode is enabled, offset is equal to the active camera position in world space. If no active camera or floatingOriginMode is disabled, offset is 0.
+     * When floatingOriginMode is enabled, offset is equal to the eye position. Default to ZeroReadonly when mode is disabled.
      */
     public get floatingOriginOffset(): Vector3 {
-        return this.floatingOriginMode
-            ? this._mirroredCameraPosition
-                ? this._mirroredCameraPosition
-                : this.activeCamera
-                  ? this.activeCamera.getWorldMatrix().getTranslationToRef(this._tempVect3)
-                  : this._floatingOriginOffsetDefault
-            : this._floatingOriginOffsetDefault;
+        return this.floatingOriginMode ? this._eyePosition : Vector3.ZeroReadOnly;
     }
 
     /**
