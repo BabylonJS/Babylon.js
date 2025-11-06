@@ -3,12 +3,12 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphSharpenTask } from "core/FrameGraph/Tasks/PostProcesses/sharpenTask";
 import { ThinSharpenPostProcess } from "core/PostProcesses/thinSharpenPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the sharpen post process
  */
-export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphSharpenTask;
 
     /**
