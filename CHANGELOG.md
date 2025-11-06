@@ -1,5 +1,41 @@
 # Changelog
 
+## 8.35.0
+
+### Core
+
+- Support reflection probe / reuse eyePosition logic - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#17402](https://github.com/BabylonJS/Babylon.js/pull/17402))
+- _isDirty support for *ToRef vector functions - by [kircher1](https://github.com/kircher1) ([#17403](https://github.com/BabylonJS/Babylon.js/pull/17403))
+- Support clip planes, skymaterial, and water material - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#17398](https://github.com/BabylonJS/Babylon.js/pull/17398))
+- Add helpers for vector3 length and distance - by [kircher1](https://github.com/kircher1) ([#17400](https://github.com/BabylonJS/Babylon.js/pull/17400))
+- Supporting more NPE transformations - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17393](https://github.com/BabylonJS/Babylon.js/pull/17393))
+- math.vector.functions cleanup and additions - by [kircher1](https://github.com/kircher1) ([#17395](https://github.com/BabylonJS/Babylon.js/pull/17395))
+- DumpData: Refactor for glTF export in BN - by [alexchuber](https://github.com/alexchuber) ([#17365](https://github.com/BabylonJS/Babylon.js/pull/17365))
+- FrameGraph: add new task + several fixes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17381](https://github.com/BabylonJS/Babylon.js/pull/17381))
+- Add `sounds` list to new audio engine - by [docEdub](https://github.com/docEdub) ([#17391](https://github.com/BabylonJS/Babylon.js/pull/17391))
+- Add ignoreBody filter for IRaycastQuery - by [lwp-joel](https://github.com/lwp-joel) ([#17390](https://github.com/BabylonJS/Babylon.js/pull/17390))
+- SSAO2 camera fovMode support + Initialization with Ortho Camera Fix - [_Bug Fix_] by [noname0310](https://github.com/noname0310) ([#17388](https://github.com/BabylonJS/Babylon.js/pull/17388))
+
+### GUI
+
+- Update stackpanel to respect idealratio - [_Bug Fix_] by [georginahalpern](https://github.com/georginahalpern) ([#17401](https://github.com/BabylonJS/Babylon.js/pull/17401))
+
+### Inspector
+
+- Inspector: Add glTF export option for Draco - by [alexchuber](https://github.com/alexchuber) ([#17399](https://github.com/BabylonJS/Babylon.js/pull/17399))
+
+### Materials
+
+- Support clip planes, skymaterial, and water material - [_New Feature_] by [georginahalpern](https://github.com/georginahalpern) ([#17398](https://github.com/BabylonJS/Babylon.js/pull/17398))
+
+### Playground
+
+- FrameGraph: add new task + several fixes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17381](https://github.com/BabylonJS/Babylon.js/pull/17381))
+
+### Serializers
+
+- DumpData: Refactor for glTF export in BN - by [alexchuber](https://github.com/alexchuber) ([#17365](https://github.com/BabylonJS/Babylon.js/pull/17365))
+
 ## 8.34.1
 
 ### Core
