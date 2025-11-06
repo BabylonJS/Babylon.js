@@ -43,6 +43,12 @@ export class SystemBlock extends NodeParticleBlock {
     public emitRate = 10;
 
     /**
+     * Gets or sets the manual emit count
+     */
+    @editableInPropertyPage("Manual emit count", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: -1 })
+    public manualEmitCount = -1;
+
+    /**
      * Gets or sets the target stop duration for the particle system
      */
     @editableInPropertyPage("Target duration", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
@@ -59,6 +65,36 @@ export class SystemBlock extends NodeParticleBlock {
      */
     @editableInPropertyPage("updateSpeed", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0, max: 0.1 })
     public updateSpeed = 0.0167;
+
+    /**
+     * Gets or sets the number of pre-warm cycles before rendering the particle system
+     */
+    @editableInPropertyPage("Pre-warm cycles", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public preWarmCycles = 0;
+
+    /**
+     * Gets or sets the time step multiplier used for pre-warm
+     */
+    @editableInPropertyPage("Pre-warm step multiplier", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
+    public preWarmStepOffset = 0;
+
+    /**
+     * Gets or sets a boolean indicating if the system is billboard based
+     */
+    @editableInPropertyPage("Is billboard based", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public isBillboardBased = true;
+
+    /**
+     * Gets or sets a boolean indicating if the system coordinate space is local or global
+     */
+    @editableInPropertyPage("Is local", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public isLocal = false;
+
+    /**
+     * Gets or sets a boolean indicating if the system should be disposed when stopped
+     */
+    @editableInPropertyPage("Dispose on stop", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public disposeOnStop = false;
 
     /**
      * Gets or sets a boolean indicating if the system should not start automatically
@@ -82,6 +118,8 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("texture", NodeParticleBlockConnectionPointTypes.Texture);
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
+        this.registerInput("translationPivot", NodeParticleBlockConnectionPointTypes.Vector2, true);
+        this.registerInput("gravity", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -122,6 +160,20 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the translationPivot input component
+     */
+    public get translationPivot(): NodeParticleConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
+     * Gets the gravity input component
+     */
+    public get gravity(): NodeParticleConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
      * Gets the system output component
      */
     public get system(): NodeParticleConnectionPoint {
@@ -142,11 +194,17 @@ export class SystemBlock extends NodeParticleBlock {
         const particleSystem = this.particle.getConnectedValue(state) as ParticleSystem;
         particleSystem.particleTexture = this.texture.getConnectedValue(state);
         particleSystem.emitRate = this.emitRate;
+        particleSystem.manualEmitCount = this.manualEmitCount;
         particleSystem.updateSpeed = this.updateSpeed;
+        particleSystem.preWarmCycles = this.preWarmCycles;
+        particleSystem.preWarmStepOffset = this.preWarmStepOffset;
         particleSystem.blendMode = this.blendMode;
         particleSystem.name = this.name;
         particleSystem._targetStopDuration = this.targetStopDuration;
         particleSystem.startDelay = this.startDelay;
+        particleSystem.isBillboardBased = this.isBillboardBased;
+        particleSystem.isLocal = this.isLocal;
+        particleSystem.disposeOnStop = this.disposeOnStop;
 
         this.system._storedValue = this;
 
@@ -196,7 +254,14 @@ export class SystemBlock extends NodeParticleBlock {
 
         serializationObject.capacity = this.capacity;
         serializationObject.emitRate = this.emitRate;
+        serializationObject.manualEmitCount = this.manualEmitCount;
         serializationObject.blendMode = this.blendMode;
+        serializationObject.updateSpeed = this.updateSpeed;
+        serializationObject.preWarmCycles = this.preWarmCycles;
+        serializationObject.preWarmStepOffset = this.preWarmStepOffset;
+        serializationObject.isBillboardBased = this.isBillboardBased;
+        serializationObject.isLocal = this.isLocal;
+        serializationObject.disposeOnStop = this.disposeOnStop;
         serializationObject.doNoStart = this.doNoStart;
         serializationObject.targetStopDuration = this.targetStopDuration;
         serializationObject.startDelay = this.startDelay;
@@ -209,6 +274,13 @@ export class SystemBlock extends NodeParticleBlock {
 
         this.capacity = serializationObject.capacity;
         this.emitRate = serializationObject.emitRate;
+        this.manualEmitCount = serializationObject.manualEmitCount ?? -1;
+        this.updateSpeed = serializationObject.updateSpeed ?? 0.0167;
+        this.preWarmCycles = serializationObject.preWarmCycles ?? 0;
+        this.preWarmStepOffset = serializationObject.preWarmStepOffset ?? 0;
+        this.isBillboardBased = serializationObject.isBillboardBased ?? true;
+        this.isLocal = serializationObject.isLocal ?? false;
+        this.disposeOnStop = serializationObject.disposeOnStop ?? false;
         this.doNoStart = !!serializationObject.doNoStart;
 
         if (serializationObject.blendMode !== undefined) {

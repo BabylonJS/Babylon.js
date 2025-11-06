@@ -9,7 +9,7 @@ import { Quaternion, Vector3 } from "./math.vector";
  * @param decimalCount defines the number of decimals to use
  * @returns a string with the IVector2Like coordinates.
  */
-export function Vector2ToFixed(vector: IVector2Like, decimalCount: number): string {
+export function Vector2ToFixed(vector: DeepImmutable<IVector2Like>, decimalCount: number): string {
     return `{X: ${vector.x.toFixed(decimalCount)} Y: ${vector.y.toFixed(decimalCount)}}`;
 }
 
@@ -22,12 +22,54 @@ export function Vector2ToFixed(vector: IVector2Like, decimalCount: number): stri
 export function Vector3Dot(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
+
+/**
+ * Computes the squared length of the IVector3Like
+ * @param vector the vector to measure
+ * @returns the squared length of the vector
+ */
+export function Vector3LengthSquared(vector: DeepImmutable<IVector3Like>): number {
+    return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+}
+
+/**
+ * Computes the length of the IVector3Like
+ * @param vector the vector to measure
+ * @returns the length of the vector
+ */
+export function Vector3Length(vector: DeepImmutable<IVector3Like>): number {
+    return Math.sqrt(Vector3LengthSquared(vector));
+}
+
+/**
+ * Computes the squared distance between the IVector3Like objects
+ * @param a defines the first vector
+ * @param b defines the second vector
+ * @returns the squared distance
+ */
+export function Vector3DistanceSquared(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
+    const x = b.x - a.x;
+    const y = b.y - a.y;
+    const z = b.z - a.z;
+    return x * x + y * y + z * z;
+}
+
+/**
+ * Computes the distance between the IVector3Like objects
+ * @param a defines the first vector
+ * @param b defines the second vector
+ * @returns the distance
+ */
+export function Vector3Distance(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>): number {
+    return Math.sqrt(Vector3DistanceSquared(a, b));
+}
+
 /**
  * Sets the given floats into the result.
  * @param x defines the x coordinate
  * @param y defines the y coordinate
  * @param z defines the z coordinate
- * @param result defines the target vector
+ * @param result defines the result vector
  * @returns the result vector
  */
 export function Vector3FromFloatsToRef<T extends IVector3Like>(x: number, y: number, z: number, result: T): T {
@@ -41,7 +83,7 @@ export function Vector3FromFloatsToRef<T extends IVector3Like>(x: number, y: num
  * Stores the scaled values of a vector into the result.
  * @param a defines the source vector
  * @param scale defines the scale factor
- * @param result defines the target vector
+ * @param result defines the result vector
  * @returns the scaled vector
  */
 export function Vector3ScaleToRef<T extends IVector3Like>(a: DeepImmutable<IVector3Like>, scale: number, result: T): T {
@@ -52,10 +94,10 @@ export function Vector3ScaleToRef<T extends IVector3Like>(a: DeepImmutable<IVect
 }
 
 /**
- * Scales the current vector values in place by a factor
+ * Scales the current vector values in place by a factor.
  * @param vector defines the vector to scale
  * @param scale defines the scale factor
- * @returns the input scaled vector
+ * @returns the scaled vector
  */
 export function Vector3ScaleInPlace<T extends IVector3Like>(vector: T, scale: number): T {
     vector.x *= scale;

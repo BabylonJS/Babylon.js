@@ -52,7 +52,8 @@ export type AudioEngineV2State = "closed" | "interrupted" | "running" | "suspend
 export abstract class AudioEngineV2 {
     /** Not owned, but all items should be in `_nodes` container, too, which is owned. */
     private readonly _mainBuses = new Set<MainAudioBus>();
-    private readonly _sounds = new Array<AbstractSound>();
+    private readonly _sounds = new Set<AbstractSound>();
+    private _soundsArray: Nullable<Array<AbstractSound>> = null;
 
     /** Owned top-level sound and bus nodes. */
     private readonly _nodes = new Set<AbstractNamedAudioNode>();
@@ -138,7 +139,10 @@ export abstract class AudioEngineV2 {
      * The list of static and streaming sounds created by the audio engine.
      */
     public get sounds(): ReadonlyArray<AbstractSound> {
-        return this._sounds;
+        if (!this._soundsArray) {
+            this._soundsArray = Array.from(this._sounds);
+        }
+        return this._soundsArray;
     }
 
     /**
@@ -222,7 +226,9 @@ export abstract class AudioEngineV2 {
 
         this._mainBuses.clear();
         this._nodes.clear();
-        this._sounds.length = 0;
+        this._sounds.clear();
+
+        this._disposeSoundsArray();
 
         this._defaultMainBus = null;
     }
@@ -287,16 +293,22 @@ export abstract class AudioEngineV2 {
     }
 
     protected _addSound(sound: AbstractSound): void {
-        this._sounds.push(sound);
+        this._disposeSoundsArray();
+        this._sounds.add(sound);
         this._addNode(sound);
     }
 
     protected _removeSound(sound: AbstractSound): void {
-        const index = this._sounds.indexOf(sound);
-        if (index !== -1) {
-            this._sounds.splice(index, 1);
-        }
+        this._disposeSoundsArray();
+        this._sounds.delete(sound);
         this._removeNode(sound);
+    }
+
+    private _disposeSoundsArray(): void {
+        if (this._soundsArray) {
+            this._soundsArray.length = 0;
+            this._soundsArray = null;
+        }
     }
 }
 
