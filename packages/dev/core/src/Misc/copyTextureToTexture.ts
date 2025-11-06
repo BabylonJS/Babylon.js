@@ -38,6 +38,24 @@ export class CopyTextureToTexture {
         return this._shaderLanguage;
     }
 
+    /**
+     * Gets the effect wrapper used for the copy
+     */
+    public get effectWrapper() {
+        return this._effectWrapper;
+    }
+
+    /**
+     * Gets or sets the source texture
+     */
+    public get source() {
+        return this._source;
+    }
+
+    public set source(texture: InternalTexture | ThinTexture) {
+        this._source = texture;
+    }
+
     private _textureIsInternal(texture: InternalTexture | ThinTexture): texture is InternalTexture {
         return (texture as ThinTexture).getInternalTexture === undefined;
     }
