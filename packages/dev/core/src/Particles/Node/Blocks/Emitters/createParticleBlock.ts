@@ -34,7 +34,7 @@ export class CreateParticleBlock extends NodeParticleBlock {
         this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2, true, new Vector2(1, 1));
         this.registerInput("angle", NodeParticleBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("angularSpeed", NodeParticleBlockConnectionPointTypes.Float, true, 0);
-        this.registerInput("size", NodeParticleBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("size", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
 
         this.scale.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Float);
