@@ -252,5 +252,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
             this._state = SoundState.Stopped;
             this.onEndedObservable.notifyObservers(this);
         }
+
+        instance.dispose();
     };
 }
