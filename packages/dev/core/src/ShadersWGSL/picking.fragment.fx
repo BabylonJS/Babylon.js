@@ -9,7 +9,7 @@ uniform meshID: f32;
 fn main(input: FragmentInputs) -> FragmentOutputs {
     var id: i32;
 #if defined(INSTANCES)
-    id = i32(input.vMeshID); 
+    id = i32(input.vMeshID);
 #else
 	id = i32(uniforms.meshID);
 #endif
