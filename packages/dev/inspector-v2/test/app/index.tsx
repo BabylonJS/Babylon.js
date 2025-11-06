@@ -5,6 +5,7 @@
 // Animation groups: http://localhost:1338/?inspectorv2#FMAYKS
 
 import HavokPhysics from "@babylonjs/havok";
+import "core/Physics/v2/physicsEngineComponent";
 import type { Nullable } from "core/types";
 
 import { Engine } from "core/Engines/engine";

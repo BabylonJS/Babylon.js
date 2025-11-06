@@ -60,25 +60,17 @@ import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
-type InspectorV2Options = Omit<ModularToolOptions, "containerElement" | "sidePaneRemapper" | "toolbarMode">;
+type InspectorV2Options = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
 const InspectorTokens = new WeakMap<Scene, IDisposable>();
 
-// TODO: We may not want to expose all of IInspectorOptions in the new Inspector v2 as there may be more general ways of achieving the same thing.
-export function ShowInspector(scene: Scene, options?: Partial<IInspectorOptions & InspectorV2Options>) {
+export function ShowInspector(scene: Scene, options?: Partial<InspectorV2Options>) {
     return _ShowInspector(scene, options ?? {});
 }
 
-function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions & InspectorV2Options>): IDisposable {
-    // TODO: Lots more work to do to respect all the Inspector v1 options.
+function _ShowInspector(scene: Nullable<Scene>, options: Partial<InspectorV2Options>): IDisposable {
     options = {
-        overlay: false,
-        showExplorer: true,
-        showInspector: true,
-        embedMode: false,
-        enableClose: true,
-        handleResize: true,
-        enablePopup: true,
+        autoResizeEngine: true,
         ...options,
     };
 
@@ -94,7 +86,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         return inspectorToken;
     }
 
-    let parentElement = options.globalRoot ?? null;
+    let parentElement = options.containerElement ?? null;
     if (!parentElement) {
         parentElement = scene.getEngine().getRenderingCanvas()?.parentElement ?? null;
         while (parentElement) {
@@ -178,14 +170,14 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         },
     };
 
-    if (options.handleResize) {
+    if (options.autoResizeEngine) {
         const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
         disposeActions.push(() => observer.remove());
     }
 
-    if (options.showExplorer) {
-        // TODO
-    }
+    // if (options.showExplorer) {
+    //     // TODO
+    // }
 
     const modularTool = MakeModularTool({
         containerElement: parentElement,
@@ -271,24 +263,9 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         themeMode: options.themeMode,
         showThemeSelector: options.showThemeSelector,
         extensionFeeds: [DefaultInspectorExtensionFeed, ...(options.extensionFeeds ?? [])],
+        layoutMode: options.layoutMode,
         toolbarMode: "compact",
-        sidePaneRemapper: options.embedMode
-            ? (sidePane) => {
-                  if (sidePane.horizontalLocation === "right") {
-                      // All right panes go to right bottom.
-                      return {
-                          horizontalLocation: "right",
-                          verticalLocation: "bottom",
-                      };
-                  } else {
-                      // All left panes go to right top.
-                      return {
-                          horizontalLocation: "right",
-                          verticalLocation: "top",
-                      };
-                  }
-              }
-            : undefined,
+        sidePaneRemapper: options.sidePaneRemapper,
     });
     disposeActions.push(() => modularTool.dispose());
 
@@ -299,7 +276,7 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         }
 
         disposeActions.reverse().forEach((dispose) => dispose());
-        if (options.handleResize) {
+        if (options.autoResizeEngine) {
             scene.getEngine().resize();
         }
 
@@ -364,7 +341,40 @@ export class Inspector {
     }
 
     public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
-        this._CurrentInspectorToken = _ShowInspector(scene, userOptions);
+        userOptions = {
+            overlay: false,
+            showExplorer: true,
+            showInspector: true,
+            embedMode: false,
+            enableClose: true,
+            handleResize: true,
+            enablePopup: true,
+            ...userOptions,
+        };
+
+        const options: Partial<InspectorV2Options> = {
+            containerElement: userOptions.globalRoot,
+            layoutMode: userOptions.overlay ? "overlay" : "inline",
+            autoResizeEngine: userOptions.handleResize,
+            sidePaneRemapper: userOptions.embedMode
+                ? (sidePane) => {
+                      if (sidePane.horizontalLocation === "right") {
+                          // All right panes go to right bottom.
+                          return {
+                              horizontalLocation: "right",
+                              verticalLocation: "bottom",
+                          };
+                      } else {
+                          // All left panes go to right top.
+                          return {
+                              horizontalLocation: "right",
+                              verticalLocation: "top",
+                          };
+                      }
+                  }
+                : undefined,
+        };
+        this._CurrentInspectorToken = _ShowInspector(scene, options);
     }
 
     public static Hide() {
