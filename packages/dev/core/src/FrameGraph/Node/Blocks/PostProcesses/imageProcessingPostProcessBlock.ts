@@ -98,7 +98,7 @@ export class NodeRenderGraphImageProcessingPostProcessBlock extends NodeRenderGr
     }
 
     /** Vignette weight or intensity of the vignette effect. */
-    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "VIGNETTE", { min: 0, max: 4 })
+    @editableInPropertyPage("Weight", PropertyTypeForEdition.Float, "VIGNETTE", { min: 0, max: 200 })
     public get vignetteWeight(): number {
         return this._frameGraphTask.postProcess.vignetteWeight;
     }

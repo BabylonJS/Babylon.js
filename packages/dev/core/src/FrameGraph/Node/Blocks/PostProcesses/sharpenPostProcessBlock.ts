@@ -33,7 +33,7 @@ export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBaseP
     }
 
     /** How much of the original color should be applied. Setting this to 0 will display edge detection. */
-    @editableInPropertyPage("Color Amount", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
+    @editableInPropertyPage("Color Amount", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 3 })
     public get colorAmount(): number {
         return this._frameGraphTask.postProcess.colorAmount;
     }
@@ -43,7 +43,7 @@ export class NodeRenderGraphSharpenPostProcessBlock extends NodeRenderGraphBaseP
     }
 
     /** How much sharpness should be applied. */
-    @editableInPropertyPage("Edge Amount", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 1 })
+    @editableInPropertyPage("Edge Amount", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0, max: 5 })
     public get edgeAmount(): number {
         return this._frameGraphTask.postProcess.edgeAmount;
     }
