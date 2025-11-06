@@ -2,7 +2,7 @@ import { Vector3FromFloatsToRef, Vector3ScaleInPlace, Vector3ScaleToRef } from "
 
 describe("Vector functions tests", () => {
     describe("Vector3", () => {
-        it("writes floats into result and honors", () => {
+        it("writes floats into result", () => {
             const target = { x: 0, y: 0, z: 0 };
             const result = Vector3FromFloatsToRef(7, 8, 9, target);
             expect(result).toBe(target);
