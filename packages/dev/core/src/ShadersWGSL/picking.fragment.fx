@@ -1,6 +1,6 @@
 
 #if defined(INSTANCES)
-varying vMeshID: f32;
+flat varying vMeshID: f32;
 #else
 uniform meshID: f32;
 #endif
