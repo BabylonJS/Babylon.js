@@ -173,13 +173,7 @@ export class CustomShaderBlock extends ShaderBlock {
             this._createConstProperty(constProperty);
         }
 
-        // Make a copy of the shader program to avoid modifying the original when we append const properties
-        this._shaderProgram = {
-            vertex: shaderProgram.vertex,
-            fragment: {
-                ...shaderProgram.fragment,
-            },
-        };
+        this._shaderProgram = shaderProgram;
     }
 
     /**
@@ -188,8 +182,17 @@ export class CustomShaderBlock extends ShaderBlock {
      */
     public override getShaderProgram() {
         // Append const properties to the fragment shader consts
-        this._shaderProgram.fragment.const = this._shaderProgram.fragment.const || "";
-        this._shaderProgram.fragment.const +=
+
+        // Make a copy of the shader program to avoid modifying the original
+        const shaderProgram = {
+            vertex: this._shaderProgram.vertex,
+            fragment: {
+                ...this._shaderProgram.fragment,
+            },
+        };
+
+        shaderProgram.fragment.const = shaderProgram.fragment.const || "";
+        shaderProgram.fragment.const +=
             this._fragmentConstProperties
                 .map((property) => {
                     switch (property.type) {
@@ -204,7 +207,7 @@ export class CustomShaderBlock extends ShaderBlock {
                 })
                 .join("\n") + "\n";
 
-        return this._shaderProgram;
+        return shaderProgram;
     }
 
     /**
@@ -219,13 +222,15 @@ export class CustomShaderBlock extends ShaderBlock {
         const editablePropertyOptions: IEditablePropertyOption = {
             notifiers: { rebuild: true },
         };
+        let propertyType = constProperty.type === "float" ? PropertyTypeForEdition.Float : PropertyTypeForEdition.Boolean;
         if (constProperty.options) {
             editablePropertyOptions.options = Object.keys(constProperty.options).map((key) => {
                 return { label: key, value: (constProperty.options as any)[key] };
             });
+            propertyType = PropertyTypeForEdition.List;
         }
 
-        const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, PropertyTypeForEdition.List, "PROPERTIES", editablePropertyOptions);
+        const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, propertyType, "PROPERTIES", editablePropertyOptions);
         decoratorApplier(this, constProperty.friendlyName, this._blockType);
     }
 
