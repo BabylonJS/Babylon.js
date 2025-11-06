@@ -173,7 +173,13 @@ export class CustomShaderBlock extends ShaderBlock {
             this._createConstProperty(constProperty);
         }
 
-        this._shaderProgram = shaderProgram;
+        // Make a copy of the shader program to avoid modifying the original when we append const properties
+        this._shaderProgram = {
+            vertex: shaderProgram.vertex,
+            fragment: {
+                ...shaderProgram.fragment,
+            },
+        };
     }
 
     /**
@@ -181,14 +187,9 @@ export class CustomShaderBlock extends ShaderBlock {
      * @returns The shader program to use to render the block
      */
     public override getShaderProgram() {
-        // Inject properties consts into the fragment shader
-
-        // Create a deep copy of the shader program so other instances aren't affected
-        const shaderProgram = JSON.parse(JSON.stringify(this._shaderProgram));
-
         // Append const properties to the fragment shader consts
-        shaderProgram.fragment.const = shaderProgram.fragment.const || "";
-        shaderProgram.fragment.const +=
+        this._shaderProgram.fragment.const = this._shaderProgram.fragment.const || "";
+        this._shaderProgram.fragment.const +=
             this._fragmentConstProperties
                 .map((property) => {
                     switch (property.type) {
@@ -203,10 +204,7 @@ export class CustomShaderBlock extends ShaderBlock {
                 })
                 .join("\n") + "\n";
 
-        // Cache buster
-        shaderProgram.fragment.const += "\nconst float cacheBuster2 = " + Math.random().toString() + ";\n";
-
-        return shaderProgram;
+        return this._shaderProgram;
     }
 
     /**
