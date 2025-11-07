@@ -643,6 +643,9 @@ export class _IblShadowsVoxelRenderer {
      * @param includedMeshes
      */
     public updateVoxelGrid(includedMeshes: Mesh[]) {
+        if (this._voxelizationInProgress) {
+            return;
+        }
         this._stopVoxelization();
         this._includedMeshes = includedMeshes;
         this._voxelizationInProgress = true;
