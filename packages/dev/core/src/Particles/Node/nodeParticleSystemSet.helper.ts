@@ -19,6 +19,7 @@ import { Vector2 } from "core/Maths/math.vector";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
+import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
 import { ParticleGradientBlock } from "./Blocks/particleGradientBlock";
 import { ParticleGradientValueBlock } from "./Blocks/particleGradientValueBlock";
@@ -35,6 +36,7 @@ import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
 import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
+import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 
 /**
@@ -69,13 +71,12 @@ async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet
     const shapeBlock = _CreateEmitterShapeBlock(oldSystem);
     createParticleBlock.particle.connectTo(shapeBlock.particle);
 
-    // Position update
-    const positionUpdateBlock = _CreatePositionUpdateBlock();
-    shapeBlock.output.connectTo(positionUpdateBlock.particle);
+    // Update the particle position
+    const positionUpdatedParticle = _CreateUpdateSystem(shapeBlock.output, oldSystem);
 
     // Color update
     const colorUpdateBlock = _CreateColorUpdateBlock(oldSystem, createParticleBlock);
-    positionUpdateBlock.output.connectTo(colorUpdateBlock.particle);
+    positionUpdatedParticle.connectTo(colorUpdateBlock.particle);
 
     // System block
     const newSystem = _CreateSystemBlock(oldSystem);
@@ -90,9 +91,6 @@ function _CreateSystemBlock(oldSystem: IParticleSystem): SystemBlock {
 
     // Translation pivot
     _CreateAndConnectInput("Translation pivot", oldSystem.translationPivot, newSystem.translationPivot);
-
-    // Gravity
-    _CreateAndConnectInput("Gravity", oldSystem.gravity, newSystem.gravity);
 
     newSystem.emitRate = oldSystem.emitRate;
     newSystem.manualEmitCount = oldSystem.manualEmitCount;
@@ -260,17 +258,49 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
     return shapeBlock;
 }
 
-function _CreatePositionUpdateBlock(): UpdatePositionBlock {
-    // Default position update
-    const positionUpdateBlock = new UpdatePositionBlock("Position update");
+function _CreateUpdateSystem(inputParticle: NodeParticleConnectionPoint, oldSystem: IParticleSystem): NodeParticleConnectionPoint {
+    let outputUpdate: NodeParticleConnectionPoint = inputParticle;
 
+    outputUpdate = _CreatePositionUpdate(inputParticle);
+
+    if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
+        outputUpdate = _CreateGravityUpdate(outputUpdate, oldSystem.gravity);
+    }
+
+    return outputUpdate;
+}
+
+function _CreatePositionUpdate(inputParticle: NodeParticleConnectionPoint): NodeParticleConnectionPoint {
+    // Calculate the new position
     const addPositionBlock = new ParticleMathBlock("Add Position");
     addPositionBlock.operation = ParticleMathBlockOperations.Add;
-    _CreateAndConnectContextual("Position", NodeParticleContextualSources.Position, addPositionBlock.left);
-    _CreateAndConnectContextual("Scaled Direction", NodeParticleContextualSources.ScaledDirection, addPositionBlock.right);
-    addPositionBlock.output.connectTo(positionUpdateBlock.position);
+    _CreateAndConnectContextualSource("Position", NodeParticleContextualSources.Position, addPositionBlock.left);
+    _CreateAndConnectContextualSource("Scaled Direction", NodeParticleContextualSources.ScaledDirection, addPositionBlock.right);
 
-    return positionUpdateBlock;
+    // Update the particle position
+    const updatePosition = new UpdatePositionBlock("Position Update");
+    inputParticle.connectTo(updatePosition.particle);
+    addPositionBlock.output.connectTo(updatePosition.position);
+
+    return updatePosition.output;
+}
+
+function _CreateGravityUpdate(inputParticle: NodeParticleConnectionPoint, gravity: Vector3): NodeParticleConnectionPoint {
+    // Create the gravity step
+    const multiplyOutput = _CreateDeltaModifiedInput("Gravity", gravity);
+
+    // Add it to the direction
+    const addDirectionBlock = new ParticleMathBlock("Add Gravity to Direction");
+    addDirectionBlock.operation = ParticleMathBlockOperations.Add;
+    _CreateAndConnectContextualSource("Direction", NodeParticleContextualSources.Direction, addDirectionBlock.left);
+    multiplyOutput.connectTo(addDirectionBlock.right);
+
+    // Update the particle direction
+    const updateDirection = new UpdateDirectionBlock("Direction Update with Gravity");
+    inputParticle.connectTo(updateDirection.particle);
+    addDirectionBlock.output.connectTo(updateDirection.direction);
+
+    return updateDirection.output;
 }
 
 function _CreateColorUpdateBlock(oldSystem: IParticleSystem, createParticleBlock: CreateParticleBlock): UpdateColorBlock {
@@ -299,7 +329,7 @@ function _CreateColorUpdateBlock(oldSystem: IParticleSystem, createParticleBlock
 
 function _CreateGradientColorUpdate(oldSystem: IParticleSystem, gradient: Array<ColorGradient>, createParticleBlock: CreateParticleBlock): ParticleGradientBlock {
     const colorGradientBlock = new ParticleGradientBlock("Color Gradient");
-    _CreateAndConnectContextual("gradient", NodeParticleContextualSources.Age, colorGradientBlock.gradient);
+    _CreateAndConnectContextualSource("gradient", NodeParticleContextualSources.Age, colorGradientBlock.gradient);
 
     let tempColor: Nullable<ParticleInputBlock | ParticleRandomBlock> = null;
     let colorStart: Nullable<ParticleInputBlock | ParticleRandomBlock> = null;
@@ -342,8 +372,8 @@ function _CreateGradientColorUpdate(oldSystem: IParticleSystem, gradient: Array<
 function _CreateBasicColorUpdate(): ParticleMathBlock {
     const addColorBlock = new ParticleMathBlock("Add Color");
     addColorBlock.operation = ParticleMathBlockOperations.Add;
-    _CreateAndConnectContextual("Color", NodeParticleContextualSources.Color, addColorBlock.left);
-    _CreateAndConnectContextual("Scaled Color Step", NodeParticleContextualSources.ScaledColorStep, addColorBlock.right);
+    _CreateAndConnectContextualSource("Color", NodeParticleContextualSources.Color, addColorBlock.left);
+    _CreateAndConnectContextualSource("Scaled Color Step", NodeParticleContextualSources.ScaledColorStep, addColorBlock.right);
 
     return addColorBlock;
 }
@@ -390,6 +420,15 @@ function _ClampUpdateColorAlpha(colorBlock: ParticleMathBlock | ParticleGradient
     return composeColorBlock;
 }
 
+function _CreateDeltaModifiedInput(name: string, value: Vector3): NodeParticleConnectionPoint {
+    const multiplyBlock = new ParticleMathBlock("Multiply by Delta");
+    multiplyBlock.operation = ParticleMathBlockOperations.Multiply;
+    _CreateAndConnectInput(name, value, multiplyBlock.left);
+    _CreateAndConnectSystemSource("Delta", NodeParticleSystemSources.Delta, multiplyBlock.right);
+
+    return multiplyBlock.output;
+}
+
 function _CreateAndConnectInput(
     inputBlockName: string,
     value: number | Vector2 | Vector3 | Color4,
@@ -401,8 +440,14 @@ function _CreateAndConnectInput(
     input.output.connectTo(targetToConnectTo);
 }
 
-function _CreateAndConnectContextual(contextualBlockName: string, contextValue: NodeParticleContextualSources, targetToConnectTo: NodeParticleConnectionPoint): void {
+function _CreateAndConnectContextualSource(contextualBlockName: string, contextSource: NodeParticleContextualSources, targetToConnectTo: NodeParticleConnectionPoint): void {
     const input = new ParticleInputBlock(contextualBlockName);
-    input.contextualValue = contextValue;
+    input.contextualValue = contextSource;
+    input.output.connectTo(targetToConnectTo);
+}
+
+function _CreateAndConnectSystemSource(systemBlockName: string, systemSource: NodeParticleSystemSources, targetToConnectTo: NodeParticleConnectionPoint): void {
+    const input = new ParticleInputBlock(systemBlockName);
+    input.systemSource = systemSource;
     input.output.connectTo(targetToConnectTo);
 }
