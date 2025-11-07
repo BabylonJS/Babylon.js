@@ -1,9 +1,14 @@
 import type { IDisposable, IInspectorOptions as InspectorV1Options, Nullable, Scene } from "core/index";
 import type { InspectorOptions as InspectorV2Options } from "./inspector";
+import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
+import type { ServiceDefinition } from "./modularity/serviceDefinition";
+import type { IShellService } from "./services/shellService";
 
+import { DebugLayerTab } from "core/Debug/debugLayer";
 import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
 import { ShowInspector } from "./inspector";
+import { ShellServiceIdentity } from "./services/shellService";
 
 type PropertyChangedEvent = {
     object: any;
@@ -61,7 +66,6 @@ export class Inspector {
         // • skipDefaultFontLoading: Probably doesn't make sense for Inspector v2 using Fluent.
 
         // TODO:
-        // • initialTab
         // • explorerExtensibility
         // • additionalNodes
         // • contextMenu
@@ -85,6 +89,32 @@ export class Inspector {
             enablePopup: true,
             ...userOptions,
         };
+
+        const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
+        if (userOptions.initialTab) {
+            const paneKey: string = (() => {
+                switch (userOptions.initialTab) {
+                    case DebugLayerTab.Debug:
+                        return "Debug";
+                    case DebugLayerTab.Statistics:
+                        return "Statistics";
+                    case DebugLayerTab.Settings:
+                        return "Settings";
+                    case DebugLayerTab.Tools:
+                        return "Tools";
+                }
+            })();
+
+            const initialTabServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+                friendlyName: "Initial Tab Selector",
+                consumes: [ShellServiceIdentity],
+                factory: (shellService) => {
+                    // Just find and select the requested initial tab.
+                    shellService.sidePanes.find((pane) => pane.key === paneKey)?.select();
+                },
+            };
+            serviceDefinitions.push(initialTabServiceDefinition);
+        }
 
         const options: Partial<InspectorV2Options> = {
             containerElement: userOptions.globalRoot,
@@ -120,6 +150,7 @@ export class Inspector {
 
                 return sidePane;
             },
+            serviceDefinitions,
         };
         this._CurrentInspectorToken = ShowInspector(scene, options);
     }
