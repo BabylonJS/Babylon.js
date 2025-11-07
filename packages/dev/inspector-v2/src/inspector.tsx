@@ -1,4 +1,3 @@
-import type { IInspectorOptions } from "core/Debug/debugLayer";
 import type { IDisposable, Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
@@ -7,7 +6,6 @@ import type { ISceneContext } from "./services/sceneContext";
 import type { IShellService } from "./services/shellService";
 
 import { makeStyles } from "@fluentui/react-components";
-import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
@@ -60,15 +58,11 @@ import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
-type InspectorV2Options = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
+export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
 const InspectorTokens = new WeakMap<Scene, IDisposable>();
 
-export function ShowInspector(scene: Scene, options?: Partial<InspectorV2Options>) {
-    return _ShowInspector(scene, options ?? {});
-}
-
-function _ShowInspector(scene: Nullable<Scene>, options: Partial<InspectorV2Options>): IDisposable {
+export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): IDisposable {
     options = {
         autoResizeEngine: true,
         ...options,
@@ -77,14 +71,6 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<InspectorV2Opti
     const inspectorToken = {
         dispose: () => {},
     };
-
-    if (!scene) {
-        scene = EngineStore.LastCreatedScene;
-    }
-
-    if (!scene || scene.isDisposed) {
-        return inspectorToken;
-    }
 
     let parentElement = options.containerElement ?? null;
     if (!parentElement) {
@@ -294,91 +280,4 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<InspectorV2Opti
     });
 
     return inspectorToken;
-}
-
-type PropertyChangedEvent = {
-    object: any;
-    property: string;
-    value: any;
-    initialValue: any;
-    allowNullValue?: boolean;
-};
-
-/**
- * @deprecated This class only exists for backward compatibility. Use the module-level ShowInspector function instead.
- */
-export class Inspector {
-    private static _CurrentInspectorToken: Nullable<IDisposable> = null;
-
-    public static readonly OnSelectionChangeObservable = new Observable<any>();
-    public static readonly OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
-
-    public static MarkLineContainerTitleForHighlighting(title: string) {
-        throw new Error("Not Implemented");
-    }
-
-    public static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]) {
-        throw new Error("Not Implemented");
-    }
-
-    public static PopupEmbed() {
-        // Show with embed mode on (stacked right panes) and undocked?
-        throw new Error("Not Implemented");
-    }
-
-    public static PopupSceneExplorer() {
-        // Show with all right panes (not stacked), scene explorer tab selected, and undocked?
-        throw new Error("Not Implemented");
-    }
-
-    public static PopupInspector() {
-        // Show with all right panes (not stacked), properties tab selected, and undocked?
-        throw new Error("Not Implemented");
-    }
-
-    public static get IsVisible(): boolean {
-        return !this._CurrentInspectorToken;
-    }
-
-    public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
-        userOptions = {
-            overlay: false,
-            showExplorer: true,
-            showInspector: true,
-            embedMode: false,
-            enableClose: true,
-            handleResize: true,
-            enablePopup: true,
-            ...userOptions,
-        };
-
-        const options: Partial<InspectorV2Options> = {
-            containerElement: userOptions.globalRoot,
-            layoutMode: userOptions.overlay ? "overlay" : "inline",
-            autoResizeEngine: userOptions.handleResize,
-            sidePaneRemapper: userOptions.embedMode
-                ? (sidePane) => {
-                      if (sidePane.horizontalLocation === "right") {
-                          // All right panes go to right bottom.
-                          return {
-                              horizontalLocation: "right",
-                              verticalLocation: "bottom",
-                          };
-                      } else {
-                          // All left panes go to right top.
-                          return {
-                              horizontalLocation: "right",
-                              verticalLocation: "top",
-                          };
-                      }
-                  }
-                : undefined,
-        };
-        this._CurrentInspectorToken = _ShowInspector(scene, options);
-    }
-
-    public static Hide() {
-        this._CurrentInspectorToken?.dispose();
-        this._CurrentInspectorToken = null;
-    }
 }

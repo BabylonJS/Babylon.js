@@ -40,6 +40,7 @@ export * from "./services/settingsContext";
 export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition } from "./services/shellService";
 export { ShellServiceIdentity } from "./services/shellService";
 export * from "./inspector";
+export * from "./backCompat";
 
 // Export the shared primitive UI controls that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/primitives/accordion";
