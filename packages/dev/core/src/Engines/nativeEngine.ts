@@ -2064,7 +2064,6 @@ export class NativeEngine extends Engine {
      */
     public override async createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         // Back-compat: Because of the previous Blob hack, this could be an array of BlobParts.
-
         if (Array.isArray(image)) {
             const arr = <Array<ArrayBuffer>>image;
             if (arr.length) {
