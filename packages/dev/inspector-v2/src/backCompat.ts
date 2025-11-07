@@ -77,23 +77,36 @@ export class Inspector {
             containerElement: userOptions.globalRoot,
             layoutMode: userOptions.overlay ? "overlay" : "inline",
             autoResizeEngine: userOptions.handleResize,
-            sidePaneRemapper: userOptions.embedMode
-                ? (sidePane) => {
-                      if (sidePane.horizontalLocation === "right") {
-                          // All right panes go to right bottom.
-                          return {
-                              horizontalLocation: "right",
-                              verticalLocation: "bottom",
-                          };
-                      } else {
-                          // All left panes go to right top.
-                          return {
-                              horizontalLocation: "right",
-                              verticalLocation: "top",
-                          };
-                      }
-                  }
-                : undefined,
+            sidePaneRemapper: (sidePane) => {
+                if (userOptions.showExplorer === false && sidePane.key === "Scene Explorer") {
+                    return null;
+                }
+
+                if (
+                    userOptions.showInspector === false &&
+                    (sidePane.key === "Properties" || sidePane.key === "Debug" || sidePane.key === "Statistics" || sidePane.key === "Settings" || sidePane.key === "Tools")
+                ) {
+                    return null;
+                }
+
+                if (userOptions.embedMode) {
+                    if (sidePane.horizontalLocation === "right") {
+                        // All right panes go to right bottom.
+                        return {
+                            horizontalLocation: "right",
+                            verticalLocation: "bottom",
+                        };
+                    } else {
+                        // All left panes go to right top.
+                        return {
+                            horizontalLocation: "right",
+                            verticalLocation: "top",
+                        };
+                    }
+                }
+
+                return sidePane;
+            },
         };
         this._CurrentInspectorToken = ShowInspector(scene, options);
     }
