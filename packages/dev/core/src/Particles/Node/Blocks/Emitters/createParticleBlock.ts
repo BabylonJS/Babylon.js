@@ -33,7 +33,6 @@ export class CreateParticleBlock extends NodeParticleBlock {
         this.registerInput("colorDead", NodeParticleBlockConnectionPointTypes.Color4, true, new Color4(0, 0, 0, 0));
         this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2, true, new Vector2(1, 1));
         this.registerInput("angle", NodeParticleBlockConnectionPointTypes.Float, true, 0);
-        this.registerInput("angularSpeed", NodeParticleBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("size", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
 
@@ -91,17 +90,10 @@ export class CreateParticleBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the angular speed input component
-     */
-    public get angularSpeed(): NodeParticleConnectionPoint {
-        return this._inputs[6];
-    }
-
-    /**
      * Gets the size component
      */
     public get size(): NodeParticleConnectionPoint {
-        return this._inputs[7];
+        return this._inputs[6];
     }
 
     /**
@@ -165,6 +157,7 @@ export class CreateParticleBlock extends NodeParticleBlock {
 
         system._angleCreation.process = (particle: Particle) => {
             state.particleContext = particle;
+
             particle.angle = this.angle.getConnectedValue(state);
         };
 

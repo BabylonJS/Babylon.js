@@ -1,6 +1,5 @@
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
-import type { Vector3 } from "core/Maths/math.vector";
 import type { Texture } from "core/Materials/Textures/texture";
 import type { Mesh } from "core/Meshes/mesh";
 import type { ColorGradient } from "core/Misc";
@@ -15,7 +14,7 @@ import type { SphereParticleEmitter } from "core/Particles/EmitterTypes/spherePa
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
 
-import { Vector2 } from "core/Maths/math.vector";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
@@ -35,6 +34,7 @@ import { CylinderShapeBlock } from "./Blocks/Emitters/cylinderShapeBlock";
 import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
 import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
+import { UpdateAngleBlock } from "./Blocks/Update/updateAngleBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
@@ -147,12 +147,6 @@ function _CreateCreateParticleBlock(oldSystem: ParticleSystem): CreateParticleBl
     _CreateAndConnectInput("Max Emit Power", oldSystem.maxEmitPower, randomEmitPowerBlock.max);
     randomEmitPowerBlock.output.connectTo(createParticleBlock.emitPower);
 
-    // Angular speed
-    const randomAngularSpeedBlock = new ParticleRandomBlock("Random Angular Speed");
-    _CreateAndConnectInput("Min Angular Speed", oldSystem.minAngularSpeed, randomAngularSpeedBlock.min);
-    _CreateAndConnectInput("Max Angular Speed", oldSystem.maxAngularSpeed, randomAngularSpeedBlock.max);
-    randomAngularSpeedBlock.output.connectTo(createParticleBlock.angularSpeed);
-
     // Angle (rotation)
     const randomRotationBlock = new ParticleRandomBlock("Random Rotation");
     _CreateAndConnectInput("Min Rotation", oldSystem.minInitialRotation, randomRotationBlock.min);
@@ -261,13 +255,40 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
 function _CreateUpdateSystem(inputParticle: NodeParticleConnectionPoint, oldSystem: IParticleSystem): NodeParticleConnectionPoint {
     let outputUpdate: NodeParticleConnectionPoint = inputParticle;
 
-    outputUpdate = _CreatePositionUpdate(inputParticle);
+    if (oldSystem.minAngularSpeed !== 0 || oldSystem.maxAngularSpeed !== 0) {
+        outputUpdate = _CreateAngularSpeedUpdate(outputUpdate, oldSystem.minAngularSpeed, oldSystem.maxAngularSpeed);
+    }
+
+    outputUpdate = _CreatePositionUpdate(outputUpdate);
 
     if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
         outputUpdate = _CreateGravityUpdate(outputUpdate, oldSystem.gravity);
     }
 
     return outputUpdate;
+}
+
+function _CreateAngularSpeedUpdate(inputParticle: NodeParticleConnectionPoint, minAngularSpeed: number, maxAngularSpeed: number): NodeParticleConnectionPoint {
+    // Random value between for the angular speed of the particle
+    const randomAngularSpeedBlock = new ParticleRandomBlock("Random Angular Speed");
+    _CreateAndConnectInput("Min Angular Speed", minAngularSpeed, randomAngularSpeedBlock.min);
+    _CreateAndConnectInput("Max Angular Speed", maxAngularSpeed, randomAngularSpeedBlock.max);
+
+    // Create the angular speed delta
+    const angleSpeedDeltaOutput = _CreateDeltaModifiedInput("Angular Speed", randomAngularSpeedBlock.output);
+
+    // Add it to the angle
+    const addAngle = new ParticleMathBlock("Add Angular Speed to Angle");
+    addAngle.operation = ParticleMathBlockOperations.Add;
+    _CreateAndConnectContextualSource("Angle", NodeParticleContextualSources.Angle, addAngle.left);
+    angleSpeedDeltaOutput.connectTo(addAngle.right);
+
+    // Update the particle angle
+    const updateAngle = new UpdateAngleBlock("Angle Update with Angular Speed");
+    inputParticle.connectTo(updateAngle.particle);
+    addAngle.output.connectTo(updateAngle.angle);
+
+    return updateAngle.output;
 }
 
 function _CreatePositionUpdate(inputParticle: NodeParticleConnectionPoint): NodeParticleConnectionPoint {
@@ -286,14 +307,14 @@ function _CreatePositionUpdate(inputParticle: NodeParticleConnectionPoint): Node
 }
 
 function _CreateGravityUpdate(inputParticle: NodeParticleConnectionPoint, gravity: Vector3): NodeParticleConnectionPoint {
-    // Create the gravity step
-    const multiplyOutput = _CreateDeltaModifiedInput("Gravity", gravity);
+    // Create the gravity delta
+    const gravityDeltaOutput = _CreateDeltaModifiedInput("Gravity", gravity);
 
     // Add it to the direction
     const addDirectionBlock = new ParticleMathBlock("Add Gravity to Direction");
     addDirectionBlock.operation = ParticleMathBlockOperations.Add;
     _CreateAndConnectContextualSource("Direction", NodeParticleContextualSources.Direction, addDirectionBlock.left);
-    multiplyOutput.connectTo(addDirectionBlock.right);
+    gravityDeltaOutput.connectTo(addDirectionBlock.right);
 
     // Update the particle direction
     const updateDirection = new UpdateDirectionBlock("Direction Update with Gravity");
@@ -420,10 +441,14 @@ function _ClampUpdateColorAlpha(colorBlock: ParticleMathBlock | ParticleGradient
     return composeColorBlock;
 }
 
-function _CreateDeltaModifiedInput(name: string, value: Vector3): NodeParticleConnectionPoint {
+function _CreateDeltaModifiedInput(name: string, value: Vector3 | NodeParticleConnectionPoint): NodeParticleConnectionPoint {
     const multiplyBlock = new ParticleMathBlock("Multiply by Delta");
     multiplyBlock.operation = ParticleMathBlockOperations.Multiply;
-    _CreateAndConnectInput(name, value, multiplyBlock.left);
+    if (value instanceof Vector3) {
+        _CreateAndConnectInput(name, value, multiplyBlock.left);
+    } else {
+        value.connectTo(multiplyBlock.left);
+    }
     _CreateAndConnectSystemSource("Delta", NodeParticleSystemSources.Delta, multiplyBlock.right);
 
     return multiplyBlock.output;
