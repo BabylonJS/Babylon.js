@@ -2063,12 +2063,18 @@ export class NativeEngine extends Engine {
      * @returns ImageBitmap
      */
     public override async createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-            if (Array.isArray(image)) {
+        // Back-compat: Blob was previously polyfilled as an array of BlobParts.
+        if (Array.isArray(image)) {
             const arr = <Array<ArrayBuffer>>image;
-                if (arr.length) {
+            if (arr.length) {
                 return this._engine.createImageBitmap(arr[0]);
-                    }
-                }
+            }
+        }
+
+        if (image instanceof Blob) {
+            const data = await image.arrayBuffer();
+            return this._engine.createImageBitmap(data);
+        }
 
         throw new Error("Unsupported data for createImageBitmap.");
     }
