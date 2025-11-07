@@ -867,8 +867,6 @@ export class Camera extends Node {
         // Getting the view matrix will also compute the world matrix.
         this.getViewMatrix();
 
-        this._worldMatrix.getTranslationToRef(this._globalPosition); // This avoids individual cameras needing to implement this logic
-
         return this._worldMatrix;
     }
 
