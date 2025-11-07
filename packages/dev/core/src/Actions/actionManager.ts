@@ -245,7 +245,9 @@ export class ActionManager extends AbstractActionManager {
             const action = this.actions[index];
 
             if (action.trigger >= ActionManager.OnPickTrigger && action.trigger <= ActionManager.OnPointerOutTrigger) {
-                return true;
+                if (action._evaluateConditionForCurrentFrame()) {
+                    return true;
+                }
             }
         }
 
@@ -260,7 +262,9 @@ export class ActionManager extends AbstractActionManager {
             const action = this.actions[index];
 
             if (action.trigger >= ActionManager.OnPickTrigger && action.trigger <= ActionManager.OnPickUpTrigger) {
-                return true;
+                if (action._evaluateConditionForCurrentFrame()) {
+                    return true;
+                }
             }
         }
 
