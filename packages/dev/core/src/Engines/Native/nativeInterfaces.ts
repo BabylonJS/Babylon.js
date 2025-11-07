@@ -81,7 +81,7 @@ export interface INativeEngine {
         bufferLength: number
     ): Promise<ArrayBuffer>;
 
-    createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
+    createImageBitmap(data: ArrayBuffer | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
     createFrameBuffer(

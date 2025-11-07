@@ -2065,7 +2065,7 @@ export class NativeEngine extends Engine {
     public override async createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return await new Promise((resolve, reject) => {
             if (Array.isArray(image)) {
-                const arr = <Array<ArrayBufferView>>image;
+            const arr = <Array<ArrayBuffer>>image;
                 if (arr.length) {
                     const image = this._engine.createImageBitmap(arr[0]);
                     if (image) {
