@@ -391,6 +391,7 @@ export class NativeEngine extends Engine {
             };
         }
 
+        // TODO: Remove in next protocol version update
         if (typeof Blob === "undefined") {
             (window.Blob as any) = function (v: any) {
                 return v;
