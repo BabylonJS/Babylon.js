@@ -54,6 +54,19 @@ export class Inspector {
     }
 
     private static _Show(scene: Nullable<Scene>, userOptions: Partial<InspectorV1Options>) {
+        // Options not currently handled:
+        // • enablePopup: Do users care about this one?
+        // • enableClose: Currently Inspector v2 does not allow panes/tabs to be closed.
+        // • gizmoCamera: Do users care about this one?
+        // • skipDefaultFontLoading: Probably doesn't make sense for Inspector v2 using Fluent.
+
+        // TODO:
+        // • initialTab
+        // • explorerExtensibility
+        // • additionalNodes
+        // • contextMenu
+        // • contextMenuOverride
+
         if (!scene) {
             scene = EngineStore.LastCreatedScene;
         }

@@ -60,6 +60,9 @@ import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
 export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
+// TODO: The key should probably be the Canvas, because we only want to show one inspector instance per canvas.
+//       If it is called for a different scene that is rendering to the same canvas, then we should probably
+//       switch the inspector instance to that scene (once this is supported).
 const InspectorTokens = new WeakMap<Scene, IDisposable>();
 
 export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): IDisposable {
@@ -160,10 +163,6 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
         disposeActions.push(() => observer.remove());
     }
-
-    // if (options.showExplorer) {
-    //     // TODO
-    // }
 
     const modularTool = MakeModularTool({
         containerElement: parentElement,
