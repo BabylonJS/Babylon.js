@@ -119,7 +119,6 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("translationPivot", NodeParticleBlockConnectionPointTypes.Vector2, true);
-        this.registerInput("gravity", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -164,13 +163,6 @@ export class SystemBlock extends NodeParticleBlock {
      */
     public get translationPivot(): NodeParticleConnectionPoint {
         return this._inputs[4];
-    }
-
-    /**
-     * Gets the gravity input component
-     */
-    public get gravity(): NodeParticleConnectionPoint {
-        return this._inputs[5];
     }
 
     /**
