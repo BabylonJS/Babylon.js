@@ -2063,20 +2063,14 @@ export class NativeEngine extends Engine {
      * @returns ImageBitmap
      */
     public override async createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        return await new Promise((resolve, reject) => {
             if (Array.isArray(image)) {
             const arr = <Array<ArrayBuffer>>image;
                 if (arr.length) {
-                    const image = this._engine.createImageBitmap(arr[0]);
-                    if (image) {
-                        resolve(image);
-                        return;
+                return this._engine.createImageBitmap(arr[0]);
                     }
                 }
-            }
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(`Unsupported data for createImageBitmap.`);
-        });
+
+        throw new Error("Unsupported data for createImageBitmap.");
     }
 
     /**
