@@ -19,6 +19,22 @@ import { EffectRenderer } from "../Materials/effectRenderer";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import { FrameGraphContext } from "./frameGraphContext";
 
+const SamplingModeHasMipMapFiltering = [
+    false, // not used
+    false, // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
+    false, // TEXTURE_BILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR
+    true, // TEXTURE_TRILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR_MIPLINEAR
+    true, // TEXTURE_NEAREST_NEAREST_MIPNEAREST
+    true, // TEXTURE_NEAREST_LINEAR_MIPNEAREST
+    true, // TEXTURE_NEAREST_LINEAR_MIPLINEAR
+    false, // TEXTURE_NEAREST_LINEAR
+    true, // TEXTURE_NEAREST_NEAREST_MIPLINEAR
+    true, // TEXTURE_LINEAR_NEAREST_MIPNEAREST
+    true, // TEXTURE_LINEAR_NEAREST_MIPLINEAR
+    true, // TEXTURE_LINEAR_LINEAR_MIPNEAREST
+    false, // TEXTURE_LINEAR_NEAREST
+];
+
 /**
  * Frame graph context used render passes.
  * @experimental
@@ -174,6 +190,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     public setTextureSamplingMode(handle: FrameGraphTextureHandle, samplingMode: number): void {
         const internalTexture = this._textureManager.getTextureFromHandle(handle);
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
+            internalTexture.useMipMaps = SamplingModeHasMipMapFiltering[samplingMode];
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
         }
     }

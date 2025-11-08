@@ -1,5 +1,6 @@
 import type { FrameGraph, FrameGraphTextureHandle, IViewportLike, Nullable } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Task used to copy a texture to another texture.
@@ -59,6 +60,7 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
             if (this.viewport) {
                 context.setViewport(this.viewport);
             }
+            context.setTextureSamplingMode(this.sourceTexture, this.lodLevel > 0 ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
             context.copyTexture(this.sourceTexture, undefined, this.viewport !== undefined, this.lodLevel);
         });
 
