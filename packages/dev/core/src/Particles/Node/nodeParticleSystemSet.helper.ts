@@ -90,7 +90,7 @@ function _CreateSystemBlock(oldSystem: ParticleSystem): SystemBlock {
     const newSystem = new SystemBlock(oldSystem.name);
 
     _CreateAndConnectInput("Translation pivot", oldSystem.translationPivot, newSystem.translationPivot);
-    _CreateAndConnectInput("Texture mask", oldSystem.textureMask as Color4, newSystem.textureMask);
+    _CreateAndConnectInput("Texture mask", oldSystem.textureMask, newSystem.textureMask);
 
     newSystem.emitRate = oldSystem.emitRate;
     newSystem.manualEmitCount = oldSystem.manualEmitCount;

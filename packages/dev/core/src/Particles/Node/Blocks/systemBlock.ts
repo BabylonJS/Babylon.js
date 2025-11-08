@@ -5,10 +5,7 @@ import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBui
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Vector2 } from "core/Maths/math.vector";
-<<<<<<< HEAD
 import { Color4 } from "core/Maths/math.color";
-=======
->>>>>>> master
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
