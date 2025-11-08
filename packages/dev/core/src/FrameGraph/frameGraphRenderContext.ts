@@ -150,8 +150,9 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             return;
         }
 
-        if (this._renderTargetIsBound && this._engine._currentRenderTarget) {
-            // we can't generate the mipmaps if the render target is bound
+        if (this._engine._currentRenderTarget && (!this._engine.isWebGPU || this._renderTargetIsBound)) {
+            // we can't generate the mipmaps if the render target (which is the texture we want to generate mipmaps for) is bound
+            // Also, for some reasons, on WebGL2, generating mipmaps doesn't work if a render target is bound, even if it's not the texture we want to generate mipmaps for...
             this._flushDebugMessages();
             this._engine.unBindFramebuffer(this._engine._currentRenderTarget);
             this._renderTargetIsBound = false;
