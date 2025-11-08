@@ -1,4 +1,4 @@
-import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, FrameGraphTextureHandle, Camera } from "core/index";
+import type { FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, FrameGraphTextureHandle, Camera } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";
 
@@ -294,9 +294,8 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
      * Creates a new shadow generator task.
      * @param name The name of the task.
      * @param frameGraph The frame graph the task belongs to.
-     * @param _scene The scene to create the shadow generator for.
      */
-    constructor(name: string, frameGraph: FrameGraph, _scene: Scene) {
+    constructor(name: string, frameGraph: FrameGraph) {
         super(name, frameGraph);
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();

@@ -38,7 +38,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
 
         this._finalizeInputOutputRegistering();
 
-        this._frameGraphTask = new FrameGraphCascadedShadowGeneratorTask(this.name, frameGraph, scene);
+        this._frameGraphTask = new FrameGraphCascadedShadowGeneratorTask(this.name, frameGraph);
     }
 
     /** Sets the number of cascades */
