@@ -245,7 +245,7 @@ export class DebugLayer {
         enablePopup: true,
     };
 
-    protected _scene: Scene;
+    private _scene: Scene;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected BJSINSPECTOR = this._getGlobalInspector();
