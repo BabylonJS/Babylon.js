@@ -19,6 +19,22 @@ import { EffectRenderer } from "../Materials/effectRenderer";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import { FrameGraphContext } from "./frameGraphContext";
 
+const SamplingModeHasMipMapFiltering = [
+    false, // not used
+    false, // TEXTURE_NEAREST_SAMPLINGMODE / TEXTURE_NEAREST_NEAREST
+    false, // TEXTURE_BILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR
+    true, // TEXTURE_TRILINEAR_SAMPLINGMODE / TEXTURE_LINEAR_LINEAR_MIPLINEAR
+    true, // TEXTURE_NEAREST_NEAREST_MIPNEAREST
+    true, // TEXTURE_NEAREST_LINEAR_MIPNEAREST
+    true, // TEXTURE_NEAREST_LINEAR_MIPLINEAR
+    false, // TEXTURE_NEAREST_LINEAR
+    true, // TEXTURE_NEAREST_NEAREST_MIPLINEAR
+    true, // TEXTURE_LINEAR_NEAREST_MIPNEAREST
+    true, // TEXTURE_LINEAR_NEAREST_MIPLINEAR
+    true, // TEXTURE_LINEAR_LINEAR_MIPNEAREST
+    false, // TEXTURE_LINEAR_NEAREST
+];
+
 /**
  * Frame graph context used render passes.
  * @experimental
@@ -150,8 +166,9 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             return;
         }
 
-        if (this._renderTargetIsBound && this._engine._currentRenderTarget) {
-            // we can't generate the mipmaps if the render target is bound
+        if (this._engine._currentRenderTarget && (!this._engine.isWebGPU || this._renderTargetIsBound)) {
+            // we can't generate the mipmaps if the render target (which is the texture we want to generate mipmaps for) is bound
+            // Also, for some reasons, on WebGL2, generating mipmaps doesn't work if a render target is bound, even if it's not the texture we want to generate mipmaps for...
             this._flushDebugMessages();
             this._engine.unBindFramebuffer(this._engine._currentRenderTarget);
             this._renderTargetIsBound = false;
@@ -173,6 +190,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     public setTextureSamplingMode(handle: FrameGraphTextureHandle, samplingMode: number): void {
         const internalTexture = this._textureManager.getTextureFromHandle(handle);
         if (internalTexture && internalTexture.samplingMode !== samplingMode) {
+            internalTexture.useMipMaps = SamplingModeHasMipMapFiltering[samplingMode];
             this._engine.updateTextureSamplingMode(samplingMode, internalTexture);
         }
     }
@@ -265,13 +283,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param sourceTexture The source texture to copy from
      * @param forceCopyToBackbuffer If true, the copy will be done to the back buffer regardless of the current render target
      * @param noViewport If true, the current viewport will be left unchanged (optional). If false or undefined, the viewport will be set to the full render target size.
+     * @param lodLevel The LOD level to use when copying the texture (default: 0).
      */
-    public copyTexture(sourceTexture: FrameGraphTextureHandle, forceCopyToBackbuffer = false, noViewport?: boolean): void {
+    public copyTexture(sourceTexture: FrameGraphTextureHandle, forceCopyToBackbuffer = false, noViewport?: boolean, lodLevel = 0): void {
         if (forceCopyToBackbuffer) {
             this.bindRenderTarget();
         }
 
         this._copyTexture.source = this._textureManager.getTextureFromHandle(sourceTexture, true)!;
+        this._copyTexture.lodLevel = lodLevel;
 
         this.applyFullScreenEffect(
             this._copyTexture.effectWrapper.drawWrapper,
