@@ -111,7 +111,8 @@ export class ParticleRandomBlock extends NodeParticleBlock {
                 func = (state) => {
                     const min = this.min.getConnectedValue(state) || 0;
                     const max = this.max.getConnectedValue(state) || 1;
-                    return min + Math.random() * (max - min);
+                    const result = min + Math.random() * (max - min);
+                    return result;
                 };
                 break;
             }

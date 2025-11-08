@@ -86,11 +86,11 @@ async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet
     newSet.systemBlocks.push(newSystem);
 }
 
-function _CreateSystemBlock(oldSystem: IParticleSystem): SystemBlock {
+function _CreateSystemBlock(oldSystem: ParticleSystem): SystemBlock {
     const newSystem = new SystemBlock(oldSystem.name);
 
-    // Translation pivot
     _CreateAndConnectInput("Translation pivot", oldSystem.translationPivot, newSystem.translationPivot);
+    _CreateAndConnectInput("Texture mask", oldSystem.textureMask as Color4, newSystem.textureMask);
 
     newSystem.emitRate = oldSystem.emitRate;
     newSystem.manualEmitCount = oldSystem.manualEmitCount;

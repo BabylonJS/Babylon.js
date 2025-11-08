@@ -5,6 +5,7 @@ import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBui
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Vector2 } from "core/Maths/math.vector";
+import { Color4 } from "core/Maths/math.color";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
@@ -206,6 +207,7 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.startDelay = this.startDelay;
         particleSystem.isBillboardBased = this.isBillboardBased;
         particleSystem.translationPivot = (this.translationPivot.getConnectedValue(state) as Vector2) || Vector2.Zero();
+        particleSystem.textureMask = this.textureMask.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
 
