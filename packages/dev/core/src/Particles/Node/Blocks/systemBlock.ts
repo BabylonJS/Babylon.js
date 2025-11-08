@@ -1,12 +1,14 @@
 import type { ParticleSystem } from "core/Particles/particleSystem";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
-import { NodeParticleBlock } from "../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Vector2 } from "core/Maths/math.vector";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
-import { _TriggerSubEmitter } from "./Triggers/triggerTools";
+import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
 /**
  * Block used to get a system of particles
@@ -203,6 +205,7 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem._targetStopDuration = this.targetStopDuration;
         particleSystem.startDelay = this.startDelay;
         particleSystem.isBillboardBased = this.isBillboardBased;
+        particleSystem.translationPivot = (this.translationPivot.getConnectedValue(state) as Vector2) || Vector2.Zero();
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
 
