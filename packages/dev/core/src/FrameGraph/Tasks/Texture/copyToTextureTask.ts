@@ -23,6 +23,11 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
     public viewport?: Nullable<IViewportLike>;
 
     /**
+     * The LOD level to copy from the source texture (default: 0).
+     */
+    public lodLevel: number = 0;
+
+    /**
      * The output texture (same as targetTexture, but the handle may be different).
      */
     public readonly outputTexture: FrameGraphTextureHandle;
@@ -54,7 +59,7 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
             if (this.viewport) {
                 context.setViewport(this.viewport);
             }
-            context.copyTexture(this.sourceTexture, undefined, this.viewport !== undefined);
+            context.copyTexture(this.sourceTexture, undefined, this.viewport !== undefined, this.lodLevel);
         });
 
         const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);

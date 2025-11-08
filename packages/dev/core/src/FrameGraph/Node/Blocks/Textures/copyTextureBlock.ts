@@ -86,6 +86,16 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
         this._setViewport();
     }
 
+    /** The LOD level to copy from the source texture (default: 0). */
+    @editableInPropertyPage("LOD Level", PropertyTypeForEdition.Int, "PROPERTIES", { min: 0, max: 16 })
+    public get lodLevel(): number {
+        return this._frameGraphTask.lodLevel;
+    }
+
+    public set lodLevel(value: number) {
+        this._frameGraphTask.lodLevel = value;
+    }
+
     /**
      * Gets the current class name
      * @returns the class name
@@ -126,6 +136,7 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.viewport = ${this._useCurrentViewport ? "null" : this._useFullScreenViewport ? "undefined" : JSON.stringify(this._viewport)};`);
+        codes.push(`${this._codeVariableName}.lodLevel = ${this.lodLevel};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -134,6 +145,7 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
         serializationObject.useCurrentViewport = this._useCurrentViewport;
         serializationObject.useFullScreenViewport = this._useFullScreenViewport;
         serializationObject.viewport = this._viewport;
+        serializationObject.lodLevel = this.lodLevel;
         return serializationObject;
     }
 
@@ -144,6 +156,7 @@ export class NodeRenderGraphCopyTextureBlock extends NodeRenderGraphBlock {
             this._useFullScreenViewport = serializationObject.useFullScreenViewport;
             this._viewport = serializationObject.viewport;
         }
+        this.lodLevel = serializationObject.lodLevel ?? 0;
         this._setViewport();
     }
 }

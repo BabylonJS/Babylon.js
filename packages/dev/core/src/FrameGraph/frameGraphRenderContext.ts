@@ -266,13 +266,15 @@ export class FrameGraphRenderContext extends FrameGraphContext {
      * @param sourceTexture The source texture to copy from
      * @param forceCopyToBackbuffer If true, the copy will be done to the back buffer regardless of the current render target
      * @param noViewport If true, the current viewport will be left unchanged (optional). If false or undefined, the viewport will be set to the full render target size.
+     * @param lodLevel The LOD level to use when copying the texture (default: 0).
      */
-    public copyTexture(sourceTexture: FrameGraphTextureHandle, forceCopyToBackbuffer = false, noViewport?: boolean): void {
+    public copyTexture(sourceTexture: FrameGraphTextureHandle, forceCopyToBackbuffer = false, noViewport?: boolean, lodLevel = 0): void {
         if (forceCopyToBackbuffer) {
             this.bindRenderTarget();
         }
 
         this._copyTexture.source = this._textureManager.getTextureFromHandle(sourceTexture, true)!;
+        this._copyTexture.lodLevel = lodLevel;
 
         this.applyFullScreenEffect(
             this._copyTexture.effectWrapper.drawWrapper,

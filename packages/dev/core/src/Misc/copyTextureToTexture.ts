@@ -27,6 +27,7 @@ export class CopyTextureToTexture {
     private _effectWrapper: EffectWrapper;
     private _source: InternalTexture | ThinTexture;
     private _conversion: number;
+    private _lodLevel: number;
 
     /** Shader language used */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -56,6 +57,17 @@ export class CopyTextureToTexture {
         this._source = texture;
     }
 
+    /**
+     * Gets or sets the LOD level to copy from the source texture
+     */
+    public get lodLevel(): number {
+        return this._lodLevel;
+    }
+
+    public set lodLevel(level: number) {
+        this._lodLevel = level;
+    }
+
     private _textureIsInternal(texture: InternalTexture | ThinTexture): texture is InternalTexture {
         return (texture as ThinTexture).getInternalTexture === undefined;
     }
@@ -69,6 +81,8 @@ export class CopyTextureToTexture {
     constructor(engine: AbstractEngine, isDepthTexture = false, sameSizeCopy = false) {
         this._engine = engine;
         this._isDepthTexture = isDepthTexture;
+        this._lodLevel = 0;
+        this._conversion = ConversionMode.None;
 
         this._renderer = new EffectRenderer(engine);
 
@@ -104,7 +118,7 @@ export class CopyTextureToTexture {
             name: "CopyTextureToTexture",
             fragmentShader: "copyTextureToTexture",
             useShaderStore: true,
-            uniformNames: ["conversion"],
+            uniformNames: ["conversion", "lodLevel"],
             samplerNames: ["textureSampler"],
             defines,
             shaderLanguage: this._shaderLanguage,
@@ -127,6 +141,7 @@ export class CopyTextureToTexture {
                 this._effectWrapper.effect.setTexture("textureSampler", this._source);
             }
             this._effectWrapper.effect.setFloat("conversion", this._conversion);
+            this._effectWrapper.effect.setFloat("lodLevel", this._lodLevel);
         });
     }
 
@@ -143,15 +158,22 @@ export class CopyTextureToTexture {
      * @param source The source texture
      * @param destination The destination texture. If null, copy the source to the currently bound framebuffer
      * @param conversion The conversion mode that should be applied when copying
+     * @param lod The LOD level to copy from the source texture
      * @returns
      */
-    public copy(source: InternalTexture | ThinTexture, destination: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null, conversion = ConversionMode.None): boolean {
+    public copy(
+        source: InternalTexture | ThinTexture,
+        destination: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null,
+        conversion = ConversionMode.None,
+        lod = 0
+    ): boolean {
         if (!this.isReady()) {
             return false;
         }
 
         this._source = source;
         this._conversion = conversion;
+        this._lodLevel = lod;
 
         const engineDepthFunc = this._engine.getDepthFunction();
         const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
