@@ -128,6 +128,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         scene.onDisposeObservable.addOnce(() => {
             this.dispose();
         });
+
+        this.onXRSessionEnded.add(() => {
+            // Set the scene's pointer camera to null to stop the XR camera being used for picking.
+            scene.cameraToUseForPointers = null;
+        });
     }
 
     /**
