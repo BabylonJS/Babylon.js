@@ -122,10 +122,6 @@ export abstract class AudioEngineV2 {
 
     /**
      * The smoothing duration to use when changing audio parameters, in seconds. Defaults to `0.01` (10 milliseconds).
-     *
-     * Due to limitations in some browsers, it is not recommended to set this value to longer than `0.01` seconds.
-     *
-     * Setting this value to longer than `0.01` seconds may result in errors being throw when setting audio parameters.
      */
     public get parameterRampDuration(): number {
         return this._parameterRampDuration;
