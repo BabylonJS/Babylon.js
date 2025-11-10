@@ -11,7 +11,7 @@ interface IPostProcessLike {
 }
 
 /**
- * @internal
+ * Base class for post process like blocks.
  */
 export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: IPostProcessLike & FrameGraphTask;
