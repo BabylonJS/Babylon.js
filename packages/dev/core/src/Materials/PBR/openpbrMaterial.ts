@@ -64,6 +64,7 @@ import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
 import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
 import type { IAnimatable } from "../../Animations/animatable.interface";
+import { Tools } from "../../Misc/tools";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1535,7 +1536,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (!OpenPBRMaterial._noiseTextures[this.getScene().uniqueId]) {
             OpenPBRMaterial._noiseTextures[this.getScene().uniqueId] = new Texture(
-                "https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png",
+                Tools.GetAssetUrl("https://assets.babylonjs.com/core/blue_noise/blue_noise_rgb.png"),
                 this.getScene(),
                 false,
                 true,
