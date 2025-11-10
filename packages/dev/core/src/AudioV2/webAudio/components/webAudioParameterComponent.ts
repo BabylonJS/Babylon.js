@@ -59,8 +59,16 @@ export class _WebAudioParameterComponent {
     public setTargetValue(value: number, options: Nullable<Partial<IAudioParameterRampOptions>> = null): void {
         const shape = typeof options?.shape === "string" ? options.shape : AudioParameterRampShape.Linear;
 
-        let duration = typeof options?.duration === "number" ? Math.max(options.duration, this._engine.parameterRampDuration) : this._engine.parameterRampDuration;
         const startTime = this._engine.currentTime;
+
+        if (shape === AudioParameterRampShape.None) {
+            this._param.cancelScheduledValues(startTime);
+            this._param.value = this._targetValue = value;
+            this._rampEndTime = startTime;
+            return;
+        }
+
+        let duration = typeof options?.duration === "number" ? Math.max(options.duration, this._engine.parameterRampDuration) : this._engine.parameterRampDuration;
 
         if ((duration = Math.max(this._engine.parameterRampDuration, duration)) < MinRampDuration) {
             this._param.setValueAtTime((this._targetValue = value), startTime);
