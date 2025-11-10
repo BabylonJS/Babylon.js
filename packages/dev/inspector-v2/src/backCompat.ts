@@ -18,6 +18,96 @@ type PropertyChangedEvent = {
     allowNullValue?: boolean;
 };
 
+export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<InspectorV2Options> {
+    // Options not currently handled:
+    // • enablePopup: Do users care about this one?
+    // • enableClose: Currently Inspector v2 does not allow panes/tabs to be closed.
+    // • gizmoCamera: Do users care about this one?
+    // • skipDefaultFontLoading: Probably doesn't make sense for Inspector v2 using Fluent.
+
+    // TODO:
+    // • explorerExtensibility
+    // • additionalNodes
+    // • contextMenu
+    // • contextMenuOverride
+
+    v1Options = {
+        overlay: false,
+        showExplorer: true,
+        showInspector: true,
+        embedMode: false,
+        enableClose: true,
+        handleResize: true,
+        enablePopup: true,
+        ...v1Options,
+    };
+
+    const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
+    if (v1Options.initialTab) {
+        const paneKey: string = (() => {
+            switch (v1Options.initialTab) {
+                case DebugLayerTab.Debug:
+                    return "Debug";
+                case DebugLayerTab.Statistics:
+                    return "Statistics";
+                case DebugLayerTab.Settings:
+                    return "Settings";
+                case DebugLayerTab.Tools:
+                    return "Tools";
+            }
+        })();
+
+        const initialTabServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+            friendlyName: "Initial Tab Selector",
+            consumes: [ShellServiceIdentity],
+            factory: (shellService) => {
+                // Just find and select the requested initial tab.
+                shellService.sidePanes.find((pane) => pane.key === paneKey)?.select();
+            },
+        };
+        serviceDefinitions.push(initialTabServiceDefinition);
+    }
+
+    const v2Options: Partial<InspectorV2Options> = {
+        containerElement: v1Options.globalRoot,
+        layoutMode: v1Options.overlay ? "overlay" : "inline",
+        autoResizeEngine: v1Options.handleResize,
+        sidePaneRemapper: (sidePane) => {
+            if (v1Options.showExplorer === false && sidePane.key === "Scene Explorer") {
+                return null;
+            }
+
+            if (
+                v1Options.showInspector === false &&
+                (sidePane.key === "Properties" || sidePane.key === "Debug" || sidePane.key === "Statistics" || sidePane.key === "Settings" || sidePane.key === "Tools")
+            ) {
+                return null;
+            }
+
+            if (v1Options.embedMode) {
+                if (sidePane.horizontalLocation === "right") {
+                    // All right panes go to right bottom.
+                    return {
+                        horizontalLocation: "right",
+                        verticalLocation: "bottom",
+                    };
+                } else {
+                    // All left panes go to right top.
+                    return {
+                        horizontalLocation: "right",
+                        verticalLocation: "top",
+                    };
+                }
+            }
+
+            return sidePane;
+        },
+        serviceDefinitions,
+    };
+
+    return v2Options;
+}
+
 /**
  * @deprecated This class only exists for backward compatibility. Use the module-level ShowInspector function instead.
  */
@@ -54,23 +144,11 @@ export class Inspector {
         return !this._CurrentInspectorToken;
     }
 
-    public static Show(scene: Nullable<Scene>, userOptions: Partial<InspectorV1Options>) {
+    public static Show(scene: Scene, userOptions: Partial<InspectorV1Options>) {
         this._Show(scene, userOptions);
     }
 
     private static _Show(scene: Nullable<Scene>, userOptions: Partial<InspectorV1Options>) {
-        // Options not currently handled:
-        // • enablePopup: Do users care about this one?
-        // • enableClose: Currently Inspector v2 does not allow panes/tabs to be closed.
-        // • gizmoCamera: Do users care about this one?
-        // • skipDefaultFontLoading: Probably doesn't make sense for Inspector v2 using Fluent.
-
-        // TODO:
-        // • explorerExtensibility
-        // • additionalNodes
-        // • contextMenu
-        // • contextMenuOverride
-
         if (!scene) {
             scene = EngineStore.LastCreatedScene;
         }
@@ -79,80 +157,7 @@ export class Inspector {
             return;
         }
 
-        userOptions = {
-            overlay: false,
-            showExplorer: true,
-            showInspector: true,
-            embedMode: false,
-            enableClose: true,
-            handleResize: true,
-            enablePopup: true,
-            ...userOptions,
-        };
-
-        const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
-        if (userOptions.initialTab) {
-            const paneKey: string = (() => {
-                switch (userOptions.initialTab) {
-                    case DebugLayerTab.Debug:
-                        return "Debug";
-                    case DebugLayerTab.Statistics:
-                        return "Statistics";
-                    case DebugLayerTab.Settings:
-                        return "Settings";
-                    case DebugLayerTab.Tools:
-                        return "Tools";
-                }
-            })();
-
-            const initialTabServiceDefinition: ServiceDefinition<[], [IShellService]> = {
-                friendlyName: "Initial Tab Selector",
-                consumes: [ShellServiceIdentity],
-                factory: (shellService) => {
-                    // Just find and select the requested initial tab.
-                    shellService.sidePanes.find((pane) => pane.key === paneKey)?.select();
-                },
-            };
-            serviceDefinitions.push(initialTabServiceDefinition);
-        }
-
-        const options: Partial<InspectorV2Options> = {
-            containerElement: userOptions.globalRoot,
-            layoutMode: userOptions.overlay ? "overlay" : "inline",
-            autoResizeEngine: userOptions.handleResize,
-            sidePaneRemapper: (sidePane) => {
-                if (userOptions.showExplorer === false && sidePane.key === "Scene Explorer") {
-                    return null;
-                }
-
-                if (
-                    userOptions.showInspector === false &&
-                    (sidePane.key === "Properties" || sidePane.key === "Debug" || sidePane.key === "Statistics" || sidePane.key === "Settings" || sidePane.key === "Tools")
-                ) {
-                    return null;
-                }
-
-                if (userOptions.embedMode) {
-                    if (sidePane.horizontalLocation === "right") {
-                        // All right panes go to right bottom.
-                        return {
-                            horizontalLocation: "right",
-                            verticalLocation: "bottom",
-                        };
-                    } else {
-                        // All left panes go to right top.
-                        return {
-                            horizontalLocation: "right",
-                            verticalLocation: "top",
-                        };
-                    }
-                }
-
-                return sidePane;
-            },
-            serviceDefinitions,
-        };
-        this._CurrentInspectorToken = ShowInspector(scene, options);
+        this._CurrentInspectorToken = ShowInspector(scene, ConvertOptions(userOptions));
     }
 
     public static Hide() {
