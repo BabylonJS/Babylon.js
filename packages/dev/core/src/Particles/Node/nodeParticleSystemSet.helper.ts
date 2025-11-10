@@ -335,7 +335,7 @@ function _CreateColorUpdateBlock(oldSystem: IParticleSystem, createParticleBlock
     if (colorGradients && colorGradients.length > 0) {
         colorBlock = _CreateGradientColorUpdate(oldSystem, colorGradients, createParticleBlock);
     } else {
-        colorBlock = _CreateBasicColorUpdate();
+        colorBlock = _CreateBasicColorUpdate(oldSystem, createParticleBlock);
     }
 
     // Clamp alpha >= 0
@@ -390,11 +390,13 @@ function _CreateGradientColorUpdate(oldSystem: IParticleSystem, gradient: Array<
     return colorGradientBlock;
 }
 
-function _CreateBasicColorUpdate(): ParticleMathBlock {
+function _CreateBasicColorUpdate(oldSystem: IParticleSystem, createParticleBlock: CreateParticleBlock): ParticleMathBlock {
     const addColorBlock = new ParticleMathBlock("Add Color");
     addColorBlock.operation = ParticleMathBlockOperations.Add;
     _CreateAndConnectContextualSource("Color", NodeParticleContextualSources.Color, addColorBlock.left);
     _CreateAndConnectContextualSource("Scaled Color Step", NodeParticleContextualSources.ScaledColorStep, addColorBlock.right);
+
+    _UpdateCreateParticleColor(oldSystem, null, null, createParticleBlock);
 
     return addColorBlock;
 }
@@ -416,7 +418,7 @@ function _UpdateCreateParticleColor(
     }
 
     const randomColorBlock = new ParticleRandomBlock("Random color");
-    randomColorBlock.lockMode = ParticleRandomBlockLocks.PerSystem;
+    randomColorBlock.lockMode = ParticleRandomBlockLocks.PerParticle;
     colorStart.output.connectTo(randomColorBlock.min);
     colorEnd.output.connectTo(randomColorBlock.max);
     randomColorBlock.output.connectTo(createParticleBlock.color);
