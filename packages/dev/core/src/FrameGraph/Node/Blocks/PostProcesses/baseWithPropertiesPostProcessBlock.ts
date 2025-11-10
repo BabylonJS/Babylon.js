@@ -3,7 +3,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 
 /**
- * @internal
+ * Base class for post process blocks.
  */
 export class NodeRenderGraphBaseWithPropertiesPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphPostProcessTask;
