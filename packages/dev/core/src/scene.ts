@@ -1232,7 +1232,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * Gets the current eye position in order of forcedViewPosition, activeCamera world position, Vector3.ZeroReadOnly
      */
     private get _eyePosition(): Vector3 {
-        return this._forcedViewPosition ?? this.activeCamera?.getWorldMatrix().getTranslationToRef(this._tempVect3) ?? Vector3.ZeroReadOnly;
+        return this._forcedViewPosition ?? this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly;
     }
 
     /**
