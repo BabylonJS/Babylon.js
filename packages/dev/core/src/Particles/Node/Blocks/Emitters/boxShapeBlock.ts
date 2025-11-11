@@ -7,6 +7,7 @@ import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { Particle } from "core/Particles/particle";
 import { RandomRange } from "core/Maths/math.scalar.functions";
 import type { IShapeBlock } from "./IShapeBlock";
+import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Block used to provide a flow of particles emitted from a box shape.
@@ -117,10 +118,11 @@ export class BoxShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
             if (system.isLocal) {
                 particle.position.copyFromFloats(randX, randY, randZ);
-                particle.position.addInPlace(state.emitterPosition!);
             } else {
                 Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
             }
+
+            _CreateLocalPositionData(particle);
         };
 
         this.output._storedValue = system;
