@@ -4,7 +4,7 @@ import { DebugLayer } from "core/Debug/debugLayer";
 import { Lazy } from "core/Misc/lazy";
 import { Scene } from "core/scene";
 
-const LazyInspectorModule = new Lazy(async () => await import("./inspector"));
+const LazyInspectorModule = new Lazy(async () => await import("../inspector"));
 
 Object.defineProperty(Scene.prototype, "debugLayer", {
     get: function (this: Scene) {
