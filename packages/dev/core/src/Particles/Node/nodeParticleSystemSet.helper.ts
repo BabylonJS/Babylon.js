@@ -230,6 +230,7 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             shapeBlock = new MeshShapeBlock("Mesh Shape");
 
             const target = shapeBlock as MeshShapeBlock;
+            target.useMeshNormalsForDirection = source.useMeshNormalsForDirection;
             _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
             _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
 
