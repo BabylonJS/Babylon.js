@@ -1,12 +1,14 @@
+import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import type { Particle } from "core/Particles/particle";
+import type { IShapeBlock } from "./IShapeBlock";
+
 import { RandomRange } from "core/Maths/math.scalar.functions";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { Particle } from "core/Particles/particle";
 import { Vector3 } from "core/Maths/math.vector";
-import type { IShapeBlock } from "./IShapeBlock";
+import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Block used to provide a flow of particles emitted from a cylinder shape.
@@ -89,9 +91,9 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
             state.particleContext = particle;
             state.systemContext = system;
 
-            const directionRandomizer = this.directionRandomizer.getConnectedValue(state);
-            particle.position.subtractToRef(state.emitterPosition!, this._tempVector);
+            const directionRandomizer = this.directionRandomizer.getConnectedValue(state) as number;
 
+            particle.position.subtractToRef(state.emitterPosition!, this._tempVector);
             this._tempVector.normalize();
 
             if (state.emitterInverseWorldMatrix) {
@@ -121,12 +123,14 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
             state.particleContext = particle;
             state.systemContext = system;
 
-            const height = this.height.getConnectedValue(state);
-            const radiusRange = this.radiusRange.getConnectedValue(state);
-            const radius = this.radius.getConnectedValue(state);
+            const height = this.height.getConnectedValue(state) as number;
+            const radiusRange = this.radiusRange.getConnectedValue(state) as number;
+            const radius = this.radius.getConnectedValue(state) as number;
+
             const yPos = RandomRange(-height / 2, height / 2);
             const angle = RandomRange(0, 2 * Math.PI);
 
+            // Pick a properly distributed point within the circle https://programming.guide/random-point-within-circle.html
             const radiusDistribution = RandomRange((1 - radiusRange) * (1 - radiusRange), 1);
             const positionRadius = Math.sqrt(radiusDistribution) * radius;
             const xPos = positionRadius * Math.cos(angle);
@@ -134,10 +138,11 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
 
             if (system.isLocal) {
                 particle.position.copyFromFloats(xPos, yPos, zPos);
-                particle.position.addInPlace(state.emitterPosition!);
             } else {
                 Vector3.TransformCoordinatesFromFloatsToRef(xPos, yPos, zPos, state.emitterWorldMatrix!, particle.position);
             }
+
+            _CreateLocalPositionData(particle);
         };
 
         this.output._storedValue = system;
