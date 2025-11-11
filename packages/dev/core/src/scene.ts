@@ -10,7 +10,7 @@ import { SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
 import type { Vector2 } from "./Maths/math.vector";
-import { Vector3, Vector4, Matrix, TmpVectors } from "./Maths/math.vector";
+import { Vector3, Vector4, Matrix } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
@@ -114,6 +114,12 @@ export interface IDisposable {
      */
     dispose(): void;
 }
+
+// Defining Temps for the file to avoid misuse of shared TmpVectors
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const TempVect1 = new Vector4();
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const TempVect2 = new Vector4();
 
 /** Interface defining initialization parameters for Scene class */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -242,8 +248,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
 
-    private _tempVect3 = new Vector3();
-    private _tempVect4 = new Vector4();
     /**
      * Observable triggered when the performance priority is changed
      */
@@ -1247,8 +1251,8 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
         const offset = this.floatingOriginOffset;
-        const eyePos = this._tempVect4.set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
-        const offsetEyePos = eyePos.subtractFromFloatsToRef(offset.x, offset.y, offset.z, 0, TmpVectors.Vector4[1]);
+        const eyePos = TempVect1.set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+        const offsetEyePos = eyePos.subtractFromFloatsToRef(offset.x, offset.y, offset.z, 0, TempVect2);
 
         if (effect) {
             if (isVector3) {
