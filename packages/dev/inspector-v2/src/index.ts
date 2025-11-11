@@ -76,7 +76,7 @@ export * from "shared-ui-components/fluent/hoc/pane";
 export * from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
-export * from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+export { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";

@@ -3,7 +3,15 @@ import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IPropertiesService } from "../services/panes/properties/propertiesService";
 
 import { InspectableType } from "core/Misc/iInspectable";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
+import { FileUploadLine } from "shared-ui-components/fluent/hoc/fileUploadLine";
+import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
+import { DropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { QuaternionPropertyLine, Vector2PropertyLine, Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 import { BoundProperty } from "../components/properties/boundProperty";
 import { PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 
@@ -33,22 +41,59 @@ export const InspectableCustomPropertiesServiceDefinition: ServiceDefinition<[],
                     component: ({ context }) => {
                         return (
                             <>
-                                {(context.inspectableCustomProperties ?? []).map((prop) => {
+                                {(context.inspectableCustomProperties ?? []).map((prop): JSX.Element => {
+                                    const commonProps = {
+                                        target: context as Record<string, any>,
+                                        propertyKey: prop.propertyName,
+                                        label: prop.label,
+                                        ignoreNullable: true,
+                                        defaultValue: undefined,
+                                    } as const;
+
                                     switch (prop.type) {
                                         case InspectableType.Checkbox:
+                                            return <BoundProperty key={prop.propertyName} {...commonProps} component={SwitchPropertyLine} />;
+                                        case InspectableType.Slider:
                                             return (
                                                 <BoundProperty
                                                     key={prop.propertyName}
-                                                    target={context as Record<string, any>}
-                                                    propertyKey={prop.propertyName}
-                                                    label={prop.label}
-                                                    ignoreNullable={true}
-                                                    defaultValue={undefined}
-                                                    component={SwitchPropertyLine}
+                                                    {...commonProps}
+                                                    min={prop.min}
+                                                    max={prop.max}
+                                                    step={prop.step}
+                                                    component={SyncedSliderPropertyLine}
                                                 />
                                             );
+                                        case InspectableType.Vector3:
+                                            return <BoundProperty key={prop.propertyName} {...commonProps} component={Vector3PropertyLine} />;
+                                        case InspectableType.Quaternion:
+                                            return <BoundProperty key={prop.propertyName} {...commonProps} component={QuaternionPropertyLine} />;
+                                        case InspectableType.Color3:
+                                            return <BoundProperty key={prop.propertyName} {...commonProps} component={Color3PropertyLine} />;
+                                        case InspectableType.String:
+                                            return <BoundProperty key={prop.propertyName} {...commonProps} component={TextInputPropertyLine} />;
+                                        case InspectableType.Button:
+                                            return <ButtonLine key={prop.propertyName} label={prop.label} onClick={() => prop.callback?.()} />;
+                                        case InspectableType.Options:
+                                            return <BoundProperty key={prop.propertyName} {...commonProps} component={DropdownPropertyLine} options={prop.options ?? []} />;
+                                        case InspectableType.Tab:
+                                            return <BoundProperty key={prop.propertyName} {...commonProps} component={TextPropertyLine} />;
+                                        case InspectableType.FileButton:
+                                            return (
+                                                <FileUploadLine
+                                                    key={prop.propertyName}
+                                                    label={prop.label}
+                                                    accept={prop.accept ?? ""}
+                                                    onClick={(files) => {
+                                                        if (files.length > 0 && prop.fileCallback) {
+                                                            prop.fileCallback(files[0]);
+                                                        }
+                                                    }}
+                                                />
+                                            );
+                                        case InspectableType.Vector2:
+                                            return <BoundProperty key={prop.propertyName} {...commonProps} component={Vector2PropertyLine} />;
                                     }
-                                    return null;
                                 })}
                             </>
                         );
