@@ -7,7 +7,7 @@ import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
 import type { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
-import type { CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
+import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
 import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
@@ -207,6 +207,18 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             _CreateAndConnectInput("Radius", source.radius, target.radius);
             _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
             _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
+            break;
+        }
+        case "CylinderDirectedParticleEmitter": {
+            const source = emitter as CylinderDirectedParticleEmitter;
+            shapeBlock = new CylinderShapeBlock("Cylinder Shape");
+
+            const target = shapeBlock as CylinderShapeBlock;
+            _CreateAndConnectInput("Height", source.height, target.height);
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
+            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
             break;
         }
         case "HemisphericParticleEmitter": {
