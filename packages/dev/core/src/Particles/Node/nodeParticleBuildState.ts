@@ -27,6 +27,9 @@ export class NodeParticleBuildState {
     /** Gets or sets the build identifier */
     public buildId: number;
 
+    /** Gets or sets a boolean indicating if the system coordinate space is local or global */
+    public isLocal: boolean;
+
     /** Gets or sets the list of non connected mandatory inputs */
     public notConnectedNonOptionalInputs: NodeParticleConnectionPoint[] = [];
 
@@ -146,6 +149,11 @@ export class NodeParticleBuildState {
             case NodeParticleContextualSources.ScaledColorStep:
                 this.particleContext.colorStep.scaleToRef(this.systemContext._scaledUpdateSpeed, this.systemContext._scaledColorStep);
                 return this.systemContext._scaledColorStep;
+            case NodeParticleContextualSources.LocalPositionUpdated:
+                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
+                this.particleContext._localPosition!.addInPlace(this.systemContext._scaledDirection);
+                Vector3.TransformCoordinatesToRef(this.particleContext._localPosition!, this.systemContext._emitterWorldMatrix, this.particleContext.position);
+                return this.particleContext.position;
         }
 
         return null;

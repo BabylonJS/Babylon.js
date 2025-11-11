@@ -259,7 +259,7 @@ function _CreateUpdateSystem(inputParticle: NodeParticleConnectionPoint, oldSyst
         outputUpdate = _CreateAngularSpeedUpdate(outputUpdate, oldSystem.minAngularSpeed, oldSystem.maxAngularSpeed);
     }
 
-    outputUpdate = _CreatePositionUpdate(outputUpdate);
+    outputUpdate = _CreatePositionUpdate(outputUpdate, oldSystem.isLocal);
 
     if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
         outputUpdate = _CreateGravityUpdate(outputUpdate, oldSystem.gravity);
@@ -291,17 +291,21 @@ function _CreateAngularSpeedUpdate(inputParticle: NodeParticleConnectionPoint, m
     return updateAngle.output;
 }
 
-function _CreatePositionUpdate(inputParticle: NodeParticleConnectionPoint): NodeParticleConnectionPoint {
-    // Calculate the new position
-    const addPositionBlock = new ParticleMathBlock("Add Position");
-    addPositionBlock.operation = ParticleMathBlockOperations.Add;
-    _CreateAndConnectContextualSource("Position", NodeParticleContextualSources.Position, addPositionBlock.left);
-    _CreateAndConnectContextualSource("Scaled Direction", NodeParticleContextualSources.ScaledDirection, addPositionBlock.right);
-
+function _CreatePositionUpdate(inputParticle: NodeParticleConnectionPoint, isLocal: boolean): NodeParticleConnectionPoint {
     // Update the particle position
     const updatePosition = new UpdatePositionBlock("Position Update");
     inputParticle.connectTo(updatePosition.particle);
-    addPositionBlock.output.connectTo(updatePosition.position);
+
+    if (isLocal) {
+        _CreateAndConnectContextualSource("Local Position Updated", NodeParticleContextualSources.LocalPositionUpdated, updatePosition.position);
+    } else {
+        // Calculate the new position
+        const addPositionBlock = new ParticleMathBlock("Add Position");
+        addPositionBlock.operation = ParticleMathBlockOperations.Add;
+        _CreateAndConnectContextualSource("Position", NodeParticleContextualSources.Position, addPositionBlock.left);
+        _CreateAndConnectContextualSource("Scaled Direction", NodeParticleContextualSources.ScaledDirection, addPositionBlock.right);
+        addPositionBlock.output.connectTo(updatePosition.position);
+    }
 
     return updatePosition.output;
 }

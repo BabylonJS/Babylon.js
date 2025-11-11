@@ -144,6 +144,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Direction", value: NodeParticleContextualSources.Direction },
                     { label: "Scaled direction", value: NodeParticleContextualSources.ScaledDirection },
                     { label: "Initial Direction", value: NodeParticleContextualSources.InitialDirection },
+                    { label: "Local Position Updated", value: NodeParticleContextualSources.LocalPositionUpdated },
                 ];
                 systemSourcesOptions = [
                     { label: "Emitter", value: NodeParticleSystemSources.Emitter },

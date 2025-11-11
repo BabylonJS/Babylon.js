@@ -251,6 +251,11 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.ScaledColorStep;
                 return block;
             }
+            case "LocalPositionUpdatedBlock": {
+                const block = new ParticleInputBlock("Local Position Updated");
+                block.contextualValue = NodeParticleContextualSources.LocalPositionUpdated;
+                return block;
+            }
             case "TimeBlock": {
                 const block = new ParticleInputBlock("Time");
                 block.systemSource = NodeParticleSystemSources.Time;
