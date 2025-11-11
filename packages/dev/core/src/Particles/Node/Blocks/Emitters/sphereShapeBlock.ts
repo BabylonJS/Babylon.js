@@ -1,12 +1,14 @@
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { Particle } from "core/Particles/particle";
+import type { IShapeBlock } from "./IShapeBlock";
+
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { Vector3 } from "core/Maths/math.vector";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import type { IShapeBlock } from "./IShapeBlock";
+import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Block used to provide a flow of particles emitted from a sphere shape.
@@ -92,9 +94,9 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
             direction.normalize();
 
             if (system.isLocal) {
-                particle.direction.copyFromFloats(randX, randY, randZ);
+                particle.direction.copyFromFloats(direction.x, direction.y, direction.z);
             } else {
-                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
+                Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, state.emitterWorldMatrix!, particle.direction);
             }
 
             particle._initialDirection = particle.direction.clone();
@@ -117,10 +119,11 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
             if (system.isLocal) {
                 particle.position.copyFromFloats(randX, randY, randZ);
-                particle.position.addInPlace(state.emitterPosition!);
             } else {
                 Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
             }
+
+            _CreateLocalPositionData(particle);
         };
 
         this.output._storedValue = system;
