@@ -1,4 +1,4 @@
-import type { IInspectable } from "core/index";
+import type { IInspectable as InspectableProperty } from "core/index";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IPropertiesService } from "../services/panes/properties/propertiesService";
 
@@ -15,15 +15,15 @@ import { QuaternionPropertyLine, Vector2PropertyLine, Vector3PropertyLine } from
 import { BoundProperty } from "../components/properties/boundProperty";
 import { PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 
-interface IInspectableCustomProperties {
-    inspectableCustomProperties: IInspectable[];
+type InspectableObject = {
+    inspectableCustomProperties: InspectableProperty[];
+};
+
+function IsInspectableObject(entity: unknown): entity is InspectableObject {
+    return (entity as InspectableObject).inspectableCustomProperties !== undefined;
 }
 
-function IsInspectableCustomProperties(entity: unknown): entity is IInspectableCustomProperties {
-    return (entity as IInspectableCustomProperties).inspectableCustomProperties !== undefined;
-}
-
-export const InspectableCustomPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+export const LegacyInspectableObjectPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
     friendlyName: "Additional Nodes",
     consumes: [PropertiesServiceIdentity],
     factory: (propertiesService) => {
@@ -34,7 +34,7 @@ export const InspectableCustomPropertiesServiceDefinition: ServiceDefinition<[],
 
         const propertiesContentRegistration = propertiesService.addSectionContent({
             key: "Additional Nodes Properties",
-            predicate: (entity: unknown): entity is IInspectableCustomProperties => IsInspectableCustomProperties(entity),
+            predicate: (entity: unknown) => IsInspectableObject(entity),
             content: [
                 {
                     section: "Custom",
