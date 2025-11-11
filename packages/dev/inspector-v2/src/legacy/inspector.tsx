@@ -1,14 +1,21 @@
-import type { IDisposable, IInspectorOptions as InspectorV1Options, Nullable, Scene } from "core/index";
-import type { InspectorOptions as InspectorV2Options } from "./inspector";
-import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
-import type { ServiceDefinition } from "./modularity/serviceDefinition";
-import type { IShellService } from "./services/shellService";
+import type { IDisposable, IExplorerAdditionalChild, IInspectorOptions as InspectorV1Options, Nullable, Scene, WritableObject } from "core/index";
+import type { EntityBase } from "../components/scene/sceneExplorer";
+import type { InspectorOptions as InspectorV2Options } from "../inspector";
+import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
+import type { ServiceDefinition } from "../modularity/serviceDefinition";
+import type { ISceneExplorerService } from "../services/panes/scene/sceneExplorerService";
+import type { IShellService } from "../services/shellService";
+
+import { BranchRegular } from "@fluentui/react-icons";
 
 import { DebugLayerTab } from "core/Debug/debugLayer";
 import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
-import { ShowInspector } from "./inspector";
-import { ShellServiceIdentity } from "./services/shellService";
+import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
+import { ShowInspector } from "../inspector";
+import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
+import { SceneExplorerServiceIdentity } from "../services/panes/scene/sceneExplorerService";
+import { ShellServiceIdentity } from "../services/shellService";
 
 type PropertyChangedEvent = {
     object: any;
@@ -27,7 +34,6 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
 
     // TODO:
     // • explorerExtensibility
-    // • additionalNodes
     // • contextMenu
     // • contextMenuOverride
 
@@ -43,6 +49,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
     };
 
     const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
+
     if (v1Options.initialTab) {
         const paneKey: string = (() => {
             switch (v1Options.initialTab) {
@@ -66,6 +73,62 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
             },
         };
         serviceDefinitions.push(initialTabServiceDefinition);
+    }
+
+    if (v1Options.additionalNodes && v1Options.additionalNodes.length > 0) {
+        const { additionalNodes } = v1Options;
+        const additionalNodesServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+            friendlyName: "Additional Nodes",
+            consumes: [SceneExplorerServiceIdentity],
+            factory: (sceneExplorerService) => {
+                const sceneExplorerSectionRegistrations = additionalNodes.map((node) =>
+                    sceneExplorerService.addSection({
+                        displayName: node.name,
+                        order: Number.MAX_SAFE_INTEGER,
+                        getRootEntities: () => {
+                            const children = node.getContent();
+                            for (const child of children) {
+                                const entity = child as Partial<WritableObject<EntityBase>>;
+                                if (!entity.uniqueId) {
+                                    entity.uniqueId = UniqueIdGenerator.UniqueId;
+                                }
+                            }
+                            return children as (IExplorerAdditionalChild & EntityBase)[];
+                        },
+                        getEntityDisplayInfo: (entity) => {
+                            const onChangeObservable = new Observable<void>();
+
+                            const nameHookToken = InterceptProperty(entity, "name", {
+                                afterSet: () => {
+                                    onChangeObservable.notifyObservers();
+                                },
+                            });
+
+                            return {
+                                get name() {
+                                    return entity.name;
+                                },
+                                onChange: onChangeObservable,
+                                dispose: () => {
+                                    nameHookToken.dispose();
+                                    onChangeObservable.clear();
+                                },
+                            };
+                        },
+                        entityIcon: () => <BranchRegular />,
+                        getEntityAddedObservables: () => [],
+                        getEntityRemovedObservables: () => [],
+                    })
+                );
+
+                return {
+                    dispose: () => {
+                        sceneExplorerSectionRegistrations.forEach((registration) => registration.dispose());
+                    },
+                };
+            },
+        };
+        serviceDefinitions.push(additionalNodesServiceDefinition);
     }
 
     const v2Options: Partial<InspectorV2Options> = {

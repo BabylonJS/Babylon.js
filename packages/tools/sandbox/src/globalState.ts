@@ -3,11 +3,11 @@ import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 
-let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/backCompat")> | null = null;
+let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/legacy/inspector")> | null = null;
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 function ImportInspectorV2() {
     if (!InspectorV2ModulePromise) {
-        InspectorV2ModulePromise = import("inspector-v2/backCompat");
+        InspectorV2ModulePromise = import("inspector-v2/legacy/inspector");
     }
     return InspectorV2ModulePromise;
 }

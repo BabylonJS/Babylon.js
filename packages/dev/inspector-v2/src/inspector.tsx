@@ -9,6 +9,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
+import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
 import { MakeModularTool } from "./modularTool";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
@@ -241,6 +242,9 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
 
             // Adds always present "mini stats" (like fps) to the toolbar, etc.
             MiniStatsServiceDefinition,
+
+            // Legacy service to support custom inspectable properties on objects.
+            LegacyInspectableObjectPropertiesServiceDefinition,
 
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),
