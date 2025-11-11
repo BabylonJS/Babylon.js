@@ -192,9 +192,7 @@ export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
         const randZ = RandomRange(this.direction1.z, this.direction2.z);
 
         if (isLocal) {
-            directionToUpdate.x = randX;
-            directionToUpdate.y = randY;
-            directionToUpdate.z = randZ;
+            directionToUpdate.copyFromFloats(randX, randY, randZ);
             return;
         }
 
