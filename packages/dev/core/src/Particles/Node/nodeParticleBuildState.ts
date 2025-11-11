@@ -27,9 +27,6 @@ export class NodeParticleBuildState {
     /** Gets or sets the build identifier */
     public buildId: number;
 
-    /** Gets or sets a boolean indicating if the system coordinate space is local or global */
-    public isLocal: boolean;
-
     /** Gets or sets the list of non connected mandatory inputs */
     public notConnectedNonOptionalInputs: NodeParticleConnectionPoint[] = [];
 
