@@ -20,7 +20,7 @@ type InspectableObject = {
 };
 
 function IsInspectableObject(entity: unknown): entity is InspectableObject {
-    return (entity as InspectableObject).inspectableCustomProperties !== undefined;
+    return !!(entity as InspectableObject).inspectableCustomProperties;
 }
 
 export const LegacyInspectableObjectPropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
