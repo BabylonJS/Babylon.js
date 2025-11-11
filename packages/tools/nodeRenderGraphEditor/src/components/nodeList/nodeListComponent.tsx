@@ -43,7 +43,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         PassCubeBlock: "Applies a pass cube post process",
         GUIBlock: "Used to render a GUI",
         ObjectRendererBlock: "Renders objects to a render target",
-        TAAObjectRendererBlock: "Renders objects with Temporal Anti-Aliasing to a render target",
+        TAABlock: "Applies a Temporal Anti-Aliasing post process",
         GeometryRendererBlock: "Generates geometry buffers for a list of objects",
         ObjectListBlock: "List of objects (meshes, particle systems, sprites)",
         CullBlock: "Culls a list of objects",
@@ -70,6 +70,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         FilterBlock: "Applies a kernel filter post process",
         TonemapBlock: "Applies a tonemapping post process",
         SSAO2Block: "Applies a Screen Space Ambient Occlusion post process",
+        ComputeShaderBlock: "Executes a compute shader",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -152,7 +153,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         // Block types used to create the menu from
-        const allBlocks: any = {
+        const allBlocks: {
+            [key: string]: string[];
+        } = {
             Custom_Frames: customFrameNames,
             Inputs: [
                 "TextureBlock",
@@ -164,7 +167,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ShadowLightBlock",
             ],
             Layers: ["GlowLayerBlock", "HighlightLayerBlock"],
-            Misc: ["ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock", "CullBlock", "ExecuteBlock"],
+            Misc: ["ComputeShaderBlock", "ElbowBlock", "TeleportInBlock", "TeleportOutBlock", "GUIBlock", "ResourceContainerBlock", "CullBlock", "ExecuteBlock"],
             Post_Processes: [
                 "AnaglyphBlock",
                 "BlackAndWhiteBlock",
@@ -187,19 +190,29 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "SharpenBlock",
                 "SSAO2Block",
                 "SSRBlock",
+                "TAABlock",
                 "TonemapBlock",
             ],
             Output_Nodes: ["OutputBlock"],
-            Rendering: [
-                "ObjectRendererBlock",
-                "GeometryRendererBlock",
-                "TAAObjectRendererBlock",
-                "ShadowGeneratorBlock",
-                "CascadedShadowGeneratorBlock",
-                "UtilityLayerRendererBlock",
-            ],
+            Rendering: ["ObjectRendererBlock", "GeometryRendererBlock", "ShadowGeneratorBlock", "CascadedShadowGeneratorBlock", "UtilityLayerRendererBlock"],
             Textures: ["ClearBlock", "CopyTextureBlock", "GenerateMipmapsBlock"],
         };
+
+        const customBlockDescriptions = this.props.globalState.customBlockDescriptions;
+        if (customBlockDescriptions) {
+            for (const desc of customBlockDescriptions) {
+                const menu = desc.menu || "Custom_Blocks";
+                let name = desc.name;
+                if (!name.endsWith("Block")) {
+                    name += "Block";
+                }
+                if (allBlocks[menu]) {
+                    allBlocks[menu].push(name);
+                } else {
+                    allBlocks[menu] = [name];
+                }
+            }
+        }
 
         // Create node menu
         const blockMenu = [];
@@ -207,20 +220,34 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             const blockList = allBlocks[key]
                 .filter((b: string) => !this.state.filter || b.toLowerCase().indexOf(this.state.filter.toLowerCase()) !== -1)
                 .sort((a: string, b: string) => a.localeCompare(b))
-                .map((block: any) => {
+                .map((blockName: string) => {
+                    const displayBlockName = blockName.replace(/_/g, " ");
                     if (key === "Custom_Frames") {
                         return (
                             <DraggableLineWithButtonComponent
-                                key={block}
-                                data={block}
-                                tooltip={this._customFrameList[block] || ""}
+                                key={blockName}
+                                data={displayBlockName}
+                                tooltip={this._customFrameList[blockName] || ""}
                                 iconImage={deleteButton}
                                 iconTitle="Delete"
                                 onIconClick={(value) => this.removeItem(value)}
                             />
                         );
                     }
-                    return <DraggableLineComponent key={block} data={block} tooltip={NodeListComponent._Tooltips[block] || ""} />;
+                    return (
+                        <DraggableLineComponent
+                            key={blockName}
+                            data={displayBlockName}
+                            tooltip={
+                                customBlockDescriptions?.find((desc) => {
+                                    const name = desc.name.endsWith("Block") ? desc.name : desc.name + "Block";
+                                    return name === blockName;
+                                })?.description ||
+                                NodeListComponent._Tooltips[blockName] ||
+                                ""
+                            }
+                        />
+                    );
                 });
 
             if (key === "Custom_Frames") {
@@ -268,7 +295,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                     finalName = name.substring(0, nameIndex);
                     finalName += " [custom]";
                 } else {
-                    finalName = name.replace("Block", "");
+                    finalName = name.replace("Block", "").replace(/_/g, " ");
                 }
                 return finalName;
             };

@@ -29,6 +29,8 @@ export const enum PropertyTypeForEdition {
     String,
     /** property is a matrix */
     Matrix,
+    /** property is a viewport */
+    Viewport,
 }
 
 /**

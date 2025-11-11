@@ -79,10 +79,10 @@ export class PointShapeBlock extends NodeParticleBlock implements IShapeBlock {
             const randY = RandomRange(direction1.y, direction2.y);
             const randZ = RandomRange(direction1.z, direction2.z);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
-            } else {
+            if (system.isLocal) {
                 particle.direction.copyFromFloats(randX, randY, randZ);
+            } else {
+                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
             }
 
             particle._initialDirection = particle.direction.clone();
@@ -90,10 +90,10 @@ export class PointShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
         system._positionCreation.process = (particle: Particle) => {
             state.systemContext = system;
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformCoordinatesFromFloatsToRef(0, 0, 0, state.emitterWorldMatrix!, particle.position);
-            } else {
+            if (system.isLocal) {
                 particle.position.copyFrom(state.emitterPosition!);
+            } else {
+                Vector3.TransformCoordinatesFromFloatsToRef(0, 0, 0, state.emitterWorldMatrix!, particle.position);
             }
         };
 

@@ -1,3 +1,4 @@
+export * from "./computeShaderBlock";
 export * from "./cullObjectsBlock";
 export * from "./elbowBlock";
 export * from "./executeBlock";
@@ -10,6 +11,7 @@ export * from "./Layers/highlightLayerBlock";
 
 export * from "./PostProcesses/anaglyphPostProcessBlock";
 export * from "./PostProcesses/basePostProcessBlock";
+export * from "./PostProcesses/baseWithPropertiesPostProcessBlock";
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";
@@ -29,13 +31,13 @@ export * from "./PostProcesses/sharpenPostProcessBlock";
 export * from "./PostProcesses/screenSpaceCurvaturePostProcessBlock";
 export * from "./PostProcesses/ssao2PostProcessBlock";
 export * from "./PostProcesses/ssrPostProcessBlock";
+export * from "./PostProcesses/taaPostProcessBlock";
 export * from "./PostProcesses/tonemapPostProcessBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";
 export * from "./Rendering/geometryRendererBlock";
 export * from "./Rendering/objectRendererBlock";
 export * from "./Rendering/shadowGeneratorBlock";
-export * from "./Rendering/taaObjectRendererBlock";
 export * from "./Rendering/utilityLayerRendererBlock";
 
 export * from "./Teleport/teleportInBlock";

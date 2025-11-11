@@ -394,6 +394,8 @@ export class ClusteredLightContainer extends Light {
         let minSlice = -1;
 
         const buf = this._lightDataBuffer;
+        const offset = this._scene.floatingOriginOffset;
+
         for (let i = 0; i < this._sortedLights.length; i += 1) {
             const light = this._sortedLights[i];
             const off = i * 20;
@@ -407,9 +409,9 @@ export class ClusteredLightContainer extends Light {
             const inverseSquaredRange = Math.max(light._inverseSquaredRange, this._minInverseSquaredRange);
 
             // vLightData
-            buf[off + 0] = position.x - this._scene.floatingOriginOffset.x;
-            buf[off + 1] = position.y - this._scene.floatingOriginOffset.y;
-            buf[off + 2] = position.z - this._scene.floatingOriginOffset.z;
+            buf[off + 0] = position.x - offset.x;
+            buf[off + 1] = position.y - offset.y;
+            buf[off + 2] = position.z - offset.z;
             buf[off + 3] = 0;
             // vLightDiffuse
             buf[off + 4] = diffuse.r;

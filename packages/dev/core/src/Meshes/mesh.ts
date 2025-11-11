@@ -2151,6 +2151,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let instancesCount = 0;
 
         const renderSelf = batch.renderSelf[subMesh._id];
+        const floatingOriginOffset = this._scene.floatingOriginOffset;
 
         const needUpdateBuffer =
             !instancesBuffer ||
@@ -2170,6 +2171,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     }
                 }
                 world.copyToArray(instanceStorage.instancesData, offset);
+
+                // Apply floatingOriginOffset to underlying data sent to buffer
+                instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
+                instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
+                instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
+
                 offset += 16;
                 instancesCount++;
             }
@@ -2199,6 +2206,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                             instance._previousWorldMatrix.copyFrom(matrix);
                         }
                     }
+
+                    // Apply floatingOriginOffset to underlying data sent to buffer
+                    instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
+                    instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
+                    instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
 
                     offset += 16;
                     instancesCount++;
@@ -2677,7 +2689,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             !instanceDataStorage.isFrozen &&
             (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling ||
                 this._internalMeshDataInfo._effectiveMaterial.sideOrientation !== null ||
-                (this._internalMeshDataInfo._effectiveMaterial as any).twoSidedLighting)
+                (this._internalMeshDataInfo._effectiveMaterial as any)._twoSidedLighting)
         ) {
             // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
             const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();

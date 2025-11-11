@@ -277,7 +277,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public linearVelocityFormat = Constants.TEXTUREFORMAT_RGBA;
 
     @editableInPropertyPage("Linear velocity type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
-    public linearVelocityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    public linearVelocityType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     /**
      * Gets the current class name

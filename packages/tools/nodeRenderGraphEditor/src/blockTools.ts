@@ -19,7 +19,7 @@ import { NodeRenderGraphObjectRendererBlock } from "core/FrameGraph/Node/Blocks/
 import { NodeRenderGraphGeometryRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/geometryRendererBlock";
 import { NodeRenderGraphCullObjectsBlock } from "core/FrameGraph/Node/Blocks/cullObjectsBlock";
 import { NodeRenderGraphGUIBlock } from "gui/2D/FrameGraph/renderGraphGUIBlock";
-import { NodeRenderGraphTAAObjectRendererBlock } from "core/FrameGraph/Node/Blocks/Rendering/taaObjectRendererBlock";
+import { NodeRenderGraphTAAPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/taaPostProcessBlock";
 import { NodeRenderGraphResourceContainerBlock } from "core/FrameGraph/Node/Blocks/resourceContainerBlock";
 import { NodeRenderGraphShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/shadowGeneratorBlock";
 import { NodeRenderGraphCascadedShadowGeneratorBlock } from "core/FrameGraph/Node/Blocks/Rendering/csmShadowGeneratorBlock";
@@ -42,6 +42,7 @@ import { NodeRenderGraphColorCorrectionPostProcessBlock } from "core/FrameGraph/
 import { NodeRenderGraphFilterPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/filterPostProcessBlock";
 import { NodeRenderGraphTonemapPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/tonemapPostProcessBlock";
 import { NodeRenderGraphSSAO2PostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/ssao2PostProcessBlock";
+import { NodeRenderGraphComputeShaderBlock } from "core/FrameGraph/Node/Blocks/computeShaderBlock";
 
 /**
  * Static class for BlockTools
@@ -122,8 +123,8 @@ export class BlockTools {
             case "GeometryRendererBlock": {
                 return new NodeRenderGraphGeometryRendererBlock("Geometry renderer", frameGraph, scene);
             }
-            case "TAAObjectRendererBlock": {
-                return new NodeRenderGraphTAAObjectRendererBlock("TAA Object renderer", frameGraph, scene);
+            case "TAABlock": {
+                return new NodeRenderGraphTAAPostProcessBlock("Temporal Anti-Aliasing", frameGraph, scene);
             }
             case "CullBlock": {
                 return new NodeRenderGraphCullObjectsBlock("Cull", frameGraph, scene);
@@ -190,6 +191,9 @@ export class BlockTools {
             }
             case "SSAO2Block": {
                 return new NodeRenderGraphSSAO2PostProcessBlock("SSAO", frameGraph, scene);
+            }
+            case "ComputeShaderBlock": {
+                return new NodeRenderGraphComputeShaderBlock("Compute Shader", frameGraph, scene);
             }
         }
 

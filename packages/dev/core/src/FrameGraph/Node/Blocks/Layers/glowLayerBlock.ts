@@ -51,7 +51,7 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
         this.registerInput(
             "objectRenderer",
             NodeRenderGraphBlockConnectionPointTypes.Object,
-            true,
+            false,
             new NodeRenderGraphConnectionPointCustomObject(
                 "objectRenderer",
                 this,

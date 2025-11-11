@@ -62,7 +62,7 @@ import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
 let CurrentInspectorToken: Nullable<IDisposable> = null;
 
-type InspectorV2Options = Omit<ModularToolOptions, "containerElement">;
+type InspectorV2Options = Omit<ModularToolOptions, "containerElement" | "sidePaneRemapper" | "toolbarMode">;
 
 export function IsInspectorVisible(): boolean {
     return CurrentInspectorToken != null;
@@ -269,7 +269,23 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         showThemeSelector: options.showThemeSelector,
         extensionFeeds: [DefaultInspectorExtensionFeed, ...(options.extensionFeeds ?? [])],
         toolbarMode: "compact",
-        sidePaneMode: options.embedMode ? "right" : "both",
+        sidePaneRemapper: options.embedMode
+            ? (sidePane) => {
+                  if (sidePane.horizontalLocation === "right") {
+                      // All right panes go to right bottom.
+                      return {
+                          horizontalLocation: "right",
+                          verticalLocation: "bottom",
+                      };
+                  } else {
+                      // All left panes go to right top.
+                      return {
+                          horizontalLocation: "right",
+                          verticalLocation: "top",
+                      };
+                  }
+              }
+            : undefined,
     });
     disposeActions.push(() => modularTool.dispose());
 

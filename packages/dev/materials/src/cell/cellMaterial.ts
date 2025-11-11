@@ -165,7 +165,7 @@ export class CellMaterial extends PushMaterial {
             undefined,
             undefined,
             undefined,
-            this._setVertexOutputInvariant
+            this._isVertexOutputInvariant
         );
 
         // Lights

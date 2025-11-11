@@ -443,6 +443,23 @@ export class FrameGraphTextureManager {
     }
 
     /**
+     * Gets the absolute dimensions of a texture from its handle or creation options.
+     * @param handleOrCreationOptions The handle or creation options of the texture
+     * @returns The absolute dimensions of the texture
+     */
+    public getTextureAbsoluteDimensions(handleOrCreationOptions: FrameGraphTextureHandle | FrameGraphTextureCreationOptions): { width: number; height: number } {
+        if (typeof handleOrCreationOptions === "number") {
+            handleOrCreationOptions = this.getTextureCreationOptions(handleOrCreationOptions);
+        }
+
+        return !handleOrCreationOptions.sizeIsPercentage
+            ? textureSizeIsObject(handleOrCreationOptions.size)
+                ? handleOrCreationOptions.size
+                : { width: handleOrCreationOptions.size, height: handleOrCreationOptions.size }
+            : this.getAbsoluteDimensions(handleOrCreationOptions.size);
+    }
+
+    /**
      * Calculates the total byte size of all textures used by the frame graph texture manager (including external textures)
      * @param optimizedSize True if the calculation should not factor in aliased textures
      * @param outputWidth The output width of the frame graph. Will be used to calculate the size of percentage-based textures
@@ -1034,14 +1051,18 @@ export class FrameGraphTextureManager {
             }
             let textureEntry = this._textures.get(textureHandle);
             if (!textureEntry) {
-                throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager.`);
+                throw new Error(
+                    `FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager. Make sure you didn't forget to add a task in the frame graph.`
+                );
             }
             let handle = textureHandle;
             while (textureEntry.refHandle !== undefined) {
                 handle = textureEntry.refHandle;
                 textureEntry = this._textures.get(handle);
                 if (!textureEntry) {
-                    throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${handle}" not found in the texture manager (source handle="${textureHandle}").`);
+                    throw new Error(
+                        `FrameGraph._computeTextureLifespan: Texture handle "${handle}" not found in the texture manager (source handle="${textureHandle}"). Make sure you didn't forget to add a task in the frame graph.`
+                    );
                 }
             }
             if (textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(handle)) {

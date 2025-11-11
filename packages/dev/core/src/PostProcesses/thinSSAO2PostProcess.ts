@@ -80,7 +80,7 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
     public set samples(n: number) {
         this._samples = n;
-        this.updateEffect(this._getDefinesForSSAO());
+        this.updateEffect();
         this._sampleSphere = this._generateHemisphere();
     }
     public get samples(): number {
@@ -101,10 +101,14 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
     public set epsilon(n: number) {
         this._epsilon = n;
-        this.updateEffect(this._getDefinesForSSAO());
+        this.updateEffect();
     }
     public get epsilon(): number {
         return this._epsilon;
+    }
+
+    public override updateEffect() {
+        super.updateEffect(this._getDefinesForSSAO());
     }
 
     private _scene: Scene;
@@ -129,7 +133,7 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
 
         this._createRandomTexture();
 
-        this.updateEffect(this._getDefinesForSSAO());
+        this.updateEffect();
         this._sampleSphere = this._generateHemisphere();
     }
 
@@ -157,8 +161,14 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
         effect.setFloat("near", camera.minZ);
         if (camera.mode === Camera.PERSPECTIVE_CAMERA) {
             effect.setMatrix3x3("depthProjection", ThinSSAO2PostProcess.PERSPECTIVE_DEPTH_PROJECTION);
-            effect.setFloat("xViewport", Math.tan(camera.fov / 2) * this._scene.getEngine().getAspectRatio(camera, true));
-            effect.setFloat("yViewport", Math.tan(camera.fov / 2));
+            const viewportSize = Math.tan(camera.fov / 2);
+            if (camera.fovMode === Camera.FOVMODE_VERTICAL_FIXED) {
+                effect.setFloat("xViewport", viewportSize * this._scene.getEngine().getAspectRatio(camera, true));
+                effect.setFloat("yViewport", viewportSize);
+            } else {
+                effect.setFloat("xViewport", viewportSize);
+                effect.setFloat("yViewport", viewportSize / this._scene.getEngine().getAspectRatio(camera, true));
+            }
         } else {
             const halfWidth = this._scene.getEngine().getRenderWidth() / 2.0;
             const halfHeight = this._scene.getEngine().getRenderHeight() / 2.0;
@@ -247,7 +257,10 @@ export class ThinSSAO2PostProcess extends EffectWrapper {
     }
 
     private _getDefinesForSSAO() {
-        let defines = `#define SSAO\n#define SAMPLES ${this.samples}\n#define EPSILON ${this.epsilon.toFixed(4)}`;
+        const epsilon = this._epsilon ?? 0.02;
+        const samples = this._samples ?? 8;
+
+        let defines = `#define SSAO\n#define SAMPLES ${samples}\n#define EPSILON ${epsilon.toFixed(4)}`;
 
         if (this.camera?.mode === Camera.ORTHOGRAPHIC_CAMERA) {
             defines += `\n#define ORTHOGRAPHIC_CAMERA`;

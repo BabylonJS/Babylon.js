@@ -7,7 +7,6 @@ import {
     ColorSlider,
     ColorArea,
     AlphaSlider,
-    Link,
     makeStyles,
     Popover,
     PopoverSurface,
@@ -24,6 +23,7 @@ import { SpinButton } from "./spinButton";
 import { TextInput } from "./textInput";
 import { NumberDropdown } from "./dropdown";
 import { ValidateColorHex } from "./utils";
+import { Link } from "./link";
 import { ToolContext } from "../hoc/fluentToolWrapper";
 
 const useColorPickerStyles = makeStyles({
@@ -233,7 +233,7 @@ export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
                                   <Body1Strong>Color3.FromHexString(GAMMA_HEX).toLinearSpace()</Body1Strong>
                                   <br />
                                   <br />
-                                  <Link href="https://doc.babylonjs.com/preparingArtForBabylon/controllingColorSpace/"> Read more in our docs! </Link>
+                                  <Link url="https://doc.babylonjs.com/preparingArtForBabylon/controllingColorSpace/" value="Read more in our docs!" />
                               </>
                           ),
                       }

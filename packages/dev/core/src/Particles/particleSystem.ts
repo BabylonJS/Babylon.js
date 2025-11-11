@@ -82,6 +82,12 @@ export class ParticleSystem extends ThinParticleSystem {
      * The current active Sub-systems, this property is used by the root particle system only.
      */
     public activeSubSystems: Array<ParticleSystem>;
+
+    /**
+     * Specifies if the particle system should be serialized
+     */
+    public doNotSerialize = false;
+
     /**
      * Creates a Point Emitter for the particle system (emits directly from the emitter position)
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
@@ -878,7 +884,9 @@ export class ParticleSystem extends ThinParticleSystem {
             for (const subs of this._subEmitters) {
                 const cell = [];
                 for (const sub of subs) {
-                    cell.push(sub.serialize(serializeTexture));
+                    if (!sub.particleSystem.doNotSerialize) {
+                        cell.push(sub.serialize(serializeTexture));
+                    }
                 }
 
                 serializationObject.subEmitters.push(cell);

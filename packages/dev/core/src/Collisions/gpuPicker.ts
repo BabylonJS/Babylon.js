@@ -219,8 +219,6 @@ export class GPUPicker {
             return;
         }
 
-        this._pickableMeshes = list as Array<AbstractMesh>;
-
         // Prepare target
         const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene();
         if (!this._cachedScene || this._cachedScene !== scene) {

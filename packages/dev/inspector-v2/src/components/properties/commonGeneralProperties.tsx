@@ -1,5 +1,7 @@
 import type { FunctionComponent } from "react";
 
+import type { IDisposable } from "core/index";
+
 import { useMemo } from "react";
 
 import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
@@ -7,6 +9,7 @@ import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { useProperty } from "../../hooks/compoundPropertyHooks";
 import { GetPropertyDescriptor, IsPropertyReadonly } from "../../instrumentation/propertyInstrumentation";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 
 type CommonEntity = {
     readonly id?: number;
@@ -37,6 +40,16 @@ export const CommonGeneralProperties: FunctionComponent<{ commonEntity: CommonEn
                 <StringifiedPropertyLine key="EntityUniqueId" label="Unique ID" description="The unique id of the node." value={commonEntity.uniqueId} />
             )}
             {className !== undefined && <TextPropertyLine key="EntityClassName" label="Class" description="The class of the node." value={className} />}
+        </>
+    );
+};
+
+export const DisposableGeneralProperties: FunctionComponent<{ disposableEntity: IDisposable }> = (props) => {
+    const { disposableEntity } = props;
+
+    return (
+        <>
+            <ButtonLine label="Dispose" onClick={() => disposableEntity.dispose()} />
         </>
     );
 };

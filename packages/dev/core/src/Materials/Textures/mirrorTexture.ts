@@ -10,6 +10,8 @@ import { BlurPostProcess } from "../../PostProcesses/blurPostProcess";
 import { Constants } from "../../Engines/constants";
 import { Plane } from "../../Maths/math.plane";
 import type { UniformBuffer } from "../uniformBuffer";
+import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+
 /**
  * Mirror texture can be used to simulate the view from a mirror in a scene.
  * It will dynamically be rendered every frame to adapt to the camera point of view.
@@ -100,6 +102,15 @@ export class MirrorTexture extends RenderTargetTexture {
         const dh = this.getRenderHeight() / engine.getRenderHeight();
         this.blurKernelX = this._adaptiveBlurKernel * dw;
         this.blurKernelY = this._adaptiveBlurKernel * dh;
+    }
+
+    public override resize(size: TextureSize | { ratio: number }): void {
+        super.resize(size);
+        if (!this._adaptiveBlurKernel) {
+            this._preparePostProcesses();
+        } else {
+            this._autoComputeBlurKernel();
+        }
     }
 
     protected override _onRatioRescale(): void {
@@ -200,7 +211,9 @@ export class MirrorTexture extends RenderTargetTexture {
             saveClipPlane = scene.clipPlane;
             scene.clipPlane = this.mirrorPlane;
 
-            scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
+            const eyePos = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
+            scene._mirroredCameraPosition = eyePos;
+            scene._forcedViewPosition = eyePos; // More performant to set 2 properties here than to check both mirroredCameraPos and forcedViewPos within eye binding (which happens on critical rendering path)
         });
 
         this.onAfterRenderObservable.add(() => {
@@ -209,6 +222,7 @@ export class MirrorTexture extends RenderTargetTexture {
             }
             scene.updateTransformMatrix();
             scene._mirroredCameraPosition = null;
+            scene._forcedViewPosition = null;
 
             scene.clipPlane = saveClipPlane;
         });

@@ -1,4 +1,4 @@
-import type { NodeRenderGraphConnectionPoint, Scene, FrameGraph } from "core/index";
+import type { NodeRenderGraphConnectionPoint, Scene, FrameGraph, FrameGraphContext } from "core/index";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Types/nodeRenderGraphTypes";
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
@@ -33,6 +33,28 @@ export class NodeRenderGraphExecuteBlock extends NodeRenderGraphBlock {
         this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.ResourceContainer);
 
         this._frameGraphTask = new FrameGraphExecuteTask(name, frameGraph);
+    }
+
+    /**
+     * Gets or sets the execute function
+     */
+    public get func(): (context: FrameGraphContext) => void {
+        return this._frameGraphTask.func;
+    }
+
+    public set func(func: (context: FrameGraphContext) => void) {
+        this._frameGraphTask.func = func;
+    }
+
+    /**
+     * Gets or sets the execute when task disabled function
+     */
+    public get funcDisabled(): ((context: FrameGraphContext) => void) | undefined {
+        return this._frameGraphTask.funcDisabled;
+    }
+
+    public set funcDisabled(func: ((context: FrameGraphContext) => void) | undefined) {
+        this._frameGraphTask.funcDisabled = func;
     }
 
     /**

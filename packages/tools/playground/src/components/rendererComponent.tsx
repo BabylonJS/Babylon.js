@@ -6,9 +6,10 @@ import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine } from "@dev/core";
+import { AddFileRevision } from "../tools/localSession";
 
-import type { Nullable, Scene } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
+import type { Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 
@@ -25,24 +26,32 @@ interface IRenderingComponentProps {
     globalState: GlobalState;
 }
 
-declare const Ammo: any;
-declare const Recast: any;
-declare const HavokPhysics: any;
-declare const HK: any;
+interface IRenderingComponentState {
+    preferInspector: boolean;
+}
 
-export class RenderingComponent extends React.Component<IRenderingComponentProps> {
-    private _engine: Nullable<Engine>;
-    private _scene: Nullable<Scene>;
+/**
+ *
+ */
+export class RenderingComponent extends React.Component<IRenderingComponentProps, IRenderingComponentState> {
+    /** Engine instance for current run */
+    private _engine!: Nullable<Engine>;
+    /** Active scene */
+    private _scene!: Nullable<Scene>;
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
-    private _babylonToolkitWasLoaded = false;
-    private _tmpErrorEvent?: ErrorEvent;
     private _inspectorFallback: boolean = false;
 
+    /**
+     * Create the rendering component.
+     * @param props Props
+     */
     public constructor(props: IRenderingComponentProps) {
         super(props);
-
         this._canvasRef = React.createRef();
+        this.state = {
+            preferInspector: false,
+        };
 
         // Create the global handleException
         (window as any).handleException = (e: Error) => {
@@ -61,7 +70,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if (!this._engine) {
                 return;
             }
-            this._downloadManager.download(this._engine);
+            this._downloadManager.downloadAsync();
         });
 
         this.props.globalState.onInspectorRequiredObservable.add(async (action) => {
@@ -101,6 +110,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
             }
 
+            this.setState({
+                preferInspector: action === "enable",
+            });
+
             if (isInspectorV1Enabled && (isInspectorV2ModeEnabled || action === "disable")) {
                 this._scene.debugLayer.hide();
             }
@@ -139,21 +152,9 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         window.addEventListener("error", this._saveError);
     }
 
-    private _saveError = (err: ErrorEvent) => {
-        this._tmpErrorEvent = err;
+    private _saveError = (_err: ErrorEvent) => {
+        // no-op placeholder retained for backward compatibility
     };
-
-    private async _loadScriptAsync(url: string): Promise<void> {
-        return await new Promise((resolve) => {
-            const script = document.createElement("script");
-            script.setAttribute("type", "text/javascript");
-            script.setAttribute("src", url);
-            script.onload = () => {
-                resolve();
-            };
-            document.head.appendChild(script);
-        });
-    }
 
     private _notifyError(message: string) {
         this.props.globalState.onErrorObservable.notifyObservers({
@@ -164,39 +165,20 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
     private _preventReentrancy = false;
 
-    private _sanitizeCode(code: string): string {
-        let result = code.normalize("NFKC");
+    private _lastEngineKind: "webgpu" | "webgl2" | "webgl" | null = null;
 
-        const hiddenCharsRegex = /[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g;
-        // eslint-disable-next-line no-control-regex
-        const controlCharsRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
-
-        // Visualizer markers for hidden characters
-        const markers: Record<string, string> = {
-            "\u200B": "⟦ZWSP⟧",
-            "\u200C": "⟦ZWNJ⟧",
-            "\u200D": "⟦ZWJ⟧",
-            "\u200E": "⟦LRM⟧",
-            "\u200F": "⟦RLM⟧",
-            "\u202A": "⟦LRE⟧",
-            "\u202B": "⟦RLE⟧",
-            "\u202C": "⟦PDF⟧",
-            "\u202D": "⟦LRO⟧",
-            "\u202E": "⟦RLO⟧",
-            "\u2060": "⟦WJ⟧",
-            "\u2066": "⟦LRI⟧",
-            "\u2067": "⟦RLI⟧",
-            "\u2068": "⟦FSI⟧",
-            "\u2069": "⟦PDI⟧",
-            "\uFEFF": "⟦BOM⟧",
-        };
-
-        result = result.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, (ch) => markers[ch] || `⟦U+${ch.charCodeAt(0).toString(16).toUpperCase()}⟧`);
-
-        result = result.replace(hiddenCharsRegex, "").replace(controlCharsRegex, "");
-
-        return result;
-    }
+    private _hardResetCanvas = () => {
+        const old = this._canvasRef.current!;
+        const parent = old.parentElement!;
+        const fresh = old.cloneNode(false) as HTMLCanvasElement;
+        fresh.id = old.id;
+        fresh.className = old.className;
+        fresh.width = old.width;
+        fresh.height = old.height;
+        parent.replaceChild(fresh, old);
+        (this._canvasRef as any).current = fresh;
+        (window as any).canvas = fresh;
+    };
 
     private async _compileAndRunAsync() {
         if (this._preventReentrancy) {
@@ -232,7 +214,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             while ((audioEngine = LastCreatedAudioEngine())) {
                 audioEngine.dispose();
             }
-        } catch (ex) {
+        } catch {
             // just ignore
         }
 
@@ -249,6 +231,37 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             const canvas = this._canvasRef.current!;
             globalObject.canvas = canvas;
 
+            // Define startRenderLoop once (PG_V2 + legacy) before any bootstrap uses it
+            globalObject.startRenderLoop = (engine: Engine, canvasEl: HTMLCanvasElement) => {
+                engine.runRenderLoop(() => {
+                    if (!this._scene || !this._engine) {
+                        return;
+                    }
+
+                    if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
+                        if (canvasEl.width !== canvasEl.clientWidth || canvasEl.height !== canvasEl.clientHeight) {
+                            this._engine.resize();
+                        }
+                    }
+
+                    if (this._scene.activeCamera || this._scene.frameGraph || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
+                        this._scene.render();
+                    }
+
+                    // Update FPS if camera is not a webxr camera
+                    if (!(this._scene.activeCamera && this._scene.activeCamera.getClassName && this._scene.activeCamera.getClassName() === "WebXRCamera")) {
+                        if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
+                            this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
+                        }
+                    }
+                });
+            };
+            const desiredKind: "webgpu" | "webgl2" | "webgl" = useWebGPU ? "webgpu" : forceWebGL1 ? "webgl" : "webgl2";
+
+            if (this._lastEngineKind && this._lastEngineKind !== desiredKind) {
+                this._hardResetCanvas();
+            }
+            this._lastEngineKind = desiredKind;
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function () {
                     try {
@@ -276,252 +289,95 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     });
                 };
             }
-
-            const zipVariables = "var engine = null;\r\nvar scene = null;\r\nvar sceneToRender = null;\r\n";
-            let defaultEngineZip = `var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: ${forceWebGL1}}); }`;
-
-            if (useWebGPU) {
-                defaultEngineZip = `var createDefaultEngine = async function() { 
-                    var engine = new BABYLON.WebGPUEngine(canvas);
-                    await engine.initAsync();
-                    return engine;
-                }`;
-            }
-
-            let code = await this.props.globalState.getCompiledCode();
-
-            if (!code) {
+            // Build the runnable (always V2)
+            // The architecture for runnables changed from text block source code in PG_V1 to a full module in PG_V2.
+            let runner;
+            try {
+                runner = await this.props.globalState.getRunnable!();
+                if (runner) {
+                    // Local file revision storage for #{snippetId}#local support
+                    AddFileRevision(this.props.globalState, runner!.getPackSnapshot().manifest);
+                }
+            } catch (e) {
+                (window as any).handleException(e as Error);
                 this._preventReentrancy = false;
+                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
                 return;
             }
 
-            code = this._sanitizeCode(code);
+            (window as any).engine = this._engine;
 
-            // Check for Ammo.js
-            let ammoInit = "";
-            if (code.indexOf("AmmoJSPlugin") > -1 && typeof Ammo === "function") {
-                ammoInit = "await Ammo();";
-            }
+            const createEngineAsync = async () => {
+                const desiredKind: "webgpu" | "webgl2" | "webgl" = useWebGPU ? "webgpu" : forceWebGL1 ? "webgl" : "webgl2";
 
-            // Check for Recast.js
-            let recastInit = "";
-            if (code.indexOf("RecastJSPlugin") > -1 && typeof Recast === "function") {
-                recastInit = "await Recast();";
-            }
-
-            let havokInit = "";
-            if (code.includes("HavokPlugin") && typeof HavokPhysics === "function" && typeof HK === "undefined") {
-                havokInit = "globalThis.HK = await HavokPhysics();";
-            }
-
-            let audioInit = "";
-            if (code.includes("BABYLON.Sound")) {
-                audioInit =
-                    "BABYLON.AbstractEngine.audioEngine = BABYLON.AbstractEngine.AudioEngineFactory(window.engine.getRenderingCanvas(), window.engine.getAudioContext(), window.engine.getAudioDestination());";
-            }
-
-            const babylonToolkit =
-                !this._babylonToolkitWasLoaded &&
-                (code.includes("BABYLON.Toolkit.SceneManager.InitializePlayground") ||
-                    code.includes("SM.InitializePlayground") ||
-                    location.href.indexOf("BabylonToolkit") !== -1 ||
-                    Utilities.ReadBoolFromStore("babylon-toolkit", false));
-            // Check for Babylon Toolkit
-            if (babylonToolkit) {
-                await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.js");
-                this._babylonToolkitWasLoaded = true;
-            }
-            Utilities.StoreBoolToStore("babylon-toolkit-used", babylonToolkit);
-
-            let createEngineFunction = "createDefaultEngine";
-            let createSceneFunction = "";
-            let checkCamera = true;
-            let checkSceneCount = true;
-
-            if (code.indexOf("createEngine") !== -1) {
-                createEngineFunction = "createEngine";
-            }
-
-            // Check for different typos
-            if (code.indexOf("delayCreateScene") !== -1) {
-                // delayCreateScene
-                createSceneFunction = "delayCreateScene";
-                checkCamera = false;
-            } else if (code.indexOf("createScene") !== -1) {
-                // createScene
-                createSceneFunction = "createScene";
-            } else if (code.indexOf("CreateScene") !== -1) {
-                // CreateScene
-                createSceneFunction = "CreateScene";
-            } else if (code.indexOf("createscene") !== -1) {
-                // createscene
-                createSceneFunction = "createscene";
-            }
-
-            if (!createSceneFunction) {
-                this._preventReentrancy = false;
-                return this._notifyError("You must provide a function named createScene.");
-            } else {
-                // Write an "initFunction" that creates engine and scene
-                // using the appropriate default or user-provided functions.
-                // (Use "window.x = foo" to allow later deletion, see above.)
-                code += `
-                window.initFunction = async function() {
-                    ${ammoInit}
-                    ${havokInit}
-                    ${recastInit}
-                    var asyncEngineCreation = async function() {
-                        try {
-                        return ${createEngineFunction}();
-                        } catch(e) {
-                        console.log("the available createEngine function failed. Creating the default engine instead");
-                        return createDefaultEngine();
-                        }
+                if (this._lastEngineKind && this._lastEngineKind !== desiredKind) {
+                    this._hardResetCanvas();
+                }
+                this._lastEngineKind = desiredKind;
+                let engine: Engine | null = null;
+                if (useWebGPU) {
+                    try {
+                        const wgpu = new WebGPUEngine(this._canvasRef.current!, { enableAllFeatures: true, setMaximumLimits: true, enableGPUDebugMarkers: true });
+                        await wgpu.initAsync();
+                        engine = wgpu as any;
+                    } catch {
+                        Logger.Warn("WebGPU not supported. Falling back to WebGL.");
                     }
-
-                    window.engine = await asyncEngineCreation();
-                    
-                    const engineOptions = window.engine.getCreationOptions?.();
-                    if (!engineOptions || engineOptions.audioEngine !== false) {
-                        ${audioInit}
-                    }`;
-                code += "\r\nif (!engine) throw 'engine should not be null.';";
-
-                globalObject.startRenderLoop = (engine: Engine, canvas: HTMLCanvasElement) => {
-                    engine.runRenderLoop(() => {
-                        if (!this._scene || !this._engine) {
-                            return;
-                        }
-
-                        if (this.props.globalState.runtimeMode === RuntimeMode.Editor && window.innerWidth > this.props.globalState.MobileSizeTrigger) {
-                            if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
-                                this._engine.resize();
-                            }
-                        }
-
-                        if (this._scene.activeCamera || this._scene.frameGraph || (this._scene.activeCameras && this._scene.activeCameras.length > 0)) {
-                            this._scene.render();
-                        }
-
-                        // Update FPS if camera is not a webxr camera
-                        if (!(this._scene.activeCamera && this._scene.activeCamera.getClassName && this._scene.activeCamera.getClassName() === "WebXRCamera")) {
-                            if (this.props.globalState.runtimeMode !== RuntimeMode.Full) {
-                                this.props.globalState.fpsElement.innerHTML = this._engine.getFps().toFixed() + " fps";
-                            }
-                        }
+                }
+                if (!engine) {
+                    engine = new Engine(this._canvasRef.current, true, {
+                        disableWebGL2Support: forceWebGL1,
+                        preserveDrawingBuffer: true,
+                        stencil: true,
                     });
-                };
-                code += "\r\nstartRenderLoop(engine, canvas);";
-
-                if (this.props.globalState.language === "JS") {
-                    code += "\r\n" + "window.scene = " + createSceneFunction + "();";
-                } else {
-                    const startCar = code.search("var " + createSceneFunction);
-                    code = code.substring(0, startCar) + code.substr(startCar + 4);
-                    code += "\n" + "window.scene = " + createSceneFunction + "();";
                 }
+                return engine;
+            };
+            (window as any).canvas = canvas;
 
-                code += `}`; // Finish "initFunction" definition.
-
-                this._tmpErrorEvent = undefined;
-
-                try {
-                    // Execute the code
-                    Utilities.FastEval(code);
-                } catch (e) {
-                    (window as any).handleException(e);
-                }
-
-                // Return early if there is a parameter to prevent auto-running
-                if (this.props.globalState.doNotRun) {
-                    this.props.globalState.doNotRun = false;
-                    this._preventReentrancy = false;
-                    this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
-                    return;
-                }
-
-                await globalObject.initFunction();
-
-                this._engine = globalObject.engine;
-
-                if (!this._engine) {
-                    this._preventReentrancy = false;
-                    return this._notifyError("createEngine function must return an engine.");
-                }
-
-                if (!globalObject.scene) {
-                    this._preventReentrancy = false;
-                    return this._notifyError("createScene function must return a scene.");
-                }
-
-                let sceneToRenderCode = "sceneToRender = scene";
-
-                // if scene returns a promise avoid checks
-                if (globalObject.scene.then) {
-                    checkCamera = false;
-                    checkSceneCount = false;
-                    sceneToRenderCode = "scene.then(returnedScene => { sceneToRender = returnedScene; });\r\n";
-                }
-
-                const createEngineZip = createEngineFunction === "createEngine" ? zipVariables : zipVariables + defaultEngineZip;
-
-                this.props.globalState.zipCode = createEngineZip + ";\r\n" + code + ";\r\ninitFunction().then(() => {" + sceneToRenderCode;
-            }
-
-            if (globalObject.scene.then) {
-                globalObject.scene.then((s: Scene) => {
-                    this._scene = s;
-                    globalObject.scene = this._scene;
-                });
-            } else {
-                this._scene = globalObject.scene as Scene;
-            }
-
-            if (checkSceneCount && this._engine.scenes.length === 0) {
+            let sceneResult: Scene | null = null;
+            let createdEngine: ThinEngine | null = null;
+            try {
+                [sceneResult, createdEngine] = await runner.run(createEngineAsync, canvas);
+                this._engine = createdEngine as Engine;
+            } catch (err) {
+                (window as any).handleException(err as Error);
                 this._preventReentrancy = false;
-                return this._notifyError("You must at least create a scene.");
+                this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+                return;
+            }
+            if (!sceneResult) {
+                this._preventReentrancy = false;
+                return this._notifyError("createScene export not found or returned null.");
             }
 
-            if (this._engine.scenes[0] && displayInspector && !globalObject.scene.then) {
+            this._scene = sceneResult as Scene;
+            (window as any).scene = this._scene;
+            (window as any).startRenderLoop(this._engine, canvas);
+
+            this._engine!.scenes[0]?.executeWhenReady(() => {
+                this.props.globalState.onRunExecutedObservable.notifyObservers();
+            });
+
+            this._preventReentrancy = false;
+            this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
+
+            // Rehydrate inspector
+            if (this.state.preferInspector && displayInspector) {
                 this.props.globalState.onInspectorRequiredObservable.notifyObservers("enable");
             }
-
-            if (checkCamera && this._engine.scenes[0].activeCamera == null) {
-                this._preventReentrancy = false;
-                return this._notifyError("You must at least create a camera.");
-            } else if (globalObject.scene.then) {
-                globalObject.scene.then(
-                    () => {
-                        if (this._engine!.scenes[0] && displayInspector) {
-                            this.props.globalState.onInspectorRequiredObservable.notifyObservers("enable");
-                        }
-                        this._engine!.scenes[0].executeWhenReady(() => {
-                            this.props.globalState.onRunExecutedObservable.notifyObservers();
-                        });
-                        this._preventReentrancy = false;
-                    },
-                    (err: any) => {
-                        // eslint-disable-next-line no-console
-                        console.error(err);
-                        this._preventReentrancy = false;
-                    }
-                );
-            } else {
-                this._engine.scenes[0].executeWhenReady(() => {
-                    this.props.globalState.onRunExecutedObservable.notifyObservers();
-                });
-                this._preventReentrancy = false;
-            }
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error(err, "Retrying if possible. If this error persists please notify the team.");
-            this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
+            return;
+        } catch (e) {
+            (window as any).handleException(e as Error);
             this._preventReentrancy = false;
         }
-        this.props.globalState.onDisplayWaitRingObservable.notifyObservers(false);
     }
 
+    /**
+     * Render canvas element
+     * @returns Canvas element
+     */
     public override render() {
-        return <canvas id="renderCanvas" ref={this._canvasRef}></canvas>;
+        return <canvas id="renderCanvas" ref={this._canvasRef} className={this.props.globalState.runtimeMode === RuntimeMode.Full ? "fullscreen" : ""}></canvas>;
     }
 }

@@ -87,7 +87,7 @@ export class ColorPicker extends Control {
             this._value.b = 1.0;
         }
 
-        this.onValueChangedObservable.notifyObservers(this._value);
+        this.onValueChangedObservable.notifyObservers(this._value, undefined, this, this);
     }
 
     /**
@@ -306,8 +306,8 @@ export class ColorPicker extends Control {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            context.shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
 
             context.fillRect(this._squareLeft, this._squareTop, this._squareSize, this._squareSize);
         }

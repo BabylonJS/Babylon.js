@@ -9,7 +9,10 @@ export type BasePrimitiveProps = {
      * Optional class name to apply custom styles to the component.
      */
     className?: string;
-
+    /**
+     * Optional style object to apply custom inline styles to the top-level HTML element.
+     */
+    style?: React.CSSProperties;
     /**
      * Optional title for the component, used for tooltips or accessibility.
      */

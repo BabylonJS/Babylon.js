@@ -13,6 +13,7 @@ export * from "./Passes/renderPass";
 export * from "./Tasks/Layers/glowLayerTask";
 export * from "./Tasks/Layers/highlightLayerTask";
 
+export * from "./Tasks/Misc/computeShaderTask";
 export * from "./Tasks/Misc/cullObjectsTask";
 export * from "./Tasks/Misc/executeTask";
 
@@ -38,6 +39,7 @@ export * from "./Tasks/PostProcesses/sharpenTask";
 export * from "./Tasks/PostProcesses/screenSpaceCurvatureTask";
 export * from "./Tasks/PostProcesses/ssao2RenderingPipelineTask";
 export * from "./Tasks/PostProcesses/ssrRenderingPipelineTask";
+export * from "./Tasks/PostProcesses/taaTask";
 export * from "./Tasks/PostProcesses/tonemapTask";
 
 export * from "./Tasks/Texture/clearTextureTask";
@@ -49,7 +51,6 @@ export * from "./Tasks/Rendering/csmShadowGeneratorTask";
 export * from "./Tasks/Rendering/geometryRendererTask";
 export * from "./Tasks/Rendering/objectRendererTask";
 export * from "./Tasks/Rendering/shadowGeneratorTask";
-export * from "./Tasks/Rendering/taaObjectRendererTask";
 export * from "./Tasks/Rendering/utilityLayerRendererTask";
 
 export * from "./frameGraph";

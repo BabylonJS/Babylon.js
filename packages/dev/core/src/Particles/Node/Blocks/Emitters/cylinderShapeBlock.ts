@@ -94,8 +94,8 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
 
             this._tempVector.normalize();
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformNormalToRef(this._tempVector, state.emitterInverseWorldMatrix!, this._tempVector);
+            if (state.emitterInverseWorldMatrix) {
+                Vector3.TransformNormalToRef(this._tempVector, state.emitterInverseWorldMatrix, this._tempVector);
             }
 
             const randY = RandomRange(-directionRandomizer / 2, directionRandomizer / 2);
@@ -108,10 +108,10 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
             this._tempVector.z = Math.cos(angle);
             this._tempVector.normalize();
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformNormalFromFloatsToRef(this._tempVector.x, this._tempVector.y, this._tempVector.z, state.emitterWorldMatrix!, particle.direction);
-            } else {
+            if (system.isLocal) {
                 particle.direction.copyFrom(this._tempVector);
+            } else {
+                Vector3.TransformNormalFromFloatsToRef(this._tempVector.x, this._tempVector.y, this._tempVector.z, state.emitterWorldMatrix!, particle.direction);
             }
 
             particle._initialDirection = particle.direction.clone();
@@ -132,11 +132,11 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
             const xPos = positionRadius * Math.cos(angle);
             const zPos = positionRadius * Math.sin(angle);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformCoordinatesFromFloatsToRef(xPos, yPos, zPos, state.emitterWorldMatrix!, particle.position);
-            } else {
+            if (system.isLocal) {
                 particle.position.copyFromFloats(xPos, yPos, zPos);
                 particle.position.addInPlace(state.emitterPosition!);
+            } else {
+                Vector3.TransformCoordinatesFromFloatsToRef(xPos, yPos, zPos, state.emitterWorldMatrix!, particle.position);
             }
         };
 

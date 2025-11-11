@@ -14,6 +14,7 @@ import type { ThinEngine } from "../Engines/thinEngine";
 import { Logger } from "../Misc/logger";
 import { BindLogDepth } from "../Materials/materialHelper.functions.pure";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { Vector3 } from "../Maths/math.vector";
 
 /**
  * Options for the SpriteRenderer
@@ -343,6 +344,7 @@ export class SpriteRenderer {
 
         let offset = 0;
         let noSprite = true;
+        const floatingOriginOffset = this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly;
         for (let index = 0; index < max; index++) {
             const sprite = sprites[index];
             if (!sprite || !sprite.isVisible) {
@@ -353,11 +355,11 @@ export class SpriteRenderer {
             sprite._animate(deltaTime);
             const baseSize = this.texture.getBaseSize(); // This could be change by the user inside the animate callback (like onAnimationEnd)
 
-            this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize, useRightHandedSystem, customSpriteUpdate);
+            this._appendSpriteVertex(offset++, sprite, 0, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset);
             if (!this._useInstancing) {
-                this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize, useRightHandedSystem, customSpriteUpdate);
-                this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize, useRightHandedSystem, customSpriteUpdate);
-                this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize, useRightHandedSystem, customSpriteUpdate);
+                this._appendSpriteVertex(offset++, sprite, 1, 0, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset);
+                this._appendSpriteVertex(offset++, sprite, 1, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset);
+                this._appendSpriteVertex(offset++, sprite, 0, 1, baseSize, useRightHandedSystem, customSpriteUpdate, floatingOriginOffset);
             }
         }
 
@@ -446,7 +448,8 @@ export class SpriteRenderer {
         offsetY: number,
         baseSize: ISize,
         useRightHandedSystem: boolean,
-        customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>
+        customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void>,
+        floatingOriginOffset: Vector3
     ): void {
         let arrayOffset = index * this._vertexBufferSize;
 
@@ -478,9 +481,9 @@ export class SpriteRenderer {
         }
 
         // Positions
-        this._vertexData[arrayOffset] = sprite.position.x;
-        this._vertexData[arrayOffset + 1] = sprite.position.y;
-        this._vertexData[arrayOffset + 2] = sprite.position.z;
+        this._vertexData[arrayOffset] = sprite.position.x - floatingOriginOffset.x;
+        this._vertexData[arrayOffset + 1] = sprite.position.y - floatingOriginOffset.y;
+        this._vertexData[arrayOffset + 2] = sprite.position.z - floatingOriginOffset.z;
         this._vertexData[arrayOffset + 3] = sprite.angle;
         // Options
         this._vertexData[arrayOffset + 4] = sprite.width;

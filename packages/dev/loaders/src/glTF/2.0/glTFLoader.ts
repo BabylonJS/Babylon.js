@@ -436,8 +436,8 @@ export class GLTFLoader implements IGLTFLoader {
                 if (!this.parent.skipMaterials && this._pbrMaterialImpl == null) {
                     if (this.parent.useOpenPBR || this.isExtensionUsed("KHR_materials_openpbr")) {
                         this._pbrMaterialImpl = {
-                            materialClass: (await import("core/Materials/PBR/openPbrMaterial")).OpenPBRMaterial,
-                            adapterClass: (await import("./openPbrMaterialLoadingAdapter")).OpenPBRMaterialLoadingAdapter,
+                            materialClass: (await import("core/Materials/PBR/openpbrMaterial")).OpenPBRMaterial,
+                            adapterClass: (await import("./openpbrMaterialLoadingAdapter")).OpenPBRMaterialLoadingAdapter,
                         };
                     } else {
                         this._pbrMaterialImpl = {

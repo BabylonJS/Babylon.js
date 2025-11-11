@@ -10,6 +10,7 @@ import type {
     Scene,
     WritableObject,
     IShadowLight,
+    INodeRenderGraphCustomBlockDescription,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
@@ -48,6 +49,9 @@ export class NodeRenderGraph {
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
+
+    /** Description of custom blocks to use in the node render graph editor */
+    public static CustomBlockDescriptions: INodeRenderGraphCustomBlockDescription[] = [];
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSNODERENDERGRAPHEDITOR = this._getGlobalNodeRenderGraphEditor();
@@ -272,6 +276,7 @@ export class NodeRenderGraph {
     private _createNodeEditor(additionalConfig?: any) {
         const nodeEditorConfig: any = {
             nodeRenderGraph: this,
+            customBlockDescriptions: NodeRenderGraph.CustomBlockDescriptions,
             ...additionalConfig,
         };
         this.BJSNODERENDERGRAPHEDITOR.NodeRenderGraphEditor.Show(nodeEditorConfig);
@@ -361,12 +366,16 @@ export class NodeRenderGraph {
      * Returns a promise that resolves when the node render graph is ready to be executed
      * This method must be called after the graph has been built (NodeRenderGraph.build called)!
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 5000)
      * @returns The promise that resolves when the graph is ready
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
-        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
+    public whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
+        this._frameGraph.pausedExecution = true;
+        // eslint-disable-next-line github/no-then
+        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout).then(() => {
+            this._frameGraph.pausedExecution = false;
+        });
     }
 
     /**
@@ -509,7 +518,7 @@ export class NodeRenderGraph {
                 this.editorData.locations = locations;
             }
 
-            const blockMap: number[] = [];
+            const blockMap: { [key: number]: number } = {};
 
             for (const key in map) {
                 blockMap[key] = map[key].uniqueId;

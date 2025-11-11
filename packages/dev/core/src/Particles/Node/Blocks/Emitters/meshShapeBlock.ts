@@ -158,10 +158,10 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.systemContext = system;
 
             if (this.useMeshNormalsForDirection && this._normals) {
-                if (state.isEmitterTransformNode) {
-                    Vector3.TransformNormalToRef(this._storedNormal, state.emitterWorldMatrix!, particle.direction);
-                } else {
+                if (system.isLocal) {
                     particle.direction.copyFrom(this._storedNormal);
+                } else {
+                    Vector3.TransformNormalToRef(this._storedNormal, state.emitterWorldMatrix!, particle.direction);
                 }
                 return;
             }
@@ -173,10 +173,10 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
             const randY = RandomRange(direction1.y, direction2.y);
             const randZ = RandomRange(direction1.z, direction2.z);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
-            } else {
+            if (system.isLocal) {
                 particle.direction.copyFromFloats(randX, randY, randZ);
+            } else {
+                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
             }
 
             particle._initialDirection = particle.direction.clone();
@@ -212,10 +212,10 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
                 Vector3.TransformCoordinatesFromFloatsToRef(randomVertex.x, randomVertex.y, randomVertex.z, this.mesh.getWorldMatrix(), randomVertex);
             }
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformCoordinatesFromFloatsToRef(randomVertex.x, randomVertex.y, randomVertex.z, state.emitterWorldMatrix!, particle.position);
-            } else {
+            if (system.isLocal) {
                 particle.position.copyFromFloats(randomVertex.x, randomVertex.y, randomVertex.z);
+            } else {
+                Vector3.TransformCoordinatesFromFloatsToRef(randomVertex.x, randomVertex.y, randomVertex.z, state.emitterWorldMatrix!, particle.position);
             }
 
             if (this.useMeshNormalsForDirection && this._normals) {

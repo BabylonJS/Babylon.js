@@ -1080,21 +1080,29 @@ declare module BABYLON.GLTF2 {
         };
     }
 
+    /**
+     * Interfaces from the KHR_materials_clearcoat extension
+     */
     /** @internal */
-    interface IKHRMaterialsClearcoatIor {
-        clearcoatIor?: number;
-    }
-
-    /** @internal */
-    interface IKHRMaterialsClearcoatDarkening {
-        clearcoatDarkeningFactor?: number;
-        clearcoatDarkeningTexture?: ITextureInfo;
-    }
-
-    /** @internal */
-    interface IKHRMaterialsClearcoatColor {
-        clearcoatColorFactor?: number[];
-        clearcoatColorTexture?: ITextureInfo;
+    interface IKHRMaterialsCoat {
+        coatFactor?: number;
+        coatTexture?: ITextureInfo;
+        coatRoughnessFactor?: number;
+        coatRoughnessTexture?: ITextureInfo;
+        coatNormalTexture?: IMaterialNormalTextureInfo;
+        coatIor?: number;
+        coatDarkeningFactor?: number;
+        coatColorFactor?: number[];
+        coatColorTexture?: ITextureInfo;
+        coatAnisotropyStrength?: number;
+        coatAnisotropyRotation?: number;
+        coatAnisotropyTexture?: ITextureInfo;
+        /**
+         * Dictionary object with extension-specific objects
+         */
+        extensions?: {
+            [key: string]: any;
+        };
     }
 
     /** @internal */
@@ -1231,6 +1239,20 @@ declare module BABYLON.GLTF2 {
         sheenColorTexture?: ITextureInfo;
         sheenRoughnessFactor?: number;
         sheenRoughnessTexture?: ITextureInfo;
+    }
+
+    /**
+     * Interfaces from the KHR_materials_fuzz extension
+     */
+
+    /** @internal */
+    interface IKHRMaterialsFuzz {
+        fuzzFactor?: number;
+        fuzzTexture?: ITextureInfo;
+        fuzzColorFactor?: number[];
+        fuzzColorTexture?: ITextureInfo;
+        fuzzRoughnessFactor?: number;
+        fuzzRoughnessTexture?: ITextureInfo;
     }
 
     /**
@@ -1434,9 +1456,9 @@ declare module BABYLON.GLTF2 {
      */
 
     /** @internal */
-    const enum EXTLightsArea_LightShape {
+    const enum EXTLightsArea_LightType {
         RECT = "rect",
-        DISK = "disk"
+        DISK = "disk",
     }
 
     /** @internal */
@@ -1446,13 +1468,13 @@ declare module BABYLON.GLTF2 {
 
     /** @internal */
     interface IEXTLightsArea_Light extends IChildRootProperty {
-        shape: EXTLightsArea_LightShape;
+        type: EXTLightsArea_LightType;
         color?: number[];
         intensity?: number;
-        type?: "area";
-        width?: number;
-        height?: number;
-        radius?: number;
+        size?: number;
+        rect?: {
+            aspect: number;
+        };
     }
 
     /** @internal */

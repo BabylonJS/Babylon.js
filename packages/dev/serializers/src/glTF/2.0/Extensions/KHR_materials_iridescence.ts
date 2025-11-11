@@ -3,7 +3,7 @@ import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 
 const NAME = "KHR_materials_iridescence";

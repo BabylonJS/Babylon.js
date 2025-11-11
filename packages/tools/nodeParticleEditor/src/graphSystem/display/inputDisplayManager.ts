@@ -119,6 +119,12 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.SpriteCellStart:
                     value = "Sprite Cell Start";
                     break;
+                case NodeParticleContextualSources.ColorStep:
+                    value = "Color Step";
+                    break;
+                case NodeParticleContextualSources.ScaledColorStep:
+                    value = "Scaled Color Step";
+                    break;
             }
         } else {
             switch (inputBlock.type) {
