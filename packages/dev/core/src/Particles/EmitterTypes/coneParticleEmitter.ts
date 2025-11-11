@@ -1,6 +1,6 @@
 import { DeepCopier } from "../../Misc/deepCopier";
 import type { Matrix } from "../../Maths/math.vector";
-import { Vector3, TmpVectors } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import { RandomRange } from "../../Maths/math.scalar.functions";
 import type { Particle } from "../../Particles/particle";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
@@ -87,19 +87,21 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the direction should be set in local space
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        if (isLocal) {
-            TmpVectors.Vector3[0].copyFrom(particle._localPosition!).normalize();
-        } else {
-            particle.position.subtractToRef(worldMatrix.getTranslation(), TmpVectors.Vector3[0]).normalize();
-        }
-
+        const direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
         const randX = RandomRange(0, this.directionRandomizer);
         const randY = RandomRange(0, this.directionRandomizer);
         const randZ = RandomRange(0, this.directionRandomizer);
-        directionToUpdate.x = TmpVectors.Vector3[0].x + randX;
-        directionToUpdate.y = TmpVectors.Vector3[0].y + randY;
-        directionToUpdate.z = TmpVectors.Vector3[0].z + randZ;
-        directionToUpdate.normalize();
+        direction.x += randX;
+        direction.y += randY;
+        direction.z += randZ;
+        direction.normalize();
+
+        if (isLocal) {
+            directionToUpdate.copyFrom(direction);
+            return;
+        }
+
+        Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
     }
 
     /**
