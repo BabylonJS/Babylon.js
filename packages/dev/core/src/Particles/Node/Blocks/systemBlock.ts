@@ -191,7 +191,6 @@ export class SystemBlock extends NodeParticleBlock {
     public createSystem(state: NodeParticleBuildState): ParticleSystem {
         state.capacity = this.capacity;
         state.buildId = this._buildId++;
-        state.isLocal = this.isLocal;
 
         this.build(state);
 

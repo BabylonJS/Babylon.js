@@ -96,7 +96,7 @@ export class BoxShapeBlock extends NodeParticleBlock implements IShapeBlock {
             const randY = RandomRange(direction1.y, direction2.y);
             const randZ = RandomRange(direction1.z, direction2.z);
 
-            if (state.isLocal) {
+            if (system.isLocal) {
                 particle.direction.copyFromFloats(randX, randY, randZ);
             } else {
                 Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
@@ -116,7 +116,7 @@ export class BoxShapeBlock extends NodeParticleBlock implements IShapeBlock {
             const randY = RandomRange(minEmitBox.y, maxEmitBox.y);
             const randZ = RandomRange(minEmitBox.z, maxEmitBox.z);
 
-            if (state.isLocal) {
+            if (system.isLocal) {
                 particle.position.copyFromFloats(randX, randY, randZ);
             } else {
                 Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
