@@ -141,7 +141,7 @@ export class Inspector {
     }
 
     public static get IsVisible(): boolean {
-        return !this._CurrentInspectorToken;
+        return !!this._CurrentInspectorToken;
     }
 
     public static Show(scene: Scene, userOptions: Partial<InspectorV1Options>) {
