@@ -1,16 +1,18 @@
-import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Mesh } from "../../../../Meshes/mesh";
-import { VertexData } from "../../../../Meshes/mesh.vertexData";
-import type { FloatArray, IndicesArray, Nullable } from "../../../../types";
-import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
-import { NodeParticleBlock } from "../../nodeParticleBlock";
-import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import type { FloatArray, IndicesArray, Nullable } from "core/types";
+import type { Mesh } from "core/Meshes/mesh";
+import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { Particle } from "core/Particles/particle";
+import type { IShapeBlock } from "./IShapeBlock";
+
+import { RegisterClass } from "core/Misc/typeStore";
+import { VertexData } from "core/Meshes/mesh.vertexData";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { TmpVectors, Vector3, Vector4 } from "core/Maths/math.vector";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import type { IShapeBlock } from "./IShapeBlock";
+import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Defines a block used to generate particle shape from mesh geometry data
@@ -34,7 +36,7 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
      * Gets or sets a boolean indicating if the mesh normals should be used for particle direction
      */
     @editableInPropertyPage("Use normals for direction", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
-    public useMeshNormalsForDirection = false;
+    public useMeshNormalsForDirection = true;
 
     /**
      * Gets or sets a boolean indicating if the mesh colors should be used for particle color
@@ -183,6 +185,9 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
         };
 
         system._positionCreation.process = (particle: Particle) => {
+            state.particleContext = particle;
+            state.systemContext = system;
+
             if (!this._indices || !this._positions) {
                 return;
             }
@@ -217,6 +222,8 @@ export class MeshShapeBlock extends NodeParticleBlock implements IShapeBlock {
             } else {
                 Vector3.TransformCoordinatesFromFloatsToRef(randomVertex.x, randomVertex.y, randomVertex.z, state.emitterWorldMatrix!, particle.position);
             }
+
+            _CreateLocalPositionData(particle);
 
             if (this.useMeshNormalsForDirection && this._normals) {
                 Vector3.FromArrayToRef(this._normals, faceIndexA * 3, vertexA);
