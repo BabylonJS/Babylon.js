@@ -1,15 +1,18 @@
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { Particle } from "core/Particles/particle";
+import type { IShapeBlock } from "./IShapeBlock";
+
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { Vector3 } from "core/Maths/math.vector";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import type { IShapeBlock } from "./IShapeBlock";
+import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Block used to provide a flow of particles emitted from a sphere shape.
+ * DirectionRandomizer will be used for the particles initial direction unless both direction1 and direction2 are connected.
  */
 export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
     /**
@@ -23,6 +26,8 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
         this.registerInput("radius", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("radiusRange", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0, 1);
         this.registerInput("directionRandomizer", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0, 1);
+        this.registerInput("direction1", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("direction2", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -63,6 +68,20 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
     }
 
     /**
+     * Gets the direction1 input component
+     */
+    public get direction1(): NodeParticleConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
+     * Gets the direction2 input component
+     */
+    public get direction2(): NodeParticleConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeParticleConnectionPoint {
@@ -80,21 +99,37 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.particleContext = particle;
             state.systemContext = system;
 
-            const directionRandomizer = this.directionRandomizer.getConnectedValue(state);
+            // We always use directionRandomizer unless both directions are connected
+            if (this.direction1.isConnected === false || this.direction2.isConnected === false) {
+                const directionRandomizer = this.directionRandomizer.getConnectedValue(state) as number;
 
-            const direction = particle.position.subtract(state.emitterPosition!).normalize();
-            const randX = RandomRange(0, directionRandomizer);
-            const randY = RandomRange(0, directionRandomizer);
-            const randZ = RandomRange(0, directionRandomizer);
-            direction.x += randX;
-            direction.y += randY;
-            direction.z += randZ;
-            direction.normalize();
+                const direction = particle.position.subtract(state.emitterPosition!).normalize();
+                const randX = RandomRange(0, directionRandomizer);
+                const randY = RandomRange(0, directionRandomizer);
+                const randZ = RandomRange(0, directionRandomizer);
+                direction.x += randX;
+                direction.y += randY;
+                direction.z += randZ;
+                direction.normalize();
 
-            if (system.isLocal) {
-                particle.direction.copyFromFloats(randX, randY, randZ);
+                if (system.isLocal) {
+                    particle.direction.copyFromFloats(direction.x, direction.y, direction.z);
+                } else {
+                    Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, state.emitterWorldMatrix!, particle.direction);
+                }
             } else {
-                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
+                const direction1 = this.direction1.getConnectedValue(state) as Vector3;
+                const direction2 = this.direction2.getConnectedValue(state) as Vector3;
+
+                const randX = RandomRange(direction1.x, direction2.x);
+                const randY = RandomRange(direction1.y, direction2.y);
+                const randZ = RandomRange(direction1.z, direction2.z);
+
+                if (system.isLocal) {
+                    particle.direction.copyFromFloats(randX, randY, randZ);
+                } else {
+                    Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
+                }
             }
 
             particle._initialDirection = particle.direction.clone();
@@ -104,8 +139,8 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.particleContext = particle;
             state.systemContext = system;
 
-            const radius = this.radius.getConnectedValue(state);
-            const radiusRange = this.radiusRange.getConnectedValue(state);
+            const radius = this.radius.getConnectedValue(state) as number;
+            const radiusRange = this.radiusRange.getConnectedValue(state) as number;
 
             const randRadius = radius - RandomRange(0, radius * radiusRange);
             const v = RandomRange(0, 1.0);
@@ -117,10 +152,11 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
             if (system.isLocal) {
                 particle.position.copyFromFloats(randX, randY, randZ);
-                particle.position.addInPlace(state.emitterPosition!);
             } else {
                 Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
             }
+
+            _CreateLocalPositionData(particle);
         };
 
         this.output._storedValue = system;

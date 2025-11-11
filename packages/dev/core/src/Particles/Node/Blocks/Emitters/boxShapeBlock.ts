@@ -1,12 +1,13 @@
+import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import type { Particle } from "core/Particles/particle";
+import type { IShapeBlock } from "./IShapeBlock";
+
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import { Vector3 } from "core/Maths/math.vector";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { Particle } from "core/Particles/particle";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import type { IShapeBlock } from "./IShapeBlock";
 import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**

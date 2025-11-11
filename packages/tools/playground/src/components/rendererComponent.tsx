@@ -13,12 +13,12 @@ import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 
-let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/inspector") & typeof import("inspector-v2/backCompat")> | null = null;
+let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/inspector") & typeof import("inspector-v2/legacy/inspector")> | null = null;
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 function ImportInspectorV2() {
     if (!InspectorV2ModulePromise) {
         const inspectorModulePromise = import("inspector-v2/inspector");
-        const backCompatModulePromise = import("inspector-v2/backCompat");
+        const backCompatModulePromise = import("inspector-v2/legacy/inspector");
         InspectorV2ModulePromise = Promise.all([inspectorModulePromise, backCompatModulePromise]).then(([inspectorModule, backCompatModule]) => {
             return {
                 ...inspectorModule,
