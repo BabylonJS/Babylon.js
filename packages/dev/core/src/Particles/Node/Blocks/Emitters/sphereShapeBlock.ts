@@ -172,6 +172,20 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
         this.output._storedValue = system;
     }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.isHemispheric = this.isHemispheric;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.isHemispheric = serializationObject.isHemispheric;
+    }
 }
 
 RegisterClass("BABYLON.SphereShapeBlock", SphereShapeBlock);
