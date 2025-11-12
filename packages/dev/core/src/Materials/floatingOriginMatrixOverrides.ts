@@ -154,6 +154,25 @@ function GetOffsetMatrix(uniformName: string, mat: IMatrixLike): IMatrixLike {
         case "worldViewProjection":
             return OffsetWorldViewProjectionToRef(offset, mat, scene.getTransformMatrix(), scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
         default:
+            // Node material blocks uniforms are formatted u_BlockName, with trailing numbers if there are multiple blocks of the same name
+            // Check u_ first so that we can early out for non-node material uniforms
+            if (uniformName.startsWith("u_")) {
+                if (uniformName.startsWith("u_WorldViewProjection")) {
+                    return OffsetWorldViewProjectionToRef(offset, mat, scene.getTransformMatrix(), scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
+                }
+                if (uniformName.startsWith("u_ViewProjection")) {
+                    return OffsetViewProjectionToRef(offset, scene.getViewMatrix(), scene.getProjectionMatrix(), TempFinalMat);
+                }
+                if (uniformName.startsWith("u_WorldView")) {
+                    return OffsetWorldViewToRef(offset, mat, scene.getViewMatrix(), TempFinalMat);
+                }
+                if (uniformName.startsWith("u_World")) {
+                    return OffsetWorldToRef(offset, mat, TempFinalMat);
+                }
+                if (uniformName.startsWith("u_View")) {
+                    return OffsetViewToRef(offset, mat, TempFinalMat);
+                }
+            }
             return mat;
     }
 }
