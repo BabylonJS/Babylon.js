@@ -172,6 +172,20 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
             return 1;
         }
     }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.emitFromSpawnPointOnly = this.emitFromSpawnPointOnly;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly;
+    }
 }
 
 RegisterClass("BABYLON.ConeShapeBlock", ConeShapeBlock);
