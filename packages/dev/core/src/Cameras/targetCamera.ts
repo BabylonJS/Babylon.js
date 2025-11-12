@@ -500,12 +500,9 @@ export class TargetCamera extends Camera {
             const parentWorldMatrix = this.parent.getWorldMatrix();
             this._viewMatrix.invert();
             this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
-            this._viewMatrix.getTranslationToRef(this._globalPosition);
             this._viewMatrix.invert();
 
             this._markSyncedWithParent();
-        } else {
-            this._globalPosition.copyFrom(position);
         }
     }
 
