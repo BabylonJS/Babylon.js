@@ -17,7 +17,10 @@ import { _CreateLocalPositionData } from "./emitters.functions";
 export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
     /**
      * Gets or sets a boolean indicating if the system should emit only from the spawn point
+<<<<<<< HEAD
      * DirectionRandomizer will be used for the particles initial direction unless both direction1 and direction2 are connected.
+=======
+>>>>>>> master
      */
     @editableInPropertyPage("Emit from spawn point only", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public emitFromSpawnPointOnly = false;
@@ -85,6 +88,7 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
     /**
      * Gets the directionRandomizer input component
+<<<<<<< HEAD
      */
     public get directionRandomizer(): NodeParticleConnectionPoint {
         return this._inputs[5];
@@ -95,6 +99,11 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
      */
     public get direction1(): NodeParticleConnectionPoint {
         return this._inputs[6];
+=======
+     */
+    public get directionRandomizer(): NodeParticleConnectionPoint {
+        return this._inputs[5];
+>>>>>>> master
     }
 
     /**
