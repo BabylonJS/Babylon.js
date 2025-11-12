@@ -7,6 +7,7 @@ import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
 import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
+import type { CustomParticleEmitter } from "core/Particles/EmitterTypes/customParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
 import type { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphericParticleEmitter";
 import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
@@ -32,6 +33,7 @@ import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { ConeShapeBlock } from "./Blocks/Emitters/coneShapeBlock";
 import { CylinderShapeBlock } from "./Blocks/Emitters/cylinderShapeBlock";
+import { CustomShapeBlock } from "./Blocks/Emitters/customShapeBlock";
 import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
 import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
@@ -210,8 +212,14 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             break;
         }
         case "CustomParticleEmitter": {
-            // Custom emitter is not supported in nodes yet
-            throw new Error("CustomParticleEmitter is not supported in Node Particle System.");
+            const source = emitter as CustomParticleEmitter;
+            shapeBlock = new CustomShapeBlock("Custom Shape");
+
+            const target = shapeBlock as CustomShapeBlock;
+            target.particlePositionGenerator = source.particlePositionGenerator;
+            target.particleDestinationGenerator = source.particleDestinationGenerator;
+            target.particleDirectionGenerator = source.particleDirectionGenerator;
+            break;
         }
         case "CylinderParticleEmitter": {
             const source = emitter as CylinderParticleEmitter;
