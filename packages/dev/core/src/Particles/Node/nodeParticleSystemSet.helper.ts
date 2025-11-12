@@ -14,7 +14,6 @@ import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshPartic
 import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
-import type { ParticleGeneratorFunction } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
 import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
 
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -503,7 +502,7 @@ function _CreateDeltaModifiedInput(name: string, value: Vector3 | NodeParticleCo
 
 function _CreateAndConnectInput(
     inputBlockName: string,
-    value: number | Vector2 | Vector3 | Color4 | ParticleGeneratorFunction,
+    value: number | Vector2 | Vector3 | Color4,
     targetToConnectTo: NodeParticleConnectionPoint,
     inputType?: NodeParticleBlockConnectionPointTypes
 ): void {
