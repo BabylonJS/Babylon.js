@@ -7,11 +7,13 @@ import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
 import type { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
+import type { CustomParticleEmitter } from "core/Particles/EmitterTypes/customParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
 import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import type { ParticleGeneratorFunction } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
 import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
 
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -31,6 +33,7 @@ import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { ConeShapeBlock } from "./Blocks/Emitters/coneShapeBlock";
 import { CylinderShapeBlock } from "./Blocks/Emitters/cylinderShapeBlock";
+import { CustomShapeBlock } from "./Blocks/Emitters/customShapeBlock";
 import { MeshShapeBlock } from "./Blocks/Emitters/meshShapeBlock";
 import { PointShapeBlock } from "./Blocks/Emitters/pointShapeBlock";
 import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
@@ -195,8 +198,14 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             break;
         }
         case "CustomParticleEmitter": {
-            // Custom emitter is not supported in nodes yet
-            throw new Error("CustomParticleEmitter is not supported in Node Particle System.");
+            const source = emitter as CustomParticleEmitter;
+            shapeBlock = new CustomShapeBlock("Custom Shape");
+
+            const target = shapeBlock as CustomShapeBlock;
+            _CreateAndConnectInput("Position generator", source.particlePositionGenerator, target.particlePositionGenerator, NodeParticleBlockConnectionPointTypes.System);
+            _CreateAndConnectInput("Destination generator", source.particleDestinationGenerator, target.particleDestinationGenerator, NodeParticleBlockConnectionPointTypes.System);
+            _CreateAndConnectInput("Direction generator", source.particleDirectionGenerator, target.particleDirectionGenerator, NodeParticleBlockConnectionPointTypes.System);
+            break;
         }
         case "CylinderParticleEmitter": {
             const source = emitter as CylinderParticleEmitter;
@@ -485,7 +494,7 @@ function _CreateDeltaModifiedInput(name: string, value: Vector3 | NodeParticleCo
 
 function _CreateAndConnectInput(
     inputBlockName: string,
-    value: number | Vector2 | Vector3 | Color4,
+    value: number | Vector2 | Vector3 | Color4 | ParticleGeneratorFunction,
     targetToConnectTo: NodeParticleConnectionPoint,
     inputType?: NodeParticleBlockConnectionPointTypes
 ): void {
