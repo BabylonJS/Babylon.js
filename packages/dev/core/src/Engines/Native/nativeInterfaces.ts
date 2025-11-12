@@ -414,14 +414,34 @@ interface INativeDataStreamConstructor {
     readonly VALIDATION_BOOLEAN: number;
 }
 
+type OpaqueHandle<T extends symbol> = unknown & { readonly [K in T]: never };
+
+declare const PerformanceCounterHandleIdentity: unique symbol;
+type PerformanceCounterHandle = OpaqueHandle<typeof PerformanceCounterHandleIdentity>;
+
 /** @internal */
 export interface INative {
+    // NativeEngine plugin
     Engine: INativeEngineConstructor;
-    Camera: INativeCameraConstructor;
-    Canvas: INativeCanvasConstructor;
-    Image: INativeImageConstructor;
-    Path2D: INativePath2DConstructor;
-    XMLHttpRequest: any; // TODO: how to do this?
-    DeviceInputSystem: IDeviceInputSystemConstructor;
     NativeDataStream: INativeDataStreamConstructor;
+
+    // NativeCamera plugin
+    Camera?: INativeCameraConstructor;
+
+    // NativeCanvas plugin
+    Canvas?: INativeCanvasConstructor;
+    Image?: INativeImageConstructor;
+    Path2D?: INativePath2DConstructor;
+
+    // Native XMLHttpRequest polyfill
+    XMLHttpRequest?: typeof XMLHttpRequest;
+
+    // NativeInput plugin
+    DeviceInputSystem?: IDeviceInputSystemConstructor;
+
+    // NativeTracing plugin
+    enablePerformanceLogging(): void;
+    disablePerformanceLogging(): void;
+    startPerformanceCounter(counter: string): PerformanceCounterHandle;
+    endPerformanceCounter(counter: PerformanceCounterHandle): void;
 }

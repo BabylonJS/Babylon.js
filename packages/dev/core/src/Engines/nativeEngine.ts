@@ -2614,7 +2614,7 @@ export class NativeEngine extends Engine {
      * @returns IImage interface
      */
     public override createCanvasImage(): IImage {
-        if (!_native.Canvas) {
+        if (!_native.Image) {
             throw new Error("Native Canvas plugin not available.");
         }
         const image = new _native.Image();
@@ -2627,7 +2627,7 @@ export class NativeEngine extends Engine {
      * @param d SVG path string
      */
     public override createCanvasPath2D(d?: string): IPath2D {
-        if (!_native.Canvas) {
+        if (!_native.Path2D) {
             throw new Error("Native Canvas plugin not available.");
         }
         const path2d = new _native.Path2D(d);
