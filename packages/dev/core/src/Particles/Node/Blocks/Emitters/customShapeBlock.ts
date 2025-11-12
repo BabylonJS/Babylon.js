@@ -18,6 +18,13 @@ export type ParticleGeneratorFunction = (index: number, particle: Nullable<Parti
  * Block used to provide a flow of particles emitted from a custom position.
  */
 export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
+    /** The particle position generator function */
+    public particlePositionGenerator: ParticleGeneratorFunction = EmptyGeneratorFunc;
+    /** The particle destination generator function */
+    public particleDestinationGenerator: ParticleGeneratorFunction = EmptyGeneratorFunc;
+    /** The particle direction generator function */
+    public particleDirectionGenerator: ParticleGeneratorFunction = EmptyGeneratorFunc;
+
     /**
      * Create a new CustomShapeBlock
      * @param name defines the block name
@@ -26,9 +33,6 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
         super(name);
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
-        this.registerInput("particlePositionGenerator", NodeParticleBlockConnectionPointTypes.System, true);
-        this.registerInput("particleDestinationGenerator", NodeParticleBlockConnectionPointTypes.System, true);
-        this.registerInput("particleDirectionGenerator", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -45,27 +49,6 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
      */
     public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
-    }
-
-    /**
-     * Gets the position generator input component
-     */
-    public get particlePositionGenerator(): NodeParticleConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the destination generator input component
-     */
-    public get particleDestinationGenerator(): NodeParticleConnectionPoint {
-        return this._inputs[2];
-    }
-
-    /**
-     * Gets the direction generator input component
-     */
-    public get particleDirectionGenerator(): NodeParticleConnectionPoint {
-        return this._inputs[3];
     }
 
     /**
@@ -86,14 +69,12 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.particleContext = particle;
             state.systemContext = system;
 
-            const directionGenerator = this.particleDirectionGenerator.getConnectedValue(state) as ParticleGeneratorFunction;
-            const destinationGenerator = this.particleDestinationGenerator.getConnectedValue(state) as ParticleGeneratorFunction;
             const tmpVector = TmpVectors.Vector3[0];
 
-            if (directionGenerator && directionGenerator !== EmptyGeneratorFunc) {
-                directionGenerator(-1, particle, tmpVector);
-            } else if (destinationGenerator && destinationGenerator !== EmptyGeneratorFunc) {
-                destinationGenerator(-1, particle, tmpVector);
+            if (this.particleDirectionGenerator && this.particleDirectionGenerator !== EmptyGeneratorFunc) {
+                this.particleDirectionGenerator(-1, particle, tmpVector);
+            } else if (this.particleDestinationGenerator && this.particleDestinationGenerator !== EmptyGeneratorFunc) {
+                this.particleDestinationGenerator(-1, particle, tmpVector);
 
                 // Get direction
                 const diffVector = TmpVectors.Vector3[1];
@@ -117,11 +98,10 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.particleContext = particle;
             state.systemContext = system;
 
-            const positionGenerator = this.particlePositionGenerator.getConnectedValue(state) as ParticleGeneratorFunction;
             const tmpVector = TmpVectors.Vector3[0];
 
-            if (positionGenerator && positionGenerator !== EmptyGeneratorFunc) {
-                positionGenerator(-1, particle, tmpVector);
+            if (this.particlePositionGenerator && this.particlePositionGenerator !== EmptyGeneratorFunc) {
+                this.particlePositionGenerator(-1, particle, tmpVector);
             } else {
                 tmpVector.set(0, 0, 0);
             }

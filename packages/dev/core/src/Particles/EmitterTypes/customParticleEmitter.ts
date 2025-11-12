@@ -1,12 +1,12 @@
-import type { Matrix } from "../../Maths/math.vector";
-import type { Particle } from "../particle";
+import type { Nullable } from "core/types";
+import type { Matrix } from "core/Maths/math.vector";
+import type { Particle } from "core/Particles/particle";
+import type { UniformBufferEffectCommonAccessor } from "core/Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
-import type { Nullable } from "../../types";
-import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
 
-import { DeepCopier } from "../../Misc/deepCopier";
-import { Vector3, TmpVectors } from "../../Maths/math.vector";
+import { DeepCopier } from "core/Misc/deepCopier";
+import { Vector3, TmpVectors } from "core/Maths/math.vector";
 
 /** Represents and empty generator function */
 export const EmptyGeneratorFunc = () => {};

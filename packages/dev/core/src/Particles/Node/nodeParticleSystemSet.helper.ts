@@ -203,9 +203,9 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             shapeBlock = new CustomShapeBlock("Custom Shape");
 
             const target = shapeBlock as CustomShapeBlock;
-            _CreateAndConnectInput("Position generator", source.particlePositionGenerator, target.particlePositionGenerator, NodeParticleBlockConnectionPointTypes.System);
-            _CreateAndConnectInput("Destination generator", source.particleDestinationGenerator, target.particleDestinationGenerator, NodeParticleBlockConnectionPointTypes.System);
-            _CreateAndConnectInput("Direction generator", source.particleDirectionGenerator, target.particleDirectionGenerator, NodeParticleBlockConnectionPointTypes.System);
+            target.particlePositionGenerator = source.particlePositionGenerator;
+            target.particleDestinationGenerator = source.particleDestinationGenerator;
+            target.particleDirectionGenerator = source.particleDirectionGenerator;
             break;
         }
         case "CylinderParticleEmitter": {
