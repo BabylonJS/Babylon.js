@@ -16,6 +16,15 @@ export class FrameGraphExecuteTask extends FrameGraphTask {
     public funcDisabled?: (context: FrameGraphContext) => void;
 
     /**
+     * Custom readiness check (optional).
+     */
+    public customIsReady?: () => boolean;
+
+    public override isReady(): boolean {
+        return !this.customIsReady || this.customIsReady();
+    }
+
+    /**
      * Creates a new execute task.
      * @param name The name of the task.
      * @param frameGraph The frame graph the task belongs to.

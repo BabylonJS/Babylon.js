@@ -123,8 +123,6 @@ export class RuntimeAnimation {
     private _keys: IAnimationKey[];
     private _minFrame: number;
     private _maxFrame: number;
-    private _minValue: any;
-    private _maxValue: any;
     private _targetIsArray = false;
 
     /** @internal */
@@ -206,12 +204,10 @@ export class RuntimeAnimation {
         this._keys = this._animation.getKeys();
         this._minFrame = this._keys[0].frame;
         this._maxFrame = this._keys[this._keys.length - 1].frame;
-        this._minValue = this._keys[0].value;
-        this._maxValue = this._keys[this._keys.length - 1].value;
 
         // Add a start key at frame 0 if missing
         if (this._minFrame !== 0) {
-            const newKey = { frame: 0, value: this._minValue };
+            const newKey = { frame: 0, value: this._keys[0].value };
             this._keys.splice(0, 0, newKey);
         }
 
@@ -575,10 +571,10 @@ export class RuntimeAnimation {
             if (!loop && to >= from && ((absoluteFrame >= frameRange && speedRatio > 0) || (absoluteFrame <= 0 && speedRatio < 0))) {
                 // If we are out of range and not looping get back to caller
                 returnValue = false;
-                highLimitValue = animation._getKeyValue(this._maxValue);
+                highLimitValue = animation.evaluate(to);
             } else if (!loop && from >= to && ((absoluteFrame <= frameRange && speedRatio < 0) || (absoluteFrame >= 0 && speedRatio > 0))) {
                 returnValue = false;
-                highLimitValue = animation._getKeyValue(this._minValue);
+                highLimitValue = animation.evaluate(from);
             } else if (this._animationState.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
                 const keyOffset = to.toString() + from.toString();
                 if (!this._offsetsCache[keyOffset]) {

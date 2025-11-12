@@ -3,14 +3,14 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphTAATask } from "core/FrameGraph/Tasks/PostProcesses/taaTask";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 import { NodeRenderGraphConnectionPointCustomObject } from "../../nodeRenderGraphConnectionPointCustomObject";
 import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectRendererBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the TAA post process
  */
-export class NodeRenderGraphTAAPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphTAAPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphTAATask;
 
     /**

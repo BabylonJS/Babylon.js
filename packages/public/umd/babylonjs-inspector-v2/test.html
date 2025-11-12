@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Test Inspector</title>
+        <style>
+            html,
+            body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="renderCanvas"></canvas>
+
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/addons/babylonjs.addons.min.js"></script>
+        <!-- <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script> -->
+        <script src="babylon.inspector-v2.bundle.js"></script>
+
+        <script>
+            const canvas = document.getElementById("renderCanvas");
+            const engine = new BABYLON.Engine(canvas, true);
+
+            const createScene = function () {
+                const scene = new BABYLON.Scene(engine);
+
+                // Camera
+                const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 10, new BABYLON.Vector3(0, 0, 0), scene);
+                camera.attachControl(canvas, true);
+
+                // Light
+                const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+                light.intensity = 0.7;
+
+                // Create a sphere
+                const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2, segments: 32 }, scene);
+                sphere.position.y = 1;
+
+                // Create a ground
+                const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, scene);
+
+                // Materials
+                const sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
+                sphereMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 1.0);
+                sphere.material = sphereMaterial;
+
+                const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+                groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+                ground.material = groundMaterial;
+
+                return scene;
+            };
+
+            const scene = createScene();
+
+            engine.runRenderLoop(function () {
+                scene.render();
+            });
+
+            window.addEventListener("resize", function () {
+                engine.resize();
+            });
+
+            // scene.debugLayer.show();
+            BABYLON.Inspector.Show();
+        </script>
+    </body>
+</html>

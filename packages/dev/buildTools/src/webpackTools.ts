@@ -196,9 +196,10 @@ export const commonDevWebpackConfiguration = (
     const enableHotReload = (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false;
 
     let plugins: WebpackPluginInstance[] | undefined = additionalPlugins;
+    const enableOverlay: boolean = !!process.env.ENABLE_DEV_OVERLAY;
     if (devServerConfig && enableHotReload) {
         plugins = plugins ?? [];
-        plugins.push(new ReactRefreshWebpackPlugin({ overlay: !process.env.DISABLE_DEV_OVERLAY }));
+        plugins.push(new ReactRefreshWebpackPlugin({ overlay: enableOverlay }));
     }
 
     return {
@@ -218,12 +219,12 @@ export const commonDevWebpackConfiguration = (
                       "Access-Control-Allow-Origin": "*",
                   },
                   client: {
-                      overlay: process.env.DISABLE_DEV_OVERLAY
-                          ? false
-                          : {
+                      overlay: enableOverlay
+                          ? {
                                 warnings: false,
                                 errors: true,
-                            },
+                            }
+                          : false,
                       logging: production ? "error" : "info",
                       progress: devServerConfig.showBuildProgress,
                   },

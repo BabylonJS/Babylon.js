@@ -331,7 +331,7 @@ export class NodeParticleSystemSet {
         // Texture
         const textureBlock = new ParticleTextureSourceBlock("Texture");
         textureBlock.texture.connectTo(system.texture);
-        textureBlock.url = "https://assets.babylonjs.com/textures/flare.png";
+        textureBlock.url = Tools.GetAssetUrl("https://assets.babylonjs.com/core/textures/flare.png");
 
         this._systemBlocks.push(system);
     }

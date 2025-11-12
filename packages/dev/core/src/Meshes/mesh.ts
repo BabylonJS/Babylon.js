@@ -2689,7 +2689,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             !instanceDataStorage.isFrozen &&
             (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling ||
                 this._internalMeshDataInfo._effectiveMaterial.sideOrientation !== null ||
-                (this._internalMeshDataInfo._effectiveMaterial as any).twoSidedLighting)
+                (this._internalMeshDataInfo._effectiveMaterial as any)._twoSidedLighting)
         ) {
             // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
             const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();

@@ -1,5 +1,5 @@
 ﻿<!doctype html>
-<html>
+<html lang="en">
     <head>
         <!-- Google tag (gtag.js) -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-41767310-2"></script>
@@ -9,7 +9,7 @@
                 dataLayer.push(arguments);
             }
             gtag("js", new Date());
-
+            window.__PLAYGROUND_BUNDLE__ = "<%= PLAYGROUND_BUNDLE %>";
             gtag("config", "UA-41767310-2");
         </script>
         <title>Babylon.js Playground</title>
@@ -28,6 +28,10 @@
         <script src="/libs/jszip.min.js"></script>
         <script src="/libs/fileSaver.js"></script>
 
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/jquery-qrcode@refs/heads/master/jquery.qrcode.min.js"></script>
+
         <!-- Dependencies -->
         <script src="https://cdn.babylonjs.com/ammo.js"></script>
         <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
@@ -36,10 +40,6 @@
         <script src="https://cdn.babylonjs.com/Oimo.js"></script>
         <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
         <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
-
-        <!-- jQuery -->
-        <script src="https://code.jquery.com/jquery.js"></script>
-        <script src="https://cdn.jsdelivr.net/gh/jeromeetienne/jquery-qrcode@refs/heads/master/jquery.qrcode.min.js"></script>
 
         <style>
             html,

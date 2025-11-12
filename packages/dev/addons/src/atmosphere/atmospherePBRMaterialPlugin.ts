@@ -152,6 +152,9 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
             this._atmosphere.bindUniformBufferToEffect(effect);
         }
 
+        // Need the offset to apply which will take a world space position and convert it to a global space position in the atmosphere.
+        // If floating origin mode is enabled, that offset is the floating origin offset.
+        // If not, it's an offset up the Y-axis by the planet radius.
         uniformBuffer.updateVector3(
             OriginOffsetUniformName,
             scene.floatingOriginMode

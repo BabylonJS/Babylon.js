@@ -149,12 +149,8 @@ export class PointLight extends ShadowLight {
     protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
         const activeCamera = this.getScene().activeCamera;
 
-        if (!activeCamera) {
-            return;
-        }
-
-        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
-        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+        const minZ = this.getDepthMinZ(activeCamera);
+        const maxZ = this.getDepthMaxZ(activeCamera);
 
         const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
 

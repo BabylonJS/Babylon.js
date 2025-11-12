@@ -29,6 +29,7 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
         this._isUnique = true;
 
         this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this._addDependenciesInput();
 
         this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
 

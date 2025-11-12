@@ -391,6 +391,7 @@ export class NativeEngine extends Engine {
             };
         }
 
+        // TODO: Remove in next protocol version update
         if (typeof Blob === "undefined") {
             (window.Blob as any) = function (v: any) {
                 return v;
@@ -2063,20 +2064,20 @@ export class NativeEngine extends Engine {
      * @returns ImageBitmap
      */
     public override async createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        return await new Promise((resolve, reject) => {
-            if (Array.isArray(image)) {
-                const arr = <Array<ArrayBufferView>>image;
-                if (arr.length) {
-                    const image = this._engine.createImageBitmap(arr[0]);
-                    if (image) {
-                        resolve(image);
-                        return;
-                    }
-                }
+        // Back-compat: Because of the previous Blob hack, this could be an array of BlobParts.
+        if (Array.isArray(image)) {
+            const arr = <Array<ArrayBuffer>>image;
+            if (arr.length) {
+                return this._engine.createImageBitmap(arr[0]);
             }
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(`Unsupported data for createImageBitmap.`);
-        });
+        }
+
+        if (image instanceof Blob) {
+            const data = await image.arrayBuffer();
+            return this._engine.createImageBitmap(data);
+        }
+
+        throw new Error("Unsupported data for createImageBitmap.");
     }
 
     /**

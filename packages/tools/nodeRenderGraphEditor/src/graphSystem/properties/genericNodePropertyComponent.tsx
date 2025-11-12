@@ -363,6 +363,61 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     );
                     break;
                 }
+                case PropertyTypeForEdition.Viewport: {
+                    components.push(
+                        <SliderLineComponent
+                            key={`viewportx-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName + " X"}
+                            target={(block as any)[propertyName]}
+                            propertyName={"x"}
+                            step={0.001}
+                            minimum={0}
+                            maximum={1}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    components.push(
+                        <SliderLineComponent
+                            key={`viewporty-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName + " Y"}
+                            target={(block as any)[propertyName]}
+                            propertyName={"y"}
+                            step={0.001}
+                            minimum={0}
+                            maximum={1}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    components.push(
+                        <SliderLineComponent
+                            key={`viewportw-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName + " Width"}
+                            target={(block as any)[propertyName]}
+                            propertyName={"width"}
+                            step={0.001}
+                            minimum={0}
+                            maximum={1}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    components.push(
+                        <SliderLineComponent
+                            key={`viewporth-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName + " Height"}
+                            target={(block as any)[propertyName]}
+                            propertyName={"height"}
+                            step={0.001}
+                            minimum={0}
+                            maximum={1}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
             }
         }
 

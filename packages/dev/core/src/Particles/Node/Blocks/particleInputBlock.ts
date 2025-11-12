@@ -135,11 +135,14 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleContextualSources.Direction:
                 case NodeParticleContextualSources.ScaledDirection:
                 case NodeParticleContextualSources.InitialDirection:
+                case NodeParticleContextualSources.LocalPositionUpdated:
                     this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                     break;
                 case NodeParticleContextualSources.Color:
                 case NodeParticleContextualSources.InitialColor:
                 case NodeParticleContextualSources.ColorDead:
+                case NodeParticleContextualSources.ColorStep:
+                case NodeParticleContextualSources.ScaledColorStep:
                     this._type = NodeParticleBlockConnectionPointTypes.Color4;
                     break;
                 case NodeParticleContextualSources.Age:

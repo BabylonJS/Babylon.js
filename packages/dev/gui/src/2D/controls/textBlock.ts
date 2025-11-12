@@ -441,8 +441,9 @@ export class TextBlock extends Control {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            const idealRatio = this.host.idealRatio;
+            context.shadowOffsetX = this.shadowOffsetX * idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * idealRatio;
         }
 
         if (this.outlineWidth) {

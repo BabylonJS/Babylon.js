@@ -334,6 +334,11 @@ export class PostProcess {
     @serialize()
     public adaptScaleToCurrentViewport = false;
 
+    /**
+     * Specifies if the post process should be serialized
+     */
+    public doNotSerialize = false;
+
     private _camera: Camera;
     protected _scene: Scene;
     private _engine: AbstractEngine;

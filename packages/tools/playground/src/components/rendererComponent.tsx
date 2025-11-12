@@ -9,15 +9,22 @@ import { DownloadManager } from "../tools/downloadManager";
 import { AddFileRevision } from "../tools/localSession";
 
 import { Engine, EngineStore, WebGPUEngine, LastCreatedAudioEngine, Logger } from "@dev/core";
-import type { Nullable, Scene, ThinEngine } from "@dev/core";
+import type { IDisposable, Nullable, Scene, ThinEngine } from "@dev/core";
 
 import "../scss/rendering.scss";
 
-let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/inspector")> | null = null;
+let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/inspector") & typeof import("inspector-v2/legacy/inspector")> | null = null;
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 function ImportInspectorV2() {
     if (!InspectorV2ModulePromise) {
-        InspectorV2ModulePromise = import("inspector-v2/inspector");
+        const inspectorModulePromise = import("inspector-v2/inspector");
+        const backCompatModulePromise = import("inspector-v2/legacy/inspector");
+        InspectorV2ModulePromise = Promise.all([inspectorModulePromise, backCompatModulePromise]).then(([inspectorModule, backCompatModule]) => {
+            return {
+                ...inspectorModule,
+                ...backCompatModule,
+            };
+        });
     }
     return InspectorV2ModulePromise;
 }
@@ -41,6 +48,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
     private _inspectorFallback: boolean = false;
+    private inspectorV2Token: Nullable<IDisposable> = null;
 
     /**
      * Create the rendering component.
@@ -91,7 +99,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             const isInspectorV1Enabled = this._scene.debugLayer.openedPanes !== 0;
-            const isInspectorV2Enabled = InspectorV2ModulePromise && (await InspectorV2ModulePromise).IsInspectorVisible();
+            const isInspectorV2Enabled = !!this.inspectorV2Token;
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
             const searchParams = new URLSearchParams(window.location.search);
@@ -114,12 +122,16 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 preferInspector: action === "enable",
             });
 
+            // Inspector v2 should not be disposed during a React render, so just wait one JS frame.
+            await Promise.resolve();
+
             if (isInspectorV1Enabled && (isInspectorV2ModeEnabled || action === "disable")) {
                 this._scene.debugLayer.hide();
             }
 
             if (isInspectorV2Enabled && (!isInspectorV2ModeEnabled || action === "disable")) {
-                (await ImportInspectorV2()).HideInspector();
+                this.inspectorV2Token?.dispose();
+                this.inspectorV2Token = null;
             }
 
             if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
@@ -129,11 +141,15 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (!isInspectorV2Enabled && isInspectorV2ModeEnabled && action === "enable") {
-                (await ImportInspectorV2()).ShowInspector(this._scene, {
-                    embedMode: true,
+                const inspectorV2Module = await ImportInspectorV2();
+                const options = {
+                    ...inspectorV2Module.ConvertOptions({
+                        embedMode: true,
+                    }),
                     showThemeSelector: false,
                     themeMode: Utilities.ReadStringFromStore("theme", "Light") === "Dark" ? "dark" : "light",
-                });
+                } as const;
+                this.inspectorV2Token = inspectorV2Module.ShowInspector(this._scene, options);
             }
         });
 
@@ -188,10 +204,13 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         this.props.globalState.onErrorObservable.notifyObservers(null);
 
-        const displayInspector = (InspectorV2ModulePromise && (await InspectorV2ModulePromise).IsInspectorVisible()) || this._scene?.debugLayer.isVisible();
+        const displayInspector = this.inspectorV2Token || this._scene?.debugLayer.isVisible();
 
         const webgpuPromise = WebGPUEngine ? WebGPUEngine.IsSupportedAsync : Promise.resolve(false);
         const webGPUSupported = await webgpuPromise;
+
+        this.inspectorV2Token?.dispose();
+        this.inspectorV2Token = null;
 
         let useWebGPU = location.search.indexOf("webgpu") !== -1 && webGPUSupported;
         let forceWebGL1 = false;

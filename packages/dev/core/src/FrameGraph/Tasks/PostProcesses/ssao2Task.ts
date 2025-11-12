@@ -15,6 +15,8 @@ export class FrameGraphSSAO2Task extends FrameGraphPostProcessTask {
 
     public override readonly postProcess: ThinSSAO2PostProcess;
 
+    private _currentCameraMode = -1;
+
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinSSAO2PostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinSSAO2PostProcess(name, frameGraph.scene));
     }
@@ -24,10 +26,18 @@ export class FrameGraphSSAO2Task extends FrameGraphPostProcessTask {
             throw new Error(`FrameGraphSSAO2Task "${this.name}": sourceTexture, depthTexture, normalTexture and camera are required`);
         }
 
+        this._currentCameraMode = this.camera.mode;
+        this.postProcess.updateEffect();
+
         const pass = super.record(
             skipCreationOfDisabledPasses,
             (context) => {
                 this.postProcess.camera = this.camera;
+
+                if (this._currentCameraMode !== this.camera.mode) {
+                    this._currentCameraMode = this.camera.mode;
+                    this.postProcess.updateEffect();
+                }
 
                 context.setTextureSamplingMode(this.depthTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
                 context.setTextureSamplingMode(this.normalTexture, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);

@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .pg-monaco-wrapper {
     --pg-font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     --pg-bar-height: 30px;
@@ -249,7 +251,7 @@
         background: #3f3461;
     }
     &:hover {
-        background: lighten(#3f3461, 10%);
+        background: color.adjust(#3f3461, $lightness: 10%);
     }
 
     // svg {

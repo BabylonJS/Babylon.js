@@ -1574,6 +1574,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
         }
         if (delay) {
+            this.startDelay = delay;
             setTimeout(() => {
                 this.start(0);
             }, delay);

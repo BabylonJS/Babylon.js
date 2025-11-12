@@ -84,7 +84,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
      * @param hdr Whether the bloom effect is HDR.
      * @param bloomScale The scale of the bloom effect. This value is multiplied by the source texture size to determine the bloom texture size.
      */
-    constructor(name: string, frameGraph: FrameGraph, weight: number, kernel: number, threshold: number, hdr = false, bloomScale = 0.5) {
+    constructor(name: string, frameGraph: FrameGraph, weight = 0.25, kernel = 64, threshold = 0.2, hdr = false, bloomScale = 0.5) {
         super(name, frameGraph);
 
         this.hdr = hdr;

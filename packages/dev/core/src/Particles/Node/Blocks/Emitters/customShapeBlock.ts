@@ -73,10 +73,10 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
             const direction = this.direction.getConnectedValue(state);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformNormalToRef(direction, state.emitterWorldMatrix!, particle.direction);
-            } else {
+            if (system.isLocal) {
                 particle.direction.copyFrom(direction);
+            } else {
+                Vector3.TransformNormalToRef(direction, state.emitterWorldMatrix!, particle.direction);
             }
 
             particle._initialDirection = particle.direction.clone();
@@ -87,11 +87,11 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.systemContext = system;
             const position = this.position.getConnectedValue(state);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformCoordinatesToRef(position, state.emitterWorldMatrix!, particle.position);
-            } else {
+            if (system.isLocal) {
                 particle.position.copyFrom(position);
                 particle.position.addInPlace(state.emitterPosition!);
+            } else {
+                Vector3.TransformCoordinatesToRef(position, state.emitterWorldMatrix!, particle.position);
             }
         };
 

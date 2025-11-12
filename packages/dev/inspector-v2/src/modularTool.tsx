@@ -33,7 +33,6 @@ import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
 import { SetThemeMode } from "./hooks/themeHooks";
 import { ServiceContainer } from "./modularity/serviceContainer";
-import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
 
@@ -134,6 +133,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
                 // Register the extension list service (for browsing/installing extensions) if extension feeds are provided.
                 if (extensionFeeds.length > 0) {
+                    const { ExtensionListServiceDefinition } = await import("./services/extensionsListService");
                     await serviceContainer.addServiceAsync(ExtensionListServiceDefinition);
                 }
 

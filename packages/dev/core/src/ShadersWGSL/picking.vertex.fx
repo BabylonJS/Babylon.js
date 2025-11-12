@@ -16,7 +16,7 @@ uniform viewProjection: mat4x4f;
 
 // Output
 #if defined(INSTANCES)
-varying vMeshID: f32;
+flat varying vMeshID: f32;
 #endif
 
 @vertex

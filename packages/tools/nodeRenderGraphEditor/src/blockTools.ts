@@ -42,6 +42,7 @@ import { NodeRenderGraphColorCorrectionPostProcessBlock } from "core/FrameGraph/
 import { NodeRenderGraphFilterPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/filterPostProcessBlock";
 import { NodeRenderGraphTonemapPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/tonemapPostProcessBlock";
 import { NodeRenderGraphSSAO2PostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/ssao2PostProcessBlock";
+import { NodeRenderGraphComputeShaderBlock } from "core/FrameGraph/Node/Blocks/computeShaderBlock";
 
 /**
  * Static class for BlockTools
@@ -190,6 +191,9 @@ export class BlockTools {
             }
             case "SSAO2Block": {
                 return new NodeRenderGraphSSAO2PostProcessBlock("SSAO", frameGraph, scene);
+            }
+            case "ComputeShaderBlock": {
+                return new NodeRenderGraphComputeShaderBlock("Compute Shader", frameGraph, scene);
             }
         }
 

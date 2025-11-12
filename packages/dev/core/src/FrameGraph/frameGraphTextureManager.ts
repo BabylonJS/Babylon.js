@@ -1051,14 +1051,18 @@ export class FrameGraphTextureManager {
             }
             let textureEntry = this._textures.get(textureHandle);
             if (!textureEntry) {
-                throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager.`);
+                throw new Error(
+                    `FrameGraph._computeTextureLifespan: Texture handle "${textureHandle}" not found in the texture manager. Make sure you didn't forget to add a task in the frame graph.`
+                );
             }
             let handle = textureHandle;
             while (textureEntry.refHandle !== undefined) {
                 handle = textureEntry.refHandle;
                 textureEntry = this._textures.get(handle);
                 if (!textureEntry) {
-                    throw new Error(`FrameGraph._computeTextureLifespan: Texture handle "${handle}" not found in the texture manager (source handle="${textureHandle}").`);
+                    throw new Error(
+                        `FrameGraph._computeTextureLifespan: Texture handle "${handle}" not found in the texture manager (source handle="${textureHandle}"). Make sure you didn't forget to add a task in the frame graph.`
+                    );
                 }
             }
             if (textureEntry.namespace === FrameGraphTextureNamespace.External || this._historyTextures.has(handle)) {

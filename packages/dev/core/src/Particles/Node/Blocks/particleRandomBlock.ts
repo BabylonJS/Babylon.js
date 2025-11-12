@@ -109,32 +109,32 @@ export class ParticleRandomBlock extends NodeParticleBlock {
             case NodeParticleBlockConnectionPointTypes.Int:
             case NodeParticleBlockConnectionPointTypes.Float: {
                 func = (state) => {
-                    const min = this.min.getConnectedValue(state) || 0;
-                    const max = this.max.getConnectedValue(state) || 1;
+                    const min = this.min.getConnectedValue(state) ?? 0;
+                    const max = this.max.getConnectedValue(state) ?? 1;
                     return min + Math.random() * (max - min);
                 };
                 break;
             }
             case NodeParticleBlockConnectionPointTypes.Vector2: {
                 func = (state) => {
-                    const min = this.min.getConnectedValue(state) || Vector2.Zero();
-                    const max = this.max.getConnectedValue(state) || Vector2.One();
+                    const min = this.min.getConnectedValue(state) ?? Vector2.Zero();
+                    const max = this.max.getConnectedValue(state) ?? Vector2.One();
                     return new Vector2(min.x + Math.random() * (max.x - min.x), min.y + Math.random() * (max.y - min.y));
                 };
                 break;
             }
             case NodeParticleBlockConnectionPointTypes.Vector3: {
                 func = (state) => {
-                    const min = this.min.getConnectedValue(state) || Vector3.Zero();
-                    const max = this.max.getConnectedValue(state) || Vector3.One();
+                    const min = this.min.getConnectedValue(state) ?? Vector3.Zero();
+                    const max = this.max.getConnectedValue(state) ?? Vector3.One();
                     return new Vector3(min.x + Math.random() * (max.x - min.x), min.y + Math.random() * (max.y - min.y), min.z + Math.random() * (max.z - min.z));
                 };
                 break;
             }
             case NodeParticleBlockConnectionPointTypes.Color4: {
                 func = (state) => {
-                    const min = this.min.getConnectedValue(state) || new Color4(0, 0, 0, 0);
-                    const max = this.max.getConnectedValue(state) || new Color4(1, 1, 1, 1);
+                    const min = this.min.getConnectedValue(state) ?? new Color4(0, 0, 0, 0);
+                    const max = this.max.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
                     return new Color4(
                         min.r + Math.random() * (max.r - min.r),
                         min.g + Math.random() * (max.g - min.g),
@@ -151,10 +151,10 @@ export class ParticleRandomBlock extends NodeParticleBlock {
 
             switch (this.lockMode) {
                 case ParticleRandomBlockLocks.PerParticle:
-                    lockId = state.particleContext?.id || -1;
+                    lockId = state.particleContext?.id ?? -1;
                     break;
                 case ParticleRandomBlockLocks.PerSystem:
-                    lockId = state.buildId || 0;
+                    lockId = state.buildId ?? 0;
                     break;
             }
 

@@ -13,6 +13,7 @@ export * from "./Passes/renderPass";
 export * from "./Tasks/Layers/glowLayerTask";
 export * from "./Tasks/Layers/highlightLayerTask";
 
+export * from "./Tasks/Misc/computeShaderTask";
 export * from "./Tasks/Misc/cullObjectsTask";
 export * from "./Tasks/Misc/executeTask";
 

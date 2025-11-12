@@ -40,6 +40,7 @@ export * from "./services/settingsContext";
 export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralContentDefinition } from "./services/shellService";
 export { ShellServiceIdentity } from "./services/shellService";
 export * from "./inspector";
+export { Inspector } from "./legacy/inspector";
 
 // Export the shared primitive UI controls that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/primitives/accordion";
@@ -75,7 +76,7 @@ export * from "shared-ui-components/fluent/hoc/pane";
 export * from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
-export * from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
+export { NumberDropdownPropertyLine, StringDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
@@ -87,3 +88,7 @@ export * from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropert
 export * from "shared-ui-components/fluent/hoc/propertyLines/textAreaPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
+
+// TODO: Enable this for back compat, but only after we remove runtime switching between inspector v1 and v2
+//       in Playground and Sandbox (otherwise this will break that functionality as it will stomp on Scene.debugLayer).
+// import "./legacy/debugLayer";

@@ -64,6 +64,7 @@ import { PushMaterial } from "../pushMaterial";
 import { SmartArray } from "../../Misc/smartArray";
 import type { RenderTargetTexture } from "../Textures/renderTargetTexture";
 import type { IAnimatable } from "../../Animations/animatable.interface";
+import { Tools } from "../../Misc/tools";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -230,9 +231,11 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public SPECULAR_WEIGHT_IN_ALPHA = false;
     public SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = false;
     public SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
+    public COAT_ROUGHNESS_FROM_GREEN_CHANNEL = false;
     public COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = false;
     public USE_GLTF_STYLE_ANISOTROPY = false;
     public THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = false;
+    public FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = false;
 
     public ENVIRONMENTBRDF = false;
     public ENVIRONMENTBRDF_RGBD = false;
@@ -1235,11 +1238,25 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public _useCoatRoughnessAnisotropyFromTangentTexture = false;
 
     /**
+     * Specifies whether the coat roughness is taken from the green channel of the coat texture.
+     * This is for compatibility with glTF's KHR_materials_clearcoat and KHR_materials_coat extensions.
+     * @internal
+     */
+    public _useCoatRoughnessFromGreenChannel = false;
+
+    /**
      * Assume the anisotropy data is stored in the format specified by
      * KHR_materials_anisotropy.
      * @internal
      */
     public _useGltfStyleAnisotropy = false;
+
+    /**
+     * Specifies that the fuzz roughness is stored in the alpha channel of the texture.
+     * This is for compatibility with glTF where the fuzz roughness is often stored in
+     * the alpha channel of the fuzz color texture.
+     */
+    public _useFuzzRoughnessFromTextureAlpha = false;
 
     /**
      * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
@@ -1519,7 +1536,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         if (!OpenPBRMaterial._noiseTextures[this.getScene().uniqueId]) {
             OpenPBRMaterial._noiseTextures[this.getScene().uniqueId] = new Texture(
-                "https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png",
+                Tools.GetAssetUrl("https://assets.babylonjs.com/core/blue_noise/blue_noise_rgb.png"),
                 this.getScene(),
                 false,
                 true,
@@ -2620,7 +2637,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.SPECULAR_WEIGHT_FROM_SPECULAR_COLOR_TEXTURE = this._useSpecularWeightFromSpecularColorTexture;
                 defines.SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useSpecularRoughnessAnisotropyFromTangentTexture;
                 defines.COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useCoatRoughnessAnisotropyFromTangentTexture;
+                defines.COAT_ROUGHNESS_FROM_GREEN_CHANNEL = this._useCoatRoughnessFromGreenChannel;
                 defines.ROUGHNESSSTOREINMETALMAPGREEN = this._useRoughnessFromMetallicTextureGreen;
+                defines.FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = this._useFuzzRoughnessFromTextureAlpha;
                 defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallicFromMetallicTextureBlue;
                 defines.THIN_FILM_THICKNESS_FROM_THIN_FILM_TEXTURE = this._useThinFilmThicknessFromTextureGreen;
 

@@ -211,7 +211,9 @@ export class MirrorTexture extends RenderTargetTexture {
             saveClipPlane = scene.clipPlane;
             scene.clipPlane = this.mirrorPlane;
 
-            scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
+            const eyePos = Vector3.TransformCoordinates((<Camera>scene.activeCamera).globalPosition, this._mirrorMatrix);
+            scene._mirroredCameraPosition = eyePos;
+            scene._forcedViewPosition = eyePos; // More performant to set 2 properties here than to check both mirroredCameraPos and forcedViewPos within eye binding (which happens on critical rendering path)
         });
 
         this.onAfterRenderObservable.add(() => {
@@ -220,6 +222,7 @@ export class MirrorTexture extends RenderTargetTexture {
             }
             scene.updateTransformMatrix();
             scene._mirroredCameraPosition = null;
+            scene._forcedViewPosition = null;
 
             scene.clipPlane = saveClipPlane;
         });

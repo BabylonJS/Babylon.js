@@ -1,4 +1,4 @@
-import type { FrameGraphTextureHandle, FrameGraph, Scene } from "core/index";
+import type { FrameGraphTextureHandle, FrameGraph } from "core/index";
 import { CascadedShadowGenerator } from "../../../Lights/Shadows/cascadedShadowGenerator";
 import { FrameGraphShadowGeneratorTask } from "./shadowGeneratorTask";
 import { DirectionalLight } from "../../../Lights/directionalLight";
@@ -23,8 +23,9 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
     }
 
     /**
-     * The depth texture used by the autoCalcDepthBounds feature (optional if autoCalcDepthBounds is set to false)
+     * The depth texture used by the autoCalcDepthBounds feature (optional if autoCalcDepthBounds is set to false).
      * This texture is used to compute the min/max depth bounds of the scene to setup the cascaded shadow generator.
+     * The texture should contain either “view,” “normalized view,” or “screen” depth values - if possible, connect “normalized view,” or “screen” for best performance.
      * Warning: Do not set a texture if you are not using the autoCalcDepthBounds feature, to avoid generating a depth texture that will not be used.
      */
     public depthTexture?: FrameGraphTextureHandle;
@@ -213,12 +214,11 @@ export class FrameGraphCascadedShadowGeneratorTask extends FrameGraphShadowGener
      * Creates a new shadow generator task.
      * @param name The name of the task.
      * @param frameGraph The frame graph the task belongs to.
-     * @param scene The scene to create the shadow generator for.
      */
-    constructor(name: string, frameGraph: FrameGraph, scene: Scene) {
-        super(name, frameGraph, scene);
+    constructor(name: string, frameGraph: FrameGraph) {
+        super(name, frameGraph);
 
-        this._thinMinMaxReducer = new ThinMinMaxReducer(scene);
+        this._thinMinMaxReducer = new ThinMinMaxReducer(frameGraph.scene);
 
         this._thinMinMaxReducer.onAfterReductionPerformed.add((minmax: { min: number; max: number }) => {
             if (!this._shadowGenerator) {

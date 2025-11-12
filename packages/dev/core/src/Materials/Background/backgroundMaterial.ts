@@ -5,7 +5,7 @@ import { Logger } from "../../Misc/logger";
 import type { Nullable, int, float } from "../../types";
 import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
-import { Vector3, Vector4 } from "../../Maths/math.vector";
+import { TmpVectors, Vector3, Vector4 } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
 import type { SubMesh } from "../../Meshes/subMesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -964,6 +964,21 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
 
             this._uniformBuffer.updateFloat("fFovMultiplier", this._fovMultiplier);
 
+            // Fresnel
+            if (defines.REFLECTIONFRESNEL) {
+                this._uniformBuffer.updateFloat4(
+                    "vReflectionControl",
+                    this._reflectionControls.x,
+                    this._reflectionControls.y,
+                    this._reflectionControls.z,
+                    this._reflectionControls.w
+                );
+            }
+            if ((defines.REFLECTIONFRESNEL && defines.REFLECTIONFALLOFF) || defines.OPACITYFRESNEL) {
+                const center = TmpVectors.Vector3[0].copyFrom(this.sceneCenter).subtractInPlace(scene.floatingOriginOffset);
+                this._uniformBuffer.updateFloat3("vBackgroundCenter", center.x, center.y, center.z);
+            }
+
             // Textures
             if (scene.texturesEnabled) {
                 if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
@@ -972,17 +987,6 @@ export class BackgroundMaterial extends BackgroundMaterialBase {
 
                 if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
                     BindIBLSamplers(scene, defines, this._uniformBuffer, reflectionTexture);
-
-                    if (defines.REFLECTIONFRESNEL) {
-                        this._uniformBuffer.updateFloat3("vBackgroundCenter", this.sceneCenter.x, this.sceneCenter.y, this.sceneCenter.z);
-                        this._uniformBuffer.updateFloat4(
-                            "vReflectionControl",
-                            this._reflectionControls.x,
-                            this._reflectionControls.y,
-                            this._reflectionControls.z,
-                            this._reflectionControls.w
-                        );
-                    }
                 }
 
                 if (defines.PROJECTED_GROUND) {

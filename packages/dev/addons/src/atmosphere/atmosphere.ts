@@ -137,12 +137,12 @@ export class Atmosphere implements IDisposable {
     /**
      * Called before the LUTs are rendered for this camera. This happens after the per-camera UBO update.
      */
-    public readonly onBeforeRenderLutsForCameraObservable = new Observable<void>();
+    public readonly onBeforeRenderLutsForCameraObservable = new Observable<Camera>();
 
     /**
      * Called after the LUTs were rendered.
      */
-    public readonly onAfterRenderLutsForCameraObservable = new Observable<void>();
+    public readonly onAfterRenderLutsForCameraObservable = new Observable<Camera>();
 
     /**
      * If provided, this is the depth texture used for composition passes.
@@ -734,7 +734,7 @@ export class Atmosphere implements IDisposable {
         // Before rendering, make sure the per-camera variables have been updated.
         this._onBeforeCameraRenderObserver = scene.onBeforeCameraRenderObservable.add((x) => {
             this._updatePerCameraVariables(x);
-            this._renderLutsForCamera();
+            this._renderLutsForCamera(x);
         });
 
         {
@@ -1207,8 +1207,9 @@ export class Atmosphere implements IDisposable {
     /**
      * Renders the lookup tables, some of which can vary per-camera.
      * It is expected that updatePerCameraVariables was previously called.
+     * @param camera - The camera to render the LUTs for.
      */
-    private _renderLutsForCamera(): void {
+    private _renderLutsForCamera(camera: Camera): void {
         {
             this.onBeforeLightVariablesUpdateObservable.notifyObservers();
 
@@ -1228,7 +1229,7 @@ export class Atmosphere implements IDisposable {
         // Render the LUTs.
         const isEnabled = this.isEnabled();
         {
-            this.onBeforeRenderLutsForCameraObservable.notifyObservers();
+            this.onBeforeRenderLutsForCameraObservable.notifyObservers(camera);
 
             // After UBO update we can render the global LUTs which use some of these values on the GPU.
             // TODO: Could break out update and UBOs to global vs. per-camera.
@@ -1254,7 +1255,7 @@ export class Atmosphere implements IDisposable {
                 }
             }
 
-            this.onAfterRenderLutsForCameraObservable.notifyObservers();
+            this.onAfterRenderLutsForCameraObservable.notifyObservers(camera);
         }
     }
 
@@ -1333,7 +1334,7 @@ export class Atmosphere implements IDisposable {
         ubo.updateVector3("minMultiScattering", this._minimumMultiScattering);
         ubo.updateFloat("diffuseSkyIrradianceIntensity", this._diffuseSkyIrradianceIntensity);
         ubo.updateVector3("cameraPositionGlobal", cameraAtmosphereVariables.cameraPositionGlobal);
-        ubo.updateFloat("lightIntensity", this.lights[0].intensity);
+        ubo.updateFloat("lightIntensity", this.lights[0].getScaledIntensity());
         ubo.updateVector3("clampedCameraPositionGlobal", cameraAtmosphereVariables.clampedCameraPositionGlobal);
         ubo.updateFloat("aerialPerspectiveIntensity", this._aerialPerspectiveIntensity);
         ubo.updateVector3("cameraGeocentricNormal", cameraAtmosphereVariables.cameraGeocentricNormal);

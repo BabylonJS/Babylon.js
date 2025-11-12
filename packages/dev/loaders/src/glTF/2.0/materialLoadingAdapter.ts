@@ -56,32 +56,32 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets/gets the base color (OpenPBR: baseColor, PBR: albedoColor)
+     * Sets/gets the base color
      */
     baseColor: Color3;
 
     /**
-     * Sets/gets the base color texture (OpenPBR: baseColorTexture, PBR: albedoTexture)
+     * Sets/gets the base color texture
      */
     baseColorTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the base diffuse roughness (OpenPBR: baseDiffuseRoughness, PBR: baseDiffuseRoughness)
+     * Sets/gets the base diffuse roughness
      */
     baseDiffuseRoughness: number;
 
     /**
-     * Sets/gets the base diffuse roughness texture (OpenPBR: baseDiffuseRoughnessTexture, PBR: baseDiffuseRoughnessTexture)
+     * Sets/gets the base diffuse roughness texture
      */
     baseDiffuseRoughnessTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the base metalness (OpenPBR: baseMetalness, PBR: metallic)
+     * Sets/gets the base metalness
      */
     baseMetalness: number;
 
     /**
-     * Sets/gets the base metalness texture (OpenPBR: baseMetalnessTexture, PBR: metallicTexture)
+     * Sets/gets the base metalness texture
      */
     baseMetalnessTexture: Nullable<BaseTexture>;
 
@@ -106,27 +106,27 @@ export interface IMaterialLoadingAdapter {
     enableSpecularEdgeColor(enableEdgeColor?: boolean): void;
 
     /**
-     * Sets/gets the specular weight (OpenPBR: specularWeight, PBR: metallicF0Factor)
+     * Sets/gets the specular weight
      */
     specularWeight: number;
 
     /**
-     * Sets/gets the specular weight texture (OpenPBR: specularWeightTexture, PBR: metallicReflectanceTexture)
+     * Sets/gets the specular weight texture
      */
     specularWeightTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the specular color (OpenPBR: specularColor, PBR: reflectance)
+     * Sets/gets the specular color
      */
     specularColor: Color3;
 
     /**
-     * Sets/gets the specular color texture (OpenPBR: specularColorTexture, PBR: reflectanceTexture)
+     * Sets/gets the specular color texture
      */
     specularColorTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the specular roughness (OpenPBR: specularRoughness, PBR: roughness)
+     * Sets/gets the specular roughness
      */
     specularRoughness: number;
 
@@ -136,7 +136,7 @@ export interface IMaterialLoadingAdapter {
     specularRoughnessTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the specular IOR (OpenPBR: specularIor, PBR: indexOfRefraction)
+     * Sets/gets the specular IOR
      */
     specularIor: number;
 
@@ -145,12 +145,12 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets/gets the emissive color (OpenPBR: emissionColor, PBR: emissiveColor)
+     * Sets/gets the emissive color
      */
     emissionColor: Color3;
 
     /**
-     * Sets/gets the emissive luminance (OpenPBR: emissionLuminance, PBR: emissiveIntensity)
+     * Sets/gets the emissive luminance
      */
     emissionLuminance: number;
 
@@ -164,7 +164,7 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets/gets the ambient occlusion texture (OpenPBR: ambientOcclusionTexture, PBR: ambientTexture)
+     * Sets/gets the ambient occlusion texture
      */
     ambientOcclusionTexture: Nullable<BaseTexture>;
 
@@ -183,32 +183,32 @@ export interface IMaterialLoadingAdapter {
     configureCoat(): void;
 
     /**
-     * Sets/gets the coat weight (OpenPBR: coatWeight, PBR: clearCoat.intensity)
+     * Sets/gets the coat weight
      */
     coatWeight: number;
 
     /**
-     * Sets/gets the coat weight texture (OpenPBR: coatWeightTexture, PBR: clearCoat.texture)
+     * Sets/gets the coat weight texture
      */
     coatWeightTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets the coat color (OpenPBR: coatColor, no PBR equivalent)
+     * Sets the coat color
      */
     coatColor: Color3;
 
     /**
-     * Sets the coat color texture (OpenPBR: coatColorTexture, no PBR equivalent)
+     * Sets the coat color texture
      */
     coatColorTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the coat roughness (OpenPBR: coatRoughness, PBR: clearCoat.roughness)
+     * Sets/gets the coat roughness
      */
     coatRoughness: number;
 
     /**
-     * Sets/gets the coat roughness texture (OpenPBR: coatRoughnessTexture, PBR: clearCoat.textureRoughness)
+     * Sets/gets the coat roughness texture
      */
     coatRoughnessTexture: Nullable<BaseTexture>;
 
@@ -218,27 +218,27 @@ export interface IMaterialLoadingAdapter {
     coatIor: number;
 
     /**
-     * Sets the coat darkening (OpenPBR: coatDarkening, no PBR equivalent)
+     * Sets the coat darkening
      */
     coatDarkening: number;
 
     /**
-     * Sets the coat darkening texture (OpenPBR: coatDarkeningTexture, no PBR equivalent)
+     * Sets the coat darkening texture
      */
     coatDarkeningTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the coat roughness anisotropy (OpenPBR: coatRoughnessAnisotropy, PBR: clearCoat.anisotropy.intensity)
+     * Sets/gets the coat roughness anisotropy
      */
     coatRoughnessAnisotropy: number;
 
     /**
-     * Sets the coat tangent angle for anisotropy (OpenPBR: geometryCoatTangentAngle, PBR: clearCoat.anisotropy.angle)
+     * Sets the coat tangent angle for anisotropy
      */
     geometryCoatTangentAngle: number;
 
     /**
-     * Sets the coat tangent texture for anisotropy (OpenPBR: geometryCoatTangentTexture, PBR: clearCoat.anisotropy.texture)
+     * Sets the coat tangent texture for anisotropy
      */
     geometryCoatTangentTexture: Nullable<BaseTexture>;
 
@@ -247,22 +247,22 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets the transmission weight (OpenPBR: transmissionWeight, PBR: subSurface.refractionIntensity)
+     * Sets the transmission weight
      */
     transmissionWeight: number;
 
     /**
-     * Sets the transmission weight texture (OpenPBR: transmissionWeightTexture, PBR: subSurface.refractionIntensityTexture)
+     * Sets the transmission weight texture
      */
     transmissionWeightTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets the attenuation distance (OpenPBR: attenuationDistance, PBR: subSurface.volumeIndexOfRefraction)
+     * Sets the attenuation distance
      */
     transmissionDepth: number;
 
     /**
-     * Sets the attenuation color (OpenPBR: attenuationColor, PBR: subSurface.tintColor)
+     * Sets the attenuation color
      */
     transmissionColor: Color3;
 
@@ -281,12 +281,12 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets the thickness texture (OpenPBR: thicknessTexture, PBR: subSurface.thicknessTexture)
+     * Sets the thickness texture
      */
     volumeThicknessTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets the thickness factor (OpenPBR: thickness, PBR: subSurface.maximumThickness)
+     * Sets the thickness factor
      */
     volumeThickness: number;
 
@@ -310,12 +310,12 @@ export interface IMaterialLoadingAdapter {
     subsurfaceWeightTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets/gets the subsurface color (OpenPBR: subsurfaceColor, PBR: subSurface.tintColor)
+     * Sets/gets the subsurface color
      */
     subsurfaceColor: Color3;
 
     /**
-     * Sets/gets the subsurface color texture (OpenPBR: subsurfaceColorTexture, PBR: subSurface.tintColorTexture)
+     * Sets/gets the subsurface color texture
      */
     subsurfaceColorTexture: Nullable<BaseTexture>;
 
@@ -329,27 +329,32 @@ export interface IMaterialLoadingAdapter {
     configureFuzz(): void;
 
     /**
-     * Sets the fuzz weight (OpenPBR: fuzzWeight, PBR: fuzz.intensity)
+     * Sets the fuzz weight
      */
     fuzzWeight: number;
 
     /**
-     * Sets the fuzz color (OpenPBR: fuzzColor, PBR: fuzz.color)
+     * Sets the fuzz weight texture
+     */
+    fuzzWeightTexture: Nullable<BaseTexture>;
+
+    /**
+     * Sets the fuzz color
      */
     fuzzColor: Color3;
 
     /**
-     * Sets the fuzz color texture (OpenPBR: fuzzColorTexture, PBR: fuzz.texture)
+     * Sets the fuzz color texture
      */
     fuzzColorTexture: Nullable<BaseTexture>;
 
     /**
-     * Sets the fuzz roughness (OpenPBR: fuzzRoughness, PBR: fuzz.roughness)
+     * Sets the fuzz roughness
      */
     fuzzRoughness: number;
 
     /**
-     * Sets the fuzz roughness texture (OpenPBR: fuzzRoughnessTexture, PBR: fuzz.textureRoughness)
+     * Sets the fuzz roughness texture
      */
     fuzzRoughnessTexture: Nullable<BaseTexture>;
 
@@ -358,17 +363,17 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets/gets the specular roughness anisotropy (OpenPBR: specularRoughnessAnisotropy, PBR: anisotropy.intensity)
+     * Sets/gets the specular roughness anisotropy
      */
     specularRoughnessAnisotropy: number;
 
     /**
-     * Sets the anisotropy rotation (OpenPBR: anisotropyRotation, PBR: anisotropy.angle)
+     * Sets the anisotropy rotation
      */
     geometryTangentAngle: number;
 
     /**
-     * Sets/gets the anisotropy texture (OpenPBR: geometryTangentTexture, PBR: anisotropy.texture)
+     * Sets/gets the anisotropy texture
      */
     geometryTangentTexture: Nullable<BaseTexture>;
 
@@ -417,7 +422,7 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets the unlit flag (OpenPBR: unlit, PBR: unlit)
+     * Sets the unlit flag
      */
     unlit: boolean;
 
@@ -426,12 +431,12 @@ export interface IMaterialLoadingAdapter {
     // ========================================
 
     /**
-     * Sets/gets the geometry opacity (OpenPBR: geometryOpacity, PBR: alpha)
+     * Sets/gets the geometry opacity
      */
     geometryOpacity: number;
 
     /**
-     * Sets/gets the geometry normal texture (OpenPBR: geometryNormalTexture, PBR: bumpTexture)
+     * Sets/gets the geometry normal texture
      */
     geometryNormalTexture: Nullable<BaseTexture>;
 
@@ -443,7 +448,7 @@ export interface IMaterialLoadingAdapter {
     setNormalMapInversions(invertX: boolean, invertY: boolean): void;
 
     /**
-     * Sets/gets the coat normal texture (OpenPBR: geometryCoatNormalTexture, PBR: clearCoat.bumpTexture)
+     * Sets/gets the coat normal texture
      */
     geometryCoatNormalTexture: Nullable<BaseTexture>;
 

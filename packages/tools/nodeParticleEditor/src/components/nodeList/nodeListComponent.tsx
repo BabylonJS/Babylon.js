@@ -30,11 +30,12 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         Int: "Input block set to a integer value",
         TextureBlock: "Provide a texture",
         BoxShapeBlock: "Emit particles from a box shape",
-        SphereShapeBlock: "Emit particles from a sphere shape",
-        MeshShapeBlock: "Emit particles from a mesh shape",
-        CylinderShapeBlock: "Emit particles from a cylinder shape",
-        PointShapeBlock: "Emit particles from a point",
+        ConeShapeBlock: "Emit particles from a cone shape",
         CustomShapeBlock: "Emit particles from a custom position",
+        CylinderShapeBlock: "Emit particles from a cylinder shape",
+        MeshShapeBlock: "Emit particles from a mesh shape",
+        PointShapeBlock: "Emit particles from a point",
+        SphereShapeBlock: "Emit particles from a sphere shape",
         UpdateDirectionBlock: "Update the direction of a particle",
         UpdatePositionBlock: "Update the position of a particle",
         UpdateColorBlock: "Update the color of a particle",
@@ -120,6 +121,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         VectorLengthBlock: "Block used to get the length of a vector",
         LocalVariableBlock: "Block used to store local values (eg. within a loop)",
         FresnelBlock: "Block used to compute the Fresnel term",
+        ColorStepBlock: "Contextual block to get the expected color step of a particle",
+        ScaledColorStepBlock: "Contextual block to get the expected scaled color step of a particle",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -204,7 +207,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Shapes: ["BoxShapeBlock", "SphereShapeBlock", "PointShapeBlock", "CustomShapeBlock", "CylinderShapeBlock", "MeshShapeBlock"],
+            Shapes: ["BoxShapeBlock", "ConeShapeBlock", "SphereShapeBlock", "PointShapeBlock", "CustomShapeBlock", "CylinderShapeBlock", "MeshShapeBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Int", "TextureBlock", "Color4"],
             Updates: [
                 "UpdateDirectionBlock",
@@ -275,6 +278,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "SpriteCellStartBlock",
                 "SpriteCellIndexBlock",
                 "InitialDirectionBlock",
+                "ColorStepBlock",
+                "ScaledColorStepBlock",
             ],
         };
 
