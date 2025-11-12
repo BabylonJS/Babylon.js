@@ -270,6 +270,23 @@ Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<
         if (buffer !== null) {
             this._thinInstanceDataStorage.previousMatrixBuffer = this._thinInstanceCreateMatrixBuffer("previousWorld", buffer, staticBuffer);
         }
+    } else if (kind === "splatIndex" && buffer) {
+        this._thinInstanceInitializeUserStorage();
+
+        this._userThinInstanceBuffersStorage.data[kind] = buffer;
+        this._userThinInstanceBuffersStorage.strides[kind] = stride;
+        this._userThinInstanceBuffersStorage.sizes[kind] = buffer.length;
+        const splatInstancesBuffer = new Buffer(this.getEngine(), buffer, true, 16, false, true);
+
+        this._userThinInstanceBuffersStorage.vertexBuffers["splatIndex0"] = splatInstancesBuffer.createVertexBuffer("splatIndex0", 0, 4);
+        this._userThinInstanceBuffersStorage.vertexBuffers["splatIndex1"] = splatInstancesBuffer.createVertexBuffer("splatIndex1", 4, 4);
+        this._userThinInstanceBuffersStorage.vertexBuffers["splatIndex2"] = splatInstancesBuffer.createVertexBuffer("splatIndex2", 8, 4);
+        this._userThinInstanceBuffersStorage.vertexBuffers["splatIndex3"] = splatInstancesBuffer.createVertexBuffer("splatIndex3", 12, 4);
+
+        this.setVerticesBuffer(this._userThinInstanceBuffersStorage.vertexBuffers["splatIndex0"]!);
+        this.setVerticesBuffer(this._userThinInstanceBuffersStorage.vertexBuffers["splatIndex1"]!);
+        this.setVerticesBuffer(this._userThinInstanceBuffersStorage.vertexBuffers["splatIndex2"]!);
+        this.setVerticesBuffer(this._userThinInstanceBuffersStorage.vertexBuffers["splatIndex3"]!);
     } else {
         // color for instanced mesh is ColorInstanceKind and not ColorKind because of native that needs to do the differenciation
         // hot switching kind here to preserve backward compatibility

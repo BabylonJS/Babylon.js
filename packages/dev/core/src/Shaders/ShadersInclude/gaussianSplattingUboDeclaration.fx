@@ -1,4 +1,4 @@
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>
 
-attribute vec2 position;
+attribute vec3 position;

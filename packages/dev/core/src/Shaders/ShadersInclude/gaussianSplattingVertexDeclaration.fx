@@ -1,4 +1,4 @@
-attribute vec2 position;
+attribute vec3 position;
 
 uniform mat4 view;
 uniform mat4 projection;

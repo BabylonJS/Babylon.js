@@ -20,6 +20,33 @@ struct Splat {
 #endif
 };
 
+fn readSplat(localIndex: i32) -> float {
+    let splatIndex: f32;
+    switch (localIndex)
+    {
+        case 0: splatIndex = input.splatIndex0.x; break;
+        case 1: splatIndex = input.splatIndex0.y; break;
+        case 2: splatIndex = input.splatIndex0.z; break;
+        case 3: splatIndex = input.splatIndex0.w; break;
+
+        case 4: splatIndex = input.splatIndex1.x; break;
+        case 5: splatIndex = input.splatIndex1.y; break;
+        case 6: splatIndex = input.splatIndex1.z; break;
+        case 7: splatIndex = input.splatIndex1.w; break;
+
+        case 8: splatIndex = input.splatIndex2.x; break;
+        case 9: splatIndex = input.splatIndex2.y; break;
+        case 10: splatIndex = input.splatIndex2.z; break;
+        case 11: splatIndex = input.splatIndex2.w; break;
+
+        case 12: splatIndex = input.splatIndex3.x; break;
+        case 13: splatIndex = input.splatIndex3.y; break;
+        case 14: splatIndex = input.splatIndex3.z; break;
+        case 15: splatIndex = input.splatIndex3.w; break;
+    }
+    return splatIndex;
+}
+
 fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     var splat: Splat;
     let splatUV = getDataUV(splatIndex, dataTextureSize);

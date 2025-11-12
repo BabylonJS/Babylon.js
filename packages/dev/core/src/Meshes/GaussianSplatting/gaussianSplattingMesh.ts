@@ -423,13 +423,29 @@ export class GaussianSplattingMesh extends Mesh {
         super(name, scene);
 
         const vertexData = new VertexData();
+        const originPositions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
+        const originIndices = [0, 1, 2, 0, 2, 3];
+        const positions = [];
+        const indices = [];
+        const batchSize = 16; // 16 splats per instance
+        for (let i = 0; i < batchSize; i++) {
+            for (let j = 0; j < 12; j++) {
+                if (j == 2 || j == 5 || j == 8 || j == 11) {
+                    positions.push(i); // local splat index
+                } else {
+                    positions.push(originPositions[j]);
+                }
+            }
+            indices.push(originIndices.map((v) => v + i * 4));
+        }
 
-        vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
-        vertexData.indices = [0, 1, 2, 0, 2, 3];
+        vertexData.positions = positions;
+        vertexData.indices = indices.flat();
+
         vertexData.applyToMesh(this);
 
         this.subMeshes = [];
-        new SubMesh(0, 0, 4, 0, 6, this);
+        new SubMesh(0, 0, 4 * batchSize, 0, 6 * batchSize, this);
 
         this.setEnabled(false);
         // webGL2 and webGPU support for RG texture with float16 is fine. not webGL1
@@ -1268,7 +1284,7 @@ export class GaussianSplattingMesh extends Mesh {
         const binfo = this.getBoundingInfo();
         newGS.getBoundingInfo().reConstruct(binfo.minimum, binfo.maximum, this.getWorldMatrix());
 
-        newGS.forcedInstanceCount = newGS._vertexCount;
+        newGS.forcedInstanceCount = this.forcedInstanceCount;
         newGS.setEnabled(true);
         return newGS;
     }
@@ -1549,12 +1565,13 @@ export class GaussianSplattingMesh extends Mesh {
 
     // in case size is different
     private _updateSplatIndexBuffer(vertexCount: number): void {
+        const paddedVertexCount = (vertexCount + 15) & ~0xf;
         if (!this._splatIndex || vertexCount > this._splatIndex.length) {
-            this._splatIndex = new Float32Array(vertexCount);
+            this._splatIndex = new Float32Array(paddedVertexCount);
 
-            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 1, false);
+            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
         }
-        this.forcedInstanceCount = vertexCount;
+        this.forcedInstanceCount = paddedVertexCount >> 4;
     }
 
     private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {

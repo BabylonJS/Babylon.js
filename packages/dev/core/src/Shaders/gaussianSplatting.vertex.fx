@@ -11,7 +11,10 @@
 #include<helperFunctions>
 
 // Attributes
-attribute float splatIndex;
+attribute vec4 splatIndex0;
+attribute vec4 splatIndex1;
+attribute vec4 splatIndex2;
+attribute vec4 splatIndex3;
 
 // Uniforms
 uniform vec2 invViewport;
@@ -43,6 +46,29 @@ varying vec2 vPosition;
 #include<gaussianSplatting>
 
 void main () {
+    float splatIndex;
+    switch (int(position.z + 0.5))
+    {
+        case 0: splatIndex = splatIndex0.x; break;
+        case 1: splatIndex = splatIndex0.y; break;
+        case 2: splatIndex = splatIndex0.z; break;
+        case 3: splatIndex = splatIndex0.w; break;
+
+        case 4: splatIndex = splatIndex1.x; break;
+        case 5: splatIndex = splatIndex1.y; break;
+        case 6: splatIndex = splatIndex1.z; break;
+        case 7: splatIndex = splatIndex1.w; break;
+
+        case 8: splatIndex = splatIndex2.x; break;
+        case 9: splatIndex = splatIndex2.y; break;
+        case 10: splatIndex = splatIndex2.z; break;
+        case 11: splatIndex = splatIndex2.w; break;
+
+        case 12: splatIndex = splatIndex3.x; break;
+        case 13: splatIndex = splatIndex3.y; break;
+        case 14: splatIndex = splatIndex3.z; break;
+        case 15: splatIndex = splatIndex3.w; break;
+    }
     Splat splat = readSplat(splatIndex);
     vec3 covA = splat.covA.xyz;
     vec3 covB = vec3(splat.covA.w, splat.covB.xy);
@@ -50,7 +76,7 @@ void main () {
     vec4 worldPos = world * vec4(splat.center.xyz, 1.0);
 
     vColor = splat.color;
-    vPosition = position;
+    vPosition = position.xy;
 
 #if SH_DEGREE > 0
     mat3 worldRot = mat3(world);
@@ -61,7 +87,7 @@ void main () {
     vColor.xyz = splat.color.xyz + computeSH(splat, dir);
 #endif
 
-    gl_Position = gaussianSplatting(position, worldPos.xyz, vec2(1.,1.), covA, covB, world, view, projection);
+    gl_Position = gaussianSplatting(position.xy, worldPos.xyz, vec2(1.,1.), covA, covB, world, view, projection);
 
 #include<clipPlaneVertex>
 #include<fogVertex>

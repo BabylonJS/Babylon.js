@@ -1,7 +1,11 @@
 #include<sceneUboDeclaration>
 #include<meshUboDeclaration>
-attribute splatIndex: f32;
-attribute position: vec2f;
+attribute splatIndex0: vec4f;
+attribute splatIndex1: vec4f;
+attribute splatIndex2: vec4f;
+attribute splatIndex3: vec4f;
+
+attribute position: vec3f;
 
 uniform invViewport: vec2f;
 uniform dataTextureSize: vec2f;
@@ -20,7 +24,32 @@ varying vColor: vec4f;
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
-    var splat: Splat = readSplat(input.splatIndex, uniforms.dataTextureSize);
+
+    let splatIndex: f32;
+    switch (int(position.z + 0.5))
+    {
+        case 0: splatIndex = input.splatIndex0.x; break;
+        case 1: splatIndex = input.splatIndex0.y; break;
+        case 2: splatIndex = input.splatIndex0.z; break;
+        case 3: splatIndex = input.splatIndex0.w; break;
+
+        case 4: splatIndex = input.splatIndex1.x; break;
+        case 5: splatIndex = input.splatIndex1.y; break;
+        case 6: splatIndex = input.splatIndex1.z; break;
+        case 7: splatIndex = input.splatIndex1.w; break;
+
+        case 8: splatIndex = input.splatIndex2.x; break;
+        case 9: splatIndex = input.splatIndex2.y; break;
+        case 10: splatIndex = input.splatIndex2.z; break;
+        case 11: splatIndex = input.splatIndex2.w; break;
+
+        case 12: splatIndex = input.splatIndex3.x; break;
+        case 13: splatIndex = input.splatIndex3.y; break;
+        case 14: splatIndex = input.splatIndex3.z; break;
+        case 15: splatIndex = input.splatIndex3.w; break;
+    }
+
+    var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
     let worldPos: vec4f = mesh.world * vec4f(splat.center.xyz, 1.0);

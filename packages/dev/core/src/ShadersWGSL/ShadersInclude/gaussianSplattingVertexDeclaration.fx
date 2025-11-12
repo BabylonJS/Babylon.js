@@ -1,1 +1,1 @@
-attribute position: vec2f;
+attribute position: vec3f;
