@@ -116,9 +116,7 @@ export interface IDisposable {
 }
 
 // Defining Temps for the file to avoid misuse of shared TmpVectors
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const TempVect1 = new Vector4();
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const TempVect2 = new Vector4();
 
 /** Interface defining initialization parameters for Scene class */
@@ -1244,7 +1242,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * @param effect The effect to be bound
      * @param variableName name of the shader variable that will hold the eye position
      * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
-     * @returns the computed eye position
+     * @returns the computed eye position in a temp vector, caller can copy values as needed
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
         const eyePosition = this._eyePosition;
