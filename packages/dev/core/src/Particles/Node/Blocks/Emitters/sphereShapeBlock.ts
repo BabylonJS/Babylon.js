@@ -9,12 +9,19 @@ import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { Vector3 } from "core/Maths/math.vector";
 import { RandomRange } from "core/Maths/math.scalar.functions";
 import { _CreateLocalPositionData } from "./emitters.functions";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to provide a flow of particles emitted from a sphere shape.
  * DirectionRandomizer will be used for the particles initial direction unless both direction1 and direction2 are connected.
  */
 export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
+    /**
+     * Gets or sets a boolean indicating whether to emit in a hemispheric mode (top half of the sphere) or not
+     */
+    @editableInPropertyPage("Is hemispheric", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public isHemispheric = false;
+
     /**
      * Create a new SphereShapeBlock
      * @param name defines the block name
@@ -147,8 +154,12 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
             const phi = RandomRange(0, 2 * Math.PI);
             const theta = Math.acos(2 * v - 1);
             const randX = randRadius * Math.cos(phi) * Math.sin(theta);
-            const randY = randRadius * Math.cos(theta);
+            let randY = randRadius * Math.cos(theta);
             const randZ = randRadius * Math.sin(phi) * Math.sin(theta);
+
+            if (this.isHemispheric) {
+                randY = Math.abs(randY);
+            }
 
             if (system.isLocal) {
                 particle.position.copyFromFloats(randX, randY, randZ);
@@ -160,6 +171,20 @@ export class SphereShapeBlock extends NodeParticleBlock implements IShapeBlock {
         };
 
         this.output._storedValue = system;
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.isHemispheric = this.isHemispheric;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.isHemispheric = serializationObject.isHemispheric;
     }
 }
 

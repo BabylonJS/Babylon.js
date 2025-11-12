@@ -9,6 +9,7 @@ import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticle
 import type { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
 import type { CustomParticleEmitter } from "core/Particles/EmitterTypes/customParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
+import type { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphericParticleEmitter";
 import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
@@ -231,14 +232,22 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             break;
         }
         case "HemisphericParticleEmitter": {
-            // Hemispheric emitter is not supported in nodes yet
-            throw new Error("HemisphericParticleEmitter is not supported in Node Particle System.");
+            const source = emitter as HemisphericParticleEmitter;
+            shapeBlock = new SphereShapeBlock("Sphere Shape");
+
+            const target = shapeBlock as SphereShapeBlock;
+            target.isHemispheric = true;
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
+            break;
         }
         case "MeshParticleEmitter": {
             const source = emitter as MeshParticleEmitter;
             shapeBlock = new MeshShapeBlock("Mesh Shape");
 
             const target = shapeBlock as MeshShapeBlock;
+            target.useMeshNormalsForDirection = source.useMeshNormalsForDirection;
             _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
             _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
 
