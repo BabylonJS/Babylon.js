@@ -12,6 +12,7 @@ import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Block used to provide a flow of particles emitted from a cylinder shape.
+ * DirectionRandomizer will be used for the particles initial direction unless both direction1 and direction2 are connected.
  */
 export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock {
     private _tempVector = Vector3.Zero();
@@ -27,6 +28,8 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
         this.registerInput("height", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0);
         this.registerInput("radiusRange", NodeParticleBlockConnectionPointTypes.Float, true, 1, 0, 1);
         this.registerInput("directionRandomizer", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0, 1);
+        this.registerInput("direction1", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("direction2", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -74,6 +77,20 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
     }
 
     /**
+     * Gets the direction1 input component
+     */
+    public get direction1(): NodeParticleConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
+     * Gets the direction2 input component
+     */
+    public get direction2(): NodeParticleConnectionPoint {
+        return this._inputs[6];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeParticleConnectionPoint {
@@ -91,29 +108,45 @@ export class CylinderShapeBlock extends NodeParticleBlock implements IShapeBlock
             state.particleContext = particle;
             state.systemContext = system;
 
-            const directionRandomizer = this.directionRandomizer.getConnectedValue(state) as number;
+            // We always use directionRandomizer unless both directions are connected
+            if (this.direction1.isConnected === false || this.direction2.isConnected === false) {
+                const directionRandomizer = this.directionRandomizer.getConnectedValue(state) as number;
 
-            particle.position.subtractToRef(state.emitterPosition!, this._tempVector);
-            this._tempVector.normalize();
+                particle.position.subtractToRef(state.emitterPosition!, this._tempVector);
+                this._tempVector.normalize();
 
-            if (state.emitterInverseWorldMatrix) {
-                Vector3.TransformNormalToRef(this._tempVector, state.emitterInverseWorldMatrix, this._tempVector);
-            }
+                if (state.emitterInverseWorldMatrix) {
+                    Vector3.TransformNormalToRef(this._tempVector, state.emitterInverseWorldMatrix, this._tempVector);
+                }
 
-            const randY = RandomRange(-directionRandomizer / 2, directionRandomizer / 2);
+                const randY = RandomRange(-directionRandomizer / 2, directionRandomizer / 2);
 
-            let angle = Math.atan2(this._tempVector.x, this._tempVector.z);
-            angle += RandomRange(-Math.PI / 2, Math.PI / 2) * directionRandomizer;
+                let angle = Math.atan2(this._tempVector.x, this._tempVector.z);
+                angle += RandomRange(-Math.PI / 2, Math.PI / 2) * directionRandomizer;
 
-            this._tempVector.y = randY; // set direction y to rand y to mirror normal of cylinder surface
-            this._tempVector.x = Math.sin(angle);
-            this._tempVector.z = Math.cos(angle);
-            this._tempVector.normalize();
+                this._tempVector.y = randY; // set direction y to rand y to mirror normal of cylinder surface
+                this._tempVector.x = Math.sin(angle);
+                this._tempVector.z = Math.cos(angle);
+                this._tempVector.normalize();
 
-            if (system.isLocal) {
-                particle.direction.copyFrom(this._tempVector);
+                if (system.isLocal) {
+                    particle.direction.copyFrom(this._tempVector);
+                } else {
+                    Vector3.TransformNormalFromFloatsToRef(this._tempVector.x, this._tempVector.y, this._tempVector.z, state.emitterWorldMatrix!, particle.direction);
+                }
             } else {
-                Vector3.TransformNormalFromFloatsToRef(this._tempVector.x, this._tempVector.y, this._tempVector.z, state.emitterWorldMatrix!, particle.direction);
+                const direction1 = this.direction1.getConnectedValue(state) as Vector3;
+                const direction2 = this.direction2.getConnectedValue(state) as Vector3;
+
+                const randX = RandomRange(direction1.x, direction2.x);
+                const randY = RandomRange(direction1.y, direction2.y);
+                const randZ = RandomRange(direction1.z, direction2.z);
+
+                if (system.isLocal) {
+                    particle.direction.copyFromFloats(randX, randY, randZ);
+                } else {
+                    Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
+                }
             }
 
             particle._initialDirection = particle.direction.clone();
