@@ -8,8 +8,8 @@ import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { RandomRange } from "core/Maths/math.scalar.functions";
 import { Vector3 } from "core/Maths/math.vector";
-import { _CreateLocalPositionData } from "./emitters.functions";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Block used to provide a flow of particles emitted from a cone shape.

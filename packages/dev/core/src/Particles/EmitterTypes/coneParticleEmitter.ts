@@ -1,11 +1,13 @@
-import { DeepCopier } from "../../Misc/deepCopier";
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector3 } from "../../Maths/math.vector";
-import { RandomRange } from "../../Maths/math.scalar.functions";
-import type { Particle } from "../../Particles/particle";
+import type { Matrix } from "core/Maths/math.vector";
+import type { Particle } from "core/Particles/particle";
+import type { UniformBufferEffectCommonAccessor } from "core/Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
-import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
+
+import { DeepCopier } from "core/Misc/deepCopier";
+import { Vector3 } from "core/Maths/math.vector";
+import { RandomRange } from "core/Maths/math.scalar.functions";
+
 /**
  * Particle emitter emitting particles from the inside of a cone.
  * It emits the particles alongside the cone volume from the base to the particle.
