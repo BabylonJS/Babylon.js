@@ -12,7 +12,7 @@ import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums
 import { _CreateLocalPositionData } from "./emitters.functions";
 
 /** Function that generates particle position/direction data */
-export type ParticleGeneratorFunction = (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void;
+type ParticleGeneratorFunction = (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void;
 
 /**
  * Block used to provide a flow of particles emitted from a custom position.
