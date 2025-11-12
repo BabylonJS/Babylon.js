@@ -2,12 +2,12 @@ import type { Nullable } from "core/types";
 import type { Particle } from "core/Particles/particle";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
-import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import type { IShapeBlock } from "./IShapeBlock";
 
 import { TmpVectors, Vector3 } from "core/Maths/math.vector";
 import { RegisterClass } from "core/Misc/typeStore";
-import { EmptyGeneratorFunc } from "core/Particles/EmitterTypes";
+import { EmptyGeneratorFunc } from "core/Particles/EmitterTypes/customParticleEmitter";
+import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { _CreateLocalPositionData } from "./emitters.functions";
 
