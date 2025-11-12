@@ -7,10 +7,11 @@ import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
 import type { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
-import type { CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
+import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
+import type { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphericParticleEmitter";
 import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
 import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
-import type { SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
+import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
 import type { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
@@ -209,15 +210,35 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
             break;
         }
+        case "CylinderDirectedParticleEmitter": {
+            const source = emitter as CylinderDirectedParticleEmitter;
+            shapeBlock = new CylinderShapeBlock("Cylinder Shape");
+
+            const target = shapeBlock as CylinderShapeBlock;
+            _CreateAndConnectInput("Height", source.height, target.height);
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
+            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
+            break;
+        }
         case "HemisphericParticleEmitter": {
-            // Hemispheric emitter is not supported in nodes yet
-            throw new Error("HemisphericParticleEmitter is not supported in Node Particle System.");
+            const source = emitter as HemisphericParticleEmitter;
+            shapeBlock = new SphereShapeBlock("Sphere Shape");
+
+            const target = shapeBlock as SphereShapeBlock;
+            target.isHemispheric = true;
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
+            break;
         }
         case "MeshParticleEmitter": {
             const source = emitter as MeshParticleEmitter;
             shapeBlock = new MeshShapeBlock("Mesh Shape");
 
             const target = shapeBlock as MeshShapeBlock;
+            target.useMeshNormalsForDirection = source.useMeshNormalsForDirection;
             _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
             _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
 
@@ -241,6 +262,17 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             _CreateAndConnectInput("Radius", source.radius, target.radius);
             _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
             _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
+            break;
+        }
+        case "SphereDirectedParticleEmitter": {
+            const source = emitter as SphereDirectedParticleEmitter;
+            shapeBlock = new SphereShapeBlock("Sphere Shape");
+
+            const target = shapeBlock as SphereShapeBlock;
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Direction1", source.direction1, target.direction1);
+            _CreateAndConnectInput("Direction2", source.direction2, target.direction2);
             break;
         }
     }
