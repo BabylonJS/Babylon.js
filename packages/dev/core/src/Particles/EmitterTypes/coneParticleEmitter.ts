@@ -1,11 +1,13 @@
-import { DeepCopier } from "../../Misc/deepCopier";
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector3, TmpVectors } from "../../Maths/math.vector";
-import { RandomRange } from "../../Maths/math.scalar.functions";
-import type { Particle } from "../../Particles/particle";
+import type { Matrix } from "core/Maths/math.vector";
+import type { Particle } from "core/Particles/particle";
+import type { UniformBufferEffectCommonAccessor } from "core/Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
-import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
+
+import { DeepCopier } from "core/Misc/deepCopier";
+import { Vector3 } from "core/Maths/math.vector";
+import { RandomRange } from "core/Maths/math.scalar.functions";
+
 /**
  * Particle emitter emitting particles from the inside of a cone.
  * It emits the particles alongside the cone volume from the base to the particle.
@@ -87,19 +89,21 @@ export class ConeParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the direction should be set in local space
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        if (isLocal) {
-            TmpVectors.Vector3[0].copyFrom(particle._localPosition!).normalize();
-        } else {
-            particle.position.subtractToRef(worldMatrix.getTranslation(), TmpVectors.Vector3[0]).normalize();
-        }
-
+        const direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
         const randX = RandomRange(0, this.directionRandomizer);
         const randY = RandomRange(0, this.directionRandomizer);
         const randZ = RandomRange(0, this.directionRandomizer);
-        directionToUpdate.x = TmpVectors.Vector3[0].x + randX;
-        directionToUpdate.y = TmpVectors.Vector3[0].y + randY;
-        directionToUpdate.z = TmpVectors.Vector3[0].z + randZ;
-        directionToUpdate.normalize();
+        direction.x += randX;
+        direction.y += randY;
+        direction.z += randZ;
+        direction.normalize();
+
+        if (isLocal) {
+            directionToUpdate.copyFrom(direction);
+            return;
+        }
+
+        Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, worldMatrix, directionToUpdate);
     }
 
     /**

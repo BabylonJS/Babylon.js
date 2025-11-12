@@ -14,9 +14,9 @@ import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointPart
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "core/Particles/EmitterTypes/sphereParticleEmitter";
 import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
 import type { IShapeBlock } from "core/Particles/Node/Blocks/Emitters/IShapeBlock";
+import type { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
 import { Vector2, Vector3 } from "core/Maths/math.vector";
-import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
@@ -187,11 +187,11 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             shapeBlock = new ConeShapeBlock("Cone Shape");
 
             const target = shapeBlock as ConeShapeBlock;
+            target.emitFromSpawnPointOnly = source.emitFromSpawnPointOnly;
             _CreateAndConnectInput("Radius", source.radius, target.radius);
             _CreateAndConnectInput("Angle", source.angle, target.angle);
             _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
             _CreateAndConnectInput("Height Range", source.heightRange, target.heightRange);
-            _CreateAndConnectInput("Emit From Spawn Point Only", source.emitFromSpawnPointOnly ? 1 : 0, target.emitFromSpawnPointOnly, NodeParticleBlockConnectionPointTypes.Int);
             _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
             break;
         }

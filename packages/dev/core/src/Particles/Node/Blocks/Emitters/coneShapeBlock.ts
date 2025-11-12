@@ -7,12 +7,20 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector";
+import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Block used to provide a flow of particles emitted from a cone shape.
  */
 export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
+    /**
+     * Gets or sets a boolean indicating if the system should emit only from the spawn point
+     */
+    @editableInPropertyPage("Emit from spawn point only", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
+    public emitFromSpawnPointOnly = false;
+
     /**
      * Create a new ConeShapeBlock
      * @param name defines the block name
@@ -25,7 +33,6 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
         this.registerInput("angle", NodeParticleBlockConnectionPointTypes.Float, true, Math.PI);
         this.registerInput("radiusRange", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("heightRange", NodeParticleBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("emitFromSpawnPointOnly", NodeParticleBlockConnectionPointTypes.Int, true, 0);
         this.registerInput("directionRandomizer", NodeParticleBlockConnectionPointTypes.Float, true, 0);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
@@ -74,17 +81,10 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
     }
 
     /**
-     * Gets the emitFromSpawnPointOnly input component
-     */
-    public get emitFromSpawnPointOnly(): NodeParticleConnectionPoint {
-        return this._inputs[5];
-    }
-
-    /**
      * Gets the directionRandomizer input component
      */
     public get directionRandomizer(): NodeParticleConnectionPoint {
-        return this._inputs[6];
+        return this._inputs[5];
     }
 
     /**
@@ -105,30 +105,21 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.particleContext = particle;
             state.systemContext = system;
 
-            // Connected values
-            let directionRandomizer = this.directionRandomizer.getConnectedValue(state) as number;
-            directionRandomizer = Math.max(0, Math.min(directionRandomizer, 1));
+            const directionRandomizer = this.directionRandomizer.getConnectedValue(state) as number;
 
-            // Calculate create direction logic
-            if (system.isLocal) {
-                TmpVectors.Vector3[0].copyFrom(particle.position).normalize();
-            } else {
-                particle.position.subtractToRef(state.emitterWorldMatrix!.getTranslation(), TmpVectors.Vector3[0]).normalize();
-            }
-
+            const direction = particle.position.subtract(state.emitterPosition!).normalize();
             const randX = RandomRange(0, directionRandomizer);
             const randY = RandomRange(0, directionRandomizer);
             const randZ = RandomRange(0, directionRandomizer);
-            const directionToUpdate = new Vector3();
-            directionToUpdate.x = TmpVectors.Vector3[0].x + randX;
-            directionToUpdate.y = TmpVectors.Vector3[0].y + randY;
-            directionToUpdate.z = TmpVectors.Vector3[0].z + randZ;
-            directionToUpdate.normalize();
+            direction.x += randX;
+            direction.y += randY;
+            direction.z += randZ;
+            direction.normalize();
 
             if (system.isLocal) {
-                particle.direction.copyFromFloats(directionToUpdate.x, directionToUpdate.y, directionToUpdate.z);
+                particle.direction.copyFromFloats(direction.x, direction.y, direction.z);
             } else {
-                Vector3.TransformNormalFromFloatsToRef(directionToUpdate.x, directionToUpdate.y, directionToUpdate.z, state.emitterWorldMatrix!, particle.direction);
+                Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, state.emitterWorldMatrix!, particle.direction);
             }
 
             particle._initialDirection = particle.direction.clone();
@@ -141,15 +132,12 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
             // Connected values
             const radius = this.radius.getConnectedValue(state) as number;
             const angle = this.angle.getConnectedValue(state) as number;
-            let radiusRange = this.radiusRange.getConnectedValue(state) as number;
-            radiusRange = Math.max(0, Math.min(radiusRange, 1));
-            let heightRange = this.heightRange.getConnectedValue(state) as number;
-            heightRange = Math.max(0, Math.min(heightRange, 1));
-            const emitFromSpawnPointOnly = (this.emitFromSpawnPointOnly.getConnectedValue(state) as number) !== 0;
+            const radiusRange = this.radiusRange.getConnectedValue(state) as number;
+            const heightRange = this.heightRange.getConnectedValue(state) as number;
 
             // Calculate position creation logic
             let h: number;
-            if (!emitFromSpawnPointOnly) {
+            if (!this.emitFromSpawnPointOnly) {
                 h = RandomRange(0, heightRange);
                 // Better distribution in a cone at normal angles.
                 h = 1 - h * h;
@@ -159,20 +147,19 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
 
             let newRadius = radius - RandomRange(0, radius * radiusRange);
             newRadius = newRadius * h;
-
             const s = RandomRange(0, Math.PI * 2);
-            const height = this._calculateHeight(angle, radius);
 
             const randX = newRadius * Math.sin(s);
             const randZ = newRadius * Math.cos(s);
-            const randY = h * height;
+            const randY = h * this._calculateHeight(angle, radius);
 
             if (system.isLocal) {
                 particle.position.copyFromFloats(randX, randY, randZ);
-                particle.position.addInPlace(state.emitterPosition!);
             } else {
                 Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
             }
+
+            _CreateLocalPositionData(particle);
         };
 
         this.output._storedValue = system;
@@ -184,6 +171,20 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
         } else {
             return 1;
         }
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.emitFromSpawnPointOnly = this.emitFromSpawnPointOnly;
+
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.emitFromSpawnPointOnly = serializationObject.emitFromSpawnPointOnly;
     }
 }
 
