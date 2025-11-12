@@ -6,7 +6,7 @@ import type { ColorGradient } from "core/Misc";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { BoxParticleEmitter } from "core/Particles/EmitterTypes/boxParticleEmitter";
-import type { ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
+import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "core/Particles/EmitterTypes/coneParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "core/Particles/EmitterTypes/cylinderParticleEmitter";
 import type { HemisphericParticleEmitter } from "core/Particles/EmitterTypes/hemisphericParticleEmitter";
 import type { MeshParticleEmitter } from "core/Particles/EmitterTypes/meshParticleEmitter";
@@ -193,6 +193,20 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
             _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
             _CreateAndConnectInput("Height Range", source.heightRange, target.heightRange);
             _CreateAndConnectInput("Direction Randomizer", source.directionRandomizer, target.directionRandomizer);
+            break;
+        }
+        case "ConeDirectedParticleEmitter": {
+            const source = emitter as ConeDirectedParticleEmitter;
+            shapeBlock = new ConeShapeBlock("Cone Shape");
+
+            const target = shapeBlock as ConeShapeBlock;
+            target.emitFromSpawnPointOnly = source.emitFromSpawnPointOnly;
+            _CreateAndConnectInput("Radius", source.radius, target.radius);
+            _CreateAndConnectInput("Angle", source.angle, target.angle);
+            _CreateAndConnectInput("Radius Range", source.radiusRange, target.radiusRange);
+            _CreateAndConnectInput("Height Range", source.heightRange, target.heightRange);
+            _CreateAndConnectInput("Direction 1", source.direction1, target.direction1);
+            _CreateAndConnectInput("Direction 2", source.direction2, target.direction2);
             break;
         }
         case "CustomParticleEmitter": {

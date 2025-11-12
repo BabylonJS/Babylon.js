@@ -17,6 +17,7 @@ import { _CreateLocalPositionData } from "./emitters.functions";
 export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
     /**
      * Gets or sets a boolean indicating if the system should emit only from the spawn point
+     * DirectionRandomizer will be used for the particles initial direction unless both direction1 and direction2 are connected.
      */
     @editableInPropertyPage("Emit from spawn point only", PropertyTypeForEdition.Boolean, "ADVANCED", { embedded: true, notifiers: { rebuild: true } })
     public emitFromSpawnPointOnly = false;
@@ -34,6 +35,8 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
         this.registerInput("radiusRange", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("heightRange", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("directionRandomizer", NodeParticleBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("direction1", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("direction2", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -88,6 +91,20 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
     }
 
     /**
+     * Gets the direction1 input component
+     */
+    public get direction1(): NodeParticleConnectionPoint {
+        return this._inputs[6];
+    }
+
+    /**
+     * Gets the direction2 input component
+     */
+    public get direction2(): NodeParticleConnectionPoint {
+        return this._inputs[7];
+    }
+
+    /**
      * Gets the output component
      */
     public get output(): NodeParticleConnectionPoint {
@@ -105,21 +122,37 @@ export class ConeShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.particleContext = particle;
             state.systemContext = system;
 
-            const directionRandomizer = this.directionRandomizer.getConnectedValue(state) as number;
+            // We always use directionRandomizer unless both directions are connected
+            if (this.direction1.isConnected === false || this.direction2.isConnected === false) {
+                const directionRandomizer = this.directionRandomizer.getConnectedValue(state) as number;
 
-            const direction = particle.position.subtract(state.emitterPosition!).normalize();
-            const randX = RandomRange(0, directionRandomizer);
-            const randY = RandomRange(0, directionRandomizer);
-            const randZ = RandomRange(0, directionRandomizer);
-            direction.x += randX;
-            direction.y += randY;
-            direction.z += randZ;
-            direction.normalize();
+                const direction = particle.position.subtract(state.emitterPosition!).normalize();
+                const randX = RandomRange(0, directionRandomizer);
+                const randY = RandomRange(0, directionRandomizer);
+                const randZ = RandomRange(0, directionRandomizer);
+                direction.x += randX;
+                direction.y += randY;
+                direction.z += randZ;
+                direction.normalize();
 
-            if (system.isLocal) {
-                particle.direction.copyFromFloats(direction.x, direction.y, direction.z);
+                if (system.isLocal) {
+                    particle.direction.copyFromFloats(direction.x, direction.y, direction.z);
+                } else {
+                    Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, state.emitterWorldMatrix!, particle.direction);
+                }
             } else {
-                Vector3.TransformNormalFromFloatsToRef(direction.x, direction.y, direction.z, state.emitterWorldMatrix!, particle.direction);
+                const direction1 = this.direction1.getConnectedValue(state) as Vector3;
+                const direction2 = this.direction2.getConnectedValue(state) as Vector3;
+
+                const randX = RandomRange(direction1.x, direction2.x);
+                const randY = RandomRange(direction1.y, direction2.y);
+                const randZ = RandomRange(direction1.z, direction2.z);
+
+                if (system.isLocal) {
+                    particle.direction.copyFromFloats(randX, randY, randZ);
+                } else {
+                    Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
+                }
             }
 
             particle._initialDirection = particle.direction.clone();
