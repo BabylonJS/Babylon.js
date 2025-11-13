@@ -20,7 +20,7 @@ struct Splat {
 #endif
 };
 
-fn readSplat(localIndex: i32) -> float {
+fn getSplatIndex(localIndex: i32) -> float {
     let splatIndex: f32;
     switch (localIndex)
     {
