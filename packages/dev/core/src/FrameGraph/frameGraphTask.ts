@@ -1,5 +1,5 @@
 import type { FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle, InternalTexture, FrameGraphRenderContext } from "core/index";
-import { FrameGraphCullPass } from "./Passes/cullPass";
+import { FrameGraphObjectListPass } from "./Passes/objectListPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { Observable } from "core/Misc/observable";
 
@@ -145,7 +145,7 @@ export abstract class FrameGraphTask {
                     }
                 }
                 outputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.textureManager.getTextureFromHandle(pass.renderTargetDepth) : null;
-            } else if (FrameGraphCullPass.IsCullPass(pass)) {
+            } else if (FrameGraphObjectListPass.IsObjectListPass(pass)) {
                 outputObjectList = pass.objectList;
             }
         }
@@ -170,7 +170,7 @@ export abstract class FrameGraphTask {
                 }
                 disabledOutputTextureHandle = handles;
                 disabledOutputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.textureManager.getTextureFromHandle(pass.renderTargetDepth) : null;
-            } else if (FrameGraphCullPass.IsCullPass(pass)) {
+            } else if (FrameGraphObjectListPass.IsObjectListPass(pass)) {
                 disabledOutputObjectList = pass.objectList;
             }
         }

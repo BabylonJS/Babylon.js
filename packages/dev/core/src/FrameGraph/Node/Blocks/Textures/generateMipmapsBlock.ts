@@ -60,7 +60,7 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._propagateInputValueToOutput(this.target, this.output);
+        this.output.value = this._frameGraphTask.outputTexture;
 
         this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
     }

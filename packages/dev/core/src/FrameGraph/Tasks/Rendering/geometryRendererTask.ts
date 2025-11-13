@@ -116,6 +116,16 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
     public dontRenderWhenMaterialDepthWriteIsDisabled = true;
 
     /**
+     * If true, the output geometry texture(s) will be resolved at the end of the render pass, if samples is greater than 1 (default: true)
+     */
+    public resolveMSAAColors = true;
+
+    /**
+     * If true, depthTexture will be resolved at the end of the render pass, if this texture is provided and samples is greater than 1 (default: true)
+     */
+    public resolveMSAADepth = false;
+
+    /**
      * The list of texture descriptions used by the geometry renderer task.
      */
     public textureDescriptions: IFrameGraphGeometryRendererTextureDescription[] = [];
@@ -402,6 +412,9 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
+
+            pass.frameGraphRenderTarget!.renderTargetWrapper!.resolveMSAAColors = this.resolveMSAAColors;
+            pass.frameGraphRenderTarget!.renderTargetWrapper!.resolveMSAADepth = this.resolveMSAADepth;
 
             context.setDepthStates(this.depthTest && depthEnabled, this.depthWrite && depthEnabled);
 
