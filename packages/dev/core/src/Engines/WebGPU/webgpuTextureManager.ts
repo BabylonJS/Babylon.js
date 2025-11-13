@@ -1391,4 +1391,3 @@ export class WebGPUTextureManager {
         this._deferredReleaseTextures.length = 0;
     }
 }
-
