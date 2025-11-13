@@ -277,7 +277,7 @@ Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<
         this._userThinInstanceBuffersStorage.strides[kind] = stride;
         this._userThinInstanceBuffersStorage.sizes[kind] = buffer.length;
         const splatInstancesBuffer = new Buffer(this.getEngine(), buffer, true, 16, false, true);
-
+        this._thinInstanceDataStorage.matrixBuffer = splatInstancesBuffer;
         for (let i = 0; i < 4; i++) {
             this.setVerticesBuffer(splatInstancesBuffer.createVertexBuffer(kind + i, i * 4, 4));
         }
@@ -324,6 +324,8 @@ Mesh.prototype.thinInstanceBufferUpdated = function (kind: string): void {
             this._thinInstanceRecreateBuffer(kind);
         }
         this._thinInstanceDataStorage.previousMatrixBuffer?.updateDirectly(this._thinInstanceDataStorage.previousMatrixData!, 0, this._thinInstanceDataStorage.instancesCount);
+    } else if (kind === "splatIndex") {
+        this._thinInstanceDataStorage.matrixBuffer?.updateDirectly(this._userThinInstanceBuffersStorage.data[kind], 0, this._thinInstanceDataStorage.instancesCount);
     } else {
         // preserve backward compatibility
         if (kind === VertexBuffer.ColorKind) {
