@@ -1235,7 +1235,7 @@ export class WebGPUTextureManager {
                         buffer: buffer,
                         offset: 0,
                         bytesPerRow,
-                        rowsPerImage: height,
+                        rowsPerImage: textureExtent.height / blockInformation.height,
                     },
                     textureCopyView,
                     textureExtent
@@ -1251,7 +1251,7 @@ export class WebGPUTextureManager {
                     {
                         offset: 0,
                         bytesPerRow,
-                        rowsPerImage: height,
+                        rowsPerImage: textureExtent.height / blockInformation.height,
                     },
                     textureExtent
                 );
@@ -1391,3 +1391,4 @@ export class WebGPUTextureManager {
         this._deferredReleaseTextures.length = 0;
     }
 }
+
