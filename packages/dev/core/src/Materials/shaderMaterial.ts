@@ -34,6 +34,7 @@ import {
     PushAttributesForInstances,
 } from "./materialHelper.functions";
 import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
+import type { InternalTexture } from "./Textures/internalTexture";
 
 const OnCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -118,6 +119,7 @@ export class ShaderMaterial extends PushMaterial {
     private _shaderPath: IShaderPath | string;
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
+    private _internalTextures: { [name: string]: InternalTexture } = {};
     private _textureArrays: { [name: string]: BaseTexture[] } = {};
     private _externalTextures: { [name: string]: ExternalTexture } = {};
     private _floats: { [name: string]: number } = {};
@@ -262,6 +264,21 @@ export class ShaderMaterial extends PushMaterial {
             this._options.samplers.push(name);
         }
         this._textures[name] = texture;
+
+        return this;
+    }
+
+    /**
+     * Set an internal texture in the shader.
+     * @param name Define the name of the uniform samplers as defined in the shader
+     * @param texture Define the texture to bind to this sampler
+     * @returns the material itself allowing "fluent" like uniform updates
+     */
+    public setInternalTexture(name: string, texture: InternalTexture): ShaderMaterial {
+        if (this._options.samplers.indexOf(name) === -1) {
+            this._options.samplers.push(name);
+        }
+        this._internalTextures[name] = texture;
 
         return this;
     }
@@ -839,6 +856,12 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
+        for (const name in this._internalTextures) {
+            if (!this._internalTextures[name].isReady) {
+                return false;
+            }
+        }
+
         // Alpha test
         if (mesh && this.needAlphaTestingForMesh(mesh)) {
             defines.push("#define ALPHATEST");
@@ -1077,6 +1100,10 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setTexture(name, this._textures[name]);
             }
 
+            for (name in this._internalTextures) {
+                effect._bindTexture(name, this._internalTextures[name]);
+            }
+
             // Texture arrays
             for (name in this._textureArrays) {
                 effect.setTextureArray(name, this._textureArrays[name]);
@@ -1273,6 +1300,13 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
+        const internalTexture = texture.getInternalTexture();
+        for (const name in this._internalTextures) {
+            if (this._internalTextures[name] === internalTexture) {
+                return true;
+            }
+        }
+
         for (const name in this._textureArrays) {
             const array = this._textureArrays[name];
             for (let index = 0; index < array.length; index++) {
@@ -1319,6 +1353,10 @@ export class ShaderMaterial extends PushMaterial {
         // Texture
         for (const key in this._textures) {
             result.setTexture(key, this._textures[key]);
+        }
+
+        for (const key in this._internalTextures) {
+            result.setInternalTexture(key, this._internalTextures[key]);
         }
 
         // TextureArray
@@ -1461,6 +1499,9 @@ export class ShaderMaterial extends PushMaterial {
             for (name in this._textures) {
                 this._textures[name].dispose();
             }
+            for (name in this._internalTextures) {
+                this._internalTextures[name].dispose();
+            }
 
             for (name in this._textureArrays) {
                 const array = this._textureArrays[name];
@@ -1471,6 +1512,7 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         this._textures = {};
+        this._internalTextures = {};
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
 
