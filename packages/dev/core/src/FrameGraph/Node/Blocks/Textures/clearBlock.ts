@@ -135,8 +135,8 @@ export class NodeRenderGraphClearBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._propagateInputValueToOutput(this.target, this.output);
-        this._propagateInputValueToOutput(this.depth, this.outputDepth);
+        this.output.value = this._frameGraphTask.outputTexture;
+        this.outputDepth.value = this._frameGraphTask.outputDepthTexture;
 
         this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
         this._frameGraphTask.depthTexture = this.depth.connectedPoint?.value as FrameGraphTextureHandle;
