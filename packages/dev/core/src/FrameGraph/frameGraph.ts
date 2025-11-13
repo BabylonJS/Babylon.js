@@ -243,6 +243,19 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
+     * Checks if the frame graph is ready to be executed.
+     * Note that you can use the whenReadyAsync method to wait for the frame graph to be ready.
+     * @returns True if the frame graph is ready to be executed, else false
+     */
+    public isReady(): boolean {
+        let ready = this._renderContext._isReady();
+        for (const task of this._tasks) {
+            ready &&= task.isReady();
+        }
+        return ready;
+    }
+
+    /**
      * Returns a promise that resolves when the frame graph is ready to be executed
      * This method must be called after the graph has been built (FrameGraph.build called)!
      * @param timeStep Time step in ms between retries (default is 16)
@@ -251,7 +264,7 @@ export class FrameGraph implements IDisposable {
      */
     public async whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
-        return await new Promise((resolve) => {
+        return await new Promise((resolve, reject) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
                     let ready = this._renderContext._isReady();
@@ -286,6 +299,7 @@ export class FrameGraph implements IDisposable {
                             Logger.Error(err);
                         }
                     }
+                    reject(new Error(err));
                 },
                 timeStep,
                 maxTimeout
