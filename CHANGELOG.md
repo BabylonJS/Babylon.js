@@ -1,5 +1,39 @@
 # Changelog
 
+## 8.37.0
+
+### Core
+
+- Adding CustomShape support - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17439](https://github.com/BabylonJS/Babylon.js/pull/17439))
+- Adding cone emitter support - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17444](https://github.com/BabylonJS/Babylon.js/pull/17444))
+- Fix ray length check - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#17443](https://github.com/BabylonJS/Babylon.js/pull/17443))
+- Add support for node material blocks - by [georginahalpern](https://github.com/georginahalpern) ([#17441](https://github.com/BabylonJS/Babylon.js/pull/17441))
+- Update _globalPosition from base camera when calculating view/world matrices - by [georginahalpern](https://github.com/georginahalpern) ([#17440](https://github.com/BabylonJS/Babylon.js/pull/17440))
+- Add support for hemispheric emission in sphere shape - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17437](https://github.com/BabylonJS/Babylon.js/pull/17437))
+- Fixing issues with MeshShape - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17438](https://github.com/BabylonJS/Babylon.js/pull/17438))
+- Add directed cylinder shape - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17436](https://github.com/BabylonJS/Babylon.js/pull/17436))
+- Add directedsphere emitter - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17435](https://github.com/BabylonJS/Babylon.js/pull/17435))
+- Updating cylinder shape - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17434](https://github.com/BabylonJS/Babylon.js/pull/17434))
+- Particles point emitter - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17431](https://github.com/BabylonJS/Babylon.js/pull/17431))
+- Fixing sphere emitter - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17432](https://github.com/BabylonJS/Babylon.js/pull/17432))
+- Adding particles islocal support for NPE - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17429](https://github.com/BabylonJS/Babylon.js/pull/17429))
+- Remove audio volume ramp overlap limitation - by [docEdub](https://github.com/docEdub) ([#17424](https://github.com/BabylonJS/Babylon.js/pull/17424))
+- PrePass Renderer: fix wrong camera being used for the prepass setup - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17430](https://github.com/BabylonJS/Babylon.js/pull/17430))
+- Inspector v2: debugLayer and back compat first pass - by [ryantrem](https://github.com/ryantrem) ([#17421](https://github.com/BabylonJS/Babylon.js/pull/17421))
+- Allow overriding new asset URLs in core - by [alexchuber](https://github.com/alexchuber) ([#17427](https://github.com/BabylonJS/Babylon.js/pull/17427))
+- Fixes bug with simple colors - [_Bug Fix_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17426](https://github.com/BabylonJS/Babylon.js/pull/17426))
+- Fixing handling of undefined values - by [VicenteCartas](https://github.com/VicenteCartas) ([#17425](https://github.com/BabylonJS/Babylon.js/pull/17425))
+- Fix WebXR pick bug - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#17423](https://github.com/BabylonJS/Babylon.js/pull/17423))
+- Add support for particles textureMask - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17419](https://github.com/BabylonJS/Babylon.js/pull/17419))
+- FrameGraph: fix mipmap generation + crash with the utility layer renderer - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17420](https://github.com/BabylonJS/Babylon.js/pull/17420))
+- Adding particles translation support - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17418](https://github.com/BabylonJS/Babylon.js/pull/17418))
+- Adding angular speed update - [_New Feature_] by [VicenteCartas](https://github.com/VicenteCartas) ([#17417](https://github.com/BabylonJS/Babylon.js/pull/17417))
+
+### Playground
+
+- Inspector v2: back compat second pass - by [ryantrem](https://github.com/ryantrem) ([#17433](https://github.com/BabylonJS/Babylon.js/pull/17433))
+- Inspector v2: debugLayer and back compat first pass - by [ryantrem](https://github.com/ryantrem) ([#17421](https://github.com/BabylonJS/Babylon.js/pull/17421))
+
 ## 8.36.1
 
 ### Core
