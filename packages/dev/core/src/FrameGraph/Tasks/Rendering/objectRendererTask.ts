@@ -328,8 +328,11 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
 
-            pass.frameGraphRenderTarget!.renderTargetWrapper!.resolveMSAAColors = this.resolveMSAAColors;
-            pass.frameGraphRenderTarget!.renderTargetWrapper!.resolveMSAADepth = this.resolveMSAADepth;
+            const renderTargetWrapper = pass.frameGraphRenderTarget!.renderTargetWrapper;
+            if (renderTargetWrapper) {
+                renderTargetWrapper.resolveMSAAColors = this.resolveMSAAColors;
+                renderTargetWrapper.resolveMSAADepth = this.resolveMSAADepth;
+            }
 
             // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
             const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;
