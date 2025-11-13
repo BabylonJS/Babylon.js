@@ -1,7 +1,7 @@
 import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph, IDisposable } from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
-import { FrameGraphCullPass } from "./Passes/cullPass";
+import { FrameGraphObjectListPass } from "./Passes/objectListPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
@@ -16,7 +16,7 @@ import "core/Engines/WebGPU/Extensions/engine.multiRender";
 enum FrameGraphPassType {
     Normal = 0,
     Render = 1,
-    Cull = 2,
+    ObjectList = 2,
 }
 
 /**
@@ -170,13 +170,13 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
-     * Adds a cull pass to a task. This method can only be called during a Task.record execution.
+     * Adds an object list pass to a task. This method can only be called during a Task.record execution.
      * @param name The name of the pass
      * @param whenTaskDisabled If true, the pass will be added to the list of passes to execute when the task is disabled (default is false)
-     * @returns The cull pass created
+     * @returns The object list pass created
      */
-    public addCullPass(name: string, whenTaskDisabled = false): FrameGraphCullPass {
-        return this._addPass(name, FrameGraphPassType.Cull, whenTaskDisabled) as FrameGraphCullPass;
+    public addObjectListPass(name: string, whenTaskDisabled = false): FrameGraphObjectListPass {
+        return this._addPass(name, FrameGraphPassType.ObjectList, whenTaskDisabled) as FrameGraphObjectListPass;
     }
 
     private _addPass(name: string, passType: FrameGraphPassType, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> | FrameGraphRenderPass {
@@ -190,8 +190,8 @@ export class FrameGraph implements IDisposable {
             case FrameGraphPassType.Render:
                 pass = new FrameGraphRenderPass(name, this._currentProcessedTask, this._renderContext, this._engine);
                 break;
-            case FrameGraphPassType.Cull:
-                pass = new FrameGraphCullPass(name, this._currentProcessedTask, this._passContext, this._engine);
+            case FrameGraphPassType.ObjectList:
+                pass = new FrameGraphObjectListPass(name, this._currentProcessedTask, this._passContext, this._engine);
                 break;
             default:
                 pass = new FrameGraphPass(name, this._currentProcessedTask, this._passContext);
