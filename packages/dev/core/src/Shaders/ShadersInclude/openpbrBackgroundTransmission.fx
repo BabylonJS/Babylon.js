@@ -7,10 +7,9 @@ vec4 slab_translucent_background = vec4(0., 0., 0., 1.);
     vec2 refractionCoords = refractionUVW.xy / refractionUVW.z;
     refractionCoords.y = 1.0 - refractionCoords.y;
     
-    // Select a mipmap LOD appropriate for the roughness and IOR
+    // Select a mipmap LOD appropriate for the roughness (and IOR)
     // vBackgroundRefractionInfos.x is the number of mips of backgroundRefractionSampler
-    // When IOR is 1.0, there is no refraction, so LOD is 0
-    float refractionLOD = specular_roughness * vBackgroundRefractionInfos.x * 3.0 * (specular_ior - 1.0);
+    float refractionLOD = transmission_roughness * vBackgroundRefractionInfos.x;
     // Apply a noise offset to reduce artifacts at higher LODs
     if (refractionLOD > 0.0) {
         refractionCoords += noise.xy / vec2(pow(2.0, vBackgroundRefractionInfos.x - refractionLOD));

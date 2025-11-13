@@ -237,8 +237,7 @@
     vec3 slab_translucent_base_ibl = slab_translucent_background.rgb;
     #ifdef REFRACTED_ENVIRONMENT
         
-        // Scale the refraction roughness based on the IOR to get appropriate blurriness.
-        float refractionAlphaG = (specular_ior - 1.0) * specularAlphaG;
+        float refractionAlphaG = transmission_roughness * transmission_roughness;
         #ifdef ANISOTROPIC_BASE
             vec3 environmentRefraction = sampleRadianceAnisotropic(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
                 , baseGeoInfo

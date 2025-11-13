@@ -243,8 +243,7 @@
     var slab_translucent_base_ibl: vec3f = slab_translucent_background.rgb;
     #ifdef REFRACTED_ENVIRONMENT
         
-        // Scale the refraction roughness based on the IOR to get appropriate blurriness.
-        let refractionAlphaG: f32 = (specular_ior - 1.0f) * specularAlphaG;
+        let refractionAlphaG: f32 = transmission_roughness * transmission_roughness;
         #ifdef ANISOTROPIC_BASE
             var environmentRefraction: vec3f = sampleRadianceAnisotropic(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
                 , baseGeoInfo
