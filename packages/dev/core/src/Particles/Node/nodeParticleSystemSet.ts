@@ -422,7 +422,6 @@ export class NodeParticleSystemSet {
         const spsInitTetra = new SPSInitBlock("Initialize Tetrahedron Particles");
         spsInitTetra.initData.connectTo(spsCreateTetra.initBlock);
 
-        // STEP 6: Random X, Z position using Vector2 (-10 to 10)
         const randomXZMin = new ParticleInputBlock("Random XZ Min");
         randomXZMin.value = new Vector2(-10, -10);
         const randomXZMax = new ParticleInputBlock("Random XZ Max");
@@ -432,7 +431,6 @@ export class NodeParticleSystemSet {
         randomXZMin.output.connectTo(randomXZ.min);
         randomXZMax.output.connectTo(randomXZ.max);
 
-        // STEP 8: Random angle (-PI to PI)
         const randomAngleMin = new ParticleInputBlock("Random Angle Min");
         randomAngleMin.value = -Math.PI;
         const randomAngleMax = new ParticleInputBlock("Random Angle Max");
@@ -442,7 +440,6 @@ export class NodeParticleSystemSet {
         randomAngleMin.output.connectTo(randomAngle.min);
         randomAngleMax.output.connectTo(randomAngle.max);
 
-        // STEP 9: Random range (1 to 5) - smaller range for Y position
         const randomRangeMin = new ParticleInputBlock("Random Range Min");
         randomRangeMin.value = 1;
         const randomRangeMax = new ParticleInputBlock("Random Range Max");
@@ -452,7 +449,6 @@ export class NodeParticleSystemSet {
         randomRangeMin.output.connectTo(randomRange.min);
         randomRangeMax.output.connectTo(randomRange.max);
 
-        // STEP 10: Calculate Y position: range * (1 + cos(angle))
         const one = new ParticleInputBlock("One");
         one.value = 1;
         const cosAngle = new ParticleTrigonometryBlock("Cos Angle");
@@ -475,7 +471,6 @@ export class NodeParticleSystemSet {
         extractXZ.yOut.connectTo(positionConverter.zIn);
         positionConverter.xyzOut.connectTo(spsInitTetra.position);
 
-        // STEP 12: Random rotation using Vector3 (-PI to PI)
         const randomRotMin = new ParticleInputBlock("Random Rot Min");
         randomRotMin.value = new Vector3(-Math.PI, -Math.PI, -Math.PI);
         const randomRotMax = new ParticleInputBlock("Random Rot Max");
@@ -486,7 +481,6 @@ export class NodeParticleSystemSet {
         randomRotMax.output.connectTo(randomRot.max);
         randomRot.output.connectTo(spsInitTetra.rotation);
 
-        // STEP 16: Random color using Vector3 random and ConverterBlock
         const randomColorMin = new ParticleInputBlock("Random Color Min");
         randomColorMin.value = new Vector3(0, 0, 0);
         const randomColorMax = new ParticleInputBlock("Random Color Max");
