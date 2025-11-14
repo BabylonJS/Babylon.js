@@ -3,13 +3,13 @@ import { CubicEase, EasingFunction } from "../../Animations/easing";
 import type { Nullable } from "../../types";
 import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
-import type { Camera } from "../../Cameras/camera.ts";
+import type { Camera } from "../../Cameras/camera";
 
 /**
  * Animate camera property changes with an interpolation effect
  * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors
  */
-export class InterpolatingBehavior<C extends Camera = Camera> implements Behavior<C> {
+export class InterpolatingBehavior<C extends Camera> implements Behavior<C> {
     /**
      * Gets the name of the behavior.
      */
