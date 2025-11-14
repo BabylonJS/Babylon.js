@@ -3,16 +3,13 @@ import { Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Epsilon } from "../Maths/math.constants";
 import { Scalar } from "../Maths/math.scalar";
 import { Camera } from "./camera";
-import { Ray } from "../Culling/ray";
 import type { Scene } from "../scene";
-import type { MeshPredicate } from "../Culling/ray.core";
-import type { Nullable } from "../types";
+import type { MeshPredicate, Ray } from "../Culling/ray.core";
+import { GeospatialCameraMovement } from "./geospatialCameraMovement";
+import { GeospatialLimits } from "./Limits/geospatialLimits";
 
 type CameraOptions = {
     planetRadius: number; // Radius of the planet
-    minAltitude?: number; // Minimum altitude of the camera above the planet surface
-    maxAltitude?: number; // Maximum altitude of the camera above the planet surface
-    restingAltitude?: number; // The altitude the camera will return to when not being actively zoomed in or out
 };
 
 /**
@@ -29,22 +26,10 @@ type CameraOptions = {
 export class GeospatialCamera extends Camera {
     override inputs: GeospatialCameraInputsManager;
 
-    // Changed by the inputs, reset on every frame
-    /** @internal */
-    public _perFrameGeocentricTranslation: Vector3; // Translation that keeps camera at the same radius from the center of the globe
-    /** @internal */
-    public _perFrameGeocentricRotation: Vector3; // Rotation around center (distinct from rotation around camera that can cause looking off into space)
-    /** @internal */
-    public _perFrameZoom: number;
-
     /** If supplied, will be used when picking the globe */
     public pickPredicate?: MeshPredicate;
 
-    /**
-     * Enables rotation around a specific point, instead of default rotation around center
-     * @internal
-     */
-    public _alternateRotationPt: Nullable<Vector3>;
+    public movement: GeospatialCameraMovement;
 
     /** The point on the globe that we are anchoring around. If no alternate rotation point is supplied, this will represent the center of screen*/
     public get center(): Vector3 {
@@ -64,13 +49,6 @@ export class GeospatialCamera extends Camera {
     private _isViewMatrixDirty: boolean;
     private _lookAtVector: Vector3;
 
-    // Camera configuration vars
-    private _planetRadius: number;
-    private _minAltitude: number;
-    private _maxAltitude?: number;
-    private _maxCameraRadius?: number;
-    private _restingAltitude: number;
-
     /** Target of camera when looking along lookAtVector from current position. This does not necessarily represent a point on the globe */
     private get _target(): Vector3 {
         return this.position.addToRef(this._lookAtVector, this._tempPosition);
@@ -78,43 +56,40 @@ export class GeospatialCamera extends Camera {
 
     /** The point around which the camera will geocentrically rotate. Uses center (pt we are anchored to) if no alternateRotationPt is defined */
     private get _geocentricRotationPt(): Vector3 {
-        return this._alternateRotationPt ?? this.center;
+        return this.movement.alternateRotationPt ?? this.center;
     }
 
     constructor(name: string, scene: Scene, options: CameraOptions, pickPredicate?: MeshPredicate) {
-        super(name, Vector3.Zero(), scene);
-        this._resetToDefault(options);
+        super(name, new Vector3(), scene);
+
+        this._limits = new GeospatialLimits(options.planetRadius);
+        this._resetToDefault();
+
+        this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, pickPredicate);
+
         this.pickPredicate = pickPredicate;
         this.inputs = new GeospatialCameraInputsManager(this);
-        this.inputs.addMouse().addMouseWheel();
+        this.inputs.addMouse().addMouseWheel().addKeyboard();
     }
 
-    private _resetToDefault(options: CameraOptions): void {
-        // Camera configuration vars
-        this._minAltitude = options.minAltitude ?? 5;
-        this._maxAltitude = options.maxAltitude;
-        this._planetRadius = options.planetRadius;
-        this._maxCameraRadius = this._maxAltitude ? this._planetRadius + this._maxAltitude : undefined;
-        this._restingAltitude = options.restingAltitude ?? this._maxCameraRadius ?? this._planetRadius * 4;
-        this.position.copyFromFloats(0, 0, -this._restingAltitude);
+    private _limits: GeospatialLimits;
+    public get limits(): GeospatialLimits {
+        return this._limits;
+    }
 
-        // Input vars
-        this._perFrameGeocentricRotation = Vector3.Zero();
-        this._perFrameGeocentricTranslation = Vector3.Zero();
-        this._perFrameZoom = 0;
+    private _resetToDefault(): void {
+        // Camera configuration vars
+        const maxCameraRadius = this._limits.altitudeMax !== undefined ? this._limits.planetRadius + this._limits.altitudeMax : undefined;
+        const restingAltitude = maxCameraRadius ?? this._limits.planetRadius * 4;
+        this.position.copyFromFloats(restingAltitude, 0, 0);
 
         // Temp vars
-        this._tempPosition = Vector3.Zero();
-        this._tempRotationAxis = Vector3.Right(); // starting axis used to calculate pitch rotation matrix
-        this._tempRotationMatrix = Matrix.Identity();
-        this._tempGeocentricNormal = Vector3.Zero();
-        this._tempPickingRay = new Ray(this.position, this._lookAtVector);
-        this._tempPickingRay.direction = Vector3.Zero();
+        this._tempPosition = new Vector3();
 
         // View matrix calculation vars
-        this.upVector = Vector3.Up(); // Up vector of the camera
-        this._lookAtVector = this.position.negate().normalize(); // Lookat vector of the camera
         this._viewMatrix = Matrix.Identity();
+        this._target.subtractToRef(this.position, this._lookAtVector).normalize(); // Lookat vector of the camera
+        this.upVector = Vector3.Up(); // Up vector of the camera (does work for -X look at)
         this._isViewMatrixDirty = true;
     }
 
@@ -173,7 +148,7 @@ export class GeospatialCamera extends Camera {
      */
     private _applyGeocentricTranslation() {
         // Store pending position (without any corrections applied)
-        this.position.addToRef(this._perFrameGeocentricTranslation, this._tempPosition);
+        this.position.addToRef(this.movement.panDeltaCurrentFrame, this._tempPosition);
 
         // 1. Calculate the altitude correction to keep camera at the same radius when applying translation
         const tempPositionScaled = TmpVectors.Vector3[2];
@@ -198,7 +173,7 @@ export class GeospatialCamera extends Camera {
         const pitchRotationMatrix = Matrix.Identity();
         const yawRotationMatrix = Matrix.Identity();
         // First apply pitch
-        if (this._perFrameGeocentricRotation.x !== 0) {
+        if (this.movement.rotationDeltaCurrentFrame.x !== 0) {
             // Compute a rotation axis that is perpendicular to both the upVector and the geocentricNormalOfPitchPoint
             Vector3.CrossToRef(this.upVector, this._tempGeocentricNormal, this._tempRotationAxis);
 
@@ -210,14 +185,14 @@ export class GeospatialCamera extends Camera {
             const pitchSign = Math.sign(Vector3.Dot(this._tempGeocentricNormal, this.upVector)); // If negative, camera is upside down
             // Since these are pointed in opposite directions, we must negate the dot product to get the proper angle
             const currentPitch = pitchSign * Math.acos(Scalar.Clamp(-Vector3.Dot(this._lookAtVector, this._tempGeocentricNormal), -1, 1));
-            const newPitch = Scalar.Clamp(currentPitch + this._perFrameGeocentricRotation.x, 0, 0.5 * Math.PI - Epsilon);
+            const newPitch = Scalar.Clamp(currentPitch + this.movement.rotationDeltaCurrentFrame.x, 0, 0.5 * Math.PI - Epsilon);
             // Build rotation matrix around normalized axis
             Matrix.RotationAxisToRef(this._tempRotationAxis.normalize(), newPitch - currentPitch, pitchRotationMatrix);
         }
 
         // Then apply yaw
-        if (this._perFrameGeocentricRotation.y !== 0) {
-            Matrix.RotationAxisToRef(this._tempGeocentricNormal, this._perFrameGeocentricRotation.y, yawRotationMatrix); // this axis changes if we aren't using center of screen for tilt
+        if (this.movement.rotationDeltaCurrentFrame.y !== 0) {
+            Matrix.RotationAxisToRef(this._tempGeocentricNormal, this.movement.rotationDeltaCurrentFrame.y, yawRotationMatrix); // this axis changes if we aren't using center of screen for tilt
         }
         pitchRotationMatrix.multiplyToRef(yawRotationMatrix, this._tempRotationMatrix);
 
@@ -231,36 +206,8 @@ export class GeospatialCamera extends Camera {
         this.position.addInPlace(this._geocentricRotationPt);
     }
 
-    private _clampZoomDistance(requestedDistance: number, pickResultDistance: number | undefined): number {
-        // If pickResult is defined
-        if (requestedDistance > 0) {
-            if (pickResultDistance !== undefined) {
-                // If there is a pick, allow movement up to pick - minAltitude
-                if (pickResultDistance - this._minAltitude < 0) {
-                    return 0;
-                }
-                return Math.min(requestedDistance, pickResultDistance - this._minAltitude);
-            } else {
-                return requestedDistance;
-            }
-        }
-
-        if (requestedDistance < 0) {
-            const maxZoomOut = this._maxCameraRadius ? this._maxCameraRadius - this.position.length() : Number.POSITIVE_INFINITY;
-            return Math.max(requestedDistance, -maxZoomOut);
-        }
-        return 0;
-    }
-
-    private _applyZoom(distance: number) {
-        const pickResult = this._scene.pick(this._scene.pointerX, this._scene.pointerY, this.pickPredicate);
-        if (pickResult.hit && pickResult.ray) {
-            // Zoom to cursor
-            this._moveCameraAlongVectorByDistance(pickResult.ray.direction, this._clampZoomDistance(distance, pickResult.distance));
-        } else {
-            // If no hit under cursor, zoom along lookVector instead
-            this._moveCameraAlongVectorByDistance(this._lookAtVector, this._clampZoomDistance(distance, this._pickAlongLook?.distance));
-        }
+    private _applyZoom() {
+        this._moveCameraAlongVectorByDistance(this.movement.computedPerFrameZoomVector, this.movement.zoomDeltaCurrentFrame);
     }
 
     private _moveCameraAlongVectorByDistance(vector: Vector3, distance: number) {
@@ -278,21 +225,24 @@ export class GeospatialCamera extends Camera {
 
     override _checkInputs(): void {
         this.inputs.checkInputs();
-        if (this._perFrameGeocentricTranslation.lengthSquared() > 0) {
+
+        // Let movement class handle all per-frame logic
+        this.movement.computeCurrentFrameDeltas();
+
+        if (this.movement.panDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricTranslation();
-            this._perFrameGeocentricTranslation.setAll(0);
             this._isViewMatrixDirty = true;
         }
-        if (this._perFrameGeocentricRotation.lengthSquared() > 0) {
+        if (this.movement.rotationDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricRotation();
-            this._perFrameGeocentricRotation.setAll(0);
             this._isViewMatrixDirty = true;
         }
-        if (this._perFrameZoom !== 0) {
-            this._applyZoom(this._perFrameZoom);
-            this._perFrameZoom = 0;
+
+        if (Math.abs(this.movement.zoomDeltaCurrentFrame) > Epsilon) {
+            this._applyZoom();
             this._isViewMatrixDirty = true;
         }
+
         super._checkInputs();
     }
 
