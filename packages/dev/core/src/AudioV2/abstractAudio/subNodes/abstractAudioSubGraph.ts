@@ -109,7 +109,11 @@ export abstract class _AbstractAudioSubGraph {
      *
      * @internal
      */
-    public async removeSubNodeAsync(subNode: _AbstractAudioSubNode): Promise<void> {
+    public async removeSubNodeAsync(subNode: Nullable<_AbstractAudioSubNode>): Promise<void> {
+        if (!subNode) {
+            return;
+        }
+
         await this._createSubNodePromisesResolvedAsync();
 
         const name = subNode.name;
