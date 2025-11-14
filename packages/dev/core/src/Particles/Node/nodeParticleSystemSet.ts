@@ -22,6 +22,7 @@ import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Nullable } from "../../types";
 import { Color4 } from "core/Maths/math.color";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
 import { SPSParticleConfigBlock, SPSInitBlock, SPSMeshShapeType, SPSMeshSourceBlock, SPSSystemBlock, SPSCreateBlock } from "./Blocks";
 import { ParticleSystem } from "..";
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
@@ -403,48 +404,33 @@ export class NodeParticleSystemSet {
         this.clear();
         this.editorData = null;
 
-        // STEP 1: Create basic SPS system
         const spsSystem = new SPSSystemBlock("SPS System");
         spsSystem.billboard = false;
 
-        // STEP 2: Create SPS creation block
         const spsCreateBlock = new SPSCreateBlock("Create Particles System");
         spsCreateBlock.solidParticleSystem.connectTo(spsSystem.solidParticleSystem);
 
-        // STEP 3: Create particle config block with count
         const spsCreateTetra = new SPSParticleConfigBlock("Create Tetrahedron Particles");
-        spsCreateTetra.count.value = 2000; // Start with small number for testing
+        spsCreateTetra.count.value = 2000;
         spsCreateTetra.particleConfig.connectTo(spsCreateBlock.particleConfig);
 
-        // STEP 4: Create mesh source (using Box first to test)
         const meshSourceTetra = new SPSMeshSourceBlock("Tetrahedron Mesh");
-        meshSourceTetra.shapeType = SPSMeshShapeType.Box; // Start with Box to test
+        meshSourceTetra.shapeType = SPSMeshShapeType.Box;
         meshSourceTetra.size = 0.3;
         meshSourceTetra.mesh.connectTo(spsCreateTetra.mesh);
 
-        // STEP 5: Create init block
         const spsInitTetra = new SPSInitBlock("Initialize Tetrahedron Particles");
         spsInitTetra.initData.connectTo(spsCreateTetra.initBlock);
 
-        // STEP 6: Random X position (-10 to 10)
-        const randomXMin = new ParticleInputBlock("Random X Min");
-        randomXMin.value = -10;
-        const randomXMax = new ParticleInputBlock("Random X Max");
-        randomXMax.value = 10;
-        const randomX = new ParticleRandomBlock("Random X");
-        randomX.lockMode = ParticleRandomBlockLocks.PerParticle;
-        randomXMin.output.connectTo(randomX.min);
-        randomXMax.output.connectTo(randomX.max);
-
-        // STEP 7: Random Z position (-10 to 10)
-        const randomZMin = new ParticleInputBlock("Random Z Min");
-        randomZMin.value = -10;
-        const randomZMax = new ParticleInputBlock("Random Z Max");
-        randomZMax.value = 10;
-        const randomZ = new ParticleRandomBlock("Random Z");
-        randomZ.lockMode = ParticleRandomBlockLocks.PerParticle;
-        randomZMin.output.connectTo(randomZ.min);
-        randomZMax.output.connectTo(randomZ.max);
+        // STEP 6: Random X, Z position using Vector2 (-10 to 10)
+        const randomXZMin = new ParticleInputBlock("Random XZ Min");
+        randomXZMin.value = new Vector2(-10, -10);
+        const randomXZMax = new ParticleInputBlock("Random XZ Max");
+        randomXZMax.value = new Vector2(10, 10);
+        const randomXZ = new ParticleRandomBlock("Random XZ");
+        randomXZ.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomXZMin.output.connectTo(randomXZ.min);
+        randomXZMax.output.connectTo(randomXZ.max);
 
         // STEP 8: Random angle (-PI to PI)
         const randomAngleMin = new ParticleInputBlock("Random Angle Min");
@@ -481,74 +467,39 @@ export class NodeParticleSystemSet {
         randomRange.output.connectTo(multiplyRange.left);
         addOne.output.connectTo(multiplyRange.right);
 
-        // STEP 11: Combine X, Y, Z into Vector3 using ConverterBlock
+        const extractXZ = new ParticleConverterBlock("Extract XZ");
+        randomXZ.output.connectTo(extractXZ.xyIn);
         const positionConverter = new ParticleConverterBlock("Position Converter");
-        randomX.output.connectTo(positionConverter.xIn);
+        extractXZ.xOut.connectTo(positionConverter.xIn);
         multiplyRange.output.connectTo(positionConverter.yIn);
-        randomZ.output.connectTo(positionConverter.zIn);
+        extractXZ.yOut.connectTo(positionConverter.zIn);
         positionConverter.xyzOut.connectTo(spsInitTetra.position);
 
-        // STEP 12: Random rotation X (-PI to PI)
-        const randomRotXMin = new ParticleInputBlock("Random Rot X Min");
-        randomRotXMin.value = -Math.PI;
-        const randomRotXMax = new ParticleInputBlock("Random Rot X Max");
-        randomRotXMax.value = Math.PI;
-        const randomRotX = new ParticleRandomBlock("Random Rot X");
-        randomRotX.lockMode = ParticleRandomBlockLocks.PerParticle;
-        randomRotXMin.output.connectTo(randomRotX.min);
-        randomRotXMax.output.connectTo(randomRotX.max);
+        // STEP 12: Random rotation using Vector3 (-PI to PI)
+        const randomRotMin = new ParticleInputBlock("Random Rot Min");
+        randomRotMin.value = new Vector3(-Math.PI, -Math.PI, -Math.PI);
+        const randomRotMax = new ParticleInputBlock("Random Rot Max");
+        randomRotMax.value = new Vector3(Math.PI, Math.PI, Math.PI);
+        const randomRot = new ParticleRandomBlock("Random Rotation");
+        randomRot.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomRotMin.output.connectTo(randomRot.min);
+        randomRotMax.output.connectTo(randomRot.max);
+        randomRot.output.connectTo(spsInitTetra.rotation);
 
-        // STEP 13: Random rotation Y (-PI to PI)
-        const randomRotYMin = new ParticleInputBlock("Random Rot Y Min");
-        randomRotYMin.value = -Math.PI;
-        const randomRotYMax = new ParticleInputBlock("Random Rot Y Max");
-        randomRotYMax.value = Math.PI;
-        const randomRotY = new ParticleRandomBlock("Random Rot Y");
-        randomRotY.lockMode = ParticleRandomBlockLocks.PerParticle;
-        randomRotYMin.output.connectTo(randomRotY.min);
-        randomRotYMax.output.connectTo(randomRotY.max);
-
-        // STEP 14: Random rotation Z (-PI to PI)
-        const randomRotZMin = new ParticleInputBlock("Random Rot Z Min");
-        randomRotZMin.value = -Math.PI;
-        const randomRotZMax = new ParticleInputBlock("Random Rot Z Max");
-        randomRotZMax.value = Math.PI;
-        const randomRotZ = new ParticleRandomBlock("Random Rot Z");
-        randomRotZ.lockMode = ParticleRandomBlockLocks.PerParticle;
-        randomRotZMin.output.connectTo(randomRotZ.min);
-        randomRotZMax.output.connectTo(randomRotZ.max);
-
-        // STEP 15: Rotation Vector3 using ConverterBlock
-        const rotationConverter = new ParticleConverterBlock("Rotation Converter");
-        randomRotX.output.connectTo(rotationConverter.xIn);
-        randomRotY.output.connectTo(rotationConverter.yIn);
-        randomRotZ.output.connectTo(rotationConverter.zIn);
-        rotationConverter.xyzOut.connectTo(spsInitTetra.rotation);
-
-        // STEP 16: Random color using ConverterBlock
+        // STEP 16: Random color using Vector3 random and ConverterBlock
         const randomColorMin = new ParticleInputBlock("Random Color Min");
-        randomColorMin.value = 0;
+        randomColorMin.value = new Vector3(0, 0, 0);
         const randomColorMax = new ParticleInputBlock("Random Color Max");
-        randomColorMax.value = 1;
-        const randomColorR = new ParticleRandomBlock("Random Color R");
-        randomColorR.lockMode = ParticleRandomBlockLocks.PerParticle;
-        randomColorMin.output.connectTo(randomColorR.min);
-        randomColorMax.output.connectTo(randomColorR.max);
-        const randomColorG = new ParticleRandomBlock("Random Color G");
-        randomColorG.lockMode = ParticleRandomBlockLocks.PerParticle;
-        randomColorMin.output.connectTo(randomColorG.min);
-        randomColorMax.output.connectTo(randomColorG.max);
-        const randomColorB = new ParticleRandomBlock("Random Color B");
-        randomColorB.lockMode = ParticleRandomBlockLocks.PerParticle;
-        randomColorMin.output.connectTo(randomColorB.min);
-        randomColorMax.output.connectTo(randomColorB.max);
-        const colorOne = new ParticleInputBlock("Color Alpha");
-        colorOne.value = 1;
+        randomColorMax.value = new Vector3(1, 1, 1);
+        const randomColorRGB = new ParticleRandomBlock("Random Color RGB");
+        randomColorRGB.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomColorMin.output.connectTo(randomColorRGB.min);
+        randomColorMax.output.connectTo(randomColorRGB.max);
+        const colorAlpha = new ParticleInputBlock("Color Alpha");
+        colorAlpha.value = 1;
         const colorConverter = new ParticleConverterBlock("Color Converter");
-        randomColorR.output.connectTo(colorConverter.xIn);
-        randomColorG.output.connectTo(colorConverter.yIn);
-        randomColorB.output.connectTo(colorConverter.zIn);
-        colorOne.output.connectTo(colorConverter.wIn);
+        randomColorRGB.output.connectTo(colorConverter.xyzIn);
+        colorAlpha.output.connectTo(colorConverter.wIn);
         colorConverter.colorOut.connectTo(spsInitTetra.color);
 
         this._systemBlocks.push(spsSystem);
