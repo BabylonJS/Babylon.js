@@ -133,7 +133,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         return true;
     }
 
-    protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex"];
+    protected static _Attribs = [VertexBuffer.PositionKind, "splatIndex0", "splatIndex1", "splatIndex2", "splatIndex3"];
     protected static _Samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture", "shTexture0", "shTexture1", "shTexture2"];
     protected static _UniformBuffers = ["Scene", "Mesh"];
     protected static _Uniforms = [

@@ -135,6 +135,10 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
         state._emitUniformFromString("eyePosition", NodeMaterialBlockConnectionPointTypes.Vector3);
         state._emitUniformFromString("viewDirectionFactor", NodeMaterialBlockConnectionPointTypes.Vector3);
         state.attributes.push(VertexBuffer.PositionKind);
+        state.attributes.push("splatIndex0");
+        state.attributes.push("splatIndex1");
+        state.attributes.push("splatIndex2");
+        state.attributes.push("splatIndex3");
         state.sharedData.nodeMaterial.backFaceCulling = false;
 
         const splatPosition = this.splatPosition;
@@ -180,7 +184,7 @@ export class GaussianSplattingBlock extends NodeMaterialBlock {
             state.compilationString += `${state._declareOutput(sh)} = vec3${addF}(0.,0.,0.);`;
         }
 
-        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
+        state.compilationString += `${state._declareOutput(output)} = gaussianSplatting(${input}.xy, ${splatPosition.associatedVariableName}, ${splatScaleParameter}, covA, covB, ${world.associatedVariableName}, ${view.associatedVariableName}, ${projection.associatedVariableName}${uniforms});\n`;
         return this;
     }
 }

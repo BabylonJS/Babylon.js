@@ -1,5 +1,4 @@
 #include<__decl__gaussianSplattingVertex>
-attribute float splatIndex;
 
 uniform vec2 invViewport;
 uniform vec2 dataTextureSize;
@@ -16,6 +15,7 @@ varying vec4 vColor;
 #include<gaussianSplatting>
 
 void main(void) {
+    float splatIndex = getSplatIndex(int(position.z + 0.5));
     Splat splat = readSplat(splatIndex);
     vec3 covA = splat.covA.xyz;
     vec3 covB = vec3(splat.covA.w, splat.covB.xy);
