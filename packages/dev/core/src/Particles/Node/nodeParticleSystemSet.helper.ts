@@ -220,9 +220,9 @@ function _CreateParticleSizeGradientBlockGroup(sizeGradients: Array<FactorGradie
         throw new Error("No size gradients provided.");
     }
 
-    const size = _CreateSizeFromGradientStep(sizeGradients[0], 0);
-    context.sizeGradientValue0Output = size;
-    return size;
+    const initialParticleSize = _CreateSizeFromGradientStep(sizeGradients[0], 0);
+    context.sizeGradientValue0Output = initialParticleSize;
+    return initialParticleSize;
 }
 
 function _CreateSizeFromGradientStep(gradientStep: FactorGradient, index: number): NodeParticleConnectionPoint {
