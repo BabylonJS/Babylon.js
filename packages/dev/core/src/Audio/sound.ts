@@ -15,6 +15,7 @@ import type { TransformNode } from "../Meshes/transformNode";
 import { _WarnImport } from "../Misc/devTools";
 import { Logger } from "../Misc/logger";
 import { Observable } from "../Misc/observable";
+import { _RetryWithInterval } from "../Misc/timingTools";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Scene } from "../scene";
 import type { Nullable } from "../types";
@@ -198,6 +199,7 @@ export class Sound {
     private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
     private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
     private _isOutputConnected = false;
+    private _url: Nullable<string> = null;
 
     // private readonly _audioEngineV2: AudioEngineV2;
     private readonly _optionsV2: Partial<IStaticSoundOptions>;
@@ -314,6 +316,7 @@ export class Sound {
             // Create the sound but don't call _initAsync on it, yet. Call it later when `setAudioBuffer` is called.
             this._soundV2 = new _WebAudioStaticSound(name, audioEngineV2, optionsV2);
         } else if (typeof urlOrArrayBuffer === "string") {
+            this._url = urlOrArrayBuffer;
             this._soundV2 = createSoundV2();
         } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
             streaming = false;
@@ -519,9 +522,15 @@ export class Sound {
             Logger.Error("setDirectionalCone(): outer angle of the cone must be superior or equal to the inner angle.");
             return;
         }
-        this._optionsV2.spatialConeInnerAngle = coneInnerAngle;
-        this._optionsV2.spatialConeOuterAngle = coneOuterAngle;
+
+        this._optionsV2.spatialConeInnerAngle = D2r(coneInnerAngle);
+        this._optionsV2.spatialConeOuterAngle = D2r(coneOuterAngle);
         this._optionsV2.spatialConeOuterVolume = coneOuterGain;
+
+        this._soundV2.spatial.coneInnerAngle = this._optionsV2.spatialConeInnerAngle;
+        this._soundV2.spatial.coneOuterAngle = this._optionsV2.spatialConeOuterAngle;
+        this._soundV2.spatial.coneOuterVolume = coneOuterGain;
+
         this._isDirectional = true;
 
         if (this.isPlaying && this.loop) {
@@ -857,41 +866,40 @@ export class Sound {
      * @returns the JSON representation of the sound
      */
     public serialize(): any {
-        // const serializationObject: any = {
-        //     name: this.name,
-        //     url: this._url,
-        //     autoplay: this.autoplay,
-        //     loop: this.loop,
-        //     volume: this._volume,
-        //     spatialSound: this._spatialSound,
-        //     maxDistance: this.maxDistance,
-        //     rolloffFactor: this.rolloffFactor,
-        //     refDistance: this.refDistance,
-        //     distanceModel: this.distanceModel,
-        //     playbackRate: this._playbackRate,
-        //     panningModel: this._panningModel,
-        //     soundTrackId: this.soundTrackId,
-        //     metadata: this.metadata,
-        // };
+        const serializationObject: any = {
+            name: this.name,
+            url: this._url,
+            autoplay: this.autoplay,
+            loop: this.loop,
+            volume: this._volume,
+            spatialSound: this.spatialSound,
+            maxDistance: this.maxDistance,
+            rolloffFactor: this.rolloffFactor,
+            refDistance: this.refDistance,
+            distanceModel: this.distanceModel,
+            playbackRate: this.getPlaybackRate(),
+            panningModel: this._soundV2.spatial.panningModel,
+            soundTrackId: this.soundTrackId,
+            metadata: this.metadata,
+        };
 
-        // if (this._spatialSound) {
-        //     if (this._connectedTransformNode) {
-        //         serializationObject.connectedMeshId = this._connectedTransformNode.id;
-        //     }
+        if (this.spatialSound) {
+            if (this._connectedTransformNode) {
+                serializationObject.connectedMeshId = this._connectedTransformNode.id;
+            }
 
-        //     serializationObject.position = this._position.asArray();
-        //     serializationObject.refDistance = this.refDistance;
-        //     serializationObject.distanceModel = this.distanceModel;
+            serializationObject.position = this._soundV2.spatial.position.asArray();
+            serializationObject.refDistance = this.refDistance;
+            serializationObject.distanceModel = this.distanceModel;
 
-        //     serializationObject.isDirectional = this._isDirectional;
-        //     serializationObject.localDirectionToMesh = this._localDirection.asArray();
-        //     serializationObject.coneInnerAngle = this._coneInnerAngle;
-        //     serializationObject.coneOuterAngle = this._coneOuterAngle;
-        //     serializationObject.coneOuterGain = this._coneOuterGain;
-        // }
+            serializationObject.isDirectional = this._isDirectional;
+            serializationObject.localDirectionToMesh = this._localDirection.asArray();
+            serializationObject.coneInnerAngle = this.directionalConeInnerAngle;
+            serializationObject.coneOuterAngle = this.directionalConeOuterAngle;
+            serializationObject.coneOuterGain = this._soundV2.spatial.coneOuterVolume;
+        }
 
-        // return serializationObject;
-        return {};
+        return serializationObject;
     }
 
     /**
@@ -903,76 +911,78 @@ export class Sound {
      * @returns the newly parsed sound
      */
     public static Parse(parsedSound: any, scene: Scene, rootUrl: string, sourceSound?: Sound): Sound {
-        // const soundName = parsedSound.name;
-        // let soundUrl;
-        // if (parsedSound.url) {
-        //     soundUrl = rootUrl + parsedSound.url;
-        // } else {
-        //     soundUrl = rootUrl + soundName;
-        // }
-        // const options = {
-        //     autoplay: parsedSound.autoplay,
-        //     loop: parsedSound.loop,
-        //     volume: parsedSound.volume,
-        //     spatialSound: parsedSound.spatialSound,
-        //     maxDistance: parsedSound.maxDistance,
-        //     rolloffFactor: parsedSound.rolloffFactor,
-        //     refDistance: parsedSound.refDistance,
-        //     distanceModel: parsedSound.distanceModel,
-        //     playbackRate: parsedSound.playbackRate,
-        // };
-        // let newSound: Sound;
-        // if (!sourceSound) {
-        //     newSound = new Sound(
-        //         soundName,
-        //         soundUrl,
-        //         scene,
-        //         () => {
-        //             scene.removePendingData(newSound);
-        //         },
-        //         options
-        //     );
-        //     scene.addPendingData(newSound);
-        // } else {
-        //     const setBufferAndRun = () => {
-        //         _RetryWithInterval(
-        //             () => sourceSound._isReadyToPlay,
-        //             () => {
-        //                 newSound._audioBuffer = sourceSound.getAudioBuffer();
-        //                 newSound._isReadyToPlay = true;
-        //                 if (newSound.autoplay) {
-        //                     newSound.play(0, newSound._offset, newSound._length);
-        //                 }
-        //             },
-        //             undefined,
-        //             300
-        //         );
-        //     };
-        //     newSound = new Sound(soundName, new ArrayBuffer(0), scene, null, options);
-        //     setBufferAndRun();
-        // }
-        // if (parsedSound.position) {
-        //     const soundPosition = Vector3.FromArray(parsedSound.position);
-        //     newSound.setPosition(soundPosition);
-        // }
-        // if (parsedSound.isDirectional) {
-        //     newSound.setDirectionalCone(parsedSound.coneInnerAngle || 360, parsedSound.coneOuterAngle || 360, parsedSound.coneOuterGain || 0);
-        //     if (parsedSound.localDirectionToMesh) {
-        //         const localDirectionToMesh = Vector3.FromArray(parsedSound.localDirectionToMesh);
-        //         newSound.setLocalDirectionToMesh(localDirectionToMesh);
-        //     }
-        // }
-        // if (parsedSound.connectedMeshId) {
-        //     const connectedMesh = scene.getMeshById(parsedSound.connectedMeshId);
-        //     if (connectedMesh) {
-        //         newSound.attachToMesh(connectedMesh);
-        //     }
-        // }
-        // if (parsedSound.metadata) {
-        //     newSound.metadata = parsedSound.metadata;
-        // }
-        // return newSound;
-        return new Sound(parsedSound.name, new ArrayBuffer(0), scene);
+        const soundName = parsedSound.name;
+        let soundUrl;
+        if (parsedSound.url) {
+            soundUrl = rootUrl + parsedSound.url;
+        } else {
+            soundUrl = rootUrl + soundName;
+        }
+        const options = {
+            autoplay: parsedSound.autoplay,
+            loop: parsedSound.loop,
+            volume: parsedSound.volume,
+            spatialSound: parsedSound.spatialSound,
+            maxDistance: parsedSound.maxDistance,
+            rolloffFactor: parsedSound.rolloffFactor,
+            refDistance: parsedSound.refDistance,
+            distanceModel: parsedSound.distanceModel,
+            playbackRate: parsedSound.playbackRate,
+        };
+        let newSound: Sound;
+        if (!sourceSound) {
+            newSound = new Sound(
+                soundName,
+                soundUrl,
+                scene,
+                () => {
+                    scene.removePendingData(newSound);
+                },
+                options
+            );
+            scene.addPendingData(newSound);
+        } else {
+            const setBufferAndRun = () => {
+                _RetryWithInterval(
+                    () => sourceSound._isReadyToPlay,
+                    () => {
+                        const audioBuffer = sourceSound.getAudioBuffer();
+                        if (audioBuffer) {
+                            newSound.setAudioBuffer(audioBuffer);
+                        }
+                        newSound._isReadyToPlay = true;
+                        if (newSound.autoplay) {
+                            newSound.play(0, sourceSound._optionsV2.startOffset, sourceSound._optionsV2.duration);
+                        }
+                    },
+                    undefined,
+                    300
+                );
+            };
+            newSound = new Sound(soundName, new ArrayBuffer(0), scene, null, options);
+            setBufferAndRun();
+        }
+        if (parsedSound.position) {
+            const soundPosition = Vector3.FromArray(parsedSound.position);
+            newSound.setPosition(soundPosition);
+        }
+        if (parsedSound.isDirectional) {
+            newSound.setDirectionalCone(parsedSound.coneInnerAngle || 360, parsedSound.coneOuterAngle || 360, parsedSound.coneOuterGain || 0);
+            if (parsedSound.localDirectionToMesh) {
+                const localDirectionToMesh = Vector3.FromArray(parsedSound.localDirectionToMesh);
+                newSound.setLocalDirectionToMesh(localDirectionToMesh);
+            }
+        }
+        if (parsedSound.connectedMeshId) {
+            const connectedMesh = scene.getMeshById(parsedSound.connectedMeshId);
+            if (connectedMesh) {
+                newSound.attachToMesh(connectedMesh);
+            }
+        }
+        if (parsedSound.metadata) {
+            newSound.metadata = parsedSound.metadata;
+        }
+        return newSound;
     }
 }
 
