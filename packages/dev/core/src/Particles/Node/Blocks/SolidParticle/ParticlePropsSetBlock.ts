@@ -4,6 +4,8 @@ import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { SolidParticle } from "../../../solidParticle";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { serialize } from "../../../../Misc/decorators";
 
 /**
  * Block used to set custom properties in particle.props
@@ -13,6 +15,11 @@ export class ParticlePropsSetBlock extends NodeParticleBlock {
     /**
      * Gets or sets the property name to store in particle.props
      */
+    @serialize("propertyName")
+    @editableInPropertyPage("Property Name", PropertyTypeForEdition.String, "PROPERTIES", {
+        embedded: false,
+        notifiers: { rebuild: true },
+    })
     public propertyName: string = "value";
 
     /**
@@ -38,6 +45,14 @@ export class ParticlePropsSetBlock extends NodeParticleBlock {
 
     public get value(): NodeParticleConnectionPoint {
         return this._inputs[0];
+    }
+
+    /**
+     * Gets the value to display (returns propertyName as string)
+     * This shadows the connection point name for display purposes
+     */
+    public get displayValue(): string {
+        return this.propertyName || "value";
     }
 
     public get output(): NodeParticleConnectionPoint {

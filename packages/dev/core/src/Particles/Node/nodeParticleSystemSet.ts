@@ -370,7 +370,7 @@ export class NodeParticleSystemSet {
 
         const meshSourceTetra = new SPSMeshSourceBlock("Tetrahedron Mesh");
         meshSourceTetra.shapeType = SPSMeshShapeType.Box;
-        meshSourceTetra.size = 0.3;
+        meshSourceTetra.size = 0.1;
         meshSourceTetra.mesh.connectTo(spsCreateTetra.mesh);
 
         const spsInitTetra = new SPSInitBlock("Initialize Tetrahedron Particles");
