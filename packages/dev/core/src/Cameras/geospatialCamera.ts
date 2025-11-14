@@ -88,8 +88,8 @@ export class GeospatialCamera extends Camera {
 
         // View matrix calculation vars
         this._viewMatrix = Matrix.Identity();
-        this._target.subtractToRef(this.position, this._lookAtVector).normalize(); // Lookat vector of the camera
-        this.upVector = Vector3.Up(); // Up vector of the camera (does work for -X look at)
+        this._target.subtractToRef(this.position, this._lookAtVector).normalize();
+        this.upVector = Vector3.Up();
         this._isViewMatrixDirty = true;
     }
 
