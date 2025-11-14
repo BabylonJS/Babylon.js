@@ -104,7 +104,6 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("gaussianSplatting", comments);
         state._emitVaryingFromString("vPosition", NodeMaterialBlockConnectionPointTypes.Vector2);
         state._emitUniformFromString("dataTextureSize", NodeMaterialBlockConnectionPointTypes.Vector2);
-        const splatIndex = this.splatIndex;
         const splatPosition = this.splatPosition;
         const splatColor = this.splatColor;
 
