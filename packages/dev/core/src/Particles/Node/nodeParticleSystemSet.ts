@@ -22,9 +22,11 @@ import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Nullable } from "../../types";
 import { Color4 } from "core/Maths/math.color";
-import { SPSParticleConfigBlock, SPSInitBlock, SPSMeshShapeType, SPSMeshSourceBlock, SPSSystemBlock, SPSUpdateBlock, SPSCreateBlock } from "./Blocks";
+import { SPSParticleConfigBlock, SPSInitBlock, SPSMeshShapeType, SPSMeshSourceBlock, SPSSystemBlock, SPSCreateBlock } from "./Blocks";
 import { ParticleSystem } from "..";
-import { Vector3 } from "../../Maths";
+import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
+import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
+import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "./Blocks/particleTrigonometryBlock";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;
@@ -340,58 +342,214 @@ export class NodeParticleSystemSet {
     }
 
     public setToDefaultSPS() {
+        // this.clear();
+        // this.editorData = null;
+        // const spsSystem = new SPSSystemBlock("SPS System");
+        // spsSystem.billboard = false;
+
+        // const spsCreateBlock = new SPSCreateBlock("Create Particles System");
+        // spsCreateBlock.solidParticleSystem.connectTo(spsSystem.solidParticleSystem);
+
+        // const spsCreateBox = new SPSParticleConfigBlock("Create Box Particles");
+        // const spsCreateSphere = new SPSParticleConfigBlock("Create Sphere Particles");
+
+        // spsCreateBox.count.value = 5;
+        // spsCreateSphere.count.value = 1;
+
+        // spsCreateBox.particleConfig.connectTo(spsCreateBlock.particleConfig);
+        // spsCreateSphere.particleConfig.connectTo(spsCreateBlock.particleConfig);
+
+        // const meshSourceBox = new SPSMeshSourceBlock("Box Mesh");
+        // const meshSourceSphere = new SPSMeshSourceBlock("Sphere Mesh");
+
+        // meshSourceBox.shapeType = SPSMeshShapeType.Box;
+        // meshSourceSphere.shapeType = SPSMeshShapeType.Sphere;
+
+        // meshSourceBox.size = 1;
+        // meshSourceSphere.size = 1;
+
+        // meshSourceBox.mesh.connectTo(spsCreateBox.mesh);
+        // meshSourceSphere.mesh.connectTo(spsCreateSphere.mesh);
+
+        // const spsInitBox = new SPSInitBlock("Initialize Box Particles");
+        // const spsInitSphere = new SPSInitBlock("Initialize Sphere Particles");
+
+        // spsInitBox.initData.connectTo(spsCreateBox.initBlock);
+        // spsInitSphere.initData.connectTo(spsCreateSphere.initBlock);
+
+        // const positionBlockBox = new ParticleInputBlock("Position");
+        // positionBlockBox.value = new Vector3(1, 1, 1);
+        // positionBlockBox.output.connectTo(spsInitBox.position);
+
+        // const rotationBlockBox = new ParticleInputBlock("Rotation");
+        // rotationBlockBox.value = new Vector3(3, 0, 0);
+        // rotationBlockBox.output.connectTo(spsInitBox.rotation);
+
+        // const positionBlockSphere = new ParticleInputBlock("Position");
+        // positionBlockSphere.value = new Vector3(0, 0, 0);
+        // positionBlockSphere.output.connectTo(spsInitSphere.position);
+
+        // const spsUpdateBox = new SPSUpdateBlock("Update Box Particles");
+        // const spsUpdateSphere = new SPSUpdateBlock("Update Sphere Particles");
+
+        // spsUpdateBox.updateData.connectTo(spsCreateBox.updateBlock);
+        // spsUpdateSphere.updateData.connectTo(spsCreateSphere.updateBlock);
+
+        // this._systemBlocks.push(spsSystem);
+        this.setToTetrahedronSPS();
+    }
+
+    public setToTetrahedronSPS() {
         this.clear();
         this.editorData = null;
+
+        // STEP 1: Create basic SPS system
         const spsSystem = new SPSSystemBlock("SPS System");
         spsSystem.billboard = false;
 
+        // STEP 2: Create SPS creation block
         const spsCreateBlock = new SPSCreateBlock("Create Particles System");
         spsCreateBlock.solidParticleSystem.connectTo(spsSystem.solidParticleSystem);
 
-        const spsCreateBox = new SPSParticleConfigBlock("Create Box Particles");
-        const spsCreateSphere = new SPSParticleConfigBlock("Create Sphere Particles");
+        // STEP 3: Create particle config block with count
+        const spsCreateTetra = new SPSParticleConfigBlock("Create Tetrahedron Particles");
+        spsCreateTetra.count.value = 2000; // Start with small number for testing
+        spsCreateTetra.particleConfig.connectTo(spsCreateBlock.particleConfig);
 
-        spsCreateBox.count.value = 5;
-        spsCreateSphere.count.value = 1;
+        // STEP 4: Create mesh source (using Box first to test)
+        const meshSourceTetra = new SPSMeshSourceBlock("Tetrahedron Mesh");
+        meshSourceTetra.shapeType = SPSMeshShapeType.Box; // Start with Box to test
+        meshSourceTetra.size = 0.3;
+        meshSourceTetra.mesh.connectTo(spsCreateTetra.mesh);
 
-        spsCreateBox.particleConfig.connectTo(spsCreateBlock.particleConfig);
-        spsCreateSphere.particleConfig.connectTo(spsCreateBlock.particleConfig);
+        // STEP 5: Create init block
+        const spsInitTetra = new SPSInitBlock("Initialize Tetrahedron Particles");
+        spsInitTetra.initData.connectTo(spsCreateTetra.initBlock);
 
-        const meshSourceBox = new SPSMeshSourceBlock("Box Mesh");
-        const meshSourceSphere = new SPSMeshSourceBlock("Sphere Mesh");
+        // STEP 6: Random X position (-10 to 10)
+        const randomXMin = new ParticleInputBlock("Random X Min");
+        randomXMin.value = -10;
+        const randomXMax = new ParticleInputBlock("Random X Max");
+        randomXMax.value = 10;
+        const randomX = new ParticleRandomBlock("Random X");
+        randomX.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomXMin.output.connectTo(randomX.min);
+        randomXMax.output.connectTo(randomX.max);
 
-        meshSourceBox.shapeType = SPSMeshShapeType.Box;
-        meshSourceSphere.shapeType = SPSMeshShapeType.Sphere;
+        // STEP 7: Random Z position (-10 to 10)
+        const randomZMin = new ParticleInputBlock("Random Z Min");
+        randomZMin.value = -10;
+        const randomZMax = new ParticleInputBlock("Random Z Max");
+        randomZMax.value = 10;
+        const randomZ = new ParticleRandomBlock("Random Z");
+        randomZ.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomZMin.output.connectTo(randomZ.min);
+        randomZMax.output.connectTo(randomZ.max);
 
-        meshSourceBox.size = 1;
-        meshSourceSphere.size = 1;
+        // STEP 8: Random angle (-PI to PI)
+        const randomAngleMin = new ParticleInputBlock("Random Angle Min");
+        randomAngleMin.value = -Math.PI;
+        const randomAngleMax = new ParticleInputBlock("Random Angle Max");
+        randomAngleMax.value = Math.PI;
+        const randomAngle = new ParticleRandomBlock("Random Angle");
+        randomAngle.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomAngleMin.output.connectTo(randomAngle.min);
+        randomAngleMax.output.connectTo(randomAngle.max);
 
-        meshSourceBox.mesh.connectTo(spsCreateBox.mesh);
-        meshSourceSphere.mesh.connectTo(spsCreateSphere.mesh);
+        // STEP 9: Random range (1 to 5) - smaller range for Y position
+        const randomRangeMin = new ParticleInputBlock("Random Range Min");
+        randomRangeMin.value = 1;
+        const randomRangeMax = new ParticleInputBlock("Random Range Max");
+        randomRangeMax.value = 5;
+        const randomRange = new ParticleRandomBlock("Random Range");
+        randomRange.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomRangeMin.output.connectTo(randomRange.min);
+        randomRangeMax.output.connectTo(randomRange.max);
 
-        const spsInitBox = new SPSInitBlock("Initialize Box Particles");
-        const spsInitSphere = new SPSInitBlock("Initialize Sphere Particles");
+        // STEP 10: Calculate Y position: range * (1 + cos(angle))
+        const one = new ParticleInputBlock("One");
+        one.value = 1;
+        const cosAngle = new ParticleTrigonometryBlock("Cos Angle");
+        cosAngle.operation = ParticleTrigonometryBlockOperations.Cos;
+        randomAngle.output.connectTo(cosAngle.input);
+        const addOne = new ParticleMathBlock("Add One");
+        addOne.operation = ParticleMathBlockOperations.Add;
+        one.output.connectTo(addOne.left);
+        cosAngle.output.connectTo(addOne.right);
+        const multiplyRange = new ParticleMathBlock("Multiply Range");
+        multiplyRange.operation = ParticleMathBlockOperations.Multiply;
+        randomRange.output.connectTo(multiplyRange.left);
+        addOne.output.connectTo(multiplyRange.right);
 
-        spsInitBox.initData.connectTo(spsCreateBox.initBlock);
-        spsInitSphere.initData.connectTo(spsCreateSphere.initBlock);
+        // STEP 11: Combine X, Y, Z into Vector3 using ConverterBlock
+        const positionConverter = new ParticleConverterBlock("Position Converter");
+        randomX.output.connectTo(positionConverter.xIn);
+        multiplyRange.output.connectTo(positionConverter.yIn);
+        randomZ.output.connectTo(positionConverter.zIn);
+        positionConverter.xyzOut.connectTo(spsInitTetra.position);
 
-        const positionBlockBox = new ParticleInputBlock("Position");
-        positionBlockBox.value = new Vector3(1, 1, 1);
-        positionBlockBox.output.connectTo(spsInitBox.position);
+        // STEP 12: Random rotation X (-PI to PI)
+        const randomRotXMin = new ParticleInputBlock("Random Rot X Min");
+        randomRotXMin.value = -Math.PI;
+        const randomRotXMax = new ParticleInputBlock("Random Rot X Max");
+        randomRotXMax.value = Math.PI;
+        const randomRotX = new ParticleRandomBlock("Random Rot X");
+        randomRotX.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomRotXMin.output.connectTo(randomRotX.min);
+        randomRotXMax.output.connectTo(randomRotX.max);
 
-        const rotationBlockBox = new ParticleInputBlock("Rotation");
-        rotationBlockBox.value = new Vector3(3, 0, 0);
-        rotationBlockBox.output.connectTo(spsInitBox.rotation);
+        // STEP 13: Random rotation Y (-PI to PI)
+        const randomRotYMin = new ParticleInputBlock("Random Rot Y Min");
+        randomRotYMin.value = -Math.PI;
+        const randomRotYMax = new ParticleInputBlock("Random Rot Y Max");
+        randomRotYMax.value = Math.PI;
+        const randomRotY = new ParticleRandomBlock("Random Rot Y");
+        randomRotY.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomRotYMin.output.connectTo(randomRotY.min);
+        randomRotYMax.output.connectTo(randomRotY.max);
 
-        const positionBlockSphere = new ParticleInputBlock("Position");
-        positionBlockSphere.value = new Vector3(0, 0, 0);
-        positionBlockSphere.output.connectTo(spsInitSphere.position);
+        // STEP 14: Random rotation Z (-PI to PI)
+        const randomRotZMin = new ParticleInputBlock("Random Rot Z Min");
+        randomRotZMin.value = -Math.PI;
+        const randomRotZMax = new ParticleInputBlock("Random Rot Z Max");
+        randomRotZMax.value = Math.PI;
+        const randomRotZ = new ParticleRandomBlock("Random Rot Z");
+        randomRotZ.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomRotZMin.output.connectTo(randomRotZ.min);
+        randomRotZMax.output.connectTo(randomRotZ.max);
 
-        const spsUpdateBox = new SPSUpdateBlock("Update Box Particles");
-        const spsUpdateSphere = new SPSUpdateBlock("Update Sphere Particles");
+        // STEP 15: Rotation Vector3 using ConverterBlock
+        const rotationConverter = new ParticleConverterBlock("Rotation Converter");
+        randomRotX.output.connectTo(rotationConverter.xIn);
+        randomRotY.output.connectTo(rotationConverter.yIn);
+        randomRotZ.output.connectTo(rotationConverter.zIn);
+        rotationConverter.xyzOut.connectTo(spsInitTetra.rotation);
 
-        spsUpdateBox.updateData.connectTo(spsCreateBox.updateBlock);
-        spsUpdateSphere.updateData.connectTo(spsCreateSphere.updateBlock);
+        // STEP 16: Random color using ConverterBlock
+        const randomColorMin = new ParticleInputBlock("Random Color Min");
+        randomColorMin.value = 0;
+        const randomColorMax = new ParticleInputBlock("Random Color Max");
+        randomColorMax.value = 1;
+        const randomColorR = new ParticleRandomBlock("Random Color R");
+        randomColorR.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomColorMin.output.connectTo(randomColorR.min);
+        randomColorMax.output.connectTo(randomColorR.max);
+        const randomColorG = new ParticleRandomBlock("Random Color G");
+        randomColorG.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomColorMin.output.connectTo(randomColorG.min);
+        randomColorMax.output.connectTo(randomColorG.max);
+        const randomColorB = new ParticleRandomBlock("Random Color B");
+        randomColorB.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomColorMin.output.connectTo(randomColorB.min);
+        randomColorMax.output.connectTo(randomColorB.max);
+        const colorOne = new ParticleInputBlock("Color Alpha");
+        colorOne.value = 1;
+        const colorConverter = new ParticleConverterBlock("Color Converter");
+        randomColorR.output.connectTo(colorConverter.xIn);
+        randomColorG.output.connectTo(colorConverter.yIn);
+        randomColorB.output.connectTo(colorConverter.zIn);
+        colorOne.output.connectTo(colorConverter.wIn);
+        colorConverter.colorOut.connectTo(spsInitTetra.color);
 
         this._systemBlocks.push(spsSystem);
     }
