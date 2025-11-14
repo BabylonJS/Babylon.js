@@ -29,8 +29,6 @@ export const enum PropertyTypeForEdition {
     TextureFormat,
     /** property (int) should be edited as a combo box with a list of texture types */
     TextureType,
-    /** property is a string */
-    String,
     /** property is a matrix */
     Matrix,
     /** property is a viewport */
