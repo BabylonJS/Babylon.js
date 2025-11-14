@@ -91,7 +91,7 @@ async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet
     positionUpdatedParticle.connectTo(colorUpdateBlock.particle);
 
     // System block
-    const newSystem = _CreateSystemBlockGroup(oldSystem, context);
+    const newSystem = _SystemBlockGroup(oldSystem, context);
     colorUpdateBlock.output.connectTo(newSystem.particle);
 
     // Register
@@ -100,7 +100,7 @@ async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet
 
 // ------------- SYSTEM FUNCTIONS -------------
 
-function _CreateSystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): SystemBlock {
+function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): SystemBlock {
     const newSystem = new SystemBlock(oldSystem.name);
 
     _CreateAndConnectInput("Translation pivot", oldSystem.translationPivot, newSystem.translationPivot);
