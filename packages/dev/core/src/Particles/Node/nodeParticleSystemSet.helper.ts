@@ -79,14 +79,14 @@ export async function ConvertToNodeParticleSystemSetAsync(name: string, particle
 
 async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet, oldSystem: ParticleSystem, context: RuntimeConversionContext): Promise<void> {
     // CreateParticle block
-    const createParticleBlock = _CreateCreateParticleBlockGroup(oldSystem, context);
+    const createParticleBlock = _CreateParticleBlockGroup(oldSystem, context);
 
     // Emitter Shape block
-    const shapeBlock = _CreateEmitterShapeBlock(oldSystem);
+    const shapeBlock = _EmitterShapeBlock(oldSystem);
     createParticleBlock.particle.connectTo(shapeBlock.particle);
 
     // Update the particle position
-    const positionUpdatedParticle = _CreateUpdateSystemGroup(shapeBlock.output, oldSystem, context);
+    const positionUpdatedParticle = _UpdateParticleBlockGroup(shapeBlock.output, oldSystem, context);
 
     // Color update
     const colorUpdateBlock = _CreateColorUpdateBlock(oldSystem, createParticleBlock);
@@ -100,7 +100,7 @@ async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet
     newSet.systemBlocks.push(newSystem);
 }
 
-// ------------- SYSTEM BLOCK FUNCTIONS -------------
+// ------------- SYSTEM FUNCTIONS -------------
 
 function _CreateSystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): SystemBlock {
     const newSystem = new SystemBlock(oldSystem.name);
@@ -135,11 +135,11 @@ function _CreateSystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConv
     return newSystem;
 }
 
-// ------------- CREATE PARTICLE BLOCK FUNCTIONS -------------
+// ------------- CREATE PARTICLE FUNCTIONS -------------
 
 // The creation of the different properties follows the order they are added to the CreationQueue in ThinParticleSystem:
 // Lifetime, Position, Direction, Emit, Size/Scale, StartSize, Angle, Velocity, VelocityLimit, Color, Drag, Noise, ColorDead, Ramp, Sheet
-function _CreateCreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): CreateParticleBlock {
+function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): CreateParticleBlock {
     // Create particle
     const createParticleBlock = new CreateParticleBlock("Create Particle");
 
@@ -250,9 +250,9 @@ function _CreateSizeFromGradient(gradientStep: FactorGradient, index: number): N
     }
 }
 
-// ------------- CREATE EMITTER SHAPE FUNCTIONS -------------
+// ------------- EMITTER SHAPE FUNCTIONS -------------
 
-function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
+function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
     const emitter = oldSystem.particleEmitterType;
     if (!emitter) {
         throw new Error("Particle system has no emitter type.");
@@ -393,7 +393,7 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
     return shapeBlock;
 }
 
-// ------------- CREATE UPDATE BLOCK FUNCTIONS -------------
+// ------------- UPDATE PARTICLE FUNCTIONS -------------
 
 /**
  * Creates the group of blocks that represent the particle system update
@@ -404,7 +404,7 @@ function _CreateEmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
  * @param context The runtime conversion context
  * @returns The output connection point after all updates have been applied
  */
-function _CreateUpdateSystemGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     let outputUpdate: NodeParticleConnectionPoint = inputParticle;
 
     if (oldSystem.minAngularSpeed !== 0 || oldSystem.maxAngularSpeed !== 0) {
