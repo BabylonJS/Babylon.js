@@ -647,7 +647,7 @@ export class Sound {
      * @param length (optional) Sound duration (in seconds)
      */
     public play(time?: number, offset?: number, length?: number): void {
-        void this._soundV2.engine.unlockAsync();
+        AbstractEngine.audioEngine?.unlock();
 
         // WebAudio sound sources have no `play` function because they are always playing.
         if (this._soundV2 instanceof _WebAudioSoundSource) {

@@ -212,6 +212,10 @@ export class AudioEngine implements IAudioEngine {
             return Promise.resolve();
         }
 
+        if (this._v2._audioContext.state === "suspended" && !this._useCustomUnlockedButton) {
+            this._v2._unmuteUIEnabled = true;
+        }
+
         return this._v2._audioContext.resume();
     }
 
