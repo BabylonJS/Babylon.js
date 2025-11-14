@@ -111,13 +111,15 @@ export class SplatReaderBlock extends NodeMaterialBlock {
         const splatVariablename = state._getFreeVariableName("splat");
 
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            state.compilationString += `var ${splatVariablename}: Splat = readSplat(${splatIndex.associatedVariableName}, uniforms.dataTextureSize);\n`;
+            state.compilationString += `let splatIndex: f32 = getSplatIndex(int(input.position.z + 0.5));`;
+            state.compilationString += `var ${splatVariablename}: Splat = readSplat(splatIndex, uniforms.dataTextureSize);\n`;
             state.compilationString += `var covA: vec3f = splat.covA.xyz; var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);\n`;
-            state.compilationString += "vertexOutputs.vPosition = input.position;\n";
+            state.compilationString += "vertexOutputs.vPosition = input.position.xy;\n";
         } else {
-            state.compilationString += `Splat ${splatVariablename} = readSplat(${splatIndex.associatedVariableName});\n`;
+            state.compilationString += `float splatIndex = getSplatIndex(int(position.z + 0.5));`;
+            state.compilationString += `Splat ${splatVariablename} = readSplat(splatIndex);\n`;
             state.compilationString += `vec3 covA = splat.covA.xyz; vec3 covB = vec3(splat.covA.w, splat.covB.xy);\n`;
-            state.compilationString += "vPosition = position;\n";
+            state.compilationString += "vPosition = position.xy;\n";
         }
         state.compilationString += `${state._declareOutput(splatPosition)} = ${splatVariablename}.center.xyz;\n`;
         state.compilationString += `${state._declareOutput(splatColor)} = ${splatVariablename}.color;\n`;

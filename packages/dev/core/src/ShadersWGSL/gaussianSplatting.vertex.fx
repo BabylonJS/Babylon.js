@@ -46,7 +46,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     let splatIndex: f32 = getSplatIndex(int(input.position.z + 0.5));
 
-    var splat: Splat = readSplat(input.splatIndex, uniforms.dataTextureSize);
+    var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
 

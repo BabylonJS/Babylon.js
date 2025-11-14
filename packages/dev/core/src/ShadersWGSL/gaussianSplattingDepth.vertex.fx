@@ -25,13 +25,13 @@ varying vColor: vec4f;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
 
-    let splatIndex: f32 = getSplatIndex(int(position.z + 0.5));
+    let splatIndex: f32 = getSplatIndex(int(input.position.z + 0.5));
 
     var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
     var covB: vec3f = vec3f(splat.covA.w, splat.covB.xy);
     let worldPos: vec4f = mesh.world * vec4f(splat.center.xyz, 1.0);
-    vertexOutputs.vPosition = input.position;
+    vertexOutputs.vPosition = input.position.xy;
     vertexOutputs.vColor = splat.color;
-    vertexOutputs.position = gaussianSplatting(input.position, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
+    vertexOutputs.position = gaussianSplatting(input.position.xy, worldPos.xyz, vec2f(1.0, 1.0), covA, covB, mesh.world, scene.view, scene.projection, uniforms.focal, uniforms.invViewport, uniforms.kernelSize);
 }
