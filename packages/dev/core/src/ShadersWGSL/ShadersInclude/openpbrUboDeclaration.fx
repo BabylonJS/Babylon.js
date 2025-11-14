@@ -6,8 +6,8 @@ uniform pointSize: f32;
 uniform vDebugMode: vec2f;
 
 uniform cameraInfo: vec4f;
-uniform environmentRefractionMatrix: mat4x4f;
-uniform vEnvironmentRefractionInfos: vec3f;
+uniform backgroundRefractionMatrix: mat4x4f;
+uniform vBackgroundRefractionInfos: vec3f;
 
 uniform vReflectionInfos: vec2f;
 uniform reflectionMatrix: mat4x4f;

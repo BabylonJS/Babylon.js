@@ -81,7 +81,7 @@
 #endif
 
 #ifdef REFRACTED_BACKGROUND
-    uniform sampler2D environmentRefractionSampler;
+    uniform sampler2D backgroundRefractionSampler;
 #endif
 
 #if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND)

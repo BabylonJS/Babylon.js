@@ -1529,16 +1529,16 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
      */
     public _environmentFuzzBRDFTexture: Nullable<BaseTexture> = null;
 
-    private _environmentRefractionTexture: Nullable<BaseTexture> = null;
+    private _backgroundRefractionTexture: Nullable<BaseTexture> = null;
     /**
      * Set the texture used for refraction of the background of transparent materials
      * @internal
      */
-    public get environmentRefractionTexture(): Nullable<BaseTexture> {
-        return this._environmentRefractionTexture;
+    public get backgroundRefractionTexture(): Nullable<BaseTexture> {
+        return this._backgroundRefractionTexture;
     }
-    public set environmentRefractionTexture(texture: Nullable<BaseTexture>) {
-        this._environmentRefractionTexture = texture;
+    public set backgroundRefractionTexture(texture: Nullable<BaseTexture>) {
+        this._backgroundRefractionTexture = texture;
         this._markAllSubMeshesAsTexturesDirty();
     }
 
@@ -1698,8 +1698,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 this._renderTargets.push(<RenderTargetTexture>this._radianceTexture);
             }
 
-            if (MaterialFlags.RefractionTextureEnabled && this._environmentRefractionTexture && this._environmentRefractionTexture.isRenderTarget) {
-                this._renderTargets.push(<RenderTargetTexture>this._environmentRefractionTexture);
+            if (MaterialFlags.RefractionTextureEnabled && this._backgroundRefractionTexture && this._backgroundRefractionTexture.isRenderTarget) {
+                this._renderTargets.push(<RenderTargetTexture>this._backgroundRefractionTexture);
             }
 
             this._eventInfo.renderTargets = this._renderTargets;
@@ -1827,7 +1827,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             return true;
         }
 
-        if (MaterialFlags.RefractionTextureEnabled && this._environmentRefractionTexture && this._environmentRefractionTexture.isRenderTarget) {
+        if (MaterialFlags.RefractionTextureEnabled && this._backgroundRefractionTexture && this._backgroundRefractionTexture.isRenderTarget) {
             return true;
         }
 
@@ -2060,8 +2060,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                     }
                 }
 
-                if (this._environmentRefractionTexture && MaterialFlags.RefractionTextureEnabled) {
-                    if (!this._environmentRefractionTexture.isReadyOrNotBlocking()) {
+                if (this._backgroundRefractionTexture && MaterialFlags.RefractionTextureEnabled) {
+                    if (!this._backgroundRefractionTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
                 }
@@ -2161,8 +2161,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         ubo.addUniform("vDebugMode", 2);
 
         ubo.addUniform("cameraInfo", 4);
-        ubo.addUniform("environmentRefractionMatrix", 16);
-        ubo.addUniform("vEnvironmentRefractionInfos", 3);
+        ubo.addUniform("backgroundRefractionMatrix", 16);
+        ubo.addUniform("vBackgroundRefractionInfos", 3);
         PrepareUniformLayoutForIBL(ubo, true, true, true, true, true);
 
         Object.values(this._uniformsList).forEach((uniform) => {
@@ -2338,10 +2338,10 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 }
 
                 if (defines.REFRACTED_BACKGROUND) {
-                    ubo.setTexture("environmentRefractionSampler", this._environmentRefractionTexture);
-                    ubo.updateMatrix("environmentRefractionMatrix", this._environmentRefractionTexture!.getReflectionTextureMatrix());
-                    TmpVectors.Vector3[1].set(Math.log2(this._environmentRefractionTexture!.getSize().width), 0, 0);
-                    ubo.updateVector3("vEnvironmentRefractionInfos", TmpVectors.Vector3[1]);
+                    ubo.setTexture("backgroundRefractionSampler", this._backgroundRefractionTexture);
+                    ubo.updateMatrix("backgroundRefractionMatrix", this._backgroundRefractionTexture!.getReflectionTextureMatrix());
+                    TmpVectors.Vector3[1].set(Math.log2(this._backgroundRefractionTexture!.getSize().width), 0, 0);
+                    ubo.updateVector3("vBackgroundRefractionInfos", TmpVectors.Vector3[1]);
                 }
 
                 if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND) {
@@ -2495,7 +2495,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 this._environmentFuzzBRDFTexture.dispose();
             }
             // The refraction texture will be cleaned up by the transmission helper.
-            this._environmentRefractionTexture = null;
+            this._backgroundRefractionTexture = null;
 
             // Loop through samplers and dispose the textures
             for (const key in this._samplersList) {
@@ -2662,8 +2662,8 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
             "morphTargetTextureInfo",
             "morphTargetTextureIndices",
             "cameraInfo",
-            "environmentRefractionMatrix",
-            "environmentRefractionInfos",
+            "backgroundRefractionMatrix",
+            "backgroundRefractionInfos",
         ];
 
         for (const uniformName in this._uniformsList) {
@@ -2677,7 +2677,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         }
 
         if (defines.REFRACTED_BACKGROUND) {
-            samplers.push("environmentRefractionSampler");
+            samplers.push("backgroundRefractionSampler");
         }
 
         if (defines.ANISOTROPIC || defines.FUZZ || defines.REFRACTED_BACKGROUND) {
@@ -2876,7 +2876,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 }
 
                 if (this.transmissionWeight > 0) {
-                    defines.REFRACTED_BACKGROUND = !!this._environmentRefractionTexture && MaterialFlags.RefractionTextureEnabled;
+                    defines.REFRACTED_BACKGROUND = !!this._backgroundRefractionTexture && MaterialFlags.RefractionTextureEnabled;
                     defines.REFRACTED_LIGHTS = true;
                     const radianceTexture = this._getRadianceTexture();
                     if (radianceTexture) {

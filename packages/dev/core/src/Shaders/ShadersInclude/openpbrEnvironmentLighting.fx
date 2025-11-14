@@ -49,6 +49,8 @@
             , viewDirectionW
             , vPositionW
             , noise
+            , false // isRefraction
+            , 1.0 // ior (not used for reflection)
             , reflectionSampler
             #ifdef REALTIME_FILTERING
                 , vReflectionFilteringInfo
@@ -89,6 +91,8 @@
                 , viewDirectionW
                 , vPositionW
                 , noise
+                , false // isRefraction
+                , 1.0 // ior (not used for reflection)
                 , reflectionSampler
                 #ifdef REALTIME_FILTERING
                     , vReflectionFilteringInfo
@@ -154,8 +158,6 @@
     float dielectricIblFresnel = getReflectanceFromBRDFLookup(vec3(baseDielectricReflectance.F0), vec3(baseDielectricReflectance.F90), baseGeoInfo.environmentBrdf).r;
     vec3 dielectricIblColoredFresnel = dielectricIblFresnel * specular_color;
     #ifdef THIN_FILM
-        // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-        float thinFilmIorScale = clamp(2.0 * abs(thin_film_ior - 1.0), 0.0, 1.0);
         vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseDielectricReflectance.coloredF0);
         // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
         // closer to path-tracing reference.
@@ -235,27 +237,41 @@
     vec3 slab_translucent_base_ibl = slab_translucent_background.rgb;
     #ifdef REFRACTED_ENVIRONMENT
         
-        vec3 iblRefractionCoords = refractedViewVector;
-        #ifdef REFRACTED_ENVIRONMENT_OPPOSITEZ
-            iblRefractionCoords.z *= -1.0;
-        #endif
-        #ifdef REFRACTED_ENVIRONMENT_LOCAL_CUBE
-            iblRefractionCoords = parallaxCorrectNormal(vPositionW, refractedViewVector, refractionSize, refractionPosition);
-        #endif
-        // Invert the Y coordinate for cube maps
-        // iblRefractionCoords.y = iblRefractionCoords.y * vEnvironmentRefractionInfos.w;
-
-        iblRefractionCoords = vec3(environmentRefractionMatrix * vec4(iblRefractionCoords, 0));
         // Scale the refraction roughness based on the IOR to get appropriate blurriness.
         float refractionAlphaG = (specular_ior - 1.0) * specularAlphaG;
-        vec3 environmentRefraction = sampleRadiance(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
-            , baseGeoInfo
-            , reflectionSampler
-            , iblRefractionCoords
-            #ifdef REALTIME_FILTERING
-                , vReflectionFilteringInfo
+        #ifdef ANISOTROPIC_BASE
+            vec3 environmentRefraction = sampleRadianceAnisotropic(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                , baseGeoInfo
+                , normalW
+                , viewDirectionW
+                , vPositionW
+                , noise
+                , true // isRefraction
+                , specular_ior // Used for refraction
+                , reflectionSampler
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+        #else
+            vec3 iblRefractionCoords = refractedViewVector;
+            #ifdef REFRACTED_ENVIRONMENT_OPPOSITEZ
+                iblRefractionCoords.z *= -1.0;
             #endif
-        );
+            #ifdef REFRACTED_ENVIRONMENT_LOCAL_CUBE
+                iblRefractionCoords = parallaxCorrectNormal(vPositionW, refractedViewVector, refractionSize, refractionPosition);
+            #endif
+
+            iblRefractionCoords = vec3(reflectionMatrix * vec4(iblRefractionCoords, 0));
+            vec3 environmentRefraction = sampleRadiance(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                , baseGeoInfo
+                , reflectionSampler
+                , iblRefractionCoords
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+        #endif
         #ifdef REFRACTED_BACKGROUND
             // Scale the refraction so that we only see it at higher roughnesses
             // This is because we're adding this to the refraction map which should take priority
@@ -276,7 +292,7 @@
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
     vec3 material_opaque_base_ibl = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
-    vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
+    vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl * transmission_absorption, transmission_weight);
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));

@@ -52,6 +52,8 @@
             , viewDirectionW
             , fragmentInputs.vPositionW
             , noise
+            , false // isRefraction
+            , 1.0 // ior (not used for reflection)
             , reflectionSampler
             , reflectionSamplerSampler
             #ifdef REALTIME_FILTERING
@@ -94,6 +96,8 @@
                 , viewDirectionW
                 , fragmentInputs.vPositionW
                 , noise
+                , false // isRefraction
+                , 1.0 // ior (not used for reflection)
                 , reflectionSampler
                 , reflectionSamplerSampler
                 #ifdef REALTIME_FILTERING
@@ -163,7 +167,6 @@
     var dielectricIblColoredFresnel: vec3f = dielectricIblFresnel * specular_color;
     #ifdef THIN_FILM
         // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-        let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
         var thin_film_dielectric: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseDielectricReflectance.coloredF0);
         let thin_film_desaturation_scale = (thin_film_ior - 1.0) * sqrt(thin_film_thickness * 0.001f * baseGeoInfo.NdotV);
         thin_film_dielectric = mix(thin_film_dielectric, vec3(dot(thin_film_dielectric, vec3f(0.3333f))), thin_film_desaturation_scale);
@@ -237,16 +240,66 @@
         let slab_fuzz_ibl = fuzzEnvironmentLight * uniforms.vLightingIntensity.z;
     #endif
 
+    var slab_translucent_base_ibl: vec3f = slab_translucent_background.rgb;
+    #ifdef REFRACTED_ENVIRONMENT
+        
+        // Scale the refraction roughness based on the IOR to get appropriate blurriness.
+        let refractionAlphaG: f32 = (specular_ior - 1.0f) * specularAlphaG;
+        #ifdef ANISOTROPIC_BASE
+            var environmentRefraction: vec3f = sampleRadianceAnisotropic(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                , baseGeoInfo
+                , normalW
+                , viewDirectionW
+                , fragmentInputs.vPositionW
+                , noise
+                , true // isRefraction
+                , specular_ior // Used for refraction
+                , reflectionSampler
+                , reflectionSamplerSampler
+                #ifdef REALTIME_FILTERING
+                    , uniforms.vReflectionFilteringInfo
+                #endif
+            );
+        #else
+            var iblRefractionCoords: vec3f = refractedViewVector;
+            #ifdef REFRACTED_ENVIRONMENT_OPPOSITEZ
+                iblRefractionCoords.z *= -1.0f;
+            #endif
+            #ifdef REFRACTED_ENVIRONMENT_LOCAL_CUBE
+                iblRefractionCoords = parallaxCorrectNormal(fragmentInputs.vPositionW, refractedViewVector, uniforms.refractionSize, uniforms.refractionPosition);
+            #endif
+
+            iblRefractionCoords = (uniforms.reflectionMatrix * vec4f(iblRefractionCoords, 0.0f)).xyz;
+            var environmentRefraction: vec3f = sampleRadiance(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                , baseGeoInfo
+                , reflectionSampler
+                , reflectionSamplerSampler
+                , iblRefractionCoords
+                #ifdef REALTIME_FILTERING
+                    , uniforms.vReflectionFilteringInfo
+                #endif
+            );
+        #endif
+        #ifdef REFRACTED_BACKGROUND
+            // Scale the refraction so that we only see it at higher roughnesses
+            // This is because we're adding this to the refraction map which should take priority
+            // at low blurriness since it represents the transmitted light that is in front of the IBL.
+            // At high blurriness, the refraction from the environment will be coming from more directions
+            // and so we want to include more of this indirect lighting.
+            environmentRefraction *= max(refractionAlphaG * refractionAlphaG - 0.1f, 0.0f);
+        #endif
+        slab_translucent_base_ibl += environmentRefraction.rgb;
+    #endif
+
     // TEMP
     var slab_subsurface_ibl: vec3f = vec3f(0., 0., 0.);
-    var slab_translucent_base_ibl: vec3f = vec3f(0., 0., 0.);
 
     slab_diffuse_ibl *= base_color.rgb;
 
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
     let material_opaque_base_ibl: vec3f = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
-    let material_dielectric_base_ibl: vec3f = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
+    let material_dielectric_base_ibl: vec3f = mix(material_opaque_base_ibl, slab_translucent_base_ibl * transmission_absorption, transmission_weight);
     let material_dielectric_gloss_ibl: vec3f = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     let material_base_substrate_ibl: vec3f = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     let material_coated_base_ibl: vec3f = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3f(1.0f));

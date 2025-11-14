@@ -86,8 +86,8 @@
 #endif
 
 #ifdef REFRACTED_BACKGROUND
-    var environmentRefractionSamplerSampler: sampler;
-    var environmentRefractionSampler: texture_2d<f32>;
+    var backgroundRefractionSamplerSampler: sampler;
+    var backgroundRefractionSampler: texture_2d<f32>;
 #endif
 
 #if defined(ANISOTROPIC) || defined(FUZZ) || defined(REFRACTED_BACKGROUND)

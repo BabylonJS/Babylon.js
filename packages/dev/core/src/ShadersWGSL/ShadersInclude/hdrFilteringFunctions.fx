@@ -341,7 +341,9 @@
             inputBitangent: vec3f,     // Surface bitangent vector
             inputNormal: vec3f,        // Surface normal vector
             filteringInfo: vec2f,
-            noiseInput: vec2f          // [-1,1] noise value per pixel for sample jittering
+            noiseInput: vec2f,          // [-1,1] noise value per pixel for sample jittering
+            isRefraction: bool,
+            ior: f32 // Index of refraction for refraction calculations
         ) -> vec3f {
             var V: vec3f = inputView;
             var N: vec3f = inputNormal;
@@ -350,7 +352,12 @@
 
             // Calculate reflection vector
             // inputView is from surface to eye, so incident direction is -V
-            var R: vec3f = reflect(-V, N);
+            var R: vec3f;
+            if (isRefraction) {
+                R = double_refract(-V, N, ior);
+            } else {
+                R = reflect(-V, N);
+            }
             var c: vec3f = textureSample(inputTexture, inputSampler, R).rgb;
 
             // Early exit for perfectly smooth surfaces
@@ -388,8 +395,13 @@
                 var H: vec3f = normalize(H_tangent.x * T + H_tangent.y * B + H_tangent.z * N);
 
                 // Calculate light direction by reflecting view vector around half vector
-                // V is surface-to-eye, L will be surface-to-light (perfect for environment sampling)
-                var L: vec3f = normalize(2.0f * dot(V, H) * H - V);
+                // V is surface-to-eye, L will be surface-to-light
+                var L: vec3f;
+                if (isRefraction) {
+                    L = refract(-V, H, 1.0 / ior);
+                } else {
+                    L = reflect(-V, H);
+                }
 
                 // Calculate dot products
                 var NoH: f32 = max(dot(N, H), 0.001f);

@@ -3177,6 +3177,36 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Transmission Roughness vs IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#134",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - IBL",
+            "playgroundId": "#GRQHVV#131",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - Realtime IBL",
+            "playgroundId": "#GRQHVV#132",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy Roughness vs IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#135",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy vs Roughness - Analytic Lights",
+            "playgroundId": "#GRQHVV#136",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Anisotropy vs Roughness - IBL",
+            "playgroundId": "#GRQHVV#138",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
         }

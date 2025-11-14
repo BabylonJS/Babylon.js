@@ -36,7 +36,7 @@ var transmission_dispersion_abbe_number: f32 = uniforms.vTransmissionDispersionA
         transmission_color *= transmissionColorFromTexture.rgb;
     #endif
 
-    transmission_color *= vTransmissionColorInfos.y;
+    transmission_color *= uniforms.vTransmissionColorInfos.y;
 #endif
 
 #ifdef TRANSMISSION_DEPTH

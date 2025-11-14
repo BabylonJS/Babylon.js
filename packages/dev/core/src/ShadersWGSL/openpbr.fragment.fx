@@ -76,6 +76,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // ______________________ Read Base properties & Opacity ______________________________
     #include<openpbrBaseLayerData>
 
+    // _____________________________ Read Transmission Layer properties ______________________
+    #include<openpbrTransmissionLayerData>
+
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
 
@@ -172,18 +175,47 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Base Metallic
     let baseConductorReflectance: ReflectanceParams = conductorReflectance(base_color, specular_color, specular_weight);
 
+    var transmission_absorption: vec3f = vec3f(1.0f);
+    #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
+        let refractedViewVector: vec3f = double_refract(-viewDirectionW, normalW, specular_ior);
+        // Transmission blurriness is affected by IOR so we scale the roughness accordingly
+        let transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
+        // Absorption is volumetric if transmission depth is > 0.
+        // Otherwise, absorption is considered instantaneous at the surface.
+        if (transmission_depth > 0.0f) {
+            // Beer's Law for absorption in transmissive materials
+            let invDepth: vec3f = vec3f(1.f / maxEps(transmission_depth));
+            
+            let absorption_coeff: vec3f = -log(transmission_color.rgb) * invDepth;
+            transmission_absorption = exp((-absorption_coeff.rgb * geometry_thickness));
+        } else {
+            // We'll account for double-absorption here, assuming light enters and then exits the
+            // volume before reaching the eye. 
+            transmission_absorption = transmission_color.rgb * transmission_color.rgb;
+        }
+    #endif
+    // __________________ Transmitted Light From Background Refraction ___________________________
+    #include<openpbrBackgroundTransmission>
+
     // ________________________ Environment (IBL) Lighting ____________________________
     var material_surface_ibl: vec3f = vec3f(0.f, 0.f, 0.f);
     #include<openpbrEnvironmentLighting>
 
     // __________________________ Direct Lighting ____________________________
     var material_surface_direct: vec3f = vec3f(0.f, 0.f, 0.f);
+    // The refracted background is basically an environment contribution so it's
+    // included in the environment lighting section above. However, if we don't
+    // have IBL enabled, we still need to compute the refracted background here and
+    // will split it between all the lights.
+    #ifdef REFLECTION
+        slab_translucent_background = vec4f(0.f, 0.f, 0.f, 1.f);
+    #else
+        slab_translucent_background /= f32(LIGHTCOUNT); // Average the background contribution over the number of lights
+    #endif
     #if defined(LIGHT0)
         var aggShadow: f32 = 0.f;
-        var numLights: f32 = 0.f;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]
         #include<openpbrDirectLighting>[0..maxSimultaneousLights]
-        
     #endif
 
     // _________________________ Emissive Lighting _______________________________

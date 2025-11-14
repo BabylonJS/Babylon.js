@@ -195,19 +195,45 @@ void main(void) {
     ReflectanceParams baseConductorReflectance;
     baseConductorReflectance = conductorReflectance(base_color, specular_color, specular_weight);
 
+    vec3 transmission_absorption = vec3(1.0);
+    #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
+        vec3 refractedViewVector = double_refract(-viewDirectionW, normalW, specular_ior);
+        // Transmission blurriness is affected by IOR so we scale the roughness accordingly
+        float transmission_roughness = specular_roughness * clamp(4.0 * (specular_ior - 1.0), 0.001, 1.0);
+        // Absorption is volumetric if transmission depth is > 0.
+        // Otherwise, absorption is considered instantaneous at the surface.
+        if (transmission_depth > 0.0) {
+            // Beer's Law for absorption in transmissive materials
+            vec3 invDepth = vec3(1. / maxEps(transmission_depth));
+            
+            vec3 absorption_coeff = -log(transmission_color.rgb) * invDepth;
+            transmission_absorption = exp((-absorption_coeff.rgb * geometry_thickness));
+        } else {
+            // We'll account for double-absorption here, assuming light enters and then exits the
+            // volume before reaching the eye. 
+            transmission_absorption = transmission_color.rgb * transmission_color.rgb;
+        }
+    #endif
     // __________________ Transmitted Light From Background Refraction ___________________________
     #include<openpbrBackgroundTransmission>
-
+    
     // ________________________ Environment (IBL) Lighting ____________________________
     vec3 material_surface_ibl = vec3(0., 0., 0.);
     #include<openpbrEnvironmentLighting>
 
     // __________________________ Direct Lighting ____________________________
     vec3 material_surface_direct = vec3(0., 0., 0.);
-    #if defined(LIGHT0)
+    // The refracted background is basically an environment contribution so it's
+    // included in the environment lighting section above. However, if we don't
+    // have IBL enabled, we still need to compute the refracted background here and
+    // will split it between all the lights.
+    #ifdef REFLECTION
+        slab_translucent_background = vec4(0., 0., 0., 1.);
+    #else
         slab_translucent_background /= float(LIGHTCOUNT); // Average the background contribution over the number of lights
+    #endif
+    #if defined(LIGHT0)
         float aggShadow = 0.;
-        float numLights = 0.;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]
         #include<openpbrDirectLighting>[0..maxSimultaneousLights]
         

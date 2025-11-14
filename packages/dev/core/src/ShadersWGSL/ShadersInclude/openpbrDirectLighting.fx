@@ -2,7 +2,7 @@
 {
     var slab_diffuse: vec3f = vec3f(0.f, 0.f, 0.f);
     var slab_subsurface: vec3f = vec3f(0.f, 0.f, 0.f);
-    var slab_translucent: vec3f = vec3f(0.f, 0.f, 0.f);
+    var slab_translucent: vec3f = slab_translucent_background.rgb;
     var slab_glossy: vec3f = vec3f(0.f, 0.f, 0.f);
     var specularFresnel: f32 = 0.0f;
     var specularColoredFresnel: vec3f = vec3f(0.f, 0.f, 0.f);
@@ -27,8 +27,6 @@
         slab_diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, textureProjectionMatrix{X}, vPositionW);
     #endif
 
-    numLights += 1.0f;
-
     #ifdef FUZZ
         let fuzzNdotH: f32 = max(dot(fuzzNormalW, preInfo{X}.H), 0.0f);
         let fuzzBrdf: vec3f = getFuzzBRDFLookup(fuzzNdotH, sqrt(fuzz_roughness));
@@ -52,17 +50,47 @@
                 // Also computeSpecularLighting does some iridescence work using these values that we don't want.
                 slab_glossy = computeSpecularLighting(preInfo{X}, normalW, vec3(1.0), vec3(1.0), specular_roughness, lightColor{X}.rgb);
             #endif
-
-            let NdotH: f32 = saturateEps(dot(normalW, preInfo{X}.H));
-            specularFresnel = fresnelSchlickGGX(NdotH, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
+            var VdotH: f32 = clamp(preInfo{X}.VdotH, 0.02, 1.0);
+            #ifdef REFRACTED_LIGHTS
+                // We create a new light structure for handling the refracted light as the half-vector
+                // will be different.
+                let eta: f32 = 1.0 / specular_ior;
+                var preInfo{X}_refract: preLightingInfo = preInfo{X};
+                preInfo{X}_refract.H = -normalize( preInfo{X}.L + min(eta, 0.95) * viewDirectionW);
+                preInfo{X}_refract.VdotH = clamp(dot(viewDirectionW, preInfo{X}_refract.H), 0.0, 1.0);
+                // On the side of the surface facing away from the light, we'll modify
+                // the VdotH used for the Fresnel calculation. This is to avoid the maxed-out
+                // Fresnel from obscuring the transmitted light.
+                if (preInfo{X}.NdotLUnclamped <= 0.0) {
+                    VdotH = max(preInfo{X}_refract.VdotH, VdotH);
+                }
+            #endif
+            specularFresnel = fresnelSchlickGGX(VdotH, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
             specularColoredFresnel = specularFresnel * specular_color;
             #ifdef THIN_FILM
-                let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
                 var thinFilmDielectricFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3f(dot(thinFilmDielectricFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
                 specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+            #endif
+
+            #ifdef REFRACTED_LIGHTS
+                preInfo{X}_refract.roughness = transmission_roughness;
+                #ifdef ANISOTROPIC_BASE
+                    preInfo{X}_refract.NdotL = max(dot(-normalW, preInfo{X}_refract.L), 0.0);
+                    slab_translucent += computeAnisotropicSpecularLighting(preInfo{X}_refract, viewDirectionW, normalW, 
+                        baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
+                        transmission_roughness, lightColor{X}.rgb);
+                #else
+                    preInfo{X}_refract.NdotL = max(dot(-normalW, preInfo{X}_refract.L) * 0.5 + 0.5, 0.0);
+                    // We're passing in vec3(1.0) for both F0 and F90 here because the actual Fresnel is computed below
+                    // Also computeSpecularLighting does some iridescence work using these values that we don't want.
+                    slab_translucent += computeSpecularLighting(preInfo{X}_refract, normalW, vec3(1.0), vec3(1.0), transmission_roughness, lightColor{X}.rgb);
+                #endif
+                // Empirical scattered light contribution for transmission
+                // As roughness increases, we add a small ambient term to simulate scattering of internal reflections
+                slab_translucent += 0.025 * transmission_roughness * preInfo0.attenuation * lightColor0.rgb;
             #endif
         }
     #endif
@@ -81,8 +109,6 @@
             #endif
 
             #ifdef THIN_FILM
-                // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-                let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
                 var thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
@@ -162,7 +188,7 @@
 
     slab_diffuse *= base_color.rgb;
     let material_opaque_base: vec3f = mix(slab_diffuse, slab_subsurface, subsurface_weight);
-    let material_dielectric_base: vec3f = mix(material_opaque_base, slab_translucent, transmission_weight);
+    let material_dielectric_base: vec3f = mix(material_opaque_base, slab_translucent * transmission_absorption, transmission_weight);
     let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
     let material_base_substrate: vec3f = mix(material_dielectric_gloss, slab_metal, base_metalness);
     let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0f));

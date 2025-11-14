@@ -8,8 +8,8 @@ uniform Material {
     vec2 vDebugMode;
 
     vec4 cameraInfo;
-    mat4 environmentRefractionMatrix;
-    vec3 vEnvironmentRefractionInfos;
+    mat4 backgroundRefractionMatrix;
+    vec3 vBackgroundRefractionInfos;
 
     vec2 vReflectionInfos;
     mat4 reflectionMatrix;
