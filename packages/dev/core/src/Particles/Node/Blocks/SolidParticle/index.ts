@@ -6,3 +6,5 @@ export * from "./SPSSystemBlock";
 export * from "./SPSUpdateBlock";
 export * from "./SPSInitBlock";
 export * from "./SPSCreateBlock";
+export * from "./ParticlePropsSetBlock";
+export * from "./ParticlePropsGetBlock";
