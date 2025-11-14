@@ -53,66 +53,31 @@ export class SPSInitBlock extends NodeParticleBlock {
         const initData = {} as ISPSUpdateData;
         if (this.position.isConnected) {
             initData.position = () => {
-                return this.getPosition(state);
+                return this.position.getConnectedValue(state);
             };
         }
         if (this.velocity.isConnected) {
             initData.velocity = () => {
-                return this.getVelocity(state);
+                return this.velocity.getConnectedValue(state);
             };
         }
         if (this.color.isConnected) {
             initData.color = () => {
-                return this.getColor(state);
+                return this.color.getConnectedValue(state);
             };
         }
         if (this.scaling.isConnected) {
             initData.scaling = () => {
-                return this.getScaling(state);
+                return this.scaling.getConnectedValue(state);
             };
         }
         if (this.rotation.isConnected) {
             initData.rotation = () => {
-                return this.getRotation(state);
+                return this.rotation.getConnectedValue(state);
             };
         }
 
         this.initData._storedValue = initData;
-    }
-
-    private getPosition(state: NodeParticleBuildState) {
-        if (this.position._storedFunction) {
-            return this.position._storedFunction(state);
-        }
-        return this.position.getConnectedValue(state);
-    }
-
-    private getVelocity(state: NodeParticleBuildState) {
-        if (this.velocity._storedFunction) {
-            return this.velocity._storedFunction(state);
-        }
-        return this.velocity.getConnectedValue(state);
-    }
-
-    private getColor(state: NodeParticleBuildState) {
-        if (this.color._storedFunction) {
-            return this.color._storedFunction(state);
-        }
-        return this.color.getConnectedValue(state);
-    }
-
-    private getScaling(state: NodeParticleBuildState) {
-        if (this.scaling._storedFunction) {
-            return this.scaling._storedFunction(state);
-        }
-        return this.scaling.getConnectedValue(state);
-    }
-
-    private getRotation(state: NodeParticleBuildState) {
-        if (this.rotation._storedFunction) {
-            return this.rotation._storedFunction(state);
-        }
-        return this.rotation.getConnectedValue(state);
     }
 
     public override serialize(): any {
