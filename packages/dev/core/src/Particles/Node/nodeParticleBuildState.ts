@@ -131,6 +131,8 @@ export class NodeParticleBuildState {
                 return this.particleContext.angle;
             case NodeParticleContextualSources.Scale:
                 return this.particleContext.scale;
+            case NodeParticleContextualSources.Size:
+                return this.particleContext.size;
             case NodeParticleContextualSources.AgeGradient:
                 return this.particleContext.age / this.particleContext.lifeTime;
             case NodeParticleContextualSources.SpriteCellEnd:
