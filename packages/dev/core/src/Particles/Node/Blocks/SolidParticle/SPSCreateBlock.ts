@@ -111,28 +111,41 @@ export class SPSCreateBlock extends NodeParticleBlock {
             if (!sps) {
                 return;
             }
-            for (let p = 0; p < sps.nbParticles; p++) {
-                const particle = sps.particles[p];
-                const particleCreateData = createBlocks.get(particle.shapeId);
-                const initBlock = particleCreateData?.initBlock;
-                if (!initBlock) {
-                    continue;
+
+            const originalContext = state.particleContext;
+            const originalSystemContext = state.systemContext;
+
+            try {
+                for (let p = 0; p < sps.nbParticles; p++) {
+                    const particle = sps.particles[p];
+                    const particleCreateData = createBlocks.get(particle.shapeId);
+                    const initBlock = particleCreateData?.initBlock;
+                    if (!initBlock) {
+                        continue;
+                    }
+
+                    state.particleContext = particle;
+                    state.systemContext = sps;
+
+                    if (initBlock.position) {
+                        particle.position.copyFrom(initBlock.position());
+                    }
+                    if (initBlock.velocity) {
+                        particle.velocity.copyFrom(initBlock.velocity());
+                    }
+                    if (initBlock.color) {
+                        particle.color?.copyFrom(initBlock.color());
+                    }
+                    if (initBlock.scaling) {
+                        particle.scaling.copyFrom(initBlock.scaling());
+                    }
+                    if (initBlock.rotation) {
+                        particle.rotation.copyFrom(initBlock.rotation());
+                    }
                 }
-                if (initBlock.position) {
-                    particle.position.copyFrom(initBlock.position());
-                }
-                if (initBlock.velocity) {
-                    particle.velocity.copyFrom(initBlock.velocity());
-                }
-                if (initBlock.color) {
-                    particle.color?.copyFrom(initBlock.color());
-                }
-                if (initBlock.scaling) {
-                    particle.scaling.copyFrom(initBlock.scaling());
-                }
-                if (initBlock.rotation) {
-                    particle.rotation.copyFrom(initBlock.rotation());
-                }
+            } finally {
+                state.particleContext = originalContext;
+                state.systemContext = originalSystemContext;
             }
         };
 
@@ -140,25 +153,40 @@ export class SPSCreateBlock extends NodeParticleBlock {
             if (!sps) {
                 return particle;
             }
+
             const particleCreateData = createBlocks.get(particle.shapeId);
             const updateBlock = particleCreateData?.updateBlock;
             if (!updateBlock) {
                 return particle;
             }
-            if (updateBlock.position) {
-                particle.position.copyFrom(updateBlock.position());
-            }
-            if (updateBlock.velocity) {
-                particle.velocity.copyFrom(updateBlock.velocity());
-            }
-            if (updateBlock.color) {
-                particle.color?.copyFrom(updateBlock.color());
-            }
-            if (updateBlock.scaling) {
-                particle.scaling.copyFrom(updateBlock.scaling());
-            }
-            if (updateBlock.rotation) {
-                particle.rotation.copyFrom(updateBlock.rotation());
+            // Set particle context in state for PerParticle lock mode
+            const originalContext = state.particleContext;
+            const originalSystemContext = state.systemContext;
+
+            // Temporarily set particle context for PerParticle lock mode
+            state.particleContext = particle;
+            state.systemContext = sps;
+
+            try {
+                if (updateBlock.position) {
+                    particle.position.copyFrom(updateBlock.position());
+                }
+                if (updateBlock.velocity) {
+                    particle.velocity.copyFrom(updateBlock.velocity());
+                }
+                if (updateBlock.color) {
+                    particle.color?.copyFrom(updateBlock.color());
+                }
+                if (updateBlock.scaling) {
+                    particle.scaling.copyFrom(updateBlock.scaling());
+                }
+                if (updateBlock.rotation) {
+                    particle.rotation.copyFrom(updateBlock.rotation());
+                }
+            } finally {
+                // Restore original context
+                state.particleContext = originalContext;
+                state.systemContext = originalSystemContext;
             }
             return particle;
         };
