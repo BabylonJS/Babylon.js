@@ -31,28 +31,15 @@ export class GeospatialCamera extends Camera {
 
     public movement: GeospatialCameraMovement;
 
-    /** The point on the globe that we are anchoring around. If no alternate rotation point is supplied, this will represent the center of screen*/
-    public get center(): Vector3 {
-        // NOTE that for now we are falling back to target if no pick on globe (because that shouldn't happen with current implemented inputs)
-        // but eventually we want to return a point on the globe even if the camera is looking off into space
-        return this._pickAlongLook?.pickedPoint ?? this._target;
-    }
-
     // Temp vars
-    private _tempGeocentricNormal: Vector3;
-    private _tempRotationAxis: Vector3;
-    private _tempRotationMatrix: Matrix;
-    private _tempPickingRay: Ray;
-    private _tempPosition: Vector3;
+    private _tempGeocentricNormal: Vector3 = new Vector3();
+    private _tempRotationAxis: Vector3 = new Vector3();
+    private _tempRotationMatrix: Matrix = new Matrix();
+    private _tempPosition: Vector3 = new Vector3();
 
-    private _viewMatrix: Matrix;
+    private _viewMatrix: Matrix = Matrix.Identity();
     private _isViewMatrixDirty: boolean;
-    private _lookAtVector: Vector3;
-
-    /** Target of camera when looking along lookAtVector from current position. This does not necessarily represent a point on the globe */
-    private get _target(): Vector3 {
-        return this.position.addToRef(this._lookAtVector, this._tempPosition);
-    }
+    private _lookAtVector: Vector3 = new Vector3();
 
     /** The point around which the camera will geocentrically rotate. Uses center (pt we are anchored to) if no alternateRotationPt is defined */
     private get _geocentricRotationPt(): Vector3 {
@@ -69,12 +56,18 @@ export class GeospatialCamera extends Camera {
 
         this.pickPredicate = pickPredicate;
         this.inputs = new GeospatialCameraInputsManager(this);
-        this.inputs.addMouse().addMouseWheel().addKeyboard();
+        this.inputs.addMouse().addMouseWheel();
     }
 
     private _limits: GeospatialLimits;
     public get limits(): GeospatialLimits {
         return this._limits;
+    }
+
+    /** The point on the globe that we are anchoring around*/
+    private _center = Vector3.Zero();
+    public get center(): Vector3 {
+        return this._position.addToRef(this._lookAtVector, this._center);
     }
 
     private _resetToDefault(): void {
@@ -83,12 +76,8 @@ export class GeospatialCamera extends Camera {
         const restingAltitude = maxCameraRadius ?? this._limits.planetRadius * 4;
         this.position.copyFromFloats(restingAltitude, 0, 0);
 
-        // Temp vars
-        this._tempPosition = new Vector3();
-
         // View matrix calculation vars
-        this._viewMatrix = Matrix.Identity();
-        this._target.subtractToRef(this.position, this._lookAtVector).normalize();
+        this._center.subtractToRef(this._position, this._lookAtVector).normalize();
         this.upVector = Vector3.Up();
         this._isViewMatrixDirty = true;
     }
@@ -106,9 +95,9 @@ export class GeospatialCamera extends Camera {
 
         // Calculate view matrix with camera position and target
         if (this.getScene().useRightHandedSystem) {
-            Matrix.LookAtRHToRef(this.position, this._target, this.upVector, this._viewMatrix);
+            Matrix.LookAtRHToRef(this.position, this._center, this.upVector, this._viewMatrix);
         } else {
-            Matrix.LookAtLHToRef(this.position, this._target, this.upVector, this._viewMatrix);
+            Matrix.LookAtLHToRef(this.position, this._center, this.upVector, this._viewMatrix);
         }
 
         return this._viewMatrix;
@@ -215,12 +204,6 @@ export class GeospatialCamera extends Camera {
             vector.scaleAndAddToRef(distance, this._tempPosition);
             this._applyRotationCorrectionAndSetPos(this._tempPosition);
         }
-    }
-
-    private get _pickAlongLook() {
-        this._tempPickingRay.origin.copyFrom(this.position);
-        this._tempPickingRay.direction.copyFrom(this._lookAtVector);
-        return this._scene.pickWithRay(this._tempPickingRay, this.pickPredicate);
     }
 
     override _checkInputs(): void {
