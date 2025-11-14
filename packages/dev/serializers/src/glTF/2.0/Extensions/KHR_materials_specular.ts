@@ -1,9 +1,10 @@
-import type { IMaterial, IKHRMaterialsSpecular } from "babylonjs-gltf2interface";
+import type { IMaterial, IKHRMaterialsSpecular, IEXTMaterialsSpecularEdgeColor } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { GLTFExporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 const NAME = "KHR_materials_specular";
 
@@ -44,7 +45,7 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
      * @param babylonMaterial corresponding babylon material
      * @returns array of additional textures to export
      */
-    public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
+    public async postExportMaterialAdditionalTexturesAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<BaseTexture[]> {
         const additionalTextures: BaseTexture[] = [];
 
         if (babylonMaterial instanceof PBRMaterial) {
@@ -108,6 +109,42 @@ export class KHR_materials_specular implements IGLTFExporterExtensionV2 {
                 };
 
                 if (this._hasTexturesExtension(babylonMaterial)) {
+                    this._exporter._materialNeedsUVsSet.add(babylonMaterial);
+                }
+
+                node.extensions[NAME] = specularInfo;
+            } else if (babylonMaterial instanceof OpenPBRMaterial) {
+                node.extensions = node.extensions || {};
+
+                const specularWeightTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.specularWeightTexture) ?? undefined;
+                const specularColorTexture = this._exporter._materialExporter.getTextureInfo(babylonMaterial.specularColorTexture) ?? undefined;
+                const specularWeight = babylonMaterial.specularWeight == 1.0 ? undefined : babylonMaterial.specularWeight;
+                const specularColor = babylonMaterial.specularColor.equalsFloats(1.0, 1.0, 1.0) ? undefined : babylonMaterial.specularColor.asArray();
+
+                if (!specularColorTexture && !specularWeightTexture && specularWeight === undefined && specularColor === undefined) {
+                    return resolve(node);
+                }
+                this._wasUsed = true;
+
+                const specularEdgeColorInfo: IEXTMaterialsSpecularEdgeColor = {
+                    specularEdgeColorEnabled: true,
+                };
+
+                const specularInfo: IKHRMaterialsSpecular = {
+                    specularFactor: specularWeight,
+                    specularTexture: specularWeightTexture,
+                    specularColorFactor: specularColor,
+                    specularColorTexture: specularColorTexture,
+                    extensions: {},
+                };
+
+                specularInfo.extensions!["EXT_materials_specular_edge_color"] = specularEdgeColorInfo;
+                this._exporter._glTF.extensionsUsed ||= [];
+                if (this._exporter._glTF.extensionsUsed.indexOf("EXT_materials_specular_edge_color") === -1) {
+                    this._exporter._glTF.extensionsUsed.push("EXT_materials_specular_edge_color");
+                }
+
+                if (specularWeightTexture || specularColorTexture) {
                     this._exporter._materialNeedsUVsSet.add(babylonMaterial);
                 }
 

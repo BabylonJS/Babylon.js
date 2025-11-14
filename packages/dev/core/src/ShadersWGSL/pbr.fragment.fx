@@ -620,7 +620,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 , uniforms.vRefractionSize
             #endif
             #ifdef SS_DISPERSION
-                , dispersion
+                , uniforms.dispersion
             #endif
         #endif
         #ifdef SS_TRANSLUCENCY
@@ -686,3 +686,4 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #define CUSTOM_FRAGMENT_MAIN_END
 
 }
+

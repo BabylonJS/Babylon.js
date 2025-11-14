@@ -206,9 +206,31 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public static readonly MATERIAL_NORMALBLENDMETHOD_RNM = 1;
 
     /**
+     * PBRMaterialLightFalloff Physical: light is falling off following the inverse squared distance law.
+     */
+    public static readonly LIGHTFALLOFF_PHYSICAL = 0;
+
+    /**
+     * PBRMaterialLightFalloff gltf: light is falling off as described in the gltf moving to PBR document
+     * to enhance interoperability with other engines.
+     */
+    public static readonly LIGHTFALLOFF_GLTF = 1;
+
+    /**
+     * PBRMaterialLightFalloff Standard: light is falling off like in the standard material
+     * to enhance interoperability with other materials.
+     */
+    public static readonly LIGHTFALLOFF_STANDARD = 2;
+
+    /**
      * Event observable which raises global events common to all materials (like MaterialPluginEvent.Created)
      */
     public static OnEventObservable = new Observable<Material>();
+
+    /**
+     * If true, all materials will have their vertex output set to invariant (see the vertexOutputInvariant property).
+     */
+    public static ForceVertexOutputInvariant = false;
 
     /**
      * Custom callback helping to override the default shader used in the material.
@@ -870,7 +892,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     @serialize()
-    protected _setVertexOutputInvariant = false;
+    protected _isVertexOutputInvariant = Material.ForceVertexOutputInvariant;
     /**
      * Gets or sets the vertex output invariant state
      * Setting this property to true will force the shader compiler to disable some optimization to make sure the vertex output is always calculated
@@ -878,16 +900,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * You may need to enable this option if you are seeing some depth artifacts when using a depth pre-pass, for e.g.
      * Note that this may have an impact on performance, so leave this option disabled if not needed.
      */
-    public get setVertexOutputInvariant(): boolean {
-        return this._setVertexOutputInvariant;
+    public get isVertexOutputInvariant(): boolean {
+        return this._isVertexOutputInvariant;
     }
 
-    public set setVertexOutputInvariant(value: boolean) {
-        if (this._setVertexOutputInvariant === value) {
+    public set isVertexOutputInvariant(value: boolean) {
+        if (this._isVertexOutputInvariant === value) {
             return;
         }
 
-        this._setVertexOutputInvariant = value;
+        this._isVertexOutputInvariant = value;
         this._markAllSubMeshesAsMiscDirty();
     }
 

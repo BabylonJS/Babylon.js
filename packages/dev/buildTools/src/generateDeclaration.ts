@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-param */
 /* eslint-disable no-console */
 import { globSync } from "glob";
 import * as fs from "fs";
@@ -76,45 +77,56 @@ function GetModuleDeclaration(
                     line = line.startsWith("    ") ? "    //" + line.substring(3) : "// " + line;
                 }
 
+                // replace type imports from directories with index (mixins are generating them)
+                line = line.replace(/import\("([./]+)"\)/g, `import("$1/index")`);
+
                 [
                     // Declaration
-                    /declare module ['"](.*)['"]/,
+                    /declare module ['"](.*)['"]/g,
                     // From
-                    / from ['"](.*)['"]/,
+                    / from ['"](.*)['"]/g,
                     // Module augmentation
-                    / {4}module ['"](.*)['"]/,
-                    /^module ['"](\..*)['"]/,
+                    / {4}module ['"](.*)['"]/g,
+                    /^module ['"](\..*)['"]/g,
                     // Inlined Import
-                    /import\(['"](.*)['"]/,
+                    /import\(['"]([^'"]*)['"]/g,
                     // Side Effect Import
-                    /import ['"](.*)['"]/,
+                    /import ['"](.*)['"]/g,
                 ].forEach((regex) => {
-                    const match = line.match(regex);
-                    if (match) {
-                        if (match[1][0] === ".") {
-                            const newLocation = path.join(sourceDir, match[1]).replace(/\\/g, "/");
-                            line = line.replace(match[1], newLocation);
-                        } else {
-                            let found = false;
-                            Object.keys(mapping).forEach((devPackageName) => {
-                                if (match[1].startsWith(devPackageName)) {
-                                    line = line.replace(
-                                        match[1],
-                                        getPublicPackageName(
-                                            mapping[(isValidDevPackageName(devPackageName, true) ? devPackageName : kebabize(config.devPackageName)) as DevPackageName][buildType],
-                                            match[1]
-                                        ) + match[1].substring(devPackageName.length)
-                                    );
-                                    found = true;
-                                }
-                            });
-                            if (!found) {
-                                // not a dev dependency
-                                // TODO - make a list of external dependencies per package
-                                // for now - we support react
-                                if (match[1] !== "react" /* && !match[1].startsWith("@fluentui")*/) {
-                                    // check what the line imports
-                                    line = "";
+                    const matches = line.matchAll(regex);
+                    if (matches) {
+                        for (const match of matches) {
+                            const group = match[1];
+                            if (group[0] === ".") {
+                                const newLocation = path.join(sourceDir, group).replace(/\\/g, "/");
+                                // replaceAll only avaialable by modifying the typescript lib
+                                // which we prefered to not change for now
+                                line = (line as any).replace(group, newLocation);
+                                // while (line.indexOf("//") > -1) {}
+                            } else {
+                                let found = false;
+                                Object.keys(mapping).forEach((devPackageName) => {
+                                    if (group.startsWith(devPackageName)) {
+                                        line = line.replace(
+                                            group,
+                                            getPublicPackageName(
+                                                mapping[(isValidDevPackageName(devPackageName, true) ? devPackageName : kebabize(config.devPackageName)) as DevPackageName][
+                                                    buildType
+                                                ],
+                                                group
+                                            ) + group.substring(devPackageName.length)
+                                        );
+                                        found = true;
+                                    }
+                                });
+                                if (!found) {
+                                    // not a dev dependency
+                                    // TODO - make a list of external dependencies per package
+                                    // for now - we support react
+                                    if (group !== "react" /* && !group.startsWith("@fluentui")*/) {
+                                        // check what the line imports
+                                        line = "";
+                                    }
                                 }
                             }
                         }
@@ -163,9 +175,9 @@ function GetModuleDeclaration(
         // TODO - make a list of dependencies that are accepted by each package
         if (!devPackageName) {
             if (externalName) {
-                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
+                if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                     // replace with any
-                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
+                    const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                     processedLines = processedLines.replace(matchRegex, `$1any$3`);
                     return;
                 }
@@ -319,8 +331,8 @@ function GetPackageDeclaration(
     while (i < lines.length) {
         let line = lines[i];
 
-        if (/import\("\.(.*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
-            line = line.replace(/import\((.*)\)./, "");
+        if (/import\("\.([^)]*)\)./g.test(line) && !/^declare type (.*) import/g.test(line)) {
+            line = line.replace(/import\(([^)]*)\)./g, "");
         }
 
         if (!line.includes("const enum") && !line.includes("=")) {
@@ -399,9 +411,9 @@ function GetPackageDeclaration(
             // TODO - make a list of dependencies that are accepted by each package
             if (!localDevPackageMap) {
                 if (externalName) {
-                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui") {
+                    if (externalName === "@fortawesome" || externalName === "react-contextmenu" || externalName === "@fluentui" || externalName === "@recast-navigation") {
                         // replace with any
-                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n> ]*)([^\\w])`, "g");
+                        const matchRegex = new RegExp(`([ <])(${alias}[^,;\n>) ]*)([^\\w])`, "g");
                         processedSource = processedSource.replace(matchRegex, `$1any$3`);
                         return;
                     } else if (externalName === "react") {

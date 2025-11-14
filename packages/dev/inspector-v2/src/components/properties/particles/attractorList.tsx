@@ -1,18 +1,23 @@
-import { GizmoManager } from "core/Gizmos/gizmoManager";
-import { StandardMaterial } from "core/Materials/standardMaterial";
-import { Color3 } from "core/Maths/math.color";
+import type { FunctionComponent } from "react";
+
+import { useCallback, useEffect, useState } from "react";
+
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { Attractor } from "core/Particles/attractor";
 import type { ParticleSystem } from "core/Particles/particleSystem";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { useCallback, useEffect, useState, type FunctionComponent } from "react";
+import type { ListItem } from "shared-ui-components/fluent/primitives/list";
+
+import { GizmoManager } from "core/Gizmos/gizmoManager";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Color3 } from "core/Maths/math.color";
+import { Attractor } from "core/Particles/attractor";
 import { Color3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
 import { List } from "shared-ui-components/fluent/primitives/list";
-import type { ListItem } from "shared-ui-components/fluent/primitives/list";
 import { useResource } from "../../../hooks/resourceHooks";
 import { AttractorComponent } from "./attractor";
+
 type AttractorListProps = {
     scene: Scene;
     attractors: Array<Attractor>;

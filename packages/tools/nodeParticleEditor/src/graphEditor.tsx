@@ -257,14 +257,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
-            this._graphCanvas.handleKeyDown(
+            void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
                     this.props.globalState.nodeParticleSet.removeBlock(nodeData.data as NodeParticleBlock);
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
-                (nodeData) => {
+                async (nodeData) => {
                     const block = nodeData.data as NodeParticleBlock;
                     const clone = block.clone();
 

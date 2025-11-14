@@ -9,7 +9,7 @@
 #define CONDUCTOR_SPECULAR_MODEL_GLTF 0
 #define CONDUCTOR_SPECULAR_MODEL_OPENPBR 1
 
-#ifndef PBR_VERTEX_SHADER
+#if !defined(PBR_VERTEX_SHADER) && !defined(OPENPBR_VERTEX_SHADER)
 
 // ______________________________________________________________________
 //
@@ -41,6 +41,25 @@
         let one_minus_cos_theta: f32 = 1.0 - cos_theta;
         let offset_from_F0: vec3f = (white_minus_F0 - b * cos_theta * one_minus_cos_theta) * pow(one_minus_cos_theta, 5.0f);
         return clamp(F0 + offset_from_F0, vec3f(0.0f), vec3f(1.0f));
+    }
+#endif
+
+#ifdef FUZZENVIRONMENTBRDF
+    fn getFuzzBRDFLookup(NdotV: f32, perceptualRoughness: f32) -> vec3f {
+        // Indexed on cos(theta) and roughness
+        let UV: vec2f = vec2f(perceptualRoughness, NdotV);
+
+        // We can find the scale and offset to apply to the specular value.
+        var brdfLookup: vec4f = textureSample(environmentFuzzBrdfSampler, environmentFuzzBrdfSamplerSampler, UV);
+
+        const RiRange: vec2f = vec2f(0.0f, 0.75f);
+        const ARange: vec2f = vec2f(0.005f, 0.88f);
+        const BRange: vec2f = vec2f(-0.18f, 0.002f);
+        brdfLookup.r = mix(ARange.x,  ARange.y,  brdfLookup.r);
+        brdfLookup.g = mix(BRange.x,  BRange.y,  brdfLookup.g);
+        brdfLookup.b = mix(RiRange.x, RiRange.y, brdfLookup.b);
+
+        return brdfLookup.rgb;
     }
 #endif
 

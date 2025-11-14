@@ -8,14 +8,19 @@ export const SettingsContextIdentity = Symbol("SettingsContext");
  */
 export interface ISettingsContext extends IService<typeof SettingsContextIdentity> {
     /**
-     * Use dregrees instead of radians for angles.
+     * Use degrees instead of radians for angles.
      */
     useDegrees: boolean;
 
     /**
-     * Ignore backfaces when picking
+     * Ignore backfaces when picking.
      */
     ignoreBackfacesForPicking: boolean;
+
+    /**
+     * Shows the Properties pane when an entity is selected.
+     */
+    showPropertiesOnEntitySelection: boolean;
 
     /**
      * Observable that fires whenever a setting changes.

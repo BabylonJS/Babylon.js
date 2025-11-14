@@ -32,7 +32,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
     const isCore = !!checkArgs("--isCore", true);
     const outputDir = checkArgs(["--output-dir"], false, true) as string;
     const verbose = checkArgs("--verbose", true);
-    let basePackageName: DevPackageName = "core";
+    let basePackageName: DevPackageName | undefined;
     if (!isCore) {
         const cliPackage = checkArgs("--package", false, true);
         if (cliPackage) {

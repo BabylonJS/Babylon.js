@@ -754,7 +754,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /** @internal */
-    public _emitFromParticle: (particle: Particle) => void = (particle) => {
+    public _emitFromParticle: (particle: Particle) => void = (_particle) => {
         // Do nothing
     };
 
@@ -1574,6 +1574,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
         }
         if (delay) {
+            this.startDelay = delay;
             setTimeout(() => {
                 this.start(0);
             }, delay);
@@ -1676,9 +1677,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
         let offset = index * this._vertexBufferSize;
 
-        this._vertexData[offset++] = particle.position.x + this.worldOffset.x;
-        this._vertexData[offset++] = particle.position.y + this.worldOffset.y;
-        this._vertexData[offset++] = particle.position.z + this.worldOffset.z;
+        const floatingOriginOffset = TmpVectors.Vector3[0].copyFrom(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly);
+        this._vertexData[offset++] = particle.position.x + this.worldOffset.x - floatingOriginOffset.x;
+        this._vertexData[offset++] = particle.position.y + this.worldOffset.y - floatingOriginOffset.y;
+        this._vertexData[offset++] = particle.position.z + this.worldOffset.z - floatingOriginOffset.z;
         this._vertexData[offset++] = particle.color.r;
         this._vertexData[offset++] = particle.color.g;
         this._vertexData[offset++] = particle.color.b;
@@ -2245,10 +2247,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 engine.bindBuffers(this._vertexBuffers, this._linesIndexBufferUseInstancing, effect);
             } else {
                 if (!this._vertexArrayObject) {
-                    this._vertexArrayObject = (this._engine as ThinEngine).recordVertexArrayObject(this._vertexBuffers, null, effect);
+                    this._vertexArrayObject = (this._engine as ThinEngine).recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
                 }
 
-                (this._engine as ThinEngine).bindVertexArrayObject(this._vertexArrayObject, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : this._indexBuffer);
+                (this._engine as ThinEngine).bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
             }
         } else {
             if (!this._indexBuffer) {

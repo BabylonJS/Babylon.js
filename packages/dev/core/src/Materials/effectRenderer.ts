@@ -103,11 +103,13 @@ export class EffectRenderer {
      * The effect needs to be ready before calling this api.
      * This also sets the default full screen position attribute.
      * @param effectWrapper Defines the effect to draw with
+     * @param depthTest Whether to enable depth testing (default: false)
+     * @param stencilTest Whether to enable stencil testing (default: false)
      */
-    public applyEffectWrapper(effectWrapper: EffectWrapper): void {
+    public applyEffectWrapper(effectWrapper: EffectWrapper, depthTest = false, stencilTest = false): void {
         this.engine.setState(true);
-        this.engine.depthCullingState.depthTest = false;
-        this.engine.stencilState.stencilTest = false;
+        this.engine.depthCullingState.depthTest = depthTest;
+        this.engine.stencilState.stencilTest = stencilTest;
         this.engine.enableEffect(effectWrapper.drawWrapper);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});

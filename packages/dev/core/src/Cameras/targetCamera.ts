@@ -76,6 +76,19 @@ export class TargetCamera extends Camera {
     public inverseRotationSpeed = 0.2;
 
     /**
+     * @internal
+     * @experimental
+     * Can be used to change clamping behavior for inertia. Hook into onBeforeRenderObservable to change the value per-frame
+     */
+    public _panningEpsilon = Epsilon;
+    /**
+     * @internal
+     * @experimental
+     * Can be used to change clamping behavior for inertia. Hook into onBeforeRenderObservable to change the value per-frame
+     */
+    public _rotationEpsilon = Epsilon;
+
+    /**
      * Define the current target of the camera as an object or a position.
      * Please note that locking a target will disable panning.
      */
@@ -391,28 +404,30 @@ export class TargetCamera extends Camera {
             }
         }
 
+        const inertialPanningLimit = this.speed * this._panningEpsilon;
+        const inertialRotationLimit = this.speed * this._rotationEpsilon;
         // Inertia
         if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.x) < inertialPanningLimit) {
                 this.cameraDirection.x = 0;
             }
 
-            if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.y) < inertialPanningLimit) {
                 this.cameraDirection.y = 0;
             }
 
-            if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.z) < inertialPanningLimit) {
                 this.cameraDirection.z = 0;
             }
 
             this.cameraDirection.scaleInPlace(this.inertia);
         }
         if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraRotation.x) < inertialRotationLimit) {
                 this.cameraRotation.x = 0;
             }
 
-            if (Math.abs(this.cameraRotation.y) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
                 this.cameraRotation.y = 0;
             }
             this.cameraRotation.scaleInPlace(this.inertia);
@@ -485,12 +500,9 @@ export class TargetCamera extends Camera {
             const parentWorldMatrix = this.parent.getWorldMatrix();
             this._viewMatrix.invert();
             this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
-            this._viewMatrix.getTranslationToRef(this._globalPosition);
             this._viewMatrix.invert();
 
             this._markSyncedWithParent();
-        } else {
-            this._globalPosition.copyFrom(position);
         }
     }
 

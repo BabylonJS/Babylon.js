@@ -1,16 +1,30 @@
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
-import { Vector3 } from "core/Maths/math.vector";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { NodeParticleBlock } from "../../nodeParticleBlock";
+import type { Nullable } from "core/types";
 import type { Particle } from "core/Particles/particle";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
 import type { IShapeBlock } from "./IShapeBlock";
+
+import { TmpVectors, Vector3 } from "core/Maths/math.vector";
+import { RegisterClass } from "core/Misc/typeStore";
+import { EmptyGeneratorFunc } from "core/Particles/EmitterTypes/customParticleEmitter";
+import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { _CreateLocalPositionData } from "./emitters.functions";
+
+/** Function that generates particle position/direction data */
+type ParticleGeneratorFunction = (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void;
 
 /**
  * Block used to provide a flow of particles emitted from a custom position.
  */
 export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
+    /** The particle position generator function */
+    public particlePositionGenerator: ParticleGeneratorFunction = EmptyGeneratorFunc;
+    /** The particle destination generator function */
+    public particleDestinationGenerator: ParticleGeneratorFunction = EmptyGeneratorFunc;
+    /** The particle direction generator function */
+    public particleDirectionGenerator: ParticleGeneratorFunction = EmptyGeneratorFunc;
+
     /**
      * Create a new CustomShapeBlock
      * @param name defines the block name
@@ -19,8 +33,6 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
         super(name);
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
-        this.registerInput("position", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(0, 0, 0));
-        this.registerInput("direction", NodeParticleBlockConnectionPointTypes.Vector3, true, new Vector3(0, 1.0, 0));
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.Particle);
     }
 
@@ -37,20 +49,6 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
      */
     public get particle(): NodeParticleConnectionPoint {
         return this._inputs[0];
-    }
-
-    /**
-     * Gets the position input component
-     */
-    public get position(): NodeParticleConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
-     * Gets the direction input component
-     */
-    public get direction(): NodeParticleConnectionPoint {
-        return this._inputs[2];
     }
 
     /**
@@ -71,26 +69,50 @@ export class CustomShapeBlock extends NodeParticleBlock implements IShapeBlock {
             state.particleContext = particle;
             state.systemContext = system;
 
-            const direction = this.direction.getConnectedValue(state);
+            const tmpVector = TmpVectors.Vector3[0];
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformNormalToRef(direction, state.emitterWorldMatrix!, particle.direction);
+            if (this.particleDirectionGenerator && this.particleDirectionGenerator !== EmptyGeneratorFunc) {
+                this.particleDirectionGenerator(-1, particle, tmpVector);
+            } else if (this.particleDestinationGenerator && this.particleDestinationGenerator !== EmptyGeneratorFunc) {
+                this.particleDestinationGenerator(-1, particle, tmpVector);
+
+                // Get direction
+                const diffVector = TmpVectors.Vector3[1];
+                tmpVector.subtractToRef(particle.position, diffVector);
+
+                diffVector.scaleToRef(1 / particle.lifeTime, tmpVector);
             } else {
-                particle.direction.copyFrom(direction);
+                tmpVector.set(0, 0, 0);
             }
+
+            if (system.isLocal) {
+                particle.direction.copyFrom(tmpVector);
+            } else {
+                Vector3.TransformNormalToRef(tmpVector, state.emitterWorldMatrix!, particle.direction);
+            }
+
+            particle._initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
-            const position = this.position.getConnectedValue(state);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformCoordinatesToRef(position, state.emitterWorldMatrix!, particle.position);
+            const tmpVector = TmpVectors.Vector3[0];
+
+            if (this.particlePositionGenerator && this.particlePositionGenerator !== EmptyGeneratorFunc) {
+                this.particlePositionGenerator(-1, particle, tmpVector);
             } else {
-                particle.position.copyFrom(position);
-                particle.position.addInPlace(state.emitterPosition!);
+                tmpVector.set(0, 0, 0);
             }
+
+            if (system.isLocal) {
+                particle.position.copyFrom(tmpVector);
+            } else {
+                Vector3.TransformCoordinatesToRef(tmpVector, state.emitterWorldMatrix!, particle.position);
+            }
+
+            _CreateLocalPositionData(particle);
         };
 
         this.output._storedValue = system;

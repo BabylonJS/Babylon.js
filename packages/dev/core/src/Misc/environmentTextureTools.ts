@@ -12,7 +12,7 @@ import { PostProcess } from "../PostProcesses/postProcess";
 import { Logger } from "../Misc/logger";
 import { RGBDTextureTools } from "./rgbdTextureTools";
 import { DumpDataAsync } from "../Misc/dumpTools";
-import { ShaderLanguage } from "core/Materials";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { Engine, WebGPUEngine } from "core/Engines";

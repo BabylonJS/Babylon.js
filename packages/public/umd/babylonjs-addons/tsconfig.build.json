@@ -9,7 +9,7 @@
         "importHelpers": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
-            "addons/*": ["dev/addons/dist/*"]
+            "addons/*": ["dev/addons/src/*"]
         }
     },
     "include": ["./src/**/*", "../../../dev/addons/src/**/*"]

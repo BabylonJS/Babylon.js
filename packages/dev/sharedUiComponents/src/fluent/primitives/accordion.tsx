@@ -1,19 +1,27 @@
 import type { AccordionToggleData, AccordionToggleEvent } from "@fluentui/react-components";
 import type { FunctionComponent, PropsWithChildren } from "react";
 
-import { Children, isValidElement, useCallback, useEffect, useMemo, useState } from "react";
+import { Children, isValidElement, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import { AccordionHeader, AccordionItem, AccordionPanel, Accordion as FluentAccordion, Subtitle1, makeStyles, tokens } from "@fluentui/react-components";
-
+import { AccordionHeader, AccordionItem, AccordionPanel, Divider, Accordion as FluentAccordion, Subtitle2Stronger, makeStyles, tokens } from "@fluentui/react-components";
+import { CustomTokens } from "./utils";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 const useStyles = makeStyles({
     accordion: {
         overflowX: "hidden",
         overflowY: "auto",
-        paddingBottom: tokens.spacingVerticalM,
+        paddingBottom: tokens.spacingVerticalM, // bottom padding since there is no divider at the bottom
         display: "flex",
         flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
         height: "100%",
+    },
+    divider: {
+        paddingTop: CustomTokens.dividerGap,
+        paddingBottom: CustomTokens.dividerGap,
+    },
+    dividerSmall: {
+        paddingTop: CustomTokens.dividerGapSmall,
+        paddingBottom: CustomTokens.dividerGapSmall,
     },
     panelDiv: {
         display: "flex",
@@ -28,14 +36,16 @@ export type AccordionSectionProps = {
 };
 
 export const AccordionSection: FunctionComponent<PropsWithChildren<AccordionSectionProps>> = (props) => {
+    AccordionSection.displayName = "AccordionSection";
     const classes = useStyles();
 
     return <div className={classes.panelDiv}>{props.children}</div>;
 };
 
 export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
+    Accordion.displayName = "Accordion";
     const classes = useStyles();
-
+    const { size } = useContext(ToolContext);
     const { children, ...rest } = props;
     const validChildren = useMemo(() => {
         return (
@@ -84,15 +94,16 @@ export const Accordion: FunctionComponent<PropsWithChildren> = (props) => {
 
     return (
         <FluentAccordion className={classes.accordion} collapsible multiple onToggle={onToggle} openItems={openItems} {...rest}>
-            {validChildren.map((child) => {
+            {validChildren.map((child, index) => {
                 return (
-                    <AccordionItem key={child.title} value={child.title}>
-                        <AccordionHeader expandIconPosition="end">
-                            <Subtitle1>{child.title}</Subtitle1>
+                    <AccordionItem key={child.content.key} value={child.title}>
+                        <AccordionHeader size={size}>
+                            <Subtitle2Stronger>{child.title}</Subtitle2Stronger>
                         </AccordionHeader>
                         <AccordionPanel>
                             <div className={classes.panelDiv}>{child.content}</div>
                         </AccordionPanel>
+                        {index < validChildren.length - 1 && <Divider inset={true} className={size === "small" ? classes.dividerSmall : classes.divider} />}
                     </AccordionItem>
                 );
             })}

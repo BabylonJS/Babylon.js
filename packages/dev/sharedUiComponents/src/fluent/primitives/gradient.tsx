@@ -47,6 +47,7 @@ type GradientProps<T extends number | Color3 | Color4> = {
  * @returns A React component
  */
 const Gradient: FunctionComponent<PrimitiveProps<GradientProps<number | Color3 | Color4>>> = (props) => {
+    Gradient.displayName = "Gradient";
     const [gradient, setGradient] = useState(props.value);
     const classes = useGradientStyles();
 

@@ -390,6 +390,7 @@ export class WebXRCamera extends FreeCamera {
                     x: this._referencedPosition.x / this._xrSessionManager.worldScalingFactor,
                     y: this._referencedPosition.y / this._xrSessionManager.worldScalingFactor,
                     z: this._referencedPosition.z / this._xrSessionManager.worldScalingFactor,
+                    w: 1,
                 },
                 {
                     x: this._referenceQuaternion.x,

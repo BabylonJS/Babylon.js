@@ -58,6 +58,7 @@ export class GlobalState {
         KHR_materials_volume: { enabled: true },
         KHR_materials_dispersion: { enabled: true },
         KHR_lights_punctual: { enabled: true },
+        EXT_lights_area: { enabled: true },
         EXT_lights_ies: { enabled: true },
         KHR_texture_basisu: { enabled: true },
         KHR_texture_transform: { enabled: true },
@@ -65,7 +66,7 @@ export class GlobalState {
         EXT_mesh_gpu_instancing: { enabled: true },
         EXT_texture_webp: { enabled: true },
         EXT_texture_avif: { enabled: true },
-        EXT_materials_diffuse_roughness: { enabled: true },
+        KHR_materials_diffuse_roughness: { enabled: true },
     };
 
     public glTFLoaderOverrideConfig = false;

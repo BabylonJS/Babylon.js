@@ -50,6 +50,7 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             title: "Scene Explorer",
             icon: CubeTreeRegular,
             horizontalLocation: "left",
+            verticalLocation: "top",
             suppressTeachingMoment: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);

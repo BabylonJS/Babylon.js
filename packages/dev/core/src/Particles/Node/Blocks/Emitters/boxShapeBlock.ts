@@ -1,12 +1,14 @@
+import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
+import type { Particle } from "core/Particles/particle";
+import type { IShapeBlock } from "./IShapeBlock";
+
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import { Vector3 } from "core/Maths/math.vector";
-import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
-import type { Particle } from "core/Particles/particle";
 import { RandomRange } from "core/Maths/math.scalar.functions";
-import type { IShapeBlock } from "./IShapeBlock";
+import { _CreateLocalPositionData } from "./emitters.functions";
 
 /**
  * Block used to provide a flow of particles emitted from a box shape.
@@ -95,16 +97,19 @@ export class BoxShapeBlock extends NodeParticleBlock implements IShapeBlock {
             const randY = RandomRange(direction1.y, direction2.y);
             const randZ = RandomRange(direction1.z, direction2.z);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
-            } else {
+            if (system.isLocal) {
                 particle.direction.copyFromFloats(randX, randY, randZ);
+            } else {
+                Vector3.TransformNormalFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.direction);
             }
+
+            particle._initialDirection = particle.direction.clone();
         };
 
         system._positionCreation.process = (particle: Particle) => {
             state.particleContext = particle;
             state.systemContext = system;
+
             const minEmitBox = this.minEmitBox.getConnectedValue(state) as Vector3;
             const maxEmitBox = this.maxEmitBox.getConnectedValue(state) as Vector3;
 
@@ -112,12 +117,13 @@ export class BoxShapeBlock extends NodeParticleBlock implements IShapeBlock {
             const randY = RandomRange(minEmitBox.y, maxEmitBox.y);
             const randZ = RandomRange(minEmitBox.z, maxEmitBox.z);
 
-            if (state.isEmitterTransformNode) {
-                Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
-            } else {
+            if (system.isLocal) {
                 particle.position.copyFromFloats(randX, randY, randZ);
-                particle.position.addInPlace(state.emitterPosition!);
+            } else {
+                Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, state.emitterWorldMatrix!, particle.position);
             }
+
+            _CreateLocalPositionData(particle);
         };
 
         this.output._storedValue = system;

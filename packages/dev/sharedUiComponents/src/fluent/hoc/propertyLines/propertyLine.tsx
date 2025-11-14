@@ -1,62 +1,60 @@
-import { Body1, Body1Strong, Button, InfoLabel, Link, ToggleButton, Checkbox, makeStyles, tokens } from "@fluentui/react-components";
-import { AddFilled, CopyRegular, SubtractFilled } from "@fluentui/react-icons";
+import { Body1, InfoLabel, Checkbox, makeStyles, Body1Strong, tokens, mergeClasses } from "@fluentui/react-components";
+import {
+    ChevronCircleDown20Regular,
+    ChevronCircleDown16Regular,
+    ChevronCircleRight16Regular,
+    ChevronCircleRight20Regular,
+    Copy16Regular,
+    Copy20Regular,
+} from "@fluentui/react-icons";
 import type { FunctionComponent, HTMLProps, PropsWithChildren } from "react";
 import { useContext, useState, forwardRef, cloneElement, isValidElement, useRef } from "react";
 import { Collapse } from "../../primitives/collapse";
 import { copyCommandToClipboard } from "../../../copyCommandToClipboard";
 import { ToolContext } from "../fluentToolWrapper";
 import type { PrimitiveProps } from "../../primitives/primitive";
+import { Link } from "../../primitives/link";
+import { ToggleButton } from "../../primitives/toggleButton";
+import { Button } from "../../primitives/button";
+import { CustomTokens } from "../../primitives/utils";
 
 const usePropertyLineStyles = makeStyles({
-    container: {
-        width: "100%",
-        display: "flex",
-        flexDirection: "column", // Stack line + expanded content
-        padding: `${tokens.spacingVerticalXS} 0px`,
-        borderBottom: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
-    },
-    line: {
+    baseLine: {
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-start",
         width: "100%",
     },
-    label: {
+    infoLabel: {
+        display: "flex",
         flex: "1 1 0", // grow=1, shrink =1, basis = 0 initial size before
-        minWidth: "50px",
+        minWidth: CustomTokens.labelMinWidth,
         textAlign: "left",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
+    },
+    labelSlot: {
+        display: "flex",
+        minWidth: 0,
     },
     labelText: {
         whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
     },
     rightContent: {
         flex: "0 1 auto",
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-end",
-        gap: tokens.spacingHorizontalS,
     },
-    button: {
-        marginLeft: tokens.spacingHorizontalXXS,
-        margin: 0,
-        padding: 0,
-        border: 0,
-        minWidth: 0,
+    infoPopup: {
+        whiteSpace: "normal",
+        wordBreak: "break-word",
     },
-    fillRestOfRightContentWidth: {
-        flex: 1,
-        display: "flex",
-        justifyContent: "flex-end",
-        alignItems: "center",
+    copy: {
+        marginRight: CustomTokens.rightAlignOffset, // Accounts for the padding baked into fluent button / ensures propertyLine looks visually aligned at the right
     },
-    expandButton: {
-        margin: 0,
-    },
-    expandedContent: {
-        paddingLeft: "20px",
+    expandedContentDiv: {
+        overflow: "hidden",
     },
 });
 
@@ -131,15 +129,15 @@ export type PropertyLineProps<ValueT> = BasePropertyLineProps &
  *
  */
 export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<PropertyLineProps<any>>>((props, ref) => {
+    PropertyLine.displayName = "PropertyLine";
+    const { disableCopy, size } = useContext(ToolContext);
     const classes = usePropertyLineStyles();
     const { label, onCopy, expandedContent, children, nullable, ignoreNullable } = props;
 
     const [expanded, setExpanded] = useState("expandByDefault" in props ? props.expandByDefault : false);
     const cachedVal = useRef(nullable ? props.value : null);
 
-    const { disableCopy } = useContext(ToolContext);
-
-    const description = props.description ?? (props.docLink ? <Link href={props.docLink}>{props.description ?? "Docs"}</Link> : props.description);
+    const description = props.docLink ? <Link url={props.docLink} value={props.description ?? "Docs"} /> : props.description;
 
     // Process children to handle nullable state -- creating component in disabled state with default value in lieu of null value
     const processedChildren =
@@ -154,11 +152,28 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
 
     return (
         <LineContainer ref={ref}>
-            <div className={classes.line}>
-                <InfoLabel className={classes.label} info={description} title={label}>
+            <div className={classes.baseLine}>
+                <InfoLabel
+                    size={size}
+                    className={classes.infoLabel}
+                    label={{ className: classes.labelSlot }}
+                    info={description ? <div className={classes.infoPopup}>{description}</div> : undefined}
+                    title={label}
+                >
                     <Body1Strong className={classes.labelText}>{label}</Body1Strong>
                 </InfoLabel>
                 <div className={classes.rightContent}>
+                    {expandedContent && (
+                        <ToggleButton
+                            title="Expand/Collapse property"
+                            appearance="transparent"
+                            checkedIcon={size === "small" ? ChevronCircleDown16Regular : ChevronCircleDown20Regular}
+                            uncheckedIcon={size === "small" ? ChevronCircleRight16Regular : ChevronCircleRight20Regular}
+                            value={expanded === true}
+                            onChange={setExpanded}
+                        />
+                    )}
+
                     {nullable && !ignoreNullable && (
                         // If this is a nullableProperty and ignoreNullable was not sent, display a checkbox used to toggle null ('checked' means 'non null')
                         <Checkbox
@@ -176,39 +191,49 @@ export const PropertyLine = forwardRef<HTMLDivElement, PropsWithChildren<Propert
                             title="Toggle null state"
                         />
                     )}
-                    <div className={classes.fillRestOfRightContentWidth}>{processedChildren}</div>
-
-                    {expandedContent && (
-                        <ToggleButton
-                            appearance="transparent"
-                            icon={expanded ? <SubtractFilled /> : <AddFilled />}
-                            className={classes.button}
-                            checked={expanded}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setExpanded((expanded) => !expanded);
-                            }}
-                        />
-                    )}
-
+                    {processedChildren}
                     {onCopy && !disableCopy && (
-                        <Button className={classes.button} id="copyProperty" icon={<CopyRegular />} onClick={() => copyCommandToClipboard(onCopy())} title="Copy to clipboard" />
+                        <Button
+                            className={classes.copy}
+                            title="Copy to clipboard"
+                            appearance="transparent"
+                            icon={size === "small" ? Copy16Regular : Copy20Regular}
+                            onClick={() => copyCommandToClipboard(onCopy())}
+                        />
                     )}
                 </div>
             </div>
             {expandedContent && (
                 <Collapse visible={!!expanded}>
-                    <div className={classes.expandedContent}>{expandedContent}</div>
+                    <div className={classes.expandedContentDiv}>{expandedContent}</div>
                 </Collapse>
             )}
         </LineContainer>
     );
 });
 
+const useLineStyles = makeStyles({
+    container: {
+        width: "100%",
+        display: "flex",
+        flexDirection: "column", // Stack line + expanded content
+        minHeight: CustomTokens.lineHeight,
+        boxSizing: "border-box",
+        justifyContent: "center",
+        paddingTop: tokens.spacingVerticalXXS,
+        paddingBottom: tokens.spacingVerticalXXS,
+    },
+    containerSmall: {
+        minHeight: CustomTokens.lineHeightSmall,
+    },
+});
+
 export const LineContainer = forwardRef<HTMLDivElement, PropsWithChildren<HTMLProps<HTMLDivElement>>>((props, ref) => {
-    const classes = usePropertyLineStyles();
+    const { size } = useContext(ToolContext);
+    const classes = useLineStyles();
+
     return (
-        <div ref={ref} className={classes.container} {...props}>
+        <div ref={ref} className={mergeClasses(classes.container, size == "small" ? classes.containerSmall : undefined)} {...props}>
             {props.children}
         </div>
     );

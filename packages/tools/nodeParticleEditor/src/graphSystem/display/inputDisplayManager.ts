@@ -68,6 +68,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleSystemSources.Emitter:
                     value = "Emitter";
                     break;
+                case NodeParticleSystemSources.CameraPosition:
+                    value = "Camera Position";
+                    break;
             }
         } else if (inputBlock.isContextual) {
             switch (inputBlock.contextualValue) {
@@ -101,6 +104,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.InitialColor:
                     value = "Initial Color";
                     break;
+                case NodeParticleContextualSources.InitialDirection:
+                    value = "Initial Direction";
+                    break;
                 case NodeParticleContextualSources.ColorDead:
                     value = "Dead Color";
                     break;
@@ -112,6 +118,15 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeParticleContextualSources.SpriteCellStart:
                     value = "Sprite Cell Start";
+                    break;
+                case NodeParticleContextualSources.ColorStep:
+                    value = "Color Step";
+                    break;
+                case NodeParticleContextualSources.ScaledColorStep:
+                    value = "Scaled Color Step";
+                    break;
+                case NodeParticleContextualSources.LocalPositionUpdated:
+                    value = "Local Position Updated";
                     break;
             }
         } else {

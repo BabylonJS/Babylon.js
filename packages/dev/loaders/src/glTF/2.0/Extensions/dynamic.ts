@@ -56,6 +56,11 @@ export function registerBuiltInGLTFExtensions() {
         return new KHR_lights(loader);
     });
 
+    registerGLTFExtension("EXT_lights_area", true, async (loader) => {
+        const { EXT_lights_area } = await import("./EXT_lights_area");
+        return new EXT_lights_area(loader);
+    });
+
     registerGLTFExtension("EXT_lights_ies", true, async (loader) => {
         const { EXT_lights_ies } = await import("./EXT_lights_ies");
         return new EXT_lights_ies(loader);
@@ -71,9 +76,9 @@ export function registerBuiltInGLTFExtensions() {
         return new KHR_materials_clearcoat(loader);
     });
 
-    registerGLTFExtension("EXT_materials_diffuse_roughness", true, async (loader) => {
-        const { EXT_materials_diffuse_roughness } = await import("./EXT_materials_diffuse_roughness");
-        return new EXT_materials_diffuse_roughness(loader);
+    registerGLTFExtension("KHR_materials_diffuse_roughness", true, async (loader) => {
+        const { KHR_materials_diffuse_roughness } = await import("./KHR_materials_diffuse_roughness");
+        return new KHR_materials_diffuse_roughness(loader);
     });
 
     registerGLTFExtension("KHR_materials_diffuse_transmission", true, async (loader) => {

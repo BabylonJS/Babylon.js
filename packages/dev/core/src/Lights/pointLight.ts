@@ -149,12 +149,8 @@ export class PointLight extends ShadowLight {
     protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
         const activeCamera = this.getScene().activeCamera;
 
-        if (!activeCamera) {
-            return;
-        }
-
-        const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
-        const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+        const minZ = this.getDepthMinZ(activeCamera);
+        const maxZ = this.getDepthMaxZ(activeCamera);
 
         const useReverseDepthBuffer = this.getScene().getEngine().useReverseDepthBuffer;
 
@@ -188,10 +184,18 @@ export class PointLight extends ShadowLight {
      * @returns The point light
      */
     public transferToEffect(effect: Effect, lightIndex: string): PointLight {
+        const offset = this._scene.floatingOriginOffset;
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, 0.0, lightIndex);
+            this._uniformBuffer.updateFloat4(
+                "vLightData",
+                this.transformedPosition.x - offset.x,
+                this.transformedPosition.y - offset.y,
+                this.transformedPosition.z - offset.z,
+                0.0,
+                lightIndex
+            );
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x - offset.x, this.position.y - offset.y, this.position.z - offset.z, 0, lightIndex);
         }
 
         this._uniformBuffer.updateFloat4("vLightFalloff", this.range, this._inverseSquaredRange, 0, 0, lightIndex);
@@ -199,10 +203,11 @@ export class PointLight extends ShadowLight {
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        const offset = this._scene.floatingOriginOffset;
         if (this.computeTransformedInformation()) {
-            effect.setFloat3(lightDataUniformName, this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z);
+            effect.setFloat3(lightDataUniformName, this.transformedPosition.x - offset.x, this.transformedPosition.y - offset.y, this.transformedPosition.z - offset.z);
         } else {
-            effect.setFloat3(lightDataUniformName, this.position.x, this.position.y, this.position.z);
+            effect.setFloat3(lightDataUniformName, this.position.x - offset.x, this.position.y - offset.y, this.position.z - offset.z);
         }
 
         return this;

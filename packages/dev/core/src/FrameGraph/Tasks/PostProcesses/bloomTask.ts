@@ -84,7 +84,7 @@ export class FrameGraphBloomTask extends FrameGraphTask {
      * @param hdr Whether the bloom effect is HDR.
      * @param bloomScale The scale of the bloom effect. This value is multiplied by the source texture size to determine the bloom texture size.
      */
-    constructor(name: string, frameGraph: FrameGraph, weight: number, kernel: number, threshold: number, hdr = false, bloomScale = 0.5) {
+    constructor(name: string, frameGraph: FrameGraph, weight = 0.25, kernel = 64, threshold = 0.2, hdr = false, bloomScale = 0.5) {
         super(name, frameGraph);
 
         this.hdr = hdr;
@@ -108,13 +108,6 @@ export class FrameGraphBloomTask extends FrameGraphTask {
         this._blurX = new FrameGraphBlurTask(`${name} Blur X`, this._frameGraph, this.bloom._blurX);
         this._blurY = new FrameGraphBlurTask(`${name} Blur Y`, this._frameGraph, this.bloom._blurY);
         this._merge = new FrameGraphBloomMergeTask(`${name} Merge`, this._frameGraph, this.bloom._merge);
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            this._downscale.onTexturesAllocatedObservable.notifyObservers(context);
-            this._blurX.onTexturesAllocatedObservable.notifyObservers(context);
-            this._blurY.onTexturesAllocatedObservable.notifyObservers(context);
-            this._merge.onTexturesAllocatedObservable.notifyObservers(context);
-        });
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }

@@ -14,9 +14,6 @@ uniform Material
 	vec2 vDiffuseInfos;
 	vec2 vAmbientInfos;
 	vec2 vOpacityInfos;
-	vec2 vReflectionInfos;
-	vec3 vReflectionPosition;
-	vec3 vReflectionSize;
 	vec2 vEmissiveInfos;
 	vec2 vLightmapInfos;
 	vec2 vSpecularInfos;
@@ -24,7 +21,6 @@ uniform Material
 	mat4 diffuseMatrix;
 	mat4 ambientMatrix;
 	mat4 opacityMatrix;
-	mat4 reflectionMatrix;
 	mat4 emissiveMatrix;
 	mat4 lightmapMatrix;
 	mat4 specularMatrix;
@@ -42,6 +38,11 @@ uniform Material
 	vec3 vAmbientColor;
 	vec4 cameraInfo;
 
+	vec2 vReflectionInfos;
+	mat4 reflectionMatrix;
+	vec3 vReflectionPosition;
+	vec3 vReflectionSize;
+	
     #define ADDITIONAL_UBO_DECLARATION
 };
 

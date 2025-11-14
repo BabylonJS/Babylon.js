@@ -36,3 +36,5 @@ else if (typeof define === 'function' && define['amd'])
   define([], function() { return DracoEncoderModule; });
 else if (typeof exports === 'object')
   exports["DracoEncoderModule"] = DracoEncoderModule;
+else
+  (typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)["DracoEncoderModule"] = DracoEncoderModule;

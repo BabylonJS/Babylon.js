@@ -547,6 +547,23 @@ export class NodeMaterialBuildState {
         return true;
     }
 
+    private _emitDefineStart(define?: string, notDefine = false) {
+        let code = "";
+        if (define) {
+            if (define.startsWith("defined(")) {
+                code = `#if ${define}\n`;
+            } else {
+                code = `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
+            }
+        }
+
+        return code;
+    }
+
+    private _emitDefineEnd(define?: string) {
+        return define ? `#endif\n` : "";
+    }
+
     /**
      * @internal
      */
@@ -560,16 +577,22 @@ export class NodeMaterialBuildState {
         const shaderType = this._getShaderType(type);
 
         const emitCode = (forFragment = false) => {
-            let code = "";
-            if (define) {
-                if (define.startsWith("defined(")) {
-                    code += `#if ${define}\n`;
-                } else {
-                    code += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
-                }
-            }
+            let code = this._emitDefineStart(define, notDefine);
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
                 switch (shaderType) {
+                    case "i32":
+                    case "f32":
+                    case "vec2f":
+                    case "vec3f":
+                    case "vec4f":
+                        code += `varying ${name}: ${shaderType};\n`;
+
+                        if (forFragment) {
+                            code += `var<private> ${name}: ${shaderType};\n`;
+                            this.sharedData.varyingInitializationsFragment +=
+                                this._emitDefineStart(define, notDefine) + `${name} = fragmentInputs.${name};\n` + this._emitDefineEnd(define);
+                        }
+                        break;
                     case "mat4x4f":
                         // We can't pass a matrix as a varying in WGSL, so we need to split it into 4 vectors
                         code += `varying ${name}_r0: vec4f;\n`;
@@ -579,7 +602,10 @@ export class NodeMaterialBuildState {
 
                         if (forFragment) {
                             code += `var<private> ${name}: mat4x4f;\n`;
-                            this.sharedData.varyingInitializationsFragment += `${name} = mat4x4f(fragmentInputs.${name}_r0, fragmentInputs.${name}_r1, fragmentInputs.${name}_r2, fragmentInputs.${name}_r3);\n`;
+                            this.sharedData.varyingInitializationsFragment +=
+                                this._emitDefineStart(define, notDefine) +
+                                `${name} = mat4x4f(fragmentInputs.${name}_r0, fragmentInputs.${name}_r1, fragmentInputs.${name}_r2, fragmentInputs.${name}_r3);\n` +
+                                this._emitDefineEnd(define);
                         }
                         break;
                     default:
@@ -589,9 +615,7 @@ export class NodeMaterialBuildState {
             } else {
                 code += `varying ${shaderType} ${name};\n`;
             }
-            if (define) {
-                code += `#endif\n`;
-            }
+            code += this._emitDefineEnd(define);
             return code;
         };
 
@@ -681,9 +705,9 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes, isConst?: boolean): string {
+    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes, isConst?: boolean, isVarPrivate?: boolean): string {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${isConst ? "const" : "var"} ${name}: ${this._getShaderType(type)}`;
+            return `${isConst ? "const" : "var" + (isVarPrivate ? "<private>" : "")} ${name}: ${this._getShaderType(type)}`;
         } else {
             return `${isConst ? "const " : ""}${this._getShaderType(type)} ${name}`;
         }

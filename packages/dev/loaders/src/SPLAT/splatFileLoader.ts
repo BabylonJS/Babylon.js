@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/promise-function-async */
+/* eslint-disable @typescript-eslint/promise-function-async*/
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderAsyncResult, ISceneLoaderProgressEvent, SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { RegisterSceneLoaderPlugin } from "core/Loading/sceneLoader";
 import { SPLATFileLoaderMetadata } from "./splatFileLoader.metadata";
@@ -14,8 +15,13 @@ import { PointsCloudSystem } from "core/Particles/pointsCloudSystem";
 import { Color4 } from "core/Maths/math.color";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { SPLATLoadingOptions } from "./splatLoadingOptions";
-import { Scalar } from "core/Maths/math.scalar";
 import type { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { ParseSpz } from "./spz";
+import { Mode } from "./splatDefs";
+import type { IParsedPLY } from "./splatDefs";
+import { ParseSogMeta } from "./sog";
+import type { SOGRootData } from "./sog";
+import { Tools } from "core/Misc/tools";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
@@ -27,29 +33,8 @@ declare module "core/Loading/sceneLoader" {
     }
 }
 
-/**
- * Indicator of the parsed ply buffer. A standard ready to use splat or an array of positions for a point cloud
- */
-const enum Mode {
-    Splat = 0,
-    PointCloud = 1,
-    Mesh = 2,
-    Reject = 3,
-}
-
-/**
- * A parsed buffer and how to use it
- */
-interface IParsedPLY {
-    data: ArrayBuffer;
-    mode: Mode;
-    faces?: number[];
-    hasVertexColors?: boolean;
-    sh?: Uint8Array[];
-    trainedWithAntialiasing?: boolean;
-    compressed?: boolean;
-    rawSplat?: boolean;
-}
+// FFlate access
+declare const fflate: any;
 
 /**
  * @experimental
@@ -189,208 +174,80 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return mesh;
     }
 
-    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    private _parseSPZAsync(data: ArrayBuffer, scene: Scene): Promise<IParsedPLY> {
-        const ubuf = new Uint8Array(data);
-        const ubufu32 = new Uint32Array(data.slice(0, 12)); // Only need ubufu32[0] to [2]
-        // debug infos
-        const splatCount = ubufu32[2];
-
-        const shDegree = ubuf[12];
-        const fractionalBits = ubuf[13];
-        const flags = ubuf[14];
-        const reserved = ubuf[15];
-        const version = ubufu32[1];
-
-        // check magic and version
-        if (reserved || ubufu32[0] != 0x5053474e || (version != 2 && version != 3)) {
-            // reserved must be 0
-            return new Promise((resolve) => {
-                resolve({ mode: Mode.Reject, data: buffer, hasVertexColors: false });
-            });
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax, @typescript-eslint/naming-convention
+    private async _unzipWithFFlateAsync(data: Uint8Array): Promise<Map<string, Uint8Array>> {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        let fflate = this._loadingOptions.fflate as typeof import("fflate");
+        // ensure fflate is loaded
+        if (!fflate) {
+            if (typeof (window as any).fflate === "undefined") {
+                await Tools.LoadScriptAsync(this._loadingOptions.deflateURL ?? "https://unpkg.com/fflate/umd/index.js");
+            }
+            fflate = (window as any).fflate as typeof fflate;
         }
 
-        const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // 32
-        const buffer = new ArrayBuffer(rowOutputLength * splatCount);
+        const { unzipSync } = fflate;
 
-        const positionScale = 1.0 / (1 << fractionalBits);
+        const unzipped = unzipSync(data) as Record<string, Uint8Array>; // { [filename: string]: Uint8Array }
 
-        const int32View = new Int32Array(1);
-        const uint8View = new Uint8Array(int32View.buffer);
-        const read24bComponent = function (u8: Uint8Array, offset: number) {
-            uint8View[0] = u8[offset + 0];
-            uint8View[1] = u8[offset + 1];
-            uint8View[2] = u8[offset + 2];
-            uint8View[3] = u8[offset + 2] & 0x80 ? 0xff : 0x00;
-            return int32View[0] * positionScale;
+        const files = new Map<string, Uint8Array>();
+        for (const [name, content] of Object.entries(unzipped)) {
+            files.set(name, content);
+        }
+        return files;
+    }
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    private _parseAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
+        const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
+
+        const makeGSFromParsedSOG = (parsedSOG: IParsedPLY) => {
+            scene._blockEntityCollection = !!this._assetContainer;
+            const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
+            gaussianSplatting._parentContainer = this._assetContainer;
+            gaussianSplatting.viewDirectionFactor.set(1, -1, 1);
+            babylonMeshesArray.push(gaussianSplatting);
+            gaussianSplatting.updateData(parsedSOG.data, parsedSOG.sh);
+            scene._blockEntityCollection = false;
         };
 
-        let byteOffset = 16;
-
-        const position = new Float32Array(buffer);
-        const scale = new Float32Array(buffer);
-        const rgba = new Uint8ClampedArray(buffer);
-        const rot = new Uint8ClampedArray(buffer);
-
-        let coordinateSign = 1;
-        let quaternionOffset = 0;
-        if (!this._loadingOptions.flipY) {
-            coordinateSign = -1;
-            quaternionOffset = 255;
-        }
-        // positions
-        for (let i = 0; i < splatCount; i++) {
-            position[i * 8 + 0] = read24bComponent(ubuf, byteOffset + 0);
-            position[i * 8 + 1] = coordinateSign * read24bComponent(ubuf, byteOffset + 3);
-            position[i * 8 + 2] = coordinateSign * read24bComponent(ubuf, byteOffset + 6);
-            byteOffset += 9;
-        }
-
-        // colors
-        const shC0 = 0.282;
-        for (let i = 0; i < splatCount; i++) {
-            for (let component = 0; component < 3; component++) {
-                const byteValue = ubuf[byteOffset + splatCount + i * 3 + component];
-                // 0.15 is hard coded value from spz
-                // Scale factor for DC color components. To convert to RGB, we should multiply by 0.282, but it can
-                // be useful to represent base colors that are out of range if the higher spherical harmonics bands
-                // bring them back into range so we multiply by a smaller value.
-                const value = (byteValue - 127.5) / (0.15 * 255);
-                rgba[i * 32 + 24 + component] = Scalar.Clamp((0.5 + shC0 * value) * 255, 0, 255);
-            }
-
-            rgba[i * 32 + 24 + 3] = ubuf[byteOffset + i];
-        }
-        byteOffset += splatCount * 4;
-
-        // scales
-        for (let i = 0; i < splatCount; i++) {
-            scale[i * 8 + 3 + 0] = Math.exp(ubuf[byteOffset + 0] / 16.0 - 10.0);
-            scale[i * 8 + 3 + 1] = Math.exp(ubuf[byteOffset + 1] / 16.0 - 10.0);
-            scale[i * 8 + 3 + 2] = Math.exp(ubuf[byteOffset + 2] / 16.0 - 10.0);
-            byteOffset += 3;
-        }
-
-        // convert quaternion
-        if (version >= 3) {
-            /*
-                In version 3, rotations are represented as the smallest three components of the normalized rotation quaternion, for optimal rotation accuracy.
-                The largest component can be derived from the others and is not stored. Its index is stored on 2 bits
-                and each of the smallest three components is encoded as a 10-bit signed integer.
-            */
-            const sqrt12 = Math.SQRT1_2;
-            for (let i = 0; i < splatCount; i++) {
-                const r = [ubuf[byteOffset + 0], ubuf[byteOffset + 1], ubuf[byteOffset + 2], ubuf[byteOffset + 3]];
-
-                const comp = r[0] + (r[1] << 8) + (r[2] << 16) + (r[3] << 24);
-
-                const cmask = (1 << 9) - 1;
-                const rotation = [];
-                const iLargest = comp >>> 30;
-                let remaining = comp;
-                let sumSquares = 0;
-
-                for (let i = 3; i >= 0; --i) {
-                    if (i !== iLargest) {
-                        const mag = remaining & cmask;
-                        const negbit = (remaining >>> 9) & 0x1;
-                        remaining = remaining >>> 10;
-
-                        rotation[i] = sqrt12 * (mag / cmask);
-                        if (negbit === 1) {
-                            rotation[i] = -rotation[i];
-                        }
-
-                        // accumulate the sum of squares
-                        sumSquares += rotation[i] * rotation[i];
-                    }
-                }
-
-                const square = 1 - sumSquares;
-                rotation[iLargest] = Math.sqrt(Math.max(square, 0));
-
-                rotation[1] *= coordinateSign;
-                rotation[2] *= coordinateSign;
-
-                const shuffle = [3, 0, 1, 2]; // shuffle to match the order of the quaternion components in the splat file
-                for (let j = 0; j < 4; j++) {
-                    rot[i * 32 + 28 + j] = Math.round(127.5 + rotation[shuffle[j]] * 127.5);
-                }
-
-                byteOffset += 4;
-            }
-        } else {
-            /*
-                In version 2, rotations are represented as the `(x, y, z)` components of the normalized rotation quaternion. The
-                `w` component can be derived from the others and is not stored. Each component is encoded as an
-                8-bit signed integer.
-            */
-            for (let i = 0; i < splatCount; i++) {
-                const x = ubuf[byteOffset + 0];
-                const y = ubuf[byteOffset + 1] * coordinateSign + quaternionOffset;
-                const z = ubuf[byteOffset + 2] * coordinateSign + quaternionOffset;
-                const nx = x / 127.5 - 1;
-                const ny = y / 127.5 - 1;
-                const nz = z / 127.5 - 1;
-                rot[i * 32 + 28 + 1] = x;
-                rot[i * 32 + 28 + 2] = y;
-                rot[i * 32 + 28 + 3] = z;
-                const v = 1 - (nx * nx + ny * ny + nz * nz);
-                rot[i * 32 + 28 + 0] = 127.5 + Math.sqrt(v < 0 ? 0 : v) * 127.5;
-
-                byteOffset += 3;
+        // check if data is json string
+        if (typeof data === "string") {
+            const dataSOG = JSON.parse(data) as SOGRootData;
+            if (dataSOG && dataSOG.means && dataSOG.scales && dataSOG.quats && dataSOG.sh0) {
+                return new Promise((resolve) => {
+                    ParseSogMeta(dataSOG, rootUrl, scene)
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                        .then((parsedSOG) => {
+                            makeGSFromParsedSOG(parsedSOG);
+                            resolve(babylonMeshesArray);
+                        })
+                        // eslint-disable-next-line github/no-then
+                        .catch(() => {
+                            throw new Error("Failed to parse SOG data.");
+                        });
+                });
             }
         }
 
-        //SH
-        if (shDegree) {
-            // shVectorCount is : 3 for dim = 1, 8 for dim = 2 and 15 for dim = 3
-            // number of vec3 vector needed per splat
-            const shVectorCount = (shDegree + 1) * (shDegree + 1) - 1; // minus 1 because sh0 is color
-            // number of component values : 3 per vector3 (45)
-            const shComponentCount = shVectorCount * 3;
-
-            const textureCount = Math.ceil(shComponentCount / 16); // 4 components can be stored per texture, 4 sh per component
-            let shIndexRead = byteOffset;
-
-            // sh is an array of uint8array that will be used to create sh textures
-            const sh: Uint8Array[] = [];
-
-            const engine = scene.getEngine();
-            const width = engine.getCaps().maxTextureSize;
-            const height = Math.ceil(splatCount / width);
-            // create array for the number of textures needed.
-            for (let textureIndex = 0; textureIndex < textureCount; textureIndex++) {
-                const texture = new Uint8Array(height * width * 4 * 4); // 4 components per texture, 4 sh per component
-                sh.push(texture);
-            }
-
-            for (let i = 0; i < splatCount; i++) {
-                for (let shIndexWrite = 0; shIndexWrite < shComponentCount; shIndexWrite++) {
-                    const shValue = ubuf[shIndexRead++];
-
-                    const textureIndex = Math.floor(shIndexWrite / 16);
-                    const shArray = sh[textureIndex];
-
-                    const byteIndexInTexture = shIndexWrite % 16; // [0..15]
-                    const offsetPerSplat = i * 16; // 16 sh values per texture per splat.
-                    shArray[byteIndexInTexture + offsetPerSplat] = shValue;
-                }
-            }
-
+        const u8 = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+        // ZIP signature check for SOG
+        if (u8[0] === 0x50 && u8[1] === 0x4b) {
             return new Promise((resolve) => {
-                resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, sh: sh, trainedWithAntialiasing: !!flags });
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                this._unzipWithFFlateAsync(u8).then((files) => {
+                    ParseSogMeta(files, rootUrl, scene)
+                        // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
+                        .then((parsedSOG) => {
+                            makeGSFromParsedSOG(parsedSOG);
+                            resolve(babylonMeshesArray);
+                        }) // eslint-disable-next-line github/no-then
+                        .catch(() => {
+                            throw new Error("Failed to parse SOG zip data.");
+                        });
+                });
             });
         }
-
-        return new Promise((resolve) => {
-            resolve({ mode: Mode.Splat, data: buffer, hasVertexColors: false, trainedWithAntialiasing: !!flags });
-        });
-    }
-
-    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    private _parseAsync(meshesNames: any, scene: Scene, data: any, _rootUrl: string): Promise<Array<AbstractMesh>> {
-        const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
         const readableStream = new ReadableStream({
             start(controller) {
@@ -409,7 +266,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 // eslint-disable-next-line github/no-then
                 .then((buffer) => {
                     // eslint-disable-next-line @typescript-eslint/no-floating-promises, github/no-then
-                    this._parseSPZAsync(buffer, scene).then((parsedSPZ) => {
+                    ParseSpz(buffer, scene, this._loadingOptions).then((parsedSPZ) => {
                         scene._blockEntityCollection = !!this._assetContainer;
                         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
                         if (parsedSPZ.trainedWithAntialiasing) {

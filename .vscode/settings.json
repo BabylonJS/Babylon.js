@@ -3,7 +3,7 @@
         "acumin",
         "babylonjs",
         "desaturated",
-        "fluentui"
+        "fluentui",
         "multilines",
         "ONEDEF",
         "Pickable",
@@ -28,6 +28,9 @@
         "**/*.vertex.ts": true,
         "**/*.compute.ts": true,
         "**/*.block.ts": true
+    },
+    "search.exclude": {
+        "**/dist": true
     },
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"

@@ -337,7 +337,7 @@ export class _GLTFAnimation {
                                 }
                             }
                         }
-                        combinedAnimation.setKeys(combinedAnimationKeys);
+                        combinedAnimation.setKeys(combinedAnimationKeys, true);
                         const animationInfo = _GLTFAnimation._DeduceAnimationInfo(combinedAnimation);
                         if (animationInfo) {
                             glTFAnimation = {
@@ -516,7 +516,7 @@ export class _GLTFAnimation {
                             }
                         }
                     }
-                    combinedAnimationGroup!.setKeys(animationKeys);
+                    combinedAnimationGroup!.setKeys(animationKeys, true);
                     const animationInfo = _GLTFAnimation._DeduceAnimationInfo(combinedAnimationGroup!);
                     if (animationInfo) {
                         _GLTFAnimation._AddAnimation(

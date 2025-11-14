@@ -255,6 +255,22 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             });
     }
 
+    async saveSFE() {
+        this.props.globalState.nodeMaterial.build();
+
+        // Attach optional SmartFilters metadata to the shader block.
+        // Doing this at the editor level to leave room for adjustments while feature evolves.
+        const glslHeader = {
+            smartFilterBlockType: this.props.globalState.nodeMaterial!.name,
+            namespace: DataStorage.ReadString("NME_SFE_Namespace", "Babylon.NME.Exports"),
+        };
+        let fragment = "// " + JSON.stringify(glslHeader) + "\n\n";
+
+        fragment += await this.props.globalState.nodeMaterial!._getProcessedFragmentAsync();
+
+        StringTools.DownloadAsFile(this.props.globalState.hostDocument, fragment, `${this.props.globalState.nodeMaterial.name}.block.glsl`);
+    }
+
     saveToSnippetServer() {
         const material = this.props.globalState.nodeMaterial;
         const xmlHttp = new XMLHttpRequest();
@@ -439,7 +455,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Particle", value: NodeMaterialModes.Particle },
             { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
             { label: "Gaussian Splatting", value: NodeMaterialModes.GaussianSplatting },
-            { label: "Smart Filters", value: NodeMaterialModes.SFE },
+            { label: "Smart Filter", value: NodeMaterialModes.SFE },
         ];
 
         const engineList = [
@@ -513,6 +529,24 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         }}
                     />
                 </LineContainerComponent>
+                {this.props.globalState.mode === NodeMaterialModes.SFE && (
+                    <LineContainerComponent title="SMART FILTER">
+                        <TextInputLineComponent
+                            label="Namespace"
+                            value={DataStorage.ReadString("NME_SFE_Namespace", "BABYLON.Exports.NME")}
+                            onChange={(value) => {
+                                DataStorage.WriteString("NME_SFE_Namespace", value);
+                                this.forceUpdate();
+                            }}
+                        />
+                        <ButtonLineComponent
+                            label="Export shader for SFE"
+                            onClick={async () => {
+                                await this.saveSFE();
+                            }}
+                        />
+                    </LineContainerComponent>
+                )}
                 <LineContainerComponent title="UI">
                     <ButtonLineComponent
                         label="Zoom to fit"
@@ -566,16 +600,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             this.save();
                         }}
                     />
-                    {this.props.globalState.mode === NodeMaterialModes.SFE && (
-                        <ButtonLineComponent
-                            label="Export shaders for SFE"
-                            onClick={async () => {
-                                this.props.globalState.nodeMaterial.build();
-                                const fragment = await this.props.globalState.nodeMaterial!._getProcessedFragmentAsync();
-                                StringTools.DownloadAsFile(this.props.globalState.hostDocument, fragment, `${this.props.globalState.nodeMaterial.name}.block.glsl`);
-                            }}
-                        />
-                    )}
                     <ButtonLineComponent
                         label="Generate code"
                         onClick={() => {

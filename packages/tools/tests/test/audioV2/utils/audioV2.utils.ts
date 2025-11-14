@@ -89,56 +89,64 @@ declare global {
     }
 }
 
-export const InitAudioV2Tests = () => {
-    test.beforeEach(async ({ page }) => {
-        await page.route("http://run.test/script.html", async (route) => {
-            route.fulfill({
-                status: 200,
-                contentType: "text/html",
-                body: `
+export const InitAudioV2Tests = (initBeforeEach = true, initAfterEach = true) => {
+    if (initBeforeEach) {
+        test.beforeEach(async ({ page }) => {
+            await page.route("http://run.test/script.html", async (route) => {
+                route.fulfill({
+                    status: 200,
+                    contentType: "text/html",
+                    body: `
                 <script src="${getGlobalConfig().baseUrl}/babylon.js"></script>
                 <script src="${getGlobalConfig().baseUrl}/audiov2-test.js"></script>
                 <body>
                 </body>
             `,
-            });
-        });
-
-        await page.goto("http://run.test/script.html");
-
-        await page.waitForFunction(() => {
-            return window.BABYLON && AudioV2Test;
-        });
-
-        page.setDefaultTimeout(0);
-
-        await page.evaluate(
-            async ({ config }: { config: AudioTestConfig }) => {
-                audioTestConfig = config;
-            },
-            { config: new AudioTestConfig() }
-        );
-
-        await page.evaluate(() => {
-            AudioV2Test.BeforeEach();
-        });
-    });
-
-    test.afterEach(async ({ page }) => {
-        if (test.info().status === "failed") {
-            let result = await page.evaluate(async () => {
-                return await AudioV2Test.GetResultAsync();
+                });
             });
 
-            SaveAudioTestResult(test.info(), result);
-        }
+            await page.goto("http://run.test/script.html");
 
-        await page.evaluate(() => {
-            AudioV2Test.AfterEach();
+            await page.waitForFunction(() => {
+                return window.BABYLON && AudioV2Test;
+            });
+
+            page.setDefaultTimeout(0);
+
+            await page.evaluate(
+                async ({ config }: { config: AudioTestConfig }) => {
+                    audioTestConfig = config;
+                },
+                { config: new AudioTestConfig() }
+            );
+
+            await page.evaluate(() => {
+                AudioV2Test.BeforeEach();
+            });
         });
+    }
 
-        await page.close();
-    });
+    if (initAfterEach) {
+        test.afterEach(async ({ page }) => {
+            if (test.info().status === "failed") {
+                let result = await page.evaluate(async () => {
+                    return await AudioV2Test.GetResultAsync();
+                });
+
+                SaveAudioTestResult(test.info(), result);
+            }
+
+            await page.evaluate(() => {
+                AudioV2Test.AfterEach();
+            });
+
+            await page.close();
+        });
+    } else {
+        test.afterEach(async ({ page }) => {
+            await page.close();
+        });
+    }
 };
 
 export async function EvaluateErrorMessageAsync(page: Page): Promise<string> {

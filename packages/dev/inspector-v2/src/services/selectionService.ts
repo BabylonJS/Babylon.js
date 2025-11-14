@@ -1,9 +1,12 @@
 import type { IDisposable, IReadonlyObservable, Nullable } from "core/index";
-
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
+import type { ISettingsContext } from "./settingsContext";
+import type { IShellService } from "./shellService";
 
 import { Observable } from "core/Misc/observable";
 import { InterceptFunction } from "../instrumentation/functionInstrumentation";
+import { SettingsContextIdentity } from "./settingsContext";
+import { ShellServiceIdentity } from "./shellService";
 
 export const SelectionServiceIdentity = Symbol("PropertiesService");
 
@@ -22,10 +25,11 @@ export interface ISelectionService extends IService<typeof SelectionServiceIdent
     readonly onSelectedEntityChanged: IReadonlyObservable<void>;
 }
 
-export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], []> = {
+export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], [IShellService, ISettingsContext]> = {
     friendlyName: "Selection Service",
     produces: [SelectionServiceIdentity],
-    factory: () => {
+    consumes: [ShellServiceIdentity, SettingsContextIdentity],
+    factory: (shellService, settingsContext) => {
         let selectedEntityState: Nullable<unknown> = null;
         const selectedEntityObservable = new Observable<void>();
         let disposedHook: Nullable<IDisposable> = null;
@@ -43,6 +47,14 @@ export const SelectionServiceDefinition: ServiceDefinition<[ISelectionService], 
                     if (disposable.dispose) {
                         disposedHook = InterceptFunction(disposable, "dispose", { afterCall: () => setSelectedItem(null) });
                     }
+                }
+
+                // Expose the selected entity through a global variable. This is an Inspector v1 feature that people have found useful.
+                (globalThis as any).debugNode = item;
+
+                // Automatically open the properties pane when an entity is selected.
+                if (item && settingsContext.showPropertiesOnEntitySelection) {
+                    shellService.sidePanes.find((pane) => pane.key === "Properties")?.select();
                 }
             }
         };

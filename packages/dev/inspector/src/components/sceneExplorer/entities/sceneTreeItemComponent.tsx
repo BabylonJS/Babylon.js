@@ -3,7 +3,6 @@ import type { Observer, Observable } from "core/Misc/observable";
 import type { PointerInfo } from "core/Events/pointerEvents";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
-import { GizmoManager } from "core/Gizmos/gizmoManager";
 import type { Scene } from "core/scene";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,8 +21,8 @@ import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import type { Bone } from "core/Bones/bone";
 
 import { setDebugNode } from "../treeNodeDebugger";
-import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 import type { DragStartEndEvent } from "core/Behaviors/Meshes/pointerDragEvents";
+import { DisposeInspectorGizmoManager, GetInspectorGizmoManager } from "../../../inspectorGizmoManager";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -53,8 +52,8 @@ export class SceneTreeItemComponent extends React.Component<
 
         const scene = this.props.scene;
         let gizmoMode = 0;
-        if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
-            const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
+        const manager = GetInspectorGizmoManager(scene, false);
+        if (manager) {
             if (manager.positionGizmoEnabled) {
                 gizmoMode = 1;
             } else if (manager.rotationGizmoEnabled) {
@@ -85,9 +84,8 @@ export class SceneTreeItemComponent extends React.Component<
     }
 
     updateGizmoAutoPicking(isInPickingMode: boolean) {
-        const scene = this.props.scene;
-        if (scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
-            const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
+        const manager = GetInspectorGizmoManager(this.props.scene, false);
+        if (manager) {
             manager.enableAutoPicking = isInPickingMode;
         }
     }
@@ -100,9 +98,8 @@ export class SceneTreeItemComponent extends React.Component<
         const scene = this.props.scene;
         this._onSelectionChangeObserver = this.props.onSelectionChangedObservable.add((entity) => {
             this._selectedEntity = entity;
-            if (entity && scene.reservedDataStore && scene.reservedDataStore.gizmoManager) {
-                const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
-
+            const manager = GetInspectorGizmoManager(scene, false);
+            if (entity && manager) {
                 const className = entity.getClassName();
 
                 if (className === "TransformNode" || className.indexOf("Mesh") !== -1) {
@@ -181,10 +178,11 @@ export class SceneTreeItemComponent extends React.Component<
     }
 
     onCoordinatesMode() {
-        const scene = this.props.scene;
-        const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
+        const manager = GetInspectorGizmoManager(this.props.scene, false);
         // flip coordinate system
-        manager.coordinatesMode = this.state.isInWorldCoodinatesMode ? GizmoCoordinatesMode.Local : GizmoCoordinatesMode.World;
+        if (manager) {
+            manager.coordinatesMode = this.state.isInWorldCoodinatesMode ? GizmoCoordinatesMode.Local : GizmoCoordinatesMode.World;
+        }
         this.setState({ isInWorldCoodinatesMode: !this.state.isInWorldCoodinatesMode });
     }
     onPickingMode() {
@@ -266,27 +264,17 @@ export class SceneTreeItemComponent extends React.Component<
     setGizmoMode(mode: number) {
         const scene = this.props.scene;
 
-        if (!scene.reservedDataStore) {
-            scene.reservedDataStore = {};
-        }
-
         if (this._gizmoLayerOnPointerObserver) {
             scene.onPointerObservable.remove(this._gizmoLayerOnPointerObserver);
             this._gizmoLayerOnPointerObserver = null;
         }
 
-        if (!scene.reservedDataStore.gizmoManager) {
-            const layer1 = scene.frameGraph ? FrameGraphUtils.CreateUtilityLayerRenderer(scene.frameGraph) : new UtilityLayerRenderer(scene);
-            const layer2 = scene.frameGraph ? FrameGraphUtils.CreateUtilityLayerRenderer(scene.frameGraph) : new UtilityLayerRenderer(scene);
-
-            scene.reservedDataStore.gizmoManager = new GizmoManager(scene, undefined, layer1, layer2);
-        }
+        const manager = GetInspectorGizmoManager(scene, true);
 
         if (this.props.gizmoCamera) {
-            scene.reservedDataStore.gizmoManager.utilityLayer.setRenderCamera(this.props.gizmoCamera);
+            manager.utilityLayer.setRenderCamera(this.props.gizmoCamera);
         }
 
-        const manager: GizmoManager = scene.reservedDataStore.gizmoManager;
         // Allow picking of light gizmo when a gizmo mode is selected
         this._gizmoLayerOnPointerObserver = UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
@@ -312,8 +300,7 @@ export class SceneTreeItemComponent extends React.Component<
 
         if (this.state.gizmoMode === mode) {
             mode = 0;
-            manager.dispose();
-            scene.reservedDataStore.gizmoManager = null;
+            DisposeInspectorGizmoManager(scene);
         } else {
             switch (mode) {
                 case 1:

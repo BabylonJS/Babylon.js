@@ -950,6 +950,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      */
     public render(): void {
         const scene = this._source.getScene();
+        const floatingOriginOffset = scene.floatingOriginOffset;
 
         const currentDrawWrapper = this._lineShader._getDrawWrapper();
         if (this._drawWrapper) {
@@ -990,6 +991,9 @@ export class EdgesRenderer implements IEdgesRenderer {
 
                     for (let i = 0; i < instanceCount; ++i) {
                         this.customInstances.data[i].copyToArray(instanceStorage.instancesData, offset);
+                        instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
+                        instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
+                        instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
                         offset += 16;
                     }
 

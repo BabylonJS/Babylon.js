@@ -1,0 +1,53 @@
+{
+    "name": "babylonjs-inspector-v2",
+    "version": "1.0.0",
+    "private": true,
+    "main": "babylon.inspector-v2.bundle.js",
+    "files": [
+        "babylon.inspector-v2.*",
+        "license.md",
+        "package.json",
+        "readme.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run build:prod",
+        "build:dev": "webpack --env development",
+        "build:prod": "webpack --env production",
+        "clean": "rimraf dist && rimraf babylon*.* -g"
+    },
+    "dependencies": {
+        "babylonjs": "^8.0.0",
+        "babylonjs-addons": "^8.0.0",
+        "babylonjs-gui": "^8.0.0",
+        "babylonjs-gui-editor": "^8.0.0",
+        "babylonjs-loaders": "^8.0.0",
+        "babylonjs-materials": "^8.0.0",
+        "babylonjs-serializers": "^8.0.0"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "1.0.0",
+        "@dev/inspector-v2": "1.0.0",
+        "source-map-loader": "^4.0.0",
+        "ts-loader": "^9.2.6",
+        "webpack": "^5.98.0",
+        "webpack-cli": "^5.1.0",
+        "webpack-merge": "^5.8.0"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "sideEffects": true,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

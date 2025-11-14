@@ -52,12 +52,13 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
      * The name of this extension.
      */
     public readonly name = NAME;
+
     /**
      * Defines whether this extension is enabled.
      */
     public enabled: boolean;
 
-    private _loader: GLTFLoader;
+    private _loader?: GLTFLoader;
 
     /**
      * @internal
@@ -67,28 +68,27 @@ export class KHR_node_visibility implements IGLTFLoaderExtension {
         this.enabled = loader.isExtensionUsed(NAME);
     }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-misused-promises
-    public async onReady(): Promise<void> {
-        this._loader.gltf.nodes?.forEach((node) => {
-            node._primitiveBabylonMeshes?.forEach((mesh) => {
-                mesh.inheritVisibility = true;
-            });
-            // When the JSON Pointer is used we need to change both the transform node and the primitive meshes to the new value.
-            if (node.extensions?.KHR_node_visibility) {
-                if (node.extensions?.KHR_node_visibility.visible === false) {
-                    if (node._babylonTransformNode) {
-                        (node._babylonTransformNode as AbstractMesh).isVisible = false;
+    public onReady(): void {
+        if (!this._loader) {
+            return;
+        }
+
+        const nodes = this._loader.gltf.nodes;
+        if (nodes) {
+            for (const node of nodes) {
+                const babylonTransformNode = node._babylonTransformNode;
+                if (babylonTransformNode) {
+                    babylonTransformNode.inheritVisibility = true;
+                    if (node.extensions && node.extensions.KHR_node_visibility && node.extensions.KHR_node_visibility.visible === false) {
+                        babylonTransformNode.isVisible = false;
                     }
-                    node._primitiveBabylonMeshes?.forEach((mesh) => {
-                        mesh.isVisible = false;
-                    });
                 }
             }
-        });
+        }
     }
 
     public dispose() {
-        (this._loader as any) = null;
+        delete this._loader;
     }
 }
 

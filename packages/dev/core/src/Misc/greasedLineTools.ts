@@ -268,12 +268,13 @@ export class GreasedLineTools {
     }
 
     /**
-     * Gets the the length from the beginning to each point of the line as array.
+     * Gets the length from the beginning to each point of the line as array.
      * @param data array of line points
+     * @param buf optional pre-allocated buffer to reduce memory pressure, should be at least `data.length * 4 / 3` bytes
      * @returns length array of the line
      */
-    public static GetLineLengthArray(data: number[]): Float32Array {
-        const out = new Float32Array(data.length / 3);
+    public static GetLineLengthArray(data: number[], buf?: ArrayBuffer): Float32Array {
+        const out = buf ? new Float32Array(buf, 0, data.length / 3) : new Float32Array(data.length / 3);
         let length = 0;
         for (let index = 0, pointsLength = data.length / 3 - 1; index < pointsLength; index++) {
             let x = data[index * 3 + 0];

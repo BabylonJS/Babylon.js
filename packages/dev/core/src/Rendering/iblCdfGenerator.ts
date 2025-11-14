@@ -19,6 +19,7 @@ import { _WarnImport } from "../Misc/devTools";
 import type { Nullable } from "../types";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "../Misc/logger";
+import { _RetryWithInterval } from "../Misc/timingTools";
 
 /**
  * Build cdf maps to be used for IBL importance sampling.
@@ -372,30 +373,43 @@ export class IblCdfGenerator {
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     public renderWhenReady(): Promise<void> {
         this._cachedDominantDirection = null;
-        // Once the textures are generated, notify that they are ready to use.
-        this._icdfPT.onGeneratedObservable.addOnce(() => {
-            this.onGeneratedObservable.notifyObservers();
-        });
-        const promises: Array<Promise<void>> = [];
-        const renderTargets: Array<ProceduralTexture> = [this._cdfyPT, this._cdfxPT, this._scaledLuminancePT, this._icdfPT];
-        for (const target of renderTargets) {
-            promises.push(
-                new Promise((resolve) => {
-                    if (target.isReady()) {
-                        resolve();
-                    } else {
-                        target.getEffect().executeWhenCompiled(() => {
-                            resolve();
-                        });
-                    }
-                })
+
+        // Even if a IBL source must be set before calling this function, _icdfPT may not yet be created because the creation may be asynchronous (see @set iblSource).
+        const icdfPTPromise = new Promise((resolve, reject) => {
+            _RetryWithInterval(
+                () => !!this._icdfPT,
+                () => resolve(void 0),
+                () => reject(new Error("Waiting for _icdfPT creation failed"))
             );
-        }
-        // eslint-disable-next-line github/no-then
-        return Promise.all(promises).then(() => {
+        });
+
+        // eslint-disable-next-line github/no-then, @typescript-eslint/promise-function-async
+        return icdfPTPromise.then(() => {
+            // Once the textures are generated, notify that they are ready to use.
+            this._icdfPT.onGeneratedObservable.addOnce(() => {
+                this.onGeneratedObservable.notifyObservers();
+            });
+            const promises: Array<Promise<void>> = [];
+            const renderTargets: Array<ProceduralTexture> = [this._cdfyPT, this._cdfxPT, this._scaledLuminancePT, this._icdfPT];
             for (const target of renderTargets) {
-                target.render();
+                promises.push(
+                    new Promise((resolve) => {
+                        if (target.isReady()) {
+                            resolve();
+                        } else {
+                            target.getEffect().executeWhenCompiled(() => {
+                                resolve();
+                            });
+                        }
+                    })
+                );
             }
+            // eslint-disable-next-line github/no-then
+            return Promise.all(promises).then(() => {
+                for (const target of renderTargets) {
+                    target.render();
+                }
+            });
         });
     }
 

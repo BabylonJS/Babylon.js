@@ -267,7 +267,7 @@ export class Ray {
 
         //check if the distance is longer than the predefined length.
         const distance = Vector3.Dot(edge2, qvec) * invdet;
-        if (distance > this.length) {
+        if (distance > this.length || distance < 0) {
             return null;
         }
 

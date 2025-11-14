@@ -8,3 +8,4 @@ export * from "./sphericalPolynomial";
 export * from "./halton2DSequence";
 export * from "./math.vector.functions";
 export * from "./ThinMaths/index";
+export * from "./math.scalar.functions";

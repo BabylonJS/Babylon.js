@@ -69,7 +69,7 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
-    public record(): FrameGraphRenderPass {
+    public record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.targetTexture === undefined && this.depthTexture === undefined) {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: targetTexture and depthTexture can't both be undefined.`);
         }
@@ -94,7 +94,7 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
 
         const attachments = this._frameGraph.engine.buildTextureLayout(
             targetTextures ? Array(targetTextures.length).fill(true) : [],
-            this.targetTexture === backbufferColorTextureHandle
+            this.targetTexture === backbufferColorTextureHandle && !this._frameGraph.textureManager.backBufferTextureOverriden
         );
 
         const color = TmpColors.Color4[0];
@@ -112,11 +112,13 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
             context.clearAttachments(color, attachments, !!this.clearColor, !!this.clearDepth, !!this.clearStencil, this.stencilValue);
         });
 
-        const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
+        if (!skipCreationOfDisabledPasses) {
+            const passDisabled = this._frameGraph.addRenderPass(this.name + "_disabled", true);
 
-        passDisabled.setRenderTarget(targetTextures);
-        passDisabled.setRenderTargetDepth(this.depthTexture);
-        passDisabled.setExecuteFunc((_context) => {});
+            passDisabled.setRenderTarget(targetTextures);
+            passDisabled.setRenderTargetDepth(this.depthTexture);
+            passDisabled.setExecuteFunc((_context) => {});
+        }
 
         return pass;
     }

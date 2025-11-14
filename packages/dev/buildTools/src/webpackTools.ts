@@ -196,9 +196,10 @@ export const commonDevWebpackConfiguration = (
     const enableHotReload = (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false;
 
     let plugins: WebpackPluginInstance[] | undefined = additionalPlugins;
+    const enableOverlay: boolean = !!process.env.ENABLE_DEV_OVERLAY;
     if (devServerConfig && enableHotReload) {
         plugins = plugins ?? [];
-        plugins.push(new ReactRefreshWebpackPlugin({ overlay: !process.env.DISABLE_DEV_OVERLAY }));
+        plugins.push(new ReactRefreshWebpackPlugin({ overlay: enableOverlay }));
     }
 
     return {
@@ -218,12 +219,12 @@ export const commonDevWebpackConfiguration = (
                       "Access-Control-Allow-Origin": "*",
                   },
                   client: {
-                      overlay: process.env.DISABLE_DEV_OVERLAY
-                          ? false
-                          : {
+                      overlay: enableOverlay
+                          ? {
                                 warnings: false,
                                 errors: true,
-                            },
+                            }
+                          : false,
                       logging: production ? "error" : "info",
                       progress: devServerConfig.showBuildProgress,
                   },
@@ -320,6 +321,12 @@ export const commonUMDWebpackConfiguration = (options: {
             libraryExport: "default",
             umdNamedDefine: true,
             globalObject: '(typeof self !== "undefined" ? self : typeof global !== "undefined" ? global : this)',
+            // This disables chunking / code splitting. For UMD, we always want a single output file per entry point.
+            // NOTE: The normal way of doing this is by limiting the max chunks, as described here: https://webpack.js.org/plugins/limit-chunk-count-plugin/#maxchunks
+            //       However, that didn't work when testing (fewer chunks were created, but still more than 1). There is a long Webpack github issue about this, where
+            //       eventually someone suggests the following config option, which apparently worked for many other people, and worked for us too.
+            //       https://github.com/webpack/webpack/issues/12464#issuecomment-1911309972
+            chunkFormat: false,
         },
         resolve: {
             extensions: [".ts", ".js"],

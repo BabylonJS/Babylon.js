@@ -19,7 +19,7 @@ import { CreateDefaultInput } from "./graphSystem/registerDefaultInput.js";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { Nullable } from "core/types";
-import { Logger, type BaseBlock, type SmartFilter } from "smart-filters";
+import { createStrongRef, Logger, ShaderBlock, type BaseBlock, type SmartFilter, InputBlock, ConnectionPointType } from "smart-filters";
 import { inputsNamespace } from "smart-filters-blocks";
 import { SetEditorData } from "./helpers/serializationTools.js";
 import { SplitContainer } from "shared-ui-components/split/splitContainer.js";
@@ -30,13 +30,14 @@ import { InitializePreview } from "./initializePreview.js";
 import { PreviewAreaControlComponent } from "./components/preview/previewAreaControlComponent.js";
 import { CreatePopup } from "shared-ui-components/popupHelper.js";
 import type { IInspectorOptions } from "core/Debug/debugLayer.js";
-import { DecodeBlockKey } from "./helpers/blockKeyConverters.js";
+import { DecodeBlockKey, GetBlockKey } from "./helpers/blockKeyConverters.js";
 import { OutputBlockName } from "./configuration/constants.js";
 import type { BlockNodeData } from "./graphSystem/blockNodeData";
 import { DataStorage } from "core/Misc/dataStorage.js";
 import { OnlyShowCustomBlocksDefaultValue } from "./constants.js";
 import { ThinEngine } from "core/Engines/thinEngine.js";
 import { HistoryStack } from "shared-ui-components/historyStack.js";
+import { WebCamInputBlockName } from "./configuration/editorBlocks/blockNames.js";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -92,11 +93,11 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         );
     }
 
-    createInputBlock(blockTypeAndNamespace: string) {
+    createInputBlock(blockTypeAndNamespace: string, name?: string) {
         const { blockType } = DecodeBlockKey(blockTypeAndNamespace);
         const nodeType = BlockTools.GetConnectionNodeTypeFromString(blockType);
 
-        const newInputBlock = CreateDefaultInput(this.props.globalState.smartFilter, nodeType, this.props.globalState.engine);
+        const newInputBlock = CreateDefaultInput(this.props.globalState.smartFilter, nodeType, this.props.globalState.engine, name);
 
         return newInputBlock;
     }
@@ -313,7 +314,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 }
             }
 
-            this._graphCanvas.handleKeyDown(
+            void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
                     if (!nodeData.data.isOutput) {
@@ -323,14 +324,13 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
-                (_nodeData) => {
-                    // TODO manage paste
-                    // const block = nodeData.data as SmartFilterBlock;
-                    // const clone = block.clone(this.props.globalState.smartFilter);
-                    // if (!clone) {
-                    //     return null;
-                    // }
-                    // return this.appendBlock(clone, false);
+                async (_nodeData) => {
+                    const oldBlock = _nodeData.data as BaseBlock;
+                    const newBlock = await this.cloneBlockAsync(oldBlock);
+                    if (!newBlock) {
+                        return null;
+                    }
+                    return this.appendBlock(newBlock, false);
                 },
                 this.props.globalState.hostDocument!.querySelector(".diagram-container") as HTMLDivElement
             );
@@ -418,25 +418,81 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         }
     };
 
-    async emitNewBlockAsync(blockTypeAndNamespace: string, targetX: number, targetY: number) {
+    async cloneBlockAsync(oldBlock: BaseBlock): Promise<Nullable<BaseBlock>> {
+        let blockType = oldBlock.blockType;
+        let blockNamespace = oldBlock.namespace;
+
+        // Input blocks are special case, fix up the blockType and namespace
+        if (oldBlock.blockType === "InputBlock") {
+            blockType = BlockTools.GetStringFromConnectionNodeType(oldBlock.outputs[0].type);
+            blockNamespace = inputsNamespace;
+
+            // A special type of input block is the webcam block, which uses a special blockType so its registration can be found
+            if (oldBlock.name === WebCamInputBlockName) {
+                blockType = WebCamInputBlockName;
+            }
+        }
+
+        const blockTypeAndNamespace = GetBlockKey(blockType, blockNamespace);
+
+        const newBlock = await this.createBlockAsync(blockTypeAndNamespace, true, oldBlock.name);
+        if (!newBlock) {
+            return null;
+        }
+
+        // Copy over InputBlock specific data
+        if (oldBlock.blockType === "InputBlock" && newBlock instanceof InputBlock && oldBlock instanceof InputBlock) {
+            // Make a copy of the value, unless it's a texture, then let it be the default
+            if (oldBlock.outputs[0].runtimeData && oldBlock.type !== ConnectionPointType.Texture) {
+                newBlock.outputs[0].runtimeData = createStrongRef(JSON.parse(JSON.stringify(oldBlock.outputs[0].runtimeData.value)));
+            }
+
+            // Copy appMetadata over, which could be any type
+            if (oldBlock.appMetadata) {
+                newBlock.appMetadata = JSON.parse(JSON.stringify(oldBlock.appMetadata));
+            }
+
+            // Copy editorData over
+            if (oldBlock.editorData) {
+                newBlock.editorData = JSON.parse(JSON.stringify(oldBlock.editorData));
+            }
+        }
+
+        // Copy over the data that block factories are not responsible for setting
+        newBlock.comments = oldBlock.comments;
+        if (oldBlock instanceof ShaderBlock && oldBlock.outputTextureOptions && newBlock instanceof ShaderBlock) {
+            newBlock.outputTextureOptions = { ...oldBlock.outputTextureOptions };
+        }
+
+        return newBlock;
+    }
+
+    async createBlockAsync(blockTypeAndNamespace: string, suppressAutomaticInputBlocks: boolean, name?: string): Promise<Nullable<BaseBlock>> {
         const { blockType, namespace } = DecodeBlockKey(blockTypeAndNamespace);
 
         let block: Nullable<BaseBlock> = null;
 
         // First try the block registrations provided to the editor
         if (this.props.globalState.engine && this.props.globalState.blockEditorRegistration) {
-            block = await this.props.globalState.blockEditorRegistration.getBlock(blockType, namespace, this.props.globalState.smartFilter, this.props.globalState.engine);
+            block = await this.props.globalState.blockEditorRegistration.getBlock(
+                blockType,
+                namespace,
+                this.props.globalState.smartFilter,
+                this.props.globalState.engine,
+                suppressAutomaticInputBlocks,
+                name
+            );
         }
 
         // If we haven't created the block yet, see if it's a standard input block
         if (!block && namespace === inputsNamespace) {
-            block = this.createInputBlock(blockTypeAndNamespace);
+            block = this.createInputBlock(blockTypeAndNamespace, name);
         }
 
         // If we don't have a block yet, display an error
         if (!block) {
             this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`Could not create a block of type ${blockTypeAndNamespace}`);
-            return;
+            return null;
         }
 
         // Enforce uniqueness if applicable
@@ -445,9 +501,18 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
             for (const other of this._graphCanvas.getCachedData()) {
                 if (other !== block && other.getClassName() === className) {
                     this.props.globalState.stateManager.onErrorMessageDialogRequiredObservable.notifyObservers(`You can only have one ${className} per graph`);
-                    return;
+                    return null;
                 }
             }
+        }
+
+        return block;
+    }
+
+    async emitNewBlockAsync(blockTypeAndNamespace: string, targetX: number, targetY: number) {
+        const block = await this.createBlockAsync(blockTypeAndNamespace, false);
+        if (!block) {
+            return;
         }
 
         const newNode = this.appendBlock(block);

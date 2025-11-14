@@ -51,7 +51,7 @@ export const AnimationsProperties: FunctionComponent<{ scene: Scene; entity: Par
     const isPlaying = animatablesForTarget.length > 0;
     const mainAnimatable = isPlaying ? animatablesForTarget[0] : undefined;
 
-    const animationPropertiesOverride = mainAnimatable ? useProperty(mainAnimatable, "animationPropertiesOverride") : undefined;
+    const animationPropertiesOverride = useProperty(mainAnimatable, "animationPropertiesOverride");
 
     if (mainAnimatable) {
         lastFrom.current = mainAnimatable.fromFrame;

@@ -68,7 +68,7 @@ export class _WebAudioUnmuteUI {
     }
 
     private _show(): void {
-        if (!this._button) {
+        if (!this._button || !this._enabled) {
             return;
         }
 

@@ -20,13 +20,13 @@ import { CubeTextureTransformProperties } from "../../../components/properties/t
 import { MultiRenderTargetGeneralProperties } from "../../../components/properties/textures/multiRenderTargetProperties";
 import { RenderTargetTextureGeneralProperties } from "../../../components/properties/textures/renderTargetTextureProperties";
 import { TextureGeneralProperties, TexturePreviewProperties, TextureTransformProperties } from "../../../components/properties/textures/textureProperties";
-import { ThinTextureGeneralProperties } from "../../../components/properties/textures/thinTextureProperties";
+import { ThinTextureGeneralProperties, ThinTextureSamplingProperties } from "../../../components/properties/textures/thinTextureProperties";
 import { SettingsContextIdentity } from "../../settingsContext";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
 // Don't use instanceof in this case as we don't want to bring in the gui package just to check if the entity is an AdvancedDynamicTexture.
 function IsAdvancedDynamicTexture(entity: unknown): entity is AdvancedDynamicTexture {
-    return (entity as AdvancedDynamicTexture)?.constructor?.name === "AdvancedDynamicTexture";
+    return (entity as AdvancedDynamicTexture)?.getClassName?.() === "AdvancedDynamicTexture";
 }
 
 export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISettingsContext]> = {
@@ -66,6 +66,11 @@ export const TexturePropertiesServiceDefinition: ServiceDefinition<[], [IPropert
                     section: "General",
                     order: 100,
                     component: ({ context }) => <ThinTextureGeneralProperties texture={context} />,
+                },
+                {
+                    section: "General",
+                    order: 200,
+                    component: ({ context }) => <ThinTextureSamplingProperties texture={context} />,
                 },
             ],
         });

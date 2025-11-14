@@ -27,6 +27,7 @@ export class CopyTextureToTexture {
     private _effectWrapper: EffectWrapper;
     private _source: InternalTexture | ThinTexture;
     private _conversion: number;
+    private _lodLevel: number;
 
     /** Shader language used */
     protected _shaderLanguage = ShaderLanguage.GLSL;
@@ -38,6 +39,35 @@ export class CopyTextureToTexture {
         return this._shaderLanguage;
     }
 
+    /**
+     * Gets the effect wrapper used for the copy
+     */
+    public get effectWrapper() {
+        return this._effectWrapper;
+    }
+
+    /**
+     * Gets or sets the source texture
+     */
+    public get source() {
+        return this._source;
+    }
+
+    public set source(texture: InternalTexture | ThinTexture) {
+        this._source = texture;
+    }
+
+    /**
+     * Gets or sets the LOD level to copy from the source texture
+     */
+    public get lodLevel(): number {
+        return this._lodLevel;
+    }
+
+    public set lodLevel(level: number) {
+        this._lodLevel = level;
+    }
+
     private _textureIsInternal(texture: InternalTexture | ThinTexture): texture is InternalTexture {
         return (texture as ThinTexture).getInternalTexture === undefined;
     }
@@ -46,19 +76,22 @@ export class CopyTextureToTexture {
      * Constructs a new instance of the class
      * @param engine The engine to use for the copy
      * @param isDepthTexture True means that we should write (using gl_FragDepth) into the depth texture attached to the destination (default: false)
+     * @param sameSizeCopy True means that the copy will be done without any sampling (more efficient, but requires the source and destination to be of the same size) (default: false)
      */
-    constructor(engine: AbstractEngine, isDepthTexture = false) {
+    constructor(engine: AbstractEngine, isDepthTexture = false, sameSizeCopy = false) {
         this._engine = engine;
         this._isDepthTexture = isDepthTexture;
+        this._lodLevel = 0;
+        this._conversion = ConversionMode.None;
 
         this._renderer = new EffectRenderer(engine);
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this._initShaderSourceAsync(isDepthTexture);
+        this._initShaderSourceAsync(isDepthTexture, sameSizeCopy);
     }
 
     private _shadersLoaded = false;
-    private async _initShaderSourceAsync(isDepthTexture: boolean) {
+    private async _initShaderSourceAsync(isDepthTexture: boolean, sameSizeCopy: boolean) {
         const engine = this._engine;
 
         if (engine.isWebGPU) {
@@ -71,14 +104,23 @@ export class CopyTextureToTexture {
 
         this._shadersLoaded = true;
 
+        const defines: string[] = [];
+
+        if (isDepthTexture) {
+            defines.push("#define DEPTH_TEXTURE");
+        }
+        if (sameSizeCopy) {
+            defines.push("#define NO_SAMPLER");
+        }
+
         this._effectWrapper = new EffectWrapper({
             engine: engine,
             name: "CopyTextureToTexture",
             fragmentShader: "copyTextureToTexture",
             useShaderStore: true,
-            uniformNames: ["conversion"],
+            uniformNames: ["conversion", "lodLevel"],
             samplerNames: ["textureSampler"],
-            defines: isDepthTexture ? ["#define DEPTH_TEXTURE"] : [],
+            defines,
             shaderLanguage: this._shaderLanguage,
         });
 
@@ -99,6 +141,7 @@ export class CopyTextureToTexture {
                 this._effectWrapper.effect.setTexture("textureSampler", this._source);
             }
             this._effectWrapper.effect.setFloat("conversion", this._conversion);
+            this._effectWrapper.effect.setFloat("lodLevel", this._lodLevel);
         });
     }
 
@@ -115,15 +158,22 @@ export class CopyTextureToTexture {
      * @param source The source texture
      * @param destination The destination texture. If null, copy the source to the currently bound framebuffer
      * @param conversion The conversion mode that should be applied when copying
+     * @param lod The LOD level to copy from the source texture
      * @returns
      */
-    public copy(source: InternalTexture | ThinTexture, destination: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null, conversion = ConversionMode.None): boolean {
+    public copy(
+        source: InternalTexture | ThinTexture,
+        destination: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null,
+        conversion = ConversionMode.None,
+        lod = 0
+    ): boolean {
         if (!this.isReady()) {
             return false;
         }
 
         this._source = source;
         this._conversion = conversion;
+        this._lodLevel = lod;
 
         const engineDepthFunc = this._engine.getDepthFunction();
         const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates

@@ -37,6 +37,33 @@
     },
 
     {
+        "label": "Frame Graph: simple frame graph",
+        "key": "Simple ",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/frameGraph/frameGraphBasicConcepts/frameGraphReplaceRenderLoop/",
+        "insertText": "const frameGraph = new BABYLON.FrameGraph(scene, true);\n\nengine.onResizeObservable.add(() => {\n    frameGraph.build();\n});\n\nscene.cameraToUseForPointers = camera;\nscene.frameGraph = frameGraph;\n\nconst samples = 4;\n\nconst colorTexture = frameGraph.textureManager.createRenderTargetTexture(\"color\", {\n    size: { width: 100, height: 100 },\n    options: {\n        createMipMaps: false,\n        types: [BABYLON.Constants.TEXTURETYPE_UNSIGNED_BYTE],\n        formats: [BABYLON.Constants.TEXTUREFORMAT_RGBA],\n        samples,\n        useSRGBBuffers: [false],\n        labels: [\"color\"],\n    },\n    sizeIsPercentage: true,\n});\n\nconst depthTexture = frameGraph.textureManager.createRenderTargetTexture(\"depth\", {\n    size: { width: 100, height: 100 },\n    options: {\n        createMipMaps: false,\n        types: [BABYLON.Constants.TEXTURETYPE_UNSIGNED_BYTE],\n        formats: [BABYLON.Constants.TEXTUREFORMAT_DEPTH32_FLOAT],\n        samples,\n        useSRGBBuffers: [false],\n        labels: [\"depth\"],\n    },\n    sizeIsPercentage: true,\n});\n\nconst clearTask = new BABYLON.FrameGraphClearTextureTask(\"clear\", frameGraph);\n\nclearTask.clearColor = true;\nclearTask.clearDepth = true;\nclearTask.targetTexture = colorTexture;\nclearTask.depthTexture = depthTexture;\n\nframeGraph.addTask(clearTask);\n\nconst rlist = {\n    meshes: scene.meshes,\n    particleSystems: scene.particleSystems,\n}\n\nconst renderTask = new BABYLON.FrameGraphObjectRendererTask(\"renderObjects\", frameGraph, scene);\n\nrenderTask.targetTexture = clearTask.outputTexture;\nrenderTask.depthTexture = clearTask.outputDepthTexture;\nrenderTask.objectList = rlist;\nrenderTask.camera = camera;\n\nframeGraph.addTask(renderTask);\n\nconst copyToBackbufferTask = new BABYLON.FrameGraphCopyToBackbufferColorTask(\"copytobackbuffer\", frameGraph);\n\ncopyToBackbufferTask.sourceTexture = renderTask.outputTexture;\n\nframeGraph.addTask(copyToBackbufferTask);\n\nframeGraph.build();\n\nframeGraph.pausedExecution = true;\nawait frameGraph.whenReadyAsync();\nframeGraph.pausedExecution = false;"
+    },
+    {
+        "label": "Frame Graph: simple node render graph",
+        "key": "Simple (NRG)",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/frameGraph/frameGraphBasicConcepts/frameGraphReplaceRenderLoop/#using-a-node-render-graph",
+        "insertText": "const nrg = await BABYLON.NodeRenderGraph.ParseFromSnippetAsync(\"2LR76I\", scene);\n\nnrg.build();\n\nscene.frameGraph = nrg.frameGraph;\n\nawait nrg.whenReadyAsync();"
+    },
+    {
+        "label": "Frame Graph: simple node render graph (no autofill parameters)",
+        "key": "Simple (NRG no autofill JS)",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/frameGraph/frameGraphBasicConcepts/frameGraphReplaceRenderLoop/#using-a-node-render-graph",
+        "language": "javascript",
+        "insertText": "scene.cameraToUseForPointers = camera;\n\nconst nrg = await BABYLON.NodeRenderGraph.ParseFromSnippetAsync(\"2LR76I\", scene, { autoFillExternalInputs: false });\n\nconst cameraBlock = nrg.getBlockByName(\"Camera\");\ncameraBlock.value = camera;\n\nconst objectListBlock = nrg.getBlockByName(\"Object List\");\nobjectListBlock.value = { meshes: null, particleSystems: null };\n\nnrg.build();\n\nscene.frameGraph = nrg.frameGraph;\n\nawait nrg.whenReadyAsync();"
+    },
+    {
+        "label": "Frame Graph: simple node render graph (no autofill parameters)",
+        "key": "Simple (NRG no autofill TS)",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/frameGraph/frameGraphBasicConcepts/frameGraphReplaceRenderLoop/#using-a-node-render-graph",
+        "language": "typescript",
+        "insertText": "scene.cameraToUseForPointers = camera;\n\nconst nrg = await BABYLON.NodeRenderGraph.ParseFromSnippetAsync(\"2LR76I\", scene, { autoFillExternalInputs: false });\n\nconst cameraBlock = nrg.getBlockByName<BABYLON.NodeRenderGraphInputBlock>(\"Camera\");\ncameraBlock.value = camera;\n\nconst objectListBlock = nrg.getBlockByName<BABYLON.NodeRenderGraphInputBlock>(\"Object List\");\nobjectListBlock.value = { meshes: null, particleSystems: null };\n\nnrg.build();\n\nscene.frameGraph = nrg.frameGraph;\n\nawait nrg.whenReadyAsync();"
+    },
+
+    {
         "label": "Add Camera : Arc Rotate Camera w/Radians",
         "key": "Arc Rotate (Rad)",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction",

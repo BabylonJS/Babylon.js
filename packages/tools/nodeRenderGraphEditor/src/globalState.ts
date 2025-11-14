@@ -17,11 +17,13 @@ import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 import { PreviewType } from "./components/preview/previewType";
 import type { Scene } from "core/scene";
 import { SerializationTools } from "./serializationTools";
+import type { INodeRenderGraphCustomBlockDescription } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 export class GlobalState {
     hostElement: HTMLElement;
     hostDocument: Document;
     hostWindow: Window;
+    hostScene?: Scene;
     stateManager: StateManager;
     onClearUndoStack = new Observable<void>();
     onBuiltObservable = new Observable<void>();
@@ -55,6 +57,7 @@ export class GlobalState {
     _engine: number;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
+    customBlockDescriptions?: INodeRenderGraphCustomBlockDescription[];
 
     private _nodeRenderGraph: NodeRenderGraph;
 

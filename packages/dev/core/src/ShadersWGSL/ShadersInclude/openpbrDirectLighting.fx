@@ -1,0 +1,171 @@
+﻿#ifdef LIGHT{X}
+{
+    var slab_diffuse: vec3f = vec3f(0.f, 0.f, 0.f);
+    var slab_subsurface: vec3f = vec3f(0.f, 0.f, 0.f);
+    var slab_translucent: vec3f = vec3f(0.f, 0.f, 0.f);
+    var slab_glossy: vec3f = vec3f(0.f, 0.f, 0.f);
+    var specularFresnel: f32 = 0.0f;
+    var specularColoredFresnel: vec3f = vec3f(0.f, 0.f, 0.f);
+    var slab_metal: vec3f = vec3f(0.f, 0.f, 0.f);
+    var slab_coat: vec3f = vec3f(0.f, 0.f, 0.f);
+    var coatFresnel: f32 = 0.0f;
+    var slab_fuzz: vec3f = vec3f(0.f, 0.f, 0.f);
+    var fuzzFresnel: f32 = 0.0f;
+
+    // _____________________________ Geometry Information _____________________________
+
+    // Diffuse Lobe
+    #ifdef HEMILIGHT{X}
+        slab_diffuse = computeHemisphericDiffuseLighting(preInfo{X}, lightColor{X}.rgb, light{X}.vLightGround);
+    #elif defined(AREALIGHT{X})
+        slab_diffuse = computeAreaDiffuseLighting(preInfo{X}, lightColor{X}.rgb);
+    #else
+        slab_diffuse = computeDiffuseLighting(preInfo{X}, lightColor{X}.rgb);
+    #endif
+
+    #ifdef PROJECTEDLIGHTTEXTURE{X}
+        slab_diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, textureProjectionMatrix{X}, vPositionW);
+    #endif
+
+    numLights += 1.0f;
+
+    #ifdef FUZZ
+        let fuzzNdotH: f32 = max(dot(fuzzNormalW, preInfo{X}.H), 0.0f);
+        let fuzzBrdf: vec3f = getFuzzBRDFLookup(fuzzNdotH, sqrt(fuzz_roughness));
+    #endif
+
+    #ifdef THIN_FILM
+        let thin_film_desaturation_scale: f32 = (thin_film_ior - 1.0f) * sqrt(thin_film_thickness * 0.001f);
+    #endif
+
+    // Specular Lobe
+    #if AREALIGHT{X}
+        slab_glossy = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
+    #else
+        {
+            #ifdef ANISOTROPIC_BASE
+                slab_glossy = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, 
+                    baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 
+                    0.0f, lightColor{X}.rgb);
+            #else
+                // We're passing in vec3(1.0) for both F0 and F90 here because the actual Fresnel is computed below
+                // Also computeSpecularLighting does some iridescence work using these values that we don't want.
+                slab_glossy = computeSpecularLighting(preInfo{X}, normalW, vec3(1.0), vec3(1.0), specular_roughness, lightColor{X}.rgb);
+            #endif
+            
+            let NdotH: f32 = dot(normalW, preInfo{X}.H);
+            specularFresnel = fresnelSchlickGGX(NdotH, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
+            specularColoredFresnel = specularFresnel * specular_color;
+            #ifdef THIN_FILM
+                let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
+                var thinFilmDielectricFresnel: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
+                // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
+                // closer to path-tracing reference.
+                thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3f(dot(thinFilmDielectricFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
+                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+            #endif
+        }
+    #endif
+
+    // Metal Lobe
+    #if AREALIGHT{X}
+        slab_metal = computeAreaSpecularLighting(preInfo{X}, light{X}.vLightSpecular.rgb, baseConductorReflectance.F0, baseConductorReflectance.F90);
+    #else
+        {
+            // For OpenPBR, we use the F82 specular model for metallic materials and mix with the
+            // usual Schlick lobe.
+            #if (CONDUCTOR_SPECULAR_MODEL == CONDUCTOR_SPECULAR_MODEL_OPENPBR)
+                var coloredFresnel: vec3f = getF82Specular(preInfo{X}.VdotH, baseConductorReflectance.coloredF0, baseConductorReflectance.coloredF90, specular_roughness);
+            #else
+                var coloredFresnel: vec3f = fresnelSchlickGGX(preInfo{X}.VdotH, baseConductorReflectance.coloredF0, baseConductorReflectance.coloredF90);
+            #endif
+
+            #ifdef THIN_FILM
+                // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
+                let thinFilmIorScale: f32 = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
+                var thinFilmConductorFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseConductorReflectance.coloredF0);
+                // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
+                // closer to path-tracing reference.
+                thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3f(dot(thinFilmConductorFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmIorScale * thinFilmConductorFresnel, thin_film_weight);
+            #endif
+
+            #ifdef ANISOTROPIC_BASE
+                slab_metal = computeAnisotropicSpecularLighting(preInfo{X}, viewDirectionW, normalW, baseGeoInfo.anisotropicTangent, baseGeoInfo.anisotropicBitangent, baseGeoInfo.anisotropy, 0.0, lightColor{X}.rgb);
+            #else
+                slab_metal = computeSpecularLighting(preInfo{X}, normalW, vec3f(baseConductorReflectance.coloredF0), coloredFresnel, specular_roughness, lightColor{X}.rgb);
+            #endif
+        }
+    #endif
+
+    // Coat Lobe
+    #if AREALIGHT{X}
+        slab_coat = computeAreaSpecularLighting(preInfoCoat{X}, light{X}.vLightSpecular.rgb, coatReflectance.F0, coatReflectance.F90);
+    #else
+        {
+            #ifdef ANISOTROPIC_COAT
+                slab_coat = computeAnisotropicSpecularLighting(preInfoCoat{X}, viewDirectionW, coatNormalW, 
+                    coatGeoInfo.anisotropicTangent, coatGeoInfo.anisotropicBitangent, coatGeoInfo.anisotropy, 0.0,
+                    lightColor{X}.rgb);
+            #else
+                slab_coat = computeSpecularLighting(preInfoCoat{X}, coatNormalW, vec3f(coatReflectance.F0), vec3f(1.0f), coat_roughness, lightColor{X}.rgb);
+            #endif
+
+            let NdotH: f32 = dot(coatNormalW, preInfoCoat{X}.H);
+            coatFresnel = fresnelSchlickGGX(NdotH, coatReflectance.F0, coatReflectance.F90);
+        }
+    #endif
+
+    var coatAbsorption = vec3f(1.0f);
+    if (coat_weight > 0.0) {
+        // __________ Coat Darkening _____________
+        let cosTheta_view: f32 = max(preInfoCoat{X}.NdotV, 0.001f);
+        let cosTheta_light: f32 = max(preInfoCoat{X}.NdotL, 0.001f);
+
+        // Fresnel reflectance for view direction
+        let fresnel_view: f32 = coatReflectance.F0 + (1.0f - coatReflectance.F0) * pow(1.0f - cosTheta_view, 5.0);
+
+        // Fresnel reflectance for light direction
+        let fresnel_light: f32 = coatReflectance.F0 + (1.0f - coatReflectance.F0) * pow(1.0f - cosTheta_light, 5.0);
+
+        // Average reflectance for the round trip (light in, view out)
+        let averageReflectance: f32 = (fresnel_view + fresnel_light) * 0.5;
+
+        // Calculate transmission through multiple internal reflections
+        // This uses the geometric series for infinite reflections:
+        // T = (1-R) / (1 + R + R² + R³ + ...) = (1-R) / (1/(1-R)) = (1-R)²
+        var darkened_transmission: f32 = (1.0f - averageReflectance) / (1.0f + averageReflectance);
+        darkened_transmission = mix(1.0f, darkened_transmission, coat_darkening);
+
+        // View-dependent coat absorption.
+        // At normal incidence, coat absorption is simply the coat_color.
+        // At grazing angles, there is increased darkening and saturation.
+        var sin2: f32 = 1.0f - coatGeoInfo.NdotV * coatGeoInfo.NdotV;
+        // Divide by the square of the relative IOR (eta) of the incident medium and coat. This
+        // is just coat_ior since the incident medium is air (IOR = 1.0).
+        sin2 = sin2 / (coat_ior * coat_ior);
+        let cos_t: f32 = sqrt(1.0f - sin2);
+        let coatPathLength = 1.0f / cos_t;
+        let colored_transmission: vec3f = pow(coat_color, vec3f(coatPathLength));
+        coatAbsorption = mix(vec3f(1.0f), colored_transmission * vec3f(darkened_transmission), coat_weight);
+    }
+
+    #ifdef FUZZ
+        fuzzFresnel = fuzzBrdf.z;
+        let fuzzNormalW = mix(normalW, coatNormalW, coat_weight);
+        let fuzzNdotV: f32 = max(dot(fuzzNormalW, viewDirectionW.xyz), 0.0f);
+        let fuzzNdotL: f32 = max(dot(fuzzNormalW, preInfo{X}.L), 0.0);
+        slab_fuzz = lightColor{X}.rgb * preInfo{X}.attenuation * evalFuzz(preInfo{X}.L, fuzzNdotL, fuzzNdotV, fuzzTangent, fuzzBitangent, fuzzBrdf);
+    #else
+        let fuzz_color = vec3f(0.0);
+    #endif
+
+    slab_diffuse *= base_color.rgb;
+    let material_opaque_base: vec3f = mix(slab_diffuse, slab_subsurface, subsurface_weight);
+    let material_dielectric_base: vec3f = mix(material_opaque_base, slab_translucent, transmission_weight);
+    let material_dielectric_gloss: vec3f = material_dielectric_base * (1.0f - specularFresnel) + slab_glossy * specularColoredFresnel;
+    let material_base_substrate: vec3f = mix(material_dielectric_gloss, slab_metal, base_metalness);
+    let material_coated_base: vec3f = layer(material_base_substrate, slab_coat, coatFresnel, coatAbsorption, vec3f(1.0f));
+    material_surface_direct += layer(material_coated_base, slab_fuzz, fuzzFresnel * fuzz_weight, vec3f(1.0f), fuzz_color);
+}
+#endif

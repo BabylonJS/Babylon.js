@@ -139,24 +139,21 @@ export class NodeParticleBuildState {
                 return this.particleContext.cellIndex;
             case NodeParticleContextualSources.SpriteCellStart:
                 return this.systemContext.startSpriteCellID;
+            case NodeParticleContextualSources.InitialDirection:
+                return this.particleContext._initialDirection;
+            case NodeParticleContextualSources.ColorStep:
+                return this.particleContext.colorStep;
+            case NodeParticleContextualSources.ScaledColorStep:
+                this.particleContext.colorStep.scaleToRef(this.systemContext._scaledUpdateSpeed, this.systemContext._scaledColorStep);
+                return this.systemContext._scaledColorStep;
+            case NodeParticleContextualSources.LocalPositionUpdated:
+                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
+                this.particleContext._localPosition!.addInPlace(this.systemContext._scaledDirection);
+                Vector3.TransformCoordinatesToRef(this.particleContext._localPosition!, this.systemContext._emitterWorldMatrix, this.particleContext.position);
+                return this.particleContext.position;
         }
 
         return null;
-    }
-
-    /**
-     * Gets a boolean indicating if the emitter is a transform node (or a simple vector3)
-     */
-    public get isEmitterTransformNode() {
-        if (!this.systemContext) {
-            return false;
-        }
-
-        if ((<AbstractMesh>this.systemContext.emitter).position) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -182,16 +179,20 @@ export class NodeParticleBuildState {
     /**
      * Gets the emitter position
      */
-    public get emitterPosition() {
+    public get emitterPosition(): Nullable<Vector3> {
         if (!this.systemContext) {
             return null;
         }
 
-        if (this.isEmitterTransformNode) {
-            return (<AbstractMesh>this.systemContext.emitter).absolutePosition;
+        if (!this.systemContext.emitter) {
+            return null;
         }
 
-        return this.systemContext.emitter as Vector3;
+        if (this.systemContext.emitter instanceof Vector3) {
+            return this.systemContext.emitter;
+        }
+
+        return (<AbstractMesh>this.systemContext.emitter).absolutePosition;
     }
 
     /**
@@ -210,12 +211,9 @@ export class NodeParticleBuildState {
             case NodeParticleSystemSources.Delta:
                 return this.systemContext._scaledUpdateSpeed;
             case NodeParticleSystemSources.Emitter:
-                if (this.isEmitterTransformNode) {
-                    const emitterMesh = <AbstractMesh>this.systemContext.emitter;
-                    return emitterMesh.absolutePosition;
-                } else {
-                    return this.systemContext.emitter;
-                }
+                return this.emitterPosition;
+            case NodeParticleSystemSources.CameraPosition:
+                return this.scene.activeCamera?.globalPosition || Vector3.Zero();
         }
 
         return null;

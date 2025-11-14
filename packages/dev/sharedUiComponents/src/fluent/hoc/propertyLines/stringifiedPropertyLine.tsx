@@ -1,5 +1,6 @@
 import type { ImmutablePrimitiveProps } from "../../primitives/primitive";
-import { PropertyLine, type PropertyLineProps } from "./propertyLine";
+import type { PropertyLineProps } from "./propertyLine";
+import { PropertyLine } from "./propertyLine";
 import type { FunctionComponent } from "react";
 import { Body1 } from "@fluentui/react-components";
 
@@ -16,6 +17,7 @@ type StringifiedPropertyLineProps = PropertyLineProps<number> &
  * @returns
  */
 export const StringifiedPropertyLine: FunctionComponent<StringifiedPropertyLineProps> = (props) => {
+    StringifiedPropertyLine.displayName = "StringifiedPropertyLine";
     const value = props.precision !== undefined ? props.value.toFixed(props.precision) : props.value.toLocaleString();
     const withUnits = props.units ? `${value} ${props.units}` : value;
     return (

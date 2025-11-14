@@ -161,7 +161,7 @@ export class UtilityLayerRenderer implements IDisposable {
         manualRender = false
     ) {
         // Create scene which will be rendered in the foreground and remove it from being referenced by engine to avoid interfering with existing app
-        this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true });
+        this.utilityLayerScene = new Scene(originalScene.getEngine(), { virtual: true, useFloatingOrigin: originalScene.floatingOriginMode });
         this.utilityLayerScene.useRightHandedSystem = originalScene.useRightHandedSystem;
         this.utilityLayerScene._allowPostProcessClearColor = false;
 

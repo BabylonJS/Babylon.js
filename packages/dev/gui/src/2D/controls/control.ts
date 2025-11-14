@@ -227,7 +227,7 @@ export class Control implements IAnimatable, IFocusableControl {
     private _cacheData: Nullable<ImageData>;
 
     private _shadowOffsetX = 0;
-    /** Gets or sets a value indicating the offset to apply on X axis to render the shadow */
+    /** Gets or sets a value indicating the offset in pixels to apply on X axis to render the shadow */
     @serialize()
     public get shadowOffsetX() {
         return this._shadowOffsetX;
@@ -243,7 +243,7 @@ export class Control implements IAnimatable, IFocusableControl {
     }
 
     private _shadowOffsetY = 0;
-    /** Gets or sets a value indicating the offset to apply on Y axis to render the shadow */
+    /** Gets or sets a value indicating the offset in pixels to apply on Y axis to render the shadow */
     @serialize()
     public get shadowOffsetY() {
         return this._shadowOffsetY;
@@ -1743,8 +1743,8 @@ export class Control implements IAnimatable, IFocusableControl {
             Measure.CombineToRef(this._tmpMeasureA, this._prevCurrentMeasureTransformedIntoGlobalSpace, this._tmpMeasureA);
 
             // Expand rect based on shadows
-            const shadowOffsetX = this.shadowOffsetX;
-            const shadowOffsetY = this.shadowOffsetY;
+            const shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            const shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
             const shadowBlur = Math.max(this._previousShadowBlur, this.shadowBlur);
 
             const leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
@@ -1865,6 +1865,9 @@ export class Control implements IAnimatable, IFocusableControl {
     }
 
     /**
+     * Applies the control's state to the provided context.  Important: unless this is a temporary context,
+     * be sure to call context.save() before calling _applyStates() and later call context.restore() when
+     * you are done using these state updates.
      * @internal
      */
     protected _applyStates(context: ICanvasRenderingContext): void {
@@ -1944,6 +1947,8 @@ export class Control implements IAnimatable, IFocusableControl {
      * @internal
      */
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        context.save();
+
         // Ensure we always apply states before measuring
         this._applyStates(context);
 
@@ -1984,6 +1989,8 @@ export class Control implements IAnimatable, IFocusableControl {
         if (this.onDirtyObservable.hasObservers()) {
             this.onDirtyObservable.notifyObservers(this);
         }
+
+        context.restore();
     }
 
     protected _evaluateClippingState(parentMeasure: Measure) {
@@ -2172,8 +2179,8 @@ export class Control implements IAnimatable, IFocusableControl {
         }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-            const shadowOffsetX = this.shadowOffsetX;
-            const shadowOffsetY = this.shadowOffsetY;
+            const shadowOffsetX = this.shadowOffsetX * this._host.idealRatio;
+            const shadowOffsetY = this.shadowOffsetY * this._host.idealRatio;
             const shadowBlur = this.shadowBlur;
 
             const leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);

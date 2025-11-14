@@ -9,8 +9,8 @@ import type { ISmartArrayLike } from "./Misc/smartArray";
 import { SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
-import type { Vector2, Vector4 } from "./Maths/math.vector";
-import { Vector3, Matrix, TmpVectors } from "./Maths/math.vector";
+import type { Vector2 } from "./Maths/math.vector";
+import { Vector3, Vector4, Matrix } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
@@ -21,6 +21,7 @@ import type { KeyboardInfoPre, KeyboardInfo } from "./Events/keyboardEvents";
 import { ActionEvent } from "./Actions/actionEvent";
 import { PostProcessManager } from "./PostProcesses/postProcessManager";
 import type { IOfflineProvider } from "./Offline/IOfflineProvider";
+import { FloatingOriginCurrentScene, OverrideMatrixFunctions, ResetMatrixFunctions } from "./Materials/floatingOriginMatrixOverrides";
 import type { RenderingGroupInfo, IRenderingManagerAutoClearSetup } from "./Rendering/renderingManager";
 import { RenderingManager } from "./Rendering/renderingManager";
 import type {
@@ -114,6 +115,10 @@ export interface IDisposable {
     dispose(): void;
 }
 
+// Defining Temps for the file to avoid misuse of shared TmpVectors
+const TempVect1 = new Vector4();
+const TempVect2 = new Vector4();
+
 /** Interface defining initialization parameters for Scene class */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface SceneOptions {
@@ -134,6 +139,16 @@ export interface SceneOptions {
      * It will improve performance when the number of mesh becomes important, but might consume a bit more memory
      */
     useClonedMeshMap?: boolean;
+
+    /**
+     * @experimental
+     * When enabled, the scene can handle large world coordinate rendering without jittering caused by floating point imprecision on the GPU.
+     * This mode offsets matrices and position-related attribute values before passing to shaders, centering camera at origin and offsetting other scene objects by camera active position.
+     *
+     * IMPORTANT: Only use this scene-level option if you intend to enable floating origin on a per-scene basis. Must use in conjunction with engine creation option 'useHighPrecisionMatrix' to fix CPU-side floating point imprecision.
+     * HOWEVER if you want largeWorldRendering on ALL scenes, set the useLargeWorldRendering flag on the engine instead of this scene-level flag. Doing so will automatically set useHighPrecisionMatrix on the engine as well.
+     */
+    useFloatingOrigin?: boolean;
 
     /** Defines if the creation of the scene should impact the engine (Eg. UtilityLayer's scene) */
     virtual?: boolean;
@@ -264,6 +279,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
      * The material properties need to be setup according to the type of texture in use.
      */
     public environmentBRDFTexture: BaseTexture;
+
+    /**
+     * This stores the brdf lookup for the fuzz layer of PBR materials in your scene.
+     */
+    public environmentFuzzBRDFTexture: BaseTexture;
 
     /**
      * Intensity of the environment (i.e. all indirect lighting) in all pbr material.
@@ -552,6 +572,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     /**
      * The list of sounds used in the scene.
+     * @deprecated please use AudioEngineV2 instead
      */
     public sounds: Nullable<Array<Sound>> = null;
 
@@ -1210,32 +1231,37 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * Gets the current eye position in order of forcedViewPosition, activeCamera world position, Vector3.ZeroReadOnly
+     */
+    private get _eyePosition(): Vector3 {
+        return this._forcedViewPosition ?? this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly;
+    }
+
+    /**
      * Bind the current view position to an effect.
      * @param effect The effect to be bound
      * @param variableName name of the shader variable that will hold the eye position
      * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
-     * @returns the computed eye position
+     * @returns the computed eye position in a temp vector, caller can copy values as needed
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition
-            ? this._forcedViewPosition
-            : this._mirroredCameraPosition
-              ? this._mirroredCameraPosition
-              : (this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly);
-
+        const eyePosition = this._eyePosition;
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
-        TmpVectors.Vector4[0].set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+        const offset = this.floatingOriginOffset;
+        const eyePos = TempVect1.set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+        const offsetEyePos = eyePos.subtractFromFloatsToRef(offset.x, offset.y, offset.z, 0, TempVect2);
 
         if (effect) {
             if (isVector3) {
-                effect.setFloat3(variableName, TmpVectors.Vector4[0].x, TmpVectors.Vector4[0].y, TmpVectors.Vector4[0].z);
+                effect.setFloat3(variableName, offsetEyePos.x, offsetEyePos.y, offsetEyePos.z);
             } else {
-                effect.setVector4(variableName, TmpVectors.Vector4[0]);
+                effect.setVector4(variableName, offsetEyePos);
             }
         }
 
-        return TmpVectors.Vector4[0];
+        // Return the non-offset position
+        return eyePos;
     }
 
     /**
@@ -1245,7 +1271,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     public finalizeSceneUbo(): UniformBuffer {
         const ubo = this.getSceneUniformBuffer();
         const eyePosition = this.bindEyePosition(null);
-        ubo.updateFloat4("vEyePosition", eyePosition.x, eyePosition.y, eyePosition.z, eyePosition.w);
+
+        const offset = this.floatingOriginOffset;
+        ubo.updateFloat4("vEyePosition", eyePosition.x - offset.x, eyePosition.y - offset.y, eyePosition.z - offset.z, eyePosition.w);
 
         ubo.update();
 
@@ -1995,6 +2023,11 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         } else {
             EngineStore._LastCreatedScene = this;
             engine.scenes.push(this);
+        }
+
+        if (engine.getCreationOptions().useLargeWorldRendering || options?.useFloatingOrigin) {
+            OverrideMatrixFunctions();
+            this._floatingOriginScene = this;
         }
 
         this._uid = null;
@@ -2752,6 +2785,24 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._sceneUbo = ubo;
         this._viewUpdateFlag = -1;
         this._projectionUpdateFlag = -1;
+    }
+
+    private _floatingOriginScene: Scene | undefined = undefined;
+    /**
+     * @experimental
+     * True if floatingOriginMode was passed to engine or this scene creation otions.
+     * This mode avoids floating point imprecision in huge coordinate system by offsetting uniform values before passing to shader, centering camera at origin and displacing rest of scene by camera position
+     */
+    public get floatingOriginMode(): boolean {
+        return this._floatingOriginScene !== undefined;
+    }
+
+    /**
+     * @experimental
+     * When floatingOriginMode is enabled, offset is equal to the eye position. Default to ZeroReadonly when mode is disabled.
+     */
+    public get floatingOriginOffset(): Vector3 {
+        return this.floatingOriginMode ? this._eyePosition : Vector3.ZeroReadOnly;
     }
 
     /**
@@ -4903,7 +4954,7 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
                     if (renderTarget._shouldRender()) {
                         this._renderId++;
                         const hasSpecialRenderTargetCamera = renderTarget.activeCamera && renderTarget.activeCamera !== this.activeCamera;
-                        if (renderTarget.enableBoundingBoxRendering && boundingBoxRenderer && !currentBoundingBoxMeshList) {
+                        if (boundingBoxRenderer && !currentBoundingBoxMeshList) {
                             // Saves the current bounding box mesh list (potentially built by the call to _evaluateActiveMeshes above), which will be reset/updated when processing this target
                             currentBoundingBoxMeshList = boundingBoxRenderer.renderList.length > 0 ? boundingBoxRenderer.renderList.data.slice() : [];
                             currentBoundingBoxMeshList.length = boundingBoxRenderer.renderList.length;
@@ -5295,6 +5346,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         this._intermediateRendering = false;
     }
 
+    private _getFloatingOriginScene = (): Scene | undefined => {
+        return this._floatingOriginScene;
+    };
     /**
      * Render the scene
      * @param updateCameras defines a boolean indicating if cameras must update according to their inputs (true by default)
@@ -5308,6 +5362,9 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         if (this.onReadyObservable.hasObservers() && this._executeWhenReadyTimeoutId === null) {
             this._checkIsReady();
         }
+
+        // Ensures that the floatingOriginOffset is grabbed from the correct scene
+        FloatingOriginCurrentScene.getScene = this._getFloatingOriginScene;
 
         this._frameId++;
         this._defaultFrameBufferCleared = false;
@@ -5637,6 +5694,13 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
         if (index > -1) {
             this._engine.scenes.splice(index, 1);
+        }
+
+        this._floatingOriginScene = undefined;
+        if (this._engine.scenes.length === 0) {
+            // If this is the last scene to be disposed, reset matrix overrides
+            // Cannot reset from within engine class due floatingOriginMatrixOverrides file import side effects
+            ResetMatrixFunctions();
         }
 
         if (EngineStore._LastCreatedScene === this) {

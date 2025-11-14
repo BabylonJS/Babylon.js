@@ -505,7 +505,7 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
     /**
      * Negate the current Vector2 and stores the result in the given vector "result" coordinates
      * Example Playground https://playground.babylonjs.com/#QYBWV4#41
-     * @param result defines the Vector3 object where to store the result
+     * @param result defines the Vector2 object where to store the result
      * @returns the result
      */
     public negateToRef<T extends IVector2Like>(result: T): T {

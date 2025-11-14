@@ -338,6 +338,12 @@ export class MaterialPluginManager {
                         if (uniforms.fragment) {
                             this._fragmentDeclaration += uniforms.fragment + "\n";
                         }
+
+                        // These are uniforms which are used by the shader but not updated by the plugin directly.
+                        // They still need to be present in the _uniformList so the Effect can determine their locations.
+                        if (uniforms.externalUniforms) {
+                            this._uniformList.push(...uniforms.externalUniforms);
+                        }
                     }
                     plugin.getSamplers(this._samplerList);
                     plugin.getUniformBuffersNames(this._uboList);

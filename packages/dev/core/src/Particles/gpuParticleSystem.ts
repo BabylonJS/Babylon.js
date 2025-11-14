@@ -110,6 +110,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _rebuildingAfterContextLost = false;
 
     /**
+     * Specifies if the particle system should be serialized
+     */
+    public doNotSerialize = false;
+
+    /**
      * Gets a boolean indicating if the GPU particles can be rendered on current browser
      */
     public static get IsSupported(): boolean {
@@ -429,6 +434,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         this._started = true;
         this._stopped = false;
+        this._actualFrame = 0;
         this._preWarmDone = false;
 
         // Animations
@@ -1695,7 +1701,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
         effect.setTexture("diffuseSampler", this.particleTexture);
         effect.setVector2("translationPivot", this.translationPivot);
-        effect.setVector3("worldOffset", this.worldOffset);
+        const worldOffset = this.worldOffset.subtractToRef(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly, TmpVectors.Vector3[0]);
+        effect.setVector3("worldOffset", worldOffset);
         if (this.isLocal) {
             effect.setMatrix("emitterWM", emitterWM);
         }

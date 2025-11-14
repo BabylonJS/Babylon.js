@@ -24,24 +24,6 @@ import type { AnimationConfiguration } from "../animationConfiguration";
 const AlphaCombine = 2;
 
 /**
- * Calculates the scale factor between a container and the animation it is playing
- * @param animationWidth Width of the animaiton
- * @param animationHeight Height of the animation
- * @param container The container where the animation is getting played
- * @returns The scale factor that will modify the size of the animation rendering to adjust to the container
- */
-export function CalculateScaleFactor(animationWidth: number | undefined, animationHeight: number | undefined, container: HTMLElement): number {
-    if (animationWidth === undefined || animationHeight === undefined) {
-        return 1;
-    }
-
-    // The size of the canvas is the relation between the size of the container div and the size of the animation
-    const horizontalScale = container.clientWidth / animationWidth;
-    const verticalScale = container.clientHeight / animationHeight;
-    return Math.min(verticalScale, horizontalScale);
-}
-
-/**
  * Class that controls the playing of lottie animations using Babylon.js
  */
 export class AnimationController {
@@ -225,7 +207,13 @@ export class AnimationController {
      */
     public dispose(): void {
         this.stopAnimation();
-        this._engine.getRenderingCanvas()?.remove();
+
+        // Offscreen canvas do not have .remove() as it doesn't inherit from Element
+        const canvas = this._engine.getRenderingCanvas();
+        if (canvas && canvas.remove) {
+            canvas.remove();
+        }
+
         this._engine.dispose();
         this._renderingManager.dispose();
         this._spritePacker.texture.dispose();
@@ -247,6 +235,13 @@ export class AnimationController {
         world[5] = -1; // we are upside down with Lottie
 
         _projectionMatrix.orthoOffCenterLeftHanded(0, _engine.getRenderWidth() / (devicePixelRatio * scale), _engine.getRenderHeight() / (devicePixelRatio * scale), 0, -100, 100);
+
+        // If we are not playing anymore (animation finished), resizing clears the buffer.
+        // Redraw the last frame so the canvas does not appear blank after a resize.
+        if (!this._isPlaying && this._animation) {
+            this._engine.setViewport(this._viewport);
+            this._renderingManager.render(this._worldMatrix, this._projectionMatrix);
+        }
     }
 
     private _isHtmlCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): boolean {
@@ -316,6 +311,7 @@ export class AnimationController {
             return;
         }
 
+        let stoppingAfterThisFrame = false;
         if (this._currentFrame > this._animation.endFrame) {
             if (this._loop) {
                 this._currentFrame = (this._currentFrame % (this._animation.endFrame - this._animation.startFrame)) + this._animation.startFrame;
@@ -323,8 +319,9 @@ export class AnimationController {
                     this._animation.nodes[i].reset();
                 }
             } else {
-                this._isPlaying = false;
-                return;
+                // When not looping, clamp to the last frame of the animation
+                this._currentFrame = this._animation.endFrame;
+                stoppingAfterThisFrame = true;
             }
         }
 
@@ -334,5 +331,9 @@ export class AnimationController {
 
         // Render all layers of the animation
         this._renderingManager.render(this._worldMatrix, this._projectionMatrix);
+
+        if (stoppingAfterThisFrame) {
+            this._isPlaying = false;
+        }
     }
 }

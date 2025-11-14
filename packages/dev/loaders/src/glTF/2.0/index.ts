@@ -4,4 +4,6 @@ export * from "./glTFLoaderExtension";
 export * from "./glTFLoaderExtensionRegistry";
 export * from "./glTFLoaderInterfaces";
 export * from "./glTFLoaderAnimation";
+export * from "./openpbrMaterialLoadingAdapter";
+export * from "./pbrMaterialLoadingAdapter";
 export * from "./Extensions/index";

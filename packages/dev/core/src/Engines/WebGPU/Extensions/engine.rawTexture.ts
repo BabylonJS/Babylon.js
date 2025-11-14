@@ -117,7 +117,7 @@ declare module "../../abstractEngine" {
             format: number,
             type: number,
             noMipmap: boolean,
-            callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
+            callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[] | Promise<ArrayBufferView[]>>,
             mipmapGenerator: Nullable<(faces: ArrayBufferView[]) => ArrayBufferView[][]>,
             onLoad: Nullable<() => void>,
             onError: Nullable<(message?: string, exception?: any) => void>
@@ -146,7 +146,7 @@ declare module "../../abstractEngine" {
             format: number,
             type: number,
             noMipmap: boolean,
-            callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
+            callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[] | Promise<ArrayBufferView[]>>,
             mipmapGenerator: Nullable<(faces: ArrayBufferView[]) => ArrayBufferView[][]>,
             onLoad: Nullable<() => void>,
             onError: Nullable<(message?: string, exception?: any) => void>,
@@ -383,7 +383,7 @@ ThinWebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
     format: number,
     type: number,
     noMipmap: boolean,
-    callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
+    callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[] | Promise<ArrayBufferView[]>>,
     mipmapGenerator: Nullable<(faces: ArrayBufferView[]) => ArrayBufferView[][]>,
     onLoad: Nullable<() => void> = null,
     onError: Nullable<(message?: string, exception?: any) => void> = null,
@@ -404,13 +404,14 @@ ThinWebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
         }
     };
 
-    const internalCallback = (data: any) => {
-        const width = texture.width;
-        const faceDataArrays = callback(data);
-
-        if (!faceDataArrays) {
+    const internalCallbackAsync = async (data: any) => {
+        const faceDataArraysResult = callback(data);
+        if (!faceDataArraysResult) {
             return;
         }
+
+        const faceDataArrays: any = faceDataArraysResult instanceof Promise ? await faceDataArraysResult : faceDataArraysResult;
+        const width = texture.width;
 
         if (mipmapGenerator) {
             const needConversion = format === Constants.TEXTUREFORMAT_RGB;
@@ -444,7 +445,10 @@ ThinWebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
     this._loadFile(
         url,
         (data) => {
-            internalCallback(data);
+            // eslint-disable-next-line github/no-then
+            internalCallbackAsync(data).catch((err) => {
+                onerror(undefined, err);
+            });
         },
         undefined,
         scene?.offlineProvider,

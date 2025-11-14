@@ -4,12 +4,12 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphChromaticAberrationTask } from "core/FrameGraph/Tasks/PostProcesses/chromaticAberrationTask";
 import { ThinChromaticAberrationPostProcess } from "core/PostProcesses/thinChromaticAberrationPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the chromatic aberration post process
  */
-export class NodeRenderGraphChromaticAberrationPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphChromaticAberrationPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphChromaticAberrationTask;
 
     /**
@@ -44,7 +44,7 @@ export class NodeRenderGraphChromaticAberrationPostProcessBlock extends NodeRend
     }
 
     /** The amount the effect will increase for pixels closer to the edge of the screen */
-    @editableInPropertyPage("Radial intensity", PropertyTypeForEdition.Float, "PROPERTIES", { min: 0.1, max: 5 })
+    @editableInPropertyPage("Radial intensity", PropertyTypeForEdition.Float, "PROPERTIES", { min: -1, max: 5 })
     public get radialIntensity(): number {
         return this._frameGraphTask.postProcess.radialIntensity;
     }

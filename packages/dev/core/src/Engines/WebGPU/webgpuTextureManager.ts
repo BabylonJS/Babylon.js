@@ -35,7 +35,7 @@ import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import type { _IProcessingOptions } from "../Processors/shaderProcessingOptions";
-import { ShaderLanguage } from "core/Materials";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 import { Finalize, Initialize, Process } from "../Processors/shaderProcessor";
 import type { WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
 
@@ -1235,7 +1235,7 @@ export class WebGPUTextureManager {
                         buffer: buffer,
                         offset: 0,
                         bytesPerRow,
-                        rowsPerImage: height,
+                        rowsPerImage: textureExtent.height / blockInformation.height,
                     },
                     textureCopyView,
                     textureExtent
@@ -1251,7 +1251,7 @@ export class WebGPUTextureManager {
                     {
                         offset: 0,
                         bytesPerRow,
-                        rowsPerImage: height,
+                        rowsPerImage: textureExtent.height / blockInformation.height,
                     },
                     textureExtent
                 );

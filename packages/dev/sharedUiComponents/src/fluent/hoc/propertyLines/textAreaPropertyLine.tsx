@@ -9,6 +9,7 @@ import type { TextareaProps } from "../../primitives/textarea";
  * @returns property-line wrapped text
  */
 export const TextAreaPropertyLine: FunctionComponent<PropertyLineProps<string> & TextareaProps> = (props) => {
+    TextAreaPropertyLine.displayName = "TextAreaPropertyLine";
     return (
         <PropertyLine {...props}>
             <Textarea {...props} />
