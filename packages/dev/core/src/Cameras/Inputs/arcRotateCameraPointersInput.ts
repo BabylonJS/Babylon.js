@@ -2,7 +2,7 @@ import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
 import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
-import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointersInput";
+import { OrbitCameraPointersInput } from "../../Cameras/Inputs/orbitCameraPointersInput";
 import type { PointerTouch } from "../../Events/pointerEvents";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 
@@ -10,7 +10,7 @@ import type { IPointerEvent } from "../../Events/deviceInputEvents";
  * Manage the pointers inputs to control an arc rotate camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
-export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
+export class ArcRotateCameraPointersInput extends OrbitCameraPointersInput {
     /**
      * Defines the camera the input is attached to.
      */

@@ -1,24 +1,45 @@
+/**
+ * Used by both arcrotatecamera and geospatialcamera, orbitPointersInputs handle pinchToZoom and multiTouchPanning
+ */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Nullable } from "../../types";
 import { serialize } from "../../Misc/decorators";
 import type { EventState, Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import type { Camera } from "../../Cameras/camera";
-import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import type { PointerInfo, PointerTouch } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { BaseCameraPointersInput } from "./BaseCameraPointersInput";
 
 /**
  * Base class for Camera Pointer Inputs.
  * See FollowCameraPointersInput in src/Cameras/Inputs/followCameraPointersInput.ts
  * for example usage.
  */
-export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
+export abstract class OrbitPointersInput implements BaseCameraPointersInput {
     /**
-     * Defines the camera the input is attached to.
+     * Defines whether zoom (2 fingers pinch) is enabled through multitouch
      */
-    public abstract camera: Camera;
+    @serialize()
+    public pinchZoom: boolean = true;
+
+    /**
+     * Defines whether panning (2 fingers swipe) is enabled through multitouch.
+     */
+    @serialize()
+    public multiTouchPanning: boolean = true;
+
+    /**
+     * Defines whether panning is enabled for both pan (2 fingers swipe) and
+     * zoom (pinch) through multitouch.
+     */
+    @serialize()
+    public multiTouchPanAndZoom: boolean = true;
+
+    protected _isPinching: boolean = false;
+    protected _twoFingerActivityCount: number = 0;
+    protected _shouldStartPinchZoom: boolean = false;
 
     /**
      * Whether keyboard modifier keys are pressed at time of last mouse event.
@@ -319,6 +340,15 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      */
     public onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {}
 
+    protected _computePinchZoom(previousPinchSquaredDistance: number, pinchSquaredDistance: number): void {}
+
+    /**
+     * Move camera from multi touch panning positions.
+     * @param previousMultiTouchPanPosition
+     * @param multiTouchPanPosition
+     */
+    protected _computeMultiTouchPanning(previousMultiTouchPanPosition: Nullable<PointerTouch>, multiTouchPanPosition: Nullable<PointerTouch>): void {}
+
     /**
      * Called on pointer POINTERMOVE event if multiple touches are active.
      * Override this method to provide functionality.
@@ -337,7 +367,47 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
         pinchSquaredDistance: number,
         previousMultiTouchPanPosition: Nullable<PointerTouch>,
         multiTouchPanPosition: Nullable<PointerTouch>
-    ): void {}
+    ): void {
+        if (previousPinchSquaredDistance === 0 && previousMultiTouchPanPosition === null) {
+            // First time this method is called for new pinch.
+            // Next time this is called there will be a
+            // previousPinchSquaredDistance and pinchSquaredDistance to compare.
+            return;
+        }
+        if (pinchSquaredDistance === 0 && multiTouchPanPosition === null) {
+            // Last time this method is called at the end of a pinch.
+            return;
+        }
+
+        // Zoom and panning enabled together
+        if (this.multiTouchPanAndZoom) {
+            this._computePinchZoom(previousPinchSquaredDistance, pinchSquaredDistance);
+            this._computeMultiTouchPanning(previousMultiTouchPanPosition, multiTouchPanPosition);
+
+            // Zoom and panning enabled but only one at a time
+        } else if (this.multiTouchPanning && this.pinchZoom) {
+            this._twoFingerActivityCount++;
+
+            if (this._isPinching || this._shouldStartPinchZoom) {
+                // Since pinch has not been active long, assume we intend to zoom.
+                this._computePinchZoom(previousPinchSquaredDistance, pinchSquaredDistance);
+
+                // Since we are pinching, remain pinching on next iteration.
+                this._isPinching = true;
+            } else {
+                // Pause between pinch starting and moving implies not a zoom event. Pan instead.
+                this._computeMultiTouchPanning(previousMultiTouchPanPosition, multiTouchPanPosition);
+            }
+
+            // Panning enabled, zoom disabled
+        } else if (this.multiTouchPanning) {
+            this._computeMultiTouchPanning(previousMultiTouchPanPosition, multiTouchPanPosition);
+
+            // Zoom enabled, panning disabled
+        } else if (this.pinchZoom) {
+            this._computePinchZoom(previousPinchSquaredDistance, pinchSquaredDistance);
+        }
+    }
 
     /**
      * Called on JS contextmenu event.
@@ -359,16 +429,20 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
-     * Override this method to provide functionality.
      * @param _evt Defines the event to track
      */
-    public onButtonUp(_evt: IPointerEvent): void {}
+    public onButtonUp(_evt: IPointerEvent): void {
+        this._twoFingerActivityCount = 0;
+        this._isPinching = false;
+    }
 
     /**
      * Called when window becomes inactive.
-     * Override this method to provide functionality.
      */
-    public onLostFocus(): void {}
+    public onLostFocus(): void {
+        this._twoFingerActivityCount = 0;
+        this._isPinching = false;
+    }
 
     private _pointerInput: (p: PointerInfo, s: EventState) => void;
     private _observer: Nullable<Observer<PointerInfo>>;
