@@ -4,6 +4,7 @@ uniform conversion: f32;
 var textureSamplerSampler: sampler;
 #endif
 var textureSampler: texture_2d<f32>;
+uniform lodLevel : f32;
 
 varying vUV: vec2f;
 
@@ -13,9 +14,9 @@ varying vUV: vec2f;
 fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #ifdef NO_SAMPLER
-    var color: vec4f = textureLoad(textureSampler, vec2u(fragmentInputs.position.xy), 0);
+    var color: vec4f = textureLoad(textureSampler, vec2u(fragmentInputs.position.xy), u32(uniforms.lodLevel));
 #else
-    var color: vec4f = textureSample(textureSampler, textureSamplerSampler, input.vUV);
+    var color: vec4f = textureSampleLevel(textureSampler, textureSamplerSampler, input.vUV, uniforms.lodLevel);
 #endif
 
 #ifdef DEPTH_TEXTURE

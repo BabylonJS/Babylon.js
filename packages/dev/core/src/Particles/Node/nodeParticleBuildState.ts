@@ -131,6 +131,8 @@ export class NodeParticleBuildState {
                 return this.particleContext.angle;
             case NodeParticleContextualSources.Scale:
                 return this.particleContext.scale;
+            case NodeParticleContextualSources.Size:
+                return this.particleContext.size;
             case NodeParticleContextualSources.AgeGradient:
                 return this.particleContext.age / this.particleContext.lifeTime;
             case NodeParticleContextualSources.SpriteCellEnd:
@@ -146,6 +148,11 @@ export class NodeParticleBuildState {
             case NodeParticleContextualSources.ScaledColorStep:
                 this.particleContext.colorStep.scaleToRef(this.systemContext._scaledUpdateSpeed, this.systemContext._scaledColorStep);
                 return this.systemContext._scaledColorStep;
+            case NodeParticleContextualSources.LocalPositionUpdated:
+                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
+                this.particleContext._localPosition!.addInPlace(this.systemContext._scaledDirection);
+                Vector3.TransformCoordinatesToRef(this.particleContext._localPosition!, this.systemContext._emitterWorldMatrix, this.particleContext.position);
+                return this.particleContext.position;
         }
 
         return null;

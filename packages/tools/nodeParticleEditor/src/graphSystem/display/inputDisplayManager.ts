@@ -86,6 +86,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.Scale:
                     value = "Scale";
                     break;
+                case NodeParticleContextualSources.Size:
+                    value = "Size";
+                    break;
                 case NodeParticleContextualSources.Age:
                     value = "Age";
                     break;
@@ -124,6 +127,9 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeParticleContextualSources.ScaledColorStep:
                     value = "Scaled Color Step";
+                    break;
+                case NodeParticleContextualSources.LocalPositionUpdated:
+                    value = "Local Position Updated";
                     break;
             }
         } else {

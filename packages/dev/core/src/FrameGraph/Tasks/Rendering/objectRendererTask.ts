@@ -102,7 +102,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _renderParticles = true;
     /**
-     * Define if particles should be rendered (default is true).
+     * Defines if particles should be rendered (default is true).
      */
     public get renderParticles() {
         return this._renderParticles;
@@ -119,7 +119,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _renderSprites = true;
     /**
-     * Define if sprites should be rendered (default is true).
+     * Defines if sprites should be rendered (default is true).
      */
     public get renderSprites() {
         return this._renderSprites;
@@ -136,7 +136,7 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
     private _forceLayerMaskCheck = true;
     /**
-     * Force checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined). Default is true.
+     * Forces checking the layerMask property even if a custom list of meshes is provided (ie. if renderList is not undefined). Default is true.
      */
     public get forceLayerMaskCheck() {
         return this._forceLayerMaskCheck;
@@ -186,8 +186,18 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
     }
 
     /**
+     * If true, targetTexture will be resolved at the end of the render pass, if this/these texture(s) is/are MSAA (default: true)
+     */
+    public resolveMSAAColors = true;
+
+    /**
+     * If true, depthTexture will be resolved at the end of the render pass, if this texture is provided and is MSAA (default: false).
+     */
+    public resolveMSAADepth = false;
+
+    /**
      * The output texture.
-     * This texture will point to the same texture than the targetTexture property if it is set.
+     * This texture will point to the same texture than the targetTexture property.
      * Note, however, that the handle itself will be different!
      */
     public readonly outputTexture: FrameGraphTextureHandle;
@@ -317,6 +327,12 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         pass.setExecuteFunc((context) => {
             this._renderer.renderList = this.objectList.meshes;
             this._renderer.particleSystemList = this.objectList.particleSystems;
+
+            const renderTargetWrapper = pass.frameGraphRenderTarget!.renderTargetWrapper;
+            if (renderTargetWrapper) {
+                renderTargetWrapper.resolveMSAAColors = this.resolveMSAAColors;
+                renderTargetWrapper.resolveMSAADepth = this.resolveMSAADepth;
+            }
 
             // The cast to "any" is to avoid an error in ES6 in case you don't import boundingBoxRenderer
             const boundingBoxRenderer = (this as any).getBoundingBoxRenderer?.() as Nullable<BoundingBoxRenderer>;

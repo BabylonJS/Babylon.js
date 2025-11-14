@@ -771,7 +771,9 @@ export class WaterMaterial extends PushMaterial {
             mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
 
             scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
-            scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
+            const cameraPos = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
+            scene._mirroredCameraPosition = cameraPos;
+            scene._forcedViewPosition = cameraPos; // More performant to set 2 properties here than to check both mirroredCameraPos and forcedViewPos within eye binding (which happens on critical rendering path)
         };
 
         this._reflectionRTT.onAfterRender = () => {
@@ -785,6 +787,7 @@ export class WaterMaterial extends PushMaterial {
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
             scene._mirroredCameraPosition = null;
+            scene._forcedViewPosition = null;
         };
     }
 

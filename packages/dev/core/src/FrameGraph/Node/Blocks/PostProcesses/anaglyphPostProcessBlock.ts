@@ -3,12 +3,12 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { FrameGraphAnaglyphTask } from "core/FrameGraph/Tasks/PostProcesses/anaglyphTask";
 import { ThinAnaglyphPostProcess } from "core/PostProcesses/thinAnaglyphPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the anaglyph post process
  */
-export class NodeRenderGraphAnaglyphPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphAnaglyphPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphAnaglyphTask;
 
     /**

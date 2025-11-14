@@ -10,7 +10,7 @@ import { SmartArrayNoDuplicate, SmartArray } from "./Misc/smartArray";
 import { StringDictionary } from "./Misc/stringDictionary";
 import { Tags } from "./Misc/tags";
 import type { Vector2 } from "./Maths/math.vector";
-import { Vector3, Vector4, Matrix, TmpVectors } from "./Maths/math.vector";
+import { Vector3, Vector4, Matrix } from "./Maths/math.vector";
 import type { IParticleSystem } from "./Particles/IParticleSystem";
 import { ImageProcessingConfiguration } from "./Materials/imageProcessingConfiguration";
 import { UniformBuffer } from "./Materials/uniformBuffer";
@@ -114,6 +114,10 @@ export interface IDisposable {
      */
     dispose(): void;
 }
+
+// Defining Temps for the file to avoid misuse of shared TmpVectors
+const TempVect1 = new Vector4();
+const TempVect2 = new Vector4();
 
 /** Interface defining initialization parameters for Scene class */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -242,8 +246,6 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
 
     private _clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
 
-    private _tempVect3 = new Vector3();
-    private _tempVect4 = new Vector4();
     /**
      * Observable triggered when the performance priority is changed
      */
@@ -1229,23 +1231,26 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
     }
 
     /**
+     * Gets the current eye position in order of forcedViewPosition, activeCamera world position, Vector3.ZeroReadOnly
+     */
+    private get _eyePosition(): Vector3 {
+        return this._forcedViewPosition ?? this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly;
+    }
+
+    /**
      * Bind the current view position to an effect.
      * @param effect The effect to be bound
      * @param variableName name of the shader variable that will hold the eye position
      * @param isVector3 true to indicates that variableName is a Vector3 and not a Vector4
-     * @returns the computed eye position
+     * @returns the computed eye position in a temp vector, caller can copy values as needed
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition
-            ? this._forcedViewPosition
-            : this._mirroredCameraPosition
-              ? this._mirroredCameraPosition
-              : (this.activeCamera?.globalPosition ?? Vector3.ZeroReadOnly);
+        const eyePosition = this._eyePosition;
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
         const offset = this.floatingOriginOffset;
-        const eyePos = this._tempVect4.set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
-        const offsetEyePos = eyePos.subtractFromFloatsToRef(offset.x, offset.y, offset.z, 0, TmpVectors.Vector4[1]);
+        const eyePos = TempVect1.set(eyePosition.x, eyePosition.y, eyePosition.z, invertNormal ? -1 : 1);
+        const offsetEyePos = eyePos.subtractFromFloatsToRef(offset.x, offset.y, offset.z, 0, TempVect2);
 
         if (effect) {
             if (isVector3) {
@@ -2792,19 +2797,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
         return this._floatingOriginScene !== undefined;
     }
 
-    private _floatingOriginOffsetDefault: Vector3 = Vector3.Zero();
     /**
      * @experimental
-     * When floatingOriginMode is enabled, offset is equal to the active camera position in world space. If no active camera or floatingOriginMode is disabled, offset is 0.
+     * When floatingOriginMode is enabled, offset is equal to the eye position. Default to ZeroReadonly when mode is disabled.
      */
     public get floatingOriginOffset(): Vector3 {
-        return this.floatingOriginMode
-            ? this._mirroredCameraPosition
-                ? this._mirroredCameraPosition
-                : this.activeCamera
-                  ? this.activeCamera.getWorldMatrix().getTranslationToRef(this._tempVect3)
-                  : this._floatingOriginOffsetDefault
-            : this._floatingOriginOffsetDefault;
+        return this.floatingOriginMode ? this._eyePosition : Vector3.ZeroReadOnly;
     }
 
     /**

@@ -1,12 +1,15 @@
 import type { ParticleSystem } from "core/Particles/particleSystem";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeParticleBlockConnectionPointTypes } from "../Enums/nodeParticleBlockConnectionPointTypes";
-import { NodeParticleBlock } from "../nodeParticleBlock";
-import type { NodeParticleConnectionPoint } from "../nodeParticleBlockConnectionPoint";
-import type { NodeParticleBuildState } from "../nodeParticleBuildState";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+import type { NodeParticleBuildState } from "core/Particles/Node/nodeParticleBuildState";
+
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
+import { RegisterClass } from "core/Misc/typeStore";
+import { Vector2 } from "core/Maths/math.vector";
+import { Color4 } from "core/Maths/math.color";
 import { BaseParticleSystem } from "core/Particles/baseParticleSystem";
-import { _TriggerSubEmitter } from "./Triggers/triggerTools";
+import { NodeParticleBlock } from "core/Particles/Node/nodeParticleBlock";
+import { _TriggerSubEmitter } from "core/Particles/Node/Blocks/Triggers/triggerTools";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 
 /**
  * Block used to get a system of particles
@@ -47,12 +50,6 @@ export class SystemBlock extends NodeParticleBlock {
      */
     @editableInPropertyPage("Manual emit count", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: -1 })
     public manualEmitCount = -1;
-
-    /**
-     * Gets or sets the target stop duration for the particle system
-     */
-    @editableInPropertyPage("Target duration", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
-    public targetStopDuration = 0;
 
     /**
      * Gets or sets the target stop duration for the particle system
@@ -119,7 +116,8 @@ export class SystemBlock extends NodeParticleBlock {
         this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("translationPivot", NodeParticleBlockConnectionPointTypes.Vector2, true);
-        this.registerInput("gravity", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("textureMask", NodeParticleBlockConnectionPointTypes.Color4, true);
+        this.registerInput("targetStopDuration", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -167,10 +165,17 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the gravity input component
+     * Gets the textureMask input component
      */
-    public get gravity(): NodeParticleConnectionPoint {
+    public get textureMask(): NodeParticleConnectionPoint {
         return this._inputs[5];
+    }
+
+    /**
+     * Gets the targetStopDuration input component
+     */
+    public get targetStopDuration(): NodeParticleConnectionPoint {
+        return this._inputs[6];
     }
 
     /**
@@ -200,9 +205,11 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.preWarmStepOffset = this.preWarmStepOffset;
         particleSystem.blendMode = this.blendMode;
         particleSystem.name = this.name;
-        particleSystem._targetStopDuration = this.targetStopDuration;
+        particleSystem._targetStopDuration = (this.targetStopDuration.getConnectedValue(state) as number) ?? 0;
         particleSystem.startDelay = this.startDelay;
         particleSystem.isBillboardBased = this.isBillboardBased;
+        particleSystem.translationPivot = (this.translationPivot.getConnectedValue(state) as Vector2) || Vector2.Zero();
+        particleSystem.textureMask = this.textureMask.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
 
@@ -249,6 +256,10 @@ export class SystemBlock extends NodeParticleBlock {
         return particleSystem;
     }
 
+    /**
+     * Serializes the system block
+     * @returns The serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -263,12 +274,15 @@ export class SystemBlock extends NodeParticleBlock {
         serializationObject.isLocal = this.isLocal;
         serializationObject.disposeOnStop = this.disposeOnStop;
         serializationObject.doNoStart = this.doNoStart;
-        serializationObject.targetStopDuration = this.targetStopDuration;
         serializationObject.startDelay = this.startDelay;
 
         return serializationObject;
     }
 
+    /**
+     * Deserializes the system block
+     * @param serializationObject The serialized system
+     */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
@@ -285,10 +299,6 @@ export class SystemBlock extends NodeParticleBlock {
 
         if (serializationObject.blendMode !== undefined) {
             this.blendMode = serializationObject.blendMode;
-        }
-
-        if (serializationObject.targetStopDuration !== undefined) {
-            this.targetStopDuration = serializationObject.targetStopDuration;
         }
 
         if (serializationObject.startDelay !== undefined) {

@@ -21,17 +21,24 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /**
-     * Gets the render target(s) used by the render pass.
+     * Gets the handle(s) of the render target(s) used by the render pass.
      */
     public get renderTarget(): FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined {
         return this._renderTarget;
     }
 
     /**
-     * Gets the render target depth used by the render pass.
+     * Gets the handle of the render target depth used by the render pass.
      */
     public get renderTargetDepth(): FrameGraphTextureHandle | undefined {
         return this._renderTargetDepth;
+    }
+
+    /**
+     * Gets the frame graph render target used by the render pass.
+     */
+    public get frameGraphRenderTarget(): FrameGraphRenderTarget | undefined {
+        return this._frameGraphRenderTarget;
     }
 
     /**
@@ -121,6 +128,13 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         super._execute();
 
         this._context._flushDebugMessages();
+
+        const renderTargetWrapper = this._frameGraphRenderTarget.renderTargetWrapper;
+        if (renderTargetWrapper && (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)) {
+            // Unbinding the render target will trigger resolving MSAA textures.
+            this._context.bindRenderTarget(undefined, `frame graph render pass - ${this.name} - resolve MSAA`, true);
+            this._context._flushDebugMessages();
+        }
     }
 
     /** @internal */

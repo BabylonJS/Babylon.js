@@ -754,11 +754,11 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /** @internal */
-    public _emitFromParticle: (particle: Particle) => void = (particle) => {
+    public _emitFromParticle: (particle: Particle) => void = (_particle) => {
         // Do nothing
     };
 
-    serialize(serializeTexture: boolean) {
+    serialize(_serializeTexture: boolean) {
         throw new Error("Method not implemented.");
     }
 
@@ -766,9 +766,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * Clones the particle system.
      * @param name The name of the cloned object
      * @param newEmitter The new emitter to use
-     * @param cloneTexture Also clone the textures if true
+     * @param _cloneTexture Also clone the textures if true
      */
-    public clone(name: string, newEmitter: any, cloneTexture = false): ThinParticleSystem {
+    public clone(name: string, newEmitter: any, _cloneTexture = false): ThinParticleSystem {
         throw new Error("Method not implemented.");
     }
 

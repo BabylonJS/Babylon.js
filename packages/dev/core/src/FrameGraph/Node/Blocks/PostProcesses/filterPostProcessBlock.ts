@@ -3,13 +3,13 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphFilterTask } from "core/FrameGraph/Tasks/PostProcesses/filterTask";
 import { ThinFilterPostProcess } from "core/PostProcesses/thinFilterPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 import { Matrix } from "../../../../Maths/math.vector";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the kernel filter post process
  */
-export class NodeRenderGraphFilterPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphFilterPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphFilterTask;
 
     /**

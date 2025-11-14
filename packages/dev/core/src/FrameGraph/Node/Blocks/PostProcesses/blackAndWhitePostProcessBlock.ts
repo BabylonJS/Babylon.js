@@ -3,12 +3,12 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphBlackAndWhiteTask } from "core/FrameGraph/Tasks/PostProcesses/blackAndWhiteTask";
 import { ThinBlackAndWhitePostProcess } from "core/PostProcesses/thinBlackAndWhitePostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the black and white post process
  */
-export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphBlackAndWhitePostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphBlackAndWhiteTask;
 
     /**

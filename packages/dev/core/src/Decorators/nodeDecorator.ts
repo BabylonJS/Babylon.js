@@ -17,6 +17,8 @@ export const enum PropertyTypeForEdition {
     Vector3,
     /** property is a list of values */
     List,
+    /** property is a Color3 */
+    Color3,
     /** property is a Color4 */
     Color4,
     /** property (int) should be edited as a combo box with a list of sampling modes */
@@ -29,6 +31,8 @@ export const enum PropertyTypeForEdition {
     String,
     /** property is a matrix */
     Matrix,
+    /** property is a viewport */
+    Viewport,
 }
 
 /**

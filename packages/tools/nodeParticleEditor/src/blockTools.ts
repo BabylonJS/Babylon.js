@@ -9,6 +9,7 @@ import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/N
 import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
 import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
 import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
+import { UpdateSizeBlock } from "core/Particles/Node/Blocks/Update/updateSizeBlock";
 import { ParticleGradientValueBlock } from "core/Particles/Node/Blocks/particleGradientValueBlock";
 import { ParticleGradientBlock } from "core/Particles/Node/Blocks/particleGradientBlock";
 import { ParticleConverterBlock } from "core/Particles/Node/Blocks/particleConverterBlock";
@@ -140,6 +141,8 @@ export class BlockTools {
                 return new UpdateColorBlock("Update color");
             case "UpdateScaleBlock":
                 return new UpdateScaleBlock("Update scale");
+            case "UpdateSizeBlock":
+                return new UpdateSizeBlock("Update size");
             case "UpdateAngleBlock":
                 return new UpdateAngleBlock("Update angle");
             case "UpdateAgeBlock":
@@ -184,6 +187,11 @@ export class BlockTools {
             case "ScaleBlock": {
                 const block = new ParticleInputBlock("Scale");
                 block.contextualValue = NodeParticleContextualSources.Scale;
+                return block;
+            }
+            case "SizeBlock": {
+                const block = new ParticleInputBlock("Size");
+                block.contextualValue = NodeParticleContextualSources.Size;
                 return block;
             }
             case "ColorBlock": {
@@ -249,6 +257,11 @@ export class BlockTools {
             case "ScaledColorStepBlock": {
                 const block = new ParticleInputBlock("Scaled Color Step");
                 block.contextualValue = NodeParticleContextualSources.ScaledColorStep;
+                return block;
+            }
+            case "LocalPositionUpdatedBlock": {
+                const block = new ParticleInputBlock("Local Position Updated");
+                block.contextualValue = NodeParticleContextualSources.LocalPositionUpdated;
                 return block;
             }
             case "TimeBlock": {

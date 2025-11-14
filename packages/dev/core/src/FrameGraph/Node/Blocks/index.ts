@@ -11,6 +11,7 @@ export * from "./Layers/highlightLayerBlock";
 
 export * from "./PostProcesses/anaglyphPostProcessBlock";
 export * from "./PostProcesses/basePostProcessBlock";
+export * from "./PostProcesses/baseWithPropertiesPostProcessBlock";
 export * from "./PostProcesses/blackAndWhitePostProcessBlock";
 export * from "./PostProcesses/bloomPostProcessBlock";
 export * from "./PostProcesses/blurPostProcessBlock";

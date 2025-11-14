@@ -1,11 +1,16 @@
-import { DeepCopier } from "../../Misc/deepCopier";
-import type { Matrix } from "../../Maths/math.vector";
-import { Vector3, TmpVectors } from "../../Maths/math.vector";
-import type { Particle } from "../particle";
+import type { Nullable } from "core/types";
+import type { Matrix } from "core/Maths/math.vector";
+import type { Particle } from "core/Particles/particle";
+import type { UniformBufferEffectCommonAccessor } from "core/Materials/uniformBufferEffectCommonAccessor";
+import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
-import type { Nullable } from "../../types";
-import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
-import type { UniformBuffer } from "../../Materials/uniformBuffer";
+
+import { DeepCopier } from "core/Misc/deepCopier";
+import { Vector3, TmpVectors } from "core/Maths/math.vector";
+
+/** Represents and empty generator function */
+export const EmptyGeneratorFunc = () => {};
+
 /**
  * Particle emitter emitting particles from a custom list of positions.
  */
@@ -14,19 +19,19 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * Gets or sets the position generator that will create the initial position of each particle.
      * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
      */
-    public particlePositionGenerator: (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void = () => {};
+    public particlePositionGenerator: (index: number, particle: Nullable<Particle>, outPosition: Vector3) => void = EmptyGeneratorFunc;
 
     /**
      * Gets or sets the destination generator that will create the final destination of each particle.
      *  * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
      */
-    public particleDestinationGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void = () => {};
+    public particleDestinationGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void = EmptyGeneratorFunc;
 
     /**
      * Gets or sets the direction generator that will create the initial direction of each particle.
      *  * Index will be provided when used with GPU particle. Particle will be provided when used with CPU particles
      */
-    public particleDirectionGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void = () => {};
+    public particleDirectionGenerator: (index: number, particle: Nullable<Particle>, outDestination: Vector3) => void = EmptyGeneratorFunc;
 
     /**
      * Creates a new instance CustomParticleEmitter
@@ -43,9 +48,9 @@ export class CustomParticleEmitter implements IParticleEmitterType {
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         const tmpVector = TmpVectors.Vector3[0];
 
-        if (this.particleDirectionGenerator) {
+        if (this.particleDirectionGenerator && this.particleDirectionGenerator !== EmptyGeneratorFunc) {
             this.particleDirectionGenerator(-1, particle, tmpVector);
-        } else if (this.particleDestinationGenerator) {
+        } else if (this.particleDestinationGenerator && this.particleDestinationGenerator !== EmptyGeneratorFunc) {
             this.particleDestinationGenerator(-1, particle, tmpVector);
 
             // Get direction
@@ -75,7 +80,7 @@ export class CustomParticleEmitter implements IParticleEmitterType {
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
         const tmpVector = TmpVectors.Vector3[0];
 
-        if (this.particlePositionGenerator) {
+        if (this.particlePositionGenerator && this.particlePositionGenerator !== EmptyGeneratorFunc) {
             this.particlePositionGenerator(-1, particle, tmpVector);
         } else {
             tmpVector.set(0, 0, 0);

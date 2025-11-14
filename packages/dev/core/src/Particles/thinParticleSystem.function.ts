@@ -211,7 +211,7 @@ export function _ProcessDragGradients(particle: Particle, system: ThinParticleSy
 /** Noise */
 
 /** @internal */
-export function _CreateNoiseData(particle: Particle, system: ThinParticleSystem) {
+export function _CreateNoiseData(particle: Particle, _system: ThinParticleSystem) {
     if (particle._randomNoiseCoordinates1) {
         particle._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
         particle._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
@@ -320,7 +320,7 @@ export function _ProcessSizeGradients(particle: Particle, system: ThinParticleSy
 /** Ramp */
 
 /** @internal */
-export function _CreateRampData(particle: Particle, system: ThinParticleSystem) {
+export function _CreateRampData(particle: Particle, _system: ThinParticleSystem) {
     particle.remapData = new Vector4(0, 1, 0, 1);
 }
 

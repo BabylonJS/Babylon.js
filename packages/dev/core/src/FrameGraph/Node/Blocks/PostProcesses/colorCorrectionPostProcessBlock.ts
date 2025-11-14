@@ -2,13 +2,13 @@ import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphColorCorrectionTask } from "../../../Tasks/PostProcesses/colorCorrectionTask";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
 import { ThinColorCorrectionPostProcess } from "../../../../PostProcesses/thinColorCorrectionPostProcess";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the color correction post process
  */
-export class NodeRenderGraphColorCorrectionPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphColorCorrectionPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphColorCorrectionTask;
 
     /**

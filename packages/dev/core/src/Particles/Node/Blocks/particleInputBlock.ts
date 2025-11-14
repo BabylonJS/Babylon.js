@@ -135,6 +135,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleContextualSources.Direction:
                 case NodeParticleContextualSources.ScaledDirection:
                 case NodeParticleContextualSources.InitialDirection:
+                case NodeParticleContextualSources.LocalPositionUpdated:
                     this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                     break;
                 case NodeParticleContextualSources.Color:
@@ -148,6 +149,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleContextualSources.Lifetime:
                 case NodeParticleContextualSources.Angle:
                 case NodeParticleContextualSources.AgeGradient:
+                case NodeParticleContextualSources.Size:
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;
                 case NodeParticleContextualSources.SpriteCellEnd:
