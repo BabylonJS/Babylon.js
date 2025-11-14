@@ -1333,7 +1333,7 @@ export class Tools {
 
     private static _Performance: Performance;
 
-    private static readonly _NativePerformanceCounterHandles = new Map<string, ReturnType<NonNullable<typeof _native.startPerformanceCounter>>>();
+    private static readonly _NativePerformanceCounterHandles = new Map<string, unknown>();
 
     /**
      * Sets the current performance log level
