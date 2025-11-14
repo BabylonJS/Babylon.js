@@ -4,12 +4,17 @@ import type { Nullable } from "../../types";
 import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
 import type { Camera } from "../../Cameras/camera";
+import type { Vector3, Quaternion } from "../../Maths/math.vector";
+
+type AnimatableProperty<T> = {
+    [K in keyof T]: T[K] extends number | Vector3 | Quaternion ? K : never;
+}[keyof T];
 
 /**
  * Animate camera property changes with an interpolation effect
  * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors/cameraBehaviors
  */
-export class InterpolatingBehavior<C extends Camera> implements Behavior<C> {
+export class InterpolatingBehavior<C extends Camera = Camera> implements Behavior<C> {
     /**
      * Gets the name of the behavior.
      */
@@ -86,7 +91,7 @@ export class InterpolatingBehavior<C extends Camera> implements Behavior<C> {
         this._promiseResolve = undefined;
     }
 
-    public updateProperties(properties: Map<string, any>): void {
+    public updateProperties(properties: Map<string, AnimatableProperty<C>>): void {
         properties.forEach((value, key) => {
             const animatable = this._animatables.get(key);
             animatable && (animatable.target = value);
@@ -94,7 +99,7 @@ export class InterpolatingBehavior<C extends Camera> implements Behavior<C> {
     }
 
     public async animatePropertiesAsync(
-        properties: Map<string, any>,
+        properties: Map<string, AnimatableProperty<C>>,
         transitionDuration: number = this.transitionDuration,
         easingFn: EasingFunction = this.easingFunction
     ): Promise<void> {
