@@ -10,12 +10,6 @@
 
 #include<helperFunctions>
 
-// Attributes
-attribute vec4 splatIndex0;
-attribute vec4 splatIndex1;
-attribute vec4 splatIndex2;
-attribute vec4 splatIndex3;
-
 // Uniforms
 uniform vec2 invViewport;
 uniform vec2 dataTextureSize;

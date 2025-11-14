@@ -1,8 +1,4 @@
 #include<__decl__gaussianSplattingVertex>
-attribute vec4 splatIndex0;
-attribute vec4 splatIndex1;
-attribute vec4 splatIndex2;
-attribute vec4 splatIndex3;
 
 uniform vec2 invViewport;
 uniform vec2 dataTextureSize;
