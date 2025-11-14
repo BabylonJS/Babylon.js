@@ -41,16 +41,14 @@ import { UpdateAngleBlock } from "./Blocks/Update/updateAngleBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
-import { UpdateScaleBlock } from "./Blocks/Update/updateScaleBlock";
+import { UpdateSizeBlock } from "./Blocks/Update/updateSizeBlock";
 
 /** Represents blocks or groups of blocks that can be used in multiple places in the graph, so they are stored in this context to be reused */
 type ConversionContext = {
     targetStopDurationBlockOutput: NodeParticleConnectionPoint;
     timeToStopTimeRatioBlockGroupOutput: NodeParticleConnectionPoint;
     sizeGradientValue0Output: NodeParticleConnectionPoint;
-    sizeGradientValue1Output: NodeParticleConnectionPoint;
     ageToLifeTimeRatioBlockGroupOutput: NodeParticleConnectionPoint;
-    scaleOutput: NodeParticleConnectionPoint;
 };
 
 type RuntimeConversionContext = Partial<ConversionContext>;
@@ -160,7 +158,6 @@ function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeCo
     _CreateAndConnectInput("Min Scale", new Vector2(oldSystem.minScaleX, oldSystem.minScaleY), randomScaleBlock.min);
     _CreateAndConnectInput("Max Scale", new Vector2(oldSystem.maxScaleX, oldSystem.maxScaleY), randomScaleBlock.max);
     randomScaleBlock.output.connectTo(createParticleBlock.scale);
-    context.scaleOutput = randomScaleBlock.output; // We need the scale for size updates
 
     // Angle (rotation)
     const randomRotationBlock = new ParticleRandomBlock("Random Rotation");
@@ -185,7 +182,12 @@ function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeCo
 function _CreateParticleLifetimeBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     if (oldSystem.targetStopDuration && oldSystem._lifeTimeGradients && oldSystem._lifeTimeGradients.length > 0) {
         context.timeToStopTimeRatioBlockGroupOutput = _CreateTimeToStopTimeRatioBlockGroup(oldSystem, context);
-        const gradientBlockGroupOutput = _CreateGradientBlockGroup(context.timeToStopTimeRatioBlockGroupOutput, oldSystem._lifeTimeGradients);
+        const gradientBlockGroupOutput = _CreateGradientBlockGroup(
+            context.timeToStopTimeRatioBlockGroupOutput,
+            oldSystem._lifeTimeGradients,
+            ParticleRandomBlockLocks.PerParticle,
+            "Lifetime"
+        );
         return gradientBlockGroupOutput;
     } else {
         const randomLifetimeBlock = new ParticleRandomBlock("Random Lifetime");
@@ -218,27 +220,16 @@ function _CreateParticleSizeGradientBlockGroup(sizeGradients: Array<FactorGradie
         throw new Error("No size gradients provided.");
     }
 
-    const minSize = _CreateSizeFromGradient(sizeGradients[0], 0);
-    let maxSize = minSize;
-    if (sizeGradients.length > 0) {
-        maxSize = _CreateSizeFromGradient(sizeGradients[1], 1);
-    }
-
-    context.sizeGradientValue0Output = minSize;
-    context.sizeGradientValue1Output = maxSize;
-
-    const randomSizeBlock = new ParticleRandomBlock("Random size");
-    minSize.connectTo(randomSizeBlock.min);
-    maxSize.connectTo(randomSizeBlock.max);
-
-    return randomSizeBlock.output;
+    const size = _CreateSizeFromGradientStep(sizeGradients[0], 0);
+    context.sizeGradientValue0Output = size;
+    return size;
 }
 
-function _CreateSizeFromGradient(gradientStep: FactorGradient, index: number): NodeParticleConnectionPoint {
+function _CreateSizeFromGradientStep(gradientStep: FactorGradient, index: number): NodeParticleConnectionPoint {
     if (gradientStep.factor2 !== undefined) {
         // Create a random between value1 and value2
-        const randomBlock = new ParticleRandomBlock("Random Gradient Value " + index);
-        randomBlock.lockMode = ParticleRandomBlockLocks.PerParticle;
+        const randomBlock = new ParticleRandomBlock("Random Value " + index);
+        randomBlock.lockMode = ParticleRandomBlockLocks.OncePerParticle;
         _CreateAndConnectInput("Value 1", gradientStep.factor1, randomBlock.min);
         _CreateAndConnectInput("Value 2", gradientStep.factor2, randomBlock.max);
         return randomBlock.output;
@@ -471,34 +462,23 @@ function _UpdateParticleSizeGradientBlockGroup(
     sizeGradients: Array<FactorGradient>,
     context: RuntimeConversionContext
 ): NodeParticleConnectionPoint {
-    if (context.scaleOutput === undefined) {
-        throw new Error("Scale output not found in context.");
-    }
-
-    if (context.sizeGradientValue0Output === undefined || context.sizeGradientValue1Output === undefined) {
+    if (context.sizeGradientValue0Output === undefined) {
         throw new Error("Initial size gradient values not found in context.");
     }
 
     context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
 
-    // Create the update scale
-    const updateScaleBlock = new UpdateScaleBlock("Scale Update with Size Gradient");
-    inputParticle.connectTo(updateScaleBlock.particle);
-
     // Generate the gradient
-    const sizeValueOutput = _CreateGradientBlockGroup(context.ageToLifeTimeRatioBlockGroupOutput, sizeGradients, [
+    const sizeValueOutput = _CreateGradientBlockGroup(context.ageToLifeTimeRatioBlockGroupOutput, sizeGradients, ParticleRandomBlockLocks.OncePerParticle, "Size", [
         context.sizeGradientValue0Output,
-        context.sizeGradientValue1Output,
     ]);
 
-    // Multiply by the initial scale
-    const multiplyBlock = new ParticleMathBlock("Multiply Size by Scale");
-    multiplyBlock.operation = ParticleMathBlockOperations.Multiply;
-    context.scaleOutput.connectTo(multiplyBlock.left);
-    sizeValueOutput.connectTo(multiplyBlock.right);
-    multiplyBlock.output.connectTo(updateScaleBlock.scale);
+    // Create the update size
+    const updateSizeBlock = new UpdateSizeBlock("Size Update");
+    inputParticle.connectTo(updateSizeBlock.particle);
+    sizeValueOutput.connectTo(updateSizeBlock.size);
 
-    return updateScaleBlock.output;
+    return updateSizeBlock.output;
 }
 
 function _UpdateParticleGravityBlockGroup(inputParticle: NodeParticleConnectionPoint, gravity: Vector3): NodeParticleConnectionPoint {
@@ -758,23 +738,27 @@ function _CreateAgeToLifeTimeRatioBlockGroup(context: RuntimeConversionContext):
  * Creates the blocks that represent a gradient
  * @param gradientSelector The value that determines which gradient to use
  * @param gradientValues The list of gradient values
+ * @param randomLockMode The type of random to use for the gradient values
+ * @param prefix The prefix to use for naming the blocks
  * @param initialValues Optional initial values to connect to the gradient inputs that were calculated during other steps of the conversion
  * @returns The output connection point of the gradient block
  */
 function _CreateGradientBlockGroup(
     gradientSelector: NodeParticleConnectionPoint,
     gradientValues: Array<FactorGradient>,
+    randomLockMode: ParticleRandomBlockLocks,
+    prefix: string,
     initialValues: NodeParticleConnectionPoint[] = []
 ): NodeParticleConnectionPoint {
     // Create the gradient block and connect the value that controls the gradient selection
-    const gradientBlock = new ParticleGradientBlock("Gradient Block");
+    const gradientBlock = new ParticleGradientBlock(prefix + " Gradient Block");
     gradientSelector.connectTo(gradientBlock.gradient);
 
     // If initial values are provided, we use them instead of the values in the gradientValues array
     // These means this values were already transformed into blocks on a previous step of the conversion and we must reuse them
     for (let i = 0; i < initialValues.length; i++) {
         const reference = i < gradientValues.length ? gradientValues[i].gradient : 1;
-        const gradientValueBlock = new ParticleGradientValueBlock("Gradient Value " + i);
+        const gradientValueBlock = new ParticleGradientValueBlock(prefix + " Gradient Value " + i);
         gradientValueBlock.reference = reference;
         initialValues[i].connectTo(gradientValueBlock.value);
         gradientValueBlock.output.connectTo(gradientBlock.inputs[i + 1]);
@@ -782,7 +766,7 @@ function _CreateGradientBlockGroup(
 
     // Create the gradient values
     for (let i = 0 + initialValues.length; i < gradientValues.length; i++) {
-        const gradientValueBlockGroupOutput = _CreateGradientValueBlockGroup(gradientValues[i], i);
+        const gradientValueBlockGroupOutput = _CreateGradientValueBlockGroup(gradientValues[i], randomLockMode, prefix, i);
         gradientValueBlockGroupOutput.connectTo(gradientBlock.inputs[i + 1]);
     }
 
@@ -793,17 +777,19 @@ function _CreateGradientBlockGroup(
  * Creates the blocks that represent a gradient value
  * This can be either a single value or a random between two values
  * @param gradientStep The gradient step data
+ * @param randomLockMode The lock mode to use for random values
+ * @param prefix The prefix to use for naming the blocks
  * @param index The index of the gradient step
  * @returns The output connection point of the gradient value block
  */
-function _CreateGradientValueBlockGroup(gradientStep: FactorGradient, index: number): NodeParticleConnectionPoint {
-    const gradientValueBlock = new ParticleGradientValueBlock("Gradient Value " + index);
+function _CreateGradientValueBlockGroup(gradientStep: FactorGradient, randomLockMode: ParticleRandomBlockLocks, prefix: string, index: number): NodeParticleConnectionPoint {
+    const gradientValueBlock = new ParticleGradientValueBlock(prefix + " Gradient Value " + index);
     gradientValueBlock.reference = gradientStep.gradient;
 
     if (gradientStep.factor2 !== undefined) {
         // Create a random between value1 and value2
-        const randomBlock = new ParticleRandomBlock("Random Gradient Value " + index);
-        randomBlock.lockMode = ParticleRandomBlockLocks.PerParticle;
+        const randomBlock = new ParticleRandomBlock("Random Value " + index);
+        randomBlock.lockMode = randomLockMode;
         _CreateAndConnectInput("Value 1", gradientStep.factor1, randomBlock.min);
         _CreateAndConnectInput("Value 2", gradientStep.factor2, randomBlock.max);
         randomBlock.output.connectTo(gradientValueBlock.value);
