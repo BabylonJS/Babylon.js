@@ -186,6 +186,11 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.Scale;
                 return block;
             }
+            case "SizeBlock": {
+                const block = new ParticleInputBlock("Size");
+                block.contextualValue = NodeParticleContextualSources.Size;
+                return block;
+            }
             case "ColorBlock": {
                 const block = new ParticleInputBlock("Color");
                 block.contextualValue = NodeParticleContextualSources.Color;

@@ -156,6 +156,9 @@ export class ParticleRandomBlock extends NodeParticleBlock {
                 case ParticleRandomBlockLocks.PerSystem:
                     lockId = state.buildId ?? 0;
                     break;
+                // case ONCEPERPARTICLE
+                // I need a dictionary particle->value, if the value exists, return it, if not generate it and store it
+                // Clean the set when a new buildId is generated
             }
 
             if (this._currentLockId !== lockId) {
