@@ -1,7 +1,6 @@
 import { Clamp } from "./math.scalar.functions";
 import type { DeepImmutable } from "../types";
 import type { IQuaternionLike, IVector2Like, IVector3Like, IVector4Like } from "./math.like";
-import { Quaternion, Vector3 } from "./math.vector";
 
 /**
  * Creates a string representation of the IVector2Like
@@ -24,12 +23,34 @@ export function Vector3Dot(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVec
 }
 
 /**
+ * Computes the squared length of a vector from its individual components
+ * @param x the x component of the vector to measure
+ * @param y the y component of the vector to measure
+ * @param z the z component of the vector to measure
+ * @returns the squared length of the vector
+ */
+export function Vector3LengthSquaredFromFloats(x: number, y: number, z: number): number {
+    return x * x + y * y + z * z;
+}
+
+/**
  * Computes the squared length of the IVector3Like
  * @param vector the vector to measure
  * @returns the squared length of the vector
  */
 export function Vector3LengthSquared(vector: DeepImmutable<IVector3Like>): number {
-    return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+    return Vector3LengthSquaredFromFloats(vector.x, vector.y, vector.z);
+}
+
+/**
+ * Computes the length of a vector from its individual components
+ * @param x the x component of the vector to measure
+ * @param y the y component of the vector to measure
+ * @param z the z component of the vector to measure
+ * @returns the length of the vector
+ */
+export function Vector3LengthFromFloats(x: number, y: number, z: number): number {
+    return Math.sqrt(Vector3LengthSquaredFromFloats(x, y, z));
 }
 
 /**
@@ -147,15 +168,31 @@ export function GetAngleBetweenQuaternions(q1: DeepImmutable<IQuaternionLike>, q
 }
 
 /**
- * Creates a quaternion from two direction vectors
- * @param a defines the first direction vector
- * @param b defines the second direction vector
+ * Creates a rotation quaternion from an axis and an angle
+ * @param axis defines the axis to use
+ * @param angle defines the angle (in radians) to use
+ * @param result defines the target quaternion
  * @returns the target quaternion
  */
-export function GetQuaternionFromDirections<T extends Vector3>(a: DeepImmutable<T>, b: DeepImmutable<T>): Quaternion {
-    const result = new Quaternion();
-    GetQuaternionFromDirectionsToRef(a, b, result);
+export function QuaternionRotationAxisFromFloatsToRef<T extends IQuaternionLike>(axisX: number, axisY: number, axisZ: number, angle: number, result: T): T {
+    result._w = Math.cos(angle / 2);
+    const sinByLength = Math.sin(angle / 2) / Vector3LengthFromFloats(axisX, axisY, axisZ);
+    result._x = axisX * sinByLength;
+    result._y = axisY * sinByLength;
+    result._z = axisZ * sinByLength;
+    result._isDirty = true;
     return result;
+}
+
+/**
+ * Creates a rotation quaternion from an axis and an angle
+ * @param axis defines the axis to use
+ * @param angle defines the angle (in radians) to use
+ * @param result defines the target quaternion
+ * @returns the target quaternion
+ */
+export function QuaternionRotationAxisToRef<T extends IQuaternionLike>(axis: DeepImmutable<IVector3Like>, angle: number, result: T): T {
+    return QuaternionRotationAxisFromFloatsToRef(axis.x, axis.y, axis.z, angle, result);
 }
 
 /**
@@ -165,9 +202,14 @@ export function GetQuaternionFromDirections<T extends Vector3>(a: DeepImmutable<
  * @param result defines the target quaternion
  * @returns the target quaternion
  */
-export function GetQuaternionFromDirectionsToRef<T extends Vector3, ResultT extends Quaternion>(a: DeepImmutable<T>, b: DeepImmutable<T>, result: ResultT): ResultT {
-    const axis = Vector3.Cross(a, b);
+export function GetQuaternionFromDirectionsToRef<T extends IVector3Like, ResultT extends IQuaternionLike>(a: DeepImmutable<T>, b: DeepImmutable<T>, result: ResultT): ResultT {
+    // Compute cross product
+    const axisX = a.y * b.z - a.z * b.y;
+    const axisY = a.z * b.x - a.x * b.z;
+    const axisZ = a.x * b.y - a.y * b.x;
+
     const angle = Math.acos(Clamp(Vector3Dot(a, b), -1, 1));
-    Quaternion.RotationAxisToRef(axis, angle, result);
+
+    QuaternionRotationAxisFromFloatsToRef(axisX, axisY, axisZ, angle, result);
     return result;
 }

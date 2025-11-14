@@ -9,9 +9,10 @@ import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Dimension, Tensor, TensorLike, TensorStatic } from "./tensor";
-import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike, IVector3LikeInternal } from "./math.like";
+import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike } from "./math.like";
 import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
 import { CopyMatrixToArray, InvertMatrixToArray, MatrixManagement, MultiplyMatricesToArray } from "./ThinMaths/thinMath.matrix.functions";
+import { QuaternionRotationAxisToRef } from "./math.vector.functions";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ExtractAsInt = (value: number) => {
@@ -1184,7 +1185,7 @@ Object.defineProperties(Vector2.prototype, {
  * Reminder: js uses a left handed forward facing system
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
-export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, IVector3Like {
+export class Vector3 implements Vector<Tuple<number, 3>, IVector3Like>, IVector3Like {
     /**
      * If the first vector is flagged with integers (as everything is 0,0,0), V8 stores all of the properties as integers internally because it doesn't know any better yet.
      * If subsequent vectors are created with non-integer values, V8 determines that it would be best to represent these properties as doubles instead of integers,
@@ -1382,7 +1383,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    public add(otherVector: DeepImmutable<IVector3LikeInternal>): Vector3 {
+    public add(otherVector: DeepImmutable<IVector3Like>): Vector3 {
         return new Vector3(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
     }
 
@@ -1393,7 +1394,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public addToRef<T extends IVector3LikeInternal>(otherVector: DeepImmutable<IVector3LikeInternal>, result: T): T {
+    public addToRef<T extends IVector3Like>(otherVector: DeepImmutable<IVector3Like>, result: T): T {
         result._x = this._x + otherVector._x;
         result._y = this._y + otherVector._y;
         result._z = this._z + otherVector._z;
@@ -1407,7 +1408,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public subtractInPlace(otherVector: DeepImmutable<IVector3LikeInternal>): this {
+    public subtractInPlace(otherVector: DeepImmutable<IVector3Like>): this {
         this._x -= otherVector._x;
         this._y -= otherVector._y;
         this._z -= otherVector._z;
@@ -1421,7 +1422,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    public subtract(otherVector: DeepImmutable<IVector3LikeInternal>): Vector3 {
+    public subtract(otherVector: DeepImmutable<IVector3Like>): Vector3 {
         return new Vector3(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
     }
 
@@ -1432,7 +1433,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public subtractToRef<T extends IVector3LikeInternal>(otherVector: DeepImmutable<IVector3LikeInternal>, result: T): T {
+    public subtractToRef<T extends IVector3Like>(otherVector: DeepImmutable<IVector3Like>, result: T): T {
         return this.subtractFromFloatsToRef(otherVector._x, otherVector._y, otherVector._z, result);
     }
 
@@ -1457,7 +1458,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public subtractFromFloatsToRef<T extends IVector3LikeInternal>(x: number, y: number, z: number, result: T): T {
+    public subtractFromFloatsToRef<T extends IVector3Like>(x: number, y: number, z: number, result: T): T {
         result._x = this._x - x;
         result._y = this._y - y;
         result._z = this._z - z;
@@ -1493,7 +1494,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public negateToRef<T extends IVector3LikeInternal>(result: T): T {
+    public negateToRef<T extends IVector3Like>(result: T): T {
         result._x = this._x * -1;
         result._y = this._y * -1;
         result._z = this._z * -1;
@@ -1532,7 +1533,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public scaleToRef<T extends IVector3LikeInternal>(scale: number, result: T): T {
+    public scaleToRef<T extends IVector3Like>(scale: number, result: T): T {
         result._x = this._x * scale;
         result._y = this._y * scale;
         result._z = this._z * scale;
@@ -1632,7 +1633,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result defines the Vector3 object where to store the result
      * @returns result input
      */
-    public scaleAndAddToRef<T extends IVector3LikeInternal>(scale: number, result: T): T {
+    public scaleAndAddToRef<T extends IVector3Like>(scale: number, result: T): T {
         result._x += this._x * scale;
         result._y += this._y * scale;
         result._z += this._z * scale;
@@ -1725,7 +1726,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public multiplyInPlace(otherVector: DeepImmutable<IVector3LikeInternal>): this {
+    public multiplyInPlace(otherVector: DeepImmutable<IVector3Like>): this {
         this._x *= otherVector._x;
         this._y *= otherVector._y;
         this._z *= otherVector._z;
@@ -1739,7 +1740,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    public multiply(otherVector: DeepImmutable<IVector3LikeInternal>): Vector3 {
+    public multiply(otherVector: DeepImmutable<IVector3Like>): Vector3 {
         return this.multiplyByFloats(otherVector._x, otherVector._y, otherVector._z);
     }
 
@@ -1750,7 +1751,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public multiplyToRef<T extends IVector3LikeInternal>(otherVector: DeepImmutable<IVector3LikeInternal>, result: T): T {
+    public multiplyToRef<T extends IVector3Like>(otherVector: DeepImmutable<IVector3Like>, result: T): T {
         result._x = this._x * otherVector._x;
         result._y = this._y * otherVector._y;
         result._z = this._z * otherVector._z;
@@ -1776,7 +1777,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    public divide(otherVector: DeepImmutable<IVector3LikeInternal>): Vector3 {
+    public divide(otherVector: DeepImmutable<IVector3Like>): Vector3 {
         return new Vector3(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
     }
 
@@ -1787,7 +1788,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public divideToRef<T extends IVector3LikeInternal>(otherVector: DeepImmutable<IVector3LikeInternal>, result: T): T {
+    public divideToRef<T extends IVector3Like>(otherVector: DeepImmutable<IVector3Like>, result: T): T {
         result._x = this._x / otherVector._x;
         result._y = this._y / otherVector._y;
         result._z = this._z / otherVector._z;
@@ -1801,7 +1802,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public divideInPlace(otherVector: DeepImmutable<IVector3LikeInternal>): this {
+    public divideInPlace(otherVector: DeepImmutable<IVector3Like>): this {
         this._x = this._x / otherVector._x;
         this._y = this._y / otherVector._y;
         this._z = this._z / otherVector._z;
@@ -1815,7 +1816,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param other defines the second operand
      * @returns the current updated Vector3
      */
-    public minimizeInPlace(other: DeepImmutable<IVector3LikeInternal>): this {
+    public minimizeInPlace(other: DeepImmutable<IVector3Like>): this {
         return this.minimizeInPlaceFromFloats(other._x, other._y, other._z);
     }
 
@@ -1825,7 +1826,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param other defines the second operand
      * @returns the current updated Vector3
      */
-    public maximizeInPlace(other: DeepImmutable<IVector3LikeInternal>): this {
+    public maximizeInPlace(other: DeepImmutable<IVector3Like>): this {
         return this.maximizeInPlaceFromFloats(other._x, other._y, other._z);
     }
 
@@ -1919,7 +1920,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public floorToRef<T extends IVector3LikeInternal>(result: T): T {
+    public floorToRef<T extends IVector3Like>(result: T): T {
         result._x = Math.floor(this._x);
         result._y = Math.floor(this._y);
         result._z = Math.floor(this._z);
@@ -1941,7 +1942,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public fractToRef<T extends IVector3LikeInternal>(result: T): T {
+    public fractToRef<T extends IVector3Like>(result: T): T {
         result._x = this._x - Math.floor(this._x);
         result._y = this._y - Math.floor(this._y);
         result._z = this._z - Math.floor(this._z);
@@ -2082,7 +2083,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
      * @param result define the Vector3 to update
      * @returns the updated Vector3
      */
-    public normalizeToRef<T extends IVector3LikeInternal>(result: T): T {
+    public normalizeToRef<T extends IVector3Like>(result: T): T {
         const len = this.length();
         if (len === 0 || len === 1.0) {
             result._x = this._x;
@@ -3389,7 +3390,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, IVector3LikeInternal>, 
         return ref;
     }
 }
-Vector3 satisfies VectorStatic<Vector3, IVector3LikeInternal>;
+Vector3 satisfies VectorStatic<Vector3, IVector3Like>;
 Object.defineProperties(Vector3.prototype, {
     dimension: { value: [3] },
     rank: { value: 1 },
@@ -5510,12 +5511,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the target quaternion
      */
     public static RotationAxisToRef<T extends Quaternion>(axis: DeepImmutable<Vector3>, angle: number, result: T): T {
-        result._w = Math.cos(angle / 2);
-        const sinByLength = Math.sin(angle / 2) / axis.length();
-        result._x = axis._x * sinByLength;
-        result._y = axis._y * sinByLength;
-        result._z = axis._z * sinByLength;
-        result._isDirty = true;
+        QuaternionRotationAxisToRef(axis, angle, result);
         return result;
     }
 
