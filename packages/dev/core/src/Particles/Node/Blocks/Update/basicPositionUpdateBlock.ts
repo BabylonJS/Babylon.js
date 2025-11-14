@@ -12,7 +12,7 @@ import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
  */
 export class BasicPositionUpdateBlock extends NodeParticleBlock {
     /**
-     * Create a new UpdateScaleBlock
+     * Create a new BasicPositionUpdateBlock
      * @param name defines the block name
      */
     public constructor(name: string) {

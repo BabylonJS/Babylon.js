@@ -256,6 +256,10 @@ export class SystemBlock extends NodeParticleBlock {
         return particleSystem;
     }
 
+    /**
+     * Serializes the system block
+     * @returns The serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -275,6 +279,10 @@ export class SystemBlock extends NodeParticleBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the system block
+     * @param serializationObject The serialized system
+     */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
