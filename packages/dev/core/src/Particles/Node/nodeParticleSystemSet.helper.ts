@@ -105,8 +105,7 @@ function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversion
 
     _CreateAndConnectInput("Translation pivot", oldSystem.translationPivot, newSystem.translationPivot);
     _CreateAndConnectInput("Texture mask", oldSystem.textureMask, newSystem.textureMask);
-    const targetStopDurationOutput = _CreateTargetStopDurationInputBlock(oldSystem, context);
-    targetStopDurationOutput.connectTo(newSystem.targetStopDuration);
+    _CreateTargetStopDurationInputBlock(oldSystem, context).connectTo(newSystem.targetStopDuration);
 
     newSystem.emitRate = oldSystem.emitRate;
     newSystem.manualEmitCount = oldSystem.manualEmitCount;
@@ -136,7 +135,7 @@ function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversion
 // ------------- CREATE PARTICLE FUNCTIONS -------------
 
 // The creation of the different properties follows the order they are added to the CreationQueue in ThinParticleSystem:
-// Lifetime, Position, Direction, Emit, Size/Scale, StartSize, Angle, Velocity, VelocityLimit, Color, Drag, Noise, ColorDead, Ramp, Sheet
+// Lifetime, Position, Direction, Emit, Size, Scale/StartSize, Angle, Velocity, VelocityLimit, Color, Drag, Noise, ColorDead, Ramp, Sheet
 function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): CreateParticleBlock {
     // Create particle
     const createParticleBlock = new CreateParticleBlock("Create Particle");
@@ -153,11 +152,8 @@ function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeCo
     // Size
     _CreateParticleSizeBlockGroup(oldSystem, context).connectTo(createParticleBlock.size);
 
-    // Scale
-    const randomScaleBlock = new ParticleRandomBlock("Random Scale");
-    _CreateAndConnectInput("Min Scale", new Vector2(oldSystem.minScaleX, oldSystem.minScaleY), randomScaleBlock.min);
-    _CreateAndConnectInput("Max Scale", new Vector2(oldSystem.maxScaleX, oldSystem.maxScaleY), randomScaleBlock.max);
-    randomScaleBlock.output.connectTo(createParticleBlock.scale);
+    // Scale/Start Size
+    _CreateParticleScaleBlockGroup(oldSystem, context).connectTo(createParticleBlock.scale);
 
     // Angle (rotation)
     const randomRotationBlock = new ParticleRandomBlock("Random Rotation");
@@ -212,6 +208,34 @@ function _CreateParticleSizeBlockGroup(oldSystem: ParticleSystem, context: Runti
         _CreateAndConnectInput("Min size", oldSystem.minSize, randomSizeBlock.min);
         _CreateAndConnectInput("Max size", oldSystem.maxSize, randomSizeBlock.max);
         return randomSizeBlock.output;
+    }
+}
+
+function _CreateParticleScaleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    // Create the random scale
+    const randomScaleBlock = new ParticleRandomBlock("Random Scale");
+    _CreateAndConnectInput("Min Scale", new Vector2(oldSystem.minScaleX, oldSystem.minScaleY), randomScaleBlock.min);
+    _CreateAndConnectInput("Max Scale", new Vector2(oldSystem.maxScaleX, oldSystem.maxScaleY), randomScaleBlock.max);
+
+    if (oldSystem.targetStopDuration && oldSystem._startSizeGradients && oldSystem._startSizeGradients.length > 0) {
+        // Create the start size gradient
+        context.timeToStopTimeRatioBlockGroupOutput = _CreateTimeToStopTimeRatioBlockGroup(oldSystem, context);
+        const gradientBlockGroupOutput = _CreateGradientBlockGroup(
+            context.timeToStopTimeRatioBlockGroupOutput,
+            oldSystem._startSizeGradients,
+            ParticleRandomBlockLocks.PerParticle,
+            "Start Size"
+        );
+
+        // Multiply the initial random scale by the start size gradient
+        const multiplyScaleBlock = new ParticleMathBlock("Multiply Scale by Start Size Gradient");
+        multiplyScaleBlock.operation = ParticleMathBlockOperations.Multiply;
+        randomScaleBlock.output.connectTo(multiplyScaleBlock.left);
+        gradientBlockGroupOutput.connectTo(multiplyScaleBlock.right);
+
+        return multiplyScaleBlock.output;
+    } else {
+        return randomScaleBlock.output;
     }
 }
 
