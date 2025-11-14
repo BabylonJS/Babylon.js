@@ -124,6 +124,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Lifetime", value: NodeParticleContextualSources.Lifetime },
                     { label: "Age gradient", value: NodeParticleContextualSources.AgeGradient },
                     { label: "Angle", value: NodeParticleContextualSources.Angle },
+                    { label: "Size", value: NodeParticleContextualSources.Size },
                 ];
                 systemSourcesOptions = [
                     { label: "Time", value: NodeParticleSystemSources.Time },
