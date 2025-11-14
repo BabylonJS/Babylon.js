@@ -440,8 +440,8 @@ export interface INative {
     DeviceInputSystem?: IDeviceInputSystemConstructor;
 
     // NativeTracing plugin
-    enablePerformanceLogging(): void;
-    disablePerformanceLogging(): void;
-    startPerformanceCounter(counter: string): PerformanceCounterHandle;
-    endPerformanceCounter(counter: PerformanceCounterHandle): void;
+    enablePerformanceLogging?(withLogging: boolean): void;
+    disablePerformanceLogging?(): void;
+    startPerformanceCounter?(counter: string): PerformanceCounterHandle;
+    endPerformanceCounter?(counter: PerformanceCounterHandle): void;
 }
