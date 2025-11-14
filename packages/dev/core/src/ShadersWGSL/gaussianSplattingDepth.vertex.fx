@@ -25,7 +25,7 @@ varying vColor: vec4f;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
 
-    let splatIndex: f32 = getSplatIndex(int(input.position.z + 0.5));
+    let splatIndex: f32 = getSplatIndex(i32(input.position.z + 0.5), input.splatIndex0, input.splatIndex1, input.splatIndex2, input.splatIndex3);
 
     var splat: Splat = readSplat(splatIndex, uniforms.dataTextureSize);
     var covA: vec3f = splat.covA.xyz;
