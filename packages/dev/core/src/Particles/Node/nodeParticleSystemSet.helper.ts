@@ -135,31 +135,16 @@ function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversion
 // ------------- CREATE PARTICLE FUNCTIONS -------------
 
 // The creation of the different properties follows the order they are added to the CreationQueue in ThinParticleSystem:
-// Lifetime, Position, Direction, Emit, Size, Scale/StartSize, Angle, Velocity, VelocityLimit, Color, Drag, Noise, ColorDead, Ramp, Sheet
+// Lifetime, Emit Power, Size, Scale/StartSize, Angle, Velocity, VelocityLimit, Color, Drag, Noise, ColorDead, Ramp, Sheet
 function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): CreateParticleBlock {
-    // Create particle
+    // Create particle block
     const createParticleBlock = new CreateParticleBlock("Create Particle");
 
-    // Lifetime
     _CreateParticleLifetimeBlockGroup(oldSystem, context).connectTo(createParticleBlock.lifeTime);
-
-    // Emit power (Speed)
-    const randomEmitPowerBlock = new ParticleRandomBlock("Random Emit Power");
-    _CreateAndConnectInput("Min Emit Power", oldSystem.minEmitPower, randomEmitPowerBlock.min);
-    _CreateAndConnectInput("Max Emit Power", oldSystem.maxEmitPower, randomEmitPowerBlock.max);
-    randomEmitPowerBlock.output.connectTo(createParticleBlock.emitPower);
-
-    // Size
+    _CreateParticleEmitPowerBlockGroup(oldSystem).connectTo(createParticleBlock.emitPower);
     _CreateParticleSizeBlockGroup(oldSystem, context).connectTo(createParticleBlock.size);
-
-    // Scale/Start Size
     _CreateParticleScaleBlockGroup(oldSystem, context).connectTo(createParticleBlock.scale);
-
-    // Angle (rotation)
-    const randomRotationBlock = new ParticleRandomBlock("Random Rotation");
-    _CreateAndConnectInput("Min Rotation", oldSystem.minInitialRotation, randomRotationBlock.min);
-    _CreateAndConnectInput("Max Rotation", oldSystem.maxInitialRotation, randomRotationBlock.max);
-    randomRotationBlock.output.connectTo(createParticleBlock.angle);
+    _CreateParticleAngleBlockGroup(oldSystem).connectTo(createParticleBlock.angle);
 
     // Color is handled when we do the color update block to manage gradients
 
@@ -194,10 +179,22 @@ function _CreateParticleLifetimeBlockGroup(oldSystem: ParticleSystem, context: R
 }
 
 /**
+ * Creates the group of blocks that represent the particle emit power
+ * @param oldSystem The old particle system to convert
+ * @returns The output of the group of blocks that represent the particle emit power
+ */
+function _CreateParticleEmitPowerBlockGroup(oldSystem: ParticleSystem): NodeParticleConnectionPoint {
+    const randomEmitPowerBlock = new ParticleRandomBlock("Random Emit Power");
+    _CreateAndConnectInput("Min Emit Power", oldSystem.minEmitPower, randomEmitPowerBlock.min);
+    _CreateAndConnectInput("Max Emit Power", oldSystem.maxEmitPower, randomEmitPowerBlock.max);
+    return randomEmitPowerBlock.output;
+}
+
+/**
  * Creates the group of blocks that represent the particle size
  * @param oldSystem The old particle system to convert
  * @param context The context of the current conversion
- * @returns The output of the group of blocks that represent the particle lifetime
+ * @returns The output of the group of blocks that represent the particle size
  */
 function _CreateParticleSizeBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
@@ -211,6 +208,12 @@ function _CreateParticleSizeBlockGroup(oldSystem: ParticleSystem, context: Runti
     }
 }
 
+/**
+ * Creates the group of blocks that represent the particle scale
+ * @param oldSystem The old particle system to convert
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle scale
+ */
 function _CreateParticleScaleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     // Create the random scale
     const randomScaleBlock = new ParticleRandomBlock("Random Scale");
@@ -237,6 +240,18 @@ function _CreateParticleScaleBlockGroup(oldSystem: ParticleSystem, context: Runt
     } else {
         return randomScaleBlock.output;
     }
+}
+
+/**
+ * Creates the group of blocks that represent the particle angle (rotation)
+ * @param oldSystem The old particle system to convert
+ * @returns The output of the group of blocks that represent the particle angle (rotation)
+ */
+function _CreateParticleAngleBlockGroup(oldSystem: ParticleSystem): NodeParticleConnectionPoint {
+    const randomRotationBlock = new ParticleRandomBlock("Random Rotation");
+    _CreateAndConnectInput("Min Rotation", oldSystem.minInitialRotation, randomRotationBlock.min);
+    _CreateAndConnectInput("Max Rotation", oldSystem.maxInitialRotation, randomRotationBlock.max);
+    return randomRotationBlock.output;
 }
 
 function _CreateParticleSizeGradientBlockGroup(sizeGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
@@ -420,46 +435,78 @@ function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
  * @returns The output connection point after all updates have been applied
  */
 function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
-    let outputUpdate: NodeParticleConnectionPoint = inputParticle;
+    let updateBlockGroupOutput: NodeParticleConnectionPoint = inputParticle;
 
-    if (oldSystem.minAngularSpeed !== 0 || oldSystem.maxAngularSpeed !== 0) {
-        outputUpdate = _UpdateParticleAngularSpeedBlockGroup(outputUpdate, oldSystem.minAngularSpeed, oldSystem.maxAngularSpeed);
-    }
-
-    outputUpdate = _UpdateParticlePositionBlockGroup(outputUpdate, oldSystem.isLocal);
+    updateBlockGroupOutput = _UpdateParticleAngleBlockGroup(updateBlockGroupOutput, oldSystem, context);
+    updateBlockGroupOutput = _UpdateParticlePositionBlockGroup(updateBlockGroupOutput, oldSystem.isLocal);
 
     if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
-        outputUpdate = _UpdateParticleSizeGradientBlockGroup(outputUpdate, oldSystem._sizeGradients, context);
+        updateBlockGroupOutput = _UpdateParticleSizeGradientBlockGroup(updateBlockGroupOutput, oldSystem._sizeGradients, context);
     }
 
     if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
-        outputUpdate = _UpdateParticleGravityBlockGroup(outputUpdate, oldSystem.gravity);
+        updateBlockGroupOutput = _UpdateParticleGravityBlockGroup(updateBlockGroupOutput, oldSystem.gravity);
     }
 
-    return outputUpdate;
+    return updateBlockGroupOutput;
+}
+
+function _UpdateParticleAngleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    // We will try to use gradients if they exist
+    // If not, we will try to use min/max angular speed
+    let angularSpeedCalculation = null;
+    if (oldSystem._angularSpeedGradients && oldSystem._angularSpeedGradients.length > 0) {
+        angularSpeedCalculation = _UpdateParticleAngularSpeedGradientBlockGroup(inputParticle, oldSystem._angularSpeedGradients, context);
+    } else if (oldSystem.minAngularSpeed !== 0 || oldSystem.maxAngularSpeed !== 0) {
+        angularSpeedCalculation = _UpdateParticleAngularSpeedBlockGroup(inputParticle, oldSystem.minAngularSpeed, oldSystem.maxAngularSpeed);
+    }
+
+    // If we have an angular speed calculation, then update the angle
+    if (angularSpeedCalculation) {
+        // Create the angular speed delta
+        const angleSpeedDeltaOutput = _CreateDeltaModifiedInput("Angular Speed", angularSpeedCalculation);
+
+        // Add it to the angle
+        const addAngle = new ParticleMathBlock("Add Angular Speed to Angle");
+        addAngle.operation = ParticleMathBlockOperations.Add;
+        _CreateAndConnectContextualSource("Angle", NodeParticleContextualSources.Angle, addAngle.left);
+        angleSpeedDeltaOutput.connectTo(addAngle.right);
+
+        // Update the particle angle
+        const updateAngle = new UpdateAngleBlock("Angle Update with Angular Speed");
+        inputParticle.connectTo(updateAngle.particle);
+        addAngle.output.connectTo(updateAngle.angle);
+
+        return updateAngle.output;
+    } else {
+        return inputParticle;
+    }
+}
+
+function _UpdateParticleAngularSpeedGradientBlockGroup(
+    inputParticle: NodeParticleConnectionPoint,
+    angularSpeedGradients: Array<FactorGradient>,
+    context: RuntimeConversionContext
+): NodeParticleConnectionPoint {
+    context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+
+    // Generate the gradient
+    const angularSpeedValueOutput = _CreateGradientBlockGroup(
+        context.ageToLifeTimeRatioBlockGroupOutput,
+        angularSpeedGradients,
+        ParticleRandomBlockLocks.OncePerParticle,
+        "Angular Speed"
+    );
+    return angularSpeedValueOutput;
 }
 
 function _UpdateParticleAngularSpeedBlockGroup(inputParticle: NodeParticleConnectionPoint, minAngularSpeed: number, maxAngularSpeed: number): NodeParticleConnectionPoint {
     // Random value between for the angular speed of the particle
     const randomAngularSpeedBlock = new ParticleRandomBlock("Random Angular Speed");
+    randomAngularSpeedBlock.lockMode = ParticleRandomBlockLocks.OncePerParticle;
     _CreateAndConnectInput("Min Angular Speed", minAngularSpeed, randomAngularSpeedBlock.min);
     _CreateAndConnectInput("Max Angular Speed", maxAngularSpeed, randomAngularSpeedBlock.max);
-
-    // Create the angular speed delta
-    const angleSpeedDeltaOutput = _CreateDeltaModifiedInput("Angular Speed", randomAngularSpeedBlock.output);
-
-    // Add it to the angle
-    const addAngle = new ParticleMathBlock("Add Angular Speed to Angle");
-    addAngle.operation = ParticleMathBlockOperations.Add;
-    _CreateAndConnectContextualSource("Angle", NodeParticleContextualSources.Angle, addAngle.left);
-    angleSpeedDeltaOutput.connectTo(addAngle.right);
-
-    // Update the particle angle
-    const updateAngle = new UpdateAngleBlock("Angle Update with Angular Speed");
-    inputParticle.connectTo(updateAngle.particle);
-    addAngle.output.connectTo(updateAngle.angle);
-
-    return updateAngle.output;
+    return randomAngularSpeedBlock.output;
 }
 
 function _UpdateParticlePositionBlockGroup(inputParticle: NodeParticleConnectionPoint, isLocal: boolean): NodeParticleConnectionPoint {
