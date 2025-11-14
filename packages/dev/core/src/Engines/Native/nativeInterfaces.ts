@@ -419,6 +419,11 @@ type OpaqueHandle<T extends symbol> = unknown & { readonly [K in T]: never };
 declare const PerformanceCounterHandleIdentity: unique symbol;
 type PerformanceCounterHandle = OpaqueHandle<typeof PerformanceCounterHandleIdentity>;
 
+export const enum NativeTraceLevel {
+    Mark = 0,
+    Log = 1,
+}
+
 /** @internal */
 export interface INative {
     // NativeEngine plugin
@@ -440,7 +445,7 @@ export interface INative {
     DeviceInputSystem?: IDeviceInputSystemConstructor;
 
     // NativeTracing plugin
-    enablePerformanceLogging?(withLogging: boolean): void;
+    enablePerformanceLogging?(level?: NativeTraceLevel): void;
     disablePerformanceLogging?(): void;
     startPerformanceCounter?(counter: string): PerformanceCounterHandle;
     endPerformanceCounter?(counter: PerformanceCounterHandle): void;

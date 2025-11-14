@@ -30,6 +30,7 @@ import { IsExponentOfTwo, Mix } from "./tools.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { INative } from "../Engines/Native/nativeInterfaces";
+import { NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare const _native: INative;
@@ -1341,14 +1342,14 @@ export class Tools {
         if ((level & Tools.PerformanceUserMarkLogLevel) === Tools.PerformanceUserMarkLogLevel) {
             Tools.StartPerformanceCounter = Tools._StartUserMark;
             Tools.EndPerformanceCounter = Tools._EndUserMark;
-            _native.enablePerformanceLogging?.(false);
+            _native.enablePerformanceLogging?.(NativeTraceLevel.Mark);
             return;
         }
 
         if ((level & Tools.PerformanceConsoleLogLevel) === Tools.PerformanceConsoleLogLevel) {
             Tools.StartPerformanceCounter = Tools._StartPerformanceConsole;
             Tools.EndPerformanceCounter = Tools._EndPerformanceConsole;
-            _native.enablePerformanceLogging?.(true);
+            _native.enablePerformanceLogging?.(NativeTraceLevel.Log);
             return;
         }
 
