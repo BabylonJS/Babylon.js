@@ -46,6 +46,8 @@ import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 type ConversionContext = {
     targetStopDurationBlockOutput: NodeParticleConnectionPoint;
     timeToStopTimeRatioBlockGroupOutput: NodeParticleConnectionPoint;
+    sizeGradientValue0Output: NodeParticleConnectionPoint;
+    sizeGradientValue1Output: NodeParticleConnectionPoint;
 };
 
 type RuntimeConversionContext = Partial<ConversionContext>;
@@ -140,10 +142,7 @@ function _CreateCreateParticleBlockGroup(oldSystem: ParticleSystem, context: Run
     _CreateParticleLifetimeBlockGroup(oldSystem, context).connectTo(createParticleBlock.lifeTime);
 
     // Size
-    const randomSizeBlock = new ParticleRandomBlock("Random size");
-    _CreateAndConnectInput("Min size", oldSystem.minSize, randomSizeBlock.min);
-    _CreateAndConnectInput("Max size", oldSystem.maxSize, randomSizeBlock.max);
-    randomSizeBlock.output.connectTo(createParticleBlock.size);
+    _CreateParticleSizeBlockGroup(oldSystem, context).connectTo(createParticleBlock.size);
 
     // Scale
     const randomScaleBlock = new ParticleRandomBlock("Random Scale");
@@ -187,6 +186,61 @@ function _CreateParticleLifetimeBlockGroup(oldSystem: ParticleSystem, context: R
         _CreateAndConnectInput("Min Lifetime", oldSystem.minLifeTime, randomLifetimeBlock.min);
         _CreateAndConnectInput("Max Lifetime", oldSystem.maxLifeTime, randomLifetimeBlock.max);
         return randomLifetimeBlock.output;
+    }
+}
+
+/**
+ * Creates the group of blocks that represent the particle size
+ * @param oldSystem The old particle system to migrate
+ * @param context The system migration context
+ * @returns The output of the group of blocks that represent the particle lifetime
+ */
+function _CreateParticleSizeBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
+        const sizeGradientBlockGroupOutput = _CreateSizeGradientBlockGroup(oldSystem._sizeGradients, context);
+        return sizeGradientBlockGroupOutput;
+    } else {
+        const randomSizeBlock = new ParticleRandomBlock("Random size");
+        _CreateAndConnectInput("Min size", oldSystem.minSize, randomSizeBlock.min);
+        _CreateAndConnectInput("Max size", oldSystem.maxSize, randomSizeBlock.max);
+        return randomSizeBlock.output;
+    }
+}
+
+function _CreateSizeGradientBlockGroup(sizeGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    if (sizeGradients.length === 0) {
+        throw new Error("No size gradients provided.");
+    }
+
+    const minSize = _CreateSizeFromGradient(sizeGradients[0], 0);
+    let maxSize = minSize;
+    if (sizeGradients.length > 0) {
+        maxSize = _CreateSizeFromGradient(sizeGradients[1], 1);
+    }
+
+    context.sizeGradientValue0Output = minSize;
+    context.sizeGradientValue1Output = maxSize;
+
+    const randomSizeBlock = new ParticleRandomBlock("Random size");
+    minSize.connectTo(randomSizeBlock.min);
+    maxSize.connectTo(randomSizeBlock.max);
+
+    return randomSizeBlock.output;
+}
+
+function _CreateSizeFromGradient(gradientStep: FactorGradient, index: number): NodeParticleConnectionPoint {
+    if (gradientStep.factor2 !== undefined) {
+        // Create a random between value1 and value2
+        const randomBlock = new ParticleRandomBlock("Random Gradient Value " + index);
+        randomBlock.lockMode = ParticleRandomBlockLocks.PerParticle;
+        _CreateAndConnectInput("Value 1", gradientStep.factor1, randomBlock.min);
+        _CreateAndConnectInput("Value 2", gradientStep.factor2, randomBlock.max);
+        return randomBlock.output;
+    } else {
+        // Single value
+        const sizeBlock = new ParticleInputBlock("Value");
+        sizeBlock.value = gradientStep.factor1;
+        return sizeBlock.output;
     }
 }
 
