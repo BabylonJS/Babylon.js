@@ -21,6 +21,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import { GetTypeByteLength } from "../Buffers/bufferUtils";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
 import {
@@ -908,10 +909,31 @@ export class ShaderMaterial extends PushMaterial {
             defines.push("#define USE_VERTEX_PULLING");
 
             const indexBuffer = renderingMesh.geometry?.getIndexBuffer();
-            if (indexBuffer) {
+            if (indexBuffer && !(renderingMesh as Mesh).isUnIndexed) {
                 defines.push("#define VERTEX_PULLING_USE_INDEX_BUFFER");
                 if (indexBuffer.is32Bits) {
                     defines.push("#define VERTEX_PULLING_INDEX_BUFFER_32BITS");
+                }
+            }
+
+            // Add vertex buffer metadata defines for proper stride/offset handling
+            const geometry = renderingMesh.geometry;
+            if (geometry) {
+                const vertexBuffers = geometry.getVertexBuffers();
+                if (vertexBuffers) {
+                    for (const attributeName in vertexBuffers) {
+                        const vertexBuffer = vertexBuffers[attributeName];
+                        if (vertexBuffer) {
+                            const componentBytes = GetTypeByteLength(vertexBuffer.type);
+                            const upperName = attributeName.toUpperCase();
+                            const stride = vertexBuffer.effectiveByteStride / 4;
+                            const offset = vertexBuffer.effectiveByteOffset / 4;
+
+                            defines.push(`#define ${upperName}_STRIDE ${stride}`);
+                            defines.push(`#define ${upperName}_OFFSET ${offset}`);
+                            defines.push(`#define ${upperName}_COMPONENT_BYTES ${componentBytes}`);
+                        }
+                    }
                 }
             }
         }

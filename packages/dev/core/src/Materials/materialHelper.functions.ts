@@ -22,6 +22,7 @@ import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
 import type { CubeTexture } from "./Textures/cubeTexture";
 import type { Color3 } from "core/Maths/math.color";
+import { GetTypeByteLength } from "../Buffers/bufferUtils";
 
 // For backwards compatibility, we export everything from the pure version of this file.
 export * from "./materialHelper.functions.pure";
@@ -596,6 +597,41 @@ export function HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbac
  */
 export function GetFogState(mesh: AbstractMesh, scene: Scene) {
     return scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE;
+}
+
+/**
+ * Helper used to prepare vertex pulling metadata defines (stride, offset, component count)
+ * This should be called when USE_VERTEX_PULLING is enabled to properly configure buffer access
+ * @param mesh The mesh being rendered
+ * @param defines The defines object to update
+ * @param attributeNames Array of attribute names to configure (e.g., ["position", "normal"])
+ */
+export function PrepareDefinesForVertexPullingMetadata(mesh: AbstractMesh, defines: any, attributeNames: string[] = ["position"]): void {
+    if (!defines["USE_VERTEX_PULLING"]) {
+        return;
+    }
+
+    const geometry = mesh.geometry;
+    if (!geometry) {
+        return;
+    }
+
+    for (const attributeName of attributeNames) {
+        const vertexBuffer = geometry.getVertexBuffer(attributeName);
+        if (!vertexBuffer) {
+            continue;
+        }
+
+        const upperName = attributeName.toUpperCase();
+        const sizeInBytes = GetTypeByteLength(vertexBuffer.type);
+        // Calculate stride in float32 elements
+        const stride = vertexBuffer.effectiveByteStride / sizeInBytes;
+        defines[`${upperName}_STRIDE`] = stride || vertexBuffer.getSize();
+
+        // Calculate offset in float32 elements
+        const offset = vertexBuffer.effectiveByteOffset / sizeInBytes;
+        defines[`${upperName}_OFFSET`] = offset;
+    }
 }
 
 /**
