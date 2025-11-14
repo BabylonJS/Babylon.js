@@ -678,6 +678,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
         }
     }
 
+    // defines["LIGHTCOUNT"] = lightIndex;
     defines["SPECULARTERM"] = state.specularEnabled;
     defines["SHADOWS"] = state.shadowEnabled;
 
@@ -710,7 +711,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["SHADOWMEDIUMQUALITY" + index] = false;
         }
     }
-
+    defines["LIGHTCOUNT"] = lightIndex;
     defines["MAXLIGHTCOUNT"] = maxSimultaneousLights;
 
     const caps = scene.getEngine().getCaps();

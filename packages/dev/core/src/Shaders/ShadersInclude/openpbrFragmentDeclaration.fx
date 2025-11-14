@@ -83,6 +83,10 @@ uniform vec2 vGeometryCoatNormalInfos;
 uniform vec2 vGeometryOpacityInfos;
 #endif
 
+#ifdef GEOMETRY_THICKNESS
+uniform vec2 vGeometryThicknessInfos;
+#endif
+
 #ifdef EMISSION_COLOR
 uniform vec2 vEmissionColorInfos;
 #endif

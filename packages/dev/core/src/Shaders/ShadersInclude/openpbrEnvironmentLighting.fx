@@ -232,9 +232,44 @@
         vec3 slab_fuzz_ibl = fuzzEnvironmentLight * vLightingIntensity.z;
     #endif
 
+    vec3 slab_translucent_base_ibl = slab_translucent_background.rgb;
+    #ifdef REFRACTED_ENVIRONMENT
+        
+        vec3 iblRefractionCoords = refractedViewVector;
+        #ifdef REFRACTED_ENVIRONMENT_OPPOSITEZ
+            iblRefractionCoords.z *= -1.0;
+        #endif
+        #ifdef REFRACTED_ENVIRONMENT_LOCAL_CUBE
+            iblRefractionCoords = parallaxCorrectNormal(vPositionW, refractedViewVector, refractionSize, refractionPosition);
+        #endif
+        // Invert the Y coordinate for cube maps
+        // iblRefractionCoords.y = iblRefractionCoords.y * vEnvironmentRefractionInfos.w;
+
+        iblRefractionCoords = vec3(environmentRefractionMatrix * vec4(iblRefractionCoords, 0));
+        // Scale the refraction roughness based on the IOR to get appropriate blurriness.
+        float refractionAlphaG = (specular_ior - 1.0) * specularAlphaG;
+        vec3 environmentRefraction = sampleRadiance(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+            , baseGeoInfo
+            , reflectionSampler
+            , iblRefractionCoords
+            #ifdef REALTIME_FILTERING
+                , vReflectionFilteringInfo
+            #endif
+        );
+        #ifdef REFRACTED_BACKGROUND
+            // Scale the refraction so that we only see it at higher roughnesses
+            // This is because we're adding this to the refraction map which should take priority
+            // at low blurriness since it represents the transmitted light that is in front of the IBL.
+            // At high blurriness, the refraction from the environment will be coming from more directions
+            // and so we want to include more of this indirect lighting.
+            environmentRefraction *= max(refractionAlphaG * refractionAlphaG - 0.1, 0.0);
+        #endif
+        slab_translucent_base_ibl += environmentRefraction.rgb;
+    #endif
+
     // TEMP
     vec3 slab_subsurface_ibl = vec3(0., 0., 0.);
-    vec3 slab_translucent_base_ibl = vec3(0., 0., 0.);
+    
     
     slab_diffuse_ibl *= base_color.rgb;
 

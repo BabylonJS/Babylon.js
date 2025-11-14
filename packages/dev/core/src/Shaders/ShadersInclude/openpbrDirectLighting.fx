@@ -2,7 +2,7 @@
 {
     vec3 slab_diffuse = vec3(0., 0., 0.);
     vec3 slab_subsurface = vec3(0., 0., 0.);
-    vec3 slab_translucent = vec3(0., 0., 0.);
+    vec3 slab_translucent = slab_translucent_background.rgb;
     vec3 slab_glossy = vec3(0., 0., 0.);
     float specularFresnel = 0.0;
     vec3 specularColoredFresnel = vec3(0., 0., 0.);
@@ -34,6 +34,8 @@
 
     #ifdef THIN_FILM
         float thin_film_desaturation_scale = (thin_film_ior - 1.0) * sqrt(thin_film_thickness * 0.001);
+        // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
+        float thinFilmIorScale = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
     #endif
 
     // Specular Lobe
@@ -50,17 +52,29 @@
                 // Also computeSpecularLighting does some iridescence work using these values that we don't want.
                 slab_glossy = computeSpecularLighting(preInfo{X}, normalW, vec3(1.0), vec3(1.0), specular_roughness, lightColor{X}.rgb);
             #endif
-            float NdotH = dot(normalW, preInfo{X}.H);
+            float NdotH = max(dot(normalW, preInfo{X}.H), 0.0);
             specularFresnel = fresnelSchlickGGX(NdotH, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
             specularColoredFresnel = specularFresnel * specular_color;
             #ifdef THIN_FILM
                 // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-                float thinFilmIorScale = clamp(2.0 * abs(thin_film_ior - 1.0), 0.0, 1.0);
                 vec3 thinFilmDielectricFresnel = evalIridescence(thin_film_outside_ior, thin_film_ior, preInfo{X}.VdotH, thin_film_thickness, baseDielectricReflectance.coloredF0);
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3(dot(thinFilmDielectricFresnel, vec3(0.3333))), thin_film_desaturation_scale);
                 specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+            #endif
+
+            #ifdef REFRACTED_LIGHTS
+                if (preInfo{X}.NdotL<=0.0001) {
+                    vec3 H_refract = normalize( -preInfo{X}.L - refractedViewVector);
+            
+                    // Use refractedLightDir for subsurface scattering or transmission calculations
+                    // For example, in subsurface calculations:
+                    float NdotH_refract = max(dot(normalW, H_refract), 0.0);
+                    float transmittedRoughness = clamp(specular_roughness * (specular_ior - 1.0), 0.001, 1.0);
+                    float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH_refract, transmittedRoughness);
+                    slab_translucent += vec3(distribution) * lightColor{X}.rgb * preInfo{X}.attenuation;
+                }
             #endif
         }
     #endif
@@ -111,7 +125,7 @@
                 slab_coat = computeSpecularLighting(preInfoCoat{X}, coatNormalW, vec3(coatReflectance.F0), vec3(1.0), coat_roughness, lightColor{X}.rgb);
             #endif
 
-            float NdotH = dot(coatNormalW, preInfoCoat{X}.H);
+            float NdotH = max(dot(coatNormalW, preInfoCoat{X}.H), 0.0);
             coatFresnel = fresnelSchlickGGX(NdotH, coatReflectance.F0, coatReflectance.F90);
         }
     #endif

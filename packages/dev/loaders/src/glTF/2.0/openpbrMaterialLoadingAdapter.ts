@@ -2,7 +2,7 @@ import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
-import type { Color3 } from "core/Maths/math.color";
+import { Color3 } from "core/Maths/math.color";
 import type { IMaterialLoadingAdapter } from "./materialLoadingAdapter";
 
 /**
@@ -645,41 +645,41 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Sets the transmission weight.
-     * TODO: Implementation pending OpenPBR transmission feature availability.
      * @param value The transmission weight value (0-1)
      */
     public set transmissionWeight(value: number) {
-        // TODO: Implement when OpenPBR transmission is available
-        // this._material.transmissionWeight = value;
+        this._material.transmissionWeight = value;
+        // If the transmission weight is greater than 0, let's check if the base color
+        // is set and use that for a surface tint in OpenPBR. This may later be
+        // overridden by the volume properties but, without volume, this will give us
+        // glTF compatibility in OpenPBR.
+        this._material.transmissionColor = this._material.baseColor;
+        this._material.transmissionColorTexture = this._material.baseColorTexture;
+        this._material.transmissionDepth = 0.0;
     }
 
     /**
      * Sets the transmission weight texture.
-     * TODO: Implementation pending OpenPBR transmission feature availability.
      * @param value The transmission weight texture or null
      */
     public set transmissionWeightTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR transmission is available
-        // this._material.transmissionWeightTexture = value;
+        this._material.transmissionWeightTexture = value;
     }
 
     /**
      * Gets the transmission weight.
-     * TODO: Implementation pending OpenPBR transmission feature availability.
      * @returns Currently returns 0 as transmission is not yet available
      */
     public get transmissionWeight(): number {
-        // TODO: Implement when OpenPBR transmission is available
-        // return this._material.transmissionWeight;
-        return 0;
+        return this._material.transmissionWeight;
     }
 
     /**
-     * Gets the transmission dispersion Abbe number.
+     * Sets the transmission dispersion Abbe number.
      * @param value The Abbe number value
      */
     public set transmissionDispersionAbbeNumber(value: number) {
-        // TODO: Implement when OpenPBR transmission dispersion is available
+        this._material.transmissionDispersionAbbeNumber = value;
     }
 
     /**
@@ -696,42 +696,47 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
 
     /**
      * Sets the attenuation distance for volume scattering.
-     * TODO: Implementation pending OpenPBR volume feature availability.
      * @param value The attenuation distance value
      */
     public set transmissionDepth(value: number) {
-        // TODO: Implement when OpenPBR volume properties are available
-        // this._material.attenuationDistance = value;
+        // If the value is being set to the default max value, and the current transmission depth is 0,
+        // we assume that attenuation color isn't used and keep it at 0 to allow
+        // us to use constant transmission color to handle glTF's surface tint from base color.
+        if (value !== Number.MAX_VALUE || this._material.transmissionDepth !== 0) {
+            this._material.transmissionDepth = value;
+        } else {
+            this._material.transmissionDepth = 0;
+        }
     }
 
     /**
      * Sets the attenuation color for volume scattering.
-     * TODO: Implementation pending OpenPBR volume feature availability.
      * @param value The attenuation color as a Color3
      */
     public set transmissionColor(value: Color3) {
-        // TODO: Implement when OpenPBR volume properties are available
-        // this._material.attenuationColor = value;
+        // Only set the transmission color if it's not white (default)
+        // This allows us to retain the base color as the transmission color,
+        // if that was previously set.
+        if (!value.equals(Color3.White())) {
+            this._material.transmissionColor = value;
+        }
     }
 
     /**
      * Sets the thickness texture for volume scattering.
-     * TODO: Implementation pending OpenPBR volume feature availability.
      * @param value The thickness texture or null
      */
     public set volumeThicknessTexture(value: Nullable<BaseTexture>) {
-        // TODO: Implement when OpenPBR volume properties are available
-        // this._material.thicknessTexture = value;
+        this._material.geometryThicknessTexture = value;
+        this._material._useGeometryThicknessFromGreenChannel = true;
     }
 
     /**
      * Sets the thickness factor for volume scattering.
-     * TODO: Implementation pending OpenPBR volume feature availability.
      * @param value The thickness value
      */
     public set volumeThickness(value: number) {
-        // TODO: Implement when OpenPBR volume properties are available
-        // this._material.thickness = value;
+        this._material.geometryThickness = value;
     }
 
     // ========================================

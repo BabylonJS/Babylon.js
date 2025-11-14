@@ -88,8 +88,11 @@ void main(void) {
 
     #include<openpbrBlockNormalFinal>
 
-    // ______________________ Read Base and specular properties & Opacity ______________________________
+    // ______________________ Read Base, Specular properties & Opacity ______________________________
     #include<openpbrBaseLayerData>
+
+    // _____________________________ Read Transmission Layer properties ______________________
+    #include<openpbrTransmissionLayerData>
 
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
@@ -101,7 +104,6 @@ void main(void) {
 
     // TEMP
     float subsurface_weight = 0.0;
-    float transmission_weight = 0.0;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
@@ -193,6 +195,9 @@ void main(void) {
     ReflectanceParams baseConductorReflectance;
     baseConductorReflectance = conductorReflectance(base_color, specular_color, specular_weight);
 
+    // __________________ Transmitted Light From Background Refraction ___________________________
+    #include<openpbrBackgroundTransmission>
+
     // ________________________ Environment (IBL) Lighting ____________________________
     vec3 material_surface_ibl = vec3(0., 0., 0.);
     #include<openpbrEnvironmentLighting>
@@ -200,6 +205,7 @@ void main(void) {
     // __________________________ Direct Lighting ____________________________
     vec3 material_surface_direct = vec3(0., 0., 0.);
     #if defined(LIGHT0)
+        slab_translucent_background /= float(LIGHTCOUNT); // Average the background contribution over the number of lights
         float aggShadow = 0.;
         float numLights = 0.;
         #include<openpbrDirectLightingInit>[0..maxSimultaneousLights]

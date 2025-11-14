@@ -1,5 +1,6 @@
 import type { Nullable } from "core/types";
 import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 import type { Material } from "core/Materials/material";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
@@ -163,6 +164,9 @@ class TransmissionHelper {
     }
 
     private _shouldRenderAsTransmission(material: Nullable<Material>): boolean {
+        if (material && material.getClassName() === "OpenPBRMaterial") {
+            return (material as OpenPBRMaterial)?.transmissionWeight > 0 ? true : false;
+        }
         return (material as any)?.subSurface?.isRefractionEnabled ? true : false;
     }
 
@@ -173,7 +177,11 @@ class TransmissionHelper {
         // internal properties are not setup yet, like _sourceMesh (needed when doing mesh.material below)
         Tools.SetImmediate(() => {
             if (this._shouldRenderAsTransmission(mesh.material)) {
-                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
+                if (mesh.material && mesh.material.getClassName() === "OpenPBRMaterial") {
+                    (mesh.material as OpenPBRMaterial).environmentRefractionTexture = this._opaqueRenderTarget;
+                } else {
+                    (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
+                }
                 if (this._transparentMeshesCache.indexOf(mesh) === -1) {
                     this._transparentMeshesCache.push(mesh);
                 }
@@ -215,9 +223,13 @@ class TransmissionHelper {
         const useTransmission = this._shouldRenderAsTransmission(mesh.material);
         if (useTransmission) {
             if (mesh.material) {
-                const subSurface = (mesh.material as PBRMaterial).subSurface;
-                if (subSurface) {
-                    subSurface.refractionTexture = this._opaqueRenderTarget;
+                if (mesh.material.getClassName() === "OpenPBRMaterial") {
+                    (mesh.material as OpenPBRMaterial).environmentRefractionTexture = this._opaqueRenderTarget;
+                } else {
+                    const subSurface = (mesh.material as PBRMaterial).subSurface;
+                    if (subSurface) {
+                        subSurface.refractionTexture = this._opaqueRenderTarget;
+                    }
                 }
             }
             if (opaqueIdx !== -1) {
@@ -289,7 +301,11 @@ class TransmissionHelper {
 
         for (const mesh of this._transparentMeshesCache) {
             if (this._shouldRenderAsTransmission(mesh.material)) {
-                (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
+                if (mesh.material && mesh.material.getClassName() === "OpenPBRMaterial") {
+                    (mesh.material as OpenPBRMaterial).environmentRefractionTexture = this._opaqueRenderTarget;
+                } else {
+                    (mesh.material as PBRMaterial).refractionTexture = this._opaqueRenderTarget;
+                }
             }
         }
     }

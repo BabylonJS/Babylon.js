@@ -52,8 +52,8 @@
                 // Also computeSpecularLighting does some iridescence work using these values that we don't want.
                 slab_glossy = computeSpecularLighting(preInfo{X}, normalW, vec3(1.0), vec3(1.0), specular_roughness, lightColor{X}.rgb);
             #endif
-            
-            let NdotH: f32 = dot(normalW, preInfo{X}.H);
+
+            let NdotH: f32 = saturateEps(dot(normalW, preInfo{X}.H));
             specularFresnel = fresnelSchlickGGX(NdotH, baseDielectricReflectance.F0, baseDielectricReflectance.F90);
             specularColoredFresnel = specularFresnel * specular_color;
             #ifdef THIN_FILM
@@ -111,7 +111,7 @@
                 slab_coat = computeSpecularLighting(preInfoCoat{X}, coatNormalW, vec3f(coatReflectance.F0), vec3f(1.0f), coat_roughness, lightColor{X}.rgb);
             #endif
 
-            let NdotH: f32 = dot(coatNormalW, preInfoCoat{X}.H);
+            let NdotH: f32 = saturateEps(dot(coatNormalW, preInfoCoat{X}.H));
             coatFresnel = fresnelSchlickGGX(NdotH, coatReflectance.F0, coatReflectance.F90);
         }
     #endif

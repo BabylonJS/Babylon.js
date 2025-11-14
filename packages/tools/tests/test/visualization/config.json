@@ -3157,6 +3157,26 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Transmission Color glTF - IBL",
+            "playgroundId": "#GRQHVV#120",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Color glTF - Analytic Lights",
+            "playgroundId": "#GRQHVV#122",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Roughness glTF - IBL",
+            "playgroundId": "#GRQHVV#123",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Roughness glTF - Analytic Lights",
+            "playgroundId": "#GRQHVV#124",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
         }

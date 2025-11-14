@@ -86,7 +86,6 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     // TEMP
     var subsurface_weight: f32 = 0.0f;
-    var transmission_weight: f32 = 0.0f;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
