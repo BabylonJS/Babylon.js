@@ -202,6 +202,26 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.dontRenderWhenMaterialDepthWriteIsDisabled = value;
     }
 
+    /** If true, MSAA color textures will be resolved at the end of the render pass (default: true) */
+    @editableInPropertyPage("Resolve MSAA colors", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get resolveMSAAColors() {
+        return this._frameGraphTask.resolveMSAAColors;
+    }
+
+    public set resolveMSAAColors(value: boolean) {
+        this._frameGraphTask.resolveMSAAColors = value;
+    }
+
+    /** If true, MSAA depth texture will be resolved at the end of the render pass (default: false) */
+    @editableInPropertyPage("Resolve MSAA depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get resolveMSAADepth() {
+        return this._frameGraphTask.resolveMSAADepth;
+    }
+
+    public set resolveMSAADepth(value: boolean) {
+        this._frameGraphTask.resolveMSAADepth = value;
+    }
+
     // View depth
     @editableInPropertyPage("View depth format", PropertyTypeForEdition.TextureFormat, "GEOMETRY BUFFERS")
     public viewDepthFormat = Constants.TEXTUREFORMAT_RED;
@@ -509,6 +529,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.velocityType = ${this.velocityType};`);
         codes.push(`${this._codeVariableName}.linearVelocityFormat = ${this.linearVelocityFormat};`);
         codes.push(`${this._codeVariableName}.linearVelocityType = ${this.linearVelocityType};`);
+        codes.push(`${this._codeVariableName}.resolveMSAAColors = ${this.resolveMSAAColors};`);
+        codes.push(`${this._codeVariableName}.resolveMSAADepth = ${this.resolveMSAADepth};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -542,6 +564,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         serializationObject.velocityType = this.velocityType;
         serializationObject.linearVelocityFormat = this.linearVelocityFormat;
         serializationObject.linearVelocityType = this.linearVelocityType;
+        serializationObject.resolveMSAAColors = this.resolveMSAAColors;
+        serializationObject.resolveMSAADepth = this.resolveMSAADepth;
         return serializationObject;
     }
 
@@ -575,6 +599,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.velocityType = serializationObject.velocityType;
         this.linearVelocityFormat = serializationObject.linearVelocityFormat;
         this.linearVelocityType = serializationObject.linearVelocityType;
+        this.resolveMSAAColors = serializationObject.resolveMSAAColors ?? true;
+        this.resolveMSAADepth = serializationObject.resolveMSAADepth ?? false;
     }
 }
 

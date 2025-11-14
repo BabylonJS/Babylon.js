@@ -6,7 +6,7 @@ export * from "./Node/nodeRenderGraphBuildState";
 export * from "./Node/Types/nodeRenderGraphTypes";
 export * from "./Node/Blocks/index";
 
-export * from "./Passes/cullPass";
+export * from "./Passes/objectListPass";
 export * from "./Passes/pass";
 export * from "./Passes/renderPass";
 

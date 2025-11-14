@@ -162,8 +162,10 @@ export class NodeRenderGraph {
         this._frameGraph.name = name;
 
         if (options.rebuildGraphOnEngineResize) {
-            this._resizeObserver = this._engine.onResizeObservable.add(() => {
+            this._resizeObserver = this._engine.onResizeObservable.add(async () => {
                 this.build();
+
+                await this.whenReadyAsync();
             });
         }
     }
