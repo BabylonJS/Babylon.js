@@ -29,7 +29,11 @@ import type { IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { INative } from "../Engines/Native/nativeInterfaces";
 import { NativeTraceLevel } from "../Engines/Native/nativeInterfaces";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare function importScripts(...urls: string[]): void;

@@ -446,9 +446,3 @@ export interface INative {
     startPerformanceCounter?(counter: string): unknown;
     endPerformanceCounter?(counter: unknown): void;
 }
-
-declare global {
-    const _native: INative | undefined;
-}
-
-export type { _native };

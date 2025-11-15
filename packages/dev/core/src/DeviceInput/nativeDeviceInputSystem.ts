@@ -1,7 +1,11 @@
+import type { INative } from "../Engines/Native/nativeInterfaces";
 import type { IUIEvent } from "../Events/deviceInputEvents";
 import { DeviceEventFactory } from "./eventFactory";
 import { DeviceType } from "./InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "./inputInterfaces";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 /** @internal */
 export class NativeDeviceInputSystem implements IDeviceInputSystem {
@@ -12,7 +16,7 @@ export class NativeDeviceInputSystem implements IDeviceInputSystem {
         onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
         onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void
     ) {
-        this._nativeInput = _native?.DeviceInputSystem
+        this._nativeInput = _native.DeviceInputSystem
             ? new _native.DeviceInputSystem(onDeviceConnected, onDeviceDisconnected, (deviceType, deviceSlot, inputIndex, currentState) => {
                   const evt = DeviceEventFactory.CreateDeviceEvent(deviceType, deviceSlot, inputIndex, currentState, this);
 

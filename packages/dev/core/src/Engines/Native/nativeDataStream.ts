@@ -1,5 +1,8 @@
 import type { DeepImmutable, FloatArray } from "../../types";
-import type { INativeDataStream } from "./nativeInterfaces";
+import type { INative, INativeDataStream } from "./nativeInterfaces";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 /** @internal */
 export type NativeData = Uint32Array;
@@ -26,7 +29,7 @@ export class NativeDataStream {
         this._length = NativeDataStream.DEFAULT_BUFFER_SIZE / 4;
         this._position = 0;
 
-        this._nativeDataStream = new _native!.NativeDataStream(() => {
+        this._nativeDataStream = new _native.NativeDataStream(() => {
             this._flush();
         });
     }
