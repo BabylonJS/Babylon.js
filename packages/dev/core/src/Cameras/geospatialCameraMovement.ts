@@ -6,8 +6,7 @@ import type { MeshPredicate } from "../Culling/ray.core";
 import { Plane } from "../Maths/math.plane";
 import { Ray } from "../Culling/ray";
 import type { Scene } from "../scene";
-import { Vector3Distance, Vector3Length, Vector3LengthSquared, Vector3SubtractToRef } from "../Maths/math.vector.functions";
-import { Clamp } from "../Maths/math.scalar.functions";
+import { Vector3Distance } from "../Maths/math.vector.functions";
 import type { PickingInfo } from "../Collisions";
 import type { Nullable } from "../types";
 
@@ -125,7 +124,7 @@ export class GeospatialCameraMovement extends CameraMovement {
                 Vector3.TransformNormalToRef(delta, localToEcef, delta);
                 this._dragPlaneOriginPointEcef.addInPlace(delta);
 
-                Vector3SubtractToRef(this.panAccumulatedPixels, delta, this.panAccumulatedPixels);
+                this.panAccumulatedPixels.subtractInPlace(delta);
             }
         }
     }
@@ -133,19 +132,6 @@ export class GeospatialCameraMovement extends CameraMovement {
     /** @override */
     public override computeCurrentFrameDeltas(): void {
         const cameraCenter = this._cameraCenter;
-
-        // Slows down panning near the poles
-        if (Vector3LengthSquared(this.panAccumulatedPixels) > Epsilon) {
-            const cameraCenterMagnitude = Vector3Length(cameraCenter); // distance from planet origin to camera center
-            const currentRadius = this._cameraPosition.length();
-            const latitudeDampeningScale = Math.max(1, cameraCenterMagnitude / Math.max(Epsilon, currentRadius - cameraCenterMagnitude)); // decrease the effect near surface
-            const sinSphericalLat = cameraCenterMagnitude === 0 ? 0 : cameraCenter.z / cameraCenterMagnitude;
-            const cosSphericalLat = Math.sqrt(1 - Math.min(1, sinSphericalLat * sinSphericalLat));
-            const latitudeDampening = Clamp(latitudeDampeningScale * Math.sqrt(Math.abs(cosSphericalLat))); // sqrt here is arbitrary, reduces effect near equator
-            this._panSpeedMultiplier = latitudeDampening;
-        } else {
-            this._panSpeedMultiplier = 0;
-        }
 
         // If a pan drag is occurring, stop zooming.
         const isDragging = this._hitPointRadius !== undefined;
