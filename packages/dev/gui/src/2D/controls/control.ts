@@ -1975,10 +1975,10 @@ export class Control implements IAnimatable, IFocusableControl {
         this._computeAlignment(this._tempPaddingMeasure, context);
 
         // Convert to int values
-        this._currentMeasure.left = this._currentMeasure.left | 0;
-        this._currentMeasure.top = this._currentMeasure.top | 0;
-        this._currentMeasure.width = this._currentMeasure.width | 0;
-        this._currentMeasure.height = this._currentMeasure.height | 0;
+        // this._currentMeasure.left = this._currentMeasure.left | 0;
+        // this._currentMeasure.top = this._currentMeasure.top | 0;
+        // this._currentMeasure.width = this._currentMeasure.width | 0;
+        // this._currentMeasure.height = this._currentMeasure.height | 0;
 
         // Let children add more features
         this._additionalProcessing(this._tempPaddingMeasure, context);
