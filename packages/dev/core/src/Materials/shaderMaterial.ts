@@ -827,9 +827,11 @@ export class ShaderMaterial extends PushMaterial {
                 if (this._options.samplers.indexOf("bakedVertexAnimationTexture") === -1) {
                     this._options.samplers.push("bakedVertexAnimationTexture");
                 }
-            }
 
-            PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
+                if (useInstances) {
+                    attribs.push("bakedVertexAnimationSettingsInstanced");
+                }
+            }
         }
 
         // Textures
