@@ -257,10 +257,6 @@ export class SmartFilterOptimizer {
                 continue;
             }
 
-            // NOTE: this assumes that defines are always the same for all instances
-            // of a block type. We would need to change this if we want to support
-            // setting them as properties in custom shader blocks.
-
             // See if we have already processed this define for this block type
             const existingRemapped = this._remappedSymbols.find((s) => s.type === "define" && s.name === defName && s.owners[0] && s.owners[0].blockType === block.blockType);
 
@@ -409,6 +405,8 @@ export class SmartFilterOptimizer {
 
         let match = rx.exec(declarations);
         while (match !== null) {
+            // NOTE: will need to decide if we'll always have consts be per-block-instance or have some way to mark which ones should be shared
+            // across all instances of a block and which should be per-block-instance
             const singleInstance = forceSingleInstance || varDecl === "const";
             const varType = match[1]!;
             const varName = match[2]!;
