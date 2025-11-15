@@ -106,6 +106,41 @@ export function Vector3ScaleInPlace<T extends IVector3Like>(vector: T, scale: nu
     return vector;
 }
 
+export function Vector3SubtractToRef<T extends IVector3Like>(a: DeepImmutable<IVector3Like>, b: DeepImmutable<IVector3Like>, result: T): T {
+    result.x = a.x - b.x;
+    result.y = a.y - b.y;
+    result.z = a.z - b.z;
+    return result;
+}
+
+export function Vector3CopyToRef<T extends IVector3Like>(source: IVector3Like, result: T): T {
+    result.x = source.x;
+    result.y = source.y;
+    result.z = source.z;
+    return result;
+}
+
+export function Vector3LerpToRef<T extends IVector3Like>(start: T, end: T, amount: number, result: T): T {
+    result.x = start.x + (end.x - start.x) * amount;
+    result.y = start.y + (end.y - start.y) * amount;
+    result.z = start.z + (end.z - start.z) * amount;
+    return result;
+}
+
+export function Vector3NormalizeToRef<T extends IVector3Like>(vector: DeepImmutable<T>, result: T): T {
+    const len = Vector3Length(vector);
+    if (len === 0) {
+        result.x = 0;
+        result.y = 0;
+        result.z = 0;
+    } else {
+        result.x = vector.x / len;
+        result.y = vector.y / len;
+        result.z = vector.z / len;
+    }
+    return result;
+}
+
 /**
  * Creates a string representation of the IVector3Like
  * @param vector defines the IVector3Like to stringify
