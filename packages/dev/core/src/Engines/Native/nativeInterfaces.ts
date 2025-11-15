@@ -414,9 +414,10 @@ interface INativeDataStreamConstructor {
     readonly VALIDATION_BOOLEAN: number;
 }
 
+// Note: These values need to match those in Babylon Native's NativeTracing plugin.
 export const enum NativeTraceLevel {
-    Mark = 0,
-    Log = 1,
+    Mark = 1,
+    Log = 2,
 }
 
 /** @internal */
@@ -445,3 +446,9 @@ export interface INative {
     startPerformanceCounter?(counter: string): unknown;
     endPerformanceCounter?(counter: unknown): void;
 }
+
+declare global {
+    const _native: INative | undefined;
+}
+
+export type { _native };

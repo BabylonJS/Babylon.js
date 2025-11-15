@@ -1,9 +1,5 @@
 import type { IWebRequest } from "./interfaces/iWebRequest";
 import type { Nullable } from "../types";
-import type { INative } from "../Engines/Native/nativeInterfaces";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-declare const _native: INative;
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
