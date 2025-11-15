@@ -907,11 +907,7 @@ export class AnimationGroup implements IDisposable {
         this._animatables.length = 0;
 
         // Remove from scene
-        const index = this._scene.animationGroups.indexOf(this);
-
-        if (index > -1) {
-            this._scene.animationGroups.splice(index, 1);
-        }
+        this._scene.removeAnimationGroup(this);
 
         if (this._parentContainer) {
             const index = this._parentContainer.animationGroups.indexOf(this);

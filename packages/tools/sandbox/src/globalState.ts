@@ -42,36 +42,40 @@ export class GlobalState {
     }
 
     public showDebugLayer() {
-        this.isDebugLayerEnabled = true;
-        if (this.currentScene) {
-            if (this._isInspectorV2ModeRequested && !this._isInspectorV2ModeEnabled) {
-                alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
-            }
+        if (!this.isDebugLayerEnabled) {
+            this.isDebugLayerEnabled = true;
+            if (this.currentScene) {
+                if (this._isInspectorV2ModeRequested && !this._isInspectorV2ModeEnabled) {
+                    alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
+                }
 
-            if (!this._isInspectorV2ModeEnabled) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.currentScene.debugLayer.show();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                (async () => {
-                    const inspectorV2Module = await ImportInspectorV2();
-                    inspectorV2Module.Inspector.Show(this.currentScene, {});
-                })();
+                if (!this._isInspectorV2ModeEnabled) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this.currentScene.debugLayer.show();
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    (async () => {
+                        const inspectorV2Module = await ImportInspectorV2();
+                        inspectorV2Module.Inspector.Show(this.currentScene, {});
+                    })();
+                }
             }
         }
     }
 
     public hideDebugLayer() {
-        this.isDebugLayerEnabled = false;
-        if (this.currentScene) {
-            if (!this._isInspectorV2ModeEnabled) {
-                this.currentScene.debugLayer.hide();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                (async () => {
-                    const inspectorV2Module = await ImportInspectorV2();
-                    inspectorV2Module.Inspector.Hide();
-                })();
+        if (this.isDebugLayerEnabled) {
+            this.isDebugLayerEnabled = false;
+            if (this.currentScene) {
+                if (!this._isInspectorV2ModeEnabled) {
+                    this.currentScene.debugLayer.hide();
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    (async () => {
+                        const inspectorV2Module = await ImportInspectorV2();
+                        inspectorV2Module.Inspector.Hide();
+                    })();
+                }
             }
         }
     }
