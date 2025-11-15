@@ -168,7 +168,7 @@ export class CameraMovement {
         this.rotationDeltaCurrentFrame.setAll(0);
         this.zoomDeltaCurrentFrame = 0;
 
-        const hasUserInput = this.panAccumulatedPixels.length() > 0 || this.rotationAccumulatedPixels.length() > 0 || this.zoomAccumulatedPixels !== 0;
+        const hasUserInput = this.panAccumulatedPixels.lengthSquared() > 0 || this.rotationAccumulatedPixels.lengthSquared() > 0 || this.zoomAccumulatedPixels !== 0;
 
         if (hasUserInput && this._behavior?.isInterpolating) {
             this._behavior.stopAllAnimations();

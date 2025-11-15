@@ -53,8 +53,7 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
             case 0: // Left button / single touch - drag/pan globe under cursor
                 this._handleDrag();
                 break;
-            case 1: // Middle button - tilt camera around cursor
-                break; // disable this for now
+            case 1: // Middle button - tilt camera
             case 2: // Right button - tilt camera
                 this._handleTilt(offsetX, offsetY);
                 break;
