@@ -29,7 +29,6 @@ import {
     BindLogDepth,
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
-    PrepareAttributesForBakedVertexAnimation,
     PrepareDefinesAndAttributesForMorphTargets,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
