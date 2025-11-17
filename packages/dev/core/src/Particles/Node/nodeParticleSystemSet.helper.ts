@@ -46,9 +46,12 @@ import { UpdateSizeBlock } from "./Blocks/Update/updateSizeBlock";
 /** Represents blocks or groups of blocks that can be used in multiple places in the graph, so they are stored in this context to be reused */
 type ConversionContext = {
     targetStopDurationBlockOutput: NodeParticleConnectionPoint;
+    // Connections that represent calculated ratios values
     timeToStopTimeRatioBlockGroupOutput: NodeParticleConnectionPoint;
-    sizeGradientValue0Output: NodeParticleConnectionPoint;
     ageToLifeTimeRatioBlockGroupOutput: NodeParticleConnectionPoint;
+    // Connections for the start value of a gradient. These are stored so they can be reused for the Creation phase and the Update phase of the particle
+    sizeGradientValue0Output: NodeParticleConnectionPoint;
+    colorGradientValue0Output: NodeParticleConnectionPoint;
 };
 
 type RuntimeConversionContext = Partial<ConversionContext>;
@@ -76,23 +79,19 @@ export async function ConvertToNodeParticleSystemSetAsync(name: string, particle
 }
 
 async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet, oldSystem: ParticleSystem, context: RuntimeConversionContext): Promise<void> {
-    // CreateParticle block
-    const createParticleBlock = _CreateParticleBlockGroup(oldSystem, context);
+    // CreateParticle block group
+    const createParticleOutput = _CreateParticleBlockGroup(oldSystem, context);
 
     // Emitter Shape block
-    const shapeBlock = _EmitterShapeBlock(oldSystem);
-    createParticleBlock.particle.connectTo(shapeBlock.particle);
+    const shapeOutput = _EmitterShapeBlock(oldSystem);
+    createParticleOutput.particle.connectTo(shapeOutput.particle);
 
-    // Update the particle position
-    const positionUpdatedParticle = _UpdateParticleBlockGroup(shapeBlock.output, oldSystem, context);
-
-    // Color update
-    const colorUpdateBlock = _CreateColorUpdateBlock(oldSystem, createParticleBlock);
-    positionUpdatedParticle.connectTo(colorUpdateBlock.particle);
+    // UpdateParticle block group
+    const updateParticleOutput = _UpdateParticleBlockGroup(shapeOutput.output, oldSystem, context);
 
     // System block
     const newSystem = _SystemBlockGroup(oldSystem, context);
-    colorUpdateBlock.output.connectTo(newSystem.particle);
+    updateParticleOutput.connectTo(newSystem.particle);
 
     // Register
     newSet.systemBlocks.push(newSystem);
@@ -145,8 +144,7 @@ function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeCo
     _CreateParticleSizeBlockGroup(oldSystem, context).connectTo(createParticleBlock.size);
     _CreateParticleScaleBlockGroup(oldSystem, context).connectTo(createParticleBlock.scale);
     _CreateParticleAngleBlockGroup(oldSystem).connectTo(createParticleBlock.angle);
-
-    // Color is handled when we do the color update block to manage gradients
+    _CreateParticleColorBlockGroup(oldSystem, context).connectTo(createParticleBlock.color);
 
     // Dead color
     _CreateAndConnectInput("Dead Color", oldSystem.colorDead, createParticleBlock.colorDead);
@@ -198,8 +196,8 @@ function _CreateParticleEmitPowerBlockGroup(oldSystem: ParticleSystem): NodePart
  */
 function _CreateParticleSizeBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
-        const sizeGradientBlockGroupOutput = _CreateParticleSizeGradientBlockGroup(oldSystem._sizeGradients, context);
-        return sizeGradientBlockGroupOutput;
+        context.sizeGradientValue0Output = _CreateParticleInitialValueFromGradient(oldSystem._sizeGradients);
+        return context.sizeGradientValue0Output;
     } else {
         const randomSizeBlock = new ParticleRandomBlock("Random size");
         _CreateAndConnectInput("Min size", oldSystem.minSize, randomSizeBlock.min);
@@ -254,28 +252,44 @@ function _CreateParticleAngleBlockGroup(oldSystem: ParticleSystem): NodeParticle
     return randomRotationBlock.output;
 }
 
-function _CreateParticleSizeGradientBlockGroup(sizeGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
-    if (sizeGradients.length === 0) {
-        throw new Error("No size gradients provided.");
+/**
+ * Creates the group of blocks that represent the particle color
+ * @param oldSystem The old particle system to convert
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle color
+ */
+function _CreateParticleColorBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    if (oldSystem._colorGradients && oldSystem._colorGradients.length > 0) {
+        context.colorGradientValue0Output = _CreateParticleInitialValueFromGradient(oldSystem._colorGradients);
+        return context.colorGradientValue0Output;
+    } else {
+        const randomColorBlock = new ParticleRandomBlock("Random color");
+        _CreateAndConnectInput("Color 1", oldSystem.color1, randomColorBlock.min);
+        _CreateAndConnectInput("Color 2", oldSystem.color2, randomColorBlock.max);
+        return randomColorBlock.output;
     }
-
-    const initialParticleSize = _CreateSizeFromGradientStep(sizeGradients[0], 0);
-    context.sizeGradientValue0Output = initialParticleSize;
-    return initialParticleSize;
 }
 
-function _CreateSizeFromGradientStep(gradientStep: FactorGradient, index: number): NodeParticleConnectionPoint {
-    if (gradientStep.factor2 !== undefined) {
+function _CreateParticleInitialValueFromGradient(gradients: Array<FactorGradient> | Array<ColorGradient>): NodeParticleConnectionPoint {
+    if (gradients.length === 0) {
+        throw new Error("No gradients provided.");
+    }
+
+    const gradientStep = gradients[0];
+    const value1 = (gradientStep as any).factor1 ?? (gradientStep as any).color1;
+    const value2 = (gradientStep as any).factor2 ?? (gradientStep as any).color2;
+
+    if (value2 !== undefined) {
         // Create a random between value1 and value2
-        const randomBlock = new ParticleRandomBlock("Random Value " + index);
+        const randomBlock = new ParticleRandomBlock("Random Value 0");
         randomBlock.lockMode = ParticleRandomBlockLocks.OncePerParticle;
-        _CreateAndConnectInput("Value 1", gradientStep.factor1, randomBlock.min);
-        _CreateAndConnectInput("Value 2", gradientStep.factor2, randomBlock.max);
+        _CreateAndConnectInput("Value 1", value1, randomBlock.min);
+        _CreateAndConnectInput("Value 2", value2, randomBlock.max);
         return randomBlock.output;
     } else {
         // Single value
         const sizeBlock = new ParticleInputBlock("Value");
-        sizeBlock.value = gradientStep.factor1;
+        sizeBlock.value = value1;
         return sizeBlock.output;
     }
 }
@@ -437,6 +451,7 @@ function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
 function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     let updateBlockGroupOutput: NodeParticleConnectionPoint = inputParticle;
 
+    updateBlockGroupOutput = _UpdateParticleColorBlockGroup(updateBlockGroupOutput, oldSystem._colorGradients, context);
     updateBlockGroupOutput = _UpdateParticleAngleBlockGroup(updateBlockGroupOutput, oldSystem, context);
     updateBlockGroupOutput = _UpdateParticlePositionBlockGroup(updateBlockGroupOutput, oldSystem.isLocal);
 
@@ -451,14 +466,41 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
     return updateBlockGroupOutput;
 }
 
+function _UpdateParticleColorBlockGroup(
+    inputParticle: NodeParticleConnectionPoint,
+    colorGradients: Nullable<Array<ColorGradient>>,
+    context: RuntimeConversionContext
+): NodeParticleConnectionPoint {
+    let colorCalculation: NodeParticleConnectionPoint | undefined = undefined;
+    if (colorGradients && colorGradients.length > 0) {
+        if (context.colorGradientValue0Output === undefined) {
+            throw new Error("Initial color gradient values not found in context.");
+        }
+
+        context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+        colorCalculation = _CreateGradientBlockGroup(context.ageToLifeTimeRatioBlockGroupOutput, colorGradients, ParticleRandomBlockLocks.OncePerParticle, "Color", [
+            context.colorGradientValue0Output,
+        ]);
+    } else {
+        colorCalculation = _CreateBasicColorUpdate();
+    }
+
+    // Create the color update block clamping alpha >= 0
+    const colorUpdateBlock = new UpdateColorBlock("Color update");
+    inputParticle.connectTo(colorUpdateBlock.particle);
+    _ClampUpdateColorAlpha(colorCalculation).connectTo(colorUpdateBlock.color);
+
+    return colorUpdateBlock.output;
+}
+
 function _UpdateParticleAngleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     // We will try to use gradients if they exist
     // If not, we will try to use min/max angular speed
     let angularSpeedCalculation = null;
     if (oldSystem._angularSpeedGradients && oldSystem._angularSpeedGradients.length > 0) {
-        angularSpeedCalculation = _UpdateParticleAngularSpeedGradientBlockGroup(inputParticle, oldSystem._angularSpeedGradients, context);
+        angularSpeedCalculation = _UpdateParticleAngularSpeedGradientBlockGroup(oldSystem._angularSpeedGradients, context);
     } else if (oldSystem.minAngularSpeed !== 0 || oldSystem.maxAngularSpeed !== 0) {
-        angularSpeedCalculation = _UpdateParticleAngularSpeedBlockGroup(inputParticle, oldSystem.minAngularSpeed, oldSystem.maxAngularSpeed);
+        angularSpeedCalculation = _UpdateParticleAngularSpeedBlockGroup(oldSystem.minAngularSpeed, oldSystem.maxAngularSpeed);
     }
 
     // If we have an angular speed calculation, then update the angle
@@ -483,11 +525,7 @@ function _UpdateParticleAngleBlockGroup(inputParticle: NodeParticleConnectionPoi
     }
 }
 
-function _UpdateParticleAngularSpeedGradientBlockGroup(
-    inputParticle: NodeParticleConnectionPoint,
-    angularSpeedGradients: Array<FactorGradient>,
-    context: RuntimeConversionContext
-): NodeParticleConnectionPoint {
+function _UpdateParticleAngularSpeedGradientBlockGroup(angularSpeedGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
 
     // Generate the gradient
@@ -500,7 +538,7 @@ function _UpdateParticleAngularSpeedGradientBlockGroup(
     return angularSpeedValueOutput;
 }
 
-function _UpdateParticleAngularSpeedBlockGroup(inputParticle: NodeParticleConnectionPoint, minAngularSpeed: number, maxAngularSpeed: number): NodeParticleConnectionPoint {
+function _UpdateParticleAngularSpeedBlockGroup(minAngularSpeed: number, maxAngularSpeed: number): NodeParticleConnectionPoint {
     // Random value between for the angular speed of the particle
     const randomAngularSpeedBlock = new ParticleRandomBlock("Random Angular Speed");
     randomAngularSpeedBlock.lockMode = ParticleRandomBlockLocks.OncePerParticle;
@@ -570,110 +608,19 @@ function _UpdateParticleGravityBlockGroup(inputParticle: NodeParticleConnectionP
     return updateDirection.output;
 }
 
-function _CreateColorUpdateBlock(oldSystem: IParticleSystem, createParticleBlock: CreateParticleBlock): UpdateColorBlock {
-    if (!oldSystem) {
-        throw new Error("Invalid particle system");
-    }
-
-    // Calculate the color
-    const colorGradients = oldSystem.getColorGradients();
-    let colorBlock: Nullable<ParticleGradientBlock | ParticleMathBlock> = null;
-    if (colorGradients && colorGradients.length > 0) {
-        colorBlock = _CreateGradientColorUpdate(oldSystem, colorGradients, createParticleBlock);
-    } else {
-        colorBlock = _CreateBasicColorUpdate(oldSystem, createParticleBlock);
-    }
-
-    // Clamp alpha >= 0
-    const clampedColor = _ClampUpdateColorAlpha(colorBlock);
-
-    // Create the color update block
-    const colorUpdateBlock = new UpdateColorBlock("Color update");
-    clampedColor.colorOut.connectTo(colorUpdateBlock.color);
-
-    return colorUpdateBlock;
-}
-
-function _CreateGradientColorUpdate(oldSystem: IParticleSystem, gradient: Array<ColorGradient>, createParticleBlock: CreateParticleBlock): ParticleGradientBlock {
-    const colorGradientBlock = new ParticleGradientBlock("Color Gradient");
-    _CreateAndConnectContextualSource("gradient", NodeParticleContextualSources.Age, colorGradientBlock.gradient);
-
-    let tempColor: Nullable<ParticleInputBlock | ParticleRandomBlock> = null;
-    let colorStart: Nullable<ParticleInputBlock | ParticleRandomBlock> = null;
-    let colorEnd: Nullable<ParticleInputBlock | ParticleRandomBlock> = null;
-    for (let i = 0; i < gradient.length; i++) {
-        const gradientStep = gradient[i];
-        const gradientValueBlock = new ParticleGradientValueBlock("Color Gradient Value " + i);
-        gradientValueBlock.reference = gradientStep.gradient;
-
-        if (gradientStep.color2) {
-            // Create a random between color1 and color2
-            const randomColorBlock = new ParticleRandomBlock("Random Color for Gradient " + i);
-            randomColorBlock.lockMode = ParticleRandomBlockLocks.PerSystem;
-            _CreateAndConnectInput("Color 1", gradientStep.color1, randomColorBlock.min);
-            _CreateAndConnectInput("Color 2", gradientStep.color2, randomColorBlock.max);
-            randomColorBlock.output.connectTo(gradientValueBlock.value);
-            tempColor = randomColorBlock;
-        } else {
-            // Single color
-            const input = new ParticleInputBlock("Color " + i);
-            input.value = gradientStep.color1;
-            input.output.connectTo(gradientValueBlock.value);
-            tempColor = input;
-        }
-
-        if (gradientStep.gradient === 0) {
-            colorStart = tempColor;
-        } else if (gradientStep.gradient === 1) {
-            colorEnd = tempColor;
-        }
-
-        gradientValueBlock.output.connectTo(colorGradientBlock.inputs[i + 1]);
-    }
-
-    _UpdateCreateParticleColor(oldSystem, colorStart, colorEnd, createParticleBlock);
-
-    return colorGradientBlock;
-}
-
-function _CreateBasicColorUpdate(oldSystem: IParticleSystem, createParticleBlock: CreateParticleBlock): ParticleMathBlock {
+function _CreateBasicColorUpdate(): NodeParticleConnectionPoint {
     const addColorBlock = new ParticleMathBlock("Add Color");
     addColorBlock.operation = ParticleMathBlockOperations.Add;
     _CreateAndConnectContextualSource("Color", NodeParticleContextualSources.Color, addColorBlock.left);
     _CreateAndConnectContextualSource("Scaled Color Step", NodeParticleContextualSources.ScaledColorStep, addColorBlock.right);
 
-    _UpdateCreateParticleColor(oldSystem, null, null, createParticleBlock);
-
-    return addColorBlock;
+    return addColorBlock.output;
 }
 
-function _UpdateCreateParticleColor(
-    oldSystem: IParticleSystem,
-    colorStart: Nullable<ParticleInputBlock | ParticleRandomBlock>,
-    colorEnd: Nullable<ParticleInputBlock | ParticleRandomBlock>,
-    createParticleBlock: CreateParticleBlock
-): void {
-    if (colorStart === null) {
-        colorStart = new ParticleInputBlock("Color Start");
-        colorStart.value = oldSystem.color1;
-    }
-
-    if (colorEnd === null) {
-        colorEnd = new ParticleInputBlock("Color End");
-        colorEnd.value = oldSystem.color2;
-    }
-
-    const randomColorBlock = new ParticleRandomBlock("Random color");
-    randomColorBlock.lockMode = ParticleRandomBlockLocks.PerParticle;
-    colorStart.output.connectTo(randomColorBlock.min);
-    colorEnd.output.connectTo(randomColorBlock.max);
-    randomColorBlock.output.connectTo(createParticleBlock.color);
-}
-
-function _ClampUpdateColorAlpha(colorBlock: ParticleMathBlock | ParticleGradientBlock): ParticleConverterBlock {
+function _ClampUpdateColorAlpha(colorCalculationOutput: NodeParticleConnectionPoint): NodeParticleConnectionPoint {
     // Decompose color to clamp alpha
     const decomposeColorBlock = new ParticleConverterBlock("Decompose Color");
-    colorBlock.outputs[0].connectTo(decomposeColorBlock.colorIn);
+    colorCalculationOutput.connectTo(decomposeColorBlock.colorIn);
 
     // Clamp alpha to be >= 0
     const maxAlphaBlock = new ParticleMathBlock("Alpha >= 0");
@@ -686,7 +633,7 @@ function _ClampUpdateColorAlpha(colorBlock: ParticleMathBlock | ParticleGradient
     decomposeColorBlock.xyzOut.connectTo(composeColorBlock.xyzIn);
     maxAlphaBlock.output.connectTo(composeColorBlock.wIn);
 
-    return composeColorBlock;
+    return composeColorBlock.colorOut;
 }
 
 // ------------- UTILITY FUNCTIONS -------------
@@ -816,7 +763,7 @@ function _CreateAgeToLifeTimeRatioBlockGroup(context: RuntimeConversionContext):
  */
 function _CreateGradientBlockGroup(
     gradientSelector: NodeParticleConnectionPoint,
-    gradientValues: Array<FactorGradient>,
+    gradientValues: Array<FactorGradient> | Array<ColorGradient>,
     randomLockMode: ParticleRandomBlockLocks,
     prefix: string,
     initialValues: NodeParticleConnectionPoint[] = []
@@ -853,20 +800,28 @@ function _CreateGradientBlockGroup(
  * @param index The index of the gradient step
  * @returns The output connection point of the gradient value block
  */
-function _CreateGradientValueBlockGroup(gradientStep: FactorGradient, randomLockMode: ParticleRandomBlockLocks, prefix: string, index: number): NodeParticleConnectionPoint {
+function _CreateGradientValueBlockGroup(
+    gradientStep: FactorGradient | ColorGradient,
+    randomLockMode: ParticleRandomBlockLocks,
+    prefix: string,
+    index: number
+): NodeParticleConnectionPoint {
     const gradientValueBlock = new ParticleGradientValueBlock(prefix + " Gradient Value " + index);
     gradientValueBlock.reference = gradientStep.gradient;
 
-    if (gradientStep.factor2 !== undefined) {
+    const value1 = (gradientStep as any).factor1 ?? (gradientStep as any).color1;
+    const value2 = (gradientStep as any).factor2 ?? (gradientStep as any).color2;
+
+    if (value2 !== undefined) {
         // Create a random between value1 and value2
         const randomBlock = new ParticleRandomBlock("Random Value " + index);
         randomBlock.lockMode = randomLockMode;
-        _CreateAndConnectInput("Value 1", gradientStep.factor1, randomBlock.min);
-        _CreateAndConnectInput("Value 2", gradientStep.factor2, randomBlock.max);
+        _CreateAndConnectInput("Value 1", value1, randomBlock.min);
+        _CreateAndConnectInput("Value 2", value2, randomBlock.max);
         randomBlock.output.connectTo(gradientValueBlock.value);
     } else {
         // Single value
-        _CreateAndConnectInput("Value", gradientStep.factor1, gradientValueBlock.value);
+        _CreateAndConnectInput("Value", value1, gradientValueBlock.value);
     }
 
     return gradientValueBlock.output;
