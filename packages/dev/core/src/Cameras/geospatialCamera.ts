@@ -10,6 +10,9 @@ import { ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialC
 import type { IVector3Like } from "../Maths/math.like";
 import { Vector3CopyToRef, Vector3Dot } from "../Maths/math.vector.functions";
 import { Clamp } from "../Maths/math.scalar.functions";
+import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
+import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import type { EasingFunction } from "../Animations/easing";
 
 type CameraOptions = {
     planetRadius: number; // Radius of the planet
@@ -37,13 +40,20 @@ export class GeospatialCamera extends Camera {
     private _isViewMatrixDirty: boolean;
     private _lookAtVector: Vector3 = new Vector3();
 
+    /** Behavior used for smooth flying animations */
+    private _flyingBehavior: InterpolatingBehavior<GeospatialCamera>;
+    private _flyToTargets: Map<keyof GeospatialCamera, AllowedAnimValue> = new Map();
+
     constructor(name: string, scene: Scene, options: CameraOptions, pickPredicate?: MeshPredicate) {
         super(name, new Vector3(), scene);
 
         this._limits = new GeospatialLimits(options.planetRadius);
         this._resetToDefault(this._limits);
 
-        this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, pickPredicate);
+        this._flyingBehavior = new InterpolatingBehavior();
+        this.addBehavior(this._flyingBehavior);
+
+        this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, pickPredicate, this._flyingBehavior);
 
         this.pickPredicate = pickPredicate;
         this.inputs = new GeospatialCameraInputsManager(this);
@@ -51,7 +61,7 @@ export class GeospatialCamera extends Camera {
     }
 
     private _center: Vector3 = new Vector3();
-    /** The point on the globe that we are anchoring around. If no alternate rotation point is present, this will represent the center of screen*/
+    /** The point on the globe that we are anchoring around. If no alternate rotation point is supplied, this will represent the center of screen*/
     public get center(): Vector3 {
         return this._center;
     }
@@ -180,6 +190,54 @@ export class GeospatialCamera extends Camera {
         return this.movement.alternateRotationPt ?? this.center;
     }
 
+    /**
+     * If camera is actively in flight, will update the target properties and use up the remaining duration from original flyTo call
+     *
+     * To start a new flyTo curve entirely, call into flyToAsync again (it will stop the inflight animation)
+     * @param targetYaw
+     * @param targetPitch
+     * @param targetRadius
+     * @param targetCenter
+     */
+    public updateFlyToDestination(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): void {
+        this._flyToTargets.clear();
+
+        this._flyToTargets.set("yaw", targetYaw);
+        this._flyToTargets.set("pitch", targetPitch);
+        this._flyToTargets.set("radius", targetRadius);
+        this._flyToTargets.set("center", targetCenter);
+
+        this._flyingBehavior.updateProperties(this._flyToTargets);
+    }
+
+    /**
+     * Animate camera towards passed in property values. If undefined, will use current value
+     * @param targetYaw
+     * @param targetPitch
+     * @param targetRadius
+     * @param targetCenter
+     * @param flightDurationMs
+     * @param easingFunction
+     * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
+     */
+    public async flyToAsync(
+        targetYaw?: number,
+        targetPitch?: number,
+        targetRadius?: number,
+        targetCenter?: Vector3,
+        flightDurationMs: number = 1000,
+        easingFunction?: EasingFunction
+    ): Promise<void> {
+        this._flyToTargets.clear();
+
+        this._flyToTargets.set("yaw", targetYaw);
+        this._flyToTargets.set("pitch", targetPitch);
+        this._flyToTargets.set("radius", targetRadius);
+        this._flyToTargets.set("center", targetCenter);
+
+        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
+    }
+
     private _limits: GeospatialLimits;
     public get limits(): GeospatialLimits {
         return this._limits;
@@ -250,10 +308,10 @@ export class GeospatialCamera extends Camera {
      * This rotation keeps the camera oriented towards the globe as it orbits around it. This is different from cameraCentricRotation which is when the camera rotates around its own axis
      */
     private _applyGeocentricRotation(): void {
-        const currentFrameRotationDelta = this.movement.rotationDeltaCurrentFrame;
-        if (currentFrameRotationDelta.x !== 0 || currentFrameRotationDelta.y !== 0) {
-            const pitch = currentFrameRotationDelta.x !== 0 ? Clamp(this._pitch + currentFrameRotationDelta.x, 0, 0.5 * Math.PI - Epsilon) : this._pitch;
-            const yaw = currentFrameRotationDelta.y !== 0 ? this._yaw + currentFrameRotationDelta.y : this._yaw;
+        const rotationDeltaCurrentFrame = this.movement.rotationDeltaCurrentFrame;
+        if (rotationDeltaCurrentFrame.x !== 0 || rotationDeltaCurrentFrame.y !== 0) {
+            const pitch = rotationDeltaCurrentFrame.x !== 0 ? Clamp(this._pitch + rotationDeltaCurrentFrame.x, 0, 0.5 * Math.PI - Epsilon) : this._pitch;
+            const yaw = rotationDeltaCurrentFrame.y !== 0 ? this._yaw + rotationDeltaCurrentFrame.y : this._yaw;
 
             // TODO: If _geocentricRotationPt is not the center, this will need to be adjusted.
             this._setOrientation(yaw, pitch, this._radius, this._geocentricRotationPt);
