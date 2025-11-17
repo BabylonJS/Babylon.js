@@ -166,11 +166,12 @@
     let dielectricIblFresnel: f32 = getReflectanceFromBRDFWithEnvLookup(vec3f(baseDielectricReflectance.F0), vec3f(baseDielectricReflectance.F90), baseGeoInfo.environmentBrdf).r;
     var dielectricIblColoredFresnel: vec3f = dielectricIblFresnel * specular_color;
     #ifdef THIN_FILM
-        // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
         var thin_film_dielectric: vec3f = evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseDielectricReflectance.coloredF0);
+        // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
+        // closer to path-tracing reference.
         let thin_film_desaturation_scale = (thin_film_ior - 1.0) * sqrt(thin_film_thickness * 0.001f * baseGeoInfo.NdotV);
         thin_film_dielectric = mix(thin_film_dielectric, vec3(dot(thin_film_dielectric, vec3f(0.3333f))), thin_film_desaturation_scale);
-        dielectricIblColoredFresnel = mix(dielectricIblColoredFresnel, thin_film_dielectric * specular_color, thin_film_weight * thinFilmIorScale);
+        dielectricIblColoredFresnel = mix(dielectricIblColoredFresnel, thin_film_dielectric * specular_color, thin_film_weight * thin_film_ior_scale);
     #endif
 
     // Conductor IBL Fresnel
@@ -178,7 +179,7 @@
     #ifdef THIN_FILM
         var thinFilmConductorFresnel: vec3f = specular_weight * evalIridescence(thin_film_outside_ior, thin_film_ior, baseGeoInfo.NdotV, thin_film_thickness, baseConductorReflectance.coloredF0);
         thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
-        conductorIblFresnel = mix(conductorIblFresnel, thinFilmConductorFresnel, thin_film_weight * thinFilmIorScale);
+        conductorIblFresnel = mix(conductorIblFresnel, thinFilmConductorFresnel, thin_film_weight * thin_film_ior_scale);
     #endif
 
     // Coat IBL Fresnel

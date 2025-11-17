@@ -224,8 +224,6 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
 
     public LODBASEDMICROSFURACE = true;
 
-    public METALLICWORKFLOW = true;
-    public ROUGHNESSSTOREINMETALMAPALPHA = false;
     public SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN = false;
     public BASE_METALNESS_FROM_METALNESS_TEXTURE_BLUE = false;
     public AOSTOREINMETALMAPRED = false;
@@ -287,6 +285,11 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
      * Iridescence is the name of thin film interference in the PBR material.
      */
     public IRIDESCENCE = false;
+
+    /**
+     * Tells the shader to enable dispersion in refraction
+     */
+    public DISPERSION = false;
 
     /**
      * Refraction of the 2D background texture. Might include the rest of the scene or just the background.
@@ -2802,7 +2805,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         MaterialHelperGeometryRendering.PrepareDefines(engine.currentRenderPassId, mesh, defines);
 
         // Textures
-        // defines.METALLICWORKFLOW = true;
         if (defines._areTexturesDirty) {
             defines._needUVs = false;
             for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
@@ -2838,7 +2840,6 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
                 defines.SPECULAR_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useSpecularRoughnessAnisotropyFromTangentTexture;
                 defines.COAT_ROUGHNESS_ANISOTROPY_FROM_TANGENT_TEXTURE = this._useCoatRoughnessAnisotropyFromTangentTexture;
                 defines.COAT_ROUGHNESS_FROM_GREEN_CHANNEL = this._useCoatRoughnessFromGreenChannel;
-                defines.ROUGHNESSSTOREINMETALMAPGREEN = this._useRoughnessFromMetallicTextureGreen;
                 defines.SPECULAR_ROUGHNESS_FROM_METALNESS_TEXTURE_GREEN = this._useRoughnessFromMetallicTextureGreen;
                 defines.FUZZ_ROUGHNESS_FROM_TEXTURE_ALPHA = this._useFuzzRoughnessFromTextureAlpha;
                 defines.BASE_METALNESS_FROM_METALNESS_TEXTURE_BLUE = this._useMetallicFromMetallicTextureBlue;
@@ -2965,6 +2966,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
 
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
+        defines.DISPERSION = this.transmissionDispersionScale > 0.0;
 
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
         if (defines.FUZZ) {

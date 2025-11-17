@@ -32,8 +32,6 @@
 
     #ifdef THIN_FILM
         float thin_film_desaturation_scale = (thin_film_ior - 1.0) * sqrt(thin_film_thickness * 0.001);
-        // Scale the thin film effect based on how different the IOR is from 1.0 (no thin film effect)
-        float thinFilmIorScale = clamp(2.0f * abs(thin_film_ior - 1.0f), 0.0f, 1.0f);
     #endif
 
     // Specular Lobe
@@ -73,7 +71,7 @@
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3(dot(thinFilmDielectricFresnel, vec3(0.3333))), thin_film_desaturation_scale);
-                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thin_film_ior_scale);
             #endif
 
             #ifdef REFRACTED_LIGHTS
@@ -114,7 +112,7 @@
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3(dot(thinFilmConductorFresnel, vec3(0.3333))), thin_film_desaturation_scale);
-                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmIorScale * thinFilmConductorFresnel, thin_film_weight);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thin_film_ior_scale * thinFilmConductorFresnel, thin_film_weight);
             #endif
 
             #ifdef ANISOTROPIC_BASE

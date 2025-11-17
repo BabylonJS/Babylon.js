@@ -72,7 +72,7 @@
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmDielectricFresnel = mix(thinFilmDielectricFresnel, vec3f(dot(thinFilmDielectricFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
-                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thinFilmIorScale);
+                specularColoredFresnel = mix(specularColoredFresnel, thinFilmDielectricFresnel * specular_color, thin_film_weight * thin_film_ior_scale);
             #endif
 
             #ifdef REFRACTED_LIGHTS
@@ -113,7 +113,7 @@
                 // Desaturate the thin film fresnel based on thickness and angle - this brings the results much
                 // closer to path-tracing reference.
                 thinFilmConductorFresnel = mix(thinFilmConductorFresnel, vec3f(dot(thinFilmConductorFresnel, vec3f(0.3333f))), thin_film_desaturation_scale);
-                coloredFresnel = mix(coloredFresnel, specular_weight * thinFilmIorScale * thinFilmConductorFresnel, thin_film_weight);
+                coloredFresnel = mix(coloredFresnel, specular_weight * thin_film_ior_scale * thinFilmConductorFresnel, thin_film_weight);
             #endif
 
             #ifdef ANISOTROPIC_BASE
