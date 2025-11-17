@@ -105,10 +105,10 @@ export class GeospatialCameraMovement extends CameraMovement {
         Plane.FromPositionAndNormalToRef(this._dragPlaneOriginPointEcef, this._dragPlaneNormal, this._dragPlane);
 
         // Lastly, find the _dragPlaneHitPoint where the ray intersects the _dragPlane.
-        IntersectRayWithPlaneToRef(ray, this._dragPlane, this._dragPlaneHitPointLocal);
-
-        // Convert the drag plane hit point into the local space.
-        Vector3.TransformCoordinatesToRef(this._dragPlaneHitPointLocal, ecefToLocal, this._dragPlaneHitPointLocal);
+        if (IntersectRayWithPlaneToRef(ray, this._dragPlane, this._dragPlaneHitPointLocal)) {
+            // If hit, convert the drag plane hit point into the local space.
+            Vector3.TransformCoordinatesToRef(this._dragPlaneHitPointLocal, ecefToLocal, this._dragPlaneHitPointLocal);
+        }
     }
 
     public handleDrag(pointerX: number, pointerY: number) {
