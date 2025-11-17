@@ -27,13 +27,9 @@ const TmpRampOptions: IAudioParameterRampOptions = {
     shape: AudioParameterRampShape.Linear,
 };
 
-const TmpPlayOptions: IStaticSoundPlayOptions = {
+const TmpPlayOptions: Partial<IStaticSoundPlayOptions> = {
     duration: 0,
-    loop: false,
-    loopEnd: 0,
-    loopStart: 0,
     startOffset: 0,
-    volume: 1,
     waitTime: 0,
 };
 
