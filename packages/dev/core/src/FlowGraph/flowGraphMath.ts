@@ -5,7 +5,7 @@ import { Vector3Dot, Vector4Dot } from "../Maths/math.vector.functions";
 import { DeepImmutable } from "../types";
 
 // *** NOTE ***
-// These function should ideally go in math.vector.functions.ts, but they require math.vector.ts to
+// These functions should ideally go in math.vector.functions.ts, but they require math.vector.ts to
 // be imported which is big. To avoid the larger bundle size, they are kept inside flow graph for now.
 
 /**
