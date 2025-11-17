@@ -15,7 +15,7 @@ import type { DeepImmutable } from "../types";
  * @returns the angle in radians between the two quaternions
  */
 export function GetAngleBetweenQuaternions(q1: DeepImmutable<IQuaternionLike>, q2: DeepImmutable<IQuaternionLike>): number {
-    return Math.acos(Clamp(Vector4Dot(q1, q2))) * 2;
+    return Math.acos(Clamp(Vector4Dot(q1, q2), -1, 1)) * 2;
 }
 
 /**
