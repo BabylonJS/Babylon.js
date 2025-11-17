@@ -77,7 +77,10 @@ export class Sound {
         if (this._soundV2 instanceof _WebAudioSoundSource) {
             return;
         }
-        this._soundV2._getOptions().autoplay = value;
+
+        if (this._soundV2) {
+            this._soundV2._getOptions().autoplay = value;
+        }
     }
 
     /**
@@ -91,7 +94,10 @@ export class Sound {
         if (this._soundV2 instanceof _WebAudioSoundSource) {
             return;
         }
-        this._soundV2.loop = value;
+
+        if (this._soundV2) {
+            this._soundV2.loop = value;
+        }
     }
 
     /**
@@ -108,7 +114,7 @@ export class Sound {
      * Is this sound currently played.
      */
     public get isPlaying(): boolean {
-        return this._soundV2 instanceof _WebAudioSoundSource ? true : this._soundV2.state === SoundState.Started || this._optionsV2.autoplay!;
+        return this._soundV2 instanceof _WebAudioSoundSource ? true : this._soundV2?.state === SoundState.Started || this._optionsV2.autoplay!;
     }
 
     /**
@@ -137,7 +143,10 @@ export class Sound {
     }
     public set maxDistance(value: number) {
         this._optionsV2.spatialMaxDistance = value;
-        this._soundV2.spatial.maxDistance = value;
+
+        if (this._soundV2) {
+            this._soundV2.spatial.maxDistance = value;
+        }
     }
     /**
      * Define the distance attenuation model the sound will follow.
@@ -148,7 +157,10 @@ export class Sound {
     }
     public set distanceModel(value: "linear" | "inverse" | "exponential") {
         this._optionsV2.spatialDistanceModel = value;
-        this._soundV2.spatial.distanceModel = value;
+
+        if (this._soundV2) {
+            this._soundV2.spatial.distanceModel = value;
+        }
     }
     /**
      * @internal
@@ -177,7 +189,7 @@ export class Sound {
      * @see https://doc.babylonjs.com/legacy/audio#creating-a-spatial-3d-sound
      */
     public get spatialSound(): boolean {
-        return this._soundV2._isSpatial;
+        return this._soundV2?._isSpatial ?? false;
     }
 
     /**
@@ -185,7 +197,9 @@ export class Sound {
      * @see https://doc.babylonjs.com/legacy/audio#creating-a-spatial-3d-sound
      */
     public set spatialSound(newValue: boolean) {
-        this._soundV2._isSpatial = newValue;
+        if (this._soundV2) {
+            this._soundV2._isSpatial = newValue;
+        }
     }
 
     private _localDirection: Vector3 = new Vector3(1, 0, 0);
@@ -279,9 +293,16 @@ export class Sound {
             optionsV2.spatialRotationQuaternion = _SpatialAudioDefaults.rotationQuaternion;
         }
 
+        this._optionsV2 = optionsV2;
+
         this.useCustomAttenuation = options.useCustomAttenuation ?? false;
 
         let streaming = options?.streaming || false;
+
+        const audioEngine = AbstractEngine.audioEngine;
+        if (!audioEngine) {
+            return;
+        }
 
         const audioEngineV2 = (AbstractEngine.audioEngine as AudioEngine)._v2;
 
@@ -335,8 +356,6 @@ export class Sound {
         } else if (Array.isArray(urlOrArrayBuffer)) {
             this._soundV2 = createSoundV2();
         }
-
-        this._optionsV2 = optionsV2;
 
         if (!this._soundV2) {
             Logger.Error("Parameter must be a URL to the sound, an Array of URLs (.mp3 & .ogg) or an ArrayBuffer of the sound.");
@@ -692,6 +711,10 @@ export class Sound {
      * @param time (optional) Stop the sound after X seconds. Stop immediately (0) by default.
      */
     public stop(time?: number): void {
+        if (!this._soundV2) {
+            return;
+        }
+
         // WebAudio sound sources have no `stop` function because they are always playing.
         if (this._soundV2 instanceof _WebAudioSoundSource) {
             return;
@@ -708,6 +731,10 @@ export class Sound {
      * Put the sound in pause
      */
     public pause(): void {
+        if (!this._soundV2) {
+            return;
+        }
+
         // WebAudio sound sources have no `pause` function because they are always playing.
         if (this._soundV2 instanceof _WebAudioSoundSource) {
             return;
