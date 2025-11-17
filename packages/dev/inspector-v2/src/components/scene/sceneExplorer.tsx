@@ -1,5 +1,5 @@
 import type { ScrollToInterface } from "@fluentui-contrib/react-virtualizer";
-import type { TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
+import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
 import type { FluentIcon } from "@fluentui/react-icons";
 import type { ComponentType, FunctionComponent } from "react";
 
@@ -14,7 +14,9 @@ import {
     FlatTreeItem,
     makeStyles,
     Menu,
+    MenuDivider,
     MenuItem,
+    MenuItemCheckbox,
     MenuList,
     MenuPopover,
     MenuTrigger,
@@ -103,6 +105,21 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
 }>;
 
+type PrimaryCommand = {
+    /**
+     * An icon component to render for the command.
+     */
+    icon: ComponentType;
+
+    mode?: "primary" | "secondary";
+};
+
+type SecondaryCommand = {
+    icon?: ComponentType;
+
+    mode: "secondary";
+};
+
 type Command = Partial<IDisposable> &
     Readonly<{
         /**
@@ -111,17 +128,12 @@ type Command = Partial<IDisposable> &
         displayName: string;
 
         /**
-         * An icon component to render for the command.
-         */
-        icon: ComponentType;
-
-        /**
          * An observable that notifies when the command state changes.
          */
         onChange?: IReadonlyObservable<unknown>;
     }>;
 
-type ActionCommand = Command & {
+type ActionCommand = {
     readonly type: "action";
 
     /**
@@ -130,7 +142,7 @@ type ActionCommand = Command & {
     execute(): void;
 };
 
-type ToggleCommand = Command & {
+type ToggleCommand = {
     readonly type: "toggle";
 
     /**
@@ -139,7 +151,7 @@ type ToggleCommand = Command & {
     isEnabled: boolean;
 };
 
-export type SceneExplorerCommand = ActionCommand | ToggleCommand;
+export type SceneExplorerCommand = Command & (ActionCommand | ToggleCommand) & (PrimaryCommand | SecondaryCommand);
 
 export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     /**
@@ -224,7 +236,7 @@ const useStyles = makeStyles({
     },
 });
 
-const ActionCommand: FunctionComponent<{ command: ActionCommand }> = (props) => {
+const ActionCommand: FunctionComponent<{ command: Command & ActionCommand & PrimaryCommand }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -240,7 +252,7 @@ const ActionCommand: FunctionComponent<{ command: ActionCommand }> = (props) => 
     );
 };
 
-const ToggleCommand: FunctionComponent<{ command: ToggleCommand }> = (props) => {
+const ToggleCommand: FunctionComponent<{ command: Command & ToggleCommand & PrimaryCommand }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -256,7 +268,7 @@ const ToggleCommand: FunctionComponent<{ command: ToggleCommand }> = (props) => 
 // This "placeholder" command has a blank icon and is a no-op. It is used for aside
 // alignment when some toggle commands are enabled. See more details on the commands
 // for setting the aside state.
-const PlaceHolderCommand: ActionCommand = {
+const PlaceHolderCommand: Command & ActionCommand & PrimaryCommand = {
     type: "action",
     displayName: "",
     icon: createFluentIcon("Placeholder", "1em", ""),
@@ -265,7 +277,7 @@ const PlaceHolderCommand: ActionCommand = {
     },
 };
 
-function MakeCommandElement(command: SceneExplorerCommand, isPlaceholder: boolean): JSX.Element {
+function MakeInlineCommandElement(command: Command & (ActionCommand | ToggleCommand) & PrimaryCommand, isPlaceholder: boolean): JSX.Element {
     if (isPlaceholder) {
         // Placeholders are not visible and not interacted with, so they are always ActionCommand
         // components, just to ensure the exact right amount of space is taken up.
@@ -409,9 +421,14 @@ const EntityTreeItem: FunctionComponent<{
         }, [entityItem.entity, commandProviders])
     );
 
+    const inlineCommands = useMemo(
+        () => commands.filter((command): command is Command & (ActionCommand | ToggleCommand) & PrimaryCommand => command.mode !== "secondary"),
+        [commands]
+    );
+
     // TreeItemLayout actions (totally unrelated to "Action" type commands) are only visible when the item is focused or has pointer hover.
     const actions = useMemo(() => {
-        const defaultCommands: SceneExplorerCommand[] = [];
+        const defaultCommands: (Command & (ActionCommand | ToggleCommand) & PrimaryCommand)[] = [];
         if (hasChildren) {
             defaultCommands.push({
                 type: "action",
@@ -421,8 +438,8 @@ const EntityTreeItem: FunctionComponent<{
             });
         }
 
-        return [...defaultCommands, ...commands].map((command) => MakeCommandElement(command, false));
-    }, [commands, hasChildren, expandAll]);
+        return [...defaultCommands, ...inlineCommands].map((command) => MakeInlineCommandElement(command, false));
+    }, [inlineCommands, hasChildren, expandAll]);
 
     // TreeItemLayout asides are always visible.
     const [aside, setAside] = useState<readonly JSX.Element[]>([]);
@@ -433,10 +450,10 @@ const EntityTreeItem: FunctionComponent<{
         const updateAside = () => {
             let isAnyCommandEnabled = false;
             const aside: JSX.Element[] = [];
-            for (const command of commands) {
+            for (const command of inlineCommands) {
                 isAnyCommandEnabled ||= command.type === "toggle" && command.isEnabled;
                 if (isAnyCommandEnabled) {
-                    aside.push(MakeCommandElement(command, command.type !== "toggle" || !command.isEnabled));
+                    aside.push(MakeInlineCommandElement(command, command.type !== "toggle" || !command.isEnabled));
                 }
             }
             setAside(aside);
@@ -444,7 +461,7 @@ const EntityTreeItem: FunctionComponent<{
 
         updateAside();
 
-        const observers = commands
+        const observers = inlineCommands
             .map((command) => command.onChange)
             .filter((onChange) => !!onChange)
             .map((onChange) => onChange.add(updateAside));
@@ -454,10 +471,53 @@ const EntityTreeItem: FunctionComponent<{
                 observer.remove();
             }
         };
-    }, [commands]);
+    }, [inlineCommands]);
+
+    const contextMenuCommands = useMemo(
+        () => commands.filter((command): command is Command & (ActionCommand | ToggleCommand) & SecondaryCommand => command.mode === "secondary"),
+        [commands]
+    );
+
+    const [checkedContextMenuItems, setCheckedContextMenuItems] = useState({ toggleCommands: [] as string[] });
+
+    useEffect(() => {
+        const updateCheckedItems = () => {
+            const checkedItems: string[] = [];
+            for (const command of contextMenuCommands) {
+                if (command.type === "toggle" && command.isEnabled) {
+                    checkedItems.push(command.displayName);
+                }
+            }
+            setCheckedContextMenuItems({ toggleCommands: checkedItems });
+        };
+
+        updateCheckedItems();
+
+        const observers = contextMenuCommands
+            .map((command) => command.onChange)
+            .filter((onChange) => !!onChange)
+            .map((onChange) => onChange.add(updateCheckedItems));
+
+        return () => {
+            for (const observer of observers) {
+                observer.remove();
+            }
+        };
+    }, [contextMenuCommands]);
+
+    const onContextMenuCheckedValueChange = useCallback(
+        (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
+            for (const command of contextMenuCommands) {
+                if (command.type === "toggle") {
+                    command.isEnabled = data.checkedItems.includes(command.displayName);
+                }
+            }
+        },
+        [contextMenuCommands]
+    );
 
     return (
-        <Menu openOnContext>
+        <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
                     key={entityItem.entity.uniqueId}
@@ -492,7 +552,7 @@ const EntityTreeItem: FunctionComponent<{
                     </TreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>
-            <MenuPopover hidden={!hasChildren}>
+            <MenuPopover hidden={!hasChildren && contextMenuCommands.length === 0}>
                 <MenuList>
                     <MenuItem onClick={expandAll}>
                         <Body1>Expand All</Body1>
@@ -500,6 +560,25 @@ const EntityTreeItem: FunctionComponent<{
                     <MenuItem onClick={collapseAll}>
                         <Body1>Collapse All</Body1>
                     </MenuItem>
+                    {contextMenuCommands.length > 0 && <MenuDivider />}
+                    {contextMenuCommands.map((command) =>
+                        command.type === "action" ? (
+                            <MenuItem key={command.displayName} icon={command.icon ? <command.icon /> : undefined} onClick={() => command.execute()}>
+                                {command.displayName}
+                            </MenuItem>
+                        ) : (
+                            <MenuItemCheckbox
+                                key={command.displayName}
+                                // Don't show both a checkmark and an icon. null means no checkmark, undefined means default (checkmark).
+                                checkmark={command.icon ? null : undefined}
+                                icon={command.icon ? <command.icon /> : undefined}
+                                name="toggleCommands"
+                                value={command.displayName}
+                            >
+                                {command.displayName}
+                            </MenuItemCheckbox>
+                        )
+                    )}
                 </MenuList>
             </MenuPopover>
         </Menu>
