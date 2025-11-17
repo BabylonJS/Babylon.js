@@ -33,7 +33,6 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
     // • skipDefaultFontLoading: Probably doesn't make sense for Inspector v2 using Fluent.
 
     // TODO:
-    // • explorerExtensibility
     // • contextMenu
     // • contextMenuOverride
 
@@ -129,6 +128,38 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
             },
         };
         serviceDefinitions.push(additionalNodesServiceDefinition);
+    }
+
+    if (v1Options.explorerExtensibility && v1Options.explorerExtensibility.length > 0) {
+        const { explorerExtensibility } = v1Options;
+        const explorerExtensibilityServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+            friendlyName: "Explorer Extensibility",
+            consumes: [SceneExplorerServiceIdentity],
+            factory: (sceneExplorerService) => {
+                const sceneExplorerCommandRegistrations = explorerExtensibility.flatMap((command) =>
+                    command.entries.map((entry) =>
+                        sceneExplorerService.addCommand({
+                            predicate: (entity): entity is EntityBase => command.predicate(entity),
+                            getCommand: (entity) => {
+                                return {
+                                    displayName: entry.label,
+                                    type: "action",
+                                    mode: "contextMenu",
+                                    execute: () => entry.action(entity),
+                                };
+                            },
+                        })
+                    )
+                );
+
+                return {
+                    dispose: () => {
+                        sceneExplorerCommandRegistrations.forEach((registration) => registration.dispose());
+                    },
+                };
+            },
+        };
+        serviceDefinitions.push(explorerExtensibilityServiceDefinition);
     }
 
     const v2Options: Partial<InspectorV2Options> = {
