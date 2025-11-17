@@ -7,7 +7,7 @@ import { Plane } from "../Maths/math.plane";
 import { Ray } from "../Culling/ray";
 import type { Scene } from "../scene";
 import { Vector3Distance } from "../Maths/math.vector.functions";
-import type { PickingInfo } from "../Collisions";
+import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
 
 /**
