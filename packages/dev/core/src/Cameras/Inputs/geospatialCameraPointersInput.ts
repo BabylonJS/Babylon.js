@@ -48,16 +48,25 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         // Single finger touch (no button property) or left button (button 0) = drag
         const button = point?.button ?? 0; // Default to button 0 (drag) if undefined
-
+        const scene = this.camera.getScene();
         switch (button) {
             case 0: // Left button / single touch - drag/pan globe under cursor
-                this._handleDrag();
+                this.camera.movement.handleDrag(scene.pointerX, scene.pointerY);
                 break;
             case 1: // Middle button - tilt camera
             case 2: // Right button - tilt camera
                 this._handleTilt(offsetX, offsetY);
                 break;
         }
+    }
+
+    /**
+     * Move camera from multitouch (pinch) zoom distances.
+     * @param previousPinchSquaredDistance
+     * @param pinchSquaredDistance
+     */
+    protected override _computePinchZoom(previousPinchSquaredDistance: number, pinchSquaredDistance: number): void {
+        this.camera.radius = (this.camera.radius * Math.sqrt(previousPinchSquaredDistance)) / Math.sqrt(pinchSquaredDistance);
     }
 
     /**
@@ -92,11 +101,6 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         this.camera.movement.alternateRotationPt = undefined;
         this.camera.movement.activeInput = false;
         super.onButtonUp(_evt);
-    }
-
-    private _handleDrag(): void {
-        const scene = this.camera.getScene();
-        this.camera.movement.handleDrag(scene.pointerX, scene.pointerY);
     }
 
     private _handleTilt(deltaX: number, deltaY: number): void {
