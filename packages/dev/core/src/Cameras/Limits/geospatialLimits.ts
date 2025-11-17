@@ -28,6 +28,11 @@ export class GeospatialLimits {
     public pinchToPanMax: number = 20;
 
     /**
+     * Defines effective absolute value distance from north/south pole that we allow for center
+     */
+    public centerLatitudeMin: number = 0.05;
+
+    /**
      * @param planetRadius The radius of the planet (used for altitude/radius conversions)
      */
     constructor(planetRadius: number) {

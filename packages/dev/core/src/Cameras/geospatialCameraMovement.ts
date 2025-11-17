@@ -7,6 +7,7 @@ import { Plane } from "../Maths/math.plane";
 import { Ray } from "../Culling/ray";
 import type { Scene } from "../scene";
 import { Vector3Distance } from "../Maths/math.vector.functions";
+import { Clamp } from "../Maths/math.scalar.functions";
 import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
 
@@ -133,6 +134,19 @@ export class GeospatialCameraMovement extends CameraMovement {
     public override computeCurrentFrameDeltas(): void {
         const cameraCenter = this._cameraCenter;
 
+        // Slows down panning near the poles
+        if (this.panAccumulatedPixels.lengthSquared() > Epsilon) {
+            const cameraCenterMagnitude = cameraCenter.length(); // distance from planet origin to camera center
+            const currentRadius = this._cameraPosition.length();
+            const latitudeDampeningScale = Math.max(1, cameraCenterMagnitude / Math.max(Epsilon, currentRadius - cameraCenterMagnitude)); // decrease the effect near surface
+            const sinSphericalLat = cameraCenterMagnitude === 0 ? 0 : cameraCenter.z / cameraCenterMagnitude;
+            const cosSphericalLat = Math.sqrt(1 - Math.min(1, sinSphericalLat * sinSphericalLat));
+            const latitudeDampening = Clamp(latitudeDampeningScale * Math.sqrt(Math.abs(cosSphericalLat))); // sqrt here is arbitrary, reduces effect near equator
+            this._panSpeedMultiplier = latitudeDampening;
+        } else {
+            this._panSpeedMultiplier = 0;
+        }
+
         // If a pan drag is occurring, stop zooming.
         const isDragging = this._hitPointRadius !== undefined;
         if (isDragging) {
@@ -208,6 +222,27 @@ export class GeospatialCameraMovement extends CameraMovement {
         this._tempPickingRay.direction.copyFrom(vector);
         return this._scene.pickWithRay(this._tempPickingRay, this.pickPredicate);
     }
+}
+
+export function ClampCenterFromPolesInPlace(center: Vector3, distanceFromPole: number) {
+    const centerMagnitude = center.length(); // distance from planet origin
+    if (centerMagnitude > Epsilon) {
+        const sinSphericalLat = centerMagnitude === 0 ? 0 : center.z / centerMagnitude;
+        const cosSphericalLat = Math.sqrt(1 - Math.min(1, sinSphericalLat * sinSphericalLat));
+        if (Math.abs(cosSphericalLat) < distanceFromPole) {
+            const cosClampedLat = (Math.sign(cosSphericalLat) || 1) * distanceFromPole;
+            const longitude = Math.atan2(center.y, center.x);
+            const sinClampedLat = Math.sqrt(1 - cosClampedLat * cosClampedLat) * (Math.sign(center.z) || 1);
+
+            const newX = centerMagnitude * Math.cos(longitude) * cosClampedLat;
+            const newY = centerMagnitude * Math.sin(longitude) * cosClampedLat;
+            const newZ = centerMagnitude * sinClampedLat;
+
+            center.set(newX, newY, newZ);
+        }
+    }
+
+    return center;
 }
 
 function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boolean {

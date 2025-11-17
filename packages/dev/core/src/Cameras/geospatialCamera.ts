@@ -6,7 +6,7 @@ import type { Scene } from "../scene";
 import type { MeshPredicate } from "../Culling/ray.core";
 import type { DeepImmutable } from "../types";
 import { GeospatialLimits } from "./Limits/geospatialLimits";
-import { ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialCameraMovement";
+import { ClampCenterFromPolesInPlace, ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialCameraMovement";
 import type { IVector3Like } from "../Maths/math.like";
 import { Vector3CopyToRef, Vector3Dot } from "../Maths/math.vector.functions";
 import { Clamp } from "../Maths/math.scalar.functions";
@@ -120,6 +120,7 @@ export class GeospatialCamera extends Camera {
         this._yaw = Clamp(this._yaw, limits.yawMin, limits.yawMax);
         this._pitch = Clamp(this._pitch, limits.pitchMin, limits.pitchMax);
         this._radius = Clamp(this._radius, limits.radiusMin, limits.radiusMax);
+        this._center = ClampCenterFromPolesInPlace(this._center, limits.centerLatitudeMin);
     }
 
     private _tempVect = new Vector3();
