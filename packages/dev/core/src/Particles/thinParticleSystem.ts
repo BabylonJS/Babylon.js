@@ -197,8 +197,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     /** @internal */
     public _colorDiff = new Color4(0, 0, 0, 0);
     /** @internal */
-    public _scaledDirection = Vector3.Zero();
-    /** @internal */
     public _scaledGravity = Vector3.Zero();
     private _currentRenderId = -1;
     private _alive: boolean;
@@ -283,8 +281,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _noiseCreation: _IExecutionQueueItem;
     private _createQueueStart: Nullable<_IExecutionQueueItem> = null;
 
-    /** @internal */
-    public _directionScale: number;
     /** @internal */
     public _tempScaledUpdateSpeed: number;
     /** @internal */
@@ -716,7 +712,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 }
 
                 this._ratio = particle.age / particle.lifeTime;
-                this._directionScale = this._tempScaledUpdateSpeed;
+                particle._directionScale = this._tempScaledUpdateSpeed;
 
                 // Processing queue
                 let currentQueueItem = this._updateQueueStart;
