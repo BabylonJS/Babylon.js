@@ -86,6 +86,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.Scale:
                     value = "Scale";
                     break;
+                case NodeParticleContextualSources.Size:
+                    value = "Size";
+                    break;
                 case NodeParticleContextualSources.Age:
                     value = "Age";
                     break;

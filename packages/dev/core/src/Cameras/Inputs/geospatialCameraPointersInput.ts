@@ -6,7 +6,7 @@ import type { PointerTouch } from "../../Events/pointerEvents";
 import { Plane } from "../../Maths/math.plane";
 import { TmpVectors, Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
-import { BaseCameraPointersInput } from "./BaseCameraPointersInput";
+import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
 
 /**
  * @experimental
@@ -21,7 +21,7 @@ import { BaseCameraPointersInput } from "./BaseCameraPointersInput";
  * Right mouse button: tilt globe around center of screen
  *
  */
-export class GeospatialCameraPointersInput extends BaseCameraPointersInput {
+export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     public camera: GeospatialCamera;
 
     /**
@@ -81,9 +81,36 @@ export class GeospatialCameraPointersInput extends BaseCameraPointersInput {
         }
     }
 
+    /**
+     * Move camera from multi touch panning positions.
+     * In geospatialcamera, multi touch panning tilts the globe (whereas single touch will pan/drag it)
+     * @param previousMultiTouchPanPosition
+     * @param multiTouchPanPosition
+     */
+    protected override _computeMultiTouchPanning(previousMultiTouchPanPosition: Nullable<PointerTouch>, multiTouchPanPosition: Nullable<PointerTouch>): void {
+        if (previousMultiTouchPanPosition && multiTouchPanPosition) {
+            const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
+            const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
+            this._handleTilt(moveDeltaX, moveDeltaY);
+        }
+    }
+
+    public override onMultiTouch(
+        pointA: Nullable<PointerTouch>,
+        pointB: Nullable<PointerTouch>,
+        previousPinchSquaredDistance: number,
+        pinchSquaredDistance: number,
+        previousMultiTouchPanPosition: Nullable<PointerTouch>,
+        multiTouchPanPosition: Nullable<PointerTouch>
+    ): void {
+        this._shouldStartPinchZoom = this._twoFingerActivityCount < 20 && Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(previousPinchSquaredDistance)) > 20; // move to limits once limits exist
+        super.onMultiTouch(pointA, pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
+    }
+
     public override onButtonUp(_evt: IPointerEvent): void {
         this._hitPointRadius = undefined;
         this.camera._alternateRotationPt = null;
+        super.onButtonUp(_evt);
     }
 
     /**

@@ -217,6 +217,11 @@ export class NodeParticleBuildState {
                 }
                 return this.particleContext.angle;
 
+            case NodeParticleContextualSources.Size:
+                if (!this._isParticleWithThinSystem()) {
+                    return null;
+                }
+                return this.particleContext.size;
             case NodeParticleContextualSources.AgeGradient:
                 if (!this._isParticleWithThinSystem()) {
                     return null;

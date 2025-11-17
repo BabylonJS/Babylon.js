@@ -41,4 +41,6 @@ export enum NodeParticleContextualSources {
     ScaledColorStep = 0x0017,
     /** Local Position Updated */
     LocalPositionUpdated = 0x0018,
+    /** Size */
+    Size = 0x0019,
 }
