@@ -105,33 +105,31 @@ export type SceneExplorerSection<T extends EntityBase> = Readonly<{
     getEntityMovedObservables?: () => readonly IReadonlyObservable<T>[];
 }>;
 
-type PrimaryCommand = {
+type InlineCommand = {
     /**
-     * An icon component to render for the command.
+     * An icon component to render for the command. Required for inline commands.
      */
     icon: ComponentType;
 
-    mode?: "primary" | "secondary";
+    /**
+     * The mode of the command. Inline commands are shown directly in the tree item layout. Inline by default.
+     */
+    mode?: "inline";
 };
 
-type SecondaryCommand = {
+type ContextMenuCommand = {
+    /**
+     * An icon component to render for the command. Optional for context menu commands.
+     */
     icon?: ComponentType;
 
-    mode: "secondary";
+    /**
+     * The mode of the command. Context menu commands are shown in the context menu for the tree item.
+     */
+    mode: "contextMenu";
 };
 
-type Command = Partial<IDisposable> &
-    Readonly<{
-        /**
-         * The display name of the command (e.g. "Delete", "Rename", etc.).
-         */
-        displayName: string;
-
-        /**
-         * An observable that notifies when the command state changes.
-         */
-        onChange?: IReadonlyObservable<unknown>;
-    }>;
+type CommandMode = (InlineCommand | ContextMenuCommand)["mode"];
 
 type ActionCommand = {
     readonly type: "action";
@@ -151,7 +149,22 @@ type ToggleCommand = {
     isEnabled: boolean;
 };
 
-export type SceneExplorerCommand = Command & (ActionCommand | ToggleCommand) & (PrimaryCommand | SecondaryCommand);
+type CommandType = (ActionCommand | ToggleCommand)["type"];
+
+export type SceneExplorerCommand<ModeT extends CommandMode = CommandMode, TypeT extends CommandType = CommandType> = Partial<IDisposable> &
+    Readonly<{
+        /**
+         * The display name of the command (e.g. "Delete", "Rename", etc.).
+         */
+        displayName: string;
+
+        /**
+         * An observable that notifies when the command state changes.
+         */
+        onChange?: IReadonlyObservable<unknown>;
+    }> &
+    (ModeT extends "inline" ? InlineCommand : ContextMenuCommand) &
+    (TypeT extends "action" ? ActionCommand : ToggleCommand);
 
 export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     /**
@@ -236,7 +249,7 @@ const useStyles = makeStyles({
     },
 });
 
-const ActionCommand: FunctionComponent<{ command: Command & ActionCommand & PrimaryCommand }> = (props) => {
+const ActionCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline", "action"> }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -252,7 +265,7 @@ const ActionCommand: FunctionComponent<{ command: Command & ActionCommand & Prim
     );
 };
 
-const ToggleCommand: FunctionComponent<{ command: Command & ToggleCommand & PrimaryCommand }> = (props) => {
+const ToggleCommand: FunctionComponent<{ command: SceneExplorerCommand<"inline", "toggle"> }> = (props) => {
     const { command } = props;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -268,7 +281,7 @@ const ToggleCommand: FunctionComponent<{ command: Command & ToggleCommand & Prim
 // This "placeholder" command has a blank icon and is a no-op. It is used for aside
 // alignment when some toggle commands are enabled. See more details on the commands
 // for setting the aside state.
-const PlaceHolderCommand: Command & ActionCommand & PrimaryCommand = {
+const PlaceHolderCommand: SceneExplorerCommand<"inline", "action"> = {
     type: "action",
     displayName: "",
     icon: createFluentIcon("Placeholder", "1em", ""),
@@ -277,7 +290,7 @@ const PlaceHolderCommand: Command & ActionCommand & PrimaryCommand = {
     },
 };
 
-function MakeInlineCommandElement(command: Command & (ActionCommand | ToggleCommand) & PrimaryCommand, isPlaceholder: boolean): JSX.Element {
+function MakeInlineCommandElement(command: SceneExplorerCommand<"inline">, isPlaceholder: boolean): JSX.Element {
     if (isPlaceholder) {
         // Placeholders are not visible and not interacted with, so they are always ActionCommand
         // components, just to ensure the exact right amount of space is taken up.
@@ -421,14 +434,11 @@ const EntityTreeItem: FunctionComponent<{
         }, [entityItem.entity, commandProviders])
     );
 
-    const inlineCommands = useMemo(
-        () => commands.filter((command): command is Command & (ActionCommand | ToggleCommand) & PrimaryCommand => command.mode !== "secondary"),
-        [commands]
-    );
+    const inlineCommands = useMemo(() => commands.filter((command): command is SceneExplorerCommand<"inline"> => command.mode !== "contextMenu"), [commands]);
 
     // TreeItemLayout actions (totally unrelated to "Action" type commands) are only visible when the item is focused or has pointer hover.
     const actions = useMemo(() => {
-        const defaultCommands: (Command & (ActionCommand | ToggleCommand) & PrimaryCommand)[] = [];
+        const defaultCommands: SceneExplorerCommand<"inline">[] = [];
         if (hasChildren) {
             defaultCommands.push({
                 type: "action",
@@ -473,10 +483,7 @@ const EntityTreeItem: FunctionComponent<{
         };
     }, [inlineCommands]);
 
-    const contextMenuCommands = useMemo(
-        () => commands.filter((command): command is Command & (ActionCommand | ToggleCommand) & SecondaryCommand => command.mode === "secondary"),
-        [commands]
-    );
+    const contextMenuCommands = useMemo(() => commands.filter((command): command is SceneExplorerCommand<"contextMenu"> => command.mode === "contextMenu"), [commands]);
 
     const [checkedContextMenuItems, setCheckedContextMenuItems] = useState({ toggleCommands: [] as string[] });
 
