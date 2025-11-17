@@ -3,7 +3,7 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { SolidParticle } from "../../../solidParticle";
+import type { SolidParticle } from "../../../solidParticle";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { serialize } from "../../../../Misc/decorators";
 
@@ -11,7 +11,7 @@ import { serialize } from "../../../../Misc/decorators";
  * Block used to set custom properties in particle.props
  * Works as a side-effect block that stores values and passes them through
  */
-export class ParticlePropsSetBlock extends NodeParticleBlock {
+export class SpsParticlePropsSetBlock extends NodeParticleBlock {
     /**
      * Gets or sets the property name to store in particle.props
      */
@@ -32,7 +32,7 @@ export class ParticlePropsSetBlock extends NodeParticleBlock {
 
         this.registerInput("value", NodeParticleBlockConnectionPointTypes.AutoDetect, true);
         this.registerOutput("output", NodeParticleBlockConnectionPointTypes.BasedOnInput);
-        
+
         // Link output type to input type
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         // Set default type for when input is not connected
@@ -40,7 +40,7 @@ export class ParticlePropsSetBlock extends NodeParticleBlock {
     }
 
     public override getClassName() {
-        return "ParticlePropsSetBlock";
+        return "SpsParticlePropsSetBlock";
     }
 
     public get value(): NodeParticleConnectionPoint {
@@ -130,4 +130,4 @@ export class ParticlePropsSetBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.ParticlePropsSetBlock", ParticlePropsSetBlock);
+RegisterClass("BABYLON.SpsParticlePropsSetBlock", SpsParticlePropsSetBlock);

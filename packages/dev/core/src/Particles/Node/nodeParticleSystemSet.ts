@@ -20,8 +20,8 @@ import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTelepor
 import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
-import type { Nullable } from "../../types";
-import { Color4 } from "core/Maths/math.color";
+import type { Nullable } from "core/types";
+import type { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
 import {
     SPSParticleConfigBlock,
@@ -31,10 +31,10 @@ import {
     SPSSystemBlock,
     SPSCreateBlock,
     SPSUpdateBlock,
-    ParticlePropsSetBlock,
-    ParticlePropsGetBlock,
+    SpsParticlePropsSetBlock,
+    SpsParticlePropsGetBlock,
 } from "./Blocks";
-import { ParticleSystem } from "..";
+import { ParticleSystem } from "core/Particles/particleSystem";
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
 import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
 import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "./Blocks/particleTrigonometryBlock";
@@ -354,7 +354,7 @@ export class NodeParticleSystemSet {
         this._systemBlocks.push(system);
     }
 
-    public setToDefaultSPS() {
+    public setToDefaultSps() {
         this.clear();
         this.editorData = null;
 
@@ -408,7 +408,7 @@ export class NodeParticleSystemSet {
         const cosAngle = new ParticleTrigonometryBlock("Cos Angle");
         cosAngle.operation = ParticleTrigonometryBlockOperations.Cos;
         // Store angle in props so we can reuse during update
-        const setAnglePropInit = new ParticlePropsSetBlock("Set Angle Prop Init");
+        const setAnglePropInit = new SpsParticlePropsSetBlock("Set Angle Prop Init");
         setAnglePropInit.propertyName = "angle";
         randomAngle.output.connectTo(setAnglePropInit.value);
         setAnglePropInit.output.connectTo(cosAngle.input);
@@ -418,7 +418,7 @@ export class NodeParticleSystemSet {
         cosAngle.output.connectTo(addOne.right);
         const multiplyRange = new ParticleMathBlock("Multiply Range");
         multiplyRange.operation = ParticleMathBlockOperations.Multiply;
-        const setRangePropInit = new ParticlePropsSetBlock("Set Range Prop Init");
+        const setRangePropInit = new SpsParticlePropsSetBlock("Set Range Prop Init");
         setRangePropInit.propertyName = "range";
         randomRange.output.connectTo(setRangePropInit.value);
         setRangePropInit.output.connectTo(multiplyRange.left);
@@ -470,11 +470,11 @@ export class NodeParticleSystemSet {
         currentPosition.output.connectTo(extractPosition.xyzIn);
 
         // Retrieve stored properties
-        const getAngleProp = new ParticlePropsGetBlock("Get Angle Prop");
+        const getAngleProp = new SpsParticlePropsGetBlock("Get Angle Prop");
         getAngleProp.propertyName = "angle";
         getAngleProp.type = NodeParticleBlockConnectionPointTypes.Float;
 
-        const getRangeProp = new ParticlePropsGetBlock("Get Range Prop");
+        const getRangeProp = new SpsParticlePropsGetBlock("Get Range Prop");
         getRangeProp.propertyName = "range";
         getRangeProp.type = NodeParticleBlockConnectionPointTypes.Float;
 
@@ -511,7 +511,7 @@ export class NodeParticleSystemSet {
         getAngleProp.output.connectTo(accumulateAngle.left);
         scaledIncrement.output.connectTo(accumulateAngle.right);
 
-        const setAnglePropUpdate = new ParticlePropsSetBlock("Set Angle Prop Update");
+        const setAnglePropUpdate = new SpsParticlePropsSetBlock("Set Angle Prop Update");
         setAnglePropUpdate.propertyName = "angle";
         setAnglePropUpdate.type = NodeParticleBlockConnectionPointTypes.Float;
         accumulateAngle.output.connectTo(setAnglePropUpdate.value);

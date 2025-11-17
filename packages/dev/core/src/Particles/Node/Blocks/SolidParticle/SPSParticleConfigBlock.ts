@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISPSParticleConfigData } from "./ISPSData";
+import type { ISpsParticleConfigData } from "./ISPSData";
 
 /**
  * Block used to configure SPS particle parameters (mesh, count, material, initBlock, updateBlock)
@@ -57,7 +59,7 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
         const initBlock = this.initBlock.isConnected ? this.initBlock.getConnectedValue(state) : null;
         const updateBlock = this.updateBlock.isConnected ? this.updateBlock.getConnectedValue(state) : null;
 
-        const particleConfig: ISPSParticleConfigData = {
+        const particleConfig: ISpsParticleConfigData = {
             mesh,
             count,
             material,

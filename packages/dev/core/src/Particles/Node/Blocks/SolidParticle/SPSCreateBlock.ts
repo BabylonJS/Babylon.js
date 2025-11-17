@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
-import type { ISPSParticleConfigData } from "./ISPSData";
-import { SolidParticle } from "../../../solidParticle";
-import { Observer } from "../../../../Misc";
+import type { ISpsParticleConfigData } from "./ISPSData";
+import type { SolidParticle } from "../../../solidParticle";
+import type { Observer } from "core/Misc/observable";
 
 /**
  * Block used to create SolidParticleSystem and collect all Create blocks
@@ -95,9 +97,9 @@ export class SPSCreateBlock extends NodeParticleBlock {
             useModelMaterial: true,
         });
 
-        const createBlocks = new Map<number, ISPSParticleConfigData>();
+        const createBlocks = new Map<number, ISpsParticleConfigData>();
         for (let i = 0; i < this._inputs.length; i++) {
-            const creatData = this._inputs[i].getConnectedValue(state) as ISPSParticleConfigData;
+            const creatData = this._inputs[i].getConnectedValue(state) as ISpsParticleConfigData;
             if (this._inputs[i].isConnected && creatData) {
                 if (creatData.mesh && creatData.count) {
                     const shapeId = sps.addShape(creatData.mesh, creatData.count);

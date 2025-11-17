@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
@@ -9,7 +11,7 @@ import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
 import { CreateCylinder } from "core/Meshes/Builders/cylinderBuilder";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { SPSMeshShapeType } from "./SPSMeshShapeType";
-import { Mesh } from "../../../../Meshes";
+import type { Mesh } from "core/Meshes/mesh";
 
 /**
  * Block used to provide mesh source for SPS

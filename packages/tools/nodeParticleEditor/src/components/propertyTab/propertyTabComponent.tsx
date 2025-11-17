@@ -227,7 +227,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                     this.props.globalState.nodeParticleSet.setToDefault();
                     break;
                 case NodeParticleModes.SPS:
-                    this.props.globalState.nodeParticleSet.setToDefaultSPS();
+                    this.props.globalState.nodeParticleSet.setToDefaultSps();
                     break;
             }
         }

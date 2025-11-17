@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISPSUpdateData } from "./ISPSData";
+import type { ISpsUpdateData } from "./ISPSData";
 
 /**
  * Block used to generate initialization function for SPS particles
@@ -50,7 +52,7 @@ export class SPSInitBlock extends NodeParticleBlock {
     }
 
     public override _build(state: NodeParticleBuildState) {
-        const initData = {} as ISPSUpdateData;
+        const initData = {} as ISpsUpdateData;
         if (this.position.isConnected) {
             initData.position = () => {
                 return this.position.getConnectedValue(state);

@@ -1,12 +1,12 @@
-import { Vector3 } from "core/Maths/math.vector";
-import { Color4 } from "core/Maths/math.color";
+import type { Vector3 } from "core/Maths/math.vector";
+import type { Color4 } from "core/Maths/math.color";
 import type { Mesh } from "core/Meshes/mesh";
 import type { Material } from "core/Materials/material";
 
 /**
  * Interface for SPS update block data
  */
-export interface ISPSUpdateData {
+export interface ISpsUpdateData {
     position?: () => Vector3;
     velocity?: () => Vector3;
     color?: () => Color4;
@@ -17,10 +17,10 @@ export interface ISPSUpdateData {
 /**
  * Interface for SPS create block data
  */
-export interface ISPSParticleConfigData {
+export interface ISpsParticleConfigData {
     mesh: Mesh;
     count: number;
     material?: Material;
-    initBlock?: ISPSUpdateData;
-    updateBlock?: ISPSUpdateData;
+    initBlock?: ISpsUpdateData;
+    updateBlock?: ISpsUpdateData;
 }

@@ -50,6 +50,6 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutDisplayManager;
     DisplayLedger.RegisteredControls["BasicConditionBlock"] = ConditionDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTriggerBlock"] = TriggerDisplayManager;
-    DisplayLedger.RegisteredControls["ParticlePropsGetBlock"] = InputDisplayManager;
-    DisplayLedger.RegisteredControls["ParticlePropsSetBlock"] = InputDisplayManager;
+    DisplayLedger.RegisteredControls["SpsParticlePropsGetBlock"] = InputDisplayManager;
+    DisplayLedger.RegisteredControls["SpsParticlePropsSetBlock"] = InputDisplayManager;
 };
