@@ -253,7 +253,7 @@ export class Sound {
 
         const optionsV2: Partial<IStaticSoundOptions> = {
             analyzerEnabled: false,
-            autoplay: options.autoplay || false,
+            autoplay: false, // `false` for now, but will be set to given option later
             duration: options.length || 0,
             loop: options.loop || false,
             loopEnd: 0,
@@ -323,7 +323,16 @@ export class Sound {
             const sound = new _WebAudioStaticSound(name, audioEngineV2, optionsV2);
 
             // eslint-disable-next-line github/no-then
-            void sound._initAsync(urlOrArrayBuffer, optionsV2).then(this._onReadyToPlay);
+            void sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
+                this._onReadyToPlay();
+
+                // We need to explicitly call this `Sound` class's `play` function when `autoplay` is `true` so the
+                // audio engine unlock mechanism is properly triggered.
+                if (options.autoplay) {
+                    this._optionsV2.autoplay = true;
+                    this.play();
+                }
+            });
 
             return sound;
         };
