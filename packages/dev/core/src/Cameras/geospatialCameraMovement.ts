@@ -232,7 +232,7 @@ export function ComputeLocalBasisToRefs(worldPos: Vector3, refEast: Vector3, ref
 
     // east = normalize(worldNorth × up)
     // (cross product of Earth rotation axis with up gives east except near poles)
-    const worldNorth = Vector3.Forward(); // (0,0,1)
+    const worldNorth = Vector3.LeftHandedForwardReadOnly; // (0,0,1)
     Vector3.CrossToRef(worldNorth, refUp, refEast);
 
     // at poles, cross with worldRight instead
