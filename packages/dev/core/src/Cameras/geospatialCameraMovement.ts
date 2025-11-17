@@ -41,7 +41,7 @@ export class GeospatialCameraMovement extends CameraMovement {
     private _tempPickingRay: Ray;
     private _storedZoomPickDistance: number | undefined;
 
-    private _hitPointRadius?: number = 0;
+    private _hitPointRadius?: number = undefined;
     private _dragPlane: Plane = new Plane(0, 0, 0, 0);
     private _dragPlaneNormal: Vector3 = Vector3.Zero();
     private _dragPlaneOriginPointEcef: Vector3 = Vector3.Zero();
