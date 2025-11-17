@@ -1,8 +1,8 @@
-import { IQuaternionLike } from "../Maths/math.like";
+import type { IQuaternionLike } from "../Maths/math.like";
 import { Clamp } from "../Maths/math.scalar.functions";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Vector3Dot, Vector4Dot } from "../Maths/math.vector.functions";
-import { DeepImmutable } from "../types";
+import type { DeepImmutable } from "../types";
 
 // *** NOTE ***
 // These functions should ideally go in math.vector.functions.ts, but they require math.vector.ts to
