@@ -14,7 +14,7 @@ import type { AbstractEngine } from "../../Engines/abstractEngine";
  * Manage the keyboard inputs to control the movement of a geospatial camera.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
-export class GeospatialCameraKeyboardMoveInput implements ICameraInput<GeospatialCamera> {
+export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCamera> {
     /**
      * Defines the camera the input is attached to.
      */
@@ -58,21 +58,21 @@ export class GeospatialCameraKeyboardMoveInput implements ICameraInput<Geospatia
 
     /**
      * Defines the rotation sensitivity of the inputs.
-     * (How many pixels per keypress is the camera rotating, before speed factor is applied by movement class)
+     * (How many pixels of pointer input to apply per keypress, before rotation speed factor is applied by movement class)
      */
     @serialize()
     public rotationSensitivity = 1.0;
 
     /**
      * Defines the panning sensitivity of the inputs.
-     * (How many pixels per keypress is the camera panning, before speed factor is applied by movement class)
+     * (How many pixels of pointer input to apply per keypress, before pan speed factor is applied by movement class)
      */
     @serialize()
     public panSensitivity: number = 1.0;
 
     /**
      * Defines the zooming sensitivity of the inputs.
-     * (How many pixels per keypress is the camera zooming, before speed factor is applied by movement class)
+     * (How many pixels of pointer input to apply per keypress, before zoom speed factor is applied by movement class)
      */
     @serialize()
     public zoomSensitivity: number = 1.0;
@@ -95,9 +95,6 @@ export class GeospatialCameraKeyboardMoveInput implements ICameraInput<Geospatia
         if (this._onCanvasBlurObserver) {
             return;
         }
-
-        this._scene = this.camera.getScene();
-        this._engine = this._scene.getEngine();
 
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
             this._keys.length = 0;
@@ -202,9 +199,8 @@ export class GeospatialCameraKeyboardMoveInput implements ICameraInput<Geospatia
                         camera.movement.zoomAccumulatedPixels -= this.zoomSensitivity;
                     } else {
                         // Call into movement class handleDrag so that behavior matches that of pointer input, simulating drag from center of screen
-                        const engine = this._scene.getEngine();
-                        const centerX = engine.getRenderWidth() / 2;
-                        const centerY = engine.getRenderHeight() / 2;
+                        const centerX = this._engine.getRenderWidth() / 2;
+                        const centerY = this._engine.getRenderHeight() / 2;
                         camera.movement.startDrag(centerX, centerY);
                         if (this.keysLeft.indexOf(keyCode) !== -1) {
                             camera.movement.handleDrag(centerX - this.panSensitivity, centerY);
@@ -227,7 +223,7 @@ export class GeospatialCameraKeyboardMoveInput implements ICameraInput<Geospatia
      * @returns the class name
      */
     public getClassName(): string {
-        return "GeospatialCameraKeyboardMoveInput";
+        return "GeospatialCameraKeyboardInput";
     }
 
     /**
@@ -239,4 +235,4 @@ export class GeospatialCameraKeyboardMoveInput implements ICameraInput<Geospatia
     }
 }
 
-(<any>CameraInputTypes)["GeospatialCameraKeyboardMoveInput"] = GeospatialCameraKeyboardMoveInput;
+(<any>CameraInputTypes)["GeospatialCameraKeyboardInput"] = GeospatialCameraKeyboardInput;
