@@ -20,8 +20,26 @@ import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTelepor
 import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
+import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
-import type { Nullable } from "../../types";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
+import {
+    SPSParticleConfigBlock,
+    SPSInitBlock,
+    SPSMeshShapeType,
+    SPSMeshSourceBlock,
+    SPSSystemBlock,
+    SPSCreateBlock,
+    SPSUpdateBlock,
+    SpsParticlePropsSetBlock,
+    SpsParticlePropsGetBlock,
+} from "./Blocks";
+import { ParticleSystem } from "core/Particles/particleSystem";
+import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
+import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
+import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "./Blocks/particleTrigonometryBlock";
+import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
+import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;
@@ -45,7 +63,7 @@ export interface INodeParticleEditorOptions {
  * PG: #ZT509U#1
  */
 export class NodeParticleSystemSet {
-    private _systemBlocks: SystemBlock[] = [];
+    private _systemBlocks: (SystemBlock | SPSSystemBlock)[] = [];
     private _buildId: number = 0;
 
     /** Define the Url to load node editor script */
@@ -90,7 +108,7 @@ export class NodeParticleSystemSet {
     /**
      * Gets the system blocks
      */
-    public get systemBlocks(): SystemBlock[] {
+    public get systemBlocks(): (SystemBlock | SPSSystemBlock)[] {
         return this._systemBlocks;
     }
 
@@ -269,13 +287,13 @@ export class NodeParticleSystemSet {
                 state.verbose = verbose;
 
                 const system = block.createSystem(state);
-                system._source = this;
-                system._blockReference = block._internalId;
-
+                if (system instanceof ParticleSystem) {
+                    system._source = this;
+                    system._blockReference = block._internalId;
+                }
+                output.systems.push(system);
                 // Errors
                 state.emitErrors();
-
-                output.systems.push(system);
             }
 
             this.onBuildObservable.notifyObservers(this);
@@ -334,6 +352,193 @@ export class NodeParticleSystemSet {
         textureBlock.url = Tools.GetAssetUrl("https://assets.babylonjs.com/core/textures/flare.png");
 
         this._systemBlocks.push(system);
+    }
+
+    public setToDefaultSps() {
+        this.clear();
+        this.editorData = null;
+
+        const spsSystem = new SPSSystemBlock("SPS System");
+        spsSystem.billboard = false;
+
+        const spsCreateBlock = new SPSCreateBlock("Create Particles System");
+        spsCreateBlock.solidParticleSystem.connectTo(spsSystem.solidParticleSystem);
+
+        const spsCreateTetra = new SPSParticleConfigBlock("Create Tetrahedron Particles");
+        spsCreateTetra.count.value = 2000;
+        spsCreateTetra.particleConfig.connectTo(spsCreateBlock.particleConfig);
+
+        const meshSourceTetra = new SPSMeshSourceBlock("Tetrahedron Mesh");
+        meshSourceTetra.shapeType = SPSMeshShapeType.Box;
+        meshSourceTetra.size = 0.1;
+        meshSourceTetra.mesh.connectTo(spsCreateTetra.mesh);
+
+        const spsInitTetra = new SPSInitBlock("Initialize Tetrahedron Particles");
+        spsInitTetra.initData.connectTo(spsCreateTetra.initBlock);
+
+        const randomXZMin = new ParticleInputBlock("Random XZ Min");
+        randomXZMin.value = new Vector2(-10, -10);
+        const randomXZMax = new ParticleInputBlock("Random XZ Max");
+        randomXZMax.value = new Vector2(10, 10);
+        const randomXZ = new ParticleRandomBlock("Random XZ");
+        randomXZ.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomXZMin.output.connectTo(randomXZ.min);
+        randomXZMax.output.connectTo(randomXZ.max);
+
+        const randomAngleMin = new ParticleInputBlock("Random Angle Min");
+        randomAngleMin.value = -Math.PI;
+        const randomAngleMax = new ParticleInputBlock("Random Angle Max");
+        randomAngleMax.value = Math.PI;
+        const randomAngle = new ParticleRandomBlock("Random Angle");
+        randomAngle.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomAngleMin.output.connectTo(randomAngle.min);
+        randomAngleMax.output.connectTo(randomAngle.max);
+
+        const randomRangeMin = new ParticleInputBlock("Random Range Min");
+        randomRangeMin.value = 1;
+        const randomRangeMax = new ParticleInputBlock("Random Range Max");
+        randomRangeMax.value = 5;
+        const randomRange = new ParticleRandomBlock("Random Range");
+        randomRange.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomRangeMin.output.connectTo(randomRange.min);
+        randomRangeMax.output.connectTo(randomRange.max);
+
+        const one = new ParticleInputBlock("One");
+        one.value = 1;
+        const cosAngle = new ParticleTrigonometryBlock("Cos Angle");
+        cosAngle.operation = ParticleTrigonometryBlockOperations.Cos;
+        // Store angle in props so we can reuse during update
+        const setAnglePropInit = new SpsParticlePropsSetBlock("Set Angle Prop Init");
+        setAnglePropInit.propertyName = "angle";
+        randomAngle.output.connectTo(setAnglePropInit.value);
+        setAnglePropInit.output.connectTo(cosAngle.input);
+        const addOne = new ParticleMathBlock("Add One");
+        addOne.operation = ParticleMathBlockOperations.Add;
+        one.output.connectTo(addOne.left);
+        cosAngle.output.connectTo(addOne.right);
+        const multiplyRange = new ParticleMathBlock("Multiply Range");
+        multiplyRange.operation = ParticleMathBlockOperations.Multiply;
+        const setRangePropInit = new SpsParticlePropsSetBlock("Set Range Prop Init");
+        setRangePropInit.propertyName = "range";
+        randomRange.output.connectTo(setRangePropInit.value);
+        setRangePropInit.output.connectTo(multiplyRange.left);
+        addOne.output.connectTo(multiplyRange.right);
+
+        const extractXZ = new ParticleConverterBlock("Extract XZ");
+        randomXZ.output.connectTo(extractXZ.xyIn);
+        const positionConverter = new ParticleConverterBlock("Position Converter");
+        extractXZ.xOut.connectTo(positionConverter.xIn);
+        multiplyRange.output.connectTo(positionConverter.yIn);
+        extractXZ.yOut.connectTo(positionConverter.zIn);
+        positionConverter.xyzOut.connectTo(spsInitTetra.position);
+
+        const randomRotMin = new ParticleInputBlock("Random Rot Min");
+        randomRotMin.value = new Vector3(-Math.PI, -Math.PI, -Math.PI);
+        const randomRotMax = new ParticleInputBlock("Random Rot Max");
+        randomRotMax.value = new Vector3(Math.PI, Math.PI, Math.PI);
+        const randomRot = new ParticleRandomBlock("Random Rotation");
+        randomRot.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomRotMin.output.connectTo(randomRot.min);
+        randomRotMax.output.connectTo(randomRot.max);
+        randomRot.output.connectTo(spsInitTetra.rotation);
+
+        const randomColorMin = new ParticleInputBlock("Random Color Min");
+        randomColorMin.value = new Vector3(0, 0, 0);
+        const randomColorMax = new ParticleInputBlock("Random Color Max");
+        randomColorMax.value = new Vector3(1, 1, 1);
+        const randomColorRGB = new ParticleRandomBlock("Random Color RGB");
+        randomColorRGB.lockMode = ParticleRandomBlockLocks.PerParticle;
+        randomColorMin.output.connectTo(randomColorRGB.min);
+        randomColorMax.output.connectTo(randomColorRGB.max);
+        const colorAlpha = new ParticleInputBlock("Color Alpha");
+        colorAlpha.value = 1;
+        const colorConverter = new ParticleConverterBlock("Color Converter");
+        randomColorRGB.output.connectTo(colorConverter.xyzIn);
+        colorAlpha.output.connectTo(colorConverter.wIn);
+        colorConverter.colorOut.connectTo(spsInitTetra.color);
+
+        // Create update block
+        const spsUpdateTetra = new SPSUpdateBlock("Update Tetrahedron Particles");
+        spsUpdateTetra.updateData.connectTo(spsCreateTetra.updateBlock);
+
+        // Get current position (X, Z stay the same, Y updates)
+        const currentPosition = new ParticleInputBlock("Current Position");
+        currentPosition.contextualValue = NodeParticleContextualSources.Position;
+
+        // Extract X and Z from current position
+        const extractPosition = new ParticleConverterBlock("Extract Position");
+        currentPosition.output.connectTo(extractPosition.xyzIn);
+
+        // Retrieve stored properties
+        const getAngleProp = new SpsParticlePropsGetBlock("Get Angle Prop");
+        getAngleProp.propertyName = "angle";
+        getAngleProp.type = NodeParticleBlockConnectionPointTypes.Float;
+
+        const getRangeProp = new SpsParticlePropsGetBlock("Get Range Prop");
+        getRangeProp.propertyName = "range";
+        getRangeProp.type = NodeParticleBlockConnectionPointTypes.Float;
+
+        // Accumulate angle using delta time to avoid relying on absolute frame id
+        const deltaBlock = new ParticleInputBlock("Delta Time");
+        deltaBlock.systemSource = NodeParticleSystemSources.Delta;
+
+        const milliToSecond = new ParticleInputBlock("Milli To Second");
+        milliToSecond.value = 0.001;
+
+        const deltaSeconds = new ParticleMathBlock("Delta Seconds");
+        deltaSeconds.operation = ParticleMathBlockOperations.Multiply;
+        deltaBlock.output.connectTo(deltaSeconds.left);
+        milliToSecond.output.connectTo(deltaSeconds.right);
+
+        const targetFps = new ParticleInputBlock("Target FPS");
+        targetFps.value = 60;
+
+        const normalizedDelta = new ParticleMathBlock("Normalized Delta");
+        normalizedDelta.operation = ParticleMathBlockOperations.Multiply;
+        deltaSeconds.output.connectTo(normalizedDelta.left);
+        targetFps.output.connectTo(normalizedDelta.right);
+
+        const speedPerFrame = new ParticleInputBlock("Speed Per Frame");
+        speedPerFrame.value = Math.PI / 100;
+
+        const scaledIncrement = new ParticleMathBlock("Scaled Increment");
+        scaledIncrement.operation = ParticleMathBlockOperations.Multiply;
+        speedPerFrame.output.connectTo(scaledIncrement.left);
+        normalizedDelta.output.connectTo(scaledIncrement.right);
+
+        const accumulateAngle = new ParticleMathBlock("Accumulate Angle");
+        accumulateAngle.operation = ParticleMathBlockOperations.Add;
+        getAngleProp.output.connectTo(accumulateAngle.left);
+        scaledIncrement.output.connectTo(accumulateAngle.right);
+
+        const setAnglePropUpdate = new SpsParticlePropsSetBlock("Set Angle Prop Update");
+        setAnglePropUpdate.propertyName = "angle";
+        setAnglePropUpdate.type = NodeParticleBlockConnectionPointTypes.Float;
+        accumulateAngle.output.connectTo(setAnglePropUpdate.value);
+
+        // Calculate new Y position: range * (1 + cos(angle))
+        const oneUpdate = new ParticleInputBlock("One Update");
+        oneUpdate.value = 1;
+        const cosUpdatedAngle = new ParticleTrigonometryBlock("Cos Updated Angle");
+        cosUpdatedAngle.operation = ParticleTrigonometryBlockOperations.Cos;
+        setAnglePropUpdate.output.connectTo(cosUpdatedAngle.input);
+        const addOneUpdate = new ParticleMathBlock("Add One Update");
+        addOneUpdate.operation = ParticleMathBlockOperations.Add;
+        oneUpdate.output.connectTo(addOneUpdate.left);
+        cosUpdatedAngle.output.connectTo(addOneUpdate.right);
+        const multiplyRangeUpdate = new ParticleMathBlock("Multiply Range Update");
+        multiplyRangeUpdate.operation = ParticleMathBlockOperations.Multiply;
+        getRangeProp.output.connectTo(multiplyRangeUpdate.left);
+        addOneUpdate.output.connectTo(multiplyRangeUpdate.right);
+
+        // Combine X (from current position), Y (new), Z (from current position)
+        const updatePositionConverter = new ParticleConverterBlock("Update Position Converter");
+        extractPosition.xOut.connectTo(updatePositionConverter.xIn);
+        multiplyRangeUpdate.output.connectTo(updatePositionConverter.yIn);
+        extractPosition.zOut.connectTo(updatePositionConverter.zIn);
+        updatePositionConverter.xyzOut.connectTo(spsUpdateTetra.position);
+
+        this._systemBlocks.push(spsSystem);
     }
 
     /**

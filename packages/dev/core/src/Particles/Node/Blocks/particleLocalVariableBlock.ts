@@ -88,7 +88,7 @@ export class ParticleLocalVariableBlock extends NodeParticleBlock {
                 return null;
             }
 
-            const id = (this.scope === ParticleLocalVariableBlockScope.Particle ? state.particleContext?.id : state.systemContext?.getScene()!.getFrameId()) || -1;
+            const id = (this.scope === ParticleLocalVariableBlockScope.Particle ? state.particleContext?.id : state.scene.getFrameId()) || -1;
 
             if (localId !== id) {
                 localId = id;

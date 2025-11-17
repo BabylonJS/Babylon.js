@@ -13,4 +13,13 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["ParticleDebugBlock"] = DebugPropertyTabComponent;
     PropertyLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutPropertyTabComponent;
     PropertyLedger.RegisteredControls["MeshShapeBlock"] = MeshShapePropertyTabComponent;
+
+    PropertyLedger.RegisteredControls["SPSMeshSourceBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSParticleConfigBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSCreateBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSSystemBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSInitBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSUpdateBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SpsParticlePropsSetBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SpsParticlePropsGetBlock"] = GenericPropertyComponent;
 };
