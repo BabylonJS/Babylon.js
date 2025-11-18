@@ -43,21 +43,7 @@ type ConstPropertyMetadataFloat = ConstPropertyMetadataBase & {
     options?: { [key: string]: number };
 };
 
-type BoolPropertyMetadataFloat = ConstPropertyMetadataBase & {
-    type: "bool";
-
-    /**
-     * The default value of the property
-     */
-    defaultValue: boolean;
-
-    /**
-     * Optional mapping of values to strings to be displayed in the Smart Filters Editor UI for this property.
-     */
-    options?: { [key: string]: boolean };
-};
-
-export type ConstPropertyMetadata = ConstPropertyMetadataFloat | BoolPropertyMetadataFloat;
+export type ConstPropertyMetadata = ConstPropertyMetadataFloat;
 
 /**
  * The V1 definition of a serialized shader block. This block definition is loaded by a CustomShaderBlock and defines how a

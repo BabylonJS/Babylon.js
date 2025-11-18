@@ -66,12 +66,11 @@ type ConstMetadataAnnotation = {
      * Note: in this case, the const will be unique to each instance of this block.
      */
     property?: {
-        options?: ConstMetadataAnnotationFloatOptions | ConstMetadataAnnotationBoolOptions;
+        options?: ConstMetadataAnnotationFloatOptions;
     };
 };
 
 type ConstMetadataAnnotationFloatOptions = { [key: string]: number };
-type ConstMetadataAnnotationBoolOptions = { [key: string]: boolean };
 
 /**
  * Information about a fragment shader
@@ -236,15 +235,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
                       defaultValue: parseFloat(defaultValue),
                       options: annotation.property.options as ConstMetadataAnnotationFloatOptions | undefined,
                   }
-                : type === "bool"
-                  ? {
-                        name: DecorateSymbol(friendlyName),
-                        friendlyName,
-                        type,
-                        defaultValue: defaultValue === "true",
-                        options: annotation.property.options as ConstMetadataAnnotationBoolOptions | undefined,
-                    }
-                  : null;
+                : null;
 
         if (!constProperty) {
             throw new Error(`Unsupported const property type: '${type}'`);

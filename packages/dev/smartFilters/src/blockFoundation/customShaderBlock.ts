@@ -200,8 +200,6 @@ export class CustomShaderBlock extends ShaderBlock {
                                 const valueStr = Number.isInteger(value) ? value.toString() + "." : value.toString();
                                 return `const float ${property.name} = ${valueStr};`;
                             }
-                            case "bool":
-                                return `const bool ${property.name} = ${(this as any)[property.friendlyName] ? "true" : "false"};`;
                         }
                     })
                     .join("\n") + "\n";
@@ -228,11 +226,7 @@ export class CustomShaderBlock extends ShaderBlock {
             });
         }
 
-        const propertyType: PropertyTypeForEdition = constProperty.options
-            ? PropertyTypeForEdition.List
-            : constProperty.type === "float"
-              ? PropertyTypeForEdition.Float
-              : PropertyTypeForEdition.Boolean;
+        const propertyType: PropertyTypeForEdition = constProperty.options ? PropertyTypeForEdition.List : PropertyTypeForEdition.Float;
 
         const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, propertyType, "PROPERTIES", editablePropertyOptions);
         decoratorApplier(this, constProperty.friendlyName, this._blockType);
