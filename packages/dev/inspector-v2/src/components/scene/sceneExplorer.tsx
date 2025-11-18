@@ -561,13 +561,17 @@ const EntityTreeItem: FunctionComponent<{
             </MenuTrigger>
             <MenuPopover hidden={!hasChildren && contextMenuCommands.length === 0}>
                 <MenuList>
-                    <MenuItem onClick={expandAll}>
-                        <Body1>Expand All</Body1>
-                    </MenuItem>
-                    <MenuItem onClick={collapseAll}>
-                        <Body1>Collapse All</Body1>
-                    </MenuItem>
-                    {contextMenuCommands.length > 0 && <MenuDivider />}
+                    {hasChildren && (
+                        <>
+                            <MenuItem onClick={expandAll}>
+                                <Body1>Expand All</Body1>
+                            </MenuItem>
+                            <MenuItem onClick={collapseAll}>
+                                <Body1>Collapse All</Body1>
+                            </MenuItem>
+                        </>
+                    )}
+                    {hasChildren && contextMenuCommands.length > 0 && <MenuDivider />}
                     {contextMenuCommands.map((command) =>
                         command.type === "action" ? (
                             <MenuItem key={command.displayName} icon={command.icon ? <command.icon /> : undefined} onClick={() => command.execute()}>
