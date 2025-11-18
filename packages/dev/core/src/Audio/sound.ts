@@ -306,14 +306,18 @@ export class Sound {
 
                 const sound = new _WebAudioStreamingSound(name, audioEngineV2, streamingOptionsV2);
 
-                sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
-                    sound.preloadInstancesAsync(1).then(this._onReadyToPlay);
+                // eslint-disable-next-line github/no-then
+                void sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
+                    // eslint-disable-next-line github/no-then
+                    void sound.preloadInstancesAsync(1).then(this._onReadyToPlay);
                 });
 
                 return sound;
             } else {
                 const sound = new _WebAudioStaticSound(name, audioEngineV2, optionsV2);
-                sound._initAsync(urlOrArrayBuffer, optionsV2).then(this._onReadyToPlay);
+
+                // eslint-disable-next-line github/no-then
+                void sound._initAsync(urlOrArrayBuffer, optionsV2).then(this._onReadyToPlay);
 
                 return sound;
             }
