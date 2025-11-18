@@ -200,9 +200,9 @@ void main(void) {
         #ifdef DISPERSION
             vec3 refractedViewVectors[3];
             float iorDispersionSpread = transmission_dispersion_scale / transmission_dispersion_abbe_number * (specular_ior - 1.0);
-            vec3 iors = vec3(specular_ior - iorDispersionSpread, specular_ior, specular_ior + iorDispersionSpread);
+            vec3 dispersion_iors = vec3(specular_ior - iorDispersionSpread, specular_ior, specular_ior + iorDispersionSpread);
             for (int i = 0; i < 3; i++) {
-                refractedViewVectors[i] = double_refract(-viewDirectionW, normalW, iors[i]);    
+                refractedViewVectors[i] = double_refract(-viewDirectionW, normalW, dispersion_iors[i]);    
             }
         #else
             vec3 refractedViewVector = double_refract(-viewDirectionW, normalW, specular_ior);

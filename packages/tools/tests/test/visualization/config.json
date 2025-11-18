@@ -3212,6 +3212,16 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Transmission Dispersion VS IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#142",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Dispersion VS IOR - Analytic Lights",
+            "playgroundId": "#GRQHVV#143",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
         }

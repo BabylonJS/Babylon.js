@@ -180,9 +180,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #ifdef DISPERSION
             var refractedViewVectors: array<vec3f, 3>;
             let iorDispersionSpread: f32 = transmission_dispersion_scale / transmission_dispersion_abbe_number * (specular_ior - 1.0f);
-            let iors: vec3f = vec3f(specular_ior - iorDispersionSpread, specular_ior, specular_ior + iorDispersionSpread);
+            let dispersion_iors: vec3f = vec3f(specular_ior - iorDispersionSpread, specular_ior, specular_ior + iorDispersionSpread);
             for (var i: i32 = 0; i < 3; i++) {
-                refractedViewVectors[i] = double_refract(-viewDirectionW, normalW, iors[i]);    
+                refractedViewVectors[i] = double_refract(-viewDirectionW, normalW, dispersion_iors[i]);    
             }
         #else
             let refractedViewVector: vec3f = double_refract(-viewDirectionW, normalW, specular_ior);
