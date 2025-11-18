@@ -163,6 +163,7 @@ export class CustomShaderBlock extends ShaderBlock {
         super(smartFilter, name, disableOptimization);
         this._blockType = blockType;
         this._namespace = namespace;
+        this._shaderProgram = shaderProgram;
         this._fragmentConstProperties = fragmentConstProperties;
 
         for (const input of inputConnectionPoints) {
@@ -172,14 +173,6 @@ export class CustomShaderBlock extends ShaderBlock {
         for (const constProperty of fragmentConstProperties) {
             this._createConstProperty(constProperty);
         }
-
-        // Make a copy of the shader program to avoid modifying the original when we append const properties
-        this._shaderProgram = {
-            vertex: shaderProgram.vertex,
-            fragment: {
-                ...shaderProgram.fragment,
-            },
-        };
     }
 
     /**
@@ -187,24 +180,34 @@ export class CustomShaderBlock extends ShaderBlock {
      * @returns The shader program to use to render the block
      */
     public override getShaderProgram() {
-        // Append const properties to the fragment shader consts
-        this._shaderProgram.fragment.const = this._shaderProgram.fragment.const || "";
-        this._shaderProgram.fragment.const +=
-            this._fragmentConstProperties
-                .map((property) => {
-                    switch (property.type) {
-                        case "float": {
-                            const value = (this as any)[property.friendlyName] as number;
-                            const valueStr = Number.isInteger(value) ? value.toString() + "." : value.toString();
-                            return `const float ${property.name} = ${valueStr};`;
+        if (this._fragmentConstProperties.length === 0) {
+            return this._shaderProgram;
+        } else {
+            // Make a copy of the shader program and append const properties to the fragment shader consts
+            const shaderProgram = {
+                vertex: this._shaderProgram.vertex,
+                fragment: {
+                    ...this._shaderProgram.fragment,
+                },
+            };
+            shaderProgram.fragment.const = shaderProgram.fragment.const || "";
+            shaderProgram.fragment.const +=
+                this._fragmentConstProperties
+                    .map((property) => {
+                        switch (property.type) {
+                            case "float": {
+                                const value = (this as any)[property.friendlyName] as number;
+                                const valueStr = Number.isInteger(value) ? value.toString() + "." : value.toString();
+                                return `const float ${property.name} = ${valueStr};`;
+                            }
+                            case "bool":
+                                return `const bool ${property.name} = ${(this as any)[property.friendlyName] ? "true" : "false"};`;
                         }
-                        case "bool":
-                            return `const bool ${property.name} = ${(this as any)[property.friendlyName] ? "true" : "false"};`;
-                    }
-                })
-                .join("\n") + "\n";
+                    })
+                    .join("\n") + "\n";
 
-        return this._shaderProgram;
+            return shaderProgram;
+        }
     }
 
     /**
@@ -225,7 +228,13 @@ export class CustomShaderBlock extends ShaderBlock {
             });
         }
 
-        const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, PropertyTypeForEdition.List, "PROPERTIES", editablePropertyOptions);
+        const propertyType: PropertyTypeForEdition = constProperty.options
+            ? PropertyTypeForEdition.List
+            : constProperty.type === "float"
+              ? PropertyTypeForEdition.Float
+              : PropertyTypeForEdition.Boolean;
+
+        const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, propertyType, "PROPERTIES", editablePropertyOptions);
         decoratorApplier(this, constProperty.friendlyName, this._blockType);
     }
 
