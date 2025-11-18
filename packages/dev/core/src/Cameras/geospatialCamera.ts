@@ -47,7 +47,7 @@ export class GeospatialCamera extends Camera {
 
         this.pickPredicate = pickPredicate;
         this.inputs = new GeospatialCameraInputsManager(this);
-        this.inputs.addMouse().addMouseWheel();
+        this.inputs.addMouse().addMouseWheel().addKeyboard();
     }
 
     private _center: Vector3 = new Vector3();
