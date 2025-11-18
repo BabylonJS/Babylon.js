@@ -278,7 +278,7 @@ export class WebXRExperienceHelper implements IDisposable {
                 if (delta >= refreshRate) {
                     this._lastTimestamp = this.sessionManager.currentTimestamp;
                     this._spectatorCamera.position.copyFrom(this.camera.rigCameras[cameraIndex].globalPosition);
-                    this._spectatorCamera.rotationQuaternion.copyFrom(this.camera.rigCameras[cameraIndex].absoluteRotation);
+                    this._spectatorCamera.rotationQuaternion?.copyFrom(this.camera.rigCameras[cameraIndex].absoluteRotation);
                 }
             }
         };
