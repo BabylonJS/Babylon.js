@@ -224,13 +224,14 @@ export class GeospatialCameraMovement extends CameraMovement {
     }
 }
 
-export function ClampCenterFromPolesInPlace(center: Vector3, distanceFromPole: number) {
+export function ClampCenterFromPolesInPlace(center: Vector3) {
     const centerMagnitude = center.length(); // distance from planet origin
     if (centerMagnitude > Epsilon) {
         const sinSphericalLat = centerMagnitude === 0 ? 0 : center.z / centerMagnitude;
         const cosSphericalLat = Math.sqrt(1 - Math.min(1, sinSphericalLat * sinSphericalLat));
-        if (Math.abs(cosSphericalLat) < distanceFromPole) {
-            const cosClampedLat = (Math.sign(cosSphericalLat) || 1) * distanceFromPole;
+        const cosLatitudeLimit = 0.05;
+        if (Math.abs(cosSphericalLat) < cosLatitudeLimit) {
+            const cosClampedLat = (Math.sign(cosSphericalLat) || 1) * cosLatitudeLimit;
             const longitude = Math.atan2(center.y, center.x);
             const sinClampedLat = Math.sqrt(1 - cosClampedLat * cosClampedLat) * (Math.sign(center.z) || 1);
 

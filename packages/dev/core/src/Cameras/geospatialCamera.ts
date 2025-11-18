@@ -120,7 +120,7 @@ export class GeospatialCamera extends Camera {
         this._yaw = Clamp(this._yaw, limits.yawMin, limits.yawMax);
         this._pitch = Clamp(this._pitch, limits.pitchMin, limits.pitchMax);
         this._radius = Clamp(this._radius, limits.radiusMin, limits.radiusMax);
-        this._center = ClampCenterFromPolesInPlace(this._center, limits.centerLatitudeMin);
+        this._center = ClampCenterFromPolesInPlace(this._center);
     }
 
     private _tempVect = new Vector3();
