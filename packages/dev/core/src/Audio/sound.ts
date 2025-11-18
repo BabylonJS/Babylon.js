@@ -197,7 +197,6 @@ export class Sound {
     private _isReadyToPlay: boolean = false;
     private _isDirectional: boolean = false;
     private _readyToPlayCallback: () => any;
-    private _soundGain: Nullable<GainNode>;
     private _scene: Scene;
     private _connectedTransformNode: Nullable<TransformNode>;
     private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
@@ -380,10 +379,6 @@ export class Sound {
             this._scene.mainSoundTrack.removeSound(this);
         } else if (this._scene.soundTracks) {
             this._scene.soundTracks[this.soundTrackId].removeSound(this);
-        }
-        if (this._soundGain) {
-            this._soundGain.disconnect();
-            this._soundGain = null;
         }
 
         if (this._connectedTransformNode && this._registerFunc) {
@@ -646,7 +641,7 @@ export class Sound {
 
     /** @internal */
     public updateDistanceFromListener() {
-        if (this._soundV2._outNode && this._connectedTransformNode && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
+        if (this._soundV2._outNode && this._connectedTransformNode && this.useCustomAttenuation && this._scene.activeCamera) {
             const distance = this._scene.audioListenerPositionProvider
                 ? this._connectedTransformNode.position.subtract(this._scene.audioListenerPositionProvider()).length()
                 : this._connectedTransformNode.getDistanceToCamera(this._scene.activeCamera);
@@ -886,7 +881,7 @@ export class Sound {
      * @returns the gain node
      */
     public getSoundGain(): Nullable<GainNode> {
-        return this._soundGain;
+        return this._soundV2._outNode as GainNode;
     }
 
     /**
