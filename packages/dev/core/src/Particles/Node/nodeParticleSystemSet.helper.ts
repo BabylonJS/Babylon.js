@@ -635,6 +635,12 @@ function _UpdateParticleVelocityLimitGradientBlockGroup(
     return updateDirection.output;
 }
 
+/**
+ * Creates the group of blocks that represent the particle drag update
+ * @param dragGradients The drag gradients
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle drag update
+ */
 function _UpdateParticleDragGradientBlockGroup(dragGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
 
