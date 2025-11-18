@@ -129,7 +129,7 @@ type ContextMenuCommand = {
     mode: "contextMenu";
 };
 
-type CommandMode = (InlineCommand | ContextMenuCommand)["mode"];
+type CommandMode = NonNullable<(InlineCommand | ContextMenuCommand)["mode"]>;
 
 type ActionCommand = {
     readonly type: "action";
@@ -166,7 +166,7 @@ export type SceneExplorerCommand<ModeT extends CommandMode = CommandMode, TypeT 
     (ModeT extends "inline" ? InlineCommand : ContextMenuCommand) &
     (TypeT extends "action" ? ActionCommand : ToggleCommand);
 
-export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
+export type SceneExplorerCommandProvider<ContextT, ModeT extends CommandMode = CommandMode, TypeT extends CommandType = CommandType> = Readonly<{
     /**
      * An optional order for the section, relative to other commands.
      * Defaults to 0.
@@ -174,14 +174,14 @@ export type SceneExplorerCommandProvider<T extends EntityBase> = Readonly<{
     order?: number;
 
     /**
-     * A predicate function that determines if the command is applicable to the given entity.
+     * A predicate function that determines if the command is applicable to the given context.
      */
-    predicate: (entity: unknown) => entity is T;
+    predicate: (context: unknown) => context is ContextT;
 
     /**
-     * Gets the command information for the given entity.
+     * Gets the command information for the given context.
      */
-    getCommand: (entity: T) => SceneExplorerCommand;
+    getCommand: (context: ContextT) => SceneExplorerCommand<ModeT, TypeT>;
 }>;
 
 type SceneTreeItemData = { type: "scene"; scene: Scene };
@@ -211,6 +211,67 @@ function ExpandOrCollapseAll(treeItem: SectionTreeItemData | EntityTreeItemData,
         (treeItem) => treeItem.children,
         (treeItem) => addOrRemove(treeItem.type === "entity" ? treeItem.entity.uniqueId : treeItem.sectionName)
     );
+}
+
+function useCommandContextMenuState(commands: readonly SceneExplorerCommand<"contextMenu">[]) {
+    const [checkedContextMenuItems, setCheckedContextMenuItems] = useState({ toggleCommands: [] as string[] });
+
+    useEffect(() => {
+        const updateCheckedItems = () => {
+            const checkedItems: string[] = [];
+            for (const command of commands) {
+                if (command.type === "toggle" && command.isEnabled) {
+                    checkedItems.push(command.displayName);
+                }
+            }
+            setCheckedContextMenuItems({ toggleCommands: checkedItems });
+        };
+
+        updateCheckedItems();
+
+        const observers = commands
+            .map((command) => command.onChange)
+            .filter((onChange) => !!onChange)
+            .map((onChange) => onChange.add(updateCheckedItems));
+
+        return () => {
+            for (const observer of observers) {
+                observer.remove();
+            }
+        };
+    }, [commands]);
+
+    const onContextMenuCheckedValueChange = useCallback(
+        (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
+            for (const command of commands) {
+                if (command.type === "toggle") {
+                    command.isEnabled = data.checkedItems.includes(command.displayName);
+                }
+            }
+        },
+        [commands]
+    );
+
+    const contextMenuItems = commands.map((command) =>
+        command.type === "action" ? (
+            <MenuItem key={command.displayName} icon={command.icon ? <command.icon /> : undefined} onClick={() => command.execute()}>
+                {command.displayName}
+            </MenuItem>
+        ) : (
+            <MenuItemCheckbox
+                key={command.displayName}
+                // Don't show both a checkmark and an icon. null means no checkmark, undefined means default (checkmark).
+                checkmark={command.icon ? null : undefined}
+                icon={command.icon ? <command.icon /> : undefined}
+                name="toggleCommands"
+                value={command.displayName}
+            >
+                {command.displayName}
+            </MenuItemCheckbox>
+        )
+    );
+
+    return [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] as const;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -331,16 +392,32 @@ const SectionTreeItem: FunctionComponent<{
     scene: Scene;
     section: SectionTreeItemData;
     isFiltering: boolean;
+    commandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
     expandAll: () => void;
     collapseAll: () => void;
 }> = (props) => {
-    const { section, isFiltering, expandAll, collapseAll } = props;
+    const { section, isFiltering, commandProviders, expandAll, collapseAll } = props;
 
     const classes = useStyles();
     const [compactMode] = useCompactMode();
 
+    // Get the commands that apply to this section.
+    const commands = useResource(
+        useCallback(() => {
+            const commands = [...commandProviders].filter((provider) => provider.predicate(section.sectionName)).map((provider) => provider.getCommand(section.sectionName));
+
+            return Object.assign(commands, {
+                dispose: () => commands.forEach((command) => command.dispose?.()),
+            });
+        }, [section.sectionName, commandProviders])
+    );
+
+    const hasChildren = section.children.length > 0;
+
+    const [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] = useCommandContextMenuState(commands);
+
     return (
-        <Menu openOnContext>
+        <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
             <MenuTrigger disableButtonEnhancement>
                 <FlatTreeItem
                     key={section.sectionName}
@@ -359,14 +436,20 @@ const SectionTreeItem: FunctionComponent<{
                     </TreeItemLayout>
                 </FlatTreeItem>
             </MenuTrigger>
-            <MenuPopover hidden={!section.children.length}>
+            <MenuPopover hidden={!hasChildren && commands.length === 0}>
                 <MenuList>
-                    <MenuItem onClick={expandAll}>
-                        <Body1>Expand All</Body1>
-                    </MenuItem>
-                    <MenuItem onClick={collapseAll}>
-                        <Body1>Collapse All</Body1>
-                    </MenuItem>
+                    {hasChildren && (
+                        <>
+                            <MenuItem onClick={expandAll}>
+                                <Body1>Expand All</Body1>
+                            </MenuItem>
+                            <MenuItem onClick={collapseAll}>
+                                <Body1>Collapse All</Body1>
+                            </MenuItem>
+                        </>
+                    )}
+                    {hasChildren && commands.length > 0 && <MenuDivider />}
+                    {contextMenuItems}
                 </MenuList>
             </MenuPopover>
         </Menu>
@@ -485,43 +568,7 @@ const EntityTreeItem: FunctionComponent<{
 
     const contextMenuCommands = useMemo(() => commands.filter((command): command is SceneExplorerCommand<"contextMenu"> => command.mode === "contextMenu"), [commands]);
 
-    const [checkedContextMenuItems, setCheckedContextMenuItems] = useState({ toggleCommands: [] as string[] });
-
-    useEffect(() => {
-        const updateCheckedItems = () => {
-            const checkedItems: string[] = [];
-            for (const command of contextMenuCommands) {
-                if (command.type === "toggle" && command.isEnabled) {
-                    checkedItems.push(command.displayName);
-                }
-            }
-            setCheckedContextMenuItems({ toggleCommands: checkedItems });
-        };
-
-        updateCheckedItems();
-
-        const observers = contextMenuCommands
-            .map((command) => command.onChange)
-            .filter((onChange) => !!onChange)
-            .map((onChange) => onChange.add(updateCheckedItems));
-
-        return () => {
-            for (const observer of observers) {
-                observer.remove();
-            }
-        };
-    }, [contextMenuCommands]);
-
-    const onContextMenuCheckedValueChange = useCallback(
-        (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
-            for (const command of contextMenuCommands) {
-                if (command.type === "toggle") {
-                    command.isEnabled = data.checkedItems.includes(command.displayName);
-                }
-            }
-        },
-        [contextMenuCommands]
-    );
+    const [checkedContextMenuItems, onContextMenuCheckedValueChange, contextMenuItems] = useCommandContextMenuState(contextMenuCommands);
 
     return (
         <Menu openOnContext checkedValues={checkedContextMenuItems} onCheckedValueChange={onContextMenuCheckedValueChange}>
@@ -572,24 +619,7 @@ const EntityTreeItem: FunctionComponent<{
                         </>
                     )}
                     {hasChildren && contextMenuCommands.length > 0 && <MenuDivider />}
-                    {contextMenuCommands.map((command) =>
-                        command.type === "action" ? (
-                            <MenuItem key={command.displayName} icon={command.icon ? <command.icon /> : undefined} onClick={() => command.execute()}>
-                                {command.displayName}
-                            </MenuItem>
-                        ) : (
-                            <MenuItemCheckbox
-                                key={command.displayName}
-                                // Don't show both a checkmark and an icon. null means no checkmark, undefined means default (checkmark).
-                                checkmark={command.icon ? null : undefined}
-                                icon={command.icon ? <command.icon /> : undefined}
-                                name="toggleCommands"
-                                value={command.displayName}
-                            >
-                                {command.displayName}
-                            </MenuItemCheckbox>
-                        )
-                    )}
+                    {contextMenuItems}
                 </MenuList>
             </MenuPopover>
         </Menu>
@@ -599,13 +629,14 @@ const EntityTreeItem: FunctionComponent<{
 export const SceneExplorer: FunctionComponent<{
     sections: readonly SceneExplorerSection<EntityBase>[];
     commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+    sectionCommandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
     scene: Scene;
     selectedEntity?: unknown;
     setSelectedEntity?: (entity: unknown) => void;
 }> = (props) => {
     const classes = useStyles();
 
-    const { sections, commandProviders, scene, selectedEntity } = props;
+    const { sections, commandProviders, sectionCommandProviders, scene, selectedEntity } = props;
 
     const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
     const [sceneVersion, setSceneVersion] = useState(0);
@@ -924,6 +955,7 @@ export const SceneExplorer: FunctionComponent<{
                                     scene={scene}
                                     section={item}
                                     isFiltering={!!itemsFilter}
+                                    commandProviders={sectionCommandProviders}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
                                 />
