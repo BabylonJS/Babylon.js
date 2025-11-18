@@ -263,7 +263,6 @@ export class Sound {
             spatialMinDistance: options.refDistance,
             spatialRolloffFactor: options.rolloffFactor,
             stereoEnabled: false,
-            stereoPan: 0,
             startOffset: options.offset || 0,
             volume: options.volume ?? 1,
         };
