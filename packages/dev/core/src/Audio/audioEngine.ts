@@ -263,6 +263,7 @@ export class AudioEngine implements IAudioEngine {
 
     private async _triggerRunningStateAsync() {
         if (this._tryToRun) {
+            void this._v2._audioContext.resume();
             return;
         }
         this._tryToRun = true;
