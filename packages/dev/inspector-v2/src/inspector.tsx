@@ -99,6 +99,8 @@ export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> =
         InspectorTokens.delete(scene);
     }
 
+    InspectorTokens.set(scene, inspectorToken);
+
     const disposeActions: (() => void)[] = [];
 
     const canvasContainerDisplay = parentElement.style.display;

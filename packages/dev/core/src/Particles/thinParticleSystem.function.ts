@@ -44,6 +44,10 @@ export function _ProcessColorGradients(particle: Particle, system: ThinParticleS
             particle._currentColorGradient = <ColorGradient>currentGradient;
         }
         Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
+
+        if (particle.color.a < 0) {
+            particle.color.a = 0;
+        }
     });
 }
 
@@ -120,7 +124,7 @@ export function _ProcessVelocityGradients(particle: Particle, system: ThinPartic
             particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
             particle._currentVelocityGradient = <FactorGradient>currentGradient;
         }
-        system._directionScale *= Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
+        particle._directionScale *= Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
     });
 }
 
@@ -143,8 +147,8 @@ export function _ProcessLimitVelocityGradients(particle: Particle, system: ThinP
 }
 
 /** @internal */
-export function _ProcessDirection(particle: Particle, system: ThinParticleSystem) {
-    particle.direction.scaleToRef(system._directionScale, system._scaledDirection);
+export function _ProcessDirection(particle: Particle) {
+    particle.direction.scaleToRef(particle._directionScale, particle._scaledDirection);
 }
 
 /** Position */
@@ -172,10 +176,10 @@ export function _CreateIsLocalData(particle: Particle, system: ThinParticleSyste
 /** @internal */
 export function _ProcessPosition(particle: Particle, system: ThinParticleSystem) {
     if (system.isLocal && particle._localPosition) {
-        particle._localPosition!.addInPlace(system._scaledDirection);
+        particle._localPosition!.addInPlace(particle._scaledDirection);
         Vector3.TransformCoordinatesToRef(particle._localPosition!, system._emitterWorldMatrix, particle.position);
     } else {
-        particle.position.addInPlace(system._scaledDirection);
+        particle.position.addInPlace(particle._scaledDirection);
     }
 }
 
@@ -204,7 +208,7 @@ export function _ProcessDragGradients(particle: Particle, system: ThinParticleSy
 
         const drag = Lerp(particle._currentDrag1, particle._currentDrag2, scale);
 
-        system._scaledDirection.scaleInPlace(1.0 - drag);
+        particle._scaledDirection.scaleInPlace(1.0 - drag);
     });
 }
 

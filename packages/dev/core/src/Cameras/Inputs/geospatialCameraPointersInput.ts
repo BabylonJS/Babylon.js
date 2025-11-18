@@ -1,17 +1,14 @@
 import type { GeospatialCamera } from "../../Cameras/geospatialCamera";
 import type { PickingInfo } from "../../Collisions/pickingInfo";
-import type { Ray } from "../../Culling/ray";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
 import type { PointerTouch } from "../../Events/pointerEvents";
-import { Plane } from "../../Maths/math.plane";
-import { TmpVectors, Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
 
 /**
  * @experimental
  * Geospatial camera inputs can simulate dragging the globe around or tilting the camera around some point on the globe
- * The input will update the camera's localTranslation or localRotation values, and the camera is responsible for using these updates to calculate viewMatrix appropriately
+ * This class will update the GeospatialCameraMovement class's movementDeltaCurrentFrame, and the camera is responsible for using these updates to calculate viewMatrix appropriately
  *
  * As of right now, the camera correction logic (to keep the camera geospatially oriented around the globe) is happening within the camera class when calculating viewmatrix
  * As this is experimental, it is possible we move that correction step to live within the input class (to enable non-corrected translations in the future), say if we want to allow the camera to move outside of the globe's orbit
@@ -24,45 +21,24 @@ import { OrbitCameraPointersInput } from "./orbitCameraPointersInput";
 export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     public camera: GeospatialCamera;
 
-    /**
-     * Mouse sensitivity for rotation (lower = more sensitive)
-     */
-    public angularSensibility = 200.0;
-
-    private _dragPlane: Plane = new Plane(0, 0, 0, 0);
-    private _dragPlaneNormal: Vector3 = Vector3.Zero();
-    private _dragPlaneOriginPoint: Vector3 = Vector3.Zero();
-    private _dragPlaneHitPoint: Vector3 = Vector3.Zero();
-    private _dragPlaneOffsetVector: Vector3 = Vector3.Zero();
-
-    private _hitPointRadius?: number; // Distance between world origin (center of globe) and the hitPoint (where initial drag started)
-
     public override getClassName(): string {
         return "GeospatialCameraPointersInput";
     }
 
     public override onButtonDown(evt: IPointerEvent): void {
+        this.camera.movement.activeInput = true;
         const scene = this.camera.getScene();
         let pickResult: Nullable<PickingInfo>;
         switch (evt.button) {
             case 0: // Left button - drag/pan globe under cursor
-                pickResult = scene.pick(scene.pointerX, scene.pointerY, this.camera.pickPredicate);
-                if (pickResult.pickedPoint && pickResult.ray) {
-                    // Store radius from earth center to pickedPoint, used when calculating drag plane
-                    this._hitPointRadius = pickResult.pickedPoint.length();
-
-                    // The dragPlaneOffsetVector will later be recalculated when drag occurs, and the delta between the offset vectors will be applied to localTranslation
-                    this._recalculateDragPlaneOffsetVectorToRef(this._hitPointRadius, pickResult.ray, this._dragPlaneOffsetVector);
-                } else {
-                    this._hitPointRadius = undefined; // can't drag without a hit on the globe
-                }
+                this.camera.movement.startDrag(scene.pointerX, scene.pointerY);
                 break;
             case 1: // Middle button - tilt camera around cursor
                 pickResult = scene.pick(scene.pointerX, scene.pointerY, this.camera.pickPredicate);
-                pickResult.pickedPoint && (this.camera._alternateRotationPt = pickResult.pickedPoint);
+                pickResult.pickedPoint && (this.camera.movement.alternateRotationPt = pickResult.pickedPoint);
                 break;
             case 2: // Right button - tilt camera around center of screen, already the default
-                this.camera._alternateRotationPt = this.camera.center;
+                this.camera.movement.alternateRotationPt = this.camera.center;
                 break;
             default:
                 return;
@@ -70,15 +46,27 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
     }
 
     public override onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
-        switch (point?.button) {
-            case 0: // Left button - drag/pan globe under cursor
-                this._hitPointRadius !== undefined && this._handleDrag(this._hitPointRadius);
+        // Single finger touch (no button property) or left button (button 0) = drag
+        const button = point?.button ?? 0; // Default to button 0 (drag) if undefined
+        const scene = this.camera.getScene();
+        switch (button) {
+            case 0: // Left button / single touch - drag/pan globe under cursor
+                this.camera.movement.handleDrag(scene.pointerX, scene.pointerY);
                 break;
-            case 1: // Middle button - tilt camera around cursor
+            case 1: // Middle button - tilt camera
             case 2: // Right button - tilt camera
                 this._handleTilt(offsetX, offsetY);
                 break;
         }
+    }
+
+    /**
+     * Move camera from multitouch (pinch) zoom distances.
+     * @param previousPinchSquaredDistance
+     * @param pinchSquaredDistance
+     */
+    protected override _computePinchZoom(previousPinchSquaredDistance: number, pinchSquaredDistance: number): void {
+        this.camera.radius = (this.camera.radius * Math.sqrt(previousPinchSquaredDistance)) / Math.sqrt(pinchSquaredDistance);
     }
 
     /**
@@ -95,6 +83,16 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         }
     }
 
+    public override onDoubleTap(type: string): void {
+        const scene = this.camera.getScene();
+        const pickResult = scene.pick(scene.pointerX, scene.pointerY, this.camera.pickPredicate);
+
+        if (pickResult.hit && pickResult.pickedPoint) {
+            const newRadius = this.camera.radius * 0.5; // Zoom to 50% of current distance
+            void this.camera.flyToAsync(undefined, undefined, newRadius, pickResult.pickedPoint);
+        }
+    }
+
     public override onMultiTouch(
         pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
@@ -103,67 +101,20 @@ export class GeospatialCameraPointersInput extends OrbitCameraPointersInput {
         previousMultiTouchPanPosition: Nullable<PointerTouch>,
         multiTouchPanPosition: Nullable<PointerTouch>
     ): void {
-        this._shouldStartPinchZoom = this._twoFingerActivityCount < 20 && Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(previousPinchSquaredDistance)) > 20; // move to limits once limits exist
+        this._shouldStartPinchZoom =
+            this._twoFingerActivityCount < 20 && Math.abs(Math.sqrt(pinchSquaredDistance) - Math.sqrt(previousPinchSquaredDistance)) > this.camera.limits.pinchToPanMax;
         super.onMultiTouch(pointA, pointB, previousPinchSquaredDistance, pinchSquaredDistance, previousMultiTouchPanPosition, multiTouchPanPosition);
     }
 
     public override onButtonUp(_evt: IPointerEvent): void {
-        this._hitPointRadius = undefined;
-        this.camera._alternateRotationPt = null;
+        this.camera.movement.stopDrag();
+        this.camera.movement.alternateRotationPt = undefined;
+        this.camera.movement.activeInput = false;
         super.onButtonUp(_evt);
     }
 
-    /**
-     * The DragPlaneOffsetVector represents the vector between the dragPlane hit point and the dragPlane origin point.
-     * As the drag movement occurs, we will continuously recalculate this vector. The delta between the offsetVectors is the delta we will apply to the camera's localtranslation
-     * @param hitPointRadius The distance between the world origin (center of globe) and the initial drag hit point
-     * @param ray The ray from the camera to the new cursor location
-     * @param ref The offset vector between the drag plane's hitPoint and originPoint
-     */
-    private _recalculateDragPlaneOffsetVectorToRef(hitPointRadius: number, ray: Ray, ref: Vector3) {
-        // Use the camera's geocentric normal to find the dragPlaneOriginPoint which lives at hitPointRadius along the camera's geocentric normal
-        this.camera.position.normalizeToRef(this._dragPlaneNormal);
-        this._dragPlaneNormal.scaleToRef(hitPointRadius, this._dragPlaneOriginPoint);
-
-        // Now create a plane at that point, perpendicular to the camera's geocentric normal
-        Plane.FromPositionAndNormalToRef(this._dragPlaneOriginPoint, this._dragPlaneNormal, this._dragPlane);
-
-        // Lastly, find the _dragPlaneHitPoint where the ray intersects the _dragPlane
-        IntersectRayWithPlaneToRef(ray, this._dragPlane, this._dragPlaneHitPoint);
-
-        // Store the new offset between the drag plane's hitPoint and originPoint
-        this._dragPlaneHitPoint.subtractToRef(this._dragPlaneOriginPoint, ref);
-    }
-
-    private _handleDrag(hitPointRadius: number): void {
-        const scene = this.camera.getScene();
-        const pickResult = scene.pick(scene.pointerX, scene.pointerY);
-        if (pickResult.ray) {
-            const newDragPlaneOffsetVector = TmpVectors.Vector3[5];
-            this._recalculateDragPlaneOffsetVectorToRef(hitPointRadius, pickResult.ray, newDragPlaneOffsetVector);
-            const delta = TmpVectors.Vector3[6];
-            newDragPlaneOffsetVector.subtractToRef(this._dragPlaneOffsetVector, delta);
-
-            this._dragPlaneOffsetVector.copyFrom(newDragPlaneOffsetVector);
-
-            this.camera._perFrameGeocentricTranslation.subtractInPlace(delta); // ???
-        }
-    }
-
     private _handleTilt(deltaX: number, deltaY: number): void {
-        this.camera._perFrameGeocentricRotation.y += -deltaX / this.angularSensibility; // yaw - looking side to side
-        this.camera._perFrameGeocentricRotation.x += -deltaY / this.angularSensibility; // pitch - look up towards sky / down towards ground
+        this.camera.movement.rotationAccumulatedPixels.y -= deltaX; // yaw - looking side to side
+        this.camera.movement.rotationAccumulatedPixels.x -= deltaY; // pitch - look up towards sky / down towards ground
     }
-}
-
-function IntersectRayWithPlaneToRef(ray: Ray, plane: Plane, ref: Vector3): boolean {
-    // Distance along the ray to the plane; null if no hit
-    const dist = ray.intersectsPlane(plane);
-
-    if (dist !== null && dist >= 0) {
-        ray.origin.addToRef(ray.direction.scaleToRef(dist, TmpVectors.Vector3[0]), ref);
-        return true;
-    }
-
-    return false;
 }
