@@ -27,7 +27,7 @@ import {
     TreeItemLayout,
     treeItemLevelToken,
 } from "@fluentui/react-components";
-import { ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
+import { ArrowCollapseAllRegular, ArrowExpandAllRegular, createFluentIcon, FilterRegular, GlobeRegular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ToggleButton } from "shared-ui-components/fluent/primitives/toggleButton";
@@ -563,10 +563,10 @@ const EntityTreeItem: FunctionComponent<{
                 <MenuList>
                     {hasChildren && (
                         <>
-                            <MenuItem onClick={expandAll}>
+                            <MenuItem icon={<ArrowExpandAllRegular />} onClick={expandAll}>
                                 <Body1>Expand All</Body1>
                             </MenuItem>
-                            <MenuItem onClick={collapseAll}>
+                            <MenuItem icon={<ArrowCollapseAllRegular />} onClick={collapseAll}>
                                 <Body1>Collapse All</Body1>
                             </MenuItem>
                         </>
