@@ -44,6 +44,10 @@ export function _ProcessColorGradients(particle: Particle, system: ThinParticleS
             particle._currentColorGradient = <ColorGradient>currentGradient;
         }
         Color4.LerpToRef(particle._currentColor1, particle._currentColor2, scale, particle.color);
+
+        if (particle.color.a < 0) {
+            particle.color.a = 0;
+        }
     });
 }
 
