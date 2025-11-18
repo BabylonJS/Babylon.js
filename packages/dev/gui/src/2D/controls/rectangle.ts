@@ -181,18 +181,6 @@ export class Rectangle extends Container {
                     this._currentMeasure.width - this._thickness,
                     this._currentMeasure.height - this._thickness
                 );
-                // eslint-disable-next-line no-console
-                console.log(
-                    "strokeRect - ",
-                    "left: ",
-                    this._currentMeasure.left + this._thickness / 2,
-                    "top: ",
-                    this._currentMeasure.top + this._thickness / 2,
-                    "width: ",
-                    this._currentMeasure.width - this._thickness,
-                    "height: ",
-                    this._currentMeasure.height - this._thickness
-                );
             }
         }
 
