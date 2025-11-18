@@ -138,7 +138,7 @@ function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversion
 // ------------- CREATE PARTICLE FUNCTIONS -------------
 
 // The creation of the different properties follows the order they are added to the CreationQueue in ThinParticleSystem:
-// Lifetime, Emit Power, Size, Scale/StartSize, Angle, Color, Drag, Noise, ColorDead, Ramp, Sheet
+// Lifetime, Emit Power, Size, Scale/StartSize, Angle, Color, Noise, ColorDead, Ramp, Sheet
 function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): CreateParticleBlock {
     // Create particle block
     const createParticleBlock = new CreateParticleBlock("Create Particle");
