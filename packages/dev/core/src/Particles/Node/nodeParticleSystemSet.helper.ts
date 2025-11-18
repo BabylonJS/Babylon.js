@@ -462,6 +462,10 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
         context.scaledDirection = _UpdateParticleVelocityGradientBlockGroup(oldSystem._velocityGradients, context);
     }
 
+    if (oldSystem._dragGradients && oldSystem._dragGradients.length > 0) {
+        context.scaledDirection = _UpdateParticleDragGradientBlockGroup(oldSystem._dragGradients, context);
+    }
+
     updateBlockGroupOutput = _UpdateParticlePositionBlockGroup(updateBlockGroupOutput, oldSystem.isLocal, context);
 
     if (oldSystem._limitVelocityGradients && oldSystem._limitVelocityGradients.length > 0 && oldSystem.limitVelocityDamping !== 0) {
@@ -629,6 +633,33 @@ function _UpdateParticleVelocityLimitGradientBlockGroup(
     compareSpeed.output.connectTo(updateDirection.direction);
 
     return updateDirection.output;
+}
+
+function _UpdateParticleDragGradientBlockGroup(dragGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+
+    // Generate the gradient
+    const dragValueOutput = _CreateGradientBlockGroup(context.ageToLifeTimeRatioBlockGroupOutput, dragGradients, ParticleRandomBlockLocks.OncePerParticle, "Drag");
+
+    // Calculate drag factor
+    const oneMinusDragBlock = new ParticleMathBlock("1 - Drag");
+    oneMinusDragBlock.operation = ParticleMathBlockOperations.Subtract;
+    _CreateAndConnectInput("One", 1, oneMinusDragBlock.left);
+    dragValueOutput.connectTo(oneMinusDragBlock.right);
+
+    // Multiply the scaled direction by drag factor
+    const multiplyDirection = new ParticleMathBlock("Scaled Direction with Drag");
+    multiplyDirection.operation = ParticleMathBlockOperations.Multiply;
+    oneMinusDragBlock.output.connectTo(multiplyDirection.left);
+    if (context.scaledDirection === undefined) {
+        _CreateAndConnectContextualSource("Scaled Direction", NodeParticleContextualSources.ScaledDirection, multiplyDirection.right);
+    } else {
+        context.scaledDirection.connectTo(multiplyDirection.right);
+    }
+
+    // Store the new calculation of the scaled direction in the context
+    context.scaledDirection = multiplyDirection.output;
+    return multiplyDirection.output;
 }
 
 /**
