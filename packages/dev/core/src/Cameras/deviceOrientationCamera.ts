@@ -17,7 +17,7 @@ Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
  * being tilted forward or back and left or right.
  */
 export class DeviceOrientationCamera extends FreeCamera {
-    private _initialQuaternion: Nullable<Quaternion> = null;
+    private _initialQuaternion: Nullable<Quaternion>;
     private _quaternionCache: Quaternion;
     private _tmpDragQuaternion = new Quaternion();
     private _disablePointerInputWhenUsingDeviceOrientation = true;

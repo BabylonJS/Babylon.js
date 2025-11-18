@@ -50,7 +50,7 @@ export class TargetCamera extends Camera {
     /**
      * Define the current rotation of the camera as a quaternion to prevent Gimbal lock
      */
-    public rotationQuaternion: Nullable<Quaternion> = null;
+    public rotationQuaternion: Nullable<Quaternion>;
 
     /**
      * Define the current speed of the camera

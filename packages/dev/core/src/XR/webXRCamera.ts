@@ -56,6 +56,9 @@ export class WebXRCamera extends FreeCamera {
      */
     public _lastXRViewerPose?: XRViewerPose;
 
+    /**
+     * webXRCamera relies on rotationQuaternion and doesn't use camera rotation property
+     */
     public override rotationQuaternion: Quaternion;
 
     /**
