@@ -22,9 +22,9 @@ const GetDefineRegExOptions = "gm";
 const ReservedSymbols = ["main"];
 
 /**
- * Describes the supported metadata properties for a uniform
+ * Describes the supported metadata annotation for a uniform
  */
-export type UniformMetadataProperties = {
+type UniformMetadataAnnotation = {
     /**
      * If supplied, the default value to use for the corresponding input connection point
      */
@@ -40,7 +40,7 @@ export type UniformMetadataProperties = {
 /**
  * Describes a uniform in a shader
  */
-export type UniformMetadata = {
+type UniformMetadata = {
     /**
      * The original name of the uniform (not renamed)
      */
@@ -54,8 +54,24 @@ export type UniformMetadata = {
     /**
      * Optional properties of the uniform
      */
-    properties?: UniformMetadataProperties;
+    properties?: UniformMetadataAnnotation;
 };
+
+/**
+ * Describes the supported metadata annotation for a const
+ */
+type ConstMetadataAnnotation = {
+    /**
+     * If supplied, the const will be treated as a property which can be set before creating a runtime.
+     * Note: in this case, the const will be unique to each instance of this block.
+     */
+    property?: {
+        options?: ConstMetadataAnnotationFloatOptions | ConstMetadataAnnotationBoolOptions;
+    };
+};
+
+type ConstMetadataAnnotationFloatOptions = { [key: string]: number };
+type ConstMetadataAnnotationBoolOptions = { [key: string]: boolean };
 
 /**
  * Information about a fragment shader
@@ -183,6 +199,13 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
             continue;
         }
 
+        const annotation = JSON.parse(annotationJSON.replace("//", "").trim()) as ConstMetadataAnnotation;
+
+        // If the annotation doesn't have a "property" field, treat it as a regular const
+        if (!annotation.property) {
+            continue;
+        }
+
         const constLine = matches[2];
 
         if (!constLine) {
@@ -204,8 +227,6 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
             throw new Error(`Consts must have a value: '${constLine}'`);
         }
 
-        const options = JSON.parse(annotationJSON.replace("//", "").trim()).options;
-
         const constProperty: Nullable<ConstPropertyMetadata> =
             type === "float"
                 ? {
@@ -213,7 +234,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
                       friendlyName,
                       type,
                       defaultValue: parseFloat(defaultValue),
-                      options,
+                      options: annotation.property.options as ConstMetadataAnnotationFloatOptions | undefined,
                   }
                 : type === "bool"
                   ? {
@@ -221,7 +242,7 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
                         friendlyName,
                         type,
                         defaultValue: defaultValue === "true",
-                        options,
+                        options: annotation.property.options as ConstMetadataAnnotationBoolOptions | undefined,
                     }
                   : null;
 
