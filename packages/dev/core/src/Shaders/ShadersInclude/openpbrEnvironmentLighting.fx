@@ -253,7 +253,13 @@
                 #endif
             );
         #else
-            vec3 iblRefractionCoords = refractedViewVector;
+            vec3 environmentRefraction = vec3(0., 0., 0.);
+            #ifdef DISPERSION
+                for (int i = 0; i < 3; i++) {
+                    vec3 iblRefractionCoords = refractedViewVectors[i];
+            #else
+                vec3 iblRefractionCoords = refractedViewVector;
+            #endif
             #ifdef REFRACTED_ENVIRONMENT_OPPOSITEZ
                 iblRefractionCoords.z *= -1.0;
             #endif
@@ -262,14 +268,28 @@
             #endif
 
             iblRefractionCoords = vec3(reflectionMatrix * vec4(iblRefractionCoords, 0));
-            vec3 environmentRefraction = sampleRadiance(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
-                , baseGeoInfo
-                , reflectionSampler
-                , iblRefractionCoords
-                #ifdef REALTIME_FILTERING
-                    , vReflectionFilteringInfo
-                #endif
-            );
+            #ifdef DISPERSION
+                environmentRefraction[i] = sampleRadiance(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                    , baseGeoInfo
+                    , reflectionSampler
+                    , iblRefractionCoords
+                    #ifdef REALTIME_FILTERING
+                        , vReflectionFilteringInfo
+                    #endif
+                )[i];
+            #else
+                environmentRefraction = sampleRadiance(refractionAlphaG, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos
+                    , baseGeoInfo
+                    , reflectionSampler
+                    , iblRefractionCoords
+                    #ifdef REALTIME_FILTERING
+                        , vReflectionFilteringInfo
+                    #endif
+                );
+            #endif
+            #ifdef DISPERSION
+                }
+            #endif
         #endif
         #ifdef REFRACTED_BACKGROUND
             // Scale the refraction so that we only see it at higher roughnesses

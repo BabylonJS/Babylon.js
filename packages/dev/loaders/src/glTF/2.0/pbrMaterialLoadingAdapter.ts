@@ -711,10 +711,18 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Gets the transmission dispersion Abbe number.
+     * Sets the transmission dispersion Abbe number.
      * @param value The Abbe number value
      */
     public set transmissionDispersionAbbeNumber(value: number) {
+        // PBRMaterial assumes a fixed Abbe number of 20.0 for dispersion calculations.
+    }
+
+    /**
+     * Sets the transmission dispersion scale.
+     * @param value The dispersion scale value
+     */
+    public set transmissionDispersionScale(value: number) {
         if (value > 0) {
             this._material.subSurface.isDispersionEnabled = true;
             this._material.subSurface.dispersion = 20.0 / value;
@@ -1012,21 +1020,6 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      */
     public set thinFilmThicknessTexture(value: Nullable<BaseTexture>) {
         this._material.iridescence.thicknessTexture = value;
-    }
-
-    // ========================================
-    // DISPERSION
-    // ========================================
-
-    /**
-     * Sets the transmission dispersion value.
-     * Note: PBR doesn't have direct dispersion support, so this stores it as metadata.
-     * @param value The dispersion value (stored as metadata)
-     */
-    public set transmissionDispersion(value: number) {
-        // PBR doesn't have a direct dispersion property, this would need custom shader modification
-        // For now, we'll store it as metadata
-        (this._material as any)._dispersion = value;
     }
 
     // ========================================

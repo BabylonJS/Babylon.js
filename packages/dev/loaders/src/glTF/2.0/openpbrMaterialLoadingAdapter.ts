@@ -644,6 +644,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     // ========================================
 
     /**
+     * Configures transmission for OpenPBR material.
+     */
+    public configureTransmission(): void {
+        // OpenPBR transmission will be configured differently when available
+    }
+
+    /**
      * Sets the transmission weight.
      * @param value The transmission weight value (0-1)
      */
@@ -683,11 +690,11 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
-     * Configures transmission for OpenPBR material.
-     * TODO: Implementation pending OpenPBR transmission feature availability.
+     * Sets the transmission dispersion scale.
+     * @param value The dispersion scale value
      */
-    public configureTransmission(): void {
-        // OpenPBR transmission will be configured differently when available
+    public set transmissionDispersionScale(value: number) {
+        this._material.transmissionDispersionScale = value;
     }
 
     // ========================================

@@ -177,7 +177,16 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     var transmission_absorption: vec3f = vec3f(1.0f);
     #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
-        let refractedViewVector: vec3f = double_refract(-viewDirectionW, normalW, specular_ior);
+        #ifdef DISPERSION
+            var refractedViewVectors: array<vec3f, 3>;
+            let iorDispersionSpread: f32 = transmission_dispersion_scale / transmission_dispersion_abbe_number * (specular_ior - 1.0f);
+            let iors: vec3f = vec3f(specular_ior - iorDispersionSpread, specular_ior, specular_ior + iorDispersionSpread);
+            for (var i: i32 = 0; i < 3; i++) {
+                refractedViewVectors[i] = double_refract(-viewDirectionW, normalW, iors[i]);    
+            }
+        #else
+            let refractedViewVector: vec3f = double_refract(-viewDirectionW, normalW, specular_ior);
+        #endif
         // Transmission blurriness is affected by IOR so we scale the roughness accordingly
         let transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
         // Absorption is volumetric if transmission depth is > 0.

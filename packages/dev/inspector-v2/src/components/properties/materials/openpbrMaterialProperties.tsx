@@ -140,6 +140,72 @@ export const OpenPBRMaterialSpecularProperties: FunctionComponent<{ material: Op
     );
 };
 
+export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material: OpenPBRMaterial }> = (props) => {
+    const { material } = props;
+
+    return (
+        <>
+            <BoundProperty component={SyncedSliderPropertyLine} label="Transmission Weight" target={material} propertyKey="transmissionWeight" min={0} max={1} step={0.01} />
+            <FileUploadLine
+                label="Transmission Weight"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.transmissionWeightTexture = texture));
+                    }
+                }}
+            />
+            <BoundProperty component={Color3PropertyLine} label="Transmission Color" target={material} propertyKey="transmissionColor" isLinearMode />
+            <FileUploadLine
+                label="Transmission Color"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.transmissionColorTexture = texture));
+                    }
+                }}
+            />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Transmission Depth" target={material} propertyKey="transmissionDepth" min={0} step={0.01} />
+            <FileUploadLine
+                label="Transmission Depth"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.transmissionDepthTexture = texture));
+                    }
+                }}
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Transmission Dispersion Abbe Number"
+                target={material}
+                propertyKey="transmissionDispersionAbbeNumber"
+                min={1}
+                max={100}
+                step={1}
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Transmission Dispersion Scale"
+                target={material}
+                propertyKey="transmissionDispersionScale"
+                min={0}
+                max={1}
+                step={0.01}
+            />
+            <FileUploadLine
+                label="Transmission Dispersion Scale"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.transmissionDispersionScaleTexture = texture));
+                    }
+                }}
+            />
+        </>
+    );
+};
+
 /**
  * Displays the coat layer properties of an OpenPBR material.
  * @param props - The required properties

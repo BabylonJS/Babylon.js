@@ -692,7 +692,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     public transmissionDispersionAbbeNumber: number;
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionDispersionAbbeNumber")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _transmissionDispersionAbbeNumber: Property<number> = new Property<number>("transmission_dispersion_abbe_number", 0.0, "vTransmissionDispersionAbbeNumber", 1, 0);
+    private _transmissionDispersionAbbeNumber: Property<number> = new Property<number>("transmission_dispersion_abbe_number", 20.0, "vTransmissionDispersionAbbeNumber", 1, 0);
 
     /**
      * Defines the amount of clear coat on the surface.

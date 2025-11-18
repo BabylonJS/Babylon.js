@@ -3207,6 +3207,11 @@
             "excludedEngines": ["webgl1"]
         },
         {
+            "title": "OpenPBR Transmission Dispersion glTF - IBL",
+            "playgroundId": "#GRQHVV#140",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
         }

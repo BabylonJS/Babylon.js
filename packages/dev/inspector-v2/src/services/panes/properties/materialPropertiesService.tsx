@@ -24,12 +24,13 @@ import {
 import { PBRMaterialLightingAndColorProperties } from "../../../components/properties/materials/pbrMaterialProperties";
 import {
     OpenPBRMaterialBaseProperties,
-    OpenPBRMaterialCoatProperties,
-    OpenPBRMaterialEmissionProperties,
-    OpenPBRMaterialFuzzProperties,
-    OpenPBRMaterialGeometryProperties,
     OpenPBRMaterialSpecularProperties,
+    OpenPBRMaterialTransmissionProperties,
+    OpenPBRMaterialCoatProperties,
+    OpenPBRMaterialFuzzProperties,
+    OpenPBRMaterialEmissionProperties,
     OpenPBRMaterialThinFilmProperties,
+    OpenPBRMaterialGeometryProperties,
 } from "../../../components/properties/materials/openpbrMaterialProperties";
 import { SkyMaterialProperties } from "../../../components/properties/materials/skyMaterialProperties";
 import {
@@ -143,6 +144,10 @@ export const MaterialPropertiesServiceDefinition: ServiceDefinition<[], [IProper
                 {
                     section: "Specular",
                     component: ({ context }) => <OpenPBRMaterialSpecularProperties material={context} />,
+                },
+                {
+                    section: "Transmission",
+                    component: ({ context }) => <OpenPBRMaterialTransmissionProperties material={context} />,
                 },
                 {
                     section: "Coat",

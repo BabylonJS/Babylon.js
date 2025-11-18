@@ -261,7 +261,13 @@
                 #endif
             );
         #else
-            var iblRefractionCoords: vec3f = refractedViewVector;
+            var environmentRefraction: vec3f = vec3f(0., 0., 0.);
+            #ifdef DISPERSION
+                for (var i: i32 = 0; i < 3; i++) {
+                    var iblRefractionCoords: vec3f = refractedViewVectors[i];
+            #else
+                var iblRefractionCoords: vec3f = refractedViewVector;
+            #endif
             #ifdef REFRACTED_ENVIRONMENT_OPPOSITEZ
                 iblRefractionCoords.z *= -1.0f;
             #endif
@@ -270,15 +276,30 @@
             #endif
 
             iblRefractionCoords = (uniforms.reflectionMatrix * vec4f(iblRefractionCoords, 0.0f)).xyz;
-            var environmentRefraction: vec3f = sampleRadiance(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
-                , baseGeoInfo
-                , reflectionSampler
-                , reflectionSamplerSampler
-                , iblRefractionCoords
-                #ifdef REALTIME_FILTERING
-                    , uniforms.vReflectionFilteringInfo
-                #endif
-            );
+            #ifdef DISPERSION
+                environmentRefraction[i] = sampleRadiance(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                    , baseGeoInfo
+                    , reflectionSampler
+                    , reflectionSamplerSampler
+                    , iblRefractionCoords
+                    #ifdef REALTIME_FILTERING
+                        , uniforms.vReflectionFilteringInfo
+                    #endif
+                )[i];
+            #else
+                environmentRefraction = sampleRadiance(refractionAlphaG, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                    , baseGeoInfo
+                    , reflectionSampler
+                    , reflectionSamplerSampler
+                    , iblRefractionCoords
+                    #ifdef REALTIME_FILTERING
+                        , uniforms.vReflectionFilteringInfo
+                    #endif
+                );
+            #endif
+            #ifdef DISPERSION
+                }
+            #endif
         #endif
         #ifdef REFRACTED_BACKGROUND
             // Scale the refraction so that we only see it at higher roughnesses

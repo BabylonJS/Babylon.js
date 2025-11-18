@@ -197,7 +197,16 @@ void main(void) {
 
     vec3 transmission_absorption = vec3(1.0);
     #if defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS)
-        vec3 refractedViewVector = double_refract(-viewDirectionW, normalW, specular_ior);
+        #ifdef DISPERSION
+            vec3 refractedViewVectors[3];
+            float iorDispersionSpread = transmission_dispersion_scale / transmission_dispersion_abbe_number * (specular_ior - 1.0);
+            vec3 iors = vec3(specular_ior - iorDispersionSpread, specular_ior, specular_ior + iorDispersionSpread);
+            for (int i = 0; i < 3; i++) {
+                refractedViewVectors[i] = double_refract(-viewDirectionW, normalW, iors[i]);    
+            }
+        #else
+            vec3 refractedViewVector = double_refract(-viewDirectionW, normalW, specular_ior);
+        #endif
         // Transmission blurriness is affected by IOR so we scale the roughness accordingly
         float transmission_roughness = specular_roughness * clamp(4.0 * (specular_ior - 1.0), 0.001, 1.0);
         // Absorption is volumetric if transmission depth is > 0.

@@ -272,6 +272,11 @@ export interface IMaterialLoadingAdapter {
     transmissionDispersionAbbeNumber: number;
 
     /**
+     * Sets the dispersion scale
+     */
+    transmissionDispersionScale: number;
+
+    /**
      * Configures transmission for thin-surface transmission (KHR_materials_transmission)
      */
     configureTransmission(): void;
