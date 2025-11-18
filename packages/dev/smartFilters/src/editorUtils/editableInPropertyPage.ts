@@ -96,18 +96,23 @@ export function EditableInPropertyPage(
             target._propStore = propStore;
         }
 
-        // Only add the property if it does not already exist
-        const existingProp = propStore.find((p) => p.propertyName === propertyKey && p.className === target.constructor.name && p.blockType === blockType);
-        if (!existingProp) {
-            propStore.push({
-                propertyName: propertyKey,
-                displayName: displayName,
-                type: propertyType,
-                groupName: groupName,
-                options: options ?? {},
-                className: target.constructor.name,
-                blockType: blockType,
-            });
+        const propToAdd: IPropertyDescriptionForEdition = {
+            propertyName: propertyKey,
+            displayName: displayName,
+            type: propertyType,
+            groupName: groupName,
+            options: options ?? {},
+            className: target.constructor.name,
+            blockType: blockType,
+        };
+
+        // If the property already exists, overwrite it, otherwise add it
+        // Note: It may have been redefined since the application started
+        const existingIndex = propStore.findIndex((p) => p.propertyName === propertyKey && p.className === target.constructor.name && p.blockType === blockType);
+        if (existingIndex !== -1) {
+            propStore[existingIndex] = propToAdd;
+        } else {
+            propStore.push(propToAdd);
         }
     };
 }
