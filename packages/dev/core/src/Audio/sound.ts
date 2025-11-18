@@ -135,6 +135,7 @@ export class Sound {
         this._optionsV2.spatialMaxDistance = value;
 
         if (this._soundV2) {
+            this._initSpatial();
             this._soundV2.spatial.maxDistance = value;
         }
     }
@@ -149,6 +150,7 @@ export class Sound {
         this._optionsV2.spatialDistanceModel = value;
 
         if (this._soundV2) {
+            this._initSpatial();
             this._soundV2.spatial.distanceModel = value;
         }
     }
@@ -188,7 +190,11 @@ export class Sound {
      */
     public set spatialSound(newValue: boolean) {
         if (this._soundV2) {
-            this._soundV2._isSpatial = newValue;
+            if (newValue) {
+                this._initSpatial();
+            } else {
+                this._soundV2._isSpatial = false;
+            }
         }
     }
 
@@ -273,6 +279,7 @@ export class Sound {
             optionsV2.spatialConeInnerAngle = _SpatialAudioDefaults.coneInnerAngle;
             optionsV2.spatialConeOuterAngle = _SpatialAudioDefaults.coneOuterAngle;
             optionsV2.spatialConeOuterVolume = _SpatialAudioDefaults.coneOuterVolume;
+            optionsV2.spatialMaxDistance = options.maxDistance || 100;
             optionsV2.spatialMinUpdateTime = 0;
             optionsV2.spatialOrientation = _SpatialAudioDefaults.orientation;
             optionsV2.spatialPanningModel = (this._scene.headphone ? "HRTF" : "equalpower") as "equalpower" | "HRTF";
@@ -489,6 +496,7 @@ export class Sound {
      */
     public switchPanningModelToHRTF() {
         if (this.spatialSound) {
+            this._initSpatial();
             this._soundV2.spatial.panningModel = "HRTF";
         }
     }
@@ -500,6 +508,7 @@ export class Sound {
      */
     public switchPanningModelToEqualPower() {
         if (this.spatialSound) {
+            this._initSpatial();
             this._soundV2.spatial.panningModel = "equalpower";
         }
     }
@@ -535,6 +544,7 @@ export class Sound {
         this._optionsV2.spatialConeOuterAngle = D2r(coneOuterAngle);
         this._optionsV2.spatialConeOuterVolume = coneOuterGain;
 
+        this._initSpatial();
         this._soundV2.spatial.coneInnerAngle = this._optionsV2.spatialConeInnerAngle;
         this._soundV2.spatial.coneOuterAngle = this._optionsV2.spatialConeOuterAngle;
         this._soundV2.spatial.coneOuterVolume = coneOuterGain;
@@ -567,6 +577,7 @@ export class Sound {
             }
             this._optionsV2.spatialConeInnerAngle = value;
             if (this.spatialSound) {
+                this._initSpatial();
                 this._soundV2.spatial.coneInnerAngle = value;
             }
         }
@@ -592,6 +603,7 @@ export class Sound {
             }
             this._optionsV2.spatialConeOuterAngle = value;
             if (this.spatialSound) {
+                this._initSpatial();
                 this._soundV2.spatial.coneOuterAngle = value;
             }
         }
@@ -610,6 +622,7 @@ export class Sound {
         }
         this._optionsV2.spatialPosition.copyFrom(newPosition);
         if (this.spatialSound && !isNaN(newPosition.x) && !isNaN(newPosition.y) && !isNaN(newPosition.z)) {
+            this._initSpatial();
             this._soundV2.spatial.position = newPosition;
         }
     }
@@ -635,7 +648,16 @@ export class Sound {
         const direction = Vector3.TransformNormal(this._localDirection, mat);
         direction.normalize();
 
+        this._initSpatial();
         this._soundV2.spatial.orientation = direction;
+    }
+
+    private _initSpatial() {
+        this._soundV2._isSpatial = true;
+        if (this._optionsV2.spatialMaxDistance === undefined) {
+            this._optionsV2.spatialMaxDistance = 100;
+            this._soundV2.spatial.maxDistance = 100;
+        }
     }
 
     /** @internal */
