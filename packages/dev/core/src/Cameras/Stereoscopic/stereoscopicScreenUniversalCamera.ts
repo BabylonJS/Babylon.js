@@ -86,7 +86,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
             cam.maxZ = this.maxZ;
             cam.fov = this.fov;
             cam.upVector.copyFrom(this.upVector);
-            if (cam.rotationQuaternion) {
+            if (cam.rotationQuaternion && this.rotationQuaternion) {
                 cam.rotationQuaternion.copyFrom(this.rotationQuaternion);
             } else {
                 cam.rotation.copyFrom(this.rotation);

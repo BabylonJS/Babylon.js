@@ -220,15 +220,18 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
         if (!this._alpha) {
             return;
         }
-        Quaternion.RotationYawPitchRollToRef(Tools.ToRadians(this._alpha), Tools.ToRadians(this._beta), -Tools.ToRadians(this._gamma), this.camera.rotationQuaternion);
-        this._camera.rotationQuaternion.multiplyInPlace(this._screenQuaternion);
-        this._camera.rotationQuaternion.multiplyInPlace(this._constantTransform);
-        if (this._camera.getScene().useRightHandedSystem) {
-            this._camera.rotationQuaternion.y *= -1;
-        } else {
-            this._camera.rotationQuaternion.z *= -1;
+        if (this._camera.rotationQuaternion) {
+            Quaternion.RotationYawPitchRollToRef(Tools.ToRadians(this._alpha), Tools.ToRadians(this._beta), -Tools.ToRadians(this._gamma), this._camera.rotationQuaternion);
+
+            this._camera.rotationQuaternion.multiplyInPlace(this._screenQuaternion);
+            this._camera.rotationQuaternion.multiplyInPlace(this._constantTransform);
+            if (this._camera.getScene().useRightHandedSystem) {
+                this._camera.rotationQuaternion.y *= -1;
+            } else {
+                this._camera.rotationQuaternion.z *= -1;
+            }
+            this._camera.rotationQuaternion.w *= -1;
         }
-        this._camera.rotationQuaternion.w *= -1;
     }
 
     /**

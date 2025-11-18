@@ -50,7 +50,7 @@ export class TargetCamera extends Camera {
     /**
      * Define the current rotation of the camera as a quaternion to prevent Gimbal lock
      */
-    public rotationQuaternion: Quaternion;
+    public rotationQuaternion: Nullable<Quaternion>;
 
     /**
      * Define the current speed of the camera
@@ -167,7 +167,7 @@ export class TargetCamera extends Camera {
 
     private _storedPosition: Vector3;
     private _storedRotation: Vector3;
-    private _storedRotationQuaternion: Quaternion;
+    private _storedRotationQuaternion: Nullable<Quaternion>;
 
     /**
      * Store current camera state of the camera (fov, position, rotation, etc..)
@@ -196,7 +196,7 @@ export class TargetCamera extends Camera {
         this.position = this._storedPosition.clone();
         this.rotation = this._storedRotation.clone();
 
-        if (this.rotationQuaternion) {
+        if (this.rotationQuaternion && this._storedRotationQuaternion) {
             this.rotationQuaternion = this._storedRotationQuaternion.clone();
         }
 
@@ -557,7 +557,7 @@ export class TargetCamera extends Camera {
                 break;
             }
             case Camera.RIG_MODE_VR:
-                if (camLeft.rotationQuaternion) {
+                if (camLeft.rotationQuaternion && camRight.rotationQuaternion && this.rotationQuaternion) {
                     camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
                     camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
                 } else {
