@@ -66,17 +66,11 @@ export class Sound {
      * Does the sound autoplay once loaded.
      */
     public get autoplay(): boolean {
-        return this._soundV2 instanceof _WebAudioSoundSource ? true : this._soundV2.autoplay;
+        return this._soundV2 instanceof _WebAudioSoundSource ? true : this._optionsV2.autoplay!;
     }
 
     public set autoplay(value: boolean) {
-        if (this._soundV2 instanceof _WebAudioSoundSource) {
-            return;
-        }
-
-        if (this._soundV2) {
-            this._soundV2._getOptions().autoplay = value;
-        }
+        this._optionsV2.autoplay = value;
     }
 
     /**
@@ -289,7 +283,8 @@ export class Sound {
             optionsV2.spatialRotationQuaternion = _SpatialAudioDefaults.rotationQuaternion;
         }
 
-        this._optionsV2 = optionsV2;
+        this._optionsV2 = { ...optionsV2 };
+        this._optionsV2.autoplay = options.autoplay || false;
 
         this.useCustomAttenuation = options.useCustomAttenuation ?? false;
 
@@ -311,30 +306,17 @@ export class Sound {
 
                 const sound = new _WebAudioStreamingSound(name, audioEngineV2, streamingOptionsV2);
 
-                // eslint-disable-next-line github/no-then
-                void sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
-                    // eslint-disable-next-line github/no-then
-                    void sound.preloadInstancesAsync(1).then(this._onReadyToPlay);
+                sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
+                    sound.preloadInstancesAsync(1).then(this._onReadyToPlay);
                 });
 
                 return sound;
+            } else {
+                const sound = new _WebAudioStaticSound(name, audioEngineV2, optionsV2);
+                sound._initAsync(urlOrArrayBuffer, optionsV2).then(this._onReadyToPlay);
+
+                return sound;
             }
-
-            const sound = new _WebAudioStaticSound(name, audioEngineV2, optionsV2);
-
-            // eslint-disable-next-line github/no-then
-            void sound._initAsync(urlOrArrayBuffer, optionsV2).then(() => {
-                this._onReadyToPlay();
-
-                // We need to explicitly call this `Sound` class's `play` function when `autoplay` is `true` so the
-                // audio engine unlock mechanism is properly triggered.
-                if (options.autoplay) {
-                    this._optionsV2.autoplay = true;
-                    this.play();
-                }
-            });
-
-            return sound;
         };
 
         // If no parameter is passed then the setAudioBuffer should be called to prepare the sound.
@@ -376,6 +358,10 @@ export class Sound {
         this._scene.mainSoundTrack.addSound(this);
         this._isReadyToPlay = true;
         this._readyToPlayCallback();
+
+        if (this._optionsV2.autoplay) {
+            this.play();
+        }
     };
 
     /**
