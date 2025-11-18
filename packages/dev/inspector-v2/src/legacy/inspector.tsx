@@ -147,7 +147,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
             factory: (sceneExplorerService) => {
                 const sceneExplorerCommandRegistrations = explorerExtensibility.flatMap((command) =>
                     command.entries.map((entry) =>
-                        sceneExplorerService.addCommand({
+                        sceneExplorerService.addEntityCommand({
                             predicate: (entity): entity is EntityBase => command.predicate(entity),
                             getCommand: (entity) => {
                                 return {

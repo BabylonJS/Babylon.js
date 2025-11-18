@@ -628,7 +628,7 @@ const EntityTreeItem: FunctionComponent<{
 
 export const SceneExplorer: FunctionComponent<{
     sections: readonly SceneExplorerSection<EntityBase>[];
-    commandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
+    entityCommandProviders: readonly SceneExplorerCommandProvider<EntityBase>[];
     sectionCommandProviders: readonly SceneExplorerCommandProvider<string, "contextMenu">[];
     scene: Scene;
     selectedEntity?: unknown;
@@ -636,7 +636,7 @@ export const SceneExplorer: FunctionComponent<{
 }> = (props) => {
     const classes = useStyles();
 
-    const { sections, commandProviders, sectionCommandProviders, scene, selectedEntity } = props;
+    const { sections, entityCommandProviders, sectionCommandProviders, scene, selectedEntity } = props;
 
     const [openItems, setOpenItems] = useState(new Set<TreeItemValue>());
     const [sceneVersion, setSceneVersion] = useState(0);
@@ -969,7 +969,7 @@ export const SceneExplorer: FunctionComponent<{
                                     isSelected={selectedEntity === item.entity}
                                     select={() => setSelectedEntity?.(item.entity)}
                                     isFiltering={!!itemsFilter}
-                                    commandProviders={commandProviders}
+                                    commandProviders={entityCommandProviders}
                                     expandAll={() => expandAll(item)}
                                     collapseAll={() => collapseAll(item)}
                                 />
