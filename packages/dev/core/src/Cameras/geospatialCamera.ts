@@ -53,7 +53,7 @@ export class GeospatialCamera extends Camera {
         this._flyingBehavior = new InterpolatingBehavior();
         this.addBehavior(this._flyingBehavior);
 
-        this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, pickPredicate, this._flyingBehavior);
+        this.movement = new GeospatialCameraMovement(scene, this._limits, this.position, this.center, this._lookAtVector, pickPredicate);
 
         this.pickPredicate = pickPredicate;
         this.inputs = new GeospatialCameraInputsManager(this);
