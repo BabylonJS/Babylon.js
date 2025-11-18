@@ -670,7 +670,8 @@ export class Sound {
      * @param length (optional) Sound duration (in seconds)
      */
     public play(time?: number, offset?: number, length?: number): void {
-        AbstractEngine.audioEngine?.unlock();
+        const audioEngine = AbstractEngine.audioEngine;
+        audioEngine?.unlock();
 
         // WebAudio sound sources have no `play` function because they are always playing.
         if (this._soundV2 instanceof _WebAudioSoundSource) {
@@ -687,7 +688,15 @@ export class Sound {
                 TmpPlayOptions.duration = length || 0;
                 TmpPlayOptions.startOffset = offset !== undefined ? offset || this._optionsV2.startOffset! : this._optionsV2.startOffset!;
                 TmpPlayOptions.waitTime = time || 0;
-                this._soundV2.play(TmpPlayOptions);
+
+                if (audioEngine?.unlocked) {
+                    this._soundV2.play(TmpPlayOptions);
+                } else {
+                    // Wait a bit for FF as context seems late to be ready.
+                    setTimeout(() => {
+                        (this._soundV2 as _WebAudioStaticSound | _WebAudioStreamingSound).play(TmpPlayOptions);
+                    }, 500);
+                }
             } catch (ex) {
                 Logger.Error("Error while trying to play audio: " + this.name + ", " + ex.message);
             }
