@@ -1,14 +1,15 @@
 import type { Scene } from "core/scene";
-import type { NodeParticleConnectionPoint } from "./nodeParticleBlockConnectionPoint";
-import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
-import type { Particle } from "../particle";
 import type { Nullable } from "core/types";
-import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
-import type { ThinParticleSystem } from "../thinParticleSystem";
-import { Color4 } from "core/Maths/math.color";
-import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { Particle } from "core/Particles/particle";
+import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+
+import { Color4 } from "core/Maths/math.color";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
+import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 /**
  * Class used to store node based geometry build state
@@ -114,6 +115,8 @@ export class NodeParticleBuildState {
                 return this.particleContext.position;
             case NodeParticleContextualSources.Direction:
                 return this.particleContext.direction;
+            case NodeParticleContextualSources.DirectionScale:
+                return this.particleContext._directionScale;
             case NodeParticleContextualSources.ScaledDirection:
                 this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
                 return this.particleContext._scaledDirection;

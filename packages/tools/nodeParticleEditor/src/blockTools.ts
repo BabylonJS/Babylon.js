@@ -179,6 +179,11 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.Direction;
                 return block;
             }
+            case "DirectionScaleBlock": {
+                const block = new ParticleInputBlock("Direction scale");
+                block.contextualValue = NodeParticleContextualSources.DirectionScale;
+                return block;
+            }
             case "ScaledDirectionBlock": {
                 const block = new ParticleInputBlock("Scaled direction");
                 block.contextualValue = NodeParticleContextualSources.ScaledDirection;
