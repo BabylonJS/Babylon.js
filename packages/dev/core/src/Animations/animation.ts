@@ -545,6 +545,7 @@ export class Animation {
      * @param transition The transition type we want to use
      * @param duration The duration of the animation, in milliseconds
      * @param onAnimationEnd Callback trigger at the end of the animation
+     * @param stopCurrent If true, will stop the current animation on the property
      * @returns Nullable animation
      */
     public static TransitionTo(
@@ -555,7 +556,8 @@ export class Animation {
         frameRate: number,
         transition: Animation,
         duration: number,
-        onAnimationEnd: Nullable<() => void> = null
+        onAnimationEnd: Nullable<() => void> = null,
+        stopCurrent: boolean = true
     ): Nullable<Animatable> {
         if (duration <= 0) {
             host[property] = targetValue;
@@ -584,8 +586,7 @@ export class Animation {
 
         host.animations.push(transition);
 
-        const animation: Animatable = scene.beginAnimation(host, 0, endFrame, false);
-        animation.onAnimationEnd = onAnimationEnd;
+        const animation: Animatable = scene.beginAnimation(host, 0, endFrame, false, 1.0, onAnimationEnd ?? undefined, undefined, stopCurrent);
         return animation;
     }
 
