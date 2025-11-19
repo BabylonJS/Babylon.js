@@ -11,6 +11,7 @@ import type {
     WritableObject,
     IShadowLight,
     INodeRenderGraphCustomBlockDescription,
+    Immutable,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
@@ -83,7 +84,12 @@ export class NodeRenderGraph {
     public attachedBlocks: NodeRenderGraphBlock[] = [];
 
     /**
-     * Observable raised when the node render graph is built
+     * Observable raised before the node render graph is built
+     */
+    public onBeforeBuildObservable = new Observable<FrameGraph>();
+
+    /**
+     * Observable raised after the node render graph is built
      * Note that this is the same observable as the one in the underlying FrameGraph!
      */
     public get onBuildObservable() {
@@ -134,6 +140,13 @@ export class NodeRenderGraph {
      */
     public getScene() {
         return this._scene;
+    }
+
+    /**
+     * Gets the options used to create this node render graph
+     */
+    public get options(): Immutable<INodeRenderGraphCreateOptions> {
+        return this._options;
     }
 
     /**
@@ -305,6 +318,8 @@ export class NodeRenderGraph {
         if (this._options.autoFillExternalInputs) {
             this._autoFillExternalInputs();
         }
+
+        this.onBeforeBuildObservable.notifyObservers(this._frameGraph);
 
         // Make sure that one of the object renderer is flagged as the main object renderer
         const objectRendererBlocks = this.getBlocksByPredicate<NodeRenderGraphBaseObjectRendererBlock>((block) => block instanceof NodeRenderGraphBaseObjectRendererBlock);
