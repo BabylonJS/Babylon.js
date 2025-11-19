@@ -216,10 +216,10 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.disposeOnStop = this.disposeOnStop;
 
         // The emit rate can vary if it is connected to another block like a gradient
-        const emitRateFunction = this._calculateEmitRate(state);
+        const emitRateInput = this.emitRate;
         particleSystem._calculateEmitRate = () => {
             state.systemContext = particleSystem;
-            return emitRateFunction();
+            return emitRateInput.getConnectedValue(state) as number;
         };
 
         this.system._storedValue = this;
@@ -295,7 +295,6 @@ export class SystemBlock extends NodeParticleBlock {
         super._deserialize(serializationObject);
 
         this.capacity = serializationObject.capacity;
-        this.emitRate.value = serializationObject.emitRate;
         this.manualEmitCount = serializationObject.manualEmitCount ?? -1;
         this.updateSpeed = serializationObject.updateSpeed ?? 0.0167;
         this.preWarmCycles = serializationObject.preWarmCycles ?? 0;
@@ -305,6 +304,10 @@ export class SystemBlock extends NodeParticleBlock {
         this.disposeOnStop = serializationObject.disposeOnStop ?? false;
         this.doNoStart = !!serializationObject.doNoStart;
 
+        if (serializationObject.emitRate !== undefined) {
+            this.emitRate.value = serializationObject.emitRate;
+        }
+
         if (serializationObject.blendMode !== undefined) {
             this.blendMode = serializationObject.blendMode;
         }
@@ -312,19 +315,6 @@ export class SystemBlock extends NodeParticleBlock {
         if (serializationObject.startDelay !== undefined) {
             this.startDelay = serializationObject.startDelay;
         }
-    }
-
-    /**
-     * Function to override the default emit rate calculation
-     * from thinParticleSystem.ts
-     * @param state State of the system
-     * @returns The emit rate function
-     */
-    private _calculateEmitRate(state: NodeParticleBuildState): () => number {
-        const emitRateInput = this.emitRate;
-        return () => {
-            return emitRateInput.getConnectedValue(state) as number;
-        };
     }
 }
 
