@@ -96,6 +96,9 @@ export class GeospatialCameraKeyboardInput implements ICameraInput<GeospatialCam
             return;
         }
 
+        this._scene = this.camera.getScene();
+        this._engine = this._scene.getEngine();
+
         this._onCanvasBlurObserver = this._engine.onCanvasBlurObservable.add(() => {
             this._keys.length = 0;
         });
