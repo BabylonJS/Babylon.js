@@ -216,10 +216,9 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.disposeOnStop = this.disposeOnStop;
 
         // The emit rate can vary if it is connected to another block like a gradient
-        const emitRateInput = this.emitRate;
         particleSystem._calculateEmitRate = () => {
             state.systemContext = particleSystem;
-            return emitRateInput.getConnectedValue(state) as number;
+            return this.emitRate.getConnectedValue(state) as number;
         };
 
         this.system._storedValue = this;
