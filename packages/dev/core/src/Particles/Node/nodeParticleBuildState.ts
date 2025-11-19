@@ -206,7 +206,7 @@ export class NodeParticleBuildState {
      * @returns the value associated with the source
      */
     public getSystemValue(source: NodeParticleSystemSources) {
-        if (!this.particleContext || !this.systemContext) {
+        if (!this.systemContext) {
             return null;
         }
 
