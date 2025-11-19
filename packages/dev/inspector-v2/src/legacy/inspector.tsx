@@ -1,4 +1,13 @@
-import type { IDisposable, IExplorerAdditionalChild, IInspectorOptions as InspectorV1Options, Nullable, Scene, WritableObject } from "core/index";
+import type {
+    IDisposable,
+    IExplorerAdditionalChild,
+    IInspectorContextMenuItem,
+    IInspectorContextMenuType,
+    IInspectorOptions as InspectorV1Options,
+    Nullable,
+    Scene,
+    WritableObject,
+} from "core/index";
 import type { EntityBase } from "../components/scene/sceneExplorer";
 import type { InspectorOptions as InspectorV2Options } from "../inspector";
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
@@ -64,7 +73,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
         })();
 
         const initialTabServiceDefinition: ServiceDefinition<[], [IShellService]> = {
-            friendlyName: "Initial Tab Selector",
+            friendlyName: "Initial Tab Selector (Backward Compatibility)",
             consumes: [ShellServiceIdentity],
             factory: (shellService) => {
                 // Just find and select the requested initial tab.
@@ -77,7 +86,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
     if (v1Options.additionalNodes && v1Options.additionalNodes.length > 0) {
         const { additionalNodes } = v1Options;
         const additionalNodesServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
-            friendlyName: "Additional Nodes",
+            friendlyName: "Additional Nodes (Backward Compatibility)",
             consumes: [SceneExplorerServiceIdentity],
             factory: (sceneExplorerService) => {
                 const sceneExplorerSectionRegistrations = additionalNodes.map((node) =>
@@ -133,12 +142,12 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
     if (v1Options.explorerExtensibility && v1Options.explorerExtensibility.length > 0) {
         const { explorerExtensibility } = v1Options;
         const explorerExtensibilityServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
-            friendlyName: "Explorer Extensibility",
+            friendlyName: "Explorer Extensibility (Backward Compatibility)",
             consumes: [SceneExplorerServiceIdentity],
             factory: (sceneExplorerService) => {
                 const sceneExplorerCommandRegistrations = explorerExtensibility.flatMap((command) =>
                     command.entries.map((entry) =>
-                        sceneExplorerService.addCommand({
+                        sceneExplorerService.addEntityCommand({
                             predicate: (entity): entity is EntityBase => command.predicate(entity),
                             getCommand: (entity) => {
                                 return {
@@ -160,6 +169,50 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
             },
         };
         serviceDefinitions.push(explorerExtensibilityServiceDefinition);
+    }
+
+    if (v1Options.contextMenu) {
+        const { contextMenu } = v1Options;
+        const sections = Object.entries(contextMenu) as [IInspectorContextMenuType, IInspectorContextMenuItem[]][];
+        if (sections.length > 0) {
+            const legacySectionMapping = {
+                pipeline: "Rendering Pipelines",
+                node: "Nodes",
+                materials: "Materials",
+                spriteManagers: "Sprite Managers",
+                particleSystems: "Particle Systems",
+                frameGraphs: "Frame Graphs",
+            } as const satisfies Record<IInspectorContextMenuType, string>;
+
+            const sectionContextMenuServiceDefinition: ServiceDefinition<[], [ISceneExplorerService]> = {
+                friendlyName: "Context Menu (Backward Compatibility)",
+                consumes: [SceneExplorerServiceIdentity],
+                factory: (sceneExplorerService) => {
+                    const sceneExlplorerCommandRegistrations = sections.flatMap(([sectionName, entries]) =>
+                        entries.map((entry) =>
+                            sceneExplorerService.addSectionCommand({
+                                predicate: (section): section is (typeof legacySectionMapping)[IInspectorContextMenuType] => legacySectionMapping[sectionName] === section,
+                                getCommand: () => {
+                                    return {
+                                        displayName: entry.label,
+                                        type: "action",
+                                        mode: "contextMenu",
+                                        execute: () => entry.action(),
+                                    };
+                                },
+                            })
+                        )
+                    );
+
+                    return {
+                        dispose: () => {
+                            sceneExlplorerCommandRegistrations.forEach((registration) => registration.dispose());
+                        },
+                    };
+                },
+            };
+            serviceDefinitions.push(sectionContextMenuServiceDefinition);
+        }
     }
 
     const v2Options: Partial<InspectorV2Options> = {
