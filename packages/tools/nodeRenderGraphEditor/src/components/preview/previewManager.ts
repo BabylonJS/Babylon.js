@@ -6,7 +6,7 @@ import type { Observer } from "core/Misc/observable";
 import type { IShadowLight } from "core/Lights/shadowLight";
 import { Engine } from "core/Engines/engine";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
+import { Matrix, Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
@@ -128,6 +128,15 @@ export class PreviewManager {
     private async _initSceneAsync(scene: Scene): Promise<void> {
         (window as any).scenePreview = scene;
 
+        const oldScene = this._scene;
+        if (oldScene) {
+            // We must wait for a while before disposing the old scene because the HDR texture could be in loading state (and maybe other resources too?).
+            // Disposing the scene will dispose the HDR texture too, which will generate an error when the texture is loaded and it tries to set some rendering parameters (sampler info, ...).
+            setTimeout(() => {
+                oldScene.dispose();
+            }, 10000);
+        }
+
         this._scene = scene;
 
         const dummyTexture = this._dummyExternalTexture;
@@ -206,10 +215,6 @@ export class PreviewManager {
             light.dispose();
         }
 
-        // Create a dummy light, which will be used for a ShadowLight input in case no directional light is selected in the UI
-        const dummyLight = new DirectionalLight("dummy", new Vector3(0, 1, 0), this._scene);
-        dummyLight.intensity = 0.0;
-
         // Create new lights based on settings
         if (this._globalState.hemisphericLight) {
             new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
@@ -232,6 +237,8 @@ export class PreviewManager {
             dir0.shadowMinZ = 0;
             dir0.shadowMaxZ = diag;
             dir0.position = findLightPosition(dir0.direction);
+            // Forces the calculation of the orthoXXX properties of dir0
+            dir0.setShadowProjectionMatrix(new Matrix(), dir0.getViewMatrix()!, this._scene.meshes);
         }
 
         if (this._globalState.directionalLight1) {
@@ -243,6 +250,8 @@ export class PreviewManager {
             dir1.shadowMinZ = 0;
             dir1.shadowMaxZ = diag;
             dir1.position = findLightPosition(dir1.direction);
+            // Forces the calculation of the orthoXXX properties of dir1
+            dir1.setShadowProjectionMatrix(new Matrix(), dir1.getViewMatrix()!, this._scene.meshes);
         }
 
         for (const m of this._scene.meshes) {
@@ -305,7 +314,12 @@ export class PreviewManager {
         this._scene.cameras.length = 0;
         this._scene.cameraToUseForPointers = null;
 
-        const dummyLight = this._scene.getLightByName("dummy") as IShadowLight;
+        let dummyLight = this._scene.getLightByName("dummy") as IShadowLight;
+        if (!dummyLight) {
+            // Create a dummy light, which will be used for a ShadowLight input in case no directional light is selected in the UI
+            dummyLight = new DirectionalLight("dummy", new Vector3(0, 1, 0), this._scene);
+            dummyLight.intensity = 0.0;
+        }
 
         const directionalLights: DirectionalLight[] = [];
         for (const light of this._scene.lights) {
@@ -430,9 +444,9 @@ export class PreviewManager {
         }
 
         try {
+            this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
             this._nodeRenderGraph.build();
             await this._nodeRenderGraph.whenReadyAsync();
-            this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
             if (LogErrorTrace) {
                 (console as any).log(err);
