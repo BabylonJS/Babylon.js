@@ -381,19 +381,29 @@ export class SmartFilterOptimizer {
         }
     }
 
+    /**
+     * Processes either consts or uniforms. Handles capturing the rename work needed, updating the sampler list, and
+     * accounting for single instance situations (where a const or uniform is shared across all instances of this block).
+     * @param block - The block to work on
+     * @param renameWork - The RenameWork list to update
+     * @param varDecl - Which type of variable we're working with
+     * @param declarations - The declarations of those variables from the shader
+     * @param sharedByAllInstances - If this should be treated as a shared value across all instances of this shader block
+     * @returns The list of samplers
+     */
     private _processVariables(
         block: ShaderBlock,
         renameWork: RenameWork,
         varDecl: "const" | "uniform",
-        declarations?: string,
-        hasValue = false,
-        forceSingleInstance = false
+        declarations: string | undefined,
+        sharedByAllInstances: boolean
     ): Array<string> {
         if (!declarations) {
             return [];
         }
 
         let rex = `${varDecl}\\s+(\\S+)\\s+${DecorateChar}(\\w+)${DecorateChar}\\s*`;
+        const hasValue = varDecl !== "uniform";
         if (hasValue) {
             rex += "=\\s*(.+);";
         } else {
@@ -405,9 +415,6 @@ export class SmartFilterOptimizer {
 
         let match = rx.exec(declarations);
         while (match !== null) {
-            // NOTE: will need to decide if we'll always have consts be per-block-instance or have some way to mark which ones should be shared
-            // across all instances of a block and which should be per-block-instance
-            const singleInstance = forceSingleInstance || varDecl === "const";
             const varType = match[1]!;
             const varName = match[2]!;
             const varValue = hasValue ? match[3]! : null;
@@ -418,7 +425,7 @@ export class SmartFilterOptimizer {
                 samplerList.push(DecorateSymbol(varName));
             } else {
                 const existingRemapped = this._remappedSymbols.find((s) => s.type === varDecl && s.name === varName && s.owners[0] && s.owners[0].blockType === block.blockType);
-                if (existingRemapped && singleInstance) {
+                if (existingRemapped && sharedByAllInstances) {
                     newVarName = existingRemapped.remappedName;
                     if (varDecl === "uniform") {
                         existingRemapped.owners.push(block);
@@ -553,12 +560,15 @@ export class SmartFilterOptimizer {
         // Processes the constants to make them unique
         this._processVariables(block, renameWork, "const", shaderProgram.fragment.const, true);
 
+        // Processes the per-instance constants
+        this._processVariables(block, renameWork, "const", shaderProgram.fragment.constPerInstance, false);
+
         // Processes the uniform inputs to make them unique. Also extract the list of samplers
         let samplerList: string[] = [];
         samplerList = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniform, false);
 
         let additionalSamplers = [];
-        additionalSamplers = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniformSingle, false, true);
+        additionalSamplers = this._processVariables(block, renameWork, "uniform", shaderProgram.fragment.uniformSingle, true);
 
         samplerList.push(...additionalSamplers);
 

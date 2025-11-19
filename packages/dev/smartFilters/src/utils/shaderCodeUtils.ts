@@ -103,7 +103,8 @@ export function InjectAutoSampleDisableCode(shaderProgram: ShaderProgram) {
 export function GetShaderFragmentCode(shaderProgram: ShaderProgram, mainCodeOnly = false): string {
     const shaderFragment = shaderProgram.fragment;
 
-    const declarations = (shaderFragment.const ?? "") + "\n" + shaderFragment.uniform + "\n" + (shaderFragment.uniformSingle ?? "") + "\n";
+    const declarations =
+        (shaderFragment.const ?? "") + "\n" + (shaderFragment.constPerInstance ?? "") + "\n" + shaderFragment.uniform + "\n" + (shaderFragment.uniformSingle ?? "") + "\n";
 
     let mainFunctionCode = "";
     let otherFunctionsCode = "";

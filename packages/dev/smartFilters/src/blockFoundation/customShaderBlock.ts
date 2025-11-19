@@ -190,8 +190,7 @@ export class CustomShaderBlock extends ShaderBlock {
                     ...this._shaderProgram.fragment,
                 },
             };
-            shaderProgram.fragment.const = shaderProgram.fragment.const || "";
-            shaderProgram.fragment.const +=
+            shaderProgram.fragment.constPerInstance =
                 this._fragmentConstProperties
                     .map((property) => {
                         switch (property.type) {

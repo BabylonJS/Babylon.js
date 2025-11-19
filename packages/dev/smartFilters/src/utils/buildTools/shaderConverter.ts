@@ -308,6 +308,10 @@ export function ParseFragmentShader(fragmentShader: string): FragmentShaderInfo 
         shaderCode.const = finalConsts.join("\n");
     }
 
+    if (fragmentConstProperties.length > 0) {
+        shaderCode.constPerInstance = fragmentConstProperties.map((property) => `const ${property.type} ${property.name} = ${property.defaultValue};`).join("\n");
+    }
+
     return {
         blockType,
         namespace,
