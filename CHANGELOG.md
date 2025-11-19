@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.37.2
+
+### Core
+
+- Define RotationQuaternion as Nullable - by [georginahalpern](https://github.com/georginahalpern) ([#17475](https://github.com/BabylonJS/Babylon.js/pull/17475))
+
 ## 8.37.1
 
 ### Core
