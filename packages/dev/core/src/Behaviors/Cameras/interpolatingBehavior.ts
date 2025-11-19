@@ -4,7 +4,7 @@ import type { Nullable } from "../../types";
 import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
 import type { Camera } from "../../Cameras/camera";
-import type { IColor3Like, IColor4Like, IMatrixLike, IQuaternionLike, IVector2Like, IVector3Like } from "../../Maths";
+import type { IColor3Like, IColor4Like, IMatrixLike, IQuaternionLike, IVector2Like, IVector3Like } from "../../Maths/math.like";
 
 export type AllowedAnimValue = number | IVector2Like | IVector3Like | IQuaternionLike | IMatrixLike | IColor3Like | IColor4Like | SizeLike | undefined;
 
