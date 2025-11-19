@@ -34,6 +34,7 @@ export class FrameGraph implements IDisposable {
     private readonly _tasks: FrameGraphTask[] = [];
     private readonly _passContext: FrameGraphContext;
     private readonly _renderContext: FrameGraphRenderContext;
+    private readonly _initAsyncPromises: Promise<void>[] = [];
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
 
@@ -147,6 +148,7 @@ export class FrameGraph implements IDisposable {
         }
 
         this._tasks.push(task);
+        this._initAsyncPromises.push(task.initAsync());
     }
 
     /**
@@ -203,14 +205,34 @@ export class FrameGraph implements IDisposable {
         return pass;
     }
 
+    /** @internal */
+    public async _whenAsynchronousInitializationDoneAsync(): Promise<void> {
+        if (this._initAsyncPromises.length > 0) {
+            await Promise.all(this._initAsyncPromises);
+            this._initAsyncPromises.length = 0;
+        }
+    }
+
+    /**
+     * @deprecated Use buildAsync instead
+     */
+    public build(): void {
+        void this.buildAsync();
+    }
+
     /**
      * Builds the frame graph.
      * This method should be called after all tasks have been added to the frame graph (FrameGraph.addTask) and before the graph is executed (FrameGraph.execute).
+     * @param waitForReadiness If true, the method will wait for the frame graph to be ready before returning (default is true)
      */
-    public build(): void {
+    public async buildAsync(waitForReadiness = true): Promise<void> {
         this.textureManager._releaseTextures(false);
 
+        this.pausedExecution = true;
+
         try {
+            await this._whenAsynchronousInitializationDoneAsync();
+
             for (const task of this._tasks) {
                 task._reset();
 
@@ -234,11 +256,17 @@ export class FrameGraph implements IDisposable {
             }
 
             this.onBuildObservable.notifyObservers(this);
+
+            if (waitForReadiness) {
+                await this.whenReadyAsync();
+            }
         } catch (e) {
             this._tasks.length = 0;
             this._currentProcessedTask = null;
             this.textureManager._isRecordingTask = false;
             throw e;
+        } finally {
+            this.pausedExecution = false;
         }
     }
 
@@ -259,10 +287,10 @@ export class FrameGraph implements IDisposable {
      * Returns a promise that resolves when the frame graph is ready to be executed
      * This method must be called after the graph has been built (FrameGraph.build called)!
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 5000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 10000)
      * @returns The promise that resolves when the graph is ready
      */
-    public async whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 10000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
         return await new Promise((resolve, reject) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(

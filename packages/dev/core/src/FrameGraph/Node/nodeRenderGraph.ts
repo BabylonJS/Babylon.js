@@ -298,10 +298,20 @@ export class NodeRenderGraph {
     }
 
     /**
-     * Build the final list of blocks that will be executed by the "execute" method
+     * @deprecated Use buildAsync instead
      * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
      */
-    public build(dontBuildFrameGraph = false) {
+    public build(dontBuildFrameGraph = false): void {
+        void this.buildAsync(dontBuildFrameGraph);
+    }
+
+    /**
+     * Build the final list of blocks that will be executed by the "execute" method.
+     * It also builds the underlying frame graph unless specified otherwise.
+     * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
+     * @param waitForReadiness If the method should wait for the frame graph to be ready before resolving (default: true). Note that this parameter has no effect if "dontBuildFrameGraph" is true.
+     */
+    public async buildAsync(dontBuildFrameGraph = false, waitForReadiness = true): Promise<void> {
         if (!this.outputBlock) {
             throw new Error("You must define the outputBlock property before building the node render graph");
         }
@@ -331,7 +341,7 @@ export class NodeRenderGraph {
             this.outputBlock.build(state);
 
             if (!dontBuildFrameGraph) {
-                this._frameGraph.build();
+                await this._frameGraph.buildAsync(waitForReadiness);
             }
         } finally {
             this._buildId = NodeRenderGraph._BuildIdGenerator++;
@@ -383,16 +393,14 @@ export class NodeRenderGraph {
      * Returns a promise that resolves when the node render graph is ready to be executed
      * This method must be called after the graph has been built (NodeRenderGraph.build called)!
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 5000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 10000)
      * @returns The promise that resolves when the graph is ready
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 10000): Promise<void> {
         this._frameGraph.pausedExecution = true;
-        // eslint-disable-next-line github/no-then
-        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout).then(() => {
-            this._frameGraph.pausedExecution = false;
-        });
+        await this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
+        this._frameGraph.pausedExecution = false;
     }
 
     /**
