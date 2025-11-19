@@ -2050,21 +2050,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._newPartsExcess = 0;
             this.manualEmitCount = 0;
         } else {
-            let rate = this.emitRate;
-
-            if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {
-                const ratio = this._actualFrame / this.targetStopDuration;
-                GradientHelper.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
-                    if (currentGradient !== this._currentEmitRateGradient) {
-                        this._currentEmitRate1 = this._currentEmitRate2;
-                        this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();
-                        this._currentEmitRateGradient = <FactorGradient>currentGradient;
-                    }
-
-                    rate = Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
-                });
-            }
-
+            const rate = this._calculateEmitRate();
             newParticles = (rate * this._scaledUpdateSpeed) >> 0;
             this._newPartsExcess += rate * this._scaledUpdateSpeed - newParticles;
         }
@@ -2117,6 +2103,30 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         if (this.manualEmitCount === 0 && this.disposeOnStop) {
             this.stop();
         }
+    }
+
+    /**
+     * Internal only. Calculates the current emit rate based on the gradients if any.
+     * @returns The emit rate
+     * @internal
+     */
+    public _calculateEmitRate(): number {
+        let rate = this.emitRate;
+
+        if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {
+            const ratio = this._actualFrame / this.targetStopDuration;
+            GradientHelper.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
+                if (currentGradient !== this._currentEmitRateGradient) {
+                    this._currentEmitRate1 = this._currentEmitRate2;
+                    this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();
+                    this._currentEmitRateGradient = <FactorGradient>currentGradient;
+                }
+
+                rate = Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
+            });
+        }
+
+        return rate;
     }
 
     private _appendParticleVertices(offset: number, particle: Particle) {

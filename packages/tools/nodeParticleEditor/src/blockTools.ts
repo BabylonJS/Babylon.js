@@ -43,6 +43,7 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
+import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 
 /**
  * Static class for BlockTools
@@ -426,6 +427,9 @@ export class BlockTools {
             }
             case "RandomBlock": {
                 return new ParticleRandomBlock("Random");
+            }
+            case "FloatToIntBlock": {
+                return new ParticleFloatToIntBlock("Float to Int");
             }
         }
 
