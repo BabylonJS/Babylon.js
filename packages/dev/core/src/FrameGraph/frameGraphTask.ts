@@ -112,6 +112,12 @@ export abstract class FrameGraphTask {
 
     /** @internal */
     public _reset() {
+        for (const pass of this._passes) {
+            pass._dispose();
+        }
+        for (const pass of this._passesDisabled) {
+            pass._dispose();
+        }
         this._passes.length = 0;
         this._passesDisabled.length = 0;
     }
