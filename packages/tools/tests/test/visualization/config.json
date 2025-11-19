@@ -2693,62 +2693,62 @@
         },
         {
             "title": "FrameGraph glow layer",
-            "playgroundId": "#9YU4C5#8",
+            "playgroundId": "#9YU4C5#110",
             "referenceImage": "FrameGraph-nrg-glow-layer.png",
             "errorRatio": 1
         },
         {
             "title": "FrameGraph highlight layer",
-            "playgroundId": "#PV8OLY#16"
+            "playgroundId": "#PV8OLY#31"
         },
         {
             "title": "FrameGraph custom rendering",
-            "playgroundId": "#RM56RY#15"
+            "playgroundId": "#RM56RY#23"
         },
         {
             "title": "FrameGraph gui bloom",
-            "playgroundId": "#RM56RY#16"
+            "playgroundId": "#RM56RY#24"
         },
         {
             "title": "FrameGraph image processing",
-            "playgroundId": "#PV8OLY#21"
+            "playgroundId": "#PV8OLY#32"
         },
         {
             "title": "FrameGraph motion blur screen based",
-            "playgroundId": "#YB006J#746",
+            "playgroundId": "#YB006J#783",
             "renderCount": 10
         },
         {
             "title": "FrameGraph motion blur object based",
-            "playgroundId": "#YB006J#747",
+            "playgroundId": "#YB006J#784",
             "renderCount": 10
         },
         {
             "title": "FrameGraph motion blur skinned",
-            "playgroundId": "#YB006J#749",
+            "playgroundId": "#YB006J#785",
             "renderCount": 40
         },
         {
             "title": "FrameGraph convolution post process",
-            "playgroundId": "#SYQW69#1318"
+            "playgroundId": "#SYQW69#1359"
         },
         {
             "title": "FrameGraph screen space curvature post process",
-            "playgroundId": "#SYQW69#1323",
+            "playgroundId": "#SYQW69#1360",
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "FrameGraph sharpen post process",
-            "playgroundId": "#SYQW69#1329",
+            "playgroundId": "#SYQW69#1361",
             "errorRatio": 6
         },
         {
             "title": "FrameGraph custom post process",
-            "playgroundId": "#R33LVG"
+            "playgroundId": "#R33LVG#4"
         },
         {
             "title": "FrameGraph TAA reproject history",
-            "playgroundId": "#OWGOUN#14",
+            "playgroundId": "#OWGOUN#17",
             "renderCount": 40,
             "excludeFromAutomaticTesting": true
         },
