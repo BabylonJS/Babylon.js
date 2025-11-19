@@ -49,13 +49,6 @@ export abstract class InputBlockBase extends BaseBlock {
      * The type of the input.
      */
     public abstract readonly type: ConnectionPointType;
-
-    /**
-     * Returns if the block is an input block.
-     */
-    public override get isInput(): boolean {
-        return true;
-    }
 }
 
 /**
