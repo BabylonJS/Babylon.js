@@ -238,13 +238,6 @@ export class GeospatialCamera extends Camera {
         return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
     }
 
-    public async flyToPointAsync(destination: Vector3, durationMs: number = 1000, easingFn?: EasingFunction) {
-        const direction = destination.subtractToRef(this.position, this._tempPosition).normalize();
-        // Zoom to 50% of current distance along pickingRay
-        const newRadius = this._getRadiusAndCenterFromZoomTowards(direction, this.radius * 0.5, this._tempVect);
-        await this.flyToAsync(undefined, undefined, newRadius, this._tempVect, durationMs, easingFn);
-    }
-
     private _limits: GeospatialLimits;
     public get limits(): GeospatialLimits {
         return this._limits;
@@ -325,7 +318,7 @@ export class GeospatialCamera extends Camera {
         }
     }
 
-    private _getRadiusAndCenterFromZoomTowards(zoomVector: Vector3, distance: number, centerRef: Vector3): number {
+    private _applyZoom(zoomVector: Vector3, distance: number) {
         // TODO this function will be re-worked shortly after checkin, becuase today it breaks down if you zoom to a point past the center
         // (ex: tilted view zooming towards cursor near horizon where the center is closer than the cursor point).
 
@@ -349,18 +342,8 @@ export class GeospatialCamera extends Camera {
         const newCenterRescale = currentCenterRadius / newCenterRadius;
         newCenter.scaleInPlace(newCenterRescale);
 
-        // Copy new center to ref
-        Vector3CopyToRef(newCenter, centerRef);
-
-        // Return new radius
-        return newRadius;
-    }
-
-    private _applyZoom(zoomVector: Vector3, distance: number) {
-        const newRadius = this._getRadiusAndCenterFromZoomTowards(zoomVector, distance, this._tempVect);
-
         // Apply changes
-        this._setOrientation(this._yaw, this._pitch, newRadius, this._tempVect);
+        this._setOrientation(this._yaw, this._pitch, newRadius, newCenter);
     }
 
     override _checkInputs(): void {
