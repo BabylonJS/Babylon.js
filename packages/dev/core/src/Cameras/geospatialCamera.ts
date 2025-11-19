@@ -35,6 +35,7 @@ export class GeospatialCamera extends Camera {
 
     // Temp vars
     private _tempPosition: Vector3 = new Vector3();
+    private _tempCenter = new Vector3();
 
     private _viewMatrix = new Matrix();
     private _isViewMatrixDirty: boolean;
@@ -238,6 +239,20 @@ export class GeospatialCamera extends Camera {
         return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
     }
 
+    /**
+     * Helper function to move camera towards a given point by radiusScale% of radius (by default 50%)
+     * @param destination point to move towards
+     * @param radiusScale value between 0 and 1, % of radius to move
+     * @param durationMs duration of flight, default 1s
+     * @param easingFn optional easing function for flight interpolation of properties
+     */
+    public async flyToPointAsync(destination: Vector3, radiusScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction) {
+        const direction = destination.subtractToRef(this.position, this._tempPosition).normalize();
+        // Zoom to radiusScale% of radius towards the given destination point
+        const newRadius = this._getRadiusAndCenterFromZoomTowards(direction, this.radius * radiusScale, this._tempCenter);
+        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn);
+    }
+
     private _limits: GeospatialLimits;
     public get limits(): GeospatialLimits {
         return this._limits;
@@ -318,7 +333,7 @@ export class GeospatialCamera extends Camera {
         }
     }
 
-    private _applyZoom(zoomVector: Vector3, distance: number) {
+    private _getRadiusAndCenterFromZoomTowards(zoomVector: Vector3, distance: number, centerRef: Vector3): number {
         // TODO this function will be re-worked shortly after checkin, becuase today it breaks down if you zoom to a point past the center
         // (ex: tilted view zooming towards cursor near horizon where the center is closer than the cursor point).
 
@@ -342,8 +357,18 @@ export class GeospatialCamera extends Camera {
         const newCenterRescale = currentCenterRadius / newCenterRadius;
         newCenter.scaleInPlace(newCenterRescale);
 
+        // Copy new center to ref
+        Vector3CopyToRef(newCenter, centerRef);
+
+        // Return new radius
+        return newRadius;
+    }
+
+    private _applyZoom(zoomVector: Vector3, distance: number) {
+        const newRadius = this._getRadiusAndCenterFromZoomTowards(zoomVector, distance, this._tempVect);
+
         // Apply changes
-        this._setOrientation(this._yaw, this._pitch, newRadius, newCenter);
+        this._setOrientation(this._yaw, this._pitch, newRadius, this._tempVect);
     }
 
     override _checkInputs(): void {
