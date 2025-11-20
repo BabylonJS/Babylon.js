@@ -176,9 +176,7 @@ export class NodeRenderGraph {
 
         if (options.rebuildGraphOnEngineResize) {
             this._resizeObserver = this._engine.onResizeObservable.add(async () => {
-                this.build();
-
-                await this.whenReadyAsync();
+                await this.buildAsync();
             });
         }
     }
@@ -302,7 +300,7 @@ export class NodeRenderGraph {
      * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
      */
     public build(dontBuildFrameGraph = false): void {
-        void this.buildAsync(dontBuildFrameGraph);
+        void this.buildAsync(dontBuildFrameGraph, false, false);
     }
 
     /**
@@ -310,10 +308,15 @@ export class NodeRenderGraph {
      * It also builds the underlying frame graph unless specified otherwise.
      * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
      * @param waitForReadiness If the method should wait for the frame graph to be ready before resolving (default: true). Note that this parameter has no effect if "dontBuildFrameGraph" is true.
+     * @param setAsSceneFrameGraph If the built frame graph must be set as the scene's frame graph (default: true)
      */
-    public async buildAsync(dontBuildFrameGraph = false, waitForReadiness = true): Promise<void> {
+    public async buildAsync(dontBuildFrameGraph = false, waitForReadiness = true, setAsSceneFrameGraph = true): Promise<void> {
         if (!this.outputBlock) {
             throw new Error("You must define the outputBlock property before building the node render graph");
+        }
+
+        if (setAsSceneFrameGraph) {
+            this._scene.frameGraph = this._frameGraph;
         }
 
         this._initializeBlock(this.outputBlock);
@@ -690,6 +693,7 @@ export class NodeRenderGraph {
 
     /**
      * Makes a duplicate of the current node render graph.
+     * Note that you should call buildAsync() on the returned graph to make it usable.
      * @param name defines the name to use for the new node render graph
      * @returns the new node render graph
      */
@@ -701,7 +705,6 @@ export class NodeRenderGraph {
 
         clone.parseSerializedObject(serializationObject);
         clone._buildId = this._buildId;
-        clone.build();
 
         return clone;
     }
@@ -770,11 +773,11 @@ export class NodeRenderGraph {
      * @param nodeRenderGraphOptions defines options to use when creating the node render graph
      * @returns a new NodeRenderGraph
      */
-    public static CreateDefault(name: string, scene: Scene, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions): NodeRenderGraph {
+    public static async CreateDefaultAsync(name: string, scene: Scene, nodeRenderGraphOptions?: INodeRenderGraphCreateOptions): Promise<NodeRenderGraph> {
         const renderGraph = new NodeRenderGraph(name, scene, nodeRenderGraphOptions);
 
         renderGraph.setToDefault();
-        renderGraph.build();
+        await renderGraph.buildAsync(false, true, false);
 
         return renderGraph;
     }
@@ -792,7 +795,7 @@ export class NodeRenderGraph {
 
         renderGraph.parseSerializedObject(source);
         if (!skipBuild) {
-            renderGraph.build();
+            void renderGraph.buildAsync();
         }
 
         return renderGraph;
@@ -816,12 +819,12 @@ export class NodeRenderGraph {
         skipBuild: boolean = true
     ): Promise<NodeRenderGraph> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", scene, nodeRenderGraphOptions));
+            return NodeRenderGraph.CreateDefaultAsync("blank", scene, nodeRenderGraphOptions);
         }
 
         return new Promise((resolve, reject) => {
             const request = new WebRequest();
-            request.addEventListener("readystatechange", () => {
+            request.addEventListener("readystatechange", async () => {
                 if (request.readyState == 4) {
                     if (request.status == 200) {
                         const snippet = JSON.parse(JSON.parse(request.responseText).jsonPayload);
@@ -836,7 +839,7 @@ export class NodeRenderGraph {
 
                         try {
                             if (!skipBuild) {
-                                nodeRenderGraph.build();
+                                await nodeRenderGraph.buildAsync();
                             }
                             resolve(nodeRenderGraph);
                         } catch (err) {

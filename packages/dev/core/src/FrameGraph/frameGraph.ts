@@ -217,8 +217,10 @@ export class FrameGraph implements IDisposable {
      * @deprecated Use buildAsync instead
      */
     public build(): void {
-        void this.buildAsync();
+        void this.buildAsync(false);
     }
+
+    private _built = false; // TODO: to be removed when build() is removed
 
     /**
      * Builds the frame graph.
@@ -229,6 +231,7 @@ export class FrameGraph implements IDisposable {
         this.textureManager._releaseTextures(false);
 
         this.pausedExecution = true;
+        this._built = false;
 
         try {
             await this._whenAsynchronousInitializationDoneAsync();
@@ -255,6 +258,8 @@ export class FrameGraph implements IDisposable {
                 task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
             }
 
+            this._built = true;
+
             this.onBuildObservable.notifyObservers(this);
 
             if (waitForReadiness) {
@@ -267,6 +272,7 @@ export class FrameGraph implements IDisposable {
             throw e;
         } finally {
             this.pausedExecution = false;
+            this._built = true;
         }
     }
 
@@ -292,6 +298,20 @@ export class FrameGraph implements IDisposable {
      */
     public async whenReadyAsync(timeStep = 16, maxTimeout = 10000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
+
+        // TODO: to be removed when build() is removed
+        await new Promise((resolve) => {
+            const checkBuilt = () => {
+                if (this._built) {
+                    resolve(void 0);
+                    return;
+                }
+                setTimeout(checkBuilt, 16);
+            };
+            checkBuilt();
+        });
+        // END TODO
+
         return await new Promise((resolve, reject) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
