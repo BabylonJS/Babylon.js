@@ -23,6 +23,20 @@ export type ShaderProgram = {
 };
 
 /**
+ * Creates a copy of a ShaderProgram so it can be modified without other instances being affected.
+ * @param shaderProgram - The shader program to clone
+ * @returns A new ShaderProgram instance
+ */
+export function CloneShaderProgram(shaderProgram: ShaderProgram): ShaderProgram {
+    return {
+        vertex: shaderProgram.vertex,
+        fragment: {
+            ...shaderProgram.fragment,
+        },
+    };
+}
+
+/**
  * The list of options required to create a shader block.
  * It mainly contains the shader code to execute and its associated parameters.
  */

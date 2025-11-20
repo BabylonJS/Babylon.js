@@ -6,7 +6,7 @@ import { CreateStrongRef } from "../runtime/strongRef.js";
 import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
 import type { SerializedInputConnectionPointV1, ConstPropertyMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
 import type { SmartFilter } from "../smartFilter.js";
-import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
+import { CloneShaderProgram, type ShaderProgram } from "../utils/shaderCodeUtils.js";
 import { ShaderBlock } from "./shaderBlock.js";
 import type { RuntimeData } from "../connection/connectionPoint.js";
 import type { Nullable } from "core/types.js";
@@ -204,13 +204,8 @@ export class CustomShaderBlock extends ShaderBlock {
             return this._shaderProgram;
         } else {
             // Make a copy of the shader program and append const properties to the fragment shader consts
-            const shaderProgram = {
-                vertex: this._shaderProgram.vertex,
-                fragment: {
-                    ...this._shaderProgram.fragment,
-                },
-            };
-            shaderProgram.fragment.constPerInstance =
+            const shaderProgramForThisInstance = CloneShaderProgram(this._shaderProgram);
+            shaderProgramForThisInstance.fragment.constPerInstance =
                 this._fragmentConstProperties
                     .map((property) => {
                         switch (property.type) {
@@ -223,7 +218,7 @@ export class CustomShaderBlock extends ShaderBlock {
                     })
                     .join("\n") + "\n";
 
-            return shaderProgram;
+            return shaderProgramForThisInstance;
         }
     }
 
