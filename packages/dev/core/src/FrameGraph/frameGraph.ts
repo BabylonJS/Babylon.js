@@ -290,8 +290,8 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
-     * Returns a promise that resolves when the frame graph is ready to be executed
-     * This method must be called after the graph has been built (FrameGraph.build called)!
+     * Returns a promise that resolves when the frame graph is ready to be executed.
+     * In general, calling “await buildAsync()” should suffice, as this function also waits for readiness by default.
      * @param timeStep Time step in ms between retries (default is 16)
      * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 10000)
      * @returns The promise that resolves when the graph is ready
