@@ -176,7 +176,7 @@ export class NodeRenderGraph {
 
         if (options.rebuildGraphOnEngineResize) {
             this._resizeObserver = this._engine.onResizeObservable.add(async () => {
-                await this.buildAsync();
+                await this.buildAsync(false, true, false);
             });
         }
     }
