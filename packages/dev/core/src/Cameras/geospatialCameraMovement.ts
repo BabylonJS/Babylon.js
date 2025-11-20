@@ -136,13 +136,18 @@ export class GeospatialCameraMovement extends CameraMovement {
 
         // Slows down panning near the poles
         if (this.panAccumulatedPixels.lengthSquared() > Epsilon) {
-            const cameraCenterMagnitude = cameraCenter.length(); // distance from planet origin to camera center
+            const centerRadius = cameraCenter.length(); // distance from planet origin to camera center
             const currentRadius = this._cameraPosition.length();
-            const latitudeDampeningScale = Math.max(1, cameraCenterMagnitude / Math.max(Epsilon, currentRadius - cameraCenterMagnitude)); // decrease the effect near surface
-            const sinSphericalLat = cameraCenterMagnitude === 0 ? 0 : cameraCenter.z / cameraCenterMagnitude;
-            const cosSphericalLat = Math.sqrt(1 - Math.min(1, sinSphericalLat * sinSphericalLat));
-            const latitudeDampening = Clamp(latitudeDampeningScale * Math.sqrt(Math.abs(cosSphericalLat))); // sqrt here is arbitrary, reduces effect near equator
-            this._panSpeedMultiplier = latitudeDampening;
+            // Dampen the pan speed based on latitude (slower near poles)
+            const sineOfSphericalLat = centerRadius === 0 ? 0 : cameraCenter.z / centerRadius;
+            const cosOfSphericalLat = Math.sqrt(1 - Math.min(1, sineOfSphericalLat * sineOfSphericalLat));
+            const latitudeDampening = Math.sqrt(Math.abs(cosOfSphericalLat)); // sqrt here reduces effect near equator
+
+            // Reduce the dampening effect near surface (so that at ground level, pan speed is not affected by latitude)
+            const height = Math.max(currentRadius - centerRadius, Epsilon);
+            const latitudeDampeningScale = Math.max(1, centerRadius / height);
+
+            this._panSpeedMultiplier = Clamp(latitudeDampeningScale * latitudeDampening, 0, 1);
         } else {
             this._panSpeedMultiplier = 0;
         }
@@ -225,24 +230,24 @@ export class GeospatialCameraMovement extends CameraMovement {
 }
 
 export function ClampCenterFromPolesInPlace(center: Vector3) {
+    const sineOfSphericalLatitudeLimit = 0.9999; // ~89.95 degrees
     const centerMagnitude = center.length(); // distance from planet origin
     if (centerMagnitude > Epsilon) {
-        const sinSphericalLat = centerMagnitude === 0 ? 0 : center.z / centerMagnitude;
-        const cosSphericalLat = Math.sqrt(1 - Math.min(1, sinSphericalLat * sinSphericalLat));
-        const cosLatitudeLimit = 0.05;
-        if (Math.abs(cosSphericalLat) < cosLatitudeLimit) {
-            const cosClampedLat = (Math.sign(cosSphericalLat) || 1) * cosLatitudeLimit;
+        const sineSphericalLat = centerMagnitude === 0 ? 0 : center.z / centerMagnitude;
+        if (Math.abs(sineSphericalLat) > sineOfSphericalLatitudeLimit) {
+            // Clamp the spherical latitude (and derive longitude)
+            const sineOfClampedSphericalLat = Clamp(sineSphericalLat, -sineOfSphericalLatitudeLimit, sineOfSphericalLatitudeLimit);
+            const cosineOfClampedSphericalLat = Math.sqrt(1 - sineOfClampedSphericalLat * sineOfClampedSphericalLat);
             const longitude = Math.atan2(center.y, center.x);
-            const sinClampedLat = Math.sqrt(1 - cosClampedLat * cosClampedLat) * (Math.sign(center.z) || 1);
 
-            const newX = centerMagnitude * Math.cos(longitude) * cosClampedLat;
-            const newY = centerMagnitude * Math.sin(longitude) * cosClampedLat;
-            const newZ = centerMagnitude * sinClampedLat;
+            // Spherical to Cartesian
+            const newX = centerMagnitude * Math.cos(longitude) * cosineOfClampedSphericalLat;
+            const newY = centerMagnitude * Math.sin(longitude) * cosineOfClampedSphericalLat;
+            const newZ = centerMagnitude * sineOfClampedSphericalLat;
 
             center.set(newX, newY, newZ);
         }
     }
-
     return center;
 }
 
