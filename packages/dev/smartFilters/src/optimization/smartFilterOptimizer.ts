@@ -871,8 +871,6 @@ export class SmartFilterOptimizer {
             Logger.Log(`samplers=${samplers}`);
         }
 
-        codeConsts += "\nconst float cacheBuster = " + Math.random().toString() + ";\n";
-
         optimizedBlock.setShaderProgram({
             vertex: this._vertexShaderCode,
             fragment: {
