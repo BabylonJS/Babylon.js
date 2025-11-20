@@ -113,8 +113,15 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
             const camera = this._attachedCamera;
             const scene = camera.getScene();
 
-            const checkClear = (animation: string) => {
-                this._animatables.delete(animation);
+            const checkClear = (propertyName: string) => {
+                // Remove the associated animation from camera once the transition to target is complete so that property animations don't accumulate
+                for (let i = camera.animations.length - 1; i >= 0; --i) {
+                    if (camera.animations[i].name === propertyName + "Animation") {
+                        camera.animations.splice(i, 1);
+                    }
+                }
+
+                this._animatables.delete(propertyName);
                 if (this._animatables.size === 0) {
                     this._promiseResolve = undefined;
                     resolve();
@@ -125,7 +132,8 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
                 if (value !== undefined) {
                     const propertyName = String(key);
                     const animation = Animation.CreateAnimation(propertyName, GetAnimationType(value), 60, easingFn);
-                    const animatable = Animation.TransitionTo(propertyName, value, camera, scene, 60, animation, transitionDuration, () => checkClear(propertyName));
+                    // Pass false for stopCurrent so that we can interpolate multiple properties at once
+                    const animatable = Animation.TransitionTo(propertyName, value, camera, scene, 60, animation, transitionDuration, () => checkClear(propertyName), false);
                     if (animatable) {
                         this._animatables.set(propertyName, animatable);
                     }
