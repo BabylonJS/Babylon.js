@@ -12,6 +12,7 @@ import type { EntityBase } from "../components/scene/sceneExplorer";
 import type { InspectorOptions as InspectorV2Options } from "../inspector";
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
+import type { IGizmoService } from "../services/gizmoService";
 import type { ISceneExplorerService } from "../services/panes/scene/sceneExplorerService";
 import type { IShellService } from "../services/shellService";
 
@@ -23,6 +24,7 @@ import { Observable } from "core/Misc/observable";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { ShowInspector } from "../inspector";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
+import { GizmoServiceIdentity } from "../services/gizmoService";
 import { SceneExplorerServiceIdentity } from "../services/panes/scene/sceneExplorerService";
 import { ShellServiceIdentity } from "../services/shellService";
 
@@ -38,12 +40,11 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
     // Options not currently handled:
     // • enablePopup: Do users care about this one?
     // • enableClose: Currently Inspector v2 does not allow panes/tabs to be closed.
-    // • gizmoCamera: Do users care about this one?
     // • skipDefaultFontLoading: Probably doesn't make sense for Inspector v2 using Fluent.
-
-    // TODO:
-    // • contextMenu
-    // • contextMenuOverride
+    // • contextMenuOverride: Currently there are no default section context menu items to override.
+    //                        If the create extension ends up adding context menu items to match v1
+    //                        behavior, then it should only enable that feature if contextMenuOverride
+    //                        is not set to true.
 
     v1Options = {
         overlay: false,
@@ -81,6 +82,24 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
             },
         };
         serviceDefinitions.push(initialTabServiceDefinition);
+    }
+
+    if (v1Options.gizmoCamera) {
+        const { gizmoCamera } = v1Options;
+        const gizmoCameraServiceDefinition: ServiceDefinition<[], [IGizmoService]> = {
+            friendlyName: "Gizmo Camera (Backward Compatibility)",
+            consumes: [GizmoServiceIdentity],
+            factory: (gizmoService) => {
+                // As a simple back compat solution, just keep the utility layer alive until Inspector is unloaded.
+                // This way we don't need to keep re-assigning the gizmo camera to the utility layer if it is recreated.
+                const utilityLayerRef = gizmoService.getUtilityLayer(gizmoCamera.getScene());
+                utilityLayerRef.value.setRenderCamera(gizmoCamera);
+                return {
+                    dispose: () => utilityLayerRef.dispose(),
+                };
+            },
+        };
+        serviceDefinitions.push(gizmoCameraServiceDefinition);
     }
 
     if (v1Options.additionalNodes && v1Options.additionalNodes.length > 0) {
@@ -260,6 +279,7 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
  */
 export class Inspector {
     private static _CurrentInspectorToken: Nullable<IDisposable> = null;
+    private static _PopupToggler: Nullable<(side: "left" | "right") => void> = null;
 
     public static readonly OnSelectionChangeObservable = new Observable<any>();
     public static readonly OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
@@ -273,18 +293,15 @@ export class Inspector {
     }
 
     public static PopupEmbed() {
-        // Show with embed mode on (stacked right panes) and undocked?
-        throw new Error("Not Implemented");
+        this._PopupToggler?.("right");
     }
 
     public static PopupSceneExplorer() {
-        // Show with all right panes (not stacked), scene explorer tab selected, and undocked?
-        throw new Error("Not Implemented");
+        this._PopupToggler?.("left");
     }
 
     public static PopupInspector() {
-        // Show with all right panes (not stacked), properties tab selected, and undocked?
-        throw new Error("Not Implemented");
+        this._PopupToggler?.("right");
     }
 
     public static get IsVisible(): boolean {
@@ -304,7 +321,32 @@ export class Inspector {
             return;
         }
 
-        this._CurrentInspectorToken = ShowInspector(scene, ConvertOptions(userOptions));
+        let options = ConvertOptions(userOptions);
+        const popupServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+            friendlyName: "Popup Service (Backward Compatibility)",
+            consumes: [ShellServiceIdentity],
+            factory: (shellService) => {
+                this._PopupToggler = (side: "left" | "right") => {
+                    const sidePaneContainer = side === "left" ? shellService.leftSidePaneContainer : shellService.rightSidePaneContainer;
+                    if (sidePaneContainer.isDocked) {
+                        sidePaneContainer.undock();
+                    } else {
+                        sidePaneContainer.dock();
+                    }
+                };
+
+                return {
+                    dispose: () => (this._PopupToggler = null),
+                };
+            },
+        };
+
+        options = {
+            ...options,
+            serviceDefinitions: [...(options.serviceDefinitions ?? []), popupServiceDefinition],
+        };
+
+        this._CurrentInspectorToken = ShowInspector(scene, options);
     }
 
     public static Hide() {
