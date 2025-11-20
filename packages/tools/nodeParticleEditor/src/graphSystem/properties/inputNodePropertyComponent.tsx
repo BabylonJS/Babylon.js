@@ -166,16 +166,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         const modeOptions = [{ label: "User-defined", value: 0 }];
 
         if (contextualSourcesOptions.length > 0) {
-            modeOptions.push({ label: "Contextual value (Float)", value: 2 });
-            modeOptions.push({ label: "Contextual value (Int)", value: 1 });
-            modeOptions.push({ label: "Contextual value (Vector2)", value: 4 });
-            modeOptions.push({ label: "Contextual value (Vector3)", value: 8 });
-            modeOptions.push({ label: "Contextual value (Color4)", value: 128 });
+            modeOptions.push({ label: "Contextual value (Float)", value: NodeParticleBlockConnectionPointTypes.Float });
+            modeOptions.push({ label: "Contextual value (Int)", value: NodeParticleBlockConnectionPointTypes.Int });
+            modeOptions.push({ label: "Contextual value (Vector2)", value: NodeParticleBlockConnectionPointTypes.Vector2 });
+            modeOptions.push({ label: "Contextual value (Vector3)", value: NodeParticleBlockConnectionPointTypes.Vector3 });
+            modeOptions.push({ label: "Contextual value (Color4)", value: NodeParticleBlockConnectionPointTypes.Color4 });
         }
 
         if (systemSourcesOptions.length > 0) {
-            modeOptions.push({ label: "System value (Float)", value: 2 });
-            modeOptions.push({ label: "System value (Vector3)", value: 8 });
+            modeOptions.push({ label: "System value (Float)", value: -NodeParticleBlockConnectionPointTypes.Float });
+            modeOptions.push({ label: "System value (Vector3)", value: -NodeParticleBlockConnectionPointTypes.Vector3 });
         }
 
         return (
@@ -197,32 +197,30 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         onSelect={(value: any) => {
                             switch (value) {
                                 case 0:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.None;
+                                    inputBlock.systemSource = NodeParticleSystemSources.None;
                                     this.setDefaultValue();
                                     break;
-                                default:
-                                    switch (value) {
-                                        case 1:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Age;
-                                            break;
-                                        case 2:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.SpriteCellIndex;
-                                            break;
-                                        case 3:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Scale;
-                                            break;
-                                        case 4:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Position;
-                                            break;
-                                        case 5:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Color;
-                                            break;
-                                        case 6:
-                                            inputBlock.systemSource = NodeParticleSystemSources.Time;
-                                            break;
-                                        case 7:
-                                            inputBlock.systemSource = NodeParticleSystemSources.Emitter;
-                                            break;
-                                    }
+                                case NodeParticleBlockConnectionPointTypes.Float:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.Age;
+                                    break;
+                                case NodeParticleBlockConnectionPointTypes.Int:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.SpriteCellIndex;
+                                    break;
+                                case NodeParticleBlockConnectionPointTypes.Vector2:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.Scale;
+                                    break;
+                                case NodeParticleBlockConnectionPointTypes.Vector3:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.Position;
+                                    break;
+                                case NodeParticleBlockConnectionPointTypes.Color4:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.Color;
+                                    break;
+                                case -NodeParticleBlockConnectionPointTypes.Float:
+                                    inputBlock.systemSource = NodeParticleSystemSources.Time;
+                                    break;
+                                case -NodeParticleBlockConnectionPointTypes.Vector3:
+                                    inputBlock.systemSource = NodeParticleSystemSources.Emitter;
                                     break;
                             }
                             this.forceUpdate();
