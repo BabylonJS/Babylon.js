@@ -199,8 +199,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         NodeRenderGraph.ParseFromSnippetAsync(snippedId, this.props.globalState.scene, undefined, renderGraph)
             // eslint-disable-next-line github/no-then
-            .then(() => {
-                renderGraph.build();
+            .then(async () => {
+                await renderGraph.buildAsync();
                 this.props.globalState.onFrame.notifyObservers();
                 this.props.globalState.onClearUndoStack.notifyObservers();
             })

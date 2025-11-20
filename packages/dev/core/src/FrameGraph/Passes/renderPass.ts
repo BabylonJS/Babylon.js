@@ -146,4 +146,9 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
               ? null
               : "Render target and render target depth cannot both be undefined.";
     }
+
+    /** @internal */
+    public override _dispose() {
+        this._frameGraphRenderTarget?.dispose();
+    }
 }

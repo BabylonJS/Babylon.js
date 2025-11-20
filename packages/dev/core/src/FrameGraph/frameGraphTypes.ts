@@ -97,4 +97,7 @@ export interface IFrameGraphPass {
 
     /** @internal */
     _isValid(): Nullable<string>;
+
+    /** @internal */
+    _dispose(): void;
 }
