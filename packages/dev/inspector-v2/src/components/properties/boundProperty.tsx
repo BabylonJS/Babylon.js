@@ -1,6 +1,8 @@
 import type { ComponentProps, ComponentType } from "react";
+
 import { forwardRef, useMemo } from "react";
 
+import { usePropertyContext } from "../../contexts/propertyContext";
 import { MakePropertyHook, useProperty } from "../../hooks/compoundPropertyHooks";
 
 /**
@@ -58,6 +60,8 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
     // Determine which specific property hook to use based on the value's type.
     const useSpecificProperty = useMemo(() => MakePropertyHook(value), [value]);
 
+    const propertyContext = usePropertyContext();
+
     // Create an inline nested component that changes when the desired specific hook type changes (since hooks can't be conditional).
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const SpecificComponent = useMemo(() => {
@@ -74,8 +78,15 @@ function BoundPropertyCoreImpl<TargetT extends object, PropertyKeyT extends keyo
                 ref,
                 value: convertedValue as TargetT[PropertyKeyT],
                 onChange: (val: TargetT[PropertyKeyT]) => {
+                    const oldValue = target[propertyKey];
                     const newValue = convertFrom ? convertFrom(val) : val;
                     target[propertyKey] = newValue;
+                    propertyContext?.onPropertyChanged.notifyObservers({
+                        entity: target,
+                        propertyKey: propertyKey,
+                        oldValue: oldValue,
+                        newValue: newValue,
+                    });
                 },
             };
 

@@ -13,6 +13,7 @@ import type { InspectorOptions as InspectorV2Options } from "../inspector";
 import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContainer";
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IGizmoService } from "../services/gizmoService";
+import type { IPropertiesService } from "../services/panes/properties/propertiesService";
 import type { ISceneExplorerService } from "../services/panes/scene/sceneExplorerService";
 import type { ISelectionService } from "../services/selectionService";
 import type { IShellService } from "../services/shellService";
@@ -26,6 +27,7 @@ import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 import { ShowInspector } from "../inspector";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { GizmoServiceIdentity } from "../services/gizmoService";
+import { PropertiesServiceIdentity } from "../services/panes/properties/propertiesService";
 import { SceneExplorerServiceIdentity } from "../services/panes/scene/sceneExplorerService";
 import { SelectionServiceIdentity } from "../services/selectionService";
 import { ShellServiceIdentity } from "../services/shellService";
@@ -362,6 +364,28 @@ export class Inspector {
             },
         };
         serviceDefinitions.push(selectionChangedServiceDefinition);
+
+        const propertyChangedServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+            friendlyName: "Property Changed Service (Backward Compatibility)",
+            consumes: [PropertiesServiceIdentity],
+            factory: (propertiesService) => {
+                const observer = propertiesService.onPropertyChanged.add((changeInfo) => {
+                    this.OnPropertyChangedObservable.notifyObservers({
+                        object: changeInfo.entity,
+                        property: changeInfo.propertyKey.toString(),
+                        value: changeInfo.newValue,
+                        initialValue: changeInfo.oldValue,
+                    });
+                });
+
+                return {
+                    dispose: () => {
+                        observer.remove();
+                    },
+                };
+            },
+        };
+        serviceDefinitions.push(propertyChangedServiceDefinition);
 
         options = {
             ...options,
