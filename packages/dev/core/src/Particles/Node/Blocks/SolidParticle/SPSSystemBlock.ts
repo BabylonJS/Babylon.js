@@ -20,6 +20,17 @@ export class SPSSystemBlock extends NodeParticleBlock {
     })
     public billboard = false;
 
+    @editableInPropertyPage("Lifetime (ms)", PropertyTypeForEdition.Float, "ADVANCED", {
+        embedded: true,
+        min: 0,
+    })
+    public lifetime = 0;
+
+    @editableInPropertyPage("Dispose on end", PropertyTypeForEdition.Boolean, "ADVANCED", {
+        embedded: true,
+    })
+    public disposeOnEnd = false;
+
     public _internalId = SPSSystemBlock._IdCounter++;
 
     public constructor(name: string) {
@@ -54,6 +65,8 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
         solidParticleSystem.billboard = this.billboard;
         solidParticleSystem.name = this.name;
+        solidParticleSystem.lifetime = this.lifetime;
+        solidParticleSystem.disposeOnEnd = this.disposeOnEnd;
 
         this.onDisposeObservable.addOnce(() => {
             solidParticleSystem.dispose();
@@ -64,12 +77,16 @@ export class SPSSystemBlock extends NodeParticleBlock {
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.billboard = this.billboard;
+        serializationObject.lifetime = this.lifetime;
+        serializationObject.disposeOnEnd = this.disposeOnEnd;
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
         this.billboard = !!serializationObject.billboard;
+        this.lifetime = serializationObject.lifetime ?? 0;
+        this.disposeOnEnd = !!serializationObject.disposeOnEnd;
     }
 }
 

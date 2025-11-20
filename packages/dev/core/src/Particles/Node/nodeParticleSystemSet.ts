@@ -21,7 +21,7 @@ import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleport
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Nullable } from "core/types";
-import type { Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
 import {
     SPSParticleConfigBlock,
@@ -355,6 +355,10 @@ export class NodeParticleSystemSet {
     }
 
     public setToDefaultSps() {
+        this.createShockwaveSps();
+    }
+
+    public createDefaultSps() {
         this.clear();
         this.editorData = null;
 
@@ -537,6 +541,311 @@ export class NodeParticleSystemSet {
         multiplyRangeUpdate.output.connectTo(updatePositionConverter.yIn);
         extractPosition.zOut.connectTo(updatePositionConverter.zIn);
         updatePositionConverter.xyzOut.connectTo(spsUpdateTetra.position);
+
+        this._systemBlocks.push(spsSystem);
+    }
+
+    /**
+     * Sets the current set to an SPS shockwave preset inspired by Patrick Ryan's createShockwave sample
+     */
+    public createShockwaveSps() {
+        this.clear();
+        this.editorData = null;
+
+        const spsSystem = new SPSSystemBlock("Shockwave SPS System");
+        spsSystem.billboard = false;
+
+        const lifetimeMs = new ParticleInputBlock("Shockwave Lifetime (ms)");
+        lifetimeMs.value = 2500;
+        spsSystem.lifetime = lifetimeMs.value;
+        spsSystem.disposeOnEnd = true;
+
+        const minLifetimeMs = new ParticleInputBlock("Shockwave Min Lifetime (ms)");
+        minLifetimeMs.value = 1;
+        const lifetimeSafe = new ParticleMathBlock("Shockwave Lifetime Safe");
+        lifetimeSafe.operation = ParticleMathBlockOperations.Max;
+        lifetimeMs.output.connectTo(lifetimeSafe.left);
+        minLifetimeMs.output.connectTo(lifetimeSafe.right);
+
+        const spsCreateBlock = new SPSCreateBlock("Create Shockwave SPS");
+        spsCreateBlock.solidParticleSystem.connectTo(spsSystem.solidParticleSystem);
+
+        const shockwaveConfig = new SPSParticleConfigBlock("Shockwave Particle Config");
+        shockwaveConfig.count.value = 7;
+        shockwaveConfig.particleConfig.connectTo(spsCreateBlock.particleConfig);
+
+        const shockwaveMesh = new SPSMeshSourceBlock("Shockwave Mesh Source");
+        shockwaveMesh.shapeType = SPSMeshShapeType.Plane;
+        shockwaveMesh.size = 0.75;
+        shockwaveMesh.segments = 32;
+        shockwaveMesh.mesh.connectTo(shockwaveConfig.mesh);
+
+        const shockwaveInit = new SPSInitBlock("Initialize Shockwave Particles");
+        shockwaveInit.initData.connectTo(shockwaveConfig.initBlock);
+
+        const shockwaveUpdate = new SPSUpdateBlock("Update Shockwave Particles");
+        shockwaveUpdate.updateData.connectTo(shockwaveConfig.updateBlock);
+
+        const deltaBlock = new ParticleInputBlock("Shockwave Delta Time");
+        deltaBlock.systemSource = NodeParticleSystemSources.Delta;
+        const milliToSecond = new ParticleInputBlock("Shockwave Milli To Second");
+        milliToSecond.value = 0.001;
+        const deltaSeconds = new ParticleMathBlock("Shockwave Delta Seconds");
+        deltaSeconds.operation = ParticleMathBlockOperations.Multiply;
+        deltaBlock.output.connectTo(deltaSeconds.left);
+        milliToSecond.output.connectTo(deltaSeconds.right);
+        const targetFps = new ParticleInputBlock("Shockwave Target FPS");
+        targetFps.value = 60;
+        const normalizedDelta = new ParticleMathBlock("Shockwave Normalized Delta");
+        normalizedDelta.operation = ParticleMathBlockOperations.Multiply;
+        deltaSeconds.output.connectTo(normalizedDelta.left);
+        targetFps.output.connectTo(normalizedDelta.right);
+
+        const lifetimeSeconds = new ParticleMathBlock("Shockwave Lifetime Seconds");
+        lifetimeSeconds.operation = ParticleMathBlockOperations.Multiply;
+        lifetimeSafe.output.connectTo(lifetimeSeconds.left);
+        milliToSecond.output.connectTo(lifetimeSeconds.right);
+        const framesPerLifetime = new ParticleMathBlock("Shockwave Frames Per Lifetime");
+        framesPerLifetime.operation = ParticleMathBlockOperations.Multiply;
+        lifetimeSeconds.output.connectTo(framesPerLifetime.left);
+        targetFps.output.connectTo(framesPerLifetime.right);
+
+        const origin = new ParticleInputBlock("Shockwave Origin");
+        origin.value = new Vector3(0, 0.05, 0);
+        origin.output.connectTo(shockwaveInit.position);
+
+        const shockwaveColor = new ParticleInputBlock("Shockwave Base Color");
+        shockwaveColor.value = new Color4(0.33, 0.49, 0.88, 0.9);
+        shockwaveColor.output.connectTo(shockwaveInit.color);
+
+        const zeroValue = new ParticleInputBlock("Shockwave Zero");
+        zeroValue.value = 0;
+
+        const radiusStart = new ParticleInputBlock("Shockwave Radius Start");
+        radiusStart.value = 1;
+        const storeRadiusInit = new SpsParticlePropsSetBlock("Store Radius Init");
+        storeRadiusInit.propertyName = "radius";
+        storeRadiusInit.type = NodeParticleBlockConnectionPointTypes.Float;
+        radiusStart.output.connectTo(storeRadiusInit.value);
+
+        const maxRadius = new ParticleInputBlock("Shockwave Max Radius");
+        maxRadius.value = 4;
+
+        const radiusRangeBlock = new ParticleMathBlock("Shockwave Radius Range");
+        radiusRangeBlock.operation = ParticleMathBlockOperations.Subtract;
+        maxRadius.output.connectTo(radiusRangeBlock.left);
+        radiusStart.output.connectTo(radiusRangeBlock.right);
+
+        const growthMultiplierMin = new ParticleInputBlock("Shockwave Growth Multiplier Min");
+        growthMultiplierMin.value = 0.85;
+        const growthMultiplierMax = new ParticleInputBlock("Shockwave Growth Multiplier Max");
+        growthMultiplierMax.value = 1.15;
+        const growthMultiplier = new ParticleRandomBlock("Shockwave Growth Multiplier");
+        growthMultiplier.lockMode = ParticleRandomBlockLocks.OncePerParticle;
+        growthMultiplierMin.output.connectTo(growthMultiplier.min);
+        growthMultiplierMax.output.connectTo(growthMultiplier.max);
+
+        const baseGrowthPerFrame = new ParticleMathBlock("Shockwave Base Growth Per Frame");
+        baseGrowthPerFrame.operation = ParticleMathBlockOperations.Divide;
+        radiusRangeBlock.output.connectTo(baseGrowthPerFrame.left);
+        framesPerLifetime.output.connectTo(baseGrowthPerFrame.right);
+
+        const growthPerFrame = new ParticleMathBlock("Shockwave Growth Per Frame");
+        growthPerFrame.operation = ParticleMathBlockOperations.Multiply;
+        baseGrowthPerFrame.output.connectTo(growthPerFrame.left);
+        growthMultiplier.output.connectTo(growthPerFrame.right);
+
+        const storeScaleStepInit = new SpsParticlePropsSetBlock("Store Scale Step Init");
+        storeScaleStepInit.propertyName = "scaleStep";
+        storeScaleStepInit.type = NodeParticleBlockConnectionPointTypes.Float;
+        growthPerFrame.output.connectTo(storeScaleStepInit.value);
+
+        const initScaleConverter = new ParticleConverterBlock("Shockwave Init Scale Converter");
+        storeRadiusInit.output.connectTo(initScaleConverter.xIn);
+        storeScaleStepInit.output.connectTo(initScaleConverter.yIn);
+        storeRadiusInit.output.connectTo(initScaleConverter.zIn);
+        initScaleConverter.xyzOut.connectTo(shockwaveInit.scaling);
+
+        const rotationMin = new ParticleInputBlock("Shockwave Rotation Min");
+        rotationMin.value = new Vector3(0, -Math.PI, 0);
+        const rotationMax = new ParticleInputBlock("Shockwave Rotation Max");
+        rotationMax.value = new Vector3(0, Math.PI, 0);
+        const initialRotation = new ParticleRandomBlock("Shockwave Initial Rotation");
+        initialRotation.lockMode = ParticleRandomBlockLocks.OncePerParticle;
+        rotationMin.output.connectTo(initialRotation.min);
+        rotationMax.output.connectTo(initialRotation.max);
+
+        const rotationConverter = new ParticleConverterBlock("Shockwave Rotation Converter");
+        initialRotation.output.connectTo(rotationConverter.xyzIn);
+        const storeRotationAngleInit = new SpsParticlePropsSetBlock("Store Rotation Angle Init");
+        storeRotationAngleInit.propertyName = "rotationAngle";
+        storeRotationAngleInit.type = NodeParticleBlockConnectionPointTypes.Float;
+        rotationConverter.yOut.connectTo(storeRotationAngleInit.value);
+
+        const rotationCompose = new ParticleConverterBlock("Shockwave Rotation Compose");
+        rotationConverter.xOut.connectTo(rotationCompose.xIn);
+        storeRotationAngleInit.output.connectTo(rotationCompose.yIn);
+        rotationConverter.zOut.connectTo(rotationCompose.zIn);
+        rotationCompose.xyzOut.connectTo(shockwaveInit.rotation);
+
+        const rotationSpeedMin = new ParticleInputBlock("Shockwave Rotation Speed Min");
+        rotationSpeedMin.value = -0.06;
+        const rotationSpeedMax = new ParticleInputBlock("Shockwave Rotation Speed Max");
+        rotationSpeedMax.value = 0.06;
+        const rotationSpeedRandom = new ParticleRandomBlock("Shockwave Rotation Speed Random");
+        rotationSpeedRandom.lockMode = ParticleRandomBlockLocks.OncePerParticle;
+        rotationSpeedMin.output.connectTo(rotationSpeedRandom.min);
+        rotationSpeedMax.output.connectTo(rotationSpeedRandom.max);
+        const storeRotationSpeed = new SpsParticlePropsSetBlock("Store Rotation Speed");
+        storeRotationSpeed.propertyName = "rotationSpeed";
+        storeRotationSpeed.type = NodeParticleBlockConnectionPointTypes.Float;
+        rotationSpeedRandom.output.connectTo(storeRotationSpeed.value);
+
+        const rotationSpeedSink = new ParticleMathBlock("Shockwave Rotation Speed Sink");
+        rotationSpeedSink.operation = ParticleMathBlockOperations.Multiply;
+        storeRotationSpeed.output.connectTo(rotationSpeedSink.left);
+        zeroValue.output.connectTo(rotationSpeedSink.right);
+        const rotationSpeedVelocity = new ParticleConverterBlock("Shockwave Rotation Speed Velocity");
+        rotationSpeedSink.output.connectTo(rotationSpeedVelocity.xIn);
+        zeroValue.output.connectTo(rotationSpeedVelocity.yIn);
+        zeroValue.output.connectTo(rotationSpeedVelocity.zIn);
+        rotationSpeedVelocity.xyzOut.connectTo(shockwaveInit.velocity);
+
+        const getRadiusProp = new SpsParticlePropsGetBlock("Get Radius Prop");
+        getRadiusProp.propertyName = "radius";
+        getRadiusProp.type = NodeParticleBlockConnectionPointTypes.Float;
+
+        const getScaleStepProp = new SpsParticlePropsGetBlock("Get Scale Step Prop");
+        getScaleStepProp.propertyName = "scaleStep";
+        getScaleStepProp.type = NodeParticleBlockConnectionPointTypes.Float;
+
+        const getRotationSpeedProp = new SpsParticlePropsGetBlock("Get Rotation Speed Prop");
+        getRotationSpeedProp.propertyName = "rotationSpeed";
+        getRotationSpeedProp.type = NodeParticleBlockConnectionPointTypes.Float;
+
+        const getRotationAngleProp = new SpsParticlePropsGetBlock("Get Rotation Angle Prop");
+        getRotationAngleProp.propertyName = "rotationAngle";
+        getRotationAngleProp.type = NodeParticleBlockConnectionPointTypes.Float;
+
+        const scaleStepDelta = new ParticleMathBlock("Shockwave Radius Delta");
+        scaleStepDelta.operation = ParticleMathBlockOperations.Multiply;
+        getScaleStepProp.output.connectTo(scaleStepDelta.left);
+        normalizedDelta.output.connectTo(scaleStepDelta.right);
+
+        const radiusIncrement = new ParticleMathBlock("Shockwave Radius Increment");
+        radiusIncrement.operation = ParticleMathBlockOperations.Add;
+        getRadiusProp.output.connectTo(radiusIncrement.left);
+        scaleStepDelta.output.connectTo(radiusIncrement.right);
+
+        const setRadiusPropUpdate = new SpsParticlePropsSetBlock("Set Radius Prop Update");
+        setRadiusPropUpdate.propertyName = "radius";
+        setRadiusPropUpdate.type = NodeParticleBlockConnectionPointTypes.Float;
+        radiusIncrement.output.connectTo(setRadiusPropUpdate.value);
+
+        const clampRadius = new ParticleMathBlock("Shockwave Clamp Radius");
+        clampRadius.operation = ParticleMathBlockOperations.Min;
+        setRadiusPropUpdate.output.connectTo(clampRadius.left);
+        maxRadius.output.connectTo(clampRadius.right);
+
+        const normalizedRadius = new ParticleMathBlock("Shockwave Normalized Radius");
+        normalizedRadius.operation = ParticleMathBlockOperations.Divide;
+        clampRadius.output.connectTo(normalizedRadius.left);
+        maxRadius.output.connectTo(normalizedRadius.right);
+
+        const normalizedMin = new ParticleMathBlock("Shockwave Normalized Min");
+        normalizedMin.operation = ParticleMathBlockOperations.Max;
+        zeroValue.output.connectTo(normalizedMin.left);
+        normalizedRadius.output.connectTo(normalizedMin.right);
+
+        const oneValue = new ParticleInputBlock("Shockwave One");
+        oneValue.value = 1;
+        const normalizedClamp = new ParticleMathBlock("Shockwave Normalized Clamp");
+        normalizedClamp.operation = ParticleMathBlockOperations.Min;
+        normalizedMin.output.connectTo(normalizedClamp.left);
+        oneValue.output.connectTo(normalizedClamp.right);
+
+        const minThickness = new ParticleInputBlock("Shockwave Min Thickness");
+        minThickness.value = 0.25;
+        const maxThickness = new ParticleInputBlock("Shockwave Max Thickness");
+        maxThickness.value = 4;
+        const thicknessRange = new ParticleMathBlock("Shockwave Thickness Range");
+        thicknessRange.operation = ParticleMathBlockOperations.Subtract;
+        maxThickness.output.connectTo(thicknessRange.left);
+        minThickness.output.connectTo(thicknessRange.right);
+        const thicknessScale = new ParticleMathBlock("Shockwave Thickness Scale");
+        thicknessScale.operation = ParticleMathBlockOperations.Multiply;
+        thicknessRange.output.connectTo(thicknessScale.left);
+        normalizedClamp.output.connectTo(thicknessScale.right);
+        const thicknessValue = new ParticleMathBlock("Shockwave Thickness Value");
+        thicknessValue.operation = ParticleMathBlockOperations.Add;
+        minThickness.output.connectTo(thicknessValue.left);
+        thicknessScale.output.connectTo(thicknessValue.right);
+
+        const minHeight = new ParticleInputBlock("Shockwave Min Height");
+        minHeight.value = 0.05;
+        const maxHeight = new ParticleInputBlock("Shockwave Max Height");
+        maxHeight.value = 0.25;
+        const heightRange = new ParticleMathBlock("Shockwave Height Range");
+        heightRange.operation = ParticleMathBlockOperations.Subtract;
+        maxHeight.output.connectTo(heightRange.left);
+        minHeight.output.connectTo(heightRange.right);
+        const heightScale = new ParticleMathBlock("Shockwave Height Scale");
+        heightScale.operation = ParticleMathBlockOperations.Multiply;
+        heightRange.output.connectTo(heightScale.left);
+        normalizedClamp.output.connectTo(heightScale.right);
+        const heightValue = new ParticleMathBlock("Shockwave Height Value");
+        heightValue.operation = ParticleMathBlockOperations.Add;
+        minHeight.output.connectTo(heightValue.left);
+        heightScale.output.connectTo(heightValue.right);
+
+        const scalingConverter = new ParticleConverterBlock("Shockwave Scaling Converter");
+        clampRadius.output.connectTo(scalingConverter.xIn);
+        thicknessValue.output.connectTo(scalingConverter.yIn);
+        clampRadius.output.connectTo(scalingConverter.zIn);
+        scalingConverter.xyzOut.connectTo(shockwaveUpdate.scaling);
+
+        const positionConverter = new ParticleConverterBlock("Shockwave Position Converter");
+        zeroValue.output.connectTo(positionConverter.xIn);
+        heightValue.output.connectTo(positionConverter.yIn);
+        zeroValue.output.connectTo(positionConverter.zIn);
+        positionConverter.xyzOut.connectTo(shockwaveUpdate.position);
+
+        const rotationIncrement = new ParticleMathBlock("Shockwave Rotation Increment");
+        rotationIncrement.operation = ParticleMathBlockOperations.Multiply;
+        getRotationSpeedProp.output.connectTo(rotationIncrement.left);
+        normalizedDelta.output.connectTo(rotationIncrement.right);
+
+        const updatedRotationAngle = new ParticleMathBlock("Shockwave Updated Rotation Angle");
+        updatedRotationAngle.operation = ParticleMathBlockOperations.Add;
+        getRotationAngleProp.output.connectTo(updatedRotationAngle.left);
+        rotationIncrement.output.connectTo(updatedRotationAngle.right);
+
+        const setRotationAngleUpdate = new SpsParticlePropsSetBlock("Set Rotation Angle Update");
+        setRotationAngleUpdate.propertyName = "rotationAngle";
+        setRotationAngleUpdate.type = NodeParticleBlockConnectionPointTypes.Float;
+        updatedRotationAngle.output.connectTo(setRotationAngleUpdate.value);
+
+        const rotationUpdateConverter = new ParticleConverterBlock("Shockwave Rotation Update Converter");
+        zeroValue.output.connectTo(rotationUpdateConverter.xIn);
+        setRotationAngleUpdate.output.connectTo(rotationUpdateConverter.yIn);
+        zeroValue.output.connectTo(rotationUpdateConverter.zIn);
+        rotationUpdateConverter.xyzOut.connectTo(shockwaveUpdate.rotation);
+
+        const colorEnd = new ParticleInputBlock("Shockwave Color End");
+        colorEnd.value = new Color4(0, 0, 0, 0);
+        const colorRange = new ParticleMathBlock("Shockwave Color Range");
+        colorRange.operation = ParticleMathBlockOperations.Subtract;
+        colorEnd.output.connectTo(colorRange.left);
+        shockwaveColor.output.connectTo(colorRange.right);
+        const colorScale = new ParticleMathBlock("Shockwave Color Scale");
+        colorScale.operation = ParticleMathBlockOperations.Multiply;
+        colorRange.output.connectTo(colorScale.left);
+        normalizedClamp.output.connectTo(colorScale.right);
+        const colorValue = new ParticleMathBlock("Shockwave Color Value");
+        colorValue.operation = ParticleMathBlockOperations.Add;
+        shockwaveColor.output.connectTo(colorValue.left);
+        colorScale.output.connectTo(colorValue.right);
+        colorValue.output.connectTo(shockwaveUpdate.color);
 
         this._systemBlocks.push(spsSystem);
     }

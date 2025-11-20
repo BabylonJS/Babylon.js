@@ -18,6 +18,7 @@ import { MultiMaterial } from "../Materials/multiMaterial";
 import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 import type { Observer } from "../Misc/observable";
+import { Observable } from "../Misc/observable";
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces of this big mesh.
@@ -63,6 +64,18 @@ export class SolidParticleSystem implements IDisposable {
      * Please read : https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/optimize_sps#limit-garbage-collection
      */
     public vars: any = {};
+    /**
+     * Lifetime duration in milliseconds (0 means infinite)
+     */
+    public lifetime = 0;
+    /**
+     * Defines if the SPS should dispose itself automatically once the lifetime ends
+     */
+    public disposeOnEnd = false;
+    /**
+     * Observable raised when the SPS lifetime is reached
+     */
+    public onLifeTimeEndedObservable = new Observable<SolidParticleSystem>();
     /**
      * This array is populated when the SPS is set as 'pickable'.
      * Each key of this array is a `faceId` value that you can get from a pickResult object.
@@ -154,6 +167,8 @@ export class SolidParticleSystem implements IDisposable {
     protected _tmpVertex: SolidParticleVertex;
     protected _recomputeInvisibles: boolean = false;
     protected _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
+    protected _elapsedLife: number = 0;
+    protected _lifeEnded: boolean = false;
     /**
      * Creates a SPS (Solid Particle System) object.
      * @param name (String) is the SPS name, this will be the underlying mesh name.
@@ -1543,9 +1558,12 @@ export class SolidParticleSystem implements IDisposable {
             this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
         }
+        this._lifeEnded = true;
+        this._elapsedLife = 0;
         if (this.mesh) {
             this.mesh.dispose();
         }
+        this.onLifeTimeEndedObservable.clear();
         this.vars = null;
         // drop references to internal big arrays for the GC
         (<any>this._positions) = null;
@@ -2005,13 +2023,58 @@ export class SolidParticleSystem implements IDisposable {
      */
     public initParticles(): void {}
 
-    public start(): void {
+    /**
+     * Starts the SPS update loop
+     * @param lifetime optional lifetime override in milliseconds (0 means infinite)
+     * @param disposeOnEnd optional flag indicating if the SPS should dispose itself when the lifetime ends
+     */
+    public start(lifetime?: number, disposeOnEnd?: boolean): void {
         this.buildMesh();
         this.initParticles();
         this.setParticles();
+
+        if (lifetime !== undefined) {
+            this.lifetime = lifetime;
+        }
+        if (disposeOnEnd !== undefined) {
+            this.disposeOnEnd = disposeOnEnd;
+        }
+
+        this._elapsedLife = 0;
+        this._lifeEnded = false;
+
+        if (this._onBeforeRenderObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
+
         this._onBeforeRenderObserver = this._scene.onBeforeRenderObservable.add(() => {
             this.setParticles();
+
+            if (this.lifetime > 0 && !this._lifeEnded) {
+                this._elapsedLife += this._scene.getEngine().getDeltaTime();
+                if (this._elapsedLife >= this.lifetime) {
+                    this._lifeEnded = true;
+                    this.stop(this.disposeOnEnd);
+                    this.onLifeTimeEndedObservable.notifyObservers(this);
+                }
+            }
         });
+    }
+
+    /**
+     * Stops the SPS update loop
+     * @param dispose if true, the SPS will be disposed after stopping
+     */
+    public stop(dispose = false): void {
+        if (this._onBeforeRenderObserver) {
+            this._scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
+            this._onBeforeRenderObserver = null;
+        }
+
+        if (dispose) {
+            this.dispose();
+        }
     }
 
     /**
