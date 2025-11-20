@@ -126,7 +126,7 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
         }
 
         for (const propDescription of propStore) {
-            const { displayName, type, groupName, options, className, blockType } = propDescription;
+            const { displayName, type, groupName, options, className } = propDescription;
             let propertyName = propDescription.propertyName;
             let target: unknown = block;
 
@@ -142,8 +142,8 @@ export class GenericPropertyTabComponent extends react.Component<IPropertyCompon
                 continue;
             }
 
-            if (blockType) {
-                if (blockType !== (block as any)._blockType) {
+            if (options.blockType) {
+                if (options.blockType !== (block as any)._blockType) {
                     continue;
                 }
             }

@@ -239,6 +239,7 @@ export class CustomShaderBlock extends ShaderBlock {
         // Use the EditableInPropertyPage decorator to make the property editable in the Smart Filters Editor
         const editablePropertyOptions: IEditablePropertyOption = {
             notifiers: { rebuild: true },
+            blockType: this._blockType,
         };
         if (constProperty.options) {
             editablePropertyOptions.options = Object.keys(constProperty.options).map((key) => {
@@ -249,7 +250,7 @@ export class CustomShaderBlock extends ShaderBlock {
         const propertyType: PropertyTypeForEdition = constProperty.options ? PropertyTypeForEdition.List : PropertyTypeForEdition.Float;
 
         const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, propertyType, "PROPERTIES", editablePropertyOptions);
-        decoratorApplier(this, constProperty.friendlyName, this._blockType);
+        decoratorApplier(this, constProperty.friendlyName);
     }
 
     /**

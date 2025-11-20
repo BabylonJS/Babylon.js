@@ -53,6 +53,11 @@ export interface IEditablePropertyOption {
     valuesAreStrings?: boolean;
     /** If supplied, the sub property to read/write */
     subPropertyName?: string;
+    /**
+     * If supplied, scope this to a specific block type - useful for the
+     * CustomShaderBlock where multiple block types are implemented with the same class
+     */
+    blockType?: string;
 }
 
 /**
@@ -71,8 +76,6 @@ export interface IPropertyDescriptionForEdition {
     options: IEditablePropertyOption;
     /** name of the class that contains the property */
     className: string;
-    /** optional block type - used to distinguish properties in different blocks that share the same class */
-    blockType?: string;
 }
 
 /**
@@ -89,7 +92,7 @@ export function EditableInPropertyPage(
     groupName: string = "PROPERTIES",
     options?: IEditablePropertyOption
 ) {
-    return (target: any, propertyKey: string, blockType?: string) => {
+    return (target: any, propertyKey: string) => {
         let propStore: IPropertyDescriptionForEdition[] = target._propStore;
         if (!propStore) {
             propStore = [];
@@ -103,12 +106,11 @@ export function EditableInPropertyPage(
             groupName: groupName,
             options: options ?? {},
             className: target.constructor.name,
-            blockType: blockType,
         };
 
         // If the property already exists, overwrite it, otherwise add it
         // Note: It may have been redefined since the application started
-        const existingIndex = propStore.findIndex((p) => p.propertyName === propertyKey && p.className === target.constructor.name && p.blockType === blockType);
+        const existingIndex = propStore.findIndex((p) => p.propertyName === propertyKey && p.className === target.constructor.name && options?.blockType === p.options?.blockType);
         if (existingIndex !== -1) {
             propStore[existingIndex] = propToAdd;
         } else {
