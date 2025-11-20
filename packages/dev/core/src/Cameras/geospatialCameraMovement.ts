@@ -149,7 +149,7 @@ export class GeospatialCameraMovement extends CameraMovement {
 
             this._panSpeedMultiplier = Clamp(latitudeDampeningScale * latitudeDampening, 0, 1);
         } else {
-            this._panSpeedMultiplier = 0;
+            this._panSpeedMultiplier = 1;
         }
 
         // If a pan drag is occurring, stop zooming.
