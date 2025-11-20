@@ -1,18 +1,20 @@
-import type { IDisposable } from "core/index";
-
+import type { IDisposable, IReadonlyObservable } from "core/index";
 import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../../components/extensibleAccordion";
+import type { PropertyChangeInfo } from "../../../contexts/propertyContext";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
 
 import { DocumentTextRegular } from "@fluentui/react-icons";
+import { useMemo } from "react";
 
+import { Observable } from "core/Misc/observable";
 import { PropertiesPane } from "../../../components/properties/propertiesPane";
+import { PropertyContext } from "../../../contexts/propertyContext";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../../hooks/observableHooks";
 import { ObservableCollection } from "../../../misc/observableCollection";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { ShellServiceIdentity } from "../../shellService";
-import { useMemo } from "react";
 
 export const PropertiesServiceIdentity = Symbol("PropertiesService");
 
@@ -45,6 +47,12 @@ export interface IPropertiesService extends IService<typeof PropertiesServiceIde
      * @param content A description of the content to add.
      */
     addSectionContent<EntityT>(content: PropertiesSectionContent<EntityT>): IDisposable;
+
+    /**
+     * An observable that notifies when a property has been changed by the user.
+     * @remarks This observable only fires for changes made through the properties pane.
+     */
+    readonly onPropertyChanged: IReadonlyObservable<PropertyChangeInfo>;
 }
 
 /**
@@ -57,6 +65,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
     factory: (shellService, selectionService) => {
         const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
         const sectionContentCollection = new ObservableCollection<PropertiesSectionContent<unknown>>();
+        const onPropertyChanged = new Observable<PropertyChangeInfo>();
 
         const registration = shellService.addSidePane({
             key: "Properties",
@@ -89,13 +98,18 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                     [sectionContent, entity]
                 );
 
-                return <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} />;
+                return (
+                    <PropertyContext.Provider value={{ onPropertyChanged }}>
+                        <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} />
+                    </PropertyContext.Provider>
+                );
             },
         });
 
         return {
             addSection: (section) => sectionsCollection.add(section),
             addSectionContent: (content) => sectionContentCollection.add(content as PropertiesSectionContent<unknown>),
+            onPropertyChanged,
             dispose: () => registration.dispose(),
         };
     },
