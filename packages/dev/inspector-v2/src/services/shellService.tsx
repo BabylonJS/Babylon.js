@@ -156,8 +156,14 @@ export type SidePaneDefinition = {
 };
 
 type RegisteredSidePane = {
-    key: string;
+    readonly key: string;
     select(): void;
+};
+
+type SidePaneContainer = {
+    readonly isDocked: boolean;
+    dock(): void;
+    undock(): void;
 };
 
 /**
@@ -222,6 +228,16 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
      * Resets the side pane layout to the default configuration.
      */
     resetSidePaneLayout(): void;
+
+    /**
+     * The left side pane container.
+     */
+    readonly leftSidePaneContainer: SidePaneContainer;
+
+    /**
+     * The right side pane container.
+     */
+    readonly rightSidePaneContainer: SidePaneContainer;
 
     /**
      * The side panes currently present in the shell.
@@ -967,6 +983,9 @@ function usePane(
                     const onParentWindowUnload = () => childWindow.close();
                     window.addEventListener("unload", onParentWindowUnload);
                     disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
+                } else {
+                    // If creating a child window failed (e.g. popup blocked), then just revert to docked mode.
+                    setUndocked(false);
                 }
                 disposeActions.push(() => childWindow?.close());
             }
@@ -1124,7 +1143,7 @@ function usePane(
         }
     }, [collapsed, corePane, windowState]);
 
-    return [topPaneTabList, pane, collapsed, setCollapsed] as const;
+    return [topPaneTabList, pane, collapsed, setCollapsed, undocked, setUndocked] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -1145,6 +1164,18 @@ export function MakeShellServiceDefinition({
             const centralContentCollection = new ObservableCollection<Readonly<CentralContentDefinition>>();
 
             const onSelectSidePane = new Observable<string>(undefined, true);
+
+            const onDockChanged = new Observable<{ location: HorizontalLocation; dock: boolean }>(undefined, true);
+            const leftSidePaneContainerState = {
+                isDocked: true as boolean,
+                dock: () => onDockChanged.notifyObservers({ location: "left", dock: true }),
+                undock: () => onDockChanged.notifyObservers({ location: "left", dock: false }),
+            } satisfies SidePaneContainer;
+            const rightSidePaneContainerState = {
+                isDocked: true as boolean,
+                dock: () => onDockChanged.notifyObservers({ location: "right", dock: true }),
+                undock: () => onDockChanged.notifyObservers({ location: "right", dock: false }),
+            } satisfies SidePaneContainer;
 
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
@@ -1304,7 +1335,7 @@ export function MakeShellServiceDefinition({
 
                 const centralContents = useOrderedObservableCollection(centralContentCollection);
 
-                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed] = usePane(
+                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, leftPaneUndocked, setLeftPaneUndocked] = usePane(
                     "left",
                     layoutMode,
                     leftPaneDefaultWidth,
@@ -1317,7 +1348,12 @@ export function MakeShellServiceDefinition({
                     bottomBarLeftItems
                 );
 
-                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed] = usePane(
+                useEffect(() => {
+                    // Propagate shorter lived React component state out to longer lived service state.
+                    leftSidePaneContainerState.isDocked = !leftPaneUndocked;
+                }, [leftPaneUndocked]);
+
+                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, rightPaneUndocked, setRightPaneUndocked] = usePane(
                     "right",
                     layoutMode,
                     rightPaneDefaultWidth,
@@ -1329,6 +1365,28 @@ export function MakeShellServiceDefinition({
                     topBarRightItems,
                     bottomBarRightItems
                 );
+
+                useEffect(() => {
+                    // Propagate shorter lived React component state out to longer lived service state.
+                    rightSidePaneContainerState.isDocked = !rightPaneUndocked;
+                }, [rightPaneUndocked]);
+
+                useEffect(() => {
+                    // If at the service level dock state change is requested, propagate to the React component state.
+                    const observer = onDockChanged.add(({ location, dock }) => {
+                        if (location === "left") {
+                            setLeftPaneUndocked(!dock);
+                        } else {
+                            setRightPaneUndocked(!dock);
+                        }
+                    });
+
+                    return () => {
+                        observer.remove();
+                        leftSidePaneContainerState.isDocked = true;
+                        rightSidePaneContainerState.isDocked = true;
+                    };
+                }, [setLeftPaneUndocked, setRightPaneUndocked]);
 
                 return (
                     <div className={classes.mainView}>
@@ -1407,6 +1465,9 @@ export function MakeShellServiceDefinition({
                 },
                 addCentralContent: (entry) => centralContentCollection.add(entry),
                 resetSidePaneLayout: () => localStorage.removeItem("Babylon/Settings/SidePaneDockOverrides"),
+                leftSidePaneContainer: leftSidePaneContainerState,
+                rightSidePaneContainer: rightSidePaneContainerState,
+                onDockChanged,
                 get sidePanes() {
                     return [...sidePaneCollection.items].map((sidePaneDefinition) => {
                         return {
