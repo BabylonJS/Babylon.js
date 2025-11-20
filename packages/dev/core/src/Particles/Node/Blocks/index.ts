@@ -3,6 +3,7 @@ export * from "./systemBlock";
 export * from "./particleFloatToIntBlock";
 export * from "./particleInputBlock";
 export * from "./particleSourceTextureBlock";
+export * from "./particleTextureFetchBlock";
 export * from "./particleMathBlock";
 export * from "./particleLerpBlock";
 export * from "./Update/updateDirectionBlock";

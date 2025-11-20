@@ -1,5 +1,6 @@
 import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
+import { ParticleTextureFetchBlock } from "core/Particles/Node/Blocks/particleTextureFetchBlock";
 import { UpdateDirectionBlock } from "core/Particles/Node/Blocks/Update/updateDirectionBlock";
 import { UpdatePositionBlock } from "core/Particles/Node/Blocks/Update/updatePositionBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
@@ -156,6 +157,8 @@ export class BlockTools {
                 return new SystemBlock("System");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
+            case "TextureFetchBlock":
+                return new ParticleTextureFetchBlock("Texture fetch");
             case "BoxShapeBlock":
                 return new BoxShapeBlock("Box shape");
             case "ConeShapeBlock":

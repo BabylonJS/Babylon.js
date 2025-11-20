@@ -1,6 +1,7 @@
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
 import type { Texture } from "core/Materials/Textures/texture";
+import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
 import type { ColorGradient, FactorGradient } from "core/Misc";
 import type { ParticleSystem } from "core/Particles/particleSystem";
@@ -420,10 +421,10 @@ function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
  * @returns The output connection point after all updates have been applied
  */
 function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
-    let updateBlockGroupOutput: NodeParticleConnectionPoint = inputParticle;
+    let updatedInputParticleOutput: NodeParticleConnectionPoint = inputParticle;
 
-    updateBlockGroupOutput = _UpdateParticleColorBlockGroup(updateBlockGroupOutput, oldSystem._colorGradients, context);
-    updateBlockGroupOutput = _UpdateParticleAngleBlockGroup(updateBlockGroupOutput, oldSystem, context);
+    updatedInputParticleOutput = _UpdateParticleColorBlockGroup(updatedInputParticleOutput, oldSystem._colorGradients, context);
+    updatedInputParticleOutput = _UpdateParticleAngleBlockGroup(updatedInputParticleOutput, oldSystem, context);
 
     if (oldSystem._velocityGradients && oldSystem._velocityGradients.length > 0) {
         context.scaledDirection = _UpdateParticleVelocityGradientBlockGroup(oldSystem._velocityGradients, context);
@@ -433,21 +434,30 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
         context.scaledDirection = _UpdateParticleDragGradientBlockGroup(oldSystem._dragGradients, context);
     }
 
-    updateBlockGroupOutput = _UpdateParticlePositionBlockGroup(updateBlockGroupOutput, oldSystem.isLocal, context);
+    updatedInputParticleOutput = _UpdateParticlePositionBlockGroup(updatedInputParticleOutput, oldSystem.isLocal, context);
 
     if (oldSystem._limitVelocityGradients && oldSystem._limitVelocityGradients.length > 0 && oldSystem.limitVelocityDamping !== 0) {
-        updateBlockGroupOutput = _UpdateParticleVelocityLimitGradientBlockGroup(updateBlockGroupOutput, oldSystem._limitVelocityGradients, oldSystem.limitVelocityDamping, context);
+        updatedInputParticleOutput = _UpdateParticleVelocityLimitGradientBlockGroup(
+            updatedInputParticleOutput,
+            oldSystem._limitVelocityGradients,
+            oldSystem.limitVelocityDamping,
+            context
+        );
+    }
+
+    if (oldSystem.noiseTexture && oldSystem.noiseStrength) {
+        updatedInputParticleOutput = _UpdateParticleNoiseBlockGroup(updatedInputParticleOutput, oldSystem.noiseTexture, oldSystem.noiseStrength, context);
     }
 
     if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
-        updateBlockGroupOutput = _UpdateParticleSizeGradientBlockGroup(updateBlockGroupOutput, oldSystem._sizeGradients, context);
+        updatedInputParticleOutput = _UpdateParticleSizeGradientBlockGroup(updatedInputParticleOutput, oldSystem._sizeGradients, context);
     }
 
     if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
-        updateBlockGroupOutput = _UpdateParticleGravityBlockGroup(updateBlockGroupOutput, oldSystem.gravity);
+        updatedInputParticleOutput = _UpdateParticleGravityBlockGroup(updatedInputParticleOutput, oldSystem.gravity);
     }
 
-    return updateBlockGroupOutput;
+    return updatedInputParticleOutput;
 }
 
 /**
@@ -598,6 +608,20 @@ function _UpdateParticleVelocityLimitGradientBlockGroup(
     const updateDirection = new UpdateDirectionBlock("Direction Update");
     inputParticle.connectTo(updateDirection.particle);
     compareSpeed.output.connectTo(updateDirection.direction);
+
+    return updateDirection.output;
+}
+
+function _UpdateParticleNoiseBlockGroup(
+    inputParticle: NodeParticleConnectionPoint,
+    noiseTexture: ProceduralTexture,
+    noiseStrength: Vector3,
+    context: RuntimeConversionContext
+): NodeParticleConnectionPoint {
+    // Update the direction of the particle with the noise value
+    const updateDirection = new UpdateDirectionBlock("Direction Update");
+    inputParticle.connectTo(updateDirection.particle);
+    // TODO: Implement noise texture sampling and application to direction
 
     return updateDirection.output;
 }
