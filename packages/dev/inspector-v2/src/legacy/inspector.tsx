@@ -352,13 +352,18 @@ export class Inspector {
             friendlyName: "Selection Changed Service (Backward Compatibility)",
             consumes: [SelectionServiceIdentity],
             factory: (selectionService) => {
-                const observer = selectionService.onSelectedEntityChanged.add(() => {
+                const selectionServiceObserver = selectionService.onSelectedEntityChanged.add(() => {
                     this.OnSelectionChangeObservable.notifyObservers(selectionService.selectedEntity);
+                });
+
+                const legacyObserver = this.OnSelectionChangeObservable.add((entity) => {
+                    selectionService.selectedEntity = entity;
                 });
 
                 return {
                     dispose: () => {
-                        observer.remove();
+                        selectionServiceObserver.remove();
+                        legacyObserver.remove();
                     },
                 };
             },
