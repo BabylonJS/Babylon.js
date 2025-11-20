@@ -15,6 +15,14 @@ export type PropertyContext = {
 
 export const PropertyContext = createContext<PropertyContext | undefined>(undefined);
 
-export function usePropertyContext() {
-    return useContext(PropertyContext);
+export function usePropertyChangedNotifier() {
+    const propertyContext = useContext(PropertyContext);
+    return <ObjectT, PropertyT extends keyof ObjectT>(target: ObjectT, propertyKey: PropertyT, oldValue: ObjectT[PropertyT], newValue: ObjectT[PropertyT]) => {
+        propertyContext?.onPropertyChanged.notifyObservers({
+            entity: target,
+            propertyKey: propertyKey,
+            oldValue: oldValue,
+            newValue: newValue,
+        });
+    };
 }
