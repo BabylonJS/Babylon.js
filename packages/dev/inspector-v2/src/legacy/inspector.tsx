@@ -14,6 +14,7 @@ import type { WeaklyTypedServiceDefinition } from "../modularity/serviceContaine
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { IGizmoService } from "../services/gizmoService";
 import type { ISceneExplorerService } from "../services/panes/scene/sceneExplorerService";
+import type { ISelectionService } from "../services/selectionService";
 import type { IShellService } from "../services/shellService";
 
 import { BranchRegular } from "@fluentui/react-icons";
@@ -26,6 +27,7 @@ import { ShowInspector } from "../inspector";
 import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
 import { GizmoServiceIdentity } from "../services/gizmoService";
 import { SceneExplorerServiceIdentity } from "../services/panes/scene/sceneExplorerService";
+import { SelectionServiceIdentity } from "../services/selectionService";
 import { ShellServiceIdentity } from "../services/shellService";
 
 type PropertyChangedEvent = {
@@ -322,6 +324,8 @@ export class Inspector {
         }
 
         let options = ConvertOptions(userOptions);
+        const serviceDefinitions: WeaklyTypedServiceDefinition[] = [];
+
         const popupServiceDefinition: ServiceDefinition<[], [IShellService]> = {
             friendlyName: "Popup Service (Backward Compatibility)",
             consumes: [ShellServiceIdentity],
@@ -340,10 +344,28 @@ export class Inspector {
                 };
             },
         };
+        serviceDefinitions.push(popupServiceDefinition);
+
+        const selectionChangedServiceDefinition: ServiceDefinition<[], [ISelectionService]> = {
+            friendlyName: "Selection Changed Service (Backward Compatibility)",
+            consumes: [SelectionServiceIdentity],
+            factory: (selectionService) => {
+                const observer = selectionService.onSelectedEntityChanged.add(() => {
+                    this.OnSelectionChangeObservable.notifyObservers(selectionService.selectedEntity);
+                });
+
+                return {
+                    dispose: () => {
+                        observer.remove();
+                    },
+                };
+            },
+        };
+        serviceDefinitions.push(selectionChangedServiceDefinition);
 
         options = {
             ...options,
-            serviceDefinitions: [...(options.serviceDefinitions ?? []), popupServiceDefinition],
+            serviceDefinitions: [...(options.serviceDefinitions ?? []), ...serviceDefinitions],
         };
 
         this._CurrentInspectorToken = ShowInspector(scene, options);
