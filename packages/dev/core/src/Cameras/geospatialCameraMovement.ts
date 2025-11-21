@@ -32,6 +32,8 @@ export class GeospatialCameraMovement extends CameraMovement {
     /** Predicate function to determine which meshes to pick against (e.g., globe mesh) */
     public pickPredicate?: MeshPredicate;
     public computedPerFrameZoomVector: Vector3 = new Vector3();
+    /** World-space picked point under cursor for zoom-to-cursor behavior (may be undefined) */
+    public computedPerFrameZoomPickPoint?: Vector3;
 
     public zoomToCursor: boolean = true;
 
@@ -87,6 +89,9 @@ export class GeospatialCameraMovement extends CameraMovement {
         this._hitPointRadius = undefined;
     }
 
+    public get isDragging() {
+        return this._hitPointRadius !== undefined;
+    }
     /**
      * The previous drag plane hit point in local space is stored to compute the movement delta.
      * As the drag movement occurs, we will continuously recalculate this point. The delta between the previous and current hit points is the delta we will apply to the camera's localtranslation
@@ -156,8 +161,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         }
 
         // If a pan drag is occurring, stop zooming.
-        const isDragging = this._hitPointRadius !== undefined;
-        if (isDragging) {
+        if (this.isDragging) {
             this._zoomSpeedMultiplier = 0;
             this._zoomVelocity = 0;
         } else {
@@ -189,12 +193,14 @@ export class GeospatialCameraMovement extends CameraMovement {
                     pickResult.ray.direction.normalizeToRef(this.computedPerFrameZoomVector);
                     pickDistance = pickResult.distance;
                     this._storedZoomPickDistance = pickDistance;
+                    this.computedPerFrameZoomPickPoint = pickResult.pickedPoint;
                 } else {
                     // If no hit under cursor, zoom along lookVector instead
                     this._cameraLookAt.normalizeToRef(this.computedPerFrameZoomVector);
                     const lookPickResult = this.pickAlongVector(this.computedPerFrameZoomVector);
                     pickDistance = lookPickResult?.distance;
                     this._storedZoomPickDistance = pickDistance;
+                    this.computedPerFrameZoomPickPoint = undefined;
                 }
             }
 
