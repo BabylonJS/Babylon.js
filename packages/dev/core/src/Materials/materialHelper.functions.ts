@@ -22,7 +22,6 @@ import { MaterialFlags } from "./materialFlags";
 import { Texture } from "./Textures/texture";
 import type { CubeTexture } from "./Textures/cubeTexture";
 import type { Color3 } from "core/Maths/math.color";
-import { GetTypeByteLength } from "../Buffers/bufferUtils";
 import type { Geometry } from "../Meshes/geometry";
 import { Vector3 } from "core/Maths/math.vector";
 
@@ -676,47 +675,20 @@ export function PrepareVertexPullingUniforms(geometry: Geometry): Nullable<Map<s
     return metadata;
 }
 
+/**
+ * Bind vertex pulling uniforms to the effect
+ * @param effect The effect to bind the uniforms to
+ * @param metadata The vertex pulling metadata
+ */
 export function BindVertexPullingUniforms(effect: Effect, metadata: Map<string, IVertexPullingMetadata>): void {
     if (!metadata || !effect) {
         return;
     }
 
-    for (const [attribute, data] of metadata) {
+    for (const [attribute, data] of metadata.entries()) {
         const uniformName = `vp_${attribute}_info`;
-        // Pack into vec4: (offset, stride, type)
+        // Pack into vec3: (offset, stride, type)
         effect.setVector3(uniformName, new Vector3(data.offset, data.stride, data.type));
-    }
-}
-
-/**
- * Helper used to prepare vertex pulling metadata defines (stride, offset, component count)
- * This should be called when USE_VERTEX_PULLING is enabled to properly configure buffer access
- * @param geometry The geometry being rendered
- * @param defines The defines object to update
- */
-export function PrepareDefinesForVertexPullingMetadata(geometry: Geometry, defines: any): void {
-    if (!geometry) {
-        return;
-    }
-    const vertexBuffers = geometry.getVertexBuffers();
-    for (const attributeName in vertexBuffers) {
-        const vertexBuffer = vertexBuffers[attributeName];
-        if (!vertexBuffer) {
-            continue;
-        }
-
-        const upperName = attributeName.toUpperCase();
-        const sizeInBytes = GetTypeByteLength(vertexBuffer.type);
-        // Calculate stride in float32 elements
-        const stride = vertexBuffer.effectiveByteStride / sizeInBytes;
-        defines.push(`#define ${upperName}_STRIDE ${stride}`);
-
-        // Calculate offset in float32 elements
-        const offset = vertexBuffer.effectiveByteOffset / sizeInBytes;
-        defines.push(`#define ${upperName}_OFFSET ${offset}`);
-        // Calculate component count
-        const componentBytes = GetTypeByteLength(vertexBuffer.type);
-        defines.push(`#define ${upperName}_COMPONENT_BYTES ${componentBytes}`);
     }
 }
 

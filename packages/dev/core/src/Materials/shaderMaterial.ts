@@ -30,7 +30,6 @@ import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
     PrepareDefinesAndAttributesForMorphTargets,
-    PrepareDefinesForVertexPullingMetadata,
     PrepareVertexPullingUniforms,
     BindVertexPullingUniforms,
     PushAttributesForInstances,
@@ -924,7 +923,6 @@ export class ShaderMaterial extends PushMaterial {
             // Add vertex buffer metadata defines for proper stride/offset handling
             const geometry = renderingMesh.geometry;
             if (geometry) {
-                PrepareDefinesForVertexPullingMetadata(geometry, defines);
                 this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
             }
         }

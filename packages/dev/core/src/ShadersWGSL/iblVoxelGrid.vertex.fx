@@ -17,13 +17,13 @@ var<storage, read> position : array<f32>;
 #if NUM_BONE_INFLUENCERS > 0
   var<storage, read> matricesIndices : array<u32>;
   var<storage, read> matricesWeights : array<f32>;
-  uniform vp_matricesIndices_info: vec4f;
-  uniform vp_matricesWeights_info: vec4f;
+  uniform vp_matricesIndices_info: vec3f;
+  uniform vp_matricesWeights_info: vec3f;
   #if NUM_BONE_INFLUENCERS > 4
     var<storage, read> matricesIndicesExtra : array<u32>;
     var<storage, read> matricesWeightsExtra : array<f32>;
-    uniform vp_matricesIndicesExtra_info: vec4f;
-    uniform vp_matricesWeightsExtra_info: vec4f;
+    uniform vp_matricesIndicesExtra_info: vec3f;
+    uniform vp_matricesWeightsExtra_info: vec3f;
   #endif
 #endif
 
@@ -33,7 +33,7 @@ uniform invWorldScale: mat4x4f;
 varying vNormalizedPosition : vec3f;
 flat varying f_swizzle: i32;
 
-uniform vp_position_info: vec4f; // (bufferIndex, offset, stride, type)
+uniform vp_position_info: vec3f; // (bufferIndex, offset, stride, type)
 
 fn convertToFloat(word: u32, byteInWord: u32, dataType: u32) -> f32 {
     switch (dataType) {
@@ -75,10 +75,10 @@ fn readPositionValue(byteOffset: u32, dataType: u32) -> f32 {
 }
 
 // Helper function to read a vec3 attribute
-fn readVertexPosition(info: vec4f, vertexIndex: u32) -> vec3f {
-    let baseOffset = u32(info.y);
-    let stride = u32(info.z);
-    let dataType = u32(info.w);
+fn readVertexPosition(info: vec3f, vertexIndex: u32) -> vec3f {
+    let baseOffset = u32(info.x);
+    let stride = u32(info.y);
+    let dataType = u32(info.z);
     
     let offset = baseOffset + vertexIndex * stride;
     
@@ -102,10 +102,10 @@ fn readMatrixIndexValue(byteOffset: u32, dataType: u32) -> f32 {
     return convertToFloat(word, byteInWord, dataType);
 }
 
-fn readMatrixIndices(info: vec4f, vertexIndex : u32) -> vec4f {
-  let baseOffset = u32(info.y);
-  let stride = u32(info.z);
-  let dataType = u32(info.w);
+fn readMatrixIndices(info: vec3f, vertexIndex : u32) -> vec4f {
+  let baseOffset = u32(info.x);
+  let stride = u32(info.y);
+  let dataType = u32(info.z);
   
   let offset = baseOffset + vertexIndex * stride;
 
@@ -128,10 +128,10 @@ fn readMatrixWeightValue(byteOffset: u32, dataType: u32) -> f32 {
     return convertToFloat(word, byteInWord, dataType);
 }
 
-fn readMatrixWeights(info: vec4f, vertexIndex : u32) -> vec4f {
-  let baseOffset = u32(info.y);
-  let stride = u32(info.z);
-  let dataType = u32(info.w);
+fn readMatrixWeights(info: vec3f, vertexIndex : u32) -> vec4f {
+  let baseOffset = u32(info.x);
+  let stride = u32(info.y);
+  let dataType = u32(info.z);
   
   let offset = baseOffset + vertexIndex * stride;
 
@@ -156,10 +156,10 @@ fn readMatrixIndexExtraValue(byteOffset: u32, dataType: u32) -> f32 {
     return convertToFloat(word, byteInWord, dataType);
 }
 
-fn readMatrixIndicesExtra(info: vec4f, vertexIndex : u32) -> vec4f {
-  let baseOffset = u32(info.y);
-  let stride = u32(info.z);
-  let dataType = u32(info.w);
+fn readMatrixIndicesExtra(info: vec3f, vertexIndex : u32) -> vec4f {
+  let baseOffset = u32(info.x);
+  let stride = u32(info.y);
+  let dataType = u32(info.z);
   
   let offset = baseOffset + vertexIndex * stride;
 
@@ -182,10 +182,10 @@ fn readMatrixWeightExtraValue(byteOffset: u32, dataType: u32) -> f32 {
     return convertToFloat(word, byteInWord, dataType);
 }
 
-fn readMatrixIndicesExtra(info: vec4f, vertexIndex : u32) -> vec4f {
-  let baseOffset = u32(info.y);
-  let stride = u32(info.z);
-  let dataType = u32(info.w);
+fn readMatrixIndicesExtra(info: vec3f, vertexIndex : u32) -> vec4f {
+  let baseOffset = u32(info.x);
+  let stride = u32(info.y);
+  let dataType = u32(info.z);
   
   let offset = baseOffset + vertexIndex * stride;
 
