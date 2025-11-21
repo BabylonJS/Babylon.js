@@ -385,13 +385,11 @@ export class GeospatialCamera extends Camera {
         }
         if (this.movement.rotationDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricRotation();
-            this._isViewMatrixDirty = true;
         }
 
         if (Math.abs(this.movement.zoomDeltaCurrentFrame) > Epsilon) {
             this._applyZoom(this.movement.computedPerFrameZoomVector, this.movement.zoomDeltaCurrentFrame);
             recalculateCenter = true;
-            this._isViewMatrixDirty = true;
         }
 
         // After a movement impacting center or radius, recalculate the center point to ensure it's still on the surface.
