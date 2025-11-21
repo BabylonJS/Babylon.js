@@ -42,6 +42,7 @@
         "lerna": "^9.0.1",
         "mini-css-extract-plugin": "~2.6.0",
         "nx": "^18.0.4",
+        "patch-package": "^8.0.1",
         "prettier": "^3.0.3",
         "rimraf": "~6.0.1",
         "ts-jest": "~29.1.0",
@@ -61,6 +62,7 @@
         "packages/**/*"
     ],
     "scripts": {
+        "postinstall": "patch-package",
         "build:dev": "npm run build:assets && npm run build:source && npm run build:declaration -w @tools/babylon-server",
         "build:lts": "npm run build:assets && npm run build:source:lts",
         "build:source": "tsc -b ./tsconfig.devpackages.json",

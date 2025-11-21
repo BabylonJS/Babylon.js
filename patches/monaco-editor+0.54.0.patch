@@ -1,0 +1,19 @@
+diff --git a/node_modules/monaco-editor/esm/vs/base/browser/dompurify/dompurify.js b/node_modules/monaco-editor/esm/vs/base/browser/dompurify/dompurify.js
+index af10243..b06a048 100644
+--- a/node_modules/monaco-editor/esm/vs/base/browser/dompurify/dompurify.js
++++ b/node_modules/monaco-editor/esm/vs/base/browser/dompurify/dompurify.js
+@@ -1551,4 +1551,3 @@ function createDOMPurify() {
+ var purify = createDOMPurify();
+ 
+ export { purify as default };
+-//# sourceMappingURL=purify.es.mjs.map
+\ No newline at end of file
+diff --git a/node_modules/monaco-editor/esm/vs/base/common/marked/marked.js b/node_modules/monaco-editor/esm/vs/base/common/marked/marked.js
+index b7b6ecc..ea54625 100644
+--- a/node_modules/monaco-editor/esm/vs/base/common/marked/marked.js
++++ b/node_modules/monaco-editor/esm/vs/base/common/marked/marked.js
+@@ -2479,4 +2479,3 @@ const parser = _Parser.parse;
+ const lexer = _Lexer.lex;
+ 
+ export { _Hooks as Hooks, _Lexer as Lexer, Marked, _Parser as Parser, _Renderer as Renderer, _TextRenderer as TextRenderer, _Tokenizer as Tokenizer, _defaults as defaults, _getDefaults as getDefaults, lexer, marked, options, parse, parseInline, parser, setOptions, use, walkTokens };
+-//# sourceMappingURL=marked.esm.js.map
