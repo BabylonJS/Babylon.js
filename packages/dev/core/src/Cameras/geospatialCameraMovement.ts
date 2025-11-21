@@ -10,6 +10,8 @@ import { Vector3Distance } from "../Maths/math.vector.functions";
 import { Clamp } from "../Maths/math.scalar.functions";
 import type { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
+import type { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
+import type { GeospatialCamera } from "./geospatialCamera";
 
 /**
  * @experimental
@@ -55,9 +57,10 @@ export class GeospatialCameraMovement extends CameraMovement {
         cameraPosition: Vector3,
         private _cameraCenter: Vector3,
         private _cameraLookAt: Vector3,
-        pickPredicate?: MeshPredicate
+        pickPredicate?: MeshPredicate,
+        behavior?: InterpolatingBehavior<GeospatialCamera>
     ) {
-        super(scene, cameraPosition);
+        super(scene, cameraPosition, behavior);
         this.computedPerFrameZoomVector.copyFrom(this._cameraLookAt);
         this.pickPredicate = pickPredicate;
         this._tempPickingRay = new Ray(this._cameraPosition, this._cameraLookAt);

@@ -4,7 +4,7 @@ import type { IPropertiesService } from "./propertiesService";
 
 import { Scene } from "core/scene";
 
-import { CommonGeneralProperties, DisposableGeneralProperties } from "../../../components/properties/commonGeneralProperties";
+import { CommonGeneralProperties, DisposableGeneralProperties, IsCommonEntity } from "../../../components/properties/commonGeneralProperties";
 import { PropertiesServiceIdentity } from "./propertiesService";
 
 type CommonEntity = {
@@ -26,8 +26,7 @@ export const CommonPropertiesServiceDefinition: ServiceDefinition<[], [IProperti
                     return false;
                 }
 
-                const commonEntity = entity as CommonEntity;
-                return commonEntity.id !== undefined || commonEntity.name !== undefined || commonEntity.uniqueId !== undefined || commonEntity.getClassName !== undefined;
+                return IsCommonEntity(entity);
             },
             content: [
                 {

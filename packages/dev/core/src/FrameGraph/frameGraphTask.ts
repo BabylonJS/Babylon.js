@@ -67,6 +67,16 @@ export abstract class FrameGraphTask {
     public abstract record(skipCreationOfDisabledPasses?: boolean): void;
 
     /**
+     * This function is called once after the task has been added to the frame graph and before the frame graph is built for the first time.
+     * This allows you to initialize asynchronous resources, which is not possible in the constructor.
+     * @returns A promise that resolves when the initialization is complete.
+     */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public initAsync(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /**
      * An observable that is triggered after the textures have been allocated.
      */
     public onTexturesAllocatedObservable: Observable<FrameGraphRenderContext> = new Observable();
@@ -112,6 +122,12 @@ export abstract class FrameGraphTask {
 
     /** @internal */
     public _reset() {
+        for (const pass of this._passes) {
+            pass._dispose();
+        }
+        for (const pass of this._passesDisabled) {
+            pass._dispose();
+        }
         this._passes.length = 0;
         this._passesDisabled.length = 0;
     }
