@@ -249,28 +249,8 @@ export class GeospatialCamera extends Camera {
     public async flyToPointAsync(destination: Vector3, radiusScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction) {
         // Zoom to radiusScale% of radius towards the given destination point
         const zoomDistance = this.radius * radiusScale;
-        const newRadius = Clamp(this.radius - zoomDistance, this.limits.radiusMin, this.limits.radiusMax);
-        const actualZoomDistance = this.radius - newRadius;
-        const zoomRatio = actualZoomDistance / this.radius;
-
-        // Move center toward destination by the zoom ratio
-        const directionToDestination = TmpVectors.Vector3[0];
-        destination.subtractToRef(this._center, directionToDestination);
-
-        const centerOffset = TmpVectors.Vector3[1];
-        directionToDestination.scaleToRef(zoomRatio, centerOffset);
-
-        const newCenter = new Vector3();
-        this._center.addToRef(centerOffset, newCenter);
-
-        // Preserve center altitude (distance from planet origin)
-        const currentCenterRadius = this._center.length();
-        const newCenterRadius = newCenter.length();
-        if (newCenterRadius > Epsilon) {
-            newCenter.scaleInPlace(currentCenterRadius / newCenterRadius);
-        }
-
-        await this.flyToAsync(undefined, undefined, newRadius, newCenter, durationMs, easingFn);
+        const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, zoomDistance, this._tempCenter);
+        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn);
     }
 
     private _limits: GeospatialLimits;
@@ -369,10 +349,11 @@ export class GeospatialCamera extends Camera {
         }
     }
 
+    private _tempCenter = new Vector3();
     private _zoomToPoint(targetPoint: Vector3, distance: number) {
-        const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._center);
+        const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._tempCenter);
         // Apply the new orientation
-        this._setOrientation(this._yaw, this._pitch, newRadius, this._center);
+        this._setOrientation(this._yaw, this._pitch, newRadius, this._tempCenter);
     }
 
     private _getCenterAndRadiusFromZoomToPoint(targetPoint: Vector3, distance: number, newCenter: Vector3): number {
