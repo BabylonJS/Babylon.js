@@ -3418,7 +3418,13 @@ export class ThinEngine extends AbstractEngine {
         if (texture.generateMipMaps) {
             const webGLHardwareTexture = texture._hardwareTexture as WebGLHardwareTexture;
             if (!webGLHardwareTexture.memoryAllocated) {
-                gl.texStorage2D(texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D, Math.floor(Math.log2(Math.max(width, height))) + 1, internalFormat, texture.width, texture.height);
+                gl.texStorage2D(
+                    texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D,
+                    Math.floor(Math.log2(Math.max(width, height))) + 1,
+                    internalFormat,
+                    texture.width,
+                    texture.height
+                );
                 webGLHardwareTexture.memoryAllocated = true;
             }
             this._gl.compressedTexSubImage2D(target, lod, 0, 0, width, height, internalFormat, data);
