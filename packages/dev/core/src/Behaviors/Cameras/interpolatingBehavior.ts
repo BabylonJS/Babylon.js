@@ -5,6 +5,7 @@ import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
 import type { Camera } from "../../Cameras/camera";
 import type { IColor3Like, IColor4Like, IMatrixLike, IQuaternionLike, IVector2Like, IVector3Like } from "../../Maths/math.like";
+import type { IAnimationKey } from "../../Animations/animationKey";
 
 export type AllowedAnimValue = number | IVector2Like | IVector3Like | IQuaternionLike | IMatrixLike | IColor3Like | IColor4Like | SizeLike | undefined;
 
@@ -101,7 +102,8 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
     public async animatePropertiesAsync<K extends keyof C>(
         properties: Map<K, AllowedAnimValue>,
         transitionDuration: number = this.transitionDuration,
-        easingFn: EasingFunction = this.easingFunction
+        easingFn: EasingFunction = this.easingFunction,
+        customKeys?: Map<K, IAnimationKey[]>
     ): Promise<void> {
         const promise = new Promise<void>((resolve) => {
             this._promiseResolve = resolve;
@@ -133,7 +135,18 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
                     const propertyName = String(key);
                     const animation = Animation.CreateAnimation(propertyName, GetAnimationType(value), 60, easingFn);
                     // Pass false for stopCurrent so that we can interpolate multiple properties at once
-                    const animatable = Animation.TransitionTo(propertyName, value, camera, scene, 60, animation, transitionDuration, () => checkClear(propertyName), false);
+                    const animatable = Animation.TransitionTo(
+                        propertyName,
+                        value,
+                        camera,
+                        scene,
+                        60,
+                        animation,
+                        transitionDuration,
+                        () => checkClear(propertyName),
+                        false,
+                        customKeys?.get(key)
+                    );
                     if (animatable) {
                         this._animatables.set(propertyName, animatable);
                     }
