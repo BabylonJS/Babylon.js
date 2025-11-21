@@ -18,10 +18,11 @@ import type { SPLATLoadingOptions } from "./splatLoadingOptions";
 import type { GaussianSplattingMaterial } from "core/Materials/GaussianSplatting/gaussianSplattingMaterial";
 import { ParseSpz } from "./spz";
 import { Mode } from "./splatDefs";
-import type { IParsedPLY } from "./splatDefs";
+import type { IParsedSplat } from "./splatDefs";
 import { ParseSogMeta } from "./sog";
 import type { SOGRootData } from "./sog";
 import { Tools } from "core/Misc/tools";
+import type { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc, @typescript-eslint/naming-convention
@@ -134,7 +135,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return true;
     }
 
-    private static _BuildMesh(scene: Scene, parsedPLY: IParsedPLY): Mesh {
+    private static _BuildMesh(scene: Scene, parsedPLY: IParsedSplat): Mesh {
         const mesh = new Mesh("PLYMesh", scene);
 
         const uBuffer = new Uint8Array(parsedPLY.data);
@@ -201,7 +202,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     private _parseAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<Array<AbstractMesh>> {
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
-        const makeGSFromParsedSOG = (parsedSOG: IParsedPLY) => {
+        const makeGSFromParsedSOG = (parsedSOG: IParsedSplat) => {
             scene._blockEntityCollection = !!this._assetContainer;
             const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene, this._loadingOptions.keepInRam);
             gaussianSplatting._parentContainer = this._assetContainer;
@@ -278,6 +279,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         babylonMeshesArray.push(gaussianSplatting);
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
                         scene._blockEntityCollection = false;
+                        this.#applyAutoCameraLimits(parsedSPZ, scene);
                         resolve(babylonMeshesArray);
                     });
                 })
@@ -325,10 +327,33 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                 throw new Error("Unsupported Splat mode");
                         }
                         scene._blockEntityCollection = false;
+                        this.#applyAutoCameraLimits(parsedPLY, scene);
                         resolve(babylonMeshesArray);
                     });
                 });
         });
+    }
+
+    /**
+     * Applies camera limits based on parsed meta data
+     * @param meta parsed splat meta data
+     * @param scene
+     */
+    #applyAutoCameraLimits(meta: IParsedSplat, scene: Scene): void {
+        if (this._loadingOptions.disableAutoCameraLimits) {
+            return;
+        }
+        if ((meta.safeOrbitCameraRadiusMin !== undefined || meta.safeOrbitCameraElevationMinMax !== undefined) && scene.activeCamera?.getClassName() === "ArcRotateCamera") {
+            const arcCam = scene.activeCamera as ArcRotateCamera;
+            if (meta.safeOrbitCameraElevationMinMax) {
+                arcCam.lowerBetaLimit = Math.PI * 0.5 - meta.safeOrbitCameraElevationMinMax[1];
+                arcCam.upperBetaLimit = Math.PI * 0.5 - meta.safeOrbitCameraElevationMinMax[0];
+            }
+
+            if (meta.safeOrbitCameraRadiusMin) {
+                arcCam.lowerRadiusLimit = meta.safeOrbitCameraRadiusMin;
+            }
+        }
     }
 
     /**
@@ -385,7 +410,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param data the .ply data to load
      * @returns the loaded splat buffer
      */
-    private static _ConvertPLYToSplat(data: ArrayBuffer): Promise<IParsedPLY> {
+    private static _ConvertPLYToSplat(data: ArrayBuffer): Promise<IParsedSplat> {
         const ubuf = new Uint8Array(data);
         const header = new TextDecoder().decode(ubuf.slice(0, 1024 * 10));
         const headerEnd = "end_header\n";
@@ -428,16 +453,20 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             offset: number;
         };
 
-        const enum ElementMode {
-            Vertex = 0,
-            Chunk = 1,
-            SH = 2,
-        }
+        const ElementMode: Record<string, number> = {
+            Vertex: 0,
+            Chunk: 1,
+            SH: 2,
+            Float_Tuple: 3,
+            Float: 4,
+            Uchar: 5,
+        };
 
         let chunkMode = ElementMode.Chunk;
         const vertexProperties: PlyProperty[] = [];
         const chunkProperties: PlyProperty[] = [];
         const filtered = header.slice(0, headerEndIndex).split("\n");
+        const metaData: Partial<IParsedSplat> = {};
         for (const prop of filtered) {
             if (prop.startsWith("property ")) {
                 const [, type, name] = prop.split(" ");
@@ -450,7 +479,21 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     rowVertexOffset += offsets[type];
                 } else if (chunkMode == ElementMode.SH) {
                     vertexProperties.push({ name, type, offset: rowVertexOffset });
+                } else if (chunkMode == ElementMode.Float_Tuple) {
+                    const view = new DataView(data, rowChunkOffset, offsets.float * 2);
+                    metaData.safeOrbitCameraElevationMinMax = [view.getFloat32(0, true), view.getFloat32(4, true)];
+                } else if (chunkMode == ElementMode.Float) {
+                    const view = new DataView(data, rowChunkOffset, offsets.float);
+                    metaData.safeOrbitCameraRadiusMin = view.getFloat32(0, true);
+                } else if (chunkMode == ElementMode.Uchar) {
+                    const view = new DataView(data, rowChunkOffset, offsets.uchar);
+                    if (name == "up_axis") {
+                        metaData.upAxis = view.getUint8(0) == 0 ? "X" : view.getUint8(0) == 1 ? "Y" : "Z";
+                    } else if (name == "chirality") {
+                        metaData.chirality = view.getUint8(0) == 0 ? "LeftHanded" : "RightHanded";
+                    }
                 }
+
                 if (!offsets[type]) {
                     Logger.Warn(`Unsupported property type: ${type}.`);
                 }
@@ -462,6 +505,12 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                     chunkMode = ElementMode.Vertex;
                 } else if (type == "sh") {
                     chunkMode = ElementMode.SH;
+                } else if (type == "safe_orbit_camera_elevation_min_max_radians") {
+                    chunkMode = ElementMode.Float_Tuple;
+                } else if (type == "safe_orbit_camera_radius_min") {
+                    chunkMode = ElementMode.Float;
+                } else if (type == "up_axis" || type == "chirality") {
+                    chunkMode = ElementMode.Uchar;
                 }
             }
         }
@@ -516,7 +565,16 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             const currentMode = faceCount ? Mode.Mesh : hasMandatoryProperties ? Mode.Splat : Mode.PointCloud;
             // parsed ready ready to be used as a splat
             return await new Promise((resolve) => {
-                resolve({ mode: currentMode, data: splatsData.buffer, sh: splatsData.sh, faces: faces, hasVertexColors: !!propertyColorCount, compressed: false, rawSplat: false });
+                resolve({
+                    ...metaData,
+                    mode: currentMode,
+                    data: splatsData.buffer,
+                    sh: splatsData.sh,
+                    faces: faces,
+                    hasVertexColors: !!propertyColorCount,
+                    compressed: false,
+                    rawSplat: false,
+                });
             });
         });
     }
