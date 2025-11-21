@@ -31,6 +31,7 @@ import { PropertiesServiceIdentity } from "../services/panes/properties/properti
 import { SceneExplorerServiceIdentity } from "../services/panes/scene/sceneExplorerService";
 import { SelectionServiceIdentity } from "../services/selectionService";
 import { ShellServiceIdentity } from "../services/shellService";
+import { LegacyPropertiesSectionMapping } from "./propertiesSectionMapping";
 
 type PropertyChangedEvent = {
     object: any;
@@ -284,16 +285,17 @@ export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<
 export class Inspector {
     private static _CurrentInspectorToken: Nullable<IDisposable> = null;
     private static _PopupToggler: Nullable<(side: "left" | "right") => void> = null;
+    private static _SectionHighlighter: Nullable<(sectionIds: readonly string[]) => void> = null;
 
     public static readonly OnSelectionChangeObservable = new Observable<any>();
     public static readonly OnPropertyChangedObservable = new Observable<PropertyChangedEvent>();
 
     public static MarkLineContainerTitleForHighlighting(title: string) {
-        throw new Error("Not Implemented");
+        this.MarkMultipleLineContainerTitlesForHighlighting([title]);
     }
 
     public static MarkMultipleLineContainerTitlesForHighlighting(titles: string[]) {
-        throw new Error("Not Implemented");
+        this._SectionHighlighter?.(titles);
     }
 
     public static PopupEmbed() {
@@ -391,6 +393,23 @@ export class Inspector {
             },
         };
         serviceDefinitions.push(propertyChangedServiceDefinition);
+
+        const sectionHighlighterServiceDefinition: ServiceDefinition<[], [IPropertiesService]> = {
+            friendlyName: "Section Highlighter Service (Backward Compatibility)",
+            consumes: [PropertiesServiceIdentity],
+            factory: (propertiesService) => {
+                this._SectionHighlighter = (sectionIds: readonly string[]) => {
+                    propertiesService.highlightSections(sectionIds.map((id) => (LegacyPropertiesSectionMapping as Record<string, string>)[id] ?? id));
+                };
+
+                return {
+                    dispose: () => {
+                        this._SectionHighlighter = null;
+                    },
+                };
+            },
+        };
+        serviceDefinitions.push(sectionHighlighterServiceDefinition);
 
         options = {
             ...options,
