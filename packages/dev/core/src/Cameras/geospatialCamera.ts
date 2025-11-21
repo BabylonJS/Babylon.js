@@ -212,6 +212,7 @@ export class GeospatialCamera extends Camera {
         this._flyingBehavior.updateProperties(this._flyToTargets);
     }
 
+    private _customKeys = new Map();
     /**
      * Animate camera towards passed in property values. If undefined, will use current value
      * @param targetYaw
@@ -233,6 +234,7 @@ export class GeospatialCamera extends Camera {
         overshootRadiusScale?: number
     ): Promise<void> {
         this._flyToTargets.clear();
+        this._customKeys.clear();
 
         this._flyToTargets.set("yaw", targetYaw);
         this._flyToTargets.set("pitch", targetPitch);
@@ -241,23 +243,18 @@ export class GeospatialCamera extends Camera {
 
         const overshootRadius = overshootRadiusScale !== undefined ? this.radius * overshootRadiusScale : undefined;
         if (overshootRadius !== undefined && overshootRadius !== targetRadius) {
-            // Set initial radius target to overshoot
-            this._flyToTargets.set("radius", overshootRadius);
-
             // Start the animation with overshoot radius
-            const animationPromise = this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
+            const frameRate = 60;
+            const totalFrames = (flightDurationMs / 1000) * frameRate;
+            const midFrame = totalFrames / 2;
 
-            // Schedule the radius update to happen halfway through
-            setTimeout(() => {
-                this.updateFlyToDestination(undefined, undefined, targetRadius, undefined);
-            }, flightDurationMs / 2);
-
-            return await animationPromise;
-        } else {
-            // Normal animation without overshoot
-            this._flyToTargets.set("radius", targetRadius);
-            return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
+            this._customKeys.set("radius", [
+                { frame: 0, value: this.radius },
+                { frame: midFrame, value: overshootRadius },
+                { frame: totalFrames, value: targetRadius },
+            ]);
         }
+        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction, this._customKeys);
     }
 
     /**
