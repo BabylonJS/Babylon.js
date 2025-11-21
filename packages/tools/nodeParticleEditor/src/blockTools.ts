@@ -474,9 +474,6 @@ export class BlockTools {
             case NodeParticleBlockConnectionPointTypes.System:
                 color = "#f20a2e";
                 break;
-            case NodeParticleBlockConnectionPointTypes.SolidParticleSystem:
-                color = "#8b4513";
-                break;
             case NodeParticleBlockConnectionPointTypes.SolidParticle:
                 color = "#2e8b57";
                 break;
@@ -511,8 +508,6 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.Color4;
             case "Matrix":
                 return NodeParticleBlockConnectionPointTypes.Matrix;
-            case "SolidParticleSystem":
-                return NodeParticleBlockConnectionPointTypes.SolidParticleSystem;
             case "SolidParticle":
                 return NodeParticleBlockConnectionPointTypes.SolidParticle;
             case "Mesh":
@@ -542,8 +537,6 @@ export class BlockTools {
                 return "Color4";
             case NodeParticleBlockConnectionPointTypes.Matrix:
                 return "Matrix";
-            case NodeParticleBlockConnectionPointTypes.SolidParticleSystem:
-                return "SolidParticleSystem";
             case NodeParticleBlockConnectionPointTypes.SolidParticle:
                 return "SolidParticle";
             case NodeParticleBlockConnectionPointTypes.Mesh:

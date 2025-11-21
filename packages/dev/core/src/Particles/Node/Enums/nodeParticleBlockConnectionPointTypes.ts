@@ -28,10 +28,10 @@ export enum NodeParticleBlockConnectionPointTypes {
     Color4Gradient = 0x0800,
     /** System */
     System = 0x1000,
-    /** SPS - Solid Particle System */
-    SolidParticleSystem = 0x2000,
-    /** SolidParticle */
-    SolidParticle = 0x4000,
+    /** Solid Particle */
+    SolidParticle = 0x2000,
+    /** Solid Particle Config */
+    SolidParticleConfig = 0x4000,
     /** Mesh */
     Mesh = 0x8000,
     /** Material */

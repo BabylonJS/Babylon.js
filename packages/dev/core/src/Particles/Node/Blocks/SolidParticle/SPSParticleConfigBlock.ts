@@ -13,14 +13,13 @@ import type { ISpsParticleConfigData } from "./ISPSData";
 export class SPSParticleConfigBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
-
-        this.registerInput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
         this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 1);
+        this.registerInput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
         this.registerInput("material", NodeParticleBlockConnectionPointTypes.Material, true);
         this.registerInput("initBlock", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("updateBlock", NodeParticleBlockConnectionPointTypes.System, true);
 
-        this.registerOutput("particleConfig", NodeParticleBlockConnectionPointTypes.SolidParticle);
+        this.registerOutput("config", NodeParticleBlockConnectionPointTypes.SolidParticleConfig);
     }
 
     public override getClassName() {
@@ -47,7 +46,7 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
         return this._inputs[4];
     }
 
-    public get particleConfig(): NodeParticleConnectionPoint {
+    public get config(): NodeParticleConnectionPoint {
         return this._outputs[0];
     }
 
@@ -67,7 +66,7 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
             updateBlock,
         };
 
-        this.particleConfig._storedValue = particleConfig;
+        this.config._storedValue = particleConfig;
     }
 }
 

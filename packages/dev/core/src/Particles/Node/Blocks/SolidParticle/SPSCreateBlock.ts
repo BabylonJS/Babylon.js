@@ -19,8 +19,8 @@ export class SPSCreateBlock extends NodeParticleBlock {
 
     public constructor(name: string) {
         super(name);
-        this.registerInput(`particleConfig-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticle);
-        this.registerOutput("solidParticleSystem", NodeParticleBlockConnectionPointTypes.SolidParticleSystem);
+        this.registerInput(`config-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticleConfig);
+        this.registerOutput("solidParticle", NodeParticleBlockConnectionPointTypes.SolidParticle);
 
         this._manageExtendedInputs(0);
     }
@@ -33,7 +33,7 @@ export class SPSCreateBlock extends NodeParticleBlock {
 
     private _extend() {
         this._entryCount++;
-        this.registerInput(`particleConfig-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticle, true);
+        this.registerInput(`config-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticleConfig, true);
         this._manageExtendedInputs(this._entryCount - 1);
     }
 
@@ -41,7 +41,7 @@ export class SPSCreateBlock extends NodeParticleBlock {
         if (this._entryCount > 1) {
             this._unmanageExtendedInputs(this._entryCount - 1);
             this._entryCount--;
-            this.unregisterInput(`particleConfig-${this._entryCount}`);
+            this.unregisterInput(`config-${this._entryCount}`);
         }
     }
 
@@ -80,11 +80,11 @@ export class SPSCreateBlock extends NodeParticleBlock {
         }
     }
 
-    public get particleConfig(): NodeParticleConnectionPoint {
+    public get config(): NodeParticleConnectionPoint {
         return this._inputs[this._entryCount - 1];
     }
 
-    public get solidParticleSystem(): NodeParticleConnectionPoint {
+    public get solidParticle(): NodeParticleConnectionPoint {
         return this._outputs[0];
     }
 
@@ -193,7 +193,7 @@ export class SPSCreateBlock extends NodeParticleBlock {
             return particle;
         };
 
-        this.solidParticleSystem._storedValue = sps;
+        this.solidParticle._storedValue = sps;
     }
 
     public override serialize(): any {

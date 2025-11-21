@@ -20,12 +20,6 @@ export class SPSSystemBlock extends NodeParticleBlock {
     })
     public billboard = false;
 
-    @editableInPropertyPage("Lifetime (ms)", PropertyTypeForEdition.Float, "ADVANCED", {
-        embedded: true,
-        min: 0,
-    })
-    public lifetime = 0;
-
     @editableInPropertyPage("Dispose on end", PropertyTypeForEdition.Boolean, "ADVANCED", {
         embedded: true,
     })
@@ -36,16 +30,21 @@ export class SPSSystemBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
         this._isSystem = true;
-        this.registerInput("solidParticleSystem", NodeParticleBlockConnectionPointTypes.SolidParticleSystem);
-        this.registerOutput("solidParticleSystem", NodeParticleBlockConnectionPointTypes.SolidParticleSystem);
+        this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("solidParticle", NodeParticleBlockConnectionPointTypes.SolidParticle);
+        this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
     public override getClassName() {
         return "SPSSystemBlock";
     }
 
-    public get solidParticleSystem(): NodeParticleConnectionPoint {
+    public get lifeTime(): NodeParticleConnectionPoint {
         return this._inputs[0];
+    }
+
+    public get solidParticle(): NodeParticleConnectionPoint {
+        return this._inputs[1];
     }
 
     public get system(): NodeParticleConnectionPoint {
@@ -57,27 +56,28 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
         this.build(state);
 
-        const solidParticleSystem = this.solidParticleSystem.getConnectedValue(state) as SolidParticleSystem;
+        const solidParticle = this.solidParticle.getConnectedValue(state) as SolidParticleSystem;
 
-        if (!solidParticleSystem) {
+        if (!solidParticle) {
             throw new Error("No SolidParticleSystem connected to SPSSystemBlock");
         }
 
-        solidParticleSystem.billboard = this.billboard;
-        solidParticleSystem.name = this.name;
-        solidParticleSystem.lifetime = this.lifetime;
-        solidParticleSystem.disposeOnEnd = this.disposeOnEnd;
-
-        this.onDisposeObservable.addOnce(() => {
-            solidParticleSystem.dispose();
-        });
-        return solidParticleSystem;
+        solidParticle.billboard = this.billboard;
+        solidParticle.name = this.name;
+        if (this.lifeTime.isConnected) {
+            const connectedLifetime = this.lifeTime.getConnectedValue(state) as number;
+            solidParticle.lifetime = connectedLifetime ?? 0;
+        } else {
+            solidParticle.lifetime = this.lifeTime.value;
+        }
+        solidParticle.disposeOnEnd = this.disposeOnEnd;
+        return solidParticle;
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.billboard = this.billboard;
-        serializationObject.lifetime = this.lifetime;
+        serializationObject.lifeTime = this.lifeTime.value;
         serializationObject.disposeOnEnd = this.disposeOnEnd;
         return serializationObject;
     }
@@ -85,7 +85,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
         this.billboard = !!serializationObject.billboard;
-        this.lifetime = serializationObject.lifetime ?? 0;
+        this.lifeTime.value = serializationObject.lifeTime ?? 0;
         this.disposeOnEnd = !!serializationObject.disposeOnEnd;
     }
 }

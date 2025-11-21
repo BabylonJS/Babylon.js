@@ -33,6 +33,8 @@ import {
     SPSUpdateBlock,
     SpsParticlePropsSetBlock,
     SpsParticlePropsGetBlock,
+    SPSMeshFileBlock,
+    SPSNodeMaterialBlock,
 } from "./Blocks";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
@@ -366,11 +368,11 @@ export class NodeParticleSystemSet {
         spsSystem.billboard = false;
 
         const spsCreateBlock = new SPSCreateBlock("Create Particles System");
-        spsCreateBlock.solidParticleSystem.connectTo(spsSystem.solidParticleSystem);
+        spsCreateBlock.solidParticle.connectTo(spsSystem.solidParticle);
 
         const spsCreateTetra = new SPSParticleConfigBlock("Create Tetrahedron Particles");
         spsCreateTetra.count.value = 2000;
-        spsCreateTetra.particleConfig.connectTo(spsCreateBlock.particleConfig);
+        spsCreateTetra.config.connectTo(spsCreateBlock.config);
 
         const meshSourceTetra = new SPSMeshSourceBlock("Tetrahedron Mesh");
         meshSourceTetra.shapeType = SPSMeshShapeType.Box;
@@ -557,28 +559,35 @@ export class NodeParticleSystemSet {
 
         const lifetimeMs = new ParticleInputBlock("Shockwave Lifetime (ms)");
         lifetimeMs.value = 2500;
-        spsSystem.lifetime = lifetimeMs.value;
-        spsSystem.disposeOnEnd = true;
-
         const minLifetimeMs = new ParticleInputBlock("Shockwave Min Lifetime (ms)");
         minLifetimeMs.value = 1;
         const lifetimeSafe = new ParticleMathBlock("Shockwave Lifetime Safe");
         lifetimeSafe.operation = ParticleMathBlockOperations.Max;
         lifetimeMs.output.connectTo(lifetimeSafe.left);
         minLifetimeMs.output.connectTo(lifetimeSafe.right);
+        lifetimeSafe.output.connectTo(spsSystem.lifeTime);
+        spsSystem.disposeOnEnd = true;
 
         const spsCreateBlock = new SPSCreateBlock("Create Shockwave SPS");
-        spsCreateBlock.solidParticleSystem.connectTo(spsSystem.solidParticleSystem);
+        spsCreateBlock.solidParticle.connectTo(spsSystem.solidParticle);
 
         const shockwaveConfig = new SPSParticleConfigBlock("Shockwave Particle Config");
         shockwaveConfig.count.value = 7;
-        shockwaveConfig.particleConfig.connectTo(spsCreateBlock.particleConfig);
+        shockwaveConfig.config.connectTo(spsCreateBlock.config);
 
         const shockwaveMesh = new SPSMeshSourceBlock("Shockwave Mesh Source");
-        shockwaveMesh.shapeType = SPSMeshShapeType.Plane;
-        shockwaveMesh.size = 0.75;
-        shockwaveMesh.segments = 32;
+        shockwaveMesh.shapeType = SPSMeshShapeType.Custom;
+        const shockwaveMeshFile = new SPSMeshFileBlock("Shockwave Mesh File");
+        shockwaveMeshFile.meshUrl = "https://patrickryanms.github.io/BabylonJStextures/Demos/attack_fx/assets/gltf/shockwaveMesh.glb";
+        shockwaveMeshFile.meshName = "shockwaveMesh";
+        shockwaveMeshFile.mesh.connectTo(shockwaveMesh.customMesh);
         shockwaveMesh.mesh.connectTo(shockwaveConfig.mesh);
+
+        const shockwaveMaterial = new SPSNodeMaterialBlock("Shockwave Material");
+        shockwaveMaterial.shaderUrl = "https://patrickryanms.github.io/BabylonJStextures/Demos/attack_fx/assets/shaders/shockwaveParticleShader.json";
+        shockwaveMaterial.textureUrl = "https://patrickryanms.github.io/BabylonJStextures/Demos/attack_fx/assets/textures/electricityRing.png";
+        shockwaveMaterial.textureBlockName = "particleTex";
+        shockwaveMaterial.material.connectTo(shockwaveConfig.material);
 
         const shockwaveInit = new SPSInitBlock("Initialize Shockwave Particles");
         shockwaveInit.initData.connectTo(shockwaveConfig.initBlock);
