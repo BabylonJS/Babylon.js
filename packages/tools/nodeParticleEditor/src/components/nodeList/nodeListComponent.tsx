@@ -23,7 +23,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
 
     private static _Tooltips: { [key: string]: string } = {
         SystemBlock: "Generate a particle system",
-        SPSMeshSourceBlock: "Mesh source for SPS - choose shape (Box, Sphere, Cylinder, Plane) or use custom mesh",
+        SPSMeshSourceBlock: "Mesh source for SPS - choose a primitive shape or load custom geometry from the inspector",
         SPSParticleConfigBlock: "Configure SPS particle: mesh, count, material, init/update",
         SPSSystemBlock: "Configure Solid Particle System - connect SPSCreateBlock output here",
         SPSUpdateBlock: "Update SPS particles - connect SPSParticleConfigBlock output here",

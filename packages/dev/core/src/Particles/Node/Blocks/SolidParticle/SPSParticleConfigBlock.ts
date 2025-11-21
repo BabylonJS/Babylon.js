@@ -13,8 +13,8 @@ import type { ISpsParticleConfigData } from "./ISPSData";
 export class SPSParticleConfigBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
-        this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 1);
         this.registerInput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
+        this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 1);
         this.registerInput("material", NodeParticleBlockConnectionPointTypes.Material, true);
         this.registerInput("initBlock", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("updateBlock", NodeParticleBlockConnectionPointTypes.System, true);
@@ -51,7 +51,7 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
     }
 
     public override _build(state: NodeParticleBuildState) {
-        const mesh = this.mesh.getConnectedValue(state);
+        const meshData = this.mesh.getConnectedValue(state);
         const count = (this.count.getConnectedValue(state) as number) || 1;
         const material = this.material.getConnectedValue(state);
 
@@ -59,7 +59,7 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
         const updateBlock = this.updateBlock.isConnected ? this.updateBlock.getConnectedValue(state) : null;
 
         const particleConfig: ISpsParticleConfigData = {
-            mesh,
+            meshData,
             count,
             material,
             initBlock,

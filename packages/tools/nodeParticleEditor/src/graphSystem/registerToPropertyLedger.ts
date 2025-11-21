@@ -5,6 +5,8 @@ import { TextureSourcePropertyTabComponent } from "./properties/textureSourceNod
 import { DebugPropertyTabComponent } from "./properties/debugNodePropertyComponent";
 import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
 import { MeshShapePropertyTabComponent } from "./properties/meshShapeNodePropertyComponent";
+import { SPSMeshSourcePropertyTabComponent } from "./properties/spsMeshSourceNodePropertyComponent";
+import { SPSNodeMaterialPropertyTabComponent } from "./properties/spsNodeMaterialPropertyComponent";
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
@@ -14,7 +16,7 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutPropertyTabComponent;
     PropertyLedger.RegisteredControls["MeshShapeBlock"] = MeshShapePropertyTabComponent;
 
-    PropertyLedger.RegisteredControls["SPSMeshSourceBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSMeshSourceBlock"] = SPSMeshSourcePropertyTabComponent;
     PropertyLedger.RegisteredControls["SPSParticleConfigBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSCreateBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSSystemBlock"] = GenericPropertyComponent;
@@ -22,4 +24,5 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["SPSUpdateBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SpsParticlePropsSetBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SpsParticlePropsGetBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SPSNodeMaterialBlock"] = SPSNodeMaterialPropertyTabComponent;
 };

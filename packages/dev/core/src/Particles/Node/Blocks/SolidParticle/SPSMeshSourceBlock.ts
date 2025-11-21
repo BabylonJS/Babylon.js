@@ -5,50 +5,33 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { CreateSphere } from "core/Meshes/Builders/sphereBuilder";
-import { CreateCylinder } from "core/Meshes/Builders/cylinderBuilder";
-import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
-import { SPSMeshShapeType } from "./SPSMeshShapeType";
-import type { Mesh } from "core/Meshes/mesh";
+import { Mesh } from "core/Meshes/mesh";
+import { VertexData } from "core/Meshes/mesh.vertexData";
+import { Observable } from "core/Misc/observable";
+import type { Nullable } from "core/types";
+import { Tools } from "core/Misc/tools";
+import { ImportMeshAsync } from "core/Loading/sceneLoader";
+import type { ISpsMeshSourceData } from "./ISPSData";
 
 /**
  * Block used to provide mesh source for SPS
  */
 export class SPSMeshSourceBlock extends NodeParticleBlock {
-    private _mesh: Mesh | null = null;
-    private _disposeHandlerAdded = false;
+    private _customVertexData: Nullable<VertexData> = null;
+    private _customMeshName = "";
+    private _isRemoteMeshLoading = false;
 
-    @editableInPropertyPage("Shape Type", PropertyTypeForEdition.List, "ADVANCED", {
-        notifiers: { rebuild: true },
-        embedded: true,
-        options: [
-            { label: "Box", value: SPSMeshShapeType.Box },
-            { label: "Sphere", value: SPSMeshShapeType.Sphere },
-            { label: "Cylinder", value: SPSMeshShapeType.Cylinder },
-            { label: "Plane", value: SPSMeshShapeType.Plane },
-            { label: "Custom", value: SPSMeshShapeType.Custom },
-        ],
-    })
-    public shapeType = SPSMeshShapeType.Box;
+    /** Gets an observable raised when the block data changes */
+    public onValueChangedObservable = new Observable<SPSMeshSourceBlock>();
 
-    @editableInPropertyPage("Size", PropertyTypeForEdition.Float, "ADVANCED", {
-        embedded: true,
-        min: 0.01,
-    })
-    public size = 1;
-
-    @editableInPropertyPage("Segments", PropertyTypeForEdition.Int, "ADVANCED", {
-        embedded: true,
-        min: 1,
-    })
-    public segments = 16;
+    /** Optional remote mesh URL used to auto load geometry */
+    public remoteMeshUrl = "";
+    /** Optional mesh name filter when loading remote geometry */
+    public remoteMeshName = "";
 
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("customMesh", NodeParticleBlockConnectionPointTypes.Mesh, true);
         this.registerOutput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
     }
 
@@ -56,76 +39,143 @@ export class SPSMeshSourceBlock extends NodeParticleBlock {
         return "SPSMeshSourceBlock";
     }
 
-    public get customMesh(): NodeParticleConnectionPoint {
-        return this._inputs[0];
-    }
-
     public get mesh(): NodeParticleConnectionPoint {
         return this._outputs[0];
     }
 
-    public override _build(state: NodeParticleBuildState) {
-        if (this._mesh) {
-            this._mesh.dispose();
-            this._mesh = null;
-        }
-        if (this.shapeType === SPSMeshShapeType.Custom) {
-            if (this.customMesh.isConnected) {
-                const customMesh = this.customMesh.getConnectedValue(state);
-                if (customMesh) {
-                    this._mesh = customMesh;
-                } else {
-                    this._mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
-                }
-            } else {
-                this._mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
-            }
-        } else {
-            switch (this.shapeType) {
-                case SPSMeshShapeType.Box:
-                    this._mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
-                    break;
-                case SPSMeshShapeType.Sphere:
-                    this._mesh = CreateSphere("sps_mesh_source", { diameter: this.size, segments: this.segments }, state.scene);
-                    break;
-                case SPSMeshShapeType.Cylinder:
-                    this._mesh = CreateCylinder("sps_mesh_source", { height: this.size, diameter: this.size, tessellation: this.segments }, state.scene);
-                    break;
-                case SPSMeshShapeType.Plane:
-                    this._mesh = CreatePlane("sps_mesh_source", { size: this.size }, state.scene);
-                    break;
-                default:
-                    this._mesh = CreateBox("sps_mesh_source", { size: this.size }, state.scene);
-                    break;
-            }
-        }
-        if (this._mesh) {
-            this._mesh.isVisible = false;
+    /**
+     * Gets whether a custom mesh is currently assigned
+     */
+    public get hasCustomMesh(): boolean {
+        return !!this._customVertexData;
+    }
+
+    /**
+     * Gets the friendly name of the assigned custom mesh
+     */
+    public get customMeshName(): string {
+        return this._customMeshName;
+    }
+
+    /**
+     * Assigns a mesh as custom geometry source
+     * @param mesh mesh providing geometry
+     */
+    public setCustomMesh(mesh: Nullable<Mesh>) {
+        if (!mesh) {
+            this.clearCustomMesh();
+            return;
         }
 
-        if (!this._disposeHandlerAdded) {
-            this.onDisposeObservable.addOnce(() => {
-                this._mesh?.dispose();
-                this._mesh = null;
-            });
-            this._disposeHandlerAdded = true;
+        this._customVertexData = VertexData.ExtractFromMesh(mesh, true, true);
+        this._customMeshName = mesh.name || "";
+        this.remoteMeshUrl = "";
+        this.remoteMeshName = "";
+        this.onValueChangedObservable.notifyObservers(this);
+    }
+
+    /**
+     * Assigns vertex data directly
+     * @param vertexData vertex data
+     * @param name friendly name
+     */
+    public setCustomVertexData(vertexData: VertexData, name = "") {
+        this._customVertexData = vertexData;
+        this._customMeshName = name;
+        this.remoteMeshUrl = "";
+        this.remoteMeshName = "";
+        this.onValueChangedObservable.notifyObservers(this);
+    }
+
+    /**
+     * Clears any assigned custom mesh data
+     */
+    public clearCustomMesh() {
+        this._customVertexData = null;
+        this._customMeshName = "";
+        this.remoteMeshUrl = "";
+        this.remoteMeshName = "";
+        this.onValueChangedObservable.notifyObservers(this);
+    }
+
+    private _tryLoadRemoteMesh(state: NodeParticleBuildState) {
+        if (this._customVertexData || !this.remoteMeshUrl || this._isRemoteMeshLoading) {
+            return;
         }
-        this.mesh._storedValue = this._mesh;
+
+        this._isRemoteMeshLoading = true;
+        const fileName = Tools.GetFilename(this.remoteMeshUrl);
+        const rootUrl = this.remoteMeshUrl.substring(0, this.remoteMeshUrl.length - fileName.length);
+
+        ImportMeshAsync(fileName, state.scene, { meshNames: "", rootUrl })
+            .then((result) => {
+                let mesh = result.meshes.find((m) => (this.remoteMeshName ? m.name === this.remoteMeshName : !!m && m.name !== "__root__"));
+                if (!mesh && result.meshes.length) {
+                    mesh = result.meshes[0];
+                }
+
+                if (mesh) {
+                    this.setCustomMesh(mesh as Mesh);
+                    this.onValueChangedObservable.notifyObservers(this);
+                }
+
+                for (const loadedMesh of result.meshes) {
+                    loadedMesh.dispose();
+                }
+                for (const skeleton of result.skeletons) {
+                    skeleton.dispose();
+                }
+                for (const animationGroup of result.animationGroups) {
+                    animationGroup.dispose();
+                }
+                for (const particleSystem of result.particleSystems) {
+                    particleSystem.dispose();
+                }
+            })
+            .catch(() => {
+                // Ignore load errors
+            })
+            .finally(() => {
+                this._isRemoteMeshLoading = false;
+            });
+    }
+
+    public override _build(state: NodeParticleBuildState) {
+        this._tryLoadRemoteMesh(state);
+
+        if (!this._customVertexData) {
+            this.mesh._storedValue = null;
+            return;
+        }
+
+        const meshData: ISpsMeshSourceData = {
+            vertexData: this._customVertexData,
+            customMeshName: this._customMeshName,
+        };
+
+        this.mesh._storedValue = meshData;
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
-        serializationObject.shapeType = this.shapeType;
-        serializationObject.size = this.size;
-        serializationObject.segments = this.segments;
+        serializationObject.remoteMeshUrl = this.remoteMeshUrl;
+        serializationObject.remoteMeshName = this.remoteMeshName;
+        serializationObject.customMeshName = this._customMeshName;
+        if (this._customVertexData) {
+            serializationObject.customVertexData = this._customVertexData.serialize();
+        }
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
-        this.shapeType = serializationObject.shapeType || SPSMeshShapeType.Box;
-        this.size = serializationObject.size || 1;
-        this.segments = serializationObject.segments || 16;
+        this.remoteMeshUrl = serializationObject.remoteMeshUrl ?? "";
+        this.remoteMeshName = serializationObject.remoteMeshName ?? "";
+
+        if (serializationObject.customVertexData) {
+            this._customVertexData = VertexData.Parse(serializationObject.customVertexData);
+            this._customMeshName = serializationObject.customMeshName || "";
+        }
     }
 }
 

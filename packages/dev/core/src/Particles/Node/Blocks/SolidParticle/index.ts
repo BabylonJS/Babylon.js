@@ -1,7 +1,5 @@
 export * from "./ISPSData";
-export * from "./SPSMeshShapeType";
 export * from "./SPSMeshSourceBlock";
-export * from "./SPSMeshFileBlock";
 export * from "./SPSParticleConfigBlock";
 export * from "./SPSSystemBlock";
 export * from "./SPSUpdateBlock";

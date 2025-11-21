@@ -7,6 +7,7 @@ import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnect
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import type { ISpsParticleConfigData } from "./ISPSData";
+import { Mesh } from "core/Meshes/mesh";
 import type { SolidParticle } from "../../../solidParticle";
 import type { Observer } from "core/Misc/observable";
 
@@ -100,13 +101,24 @@ export class SPSCreateBlock extends NodeParticleBlock {
         const createBlocks = new Map<number, ISpsParticleConfigData>();
         for (let i = 0; i < this._inputs.length; i++) {
             const creatData = this._inputs[i].getConnectedValue(state) as ISpsParticleConfigData;
-            if (this._inputs[i].isConnected && creatData) {
-                if (creatData.mesh && creatData.count) {
-                    const shapeId = sps.addShape(creatData.mesh, creatData.count);
-                    createBlocks.set(shapeId, creatData);
-                    creatData.mesh.isVisible = false;
-                }
+            if (!this._inputs[i].isConnected || !creatData || !creatData.meshData || !creatData.count) {
+                continue;
             }
+
+            if (!creatData.meshData.vertexData) {
+                continue;
+            }
+
+            const mesh = new Mesh(`${this.name}_shape_${i}`, state.scene);
+            creatData.meshData.vertexData.applyToMesh(mesh, true);
+            mesh.isVisible = false;
+            if (creatData.material) {
+                mesh.material = creatData.material;
+            }
+
+            const shapeId = sps.addShape(mesh, creatData.count);
+            createBlocks.set(shapeId, creatData);
+            mesh.dispose();
         }
 
         sps.initParticles = () => {

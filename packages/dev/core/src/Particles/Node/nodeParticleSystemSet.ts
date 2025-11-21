@@ -23,17 +23,16 @@ import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Nullable } from "core/types";
 import { Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { VertexData } from "core/Meshes/mesh.vertexData";
 import {
     SPSParticleConfigBlock,
     SPSInitBlock,
-    SPSMeshShapeType,
     SPSMeshSourceBlock,
     SPSSystemBlock,
     SPSCreateBlock,
     SPSUpdateBlock,
     SpsParticlePropsSetBlock,
     SpsParticlePropsGetBlock,
-    SPSMeshFileBlock,
     SPSNodeMaterialBlock,
 } from "./Blocks";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -375,8 +374,8 @@ export class NodeParticleSystemSet {
         spsCreateTetra.config.connectTo(spsCreateBlock.config);
 
         const meshSourceTetra = new SPSMeshSourceBlock("Tetrahedron Mesh");
-        meshSourceTetra.shapeType = SPSMeshShapeType.Box;
-        meshSourceTetra.size = 0.1;
+        const tetraVertexData = VertexData.CreateBox({ size: 0.1 });
+        meshSourceTetra.setCustomVertexData(tetraVertexData, "Default Box");
         meshSourceTetra.mesh.connectTo(spsCreateTetra.mesh);
 
         const spsInitTetra = new SPSInitBlock("Initialize Tetrahedron Particles");
@@ -576,17 +575,16 @@ export class NodeParticleSystemSet {
         shockwaveConfig.config.connectTo(spsCreateBlock.config);
 
         const shockwaveMesh = new SPSMeshSourceBlock("Shockwave Mesh Source");
-        shockwaveMesh.shapeType = SPSMeshShapeType.Custom;
-        const shockwaveMeshFile = new SPSMeshFileBlock("Shockwave Mesh File");
-        shockwaveMeshFile.meshUrl = "https://patrickryanms.github.io/BabylonJStextures/Demos/attack_fx/assets/gltf/shockwaveMesh.glb";
-        shockwaveMeshFile.meshName = "shockwaveMesh";
-        shockwaveMeshFile.mesh.connectTo(shockwaveMesh.customMesh);
+        shockwaveMesh.remoteMeshUrl = "https://patrickryanms.github.io/BabylonJStextures/Demos/attack_fx/assets/gltf/shockwaveMesh.glb";
+        shockwaveMesh.remoteMeshName = "shockwaveMesh";
         shockwaveMesh.mesh.connectTo(shockwaveConfig.mesh);
 
         const shockwaveMaterial = new SPSNodeMaterialBlock("Shockwave Material");
         shockwaveMaterial.shaderUrl = "https://patrickryanms.github.io/BabylonJStextures/Demos/attack_fx/assets/shaders/shockwaveParticleShader.json";
-        shockwaveMaterial.textureUrl = "https://patrickryanms.github.io/BabylonJStextures/Demos/attack_fx/assets/textures/electricityRing.png";
         shockwaveMaterial.textureBlockName = "particleTex";
+        const shockwaveTexture = new ParticleTextureSourceBlock("Shockwave Texture");
+        shockwaveTexture.url = "https://patrickryanms.github.io/BabylonJStextures/Demos/attack_fx/assets/textures/electricityRing.png";
+        shockwaveTexture.texture.connectTo(shockwaveMaterial.texture);
         shockwaveMaterial.material.connectTo(shockwaveConfig.material);
 
         const shockwaveInit = new SPSInitBlock("Initialize Shockwave Particles");

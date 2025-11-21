@@ -1,7 +1,12 @@
 import type { Vector3 } from "core/Maths/math.vector";
 import type { Color4 } from "core/Maths/math.color";
-import type { Mesh } from "core/Meshes/mesh";
 import type { Material } from "core/Materials/material";
+import type { VertexData } from "core/Meshes/mesh.vertexData";
+
+export interface ISpsMeshSourceData {
+    customMeshName?: string;
+    vertexData?: VertexData;
+}
 
 /**
  * Interface for SPS update block data
@@ -18,7 +23,7 @@ export interface ISpsUpdateData {
  * Interface for SPS create block data
  */
 export interface ISpsParticleConfigData {
-    mesh: Mesh;
+    meshData: ISpsMeshSourceData | null;
     count: number;
     material?: Material;
     initBlock?: ISpsUpdateData;
