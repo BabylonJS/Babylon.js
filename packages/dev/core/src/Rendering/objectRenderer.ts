@@ -463,22 +463,6 @@ export class ObjectRenderer {
         this._sceneUBOs.push(this._scene.createSceneUniformBuffer(`Scene ubo #${index} for ${this.name}`, false));
     }
 
-    private _getSceneUBO(): UniformBuffer {
-        if (this._currentFrameId !== this._engine.frameId) {
-            this._currentSceneUBOIndex = 0;
-            this._currentFrameId = this._engine.frameId;
-        }
-
-        if (this._currentSceneUBOIndex >= this._sceneUBOs.length) {
-            this._createSceneUBO();
-        }
-
-        const ubo = this._sceneUBOs[this._currentSceneUBOIndex++];
-        ubo.unbindEffect();
-
-        return ubo;
-    }
-
     /**
      * Resets the refresh counter of the renderer and start back from scratch.
      * Could be useful to re-render if it is setup to render only once.
@@ -592,28 +576,18 @@ export class ObjectRenderer {
      * @param viewportHeight Height of the viewport to render to
      */
     public initRender(viewportWidth: number, viewportHeight: number): void {
+        const engine = this._scene.getEngine();
         const camera: Nullable<Camera> = this.activeCamera ?? this._scene.activeCamera;
+        this.onInitRenderingObservable.notifyObservers(this);
 
         this._currentSceneCamera = this._scene.activeCamera;
 
-        if (this._useUBO) {
-            this._currentSceneUBO = this._scene.getSceneUniformBuffer();
-            this._currentSceneUBO.unbindEffect();
-            this._scene.setSceneUniformBuffer(this._getSceneUBO());
-        }
-
-        this.onInitRenderingObservable.notifyObservers(this);
-
         if (camera) {
-            if (!this.dontSetTransformationMatrix) {
+            if (camera !== this._scene.activeCamera) {
                 this._scene.setTransformMatrix(camera.getViewMatrix(), camera.getProjectionMatrix(true));
+                this._scene.activeCamera = camera;
             }
-            this._scene.activeCamera = camera;
-            this._engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, viewportWidth, viewportHeight);
-        }
-
-        if (this._useUBO) {
-            this._scene.finalizeSceneUbo();
+            engine.setViewport(camera.rigParent ? camera.rigParent.viewport : camera.viewport, viewportWidth, viewportHeight);
         }
 
         this._defaultRenderListPrepared = false;
@@ -625,10 +599,6 @@ export class ObjectRenderer {
     public finishRender() {
         const scene = this._scene;
 
-        if (this._useUBO) {
-            this._scene.setSceneUniformBuffer(this._currentSceneUBO);
-        }
-
         if (this._disableImageProcessing) {
             scene.imageProcessingConfiguration._applyByPostProcess = this._currentApplyByPostProcessSetting;
         }
@@ -638,7 +608,7 @@ export class ObjectRenderer {
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(this._currentSceneCamera.getViewMatrix(), this._currentSceneCamera.getProjectionMatrix(true));
             }
-            this._engine.setViewport(this._currentSceneCamera.viewport);
+            scene.getEngine().setViewport(this._currentSceneCamera.viewport);
         }
 
         scene.resetCachedMaterial();
