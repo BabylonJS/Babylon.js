@@ -104,8 +104,8 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
         easingFn: EasingFunction = this.easingFunction
     ): Promise<void> {
         const promise = new Promise<void>((resolve) => {
-            this._promiseResolve = resolve;
             this.stopAllAnimations();
+            this._promiseResolve = resolve;
             if (!this._attachedCamera) {
                 this._promiseResolve = undefined;
                 return resolve();

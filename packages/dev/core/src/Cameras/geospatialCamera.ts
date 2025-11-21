@@ -220,6 +220,7 @@ export class GeospatialCamera extends Camera {
      * @param targetCenter
      * @param flightDurationMs
      * @param easingFunction
+     * @param overshootRadius If defined, will first fly to this radius before flying to targetRadius to create a "bounce" effect
      * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
      */
     public async flyToAsync(
@@ -228,7 +229,8 @@ export class GeospatialCamera extends Camera {
         targetRadius?: number,
         targetCenter?: Vector3,
         flightDurationMs: number = 1000,
-        easingFunction?: EasingFunction
+        easingFunction?: EasingFunction,
+        overshootRadius?: number
     ): Promise<void> {
         this._flyToTargets.clear();
 
@@ -236,8 +238,15 @@ export class GeospatialCamera extends Camera {
         this._flyToTargets.set("pitch", targetPitch);
         this._flyToTargets.set("radius", targetRadius);
         this._flyToTargets.set("center", targetCenter);
-
-        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
+        let animationDuration = flightDurationMs;
+        if (overshootRadius !== undefined && overshootRadius !== targetRadius) {
+            // If we have an overshoot radius, we will do a 2-part animation: first to overshoot radius, then to targetRadius
+            animationDuration = flightDurationMs / 2;
+            this._flyToTargets.set("radius", overshootRadius);
+            await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, animationDuration, easingFunction);
+            this._flyToTargets.set("radius", targetRadius);
+        }
+        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, animationDuration, easingFunction);
     }
 
     /**
