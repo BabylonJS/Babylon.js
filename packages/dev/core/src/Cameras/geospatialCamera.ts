@@ -417,23 +417,46 @@ export class GeospatialCamera extends Camera {
         // Let movement class handle all per-frame logic
         this.movement.computeCurrentFrameDeltas();
 
+        let recalculateCenter = false;
         if (this.movement.panDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricTranslation();
-            this._isViewMatrixDirty = true;
+            recalculateCenter = true;
         }
         if (this.movement.rotationDeltaCurrentFrame.lengthSquared() > 0) {
             this._applyGeocentricRotation();
-            this._isViewMatrixDirty = true;
         }
 
         if (Math.abs(this.movement.zoomDeltaCurrentFrame) > Epsilon) {
             this._applyZoom();
-            this._isViewMatrixDirty = true;
+            recalculateCenter = true;
         }
+
+        // After a movement impacting center or radius, recalculate the center point to ensure it's still on the surface.
+        recalculateCenter && this._recalculateCenter();
 
         super._checkInputs();
     }
 
+    private _recalculateCenter() {
+        // Wait until dragging is complete to avoid wasted raycasting
+        if (!this.movement.isDragging) {
+            const newCenter = this.movement.pickAlongVector(this._lookAtVector);
+            if (newCenter?.pickedPoint) {
+                // Direction from new center to origin
+                const centerToOrigin = TmpVectors.Vector3[4];
+                centerToOrigin.copyFrom(newCenter.pickedPoint).negateInPlace().normalize();
+
+                // Check if this direction aligns with camera's lookAt vector
+                const dotProduct = Vector3.Dot(this._lookAtVector, centerToOrigin);
+
+                // Only update if the center is looking toward the origin (dot product > 0) to avoid a center on the opposite side of globe
+                if (dotProduct > 0) {
+                    const newRadius = Vector3.Distance(this.position, newCenter.pickedPoint);
+                    this._setOrientation(this._yaw, this._pitch, newRadius, newCenter.pickedPoint);
+                }
+            }
+        }
+    }
     override attachControl(noPreventDefault?: boolean): void {
         this.inputs.attachElement(noPreventDefault);
     }

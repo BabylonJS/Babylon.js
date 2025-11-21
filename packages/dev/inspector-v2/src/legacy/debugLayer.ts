@@ -24,6 +24,7 @@ class DebugLayerEx extends DebugLayer {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     override async show(config?: IInspectorOptions): Promise<DebugLayer> {
+        // If a custom inspector URL is not provided, default to a lazy dynamic import of the inspector module.
         if (!config?.inspectorURL) {
             this.BJSINSPECTOR = await LazyInspectorModule.value;
         }

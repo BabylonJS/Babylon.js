@@ -157,8 +157,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         }
 
         // If a pan drag is occurring, stop zooming.
-        const isDragging = this._hitPointRadius !== undefined;
-        if (isDragging) {
+        if (this.isDragging) {
             this._zoomSpeedMultiplier = 0;
             this._zoomVelocity = 0;
         } else {
@@ -171,6 +170,10 @@ export class GeospatialCameraMovement extends CameraMovement {
         super.computeCurrentFrameDeltas();
 
         this._handleZoom(activeZoom);
+    }
+
+    public get isDragging() {
+        return this._hitPointRadius !== undefined;
     }
 
     private _handleZoom(activeZoom: boolean) {
