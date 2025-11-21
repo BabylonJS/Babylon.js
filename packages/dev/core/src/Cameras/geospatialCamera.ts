@@ -8,7 +8,7 @@ import type { DeepImmutable } from "../types";
 import { GeospatialLimits } from "./Limits/geospatialLimits";
 import { ClampCenterFromPolesInPlace, ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialCameraMovement";
 import type { IVector3Like } from "../Maths/math.like";
-import { Vector3CopyToRef, Vector3Dot } from "../Maths/math.vector.functions";
+import { Vector3CopyToRef } from "../Maths/math.vector.functions";
 import { Clamp } from "../Maths/math.scalar.functions";
 import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
 import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
@@ -35,7 +35,6 @@ export class GeospatialCamera extends Camera {
 
     // Temp vars
     private _tempPosition: Vector3 = new Vector3();
-    private _tempCenter = new Vector3();
 
     private _viewMatrix = new Matrix();
     private _isViewMatrixDirty: boolean;
