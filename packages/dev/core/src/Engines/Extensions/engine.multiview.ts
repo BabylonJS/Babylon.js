@@ -183,8 +183,8 @@ declare module "../../scene" {
     }
 }
 
-function CreateMultiviewUbo(engine: AbstractEngine, name?: string) {
-    const ubo = new UniformBuffer(engine, undefined, true, name);
+function CreateMultiviewUbo(engine: AbstractEngine, name?: string, trackUBOsInFrame?: boolean) {
+    const ubo = new UniformBuffer(engine, undefined, true, name, undefined, trackUBOsInFrame);
     ubo.addUniform("viewProjection", 16);
     ubo.addUniform("viewProjectionR", 16);
     ubo.addUniform("view", 16);
@@ -200,11 +200,11 @@ Scene.prototype._multiviewSceneUbo = null;
 Scene.prototype._createMultiviewUbo = function () {
     this._multiviewSceneUbo = CreateMultiviewUbo(this.getEngine(), "scene_multiview");
 };
-Scene.prototype.createSceneUniformBuffer = function (name?: string): UniformBuffer {
+Scene.prototype.createSceneUniformBuffer = function (name?: string, trackUBOsInFrame?: boolean): UniformBuffer {
     if (this._multiviewSceneUbo) {
-        return CreateMultiviewUbo(this.getEngine(), name);
+        return CreateMultiviewUbo(this.getEngine(), name, trackUBOsInFrame);
     }
-    return CurrentCreateSceneUniformBuffer.bind(this)(name);
+    return CurrentCreateSceneUniformBuffer.bind(this)(name, trackUBOsInFrame);
 };
 Scene.prototype._updateMultiviewUbo = function (viewR?: Matrix, projectionR?: Matrix) {
     if (viewR && projectionR) {

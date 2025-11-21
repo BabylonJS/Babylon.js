@@ -2,7 +2,7 @@
 import type { Nullable } from "core/types";
 import { serializeAsVector2, serializeAsTexture, serialize, expandToProperty, serializeAsColor3 } from "core/Misc/decorators";
 import { SerializationHelper } from "core/Misc/decorators.serialization";
-import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Plane } from "core/Maths/math.plane";
 import type { IAnimatable } from "core/Animations/animatable.interface";
@@ -46,6 +46,8 @@ import {
 } from "core/Materials/materialHelper.functions";
 
 import "core/Rendering/boundingBoxRenderer";
+import { OffsetClipPlaneToRef, OffsetViewToRef } from "core/Materials/floatingOriginMatrixOverrides";
+import { MultiplyMatricesToRef } from "core/Maths/ThinMaths/thinMath.matrix.functions";
 
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
@@ -236,6 +238,8 @@ export class WaterMaterial extends PushMaterial {
     private _reflectionRTT: Nullable<RenderTargetTexture>;
 
     private _reflectionTransform: Matrix = Matrix.Zero();
+    private _offsetMirror: Matrix = Matrix.Zero();
+    private _tempPlane: Plane = new Plane(0, 0, 0, 0);
     private _lastTime: number = 0;
     private _lastDeltaTime: number = 0;
 
@@ -394,7 +398,19 @@ export class WaterMaterial extends PushMaterial {
 
         PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            this.needAlphaTestingForMesh(mesh),
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._isVertexOutputInvariant
+        );
 
         if (defines._areMiscDirty) {
             defines.FRESNELSEPARATE = this._fresnelSeparate;
@@ -635,7 +651,16 @@ export class WaterMaterial extends PushMaterial {
             this._activeEffect.setTexture("reflectionSampler", this._reflectionRTT);
         }
 
-        const wrvp = this._reflectionTransform.multiply(scene.getProjectionMatrix());
+        const wrvp = TmpVectors.Matrix[3].copyFrom(this._reflectionTransform);
+
+        // Handle floating origin for reflection
+        if (scene.floatingOriginMode) {
+            // Recalculate reflection transform using offset mirror matrix
+            const offsetView = OffsetViewToRef(scene.floatingOriginOffset, scene.getViewMatrix(), TmpVectors.Matrix[1]);
+            MultiplyMatricesToRef(this._offsetMirror, offsetView, wrvp);
+        }
+
+        wrvp.multiplyToRef(scene.getProjectionMatrix(), wrvp);
 
         // Add delta time. Prevent adding delta time if it hasn't changed.
         const deltaTime = scene.getEngine().getDeltaTime();
@@ -732,14 +757,23 @@ export class WaterMaterial extends PushMaterial {
                 scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
 
                 Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
+
+                this._offsetMirror.copyFrom(mirrorMatrix);
+                if (scene.floatingOriginMode) {
+                    OffsetClipPlaneToRef(scene.floatingOriginOffset, scene.clipPlane, this._tempPlane);
+                    Matrix.ReflectionToRef(this._tempPlane, this._offsetMirror);
+                }
             }
 
             // Transform
             savedViewMatrix = scene.getViewMatrix();
 
             mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
+
             scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
-            scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
+            const cameraPos = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
+            scene._mirroredCameraPosition = cameraPos;
+            scene._forcedViewPosition = cameraPos; // More performant to set 2 properties here than to check both mirroredCameraPos and forcedViewPos within eye binding (which happens on critical rendering path)
         };
 
         this._reflectionRTT.onAfterRender = () => {
@@ -753,6 +787,7 @@ export class WaterMaterial extends PushMaterial {
             // Transform
             scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
             scene._mirroredCameraPosition = null;
+            scene._forcedViewPosition = null;
         };
     }
 

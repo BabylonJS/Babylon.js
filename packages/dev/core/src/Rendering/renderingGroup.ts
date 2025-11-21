@@ -43,6 +43,8 @@ export class RenderingGroup {
 
     public onBeforeTransparentRendering: () => void;
 
+    public disableDepthPrePass = false;
+
     /**
      * Set the opaque sort comparison function.
      * If null the sub meshes will be render in the order they were created
@@ -201,7 +203,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderOpaqueSorted(subMeshes: SmartArray<SubMesh>): void {
-        RenderingGroup._RenderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false);
+        RenderingGroup._RenderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false, this.disableDepthPrePass);
     }
 
     /**
@@ -209,7 +211,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderAlphaTestSorted(subMeshes: SmartArray<SubMesh>): void {
-        RenderingGroup._RenderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false);
+        RenderingGroup._RenderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false, this.disableDepthPrePass);
     }
 
     /**
@@ -217,7 +219,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderTransparentSorted(subMeshes: SmartArray<SubMesh>): void {
-        RenderingGroup._RenderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true);
+        RenderingGroup._RenderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true, this.disableDepthPrePass);
     }
 
     /**
@@ -226,12 +228,14 @@ export class RenderingGroup {
      * @param sortCompareFn The comparison function use to sort
      * @param camera The camera position use to preprocess the submeshes to help sorting
      * @param transparent Specifies to activate blending if true
+     * @param disableDepthPrePass Specifies to disable depth pre-pass if true (default: false)
      */
     private static _RenderSorted(
         subMeshes: SmartArray<SubMesh>,
         sortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>,
         camera: Nullable<Camera>,
-        transparent: boolean
+        transparent: boolean,
+        disableDepthPrePass?: boolean
     ): void {
         let subIndex = 0;
         let subMesh: SubMesh;
@@ -262,7 +266,7 @@ export class RenderingGroup {
             if (transparent) {
                 const material = subMesh.getMaterial();
 
-                if (material && material.needDepthPrePass) {
+                if (material && material.needDepthPrePass && !disableDepthPrePass) {
                     const engine = material.getScene().getEngine();
                     engine.setColorWrite(false);
                     engine.setAlphaMode(Constants.ALPHA_DISABLE);
@@ -413,13 +417,13 @@ export class RenderingGroup {
             this._transparentSubMeshes.push(subMesh);
         } else if (material.needAlphaTestingForMesh(mesh)) {
             // Alpha test
-            if (material.needDepthPrePass) {
+            if (material.needDepthPrePass && !this.disableDepthPrePass) {
                 this._depthOnlySubMeshes.push(subMesh);
             }
 
             this._alphaTestSubMeshes.push(subMesh);
         } else {
-            if (material.needDepthPrePass) {
+            if (material.needDepthPrePass && !this.disableDepthPrePass) {
                 this._depthOnlySubMeshes.push(subMesh);
             }
 

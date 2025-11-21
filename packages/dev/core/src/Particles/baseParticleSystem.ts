@@ -1,4 +1,3 @@
-/* eslint-disable import/no-internal-modules */
 import type { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";

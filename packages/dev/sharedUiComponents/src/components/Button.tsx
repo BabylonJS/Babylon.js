@@ -2,7 +2,8 @@ import type { PropsWithChildren } from "react";
 import * as styles from "./Button.module.scss";
 import { ClassNames } from "./classNames";
 
-export type ButtonProps = {
+// Will be deleted after fluent work complete
+export type ButtonComponentProps = {
     disabled?: boolean;
     active?: boolean;
     onClick?: () => void;
@@ -12,7 +13,7 @@ export type ButtonProps = {
     backgroundColor?: string;
 };
 
-export const Button: React.FC<PropsWithChildren<ButtonProps>> = ({ disabled, active, onClick, children, color, size, title, backgroundColor }) => {
+export const ButtonComponent: React.FC<PropsWithChildren<ButtonComponentProps>> = ({ disabled, active, onClick, children, color, size, title, backgroundColor }) => {
     return (
         <button
             className={ClassNames(

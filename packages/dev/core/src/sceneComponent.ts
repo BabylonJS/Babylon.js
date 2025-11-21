@@ -39,6 +39,7 @@ export class SceneComponentConstants {
     public static readonly NAME_AUDIO = "Audio";
     public static readonly NAME_FLUIDRENDERER = "FluidRenderer";
     public static readonly NAME_IBLCDFGENERATOR = "iblCDFGenerator";
+    public static readonly NAME_CLUSTEREDLIGHTING = "ClusteredLighting";
 
     public static readonly STEP_ISREADYFORMESH_EFFECTLAYER = 0;
 
@@ -96,6 +97,7 @@ export class SceneComponentConstants {
 
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_DEPTHRENDERER = 0;
     public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_FLUIDRENDERER = 1;
+    public static readonly STEP_GATHERACTIVECAMERARENDERTARGETS_CLUSTEREDLIGHTING = 2;
 
     public static readonly STEP_POINTERMOVE_SPRITE = 0;
     public static readonly STEP_POINTERDOWN_SPRITE = 0;

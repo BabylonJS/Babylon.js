@@ -22,15 +22,17 @@ enum StatePosition {
     DepthBias = 2,
     DepthBiasSlopeScale = 3,
     DepthStencilState = 4,
-    MRTAttachments1 = 5,
-    MRTAttachments2 = 6,
-    RasterizationState = 7,
-    ColorStates = 8,
-    ShaderStage = 9,
-    TextureStage = 10,
-    VertexState = 11, // vertex state will consume positions 11, 12, ... depending on the number of vertex inputs
+    MRTAttachments = 5,
+    RasterizationState = 6,
+    ColorStates1 = 7,
+    ColorStates2 = 8,
+    ColorStates3 = 9,
+    ColorStates4 = 10,
+    ShaderStage = 11,
+    TextureStage = 12,
+    VertexState = 13, // vertex state will consume positions 13, 14, ... depending on the number of vertex inputs
 
-    NumStates = 12,
+    NumStates = 14,
 }
 
 const alphaBlendFactorToIndex: { [name: number]: number } = {
@@ -47,8 +49,20 @@ const alphaBlendFactorToIndex: { [name: number]: number } = {
     0x0308: 11, // SrcAlphaSaturated
     0x8001: 12, // BlendColor
     0x8002: 13, // OneMinusBlendColor
-    0x8003: 12, // BlendColor (alpha)
-    0x8004: 13, // OneMinusBlendColor (alpha)
+    0x8003: 14, // BlendColor (alpha)
+    0x8004: 15, // OneMinusBlendColor (alpha)
+    0x88f9: 16, // Src1Color
+    0x88fa: 17, // OneMinusSrc1Color
+    0x8589: 18, // Src1Alpha
+    0x88fb: 19, // OneMinusSrc1Alpha
+};
+
+const alphaBlendEquationToIndex: { [name: number]: number } = {
+    0x8006: 0, // Add
+    0x8007: 1, // Min
+    0x8008: 2, // Max
+    0x800a: 3, // Subtract
+    0x800b: 4, // ReverseSubtract
 };
 
 const stencilOpToIndex: { [name: number]: number } = {
@@ -61,6 +75,8 @@ const stencilOpToIndex: { [name: number]: number } = {
     0x8507: 6, // INCR_WRAP
     0x8508: 7, // DECR_WRAP
 };
+
+const colorStates = [0, 0, 0, 0];
 
 /** @internal */
 export abstract class WebGPUCacheRenderPipeline {
@@ -98,15 +114,14 @@ export abstract class WebGPUCacheRenderPipeline {
     private _depthBiasSlopeScale: number;
     private _colorFormat: number;
     private _webgpuColorFormat: (GPUTextureFormat | null)[];
-    private _mrtAttachments1: number;
-    private _mrtAttachments2: number;
+    private _mrtAttachments: number;
     private _mrtFormats: (GPUTextureFormat | null)[];
     private _mrtEnabledMask: number;
-    private _alphaBlendEnabled: boolean;
+    private _alphaBlendEnabled: boolean[];
+    private _numAlphaBlendTargetsEnabled: number;
     private _alphaBlendFuncParams: Array<Nullable<number>>;
     private _alphaBlendEqParams: Array<Nullable<number>>;
     private _writeMask: number;
-    private _colorStates: number;
     private _depthStencilFormat: number;
     private _webgpuDepthStencilFormat: GPUTextureFormat | undefined;
     private _depthTestEnabled: boolean;
@@ -117,12 +132,15 @@ export abstract class WebGPUCacheRenderPipeline {
     private _stencilFrontDepthFailOp: number;
     private _stencilFrontPassOp: number;
     private _stencilFrontFailOp: number;
+    private _stencilBackCompare: number;
+    private _stencilBackDepthFailOp: number;
+    private _stencilBackPassOp: number;
+    private _stencilBackFailOp: number;
     private _stencilReadMask: number;
     private _stencilWriteMask: number;
     private _depthStencilState: number;
     private _vertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
     private _overrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }>;
-    private _indexBuffer: Nullable<DataBuffer>;
     private _textureState: number;
     private _useTextureStage: boolean;
 
@@ -152,7 +170,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._webgpuColorFormat = [WebGPUConstants.TextureFormat.BGRA8Unorm];
         this.setColorFormat(WebGPUConstants.TextureFormat.BGRA8Unorm);
         this.setMRT([]);
-        this.setAlphaBlendEnabled(false);
+        this.setAlphaBlendEnabled([false], 1);
         this.setAlphaBlendFactors([null, null, null, null], [null, null]);
         this.setWriteMask(0xf);
         this.setDepthStencilFormat(WebGPUConstants.TextureFormat.Depth24PlusStencil8);
@@ -166,9 +184,10 @@ export abstract class WebGPUCacheRenderPipeline {
     protected abstract _setRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void;
 
     public readonly vertexBuffers: VertexBuffer[];
+    public readonly indexBuffer: Nullable<DataBuffer>;
 
     public get colorFormats(): (GPUTextureFormat | null)[] {
-        return this._mrtAttachments1 > 0 ? this._mrtFormats : this._webgpuColorFormat;
+        return this._mrtAttachments > 0 ? this._mrtFormats : this._webgpuColorFormat;
     }
 
     public readonly mrtAttachments: number[];
@@ -308,6 +327,7 @@ export abstract class WebGPUCacheRenderPipeline {
         this._colorFormat = renderableTextureFormatToIndex[format ?? ""];
     }
 
+    // Must be called after setMRT!
     public setMRTAttachments(attachments: number[]): void {
         (this.mrtAttachments as any) = attachments;
         let mask = 0;
@@ -319,56 +339,48 @@ export abstract class WebGPUCacheRenderPipeline {
         if (this._mrtEnabledMask !== mask) {
             this._mrtEnabledMask = mask;
             this._isDirty = true;
-            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.MRTAttachments1);
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.MRTAttachments);
         }
     }
 
     public setMRT(textureArray: InternalTexture[], textureCount?: number): void {
         textureCount = textureCount ?? textureArray.length;
-        if (textureCount > 10) {
-            // If we want more than 10 attachments we need to change this method (and the StatePosition enum) but 10 seems plenty: note that WebGPU only supports 8 at the time (2021/12/13)!
-            // As we need ~39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
-            // We are using 2x32 bit values to handle 10 textures
-            // eslint-disable-next-line no-throw-literal
-            throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
+        if (textureCount > 8) {
+            // We only support 8 MRTs in WebGPU, so we throw an error if we try to set more than that.
+            throw new Error("Can't handle more than 8 attachments for a MRT in cache render pipeline!");
         }
         (this.mrtTextureArray as any) = textureArray;
         (this.mrtTextureCount as any) = textureCount;
 
+        // Since we need approximately 45 different values per texture format (see WebGPUTextureManager.renderableTextureFormatToIndex), we use 6 bits to encode a texture format,
+        // which means we can encode 8 texture formats in 48 bits (a double can represent integers exactly up until 2^53, so 48 bits is ok).
+
         this._mrtEnabledMask = 0xffff; // all textures are enabled at start (meaning we can write to them). Calls to setMRTAttachments may disable some
 
-        const bits: number[] = [0, 0];
-        let indexBits = 0,
-            mask = 0,
-            numRT = 0;
+        let mrtAttachments = 0;
+        let mask = 0;
+
         for (let i = 0; i < textureCount; ++i) {
             const texture = textureArray[i];
             const gpuWrapper = texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
 
-            this._mrtFormats[numRT] = gpuWrapper?.format ?? this._webgpuColorFormat[0];
+            this._mrtFormats[i] = gpuWrapper?.format ?? this._webgpuColorFormat[0];
 
-            bits[indexBits] += renderableTextureFormatToIndex[this._mrtFormats[numRT] ?? ""] << mask;
+            mrtAttachments += renderableTextureFormatToIndex[this._mrtFormats[i] ?? ""] * 2 ** mask;
             mask += 6;
-            numRT++;
-
-            if (mask >= 32) {
-                mask = 0;
-                indexBits++;
-            }
         }
-        this._mrtFormats.length = numRT;
-        if (this._mrtAttachments1 !== bits[0] || this._mrtAttachments2 !== bits[1]) {
-            this._mrtAttachments1 = bits[0];
-            this._mrtAttachments2 = bits[1];
-            this._states[StatePosition.MRTAttachments1] = bits[0];
-            this._states[StatePosition.MRTAttachments2] = bits[1];
+        this._mrtFormats.length = textureCount;
+        if (this._mrtAttachments !== mrtAttachments) {
+            this._mrtAttachments = mrtAttachments;
+            this._states[StatePosition.MRTAttachments] = mrtAttachments;
             this._isDirty = true;
-            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.MRTAttachments1);
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.MRTAttachments);
         }
     }
 
-    public setAlphaBlendEnabled(enabled: boolean): void {
+    public setAlphaBlendEnabled(enabled: boolean[], numAlphaBlendTargetsEnabled: number): void {
         this._alphaBlendEnabled = enabled;
+        this._numAlphaBlendTargetsEnabled = numAlphaBlendTargetsEnabled;
     }
 
     public setAlphaBlendFactors(factors: Array<Nullable<number>>, operations: Array<Nullable<number>>): void {
@@ -417,6 +429,22 @@ export abstract class WebGPUCacheRenderPipeline {
         this._stencilFrontFailOp = op === null ? 1 /* KEEP */ : stencilOpToIndex[op];
     }
 
+    public setStencilBackCompare(func: Nullable<number>): void {
+        this._stencilBackCompare = (func ?? Constants.ALWAYS) - 0x0200;
+    }
+
+    public setStencilBackDepthFailOp(op: Nullable<number>): void {
+        this._stencilBackDepthFailOp = op === null ? 1 /* KEEP */ : stencilOpToIndex[op];
+    }
+
+    public setStencilBackPassOp(op: Nullable<number>): void {
+        this._stencilBackPassOp = op === null ? 2 /* REPLACE */ : stencilOpToIndex[op];
+    }
+
+    public setStencilBackFailOp(op: Nullable<number>): void {
+        this._stencilBackFailOp = op === null ? 1 /* KEEP */ : stencilOpToIndex[op];
+    }
+
     public setStencilReadMask(mask: number): void {
         if (this._stencilReadMask !== mask) {
             this._stencilReadMask = mask;
@@ -446,13 +474,21 @@ export abstract class WebGPUCacheRenderPipeline {
         passOp: Nullable<number>,
         failOp: Nullable<number>,
         readMask: number,
-        writeMask: number
+        writeMask: number,
+        backCompare: Nullable<number> = null,
+        backDepthFailOp: Nullable<number> = null,
+        backPassOp: Nullable<number> = null,
+        backFailOp: Nullable<number> = null
     ): void {
         this._stencilEnabled = stencilEnabled;
         this._stencilFrontCompare = (compare ?? Constants.ALWAYS) - 0x0200;
         this._stencilFrontDepthFailOp = depthFailOp === null ? 1 /* KEEP */ : stencilOpToIndex[depthFailOp];
         this._stencilFrontPassOp = passOp === null ? 2 /* REPLACE */ : stencilOpToIndex[passOp];
         this._stencilFrontFailOp = failOp === null ? 1 /* KEEP */ : stencilOpToIndex[failOp];
+        this._stencilBackCompare = (backCompare ?? Constants.ALWAYS) - 0x0200;
+        this._stencilBackDepthFailOp = backDepthFailOp === null ? 1 /* KEEP */ : stencilOpToIndex[backDepthFailOp];
+        this._stencilBackPassOp = backPassOp === null ? 2 /* REPLACE */ : stencilOpToIndex[backPassOp];
+        this._stencilBackFailOp = backFailOp === null ? 1 /* KEEP */ : stencilOpToIndex[backFailOp];
         this.setStencilReadMask(readMask);
         this.setStencilWriteMask(writeMask);
     }
@@ -464,7 +500,7 @@ export abstract class WebGPUCacheRenderPipeline {
     ): void {
         this._vertexBuffers = vertexBuffers;
         this._overrideVertexBuffers = overrideVertexBuffers;
-        this._indexBuffer = indexBuffer;
+        (this.indexBuffer as Nullable<DataBuffer>) = indexBuffer;
     }
 
     private static _GetTopology(fillMode: number): GPUPrimitiveTopology {
@@ -542,11 +578,9 @@ export abstract class WebGPUCacheRenderPipeline {
             case Constants.GL_ALPHA_FUNCTION_SRC_ALPHA_SATURATED:
                 return WebGPUConstants.BlendFactor.SrcAlphaSaturated;
             case Constants.GL_ALPHA_FUNCTION_CONSTANT_COLOR:
-                return WebGPUConstants.BlendFactor.Constant;
-            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_COLOR:
-                return WebGPUConstants.BlendFactor.OneMinusConstant;
             case Constants.GL_ALPHA_FUNCTION_CONSTANT_ALPHA:
                 return WebGPUConstants.BlendFactor.Constant;
+            case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_COLOR:
             case Constants.GL_ALPHA_FUNCTION_ONE_MINUS_CONSTANT_ALPHA:
                 return WebGPUConstants.BlendFactor.OneMinusConstant;
             case Constants.GL_ALPHA_FUNCTION_SRC1_COLOR:
@@ -693,27 +727,27 @@ export abstract class WebGPUCacheRenderPipeline {
         throw new Error(`Invalid Format '${vertexBuffer.getKind()}' - type=${type}, normalized=${normalized}, size=${size}`);
     }
 
-    private _getAphaBlendState(): Nullable<GPUBlendComponent> {
-        if (!this._alphaBlendEnabled) {
+    private _getAphaBlendState(targetIndex: number): Nullable<GPUBlendComponent> {
+        if (!this._alphaBlendEnabled[targetIndex]) {
             return null;
         }
 
         return {
-            srcFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[2]),
-            dstFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[3]),
-            operation: WebGPUCacheRenderPipeline._GetAphaBlendOperation(this._alphaBlendEqParams[1]),
+            srcFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[targetIndex * 4 + 2]),
+            dstFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[targetIndex * 4 + 3]),
+            operation: WebGPUCacheRenderPipeline._GetAphaBlendOperation(this._alphaBlendEqParams[targetIndex * 2 + 1]),
         };
     }
 
-    private _getColorBlendState(): Nullable<GPUBlendComponent> {
+    private _getColorBlendState(targetIndex: number): Nullable<GPUBlendComponent> {
         if (!this._alphaBlendEnabled) {
             return null;
         }
 
         return {
-            srcFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[0]),
-            dstFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[1]),
-            operation: WebGPUCacheRenderPipeline._GetAphaBlendOperation(this._alphaBlendEqParams[0]),
+            srcFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[targetIndex * 4 + 0]),
+            dstFactor: WebGPUCacheRenderPipeline._GetAphaBlendFactor(this._alphaBlendFuncParams[targetIndex * 4 + 1]),
+            operation: WebGPUCacheRenderPipeline._GetAphaBlendOperation(this._alphaBlendEqParams[targetIndex * 2 + 0]),
         };
     }
 
@@ -742,32 +776,74 @@ export abstract class WebGPUCacheRenderPipeline {
     }
 
     private _setColorStates(): void {
-        let colorStates = ((this._writeMask ? 1 : 0) << 22) + (this._colorFormat << 23) + ((this._depthWriteEnabled ? 1 : 0) << 29); // this state has been moved from depthStencilState here because alpha and depth are related (generally when alpha is on, depth write is off and the other way around)
+        // Note that _depthWriteEnabled state has been moved from depthStencilState here because alpha and depth are related (generally when alpha is on, depth write is off and the other way around)
 
-        if (this._alphaBlendEnabled) {
-            colorStates +=
-                ((this._alphaBlendFuncParams[0] === null ? 2 : alphaBlendFactorToIndex[this._alphaBlendFuncParams[0]]) << 0) +
-                ((this._alphaBlendFuncParams[1] === null ? 2 : alphaBlendFactorToIndex[this._alphaBlendFuncParams[1]]) << 4) +
-                ((this._alphaBlendFuncParams[2] === null ? 2 : alphaBlendFactorToIndex[this._alphaBlendFuncParams[2]]) << 8) +
-                ((this._alphaBlendFuncParams[3] === null ? 2 : alphaBlendFactorToIndex[this._alphaBlendFuncParams[3]]) << 12) +
-                ((this._alphaBlendEqParams[0] === null ? 1 : this._alphaBlendEqParams[0] - 0x8005) << 16) +
-                ((this._alphaBlendEqParams[1] === null ? 1 : this._alphaBlendEqParams[1] - 0x8005) << 19);
+        // We need 4 color states because we will be grouping 2 blend targets in each state (and WebGPU supports up to 8 targets).
+        // Integers can only be represented exactly in 53 bits with a double, so we can only use 53 bits for each state.
+        // We use 25 bits for each blend target (5 bits for the 2 (color/alpha) equations and 4*5 bits for the 4 factors (src/dst color and src/dst alpha)).
+        // This means that we need 25*2=50 bits to pack 2 blend targets, and we can use the remaining 3 bits for other states (write mask, depth write, color format).
+        // The color format is encoded on 6 bits, so we dispatch it over 3 bits to the last two color states.
+
+        colorStates[0] = (this._writeMask ? 1 : 0) * 2 ** 53;
+        colorStates[1] = (this._depthWriteEnabled ? 1 : 0) * 2 ** 53;
+        colorStates[2] = (this._colorFormat & 0x07) * 2 ** 50;
+        colorStates[3] = (this._colorFormat & 0x38) * 2 ** 47;
+
+        let colorStateIndex = 0;
+        let isDirty = false;
+
+        for (let i = 0; i < 8; i++) {
+            if (this._alphaBlendEnabled[i]) {
+                const index0 = i * 4 + 0;
+                const index1 = i * 4 + 1;
+                const index2 = i * 4 + 2;
+                const index3 = i * 4 + 3;
+                const indexEq0 = i * 2 + 0;
+                const indexEq1 = i * 2 + 1;
+                const eq0 = this._alphaBlendEqParams[indexEq0] === null ? 0 : alphaBlendEquationToIndex[this._alphaBlendEqParams[indexEq0]];
+                const eq1 = this._alphaBlendEqParams[indexEq1] === null ? 0 : alphaBlendEquationToIndex[this._alphaBlendEqParams[indexEq1]];
+
+                colorStates[colorStateIndex] +=
+                    ((this._alphaBlendFuncParams[index0] === null ? 1 : alphaBlendFactorToIndex[this._alphaBlendFuncParams[index0]]) << 0) +
+                    ((this._alphaBlendFuncParams[index1] === null ? 1 : alphaBlendFactorToIndex[this._alphaBlendFuncParams[index1]]) << 5) +
+                    ((this._alphaBlendFuncParams[index2] === null ? 1 : alphaBlendFactorToIndex[this._alphaBlendFuncParams[index2]]) << 10) +
+                    ((this._alphaBlendFuncParams[index3] === null ? 1 : alphaBlendFactorToIndex[this._alphaBlendFuncParams[index3]]) << 15) +
+                    (eq0 + eq1 * 5) * (1 << 20);
+            }
+
+            if (i & 1) {
+                isDirty = isDirty || this._states[StatePosition.ColorStates1 + colorStateIndex] !== colorStates[colorStateIndex];
+                this._states[StatePosition.ColorStates1 + colorStateIndex] = colorStates[colorStateIndex];
+                colorStateIndex++;
+            }
         }
 
-        if (colorStates !== this._colorStates) {
-            this._colorStates = colorStates;
-            this._states[StatePosition.ColorStates] = this._colorStates;
+        if (isDirty) {
             this._isDirty = true;
-            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.ColorStates);
+            this._stateDirtyLowestIndex = Math.min(this._stateDirtyLowestIndex, StatePosition.ColorStates1);
         }
     }
 
     private _setDepthStencilState(): void {
         const stencilState = !this._stencilEnabled
-            ? 7 /* ALWAYS */ + (1 /* KEEP */ << 3) + (1 /* KEEP */ << 6) + (1 /* KEEP */ << 9)
-            : this._stencilFrontCompare + (this._stencilFrontDepthFailOp << 3) + (this._stencilFrontPassOp << 6) + (this._stencilFrontFailOp << 9);
+            ? 7 /* ALWAYS */ +
+              (1 /* KEEP */ << 3) +
+              (1 /* KEEP */ << 6) +
+              (1 /* KEEP */ << 9) + // front
+              (7 /* ALWAYS */ << 12) +
+              (1 /* KEEP */ << 15) +
+              (1 /* KEEP */ << 18) +
+              (1 /* KEEP */ << 21) // back
+            : this._stencilFrontCompare +
+              (this._stencilFrontDepthFailOp << 3) +
+              (this._stencilFrontPassOp << 6) +
+              (this._stencilFrontFailOp << 9) + // front
+              (this._stencilBackCompare << 12) +
+              (this._stencilBackDepthFailOp << 15) +
+              (this._stencilBackPassOp << 18) +
+              (this._stencilBackFailOp << 21); // back
 
-        const depthStencilState = this._depthStencilFormat + ((this._depthTestEnabled ? this._depthCompare : 7) /* ALWAYS */ << 6) + (stencilState << 10); // stencil front - stencil back is the same
+        const depthStencilState = this._depthStencilFormat + ((this._depthTestEnabled ? this._depthCompare : 7) /* ALWAYS */ << 6) + stencilState * (1 << 10); // stencil front + back
 
         if (this._depthStencilState !== depthStencilState) {
             this._depthStencilState = depthStencilState;
@@ -974,14 +1050,12 @@ export abstract class WebGPUCacheRenderPipeline {
         const pipelineLayout = this._createPipelineLayout(webgpuPipelineContext);
 
         const colorStates: Array<GPUColorTargetState | null> = [];
-        const alphaBlend = this._getAphaBlendState();
-        const colorBlend = this._getColorBlendState();
 
         if (this._vertexBuffers) {
             checkNonFloatVertexBuffers(this._vertexBuffers, effect);
         }
 
-        if (this._mrtAttachments1 > 0) {
+        if (this._mrtAttachments > 0) {
             for (let i = 0; i < this._mrtFormats.length; ++i) {
                 const format = this._mrtFormats[i];
                 if (format) {
@@ -989,6 +1063,9 @@ export abstract class WebGPUCacheRenderPipeline {
                         format,
                         writeMask: (this._mrtEnabledMask & (1 << i)) !== 0 ? this._writeMask : 0,
                     };
+                    const alphaBlend = this._getAphaBlendState(i < this._numAlphaBlendTargetsEnabled ? i : 0);
+                    const colorBlend = this._getColorBlendState(i < this._numAlphaBlendTargetsEnabled ? i : 0);
+
                     if (alphaBlend && colorBlend) {
                         descr.blend = {
                             alpha: alphaBlend,
@@ -1006,6 +1083,9 @@ export abstract class WebGPUCacheRenderPipeline {
                     format: this._webgpuColorFormat[0],
                     writeMask: this._writeMask,
                 };
+                const alphaBlend = this._getAphaBlendState(0);
+                const colorBlend = this._getColorBlendState(0);
+
                 if (alphaBlend && colorBlend) {
                     descr.blend = {
                         alpha: alphaBlend,
@@ -1018,18 +1098,25 @@ export abstract class WebGPUCacheRenderPipeline {
             }
         }
 
-        const stencilFrontBack: GPUStencilFaceState = {
+        const stencilFront: GPUStencilFaceState = {
             compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilEnabled ? this._stencilFrontCompare : 7 /* ALWAYS */),
             depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontDepthFailOp : 1 /* KEEP */),
             failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontFailOp : 1 /* KEEP */),
             passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontPassOp : 1 /* KEEP */),
         };
 
+        const stencilBack: GPUStencilFaceState = {
+            compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilEnabled ? this._stencilBackCompare : 7 /* ALWAYS */),
+            depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilBackDepthFailOp : 1 /* KEEP */),
+            failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilBackFailOp : 1 /* KEEP */),
+            passOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilBackPassOp : 1 /* KEEP */),
+        };
+
         const topologyIsTriangle = topology === WebGPUConstants.PrimitiveTopology.TriangleList || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip;
 
         let stripIndexFormat: GPUIndexFormat | undefined = undefined;
         if (topology === WebGPUConstants.PrimitiveTopology.LineStrip || topology === WebGPUConstants.PrimitiveTopology.TriangleStrip) {
-            stripIndexFormat = !this._indexBuffer || this._indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
+            stripIndexFormat = !this.indexBuffer || this.indexBuffer.is32Bits ? WebGPUConstants.IndexFormat.Uint32 : WebGPUConstants.IndexFormat.Uint16;
         }
 
         const depthStencilFormatHasStencil = this._webgpuDepthStencilFormat ? WebGPUTextureHelper.HasStencilAspect(this._webgpuDepthStencilFormat) : false;
@@ -1068,8 +1155,8 @@ export abstract class WebGPUCacheRenderPipeline {
                           depthWriteEnabled: this._depthWriteEnabled,
                           depthCompare: this._depthTestEnabled ? WebGPUCacheRenderPipeline._GetCompareFunction(this._depthCompare) : WebGPUConstants.CompareFunction.Always,
                           format: this._webgpuDepthStencilFormat,
-                          stencilFront: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
-                          stencilBack: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFrontBack : undefined,
+                          stencilFront: this._stencilEnabled && depthStencilFormatHasStencil ? stencilFront : undefined,
+                          stencilBack: this._stencilEnabled && depthStencilFormatHasStencil ? stencilBack : undefined,
                           stencilReadMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilReadMask : undefined,
                           stencilWriteMask: this._stencilEnabled && depthStencilFormatHasStencil ? this._stencilWriteMask : undefined,
                           depthBias: this._depthBias,

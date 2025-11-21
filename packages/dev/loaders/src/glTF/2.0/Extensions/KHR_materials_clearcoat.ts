@@ -1,7 +1,5 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
-
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
@@ -72,35 +70,22 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
 
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
     private _loadClearCoatPropertiesAsync(context: string, properties: IKHRMaterialsClearcoat, babylonMaterial: Material): Promise<void> {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
+        const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
         const promises = new Array<Promise<any>>();
 
-        babylonMaterial.clearCoat.isEnabled = true;
-        babylonMaterial.clearCoat.useRoughnessFromMainTexture = false;
-        babylonMaterial.clearCoat.remapF0OnInterfaceChange = false;
+        // Set non-texture properties immediately
+        adapter.configureCoat();
+        adapter.coatWeight = properties.clearcoatFactor !== undefined ? properties.clearcoatFactor : 0;
+        adapter.coatRoughness = properties.clearcoatRoughnessFactor !== undefined ? properties.clearcoatRoughnessFactor : 0;
 
-        if (properties.clearcoatFactor != undefined) {
-            babylonMaterial.clearCoat.intensity = properties.clearcoatFactor;
-        } else {
-            babylonMaterial.clearCoat.intensity = 0;
-        }
-
+        // Load textures
         if (properties.clearcoatTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/clearcoatTexture`, properties.clearcoatTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (ClearCoat)`;
-                    babylonMaterial.clearCoat.texture = texture;
+                    adapter.coatWeightTexture = texture;
                 })
             );
-        }
-
-        if (properties.clearcoatRoughnessFactor != undefined) {
-            babylonMaterial.clearCoat.roughness = properties.clearcoatRoughnessFactor;
-        } else {
-            babylonMaterial.clearCoat.roughness = 0;
         }
 
         if (properties.clearcoatRoughnessTexture) {
@@ -108,7 +93,7 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/clearcoatRoughnessTexture`, properties.clearcoatRoughnessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (ClearCoat Roughness)`;
-                    babylonMaterial.clearCoat.textureRoughness = texture;
+                    adapter.coatRoughnessTexture = texture;
                 })
             );
         }
@@ -118,21 +103,18 @@ export class KHR_materials_clearcoat implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/clearcoatNormalTexture`, properties.clearcoatNormalTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (ClearCoat Normal)`;
-                    babylonMaterial.clearCoat.bumpTexture = texture;
+                    adapter.geometryCoatNormalTexture = texture;
+                    if (properties.clearcoatNormalTexture?.scale != undefined) {
+                        adapter.geometryCoatNormalTextureScale = properties.clearcoatNormalTexture.scale;
+                    }
                 })
             );
-
-            babylonMaterial.invertNormalMapX = !babylonMaterial.getScene().useRightHandedSystem;
-            babylonMaterial.invertNormalMapY = babylonMaterial.getScene().useRightHandedSystem;
-            if (properties.clearcoatNormalTexture.scale != undefined) {
-                babylonMaterial.clearCoat.bumpTexture!.level = properties.clearcoatNormalTexture.scale;
-            }
+            adapter.setNormalMapInversions(!babylonMaterial.getScene().useRightHandedSystem, babylonMaterial.getScene().useRightHandedSystem);
         }
 
         // eslint-disable-next-line github/no-then
         return Promise.all(promises).then(() => {});
     }
 }
-
 unregisterGLTFExtension(NAME);
 registerGLTFExtension(NAME, true, (loader) => new KHR_materials_clearcoat(loader));

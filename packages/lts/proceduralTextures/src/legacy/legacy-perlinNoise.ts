@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as proceduralTexture from "procedural-textures/perlinNoise/index";
 
 /**

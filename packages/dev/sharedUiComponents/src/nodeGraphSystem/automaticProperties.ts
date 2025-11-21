@@ -13,6 +13,14 @@ export function ForceRebuild(source: any, stateManager: StateManager, propertyNa
         return;
     }
 
+    if (stateManager.getScene) {
+        const rebuild = notifiers?.callback?.(stateManager.getScene(), source) ?? false;
+
+        if (rebuild) {
+            stateManager.onRebuildRequiredObservable.notifyObservers();
+        }
+    }
+
     if (!notifiers || notifiers.update) {
         stateManager.onUpdateRequiredObservable.notifyObservers(source);
     }
@@ -23,13 +31,5 @@ export function ForceRebuild(source: any, stateManager: StateManager, propertyNa
 
     if (notifiers?.activatePreviewCommand) {
         stateManager.onPreviewCommandActivated.notifyObservers(true);
-    }
-
-    if (stateManager.getScene) {
-        const rebuild = notifiers?.callback?.(stateManager.getScene(), source) ?? false;
-
-        if (rebuild) {
-            stateManager.onRebuildRequiredObservable.notifyObservers();
-        }
     }
 }

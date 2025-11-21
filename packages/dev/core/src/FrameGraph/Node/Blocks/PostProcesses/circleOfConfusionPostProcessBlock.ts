@@ -1,16 +1,15 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, NodeRenderGraphBuildState, FrameGraphTextureHandle, FrameGraph, Camera } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphCircleOfConfusionTask } from "core/FrameGraph/Tasks/PostProcesses/circleOfConfusionTask";
 import { ThinCircleOfConfusionPostProcess } from "core/PostProcesses/thinCircleOfConfusionPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the circle of confusion post process
  */
-export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphCircleOfConfusionPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphCircleOfConfusionTask;
 
     /**

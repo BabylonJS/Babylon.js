@@ -16,7 +16,9 @@ export class ButtonLineComponent extends React.Component<IButtonLineComponentPro
     }
 
     renderFluent() {
-        return <ButtonLine label={this.props.label} icon={this.props.icon} title={this.props.label} onClick={this.props.onClick} disabled={this.props.isDisabled} />;
+        // NOTE when callsit replaces usage of this with the ButtonLine, can pass in a true fluent icon
+        const fluentIcon = this.props.icon ? () => <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" /> : undefined;
+        return <ButtonLine label={this.props.label} icon={fluentIcon} onClick={this.props.onClick} disabled={this.props.isDisabled} />;
     }
     renderOriginal() {
         return (

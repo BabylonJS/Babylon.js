@@ -1,16 +1,15 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphBlurTask } from "core/FrameGraph/Tasks/PostProcesses/blurTask";
 import { ThinBlurPostProcess } from "core/PostProcesses/thinBlurPostProcess";
 import { Vector2 } from "core/Maths/math.vector";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the blur post process
  */
-export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphBlurPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphBlurTask;
 
     /**

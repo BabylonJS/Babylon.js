@@ -4,8 +4,9 @@ import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 import copyIcon from "../imgs/copy.svg";
-import { PropertyLine } from "../fluent/hoc/propertyLine";
+import { PropertyLine } from "../fluent/hoc/propertyLines/propertyLine";
 import { Dropdown } from "../fluent/primitives/dropdown";
+import type { AcceptedDropdownValue } from "../fluent/primitives/dropdown";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -15,7 +16,7 @@ export interface IOptionsLineProps {
     label: string;
     target: any;
     propertyName: string;
-    options: IInspectableOptions[];
+    options: readonly IInspectableOptions[];
     noDirectUpdate?: boolean;
     onSelect?: (value: number | string) => void;
     extractValue?: (target: any) => number | string;
@@ -124,10 +125,11 @@ export class OptionsLine extends React.Component<IOptionsLineProps, { value: num
             <PropertyLine label={this.props.label} onCopy={() => this.onCopyClickStr()}>
                 <Dropdown
                     options={this.props.options}
-                    onSelect={(val: string) => {
-                        val !== undefined && this.updateValue(val);
+                    onChange={(val: AcceptedDropdownValue) => {
+                        // val != null captures both null and undefined cases
+                        val != null && this.updateValue(val.toString());
                     }}
-                    defaultValue={this.props.options.find((o) => o.value === this.state.value || o.selected)}
+                    value={this.state.value}
                 />
             </PropertyLine>
         );

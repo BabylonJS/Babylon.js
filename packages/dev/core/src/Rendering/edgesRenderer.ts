@@ -950,6 +950,7 @@ export class EdgesRenderer implements IEdgesRenderer {
      */
     public render(): void {
         const scene = this._source.getScene();
+        const floatingOriginOffset = scene.floatingOriginOffset;
 
         const currentDrawWrapper = this._lineShader._getDrawWrapper();
         if (this._drawWrapper) {
@@ -973,7 +974,8 @@ export class EdgesRenderer implements IEdgesRenderer {
             this._buffersForInstances["world3"] = (this._source as Mesh).getVertexBuffer("world3");
 
             if (hasInstances) {
-                const instanceStorage = (this._source as Mesh)._instanceDataStorage;
+                const instanceStorage = (this._source as Mesh)._getInstanceDataStorage();
+                const isFrozen = (this._source as Mesh)._instanceDataStorage.isFrozen;
 
                 instanceCount = this.customInstances.length;
 
@@ -984,11 +986,14 @@ export class EdgesRenderer implements IEdgesRenderer {
                     return;
                 }
 
-                if (!instanceStorage.isFrozen) {
+                if (!isFrozen) {
                     let offset = 0;
 
                     for (let i = 0; i < instanceCount; ++i) {
                         this.customInstances.data[i].copyToArray(instanceStorage.instancesData, offset);
+                        instanceStorage.instancesData[offset + 12] -= floatingOriginOffset.x;
+                        instanceStorage.instancesData[offset + 13] -= floatingOriginOffset.y;
+                        instanceStorage.instancesData[offset + 14] -= floatingOriginOffset.z;
                         offset += 16;
                     }
 

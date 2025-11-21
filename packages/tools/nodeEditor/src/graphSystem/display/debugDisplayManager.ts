@@ -34,6 +34,11 @@ export class DebugDisplayManager implements IDisplayManager {
         const block = data.data as NodeMaterialDebugBlock;
 
         const globalState = manager.data as GlobalState;
+
+        if (globalState.forcedDebugBlock !== null) {
+            return;
+        }
+
         if (selectedData === data && !this._onPreviewSceneAfterRenderObserver) {
             globalState.onPreviewUpdatedObservable.addOnce(() => {
                 this._onPreviewSceneAfterRenderObserver = globalState.onPreviewSceneAfterRenderObservable.add(async () => {

@@ -1,104 +1,106 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { useState, useEffect, useCallback } from "react";
-import type { FunctionComponent, ChangeEvent } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
+import type { FunctionComponent } from "react";
 import {
-    Input,
-    Label,
-    SpinButton,
-    useId,
-    ColorPicker,
+    ColorPicker as FluentColorPicker,
     ColorSlider,
     ColorArea,
     AlphaSlider,
-    InfoLabel,
-    Link,
     makeStyles,
     Popover,
     PopoverSurface,
     PopoverTrigger,
     tokens,
     Body1Strong,
+    ColorSwatch,
+    Body1,
 } from "@fluentui/react-components";
-import type { SpinButtonChangeEvent, SpinButtonOnChangeData, ColorPickerProps as FluentColorPickerProps, InputOnChangeData } from "@fluentui/react-components";
+import type { ColorPickerProps as FluentColorPickerProps } from "@fluentui/react-components";
 import { Color3, Color4 } from "core/Maths/math.color";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { PrimitiveProps } from "./primitive";
+import { SpinButton } from "./spinButton";
+import { TextInput } from "./textInput";
+import { NumberDropdown } from "./dropdown";
+import { ValidateColorHex } from "./utils";
+import { Link } from "./link";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 const useColorPickerStyles = makeStyles({
-    colorPickerContainer: {
-        width: "300px",
-        display: "flex",
-        flexDirection: "column",
-        gap: tokens.spacingVerticalMNudge, // 10px
+    container: {
+        width: "350px",
+        display: "flex", // becomes a flexbox
+        flexDirection: "column", // with children in a column
+        alignItems: "center", // centers children horizontally
+        justifyContent: "center", // centers children vertically (if height is set)
+        gap: tokens.spacingVerticalM,
         overflow: "visible",
     },
-    triggerColor: {
-        width: "50px",
-        height: tokens.lineHeightBase100,
-        borderRadius: tokens.borderRadiusMedium,
-        cursor: "pointer", // Show pointer on hover
-        border: `${tokens.spacingVerticalXXS} solid ${tokens.colorNeutralShadowKeyLighter}`,
-        "@media (forced-colors: active)": {
-            forcedColorAdjust: "none", // ensures element maintains color in high contrast mode
-        },
+    row: {
+        flex: 1, // is a row in the container's flex column
+        display: "flex", // becomes its own flexbox
+        flexDirection: "row", // with children in a row
+        gap: tokens.spacingHorizontalXL,
+        alignItems: "center", // align items vertically
+        width: "100%",
+    },
+    colorPicker: {
+        flex: 1,
+        width: "350px",
+        height: "350px",
     },
     previewColor: {
-        width: "50px",
-        height: "50px",
-        borderRadius: tokens.borderRadiusMedium,
+        width: "60px",
+        height: "60px",
+        borderRadius: tokens.borderRadiusMedium, // 4px?
         border: `${tokens.spacingVerticalXXS} solid ${tokens.colorNeutralShadowKeyLighter}`,
         "@media (forced-colors: active)": {
             forcedColorAdjust: "none", // ensures elmement maintains color in high constrast mode
         },
     },
-    row: {
+    inputRow: {
         display: "flex",
         flexDirection: "row",
-        gap: tokens.spacingVerticalM, // 12px
-        alignItems: "center",
+        flex: 1, // grow and fill available space
+        justifyContent: "center",
+        gap: "10px",
+        width: "100%",
     },
-    colorFieldWrapper: {
-        display: "flex",
-        flexDirection: "column",
+    inputField: {
+        flex: 1, // grow and fill available space
+        width: "auto",
+        minWidth: 0,
         gap: tokens.spacingVerticalSNudge, // 6px
-    },
-    input: {
-        width: "80px",
-    },
-    spinButton: {
-        minWidth: "60px",
-    },
-    container: {
-        display: "flex",
-        flexDirection: "column",
-        gap: tokens.spacingVerticalL, // 16px
     },
 });
 
 export type ColorPickerProps<C extends Color3 | Color4> = {
     isLinearMode?: boolean;
-} & BaseComponentProps<C>;
+} & PrimitiveProps<C>;
 
 export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color4>> = (props) => {
+    ColorPickerPopup.displayName = "ColorPickerPopup";
     const classes = useColorPickerStyles();
     const [color, setColor] = useState(props.value);
-
     const [popoverOpen, setPopoverOpen] = useState(false);
-
-    useEffect(() => {
-        props.onChange(color); // Ensures the parent is notified when color changes from within colorPicker
-    }, [color]);
-
+    const [isLinear, setIsLinear] = useState(props.isLinearMode ?? false);
+    const [isFloat, setFloat] = useState(false);
+    const { size } = useContext(ToolContext);
     useEffect(() => {
         setColor(props.value); // Ensures the trigger color updates when props.value changes
     }, [props.value]);
 
-    const handleChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
+    const handleColorPickerChange: FluentColorPickerProps["onColorChange"] = (_, data) => {
         let color: Color3 | Color4 = Color3.FromHSV(data.color.h, data.color.s, data.color.v);
         if (props.value instanceof Color4) {
             color = Color4.FromColor3(color, data.color.a ?? 1);
         }
-        setColor(color);
+        handleChange(color);
+    };
+
+    const handleChange = (newColor: Color3 | Color4) => {
+        setColor(newColor);
+        props.onChange(newColor); // Ensures the parent is notified when color changes from within colorPicker
     };
 
     return (
@@ -113,38 +115,72 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
             onOpenChange={(_, data) => setPopoverOpen(data.open)}
         >
             <PopoverTrigger disableButtonEnhancement>
-                <div className={classes.triggerColor} style={{ backgroundColor: color.toHexString() }} />
+                <ColorSwatch
+                    borderColor={tokens.colorNeutralShadowKeyDarker}
+                    size={size === "small" ? "extra-small" : "small"}
+                    shape="rounded"
+                    color={color.toHexString()}
+                    value={color.toHexString().slice(1)}
+                />
             </PopoverTrigger>
 
             <PopoverSurface>
-                <div className={classes.colorPickerContainer}>
-                    <ColorPicker color={rgbaToHsv(color)} onColorChange={handleChange}>
+                <div className={classes.container}>
+                    <FluentColorPicker className={classes.colorPicker} color={rgbaToHsv(color)} onColorChange={handleColorPickerChange}>
                         <ColorArea inputX={{ "aria-label": "Saturation" }} inputY={{ "aria-label": "Brightness" }} />
                         <ColorSlider aria-label="Hue" />
                         {color instanceof Color4 && <AlphaSlider aria-label="Alpha" />}
-                    </ColorPicker>
-                    <div className={classes.container}>
-                        {/* Top Row: Preview, Gamma Hex, Linear Hex */}
-                        <div className={classes.row}>
-                            <div className={classes.previewColor} style={{ backgroundColor: color.toHexString() }} />
-                            <InputHexField label="Gamma Hex" color={color} isLinearMode={props.isLinearMode} onChange={setColor} />
-                            <InputHexField label="Linear Hex" linearHex={true} isLinearMode={props.isLinearMode} color={color} onChange={setColor} />
-                        </div>
+                    </FluentColorPicker>
+                    {/* Top Row: Preview, Gamma Hex, Linear Hex */}
+                    <div className={classes.row}>
+                        <div className={classes.previewColor} style={{ backgroundColor: color.toHexString() }} />
+                        <NumberDropdown
+                            className={classes.inputField}
+                            infoLabel={{
+                                label: "Color Space",
+                                info: <Body1>Today this is not mutable as the color space is determined by the entity. Soon we will allow swapping</Body1>,
+                            }}
+                            options={[
+                                { label: "Gamma", value: 0 },
+                                { label: "Linear", value: 1 },
+                            ]}
+                            disabled={true}
+                            value={isLinear ? 1 : 0}
+                            onChange={(val: number) => setIsLinear(val === 1)}
+                        />
+                        <NumberDropdown
+                            className={classes.inputField}
+                            infoLabel={{
+                                label: "Data Type",
+                                info: <Body1>We will introduce this functionality soon!</Body1>,
+                            }}
+                            options={[
+                                { label: "Int", value: 0 },
+                                { label: "Float", value: 1 },
+                            ]}
+                            disabled={true}
+                            value={isFloat ? 1 : 0}
+                            onChange={(val: number) => setFloat(val === 1)}
+                        />
+                    </div>
 
-                        {/* Middle Row: Red, Green, Blue, Alpha */}
-                        <div className={classes.row}>
-                            <InputRgbField label="Red" color={color} rgbKey="r" onChange={setColor} />
-                            <InputRgbField label="Green" color={color} rgbKey="g" onChange={setColor} />
-                            <InputRgbField label="Blue" color={color} rgbKey="b" onChange={setColor} />
-                            <InputAlphaField color={color} onChange={setColor} />
-                        </div>
+                    {/* Middle Row: Red, Green, Blue, Alpha */}
+                    <div className={classes.inputRow}>
+                        <InputRgbField title="Red" value={color} rgbKey="r" onChange={handleChange} />
+                        <InputRgbField title="Green" value={color} rgbKey="g" onChange={handleChange} />
+                        <InputRgbField title="Blue" value={color} rgbKey="b" onChange={handleChange} />
+                        <InputAlphaField color={color} onChange={handleChange} />
+                    </div>
 
-                        {/* Bottom Row: Hue, Saturation, Value */}
-                        <div className={classes.row}>
-                            <InputHsvField label="Hue" color={color} hsvKey="h" max={360} onChange={setColor} />
-                            <InputHsvField label="Saturation" color={color} hsvKey="s" max={100} scale={100} onChange={setColor} />
-                            <InputHsvField label="Value" color={color} hsvKey="v" max={100} scale={100} onChange={setColor} />
-                        </div>
+                    {/* Bottom Row: Hue, Saturation, Value */}
+                    <div className={classes.inputRow}>
+                        <InputHsvField title="Hue" value={color} hsvKey="h" max={360} onChange={handleChange} />
+                        <InputHsvField title="Saturation" value={color} hsvKey="s" max={100} scale={100} onChange={handleChange} />
+                        <InputHsvField title="Value" value={color} hsvKey="v" max={100} scale={100} onChange={handleChange} />
+                    </div>
+
+                    <div className={classes.inputRow}>
+                        <InputHexField title="Hexadecimal" linearHex={isLinear} isLinearMode={isLinear} value={color} onChange={handleChange} />
                     </div>
                 </div>
             </PopoverSurface>
@@ -152,11 +188,7 @@ export const ColorPickerPopup: FunctionComponent<ColorPickerProps<Color3 | Color
     );
 };
 
-type HsvKey = "h" | "s" | "v";
-type InputHexProps = {
-    label?: string;
-    color: Color3 | Color4;
-    onChange: (color: Color3 | Color4) => void;
+export type InputHexProps = PrimitiveProps<Color3 | Color4> & {
     linearHex?: boolean;
     isLinearMode?: boolean;
 };
@@ -168,103 +200,90 @@ type InputHexProps = {
  * @param props - The properties for the InputHexField component.
  * @returns
  */
-const InputHexField: FunctionComponent<InputHexProps> = (props) => {
-    const id = useId("hex-input");
-    const styles = useColorPickerStyles();
-    const { label, color, onChange, linearHex, isLinearMode } = props;
+export const InputHexField: FunctionComponent<InputHexProps> = (props) => {
+    const classes = useColorPickerStyles();
+    const { title, value, onChange, linearHex, isLinearMode } = props;
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>, _: InputOnChangeData) => {
-        // If linearHint (aka PBR material, ensure the other values are displayed in gamma even if linear hex changes)
-        const value = e.target.value;
-        if (value != "" && /^[0-9A-Fa-f]+$/g.test(value) == false) {
-            return;
-        }
-        onChange(Color3.FromHexString(value).toGammaSpace());
-    };
     return (
-        <div className={styles.colorFieldWrapper}>
-            {props.linearHex ? (
-                <InfoLabel
-                    htmlFor={id}
-                    info={
-                        !isLinearMode ? (
-                            <> This color picker is attached to an entity whose color is stored in gamma space, so we are showing linear hex in disabled view </>
-                        ) : (
-                            <>
-                                This color picker is attached to an entity whose color is stored in linear space (ex: PBR Material), and Babylon converts the color to gamma space
-                                before rendering on screen because the human eye is best at processing colors in gamma space. We thus also want to display the color picker in gamma
-                                space so that the color chosen here will match the color seen in your entity.
-                                <br />
-                                If you want to copy/paste the HEX into your code, you can either use
-                                <Body1Strong>Color3.FromHexString(LINEAR_HEX)</Body1Strong>
-                                <br />
-                                or
-                                <br />
-                                <Body1Strong>Color3.FromHexString(GAMMA_HEX).toLinearSpace()</Body1Strong>
-                                <br />
-                                <br />
-                                <Link href="https://doc.babylonjs.com/preparingArtForBabylon/controllingColorSpace/"> Read more in our docs! </Link>
-                            </>
-                        )
-                    }
-                >
-                    {label}
-                </InfoLabel>
-            ) : (
-                <Label htmlFor={id}>{label}</Label>
-            )}
-            <Input
-                disabled={linearHex ? !isLinearMode : false}
-                className={styles.input}
-                value={linearHex ? color.toLinearSpace().toHexString() : color.toHexString()}
-                id={id}
-                onChange={handleChange}
-            />
-        </div>
+        <TextInput
+            disabled={linearHex ? !isLinearMode : false}
+            className={classes.inputField}
+            value={linearHex ? value.toLinearSpace().toHexString() : value.toHexString()}
+            validator={ValidateColorHex}
+            onChange={(val) => (linearHex ? onChange(Color3.FromHexString(val).toGammaSpace()) : onChange(Color3.FromHexString(val)))}
+            infoLabel={
+                title
+                    ? {
+                          label: title,
+                          // If not representing a linearHex, no info is needed.
+                          info: !props.linearHex ? undefined : !isLinearMode ? ( // If representing a linear hex but we are in gammaMode, simple message explaining why linearHex is disabled
+                              <> This color picker is attached to an entity whose color is stored in gamma space, so we are showing linear hex in disabled view </>
+                          ) : (
+                              // If representing a linear hex and we are in linearMode, give information about how to use these hex values
+                              <>
+                                  This color picker is attached to an entity whose color is stored in linear space (ex: PBR Material), and Babylon converts the color to gamma space
+                                  before rendering on screen because the human eye is best at processing colors in gamma space. We thus also want to display the color picker in
+                                  gamma space so that the color chosen here will match the color seen in your entity.
+                                  <br />
+                                  If you want to copy/paste the HEX into your code, you can either use
+                                  <Body1Strong>Color3.FromHexString(LINEAR_HEX)</Body1Strong>
+                                  <br />
+                                  or
+                                  <br />
+                                  <Body1Strong>Color3.FromHexString(GAMMA_HEX).toLinearSpace()</Body1Strong>
+                                  <br />
+                                  <br />
+                                  <Link url="https://doc.babylonjs.com/preparingArtForBabylon/controllingColorSpace/" value="Read more in our docs!" />
+                              </>
+                          ),
+                      }
+                    : undefined
+            }
+        />
     );
 };
 
 type RgbKey = "r" | "g" | "b";
-type InputRgbFieldProps = {
-    color: Color3 | Color4;
-    label: string;
+type InputRgbFieldProps = PrimitiveProps<Color3 | Color4> & {
     rgbKey: RgbKey;
-    onChange: (color: Color3 | Color4) => void;
 };
 
 const InputRgbField: FunctionComponent<InputRgbFieldProps> = (props) => {
-    const { color, onChange, label, rgbKey } = props;
-    const id = useId(`${label.toLowerCase()}-input`);
+    const { value, onChange, title, rgbKey } = props;
     const classes = useColorPickerStyles();
 
     const handleChange = useCallback(
-        (_: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {
-            const val = data.value ?? parseFloat(data.displayValue ?? "");
-
-            if (val === null || Number.isNaN(val) || !NUMBER_REGEX.test(val.toString())) {
-                return;
-            }
-
-            const newColor = color.clone();
+        (val: number) => {
+            const newColor = value.clone();
             newColor[rgbKey] = val / 255.0; // Convert to 0-1 range
             onChange(newColor);
         },
-        [color]
+        [value, onChange, rgbKey]
     );
 
     return (
-        <div className={classes.colorFieldWrapper}>
-            <Label htmlFor={id}>{label}</Label>
-            <SpinButton className={classes.spinButton} min={0} max={255} value={color[rgbKey] * 255.0} step={1} id={id} onChange={handleChange} name={rgbKey} />
-        </div>
+        <SpinButton
+            title={title}
+            infoLabel={title ? { label: title } : undefined}
+            className={classes.inputField}
+            min={0}
+            max={255}
+            value={Math.round(value[rgbKey] * 255)}
+            forceInt
+            onChange={handleChange}
+        />
     );
 };
 
-type InputHsvFieldProps = {
-    color: Color3 | Color4;
-    label: string;
+function rgbaToHsv(color: { r: number; g: number; b: number; a?: number }): { h: number; s: number; v: number; a?: number } {
+    const c = new Color3(color.r, color.g, color.b);
+    const hsv = c.toHSV();
+    return { h: hsv.r, s: hsv.g, v: hsv.b, a: color.a };
+}
+
+type HsvKey = "h" | "s" | "v";
+type InputHsvFieldProps = PrimitiveProps<Color3 | Color4> & {
     hsvKey: HsvKey;
-    onChange: (color: Color3 | Color4) => void;
     max: number;
     scale?: number;
 };
@@ -276,36 +295,35 @@ type InputHsvFieldProps = {
  * @param props - The properties for the InputHsvField component.
  */
 export const InputHsvField: FunctionComponent<InputHsvFieldProps> = (props) => {
-    const { color, label, hsvKey, max, scale = 1 } = props;
+    const { value, title, hsvKey, max, onChange, scale = 1 } = props;
 
-    const id = useId(`${label.toLowerCase()}-input`);
     const classes = useColorPickerStyles();
 
     const handleChange = useCallback(
-        (_: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {
-            const val = data.value ?? parseFloat(data.displayValue ?? "");
-
-            if (val === null || Number.isNaN(val) || !NUMBER_REGEX.test(val.toString())) {
-                return;
-            }
-
+        (val: number) => {
             // Convert current color to HSV, update the new hsv value, then call onChange prop
-            const hsv = rgbaToHsv(color);
+            const hsv = rgbaToHsv(value);
             hsv[hsvKey] = val / scale;
             let newColor: Color3 | Color4 = Color3.FromHSV(hsv.h, hsv.s, hsv.v);
-            if (color instanceof Color4) {
-                newColor = Color4.FromColor3(newColor, color.a ?? 1);
+            if (value instanceof Color4) {
+                newColor = Color4.FromColor3(newColor, value.a ?? 1);
             }
             props.onChange(newColor);
         },
-        [color]
+        [value, onChange, hsvKey, scale]
     );
 
     return (
-        <div className={classes.colorFieldWrapper}>
-            <Label htmlFor={id}>{label}</Label>
-            <SpinButton className={classes.spinButton} min={0} max={max} value={rgbaToHsv(color)[hsvKey] * scale} step={1} id={id} onChange={handleChange} name={hsvKey} />
-        </div>
+        <SpinButton
+            infoLabel={title ? { label: title } : undefined}
+            title={title}
+            className={classes.inputField}
+            min={0}
+            max={max}
+            value={Math.round(rgbaToHsv(value)[hsvKey] * scale)}
+            forceInt
+            onChange={handleChange}
+        />
     );
 };
 
@@ -321,59 +339,44 @@ type InputAlphaProps = {
  */
 const InputAlphaField: FunctionComponent<InputAlphaProps> = (props) => {
     const classes = useColorPickerStyles();
-    const id = useId("alpha-input");
-    const { color } = props;
+    const { color, onChange } = props;
 
-    const onChange = (_: SpinButtonChangeEvent, data: SpinButtonOnChangeData) => {
-        const value = data.value ?? parseFloat(data.displayValue ?? "");
+    const handleChange = useCallback(
+        (value: number) => {
+            if (Number.isNaN(value) || value < 0 || value > 1) {
+                return;
+            }
 
-        if (Number.isNaN(value) || value < 0 || value > 1) {
-            return;
-        }
-
-        if (color instanceof Color4) {
-            const newColor = color.clone();
-            newColor.a = value;
-            return newColor;
-        } else {
-            return Color4.FromColor3(color, value);
-        }
-    };
+            if (color instanceof Color4) {
+                const newColor = color.clone();
+                newColor.a = value;
+                return newColor;
+            } else {
+                return Color4.FromColor3(color, value);
+            }
+        },
+        [onChange]
+    );
 
     return (
-        <div className={classes.colorFieldWrapper}>
-            <div className={classes.row}>
-                <Label htmlFor={id}>Alpha</Label>
-                {color instanceof Color3 && (
-                    <InfoLabel
-                        htmlFor={id}
-                        info={
-                            <>
-                                Because this color picker is representing a Color3, we do not permit modifying alpha from the color picker. You can however modify the material's
-                                alpha property directly, either in code via material.alpha OR via inspector's transparency section.
-                            </>
-                        }
-                    ></InfoLabel>
-                )}
-            </div>
-            <SpinButton
-                disabled={color instanceof Color3}
-                min={0}
-                max={1}
-                className={classes.spinButton}
-                value={color instanceof Color3 ? 1 : color.a}
-                step={0.01}
-                onChange={onChange}
-                id={id}
-            />
-        </div>
+        <SpinButton
+            disabled={color instanceof Color3}
+            min={0}
+            max={1}
+            className={classes.inputField}
+            value={color instanceof Color3 ? 1 : color.a}
+            step={0.01}
+            onChange={handleChange}
+            infoLabel={{
+                label: "Alpha",
+                info:
+                    color instanceof Color3 ? (
+                        <>
+                            Because this color picker is representing a Color3, we do not permit modifying alpha from the color picker. You can however modify the entity's alpha
+                            property directly, either in code via entity.alpha OR via inspector's transparency section.
+                        </>
+                    ) : undefined,
+            }}
+        />
     );
 };
-
-const NUMBER_REGEX = /^\d+$/;
-
-function rgbaToHsv(color: { r: number; g: number; b: number; a?: number }): { h: number; s: number; v: number; a?: number } {
-    const c = new Color3(color.r, color.g, color.b);
-    const hsv = c.toHSV();
-    return { h: hsv.r, s: hsv.g, v: hsv.b, a: color.a };
-}

@@ -110,6 +110,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _rebuildingAfterContextLost = false;
 
     /**
+     * Specifies if the particle system should be serialized
+     */
+    public doNotSerialize = false;
+
+    /**
      * Gets a boolean indicating if the GPU particles can be rendered on current browser
      */
     public static get IsSupported(): boolean {
@@ -189,6 +194,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
+
+    /**
+     * Gets or sets an object used to store user defined information for the particle system
+     */
+    public metadata: any = null;
 
     /**
      * Creates a Point Emitter for the particle system (emits directly from the emitter position)
@@ -424,6 +434,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         this._started = true;
         this._stopped = false;
+        this._actualFrame = 0;
         this._preWarmDone = false;
 
         // Animations
@@ -1690,7 +1701,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         effect.setMatrix("projection", this.defaultProjectionMatrix ?? this._scene!.getProjectionMatrix());
         effect.setTexture("diffuseSampler", this.particleTexture);
         effect.setVector2("translationPivot", this.translationPivot);
-        effect.setVector3("worldOffset", this.worldOffset);
+        const worldOffset = this.worldOffset.subtractToRef(this._scene?.floatingOriginOffset || Vector3.ZeroReadOnly, TmpVectors.Vector3[0]);
+        effect.setVector3("worldOffset", worldOffset);
         if (this.isLocal) {
             effect.setMatrix("emitterWM", emitterWM);
         }
@@ -2121,6 +2133,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         serializationObject.randomTextureSize = this._randomTextureSize;
         serializationObject.customShader = this.customShader;
 
+        serializationObject.preventAutoStart = this.preventAutoStart;
+        serializationObject.worldOffset = this.worldOffset.asArray();
+
+        if (this.metadata) {
+            serializationObject.metadata = this.metadata;
+        }
+
         return serializationObject;
     }
 
@@ -2181,9 +2200,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         ParticleSystem._Parse(parsedParticleSystem, particleSystem, sceneOrEngine, rootUrl);
 
+        if (parsedParticleSystem.worldOffset) {
+            particleSystem.worldOffset = Vector3.FromArray(parsedParticleSystem.worldOffset);
+        }
+
         // Auto start
         if (parsedParticleSystem.preventAutoStart) {
             particleSystem.preventAutoStart = parsedParticleSystem.preventAutoStart;
+        }
+
+        if (parsedParticleSystem.metadata) {
+            particleSystem.metadata = parsedParticleSystem.metadata;
         }
 
         if (!doNotStart && !particleSystem.preventAutoStart) {

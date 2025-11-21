@@ -108,16 +108,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Connect to relevant events
         globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onRebuildRequiredObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onNodeMovedObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onNewNodeCreatedObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.onClearUndoStack.add(() => {
             this._historyStack.reset();
@@ -252,14 +252,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
-            this._graphCanvas.handleKeyDown(
+            void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
                     this.props.globalState.nodeMaterial.removeBlock(nodeData.data as NodeMaterialBlock);
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
-                (nodeData) => {
+                async (nodeData) => {
                     const block = nodeData.data as NodeMaterialBlock;
                     const clone = block.clone(this.props.globalState.nodeMaterial.getScene());
 
@@ -633,7 +633,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     override render() {
         return (
             <Portal globalState={this.props.globalState}>
-                <FluentToolWrapper disableCopy={true}>
+                <FluentToolWrapper toolName="NODE MATERIAL EDITOR" disableCopy={true}>
                     <SplitContainer
                         id="node-editor-graph-root"
                         direction={SplitDirection.Horizontal}

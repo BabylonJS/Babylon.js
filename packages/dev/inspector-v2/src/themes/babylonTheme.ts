@@ -4,37 +4,31 @@ import type { BrandVariants, Theme } from "@fluentui/react-components";
 
 import { createDarkTheme, createLightTheme } from "@fluentui/react-components";
 
-const babylonBrand: BrandVariants = {
-    10: "#000000",
-    20: "#1E0F11",
-    30: "#34181B",
-    40: "#4B1F24",
-    50: "#63272D",
-    60: "#7C2F36",
-    70: "#96373E",
-    80: "#AF4046",
-    90: "#C44F51",
-    100: "#D5625F",
-    110: "#E4766E",
-    120: "#F18A7F",
-    130: "#FBA092",
-    140: "#FFB8AA",
-    150: "#FFD1C6",
-    160: "#FFE8E2",
+// Generated from https://react.fluentui.dev/?path=/docs/theme-theme-designer--docs
+// Key color: #3A94FC
+const babylonRamp: BrandVariants = {
+    10: "#020305",
+    20: "#121721",
+    30: "#1A263A",
+    40: "#1F314F",
+    50: "#243E64",
+    60: "#294B7B",
+    70: "#2D5892",
+    80: "#3166AA",
+    90: "#3473C3",
+    100: "#3782DC",
+    110: "#3990F6",
+    120: "#5A9EFD",
+    130: "#7BACFE",
+    140: "#96BAFF",
+    150: "#AFC9FF",
+    160: "#C6D8FF",
 };
 
 export const LightTheme: Theme = {
-    ...createLightTheme(babylonBrand),
+    ...createLightTheme(babylonRamp),
 };
 
 export const DarkTheme: Theme = {
-    ...createDarkTheme(babylonBrand),
-    colorBrandForeground1: babylonBrand[110],
-    colorBrandForegroundLink: babylonBrand[110],
-    colorBrandForegroundLinkPressed: babylonBrand[110],
-    colorBrandForegroundLinkSelected: babylonBrand[110],
-    colorCompoundBrandBackgroundHover: babylonBrand[100],
-    colorCompoundBrandForeground1Pressed: babylonBrand[100],
-    colorCompoundBrandStrokePressed: babylonBrand[100],
-    colorNeutralForeground2BrandPressed: babylonBrand[100],
+    ...createDarkTheme(babylonRamp),
 };

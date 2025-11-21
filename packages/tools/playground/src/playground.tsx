@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { MonacoComponent } from "./components/monacoComponent";
+import { MonacoComponent } from "./components/editor/monacoComponent";
 import { RenderingComponent } from "./components/rendererComponent";
 import { GlobalState, EditionMode, RuntimeMode } from "./globalState";
 import { FooterComponent } from "./components/footerComponent";
@@ -23,9 +23,25 @@ import { ControlledSize, SplitDirection } from "shared-ui-components/split/split
 
 interface IPlaygroundProps {
     runtimeMode: RuntimeMode;
+    version: string;
 }
 
-export class Playground extends React.Component<IPlaygroundProps, { errorMessage: string; mode: EditionMode }> {
+/**
+ *
+ */
+export class Playground extends React.Component<
+    IPlaygroundProps,
+    {
+        /**
+         *
+         */
+        errorMessage: string;
+        /**
+         *
+         */
+        mode: EditionMode;
+    }
+> {
     private _monacoRef: React.RefObject<HTMLDivElement>;
     private _renderingRef: React.RefObject<HTMLDivElement>;
     private _splitterRef: React.RefObject<HTMLDivElement>;
@@ -33,8 +49,17 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
 
     private _globalState: GlobalState;
 
+    /**
+     *
+     */
     public saveManager: SaveManager;
+    /**
+     *
+     */
     public loadManager: LoadManager;
+    /**
+     *
+     */
     public shortcutManager: ShortcutManager;
 
     public constructor(props: IPlaygroundProps) {
@@ -42,6 +67,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         this._globalState = new GlobalState();
 
         this._globalState.runtimeMode = props.runtimeMode || RuntimeMode.Editor;
+        this._globalState.version = props.version;
 
         this._monacoRef = React.createRef();
         this._renderingRef = React.createRef();
@@ -64,6 +90,8 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         this._globalState.onEditorDisplayChangedObservable.add((value) => {
             this.setState({ mode: value ? EditionMode.Desktop : EditionMode.RenderingOnly });
         });
+
+        this._globalState.doNotRun = location.search.indexOf("norun") !== -1 || !Utilities.ReadBoolFromStore("auto-run", true);
 
         // Managers
         this.saveManager = new SaveManager(this._globalState);
@@ -91,12 +119,13 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
                 this._renderingRef.current!.classList.add("hidden");
                 this._splitterRef.current!.classList.add("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
-                this._monacoRef.current!.style.width = "100%";
+                this._monacoRef.current!.classList.add("pg-monaco-wrapper__fullscreen");
                 break;
             case EditionMode.RenderingOnly:
                 this._splitContainerRef.current!.classList.add("disable-split-rendering");
                 this._splitContainerRef.current!.classList.remove("disable-split-code");
                 this._monacoRef.current!.classList.add("hidden");
+                this._monacoRef.current!.classList.remove("pg-monaco-wrapper__fullscreen");
                 this._splitterRef.current!.classList.add("hidden");
                 this._renderingRef.current!.classList.remove("hidden");
                 this._renderingRef.current!.style.width = "100%";
@@ -107,6 +136,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
                 this._renderingRef.current!.classList.remove("hidden");
                 this._splitterRef.current!.classList.remove("hidden");
                 this._monacoRef.current!.classList.remove("hidden");
+                this._monacoRef.current!.classList.remove("pg-monaco-wrapper__fullscreen");
                 break;
         }
     }
@@ -160,8 +190,8 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         );
     }
 
-    public static Show(hostElement: HTMLElement, mode: RuntimeMode) {
-        const playground = React.createElement(Playground, { runtimeMode: mode });
+    public static Show(hostElement: HTMLElement, mode: RuntimeMode, version: string) {
+        const playground = React.createElement(Playground, { runtimeMode: mode, version });
 
         const root = createRoot(hostElement);
         root.render(playground);

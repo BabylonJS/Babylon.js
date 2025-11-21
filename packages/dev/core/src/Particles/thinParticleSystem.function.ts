@@ -13,7 +13,10 @@ export function _CreateColorData(particle: Particle, system: ThinParticleSystem)
     const step = RandomRange(0, 1.0);
 
     Color4.LerpToRef(system.color1, system.color2, step, particle.color);
+}
 
+/** @internal */
+export function _CreateColorDeadData(particle: Particle, system: ThinParticleSystem) {
     system.colorDead.subtractToRef(particle.color, system._colorDiff);
     system._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
 }
@@ -208,7 +211,7 @@ export function _ProcessDragGradients(particle: Particle, system: ThinParticleSy
 /** Noise */
 
 /** @internal */
-export function _CreateNoiseData(particle: Particle, system: ThinParticleSystem) {
+export function _CreateNoiseData(particle: Particle, _system: ThinParticleSystem) {
     if (particle._randomNoiseCoordinates1) {
         particle._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
         particle._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
@@ -317,7 +320,7 @@ export function _ProcessSizeGradients(particle: Particle, system: ThinParticleSy
 /** Ramp */
 
 /** @internal */
-export function _CreateRampData(particle: Particle, system: ThinParticleSystem) {
+export function _CreateRampData(particle: Particle, _system: ThinParticleSystem) {
     particle.remapData = new Vector4(0, 1, 0, 1);
 }
 

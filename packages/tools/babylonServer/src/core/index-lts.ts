@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 /* eslint-disable @typescript-eslint/naming-convention */
 // import * as BABYLON from "core/index";
 import * as BABYLON from "../../../../dev/core/src/index";

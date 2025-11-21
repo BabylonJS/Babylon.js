@@ -24,13 +24,18 @@ export class MaterialStencilState implements IStencilState {
         this.enabled = false;
         this.mask = 0xff;
 
-        this.func = Constants.ALWAYS;
         this.funcRef = 1;
         this.funcMask = 0xff;
 
+        this.func = Constants.ALWAYS;
         this.opStencilFail = Constants.KEEP;
         this.opDepthFail = Constants.KEEP;
         this.opStencilDepthPass = Constants.REPLACE;
+
+        this.backFunc = Constants.ALWAYS;
+        this.backOpStencilFail = Constants.KEEP;
+        this.backOpDepthFail = Constants.KEEP;
+        this.backOpStencilDepthPass = Constants.REPLACE;
     }
 
     private _func: number;
@@ -44,6 +49,19 @@ export class MaterialStencilState implements IStencilState {
 
     public set func(value: number) {
         this._func = value;
+    }
+
+    private _backFunc: number;
+    /**
+     * Gets or sets the stencil back function
+     */
+    @serialize()
+    public get backFunc(): number {
+        return this._backFunc;
+    }
+
+    public set backFunc(value: number) {
+        this._backFunc = value;
     }
 
     private _funcRef: number;
@@ -109,6 +127,45 @@ export class MaterialStencilState implements IStencilState {
 
     public set opStencilDepthPass(value: number) {
         this._opStencilDepthPass = value;
+    }
+
+    private _backOpStencilFail: number;
+    /**
+     * Gets or sets the operation when the back stencil test fails
+     */
+    @serialize()
+    public get backOpStencilFail(): number {
+        return this._backOpStencilFail;
+    }
+
+    public set backOpStencilFail(value: number) {
+        this._backOpStencilFail = value;
+    }
+
+    private _backOpDepthFail: number;
+    /**
+     * Gets or sets the operation when the back depth test fails
+     */
+    @serialize()
+    public get backOpDepthFail(): number {
+        return this._backOpDepthFail;
+    }
+
+    public set backOpDepthFail(value: number) {
+        this._backOpDepthFail = value;
+    }
+
+    private _backOpStencilDepthPass: number;
+    /**
+     * Gets or sets the operation when the back stencil+depth test succeeds
+     */
+    @serialize()
+    public get backOpStencilDepthPass(): number {
+        return this._backOpStencilDepthPass;
+    }
+
+    public set backOpStencilDepthPass(value: number) {
+        this._backOpStencilDepthPass = value;
     }
 
     private _mask: number;

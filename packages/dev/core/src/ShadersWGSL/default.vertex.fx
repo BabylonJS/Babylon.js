@@ -69,6 +69,10 @@ varying vPositionUVW: vec3f;
 varying vDirectionW: vec3f;
 #endif
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying vViewDepth: f32;
+#endif
+
 #include<logDepthDeclaration>
 #define CUSTOM_VERTEX_DEFINITIONS
 
@@ -153,6 +157,10 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 	vertexOutputs.vDirectionW = normalize((finalWorld *  vec4f(positionUpdated, 0.0)).xyz);
+#endif
+
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+   vertexOutputs.vViewDepth = (scene.view * worldPos).z;
 #endif
 
 	// Texture coordinates

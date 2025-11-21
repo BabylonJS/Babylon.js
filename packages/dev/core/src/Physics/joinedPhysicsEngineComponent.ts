@@ -68,7 +68,7 @@ declare module "../scene" {
  * @returns a IPhysicsEngine or null if none attached
  */
 Scene.prototype.getPhysicsEngine = function (): Nullable<IPhysicsEngine> {
-    return this._physicsEngine;
+    return this._physicsEngine ?? null;
 };
 
 /**

@@ -1,18 +1,34 @@
-import type { Camera } from "../../Cameras/camera";
-import type { PostProcessRenderPipeline } from "./postProcessRenderPipeline";
+import type { Camera, IReadonlyObservable, PostProcessRenderPipeline } from "core/index";
+
+import { Observable } from "../../Misc/observable";
+
 /**
  * PostProcessRenderPipelineManager class
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
  */
 export class PostProcessRenderPipelineManager {
-    private _renderPipelines: { [Key: string]: PostProcessRenderPipeline };
+    private readonly _renderPipelines: { [Key: string]: PostProcessRenderPipeline } = {};
+    private readonly _onNewPipelineAddedObservable = new Observable<PostProcessRenderPipeline>();
+    private readonly _onPipelineRemovedObservable = new Observable<PostProcessRenderPipeline>();
 
     /**
      * Initializes a PostProcessRenderPipelineManager
      * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/postProcessRenderPipeline
      */
-    constructor() {
-        this._renderPipelines = {};
+    constructor() {}
+
+    /**
+     * An event triggered when a pipeline is added to the manager
+     */
+    public get onNewPipelineAddedObservable(): IReadonlyObservable<PostProcessRenderPipeline> {
+        return this._onNewPipelineAddedObservable;
+    }
+
+    /**
+     * An event triggered when a pipeline is removed from the manager
+     */
+    public get onPipelineRemovedObservable(): IReadonlyObservable<PostProcessRenderPipeline> {
+        return this._onPipelineRemovedObservable;
     }
 
     /**
@@ -38,7 +54,9 @@ export class PostProcessRenderPipelineManager {
      * @param renderPipeline The pipeline to add
      */
     public addPipeline(renderPipeline: PostProcessRenderPipeline): void {
+        this.removePipeline(renderPipeline._name);
         this._renderPipelines[renderPipeline._name] = renderPipeline;
+        this._onNewPipelineAddedObservable.notifyObservers(renderPipeline);
     }
 
     /**
@@ -46,7 +64,11 @@ export class PostProcessRenderPipelineManager {
      * @param renderPipelineName the name of the pipeline to remove
      */
     public removePipeline(renderPipelineName: string): void {
-        delete this._renderPipelines[renderPipelineName];
+        const pipeline = this._renderPipelines[renderPipelineName];
+        if (pipeline) {
+            this._onPipelineRemovedObservable.notifyObservers(pipeline);
+            delete this._renderPipelines[renderPipelineName];
+        }
     }
 
     /**

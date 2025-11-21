@@ -1,4 +1,3 @@
-/* eslint-disable import/no-internal-modules */
 import type {
     Observer,
     Nullable,
@@ -11,6 +10,7 @@ import type {
     Scene,
     WritableObject,
     IShadowLight,
+    INodeRenderGraphCustomBlockDescription,
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
@@ -25,8 +25,10 @@ import { Tools } from "../../Misc/tools";
 import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Types/nodeRenderGraphTypes";
 import { NodeRenderGraphClearBlock } from "./Blocks/Textures/clearBlock";
+import { NodeRenderGraphBaseObjectRendererBlock } from "./Blocks/Rendering/baseObjectRendererBlock";
 import { NodeRenderGraphObjectRendererBlock } from "./Blocks/Rendering/objectRendererBlock";
 import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
+import { NodeRenderGraphCullObjectsBlock } from "./Blocks/cullObjectsBlock";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -47,6 +49,9 @@ export class NodeRenderGraph {
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
+
+    /** Description of custom blocks to use in the node render graph editor */
+    public static CustomBlockDescriptions: INodeRenderGraphCustomBlockDescription[] = [];
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSNODERENDERGRAPHEDITOR = this._getGlobalNodeRenderGraphEditor();
@@ -79,8 +84,11 @@ export class NodeRenderGraph {
 
     /**
      * Observable raised when the node render graph is built
+     * Note that this is the same observable as the one in the underlying FrameGraph!
      */
-    public onBuildObservable = new Observable<NodeRenderGraph>();
+    public get onBuildObservable() {
+        return this._frameGraph.onBuildObservable;
+    }
 
     /**
      * Observable raised when an error is detected
@@ -154,8 +162,10 @@ export class NodeRenderGraph {
         this._frameGraph.name = name;
 
         if (options.rebuildGraphOnEngineResize) {
-            this._resizeObserver = this._engine.onResizeObservable.add(() => {
+            this._resizeObserver = this._engine.onResizeObservable.add(async () => {
                 this.build();
+
+                await this.whenReadyAsync();
             });
         }
     }
@@ -268,6 +278,7 @@ export class NodeRenderGraph {
     private _createNodeEditor(additionalConfig?: any) {
         const nodeEditorConfig: any = {
             nodeRenderGraph: this,
+            customBlockDescriptions: NodeRenderGraph.CustomBlockDescriptions,
             ...additionalConfig,
         };
         this.BJSNODERENDERGRAPHEDITOR.NodeRenderGraphEditor.Show(nodeEditorConfig);
@@ -275,8 +286,9 @@ export class NodeRenderGraph {
 
     /**
      * Build the final list of blocks that will be executed by the "execute" method
+     * @param dontBuildFrameGraph If the underlying frame graph should not be built (default: false)
      */
-    public build() {
+    public build(dontBuildFrameGraph = false) {
         if (!this.outputBlock) {
             throw new Error("You must define the outputBlock property before building the node render graph");
         }
@@ -294,16 +306,22 @@ export class NodeRenderGraph {
             this._autoFillExternalInputs();
         }
 
+        // Make sure that one of the object renderer is flagged as the main object renderer
+        const objectRendererBlocks = this.getBlocksByPredicate<NodeRenderGraphBaseObjectRendererBlock>((block) => block instanceof NodeRenderGraphBaseObjectRendererBlock);
+        if (objectRendererBlocks.length > 0 && !objectRendererBlocks.find((block) => block.isMainObjectRenderer)) {
+            objectRendererBlocks[0].isMainObjectRenderer = true;
+        }
+
         try {
             this.outputBlock.build(state);
 
-            this._frameGraph.build();
+            if (!dontBuildFrameGraph) {
+                this._frameGraph.build();
+            }
         } finally {
             this._buildId = NodeRenderGraph._BuildIdGenerator++;
 
-            if (state.emitErrors(this.onBuildErrorObservable)) {
-                this.onBuildObservable.notifyObservers(this);
-            }
+            state.emitErrors(this.onBuildErrorObservable);
         }
     }
 
@@ -350,12 +368,16 @@ export class NodeRenderGraph {
      * Returns a promise that resolves when the node render graph is ready to be executed
      * This method must be called after the graph has been built (NodeRenderGraph.build called)!
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 30000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 5000)
      * @returns The promise that resolves when the graph is ready
      */
     // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
-    public whenReadyAsync(timeStep = 16, maxTimeout = 30000): Promise<void> {
-        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout);
+    public whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
+        this._frameGraph.pausedExecution = true;
+        // eslint-disable-next-line github/no-then
+        return this._frameGraph.whenReadyAsync(timeStep, maxTimeout).then(() => {
+            this._frameGraph.pausedExecution = false;
+        });
     }
 
     /**
@@ -498,7 +520,7 @@ export class NodeRenderGraph {
                 this.editorData.locations = locations;
             }
 
-            const blockMap: number[] = [];
+            const blockMap: { [key: number]: number } = {};
 
             for (const key in map) {
                 blockMap[key] = map[key].uniqueId;
@@ -620,14 +642,19 @@ export class NodeRenderGraph {
         colorTexture.output.connectTo(clear.target);
         depthTexture.output.connectTo(clear.depth);
 
-        // Render objects
+        // Object list and culling
         const camera = new NodeRenderGraphInputBlock("Camera", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.Camera);
         const objectList = new NodeRenderGraphInputBlock("Object List", this._frameGraph, this._scene, NodeRenderGraphBlockConnectionPointTypes.ObjectList);
+        const cull = new NodeRenderGraphCullObjectsBlock("Cull", this._frameGraph, this._scene);
 
+        camera.output.connectTo(cull.camera);
+        objectList.output.connectTo(cull.objects);
+
+        // Render objects
         const mainRendering = new NodeRenderGraphObjectRendererBlock("Main Rendering", this._frameGraph, this._scene);
 
         camera.output.connectTo(mainRendering.camera);
-        objectList.output.connectTo(mainRendering.objects);
+        cull.output.connectTo(mainRendering.objects);
         clear.output.connectTo(mainRendering.target);
         clear.outputDepth.connectTo(mainRendering.depth);
 
@@ -710,7 +737,6 @@ export class NodeRenderGraph {
         (this._resizeObserver as WritableObject<Nullable<Observer<AbstractEngine>>>) = null;
 
         this.attachedBlocks.length = 0;
-        this.onBuildObservable.clear();
         this.onBuildErrorObservable.clear();
     }
 

@@ -267,7 +267,14 @@ AbstractEngine.prototype.createCubeTextureBase = function (
                     localOnError("Textures type does not support cascades.");
                 }
             } else {
-                this._loadFile(rootUrl, (data) => onLoadData(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
+                this._loadFile(
+                    rootUrl,
+                    (data) => onLoadData(new Uint8Array(data as ArrayBuffer)),
+                    undefined,
+                    scene ? scene.offlineProvider || null : undefined,
+                    true,
+                    onInternalError
+                );
             }
         });
     } else {

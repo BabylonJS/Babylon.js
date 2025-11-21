@@ -1,15 +1,14 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { FrameGraphGrainTask } from "core/FrameGraph/Tasks/PostProcesses/grainTask";
 import { ThinGrainPostProcess } from "core/PostProcesses/thinGrainPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the grain post process
  */
-export class NodeRenderGraphGrainPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphGrainPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphGrainTask;
 
     /**

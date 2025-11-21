@@ -22,6 +22,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     protected _gammaDefineName: string;
     protected _mainUVName: string;
     protected _tempTextureRead: string;
+    protected _texture: Nullable<BaseTexture>;
 
     /**
      * The name of the sampler to read the screen texture from.
@@ -33,7 +34,12 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the texture associated with the node
      */
-    public texture: Nullable<BaseTexture>;
+    public get texture(): Nullable<BaseTexture> {
+        return this._texture;
+    }
+    public set texture(value: Nullable<BaseTexture>) {
+        this._texture = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if content needs to be converted to gamma space
@@ -132,7 +138,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
      * @param state defines the state that will be used for the build
      */
     public override initialize(state: NodeMaterialBuildState) {
-        state._excludeVariableName(this._samplerName);
+        state._excludeVariableName(this.samplerName);
     }
 
     public override get target() {
@@ -199,8 +205,8 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             }
             const textureReadFunc =
                 state.shaderLanguage === ShaderLanguage.GLSL
-                    ? `texture2D(${this._samplerName},`
-                    : `textureSampleLevel(${this._samplerName}, ${this._samplerName + Constants.AUTOSAMPLERSUFFIX},`;
+                    ? `texture2D(${this.samplerName},`
+                    : `textureSampleLevel(${this.samplerName}, ${this.samplerName + Constants.AUTOSAMPLERSUFFIX},`;
 
             const complement = state.shaderLanguage === ShaderLanguage.GLSL ? "" : ", 0";
 
@@ -210,8 +216,8 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
 
         const textureReadFunc =
             state.shaderLanguage === ShaderLanguage.GLSL
-                ? `texture2D(${this._samplerName},`
-                : `textureSample(${this._samplerName}, ${this._samplerName + Constants.AUTOSAMPLERSUFFIX},`;
+                ? `texture2D(${this.samplerName},`
+                : `textureSample(${this.samplerName}, ${this.samplerName + Constants.AUTOSAMPLERSUFFIX},`;
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
             state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${textureReadFunc} ${uvInput.associatedVariableName});\n`;
@@ -250,7 +256,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
 
     protected _emitUvAndSampler(state: NodeMaterialBuildState) {
         state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2);
-        state._emit2DSampler(this._samplerName);
+        state._emit2DSampler(this.samplerName);
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {

@@ -4,7 +4,7 @@ import { extendedConfiguration } from "./extended";
 import type { ViewerConfiguration } from "../configuration";
 import { shadowDirectionalLightConfiguration, shadowSpotlLightConfiguration } from "./shadowLight";
 import { environmentMapConfiguration } from "./environmentMap";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { deepmerge } from "../../helper/index";
 
 /**

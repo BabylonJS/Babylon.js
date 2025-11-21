@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Scene, CubeTexture, Camera, EffectWrapperCreationOptions } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { EffectWrapper } from "core/Materials/effectRenderer";

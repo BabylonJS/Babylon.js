@@ -307,12 +307,27 @@ export class GaussianSplattingMesh extends Mesh {
     // batch size between 2 yield calls during the PLY to splat conversion.
     private static _PlyConversionBatchSize = 32768;
     private _shDegree = 0;
+    private _viewDirectionFactor = new Vector3(1, 1, -1);
+
+    /**
+     * View direction factor used to compute the SH view direction in the shader.
+     */
+    public get viewDirectionFactor() {
+        return this._viewDirectionFactor;
+    }
 
     /**
      * SH degree. 0 = no sh (default). 1 = 3 parameters. 2 = 8 parameters. 3 = 15 parameters.
      */
     public get shDegree() {
         return this._shDegree;
+    }
+
+    /**
+     * Number of splats in the mesh
+     */
+    public get splatCount() {
+        return this._splatIndex?.length;
     }
 
     /**
@@ -364,6 +379,23 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * Gets the kernel size
+     * Documentation and mathematical explanations here:
+     * https://github.com/graphdeco-inria/gaussian-splatting/issues/294#issuecomment-1772688093
+     * https://github.com/autonomousvision/mip-splatting/issues/18#issuecomment-1929388931
+     */
+    public get kernelSize() {
+        return this._material instanceof GaussianSplattingMaterial ? this._material.kernelSize : 0;
+    }
+
+    /**
+     * Get the compensation state
+     */
+    public get compensation() {
+        return this._material instanceof GaussianSplattingMaterial ? this._material.compensation : false;
+    }
+
+    /**
      * set rendering material
      */
     public override set material(value: Material) {
@@ -392,19 +424,12 @@ export class GaussianSplattingMesh extends Mesh {
 
         const vertexData = new VertexData();
 
-        // Use an intanced quad or triangle. Triangle might be a bit faster because of less shader invocation but I didn't see any difference.
-        // Keeping both and use triangle for now.
-        // for quad, use following lines
-        //vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
-        //vertexData.indices = [0, 1, 2, 0, 2, 3];
-        vertexData.positions = [-3, -2, 0, 3, -2, 0, 0, 4, 0];
-        vertexData.indices = [0, 1, 2];
+        vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
+        vertexData.indices = [0, 1, 2, 0, 2, 3];
         vertexData.applyToMesh(this);
 
         this.subMeshes = [];
-        // for quad, use following line
-        //new SubMesh(0, 0, 4, 0, 6, this);
-        new SubMesh(0, 0, 3, 0, 3, this);
+        new SubMesh(0, 0, 4, 0, 6, this);
 
         this.setEnabled(false);
         // webGL2 and webGPU support for RG texture with float16 is fine. not webGL1
@@ -730,13 +755,15 @@ export class GaussianSplattingMesh extends Mesh {
                 const [, typeName, name] = prop.split(" ");
 
                 const value = GaussianSplattingMesh._ValueNameToEnum(name);
-                // SH degree 1,2 or 3 for 9, 24 or 45 values
-                if (value >= PLYValue.SH_44) {
-                    shDegree = 3;
-                } else if (value >= PLYValue.SH_24) {
-                    shDegree = 2;
-                } else if (value >= PLYValue.SH_8) {
-                    shDegree = 1;
+                if (value != PLYValue.UNDEFINED) {
+                    // SH degree 1,2 or 3 for 9, 24 or 45 values
+                    if (value >= PLYValue.SH_44) {
+                        shDegree = 3;
+                    } else if (value >= PLYValue.SH_24) {
+                        shDegree = 2;
+                    } else if (value >= PLYValue.SH_8) {
+                        shDegree = 1;
+                    }
                 }
                 const type = GaussianSplattingMesh._TypeNameToEnum(typeName);
                 if (chunkMode == ElementMode.Chunk) {
@@ -931,8 +958,8 @@ export class GaussianSplattingMesh extends Mesh {
                         const compressedChunk = compressedChunks![chunkIndex];
                         Unpack111011(value, temp3);
                         position[0] = Scalar.Lerp(compressedChunk.min.x, compressedChunk.max.x, temp3.x);
-                        position[1] = -Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
-                        position[2] = -Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
+                        position[1] = Scalar.Lerp(compressedChunk.min.y, compressedChunk.max.y, temp3.y);
+                        position[2] = Scalar.Lerp(compressedChunk.min.z, compressedChunk.max.z, temp3.z);
                     }
                     break;
                 case PLYValue.PACKED_ROTATION:
@@ -941,8 +968,8 @@ export class GaussianSplattingMesh extends Mesh {
 
                         r0 = q.x;
                         r1 = q.y;
-                        r2 = -q.z;
-                        r3 = -q.w;
+                        r2 = q.z;
+                        r3 = q.w;
                     }
                     break;
                 case PLYValue.PACKED_SCALE:
@@ -967,10 +994,10 @@ export class GaussianSplattingMesh extends Mesh {
                     position[0] = value;
                     break;
                 case PLYValue.Y:
-                    position[1] = -value;
+                    position[1] = value;
                     break;
                 case PLYValue.Z:
-                    position[2] = -value;
+                    position[2] = value;
                     break;
                 case PLYValue.SCALE_0:
                     scale[0] = Math.exp(value);
@@ -1012,10 +1039,10 @@ export class GaussianSplattingMesh extends Mesh {
                     r1 = value;
                     break;
                 case PLYValue.ROT_2:
-                    r2 = -value;
+                    r2 = value;
                     break;
                 case PLYValue.ROT_3:
-                    r3 = -value;
+                    r3 = value;
                     break;
             }
             if (sh && property.value >= PLYValue.SH_0 && property.value <= PLYValue.SH_44) {
@@ -1324,6 +1351,7 @@ export class GaussianSplattingMesh extends Mesh {
             (uBuffer[32 * index + 28 + 3] - 127.5) / 127.5,
             -(uBuffer[32 * index + 28 + 0] - 127.5) / 127.5
         );
+        quaternion.normalize();
         quaternion.toRotationMatrix(matrixRotation);
 
         Matrix.ScalingToRef(fBuffer[8 * index + 3 + 0] * 2, fBuffer[8 * index + 3 + 1] * 2, fBuffer[8 * index + 3 + 2] * 2, matrixScale);

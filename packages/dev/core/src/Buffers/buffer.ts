@@ -623,15 +623,16 @@ export class VertexBuffer {
     }
 
     /**
-     * Gets current buffer's data
-     * @returns a DataArray or null
+     * Gets the raw data from the underlying buffer.
+     * Note: The data may include more than just this vertex buffer's values.
+     * @returns the buffer data as a DataArray, or null.
      */
     public getData(): Nullable<DataArray> {
         return this._buffer.getData();
     }
 
     /**
-     * Gets current buffer's data as a float array. Float data is constructed if the vertex buffer data cannot be returned directly.
+     * Gets this vertex buffer's data as a float array. Float data is constructed if the vertex buffer data cannot be returned directly.
      * @param totalVertices number of vertices in the buffer to take into account
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns a float array containing vertex data

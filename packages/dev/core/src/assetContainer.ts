@@ -816,14 +816,35 @@ export class AssetContainer extends AbstractAssetContainer {
             this.scene.addReflectionProbe(o);
         }
 
-        for (const addedNode of addedNodes) {
-            // If node was added to the scene, but parent is not in the scene, break the relationship
-            if (addedNode.parent && this.scene.getNodes().indexOf(addedNode.parent) === -1) {
-                // Use setParent to keep transform if possible
-                if ((addedNode as TransformNode).setParent) {
-                    (addedNode as TransformNode).setParent(null);
-                } else {
-                    addedNode.parent = null;
+        // No more nodes added to scene after this line, so it's safe to make a "snapshot" of nodes
+        if (addedNodes.length) {
+            // build the nodeSet only if needed
+            const nodeSet = new Set<Node>(this.scene.meshes);
+            // benchmark shows Set constructor and Set.add have similar performance,
+            // but using Set.add here avoids another allocate in scene.getNodes().
+            for (const light of this.scene.lights) {
+                nodeSet.add(light);
+            }
+            for (const camera of this.scene.cameras) {
+                nodeSet.add(camera);
+            }
+            for (const transformNode of this.scene.transformNodes) {
+                nodeSet.add(transformNode);
+            }
+            for (const skeleton of this.skeletons) {
+                for (const bone of skeleton.bones) {
+                    nodeSet.add(bone);
+                }
+            }
+            for (const addedNode of addedNodes) {
+                // If node was added to the scene, but parent is not in the scene, break the relationship
+                if (addedNode.parent && !nodeSet.has(addedNode.parent)) {
+                    // Use setParent to keep transform if possible
+                    if ((addedNode as TransformNode).setParent) {
+                        (addedNode as TransformNode).setParent(null);
+                    } else {
+                        addedNode.parent = null;
+                    }
                 }
             }
         }
@@ -1244,7 +1265,7 @@ export class AssetContainer extends AbstractAssetContainer {
 
     /**
      * @since 6.26.0
-     * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons/animation groups to the container.
+     * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons to the container.
      * @param root root node
      */
     public addAllAssetsToContainer(root: Node) {

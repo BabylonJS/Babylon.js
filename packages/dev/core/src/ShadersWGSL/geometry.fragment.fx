@@ -33,6 +33,17 @@ uniform vTangentSpaceParams: vec2f;
         var reflectivitySamplerSampler: sampler;
         var reflectivitySampler: texture_2d<f32>;
         varying vReflectivityUV: vec2f;
+    #else
+        #ifdef METALLIC_TEXTURE
+            var metallicSamplerSampler: sampler;
+            var metallicSampler: texture_2d<f32>;
+            varying vMetallicUV: vec2f;
+        #endif
+        #ifdef ROUGHNESS_TEXTURE
+            var roughnessSamplerSampler: sampler;
+            var roughnessSampler: texture_2d<f32>;
+            varying vRoughnessUV: vec2f;
+        #endif
     #endif
     #ifdef ALBEDOTEXTURE
         varying vAlbedoUV: vec2f;
@@ -84,8 +95,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #else
             normalOutput = normalize( (mat4x4f(input.vWorldView0, input.vWorldView1, input.vWorldView2, input.vWorldView3) *  vec4f(normalW, 0.0)).xyz);
         #endif
-    #else
+    #elif defined(HAS_NORMAL_ATTRIBUTE)
         normalOutput = normalize(input.vNormalV);
+    #elif defined(POSITION)
+        // Derive normal from position
+	    normalOutput = normalize(-cross(dpdx(input.vPositionW), dpdy(input.vPositionW)));
     #endif
 
     #ifdef ENCODE_NORMAL
@@ -144,6 +158,13 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 // pbr.useMetallnessFromMetallicTextureBlue = true;
                 metal *= textureSample(reflectivitySampler, reflectivitySamplerSampler, input.vReflectivityUV).b;
                 roughness *= textureSample(reflectivitySampler, reflectivitySamplerSampler, input.vReflectivityUV).g;
+            #else
+                #ifdef METALLIC_TEXTURE
+                    metal *= textureSample(metallicSampler, metallicSamplerSampler, input.vMetallicUV).r;
+                #endif
+                #ifdef ROUGHNESS_TEXTURE
+                    roughness *= textureSample(roughnessSampler, roughnessSamplerSampler, input.vRoughnessUV).r;
+                #endif
             #endif
 
             #ifdef METALLIC

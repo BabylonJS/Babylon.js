@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./objectModelMapping";
 export * from "./EXT_lights_image_based";
 export * from "./EXT_mesh_gpu_instancing";
@@ -7,13 +8,16 @@ export * from "./EXT_texture_avif";
 export * from "./EXT_lights_ies";
 export * from "./KHR_draco_mesh_compression";
 export * from "./KHR_lights_punctual";
+export * from "./EXT_lights_area";
 export * from "./KHR_materials_pbrSpecularGlossiness";
 export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_clearcoat";
+export * from "./KHR_materials_coat";
 export * from "./KHR_materials_iridescence";
 export * from "./KHR_materials_anisotropy";
 export * from "./KHR_materials_emissive_strength";
 export * from "./KHR_materials_sheen";
+export * from "./KHR_materials_fuzz";
 export * from "./KHR_materials_specular";
 export * from "./KHR_materials_ior";
 export * from "./KHR_materials_variants";
@@ -21,7 +25,7 @@ export * from "./KHR_materials_transmission";
 export * from "./KHR_materials_diffuse_transmission";
 export * from "./KHR_materials_volume";
 export * from "./KHR_materials_dispersion";
-export * from "./EXT_materials_diffuse_roughness";
+export * from "./KHR_materials_diffuse_roughness";
 export * from "./KHR_mesh_quantization";
 export * from "./KHR_texture_basisu";
 export * from "./KHR_texture_transform";
@@ -36,5 +40,4 @@ export * from "./KHR_node_visibility";
 export * from "./KHR_node_selectability";
 export * from "./KHR_node_hoverability";
 export * from "./ExtrasAsMetadata";
-// eslint-disable-next-line import/no-internal-modules
 export * from "./KHR_interactivity/index";

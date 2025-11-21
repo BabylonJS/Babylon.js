@@ -539,7 +539,7 @@ export class Tools {
         // run the preprocessor
         scriptUrl = Tools.ScriptPreprocessUrl(scriptUrl);
 
-        if (forceAbsoluteUrl) {
+        if (forceAbsoluteUrl && !Tools.IsAbsoluteUrl(scriptUrl)) {
             scriptUrl = Tools.GetAbsoluteUrl(scriptUrl);
         }
 

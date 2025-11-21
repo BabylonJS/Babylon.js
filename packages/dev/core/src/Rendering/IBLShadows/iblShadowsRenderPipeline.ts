@@ -27,6 +27,8 @@ import type { Material } from "core/Materials/material";
 import { Observable } from "core/Misc/observable";
 import "../geometryBufferRendererSceneComponent";
 import "../iblCdfGeneratorSceneComponent";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
+import { Tools } from "../../Misc/tools";
 
 interface IIblShadowsSettings {
     /**
@@ -834,7 +836,13 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this.ssShadowStride = options.ssShadowStride || 8;
         this.ssShadowThicknessScale = options.ssShadowThicknessScale || 1.0;
         this.shadowRemanence = options.shadowRemanence ?? 0.75;
-        this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this.scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        this._noiseTexture = new Texture(
+            Tools.GetAssetUrl("https://assets.babylonjs.com/core/blue_noise/blue_noise_rgb.png"),
+            this.scene,
+            false,
+            true,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE
+        );
 
         scene.postProcessRenderPipelineManager.addPipeline(this);
 
@@ -1115,7 +1123,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     protected _addShadowSupportToMaterial(material: Material) {
-        if (!(material instanceof PBRBaseMaterial) && !(material instanceof StandardMaterial)) {
+        if (!(material instanceof PBRBaseMaterial) && !(material instanceof StandardMaterial) && !(material instanceof OpenPBRMaterial)) {
             return;
         }
         let plugin = material.pluginManager?.getPlugin<IBLShadowsPluginMaterial>(IBLShadowsPluginMaterial.Name);

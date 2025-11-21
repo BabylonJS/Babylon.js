@@ -38,7 +38,6 @@ function IsTextureAsset(extension: string): boolean {
         case "png":
         case "jpg":
         case "jpeg":
-        case "exr":
         case "webp": {
             return true;
         }
@@ -140,6 +139,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                 switch (extension.toLowerCase()) {
                     case "dds":
                     case "env":
+                    case "exr":
                     case "hdr": {
                         FilesInput.FilesToLoad[name] = file;
                         EnvironmentTools.SkyboxPath = "file:" + (file as any).correctName;
@@ -416,6 +416,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
             if (this._currentPluginName === "gltf") {
                 const loader = plugin as GLTFFileLoader;
                 loader.transparencyAsCoverage = this.props.globalState.commerceMode;
+
                 loader.validate = true;
 
                 loader.onExtensionLoadedObservable.add((extension: import("loaders/glTF/index").IGLTFLoaderExtension) => {

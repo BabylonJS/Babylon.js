@@ -17,7 +17,9 @@ import fullScreenLogo from "./img/logo-fullscreen.svg";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 
-interface ISandboxProps {}
+interface ISandboxProps {
+    version: string;
+}
 
 /**
  * Sandbox component
@@ -45,7 +47,7 @@ export class Sandbox extends React.Component<
 
     public constructor(props: ISandboxProps) {
         super(props);
-        this._globalState = new GlobalState();
+        this._globalState = new GlobalState(props.version);
         this._logoRef = React.createRef();
         this._dropTextRef = React.createRef();
         this._clickInterceptorRef = React.createRef();
@@ -285,8 +287,8 @@ export class Sandbox extends React.Component<
     // Use the promise of this deferred to do something after the scene is loaded.
     private static _SceneLoadedDeferred = new Deferred<Scene>();
 
-    public static Show(hostElement: HTMLElement): void {
-        const sandbox = React.createElement(Sandbox, {});
+    public static Show(hostElement: HTMLElement, version: string): void {
+        const sandbox = React.createElement(Sandbox, { version });
         const root = createRoot(hostElement);
         root.render(sandbox);
     }

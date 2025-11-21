@@ -45,5 +45,13 @@ export const Viewer: FunctionComponent<{ onViewerCreated: (element: ViewerElemen
         })();
     }, []);
 
-    return <configured-babylon-viewer class="viewerElement" ref={props.onViewerCreated}></configured-babylon-viewer>;
+    // Allow engine selection through query param for testing. Later we may add an option in the UI for engine selection.
+    const engineQueryParam: string | null | undefined = new URLSearchParams(window.location.search).get("engine");
+    const engine = engineQueryParam?.toLowerCase() === "webgl" ? "WebGL" : engineQueryParam?.toLowerCase() === "webgpu" ? "WebGPU" : undefined;
+
+    if (engineQueryParam && !engine) {
+        Logger.Warn(`Invalid engine specified in query param: ${engineQueryParam}. 'webgl' or 'webgpu' expected.`);
+    }
+
+    return <configured-babylon-viewer class="viewerElement" ref={props.onViewerCreated} engine={engine}></configured-babylon-viewer>;
 };

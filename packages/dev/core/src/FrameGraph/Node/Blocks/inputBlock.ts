@@ -1,4 +1,3 @@
-/* eslint-disable import/no-internal-modules */
 import type {
     NodeRenderGraphConnectionPoint,
     Scene,
@@ -91,8 +90,10 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                         formats: [Constants.TEXTUREFORMAT_RGBA],
                         samples: 1,
                         useSRGBBuffers: [false],
+                        creationFlags: [0],
                     },
                     sizeIsPercentage: true,
+                    isHistoryTexture: false,
                 };
                 this.creationOptions = options;
                 break;
@@ -105,16 +106,18 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                         types: [Constants.TEXTURETYPE_UNSIGNED_BYTE],
                         formats: [Constants.TEXTUREFORMAT_DEPTH24_STENCIL8],
                         useSRGBBuffers: [false],
+                        creationFlags: [0],
                         labels: [this.name],
                         samples: 1,
                     },
                     sizeIsPercentage: true,
+                    isHistoryTexture: false,
                 };
                 this.creationOptions = options;
                 break;
             }
             case NodeRenderGraphBlockConnectionPointTypes.ObjectList:
-                this.value = { meshes: [], particleSystems: [] };
+                this.value = { meshes: null, particleSystems: null };
                 this.isExternal = true;
                 break;
             case NodeRenderGraphBlockConnectionPointTypes.Camera:

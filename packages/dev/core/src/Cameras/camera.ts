@@ -366,6 +366,12 @@ export class Camera extends Node {
     public isStereoscopicSideBySide: boolean;
 
     /**
+     * Ignores camera maxZ when computing the projection matrix (ie. use 0 instead of maxZ), meaning objects won't be culled by the far plane
+     */
+    @serialize()
+    public ignoreCameraMaxZ = false;
+
+    /**
      * Defines the list of custom render target which are rendered to and then used as the input to this camera's render. Eg. display another camera view on a TV in the main scene
      * This is pretty helpful if you wish to make a camera render to a texture you could reuse somewhere
      * else in the scene. (Eg. security camera)
@@ -653,7 +659,9 @@ export class Camera extends Node {
 
     /** @internal */
     public _isSynchronizedProjectionMatrix(): boolean {
-        let isSynchronized = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
+        const maxZ = this.ignoreCameraMaxZ ? 0 : this.maxZ;
+
+        let isSynchronized = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === maxZ;
 
         if (!isSynchronized) {
             return false;
@@ -899,6 +907,7 @@ export class Camera extends Node {
         this.onViewMatrixChangedObservable.notifyObservers(this);
 
         this._computedViewMatrix.invertToRef(this._worldMatrix);
+        this._worldMatrix.getTranslationToRef(this._globalPosition);
 
         return this._computedViewMatrix;
     }
@@ -933,10 +942,12 @@ export class Camera extends Node {
             return this._projectionMatrix;
         }
 
+        const maxZ = this.ignoreCameraMaxZ ? 0 : this.maxZ;
+
         // Cache
         this._cache.mode = this.mode;
         this._cache.minZ = this.minZ;
-        this._cache.maxZ = this.maxZ;
+        this._cache.maxZ = maxZ;
 
         // Matrix
         this._refreshFrustumPlanes = true;
@@ -974,8 +985,8 @@ export class Camera extends Node {
             getProjectionMatrix(
                 this.fov,
                 engine.getAspectRatio(this),
-                reverseDepth ? this.maxZ : this.minZ,
-                reverseDepth ? this.minZ : this.maxZ,
+                reverseDepth ? maxZ : this.minZ,
+                reverseDepth ? this.minZ : maxZ,
                 this._projectionMatrix,
                 this.fovMode === Camera.FOVMODE_VERTICAL_FIXED,
                 engine.isNDCHalfZRange,
@@ -992,8 +1003,8 @@ export class Camera extends Node {
                         this.orthoRight ?? halfWidth,
                         this.orthoBottom ?? -halfHeight,
                         this.orthoTop ?? halfHeight,
-                        reverseDepth ? this.maxZ : this.minZ,
-                        reverseDepth ? this.minZ : this.maxZ,
+                        reverseDepth ? maxZ : this.minZ,
+                        reverseDepth ? this.minZ : maxZ,
                         this.oblique.length,
                         this.oblique.angle,
                         this._computeObliqueDistance(this.oblique.offset),
@@ -1006,8 +1017,8 @@ export class Camera extends Node {
                         this.orthoRight ?? halfWidth,
                         this.orthoBottom ?? -halfHeight,
                         this.orthoTop ?? halfHeight,
-                        reverseDepth ? this.maxZ : this.minZ,
-                        reverseDepth ? this.minZ : this.maxZ,
+                        reverseDepth ? maxZ : this.minZ,
+                        reverseDepth ? this.minZ : maxZ,
                         this._projectionMatrix,
                         engine.isNDCHalfZRange
                     );
@@ -1019,8 +1030,8 @@ export class Camera extends Node {
                         this.orthoRight ?? halfWidth,
                         this.orthoBottom ?? -halfHeight,
                         this.orthoTop ?? halfHeight,
-                        reverseDepth ? this.maxZ : this.minZ,
-                        reverseDepth ? this.minZ : this.maxZ,
+                        reverseDepth ? maxZ : this.minZ,
+                        reverseDepth ? this.minZ : maxZ,
                         this.oblique.length,
                         this.oblique.angle,
                         this._computeObliqueDistance(this.oblique.offset),
@@ -1033,8 +1044,8 @@ export class Camera extends Node {
                         this.orthoRight ?? halfWidth,
                         this.orthoBottom ?? -halfHeight,
                         this.orthoTop ?? halfHeight,
-                        reverseDepth ? this.maxZ : this.minZ,
-                        reverseDepth ? this.minZ : this.maxZ,
+                        reverseDepth ? maxZ : this.minZ,
+                        reverseDepth ? this.minZ : maxZ,
                         this._projectionMatrix,
                         engine.isNDCHalfZRange
                     );
@@ -1127,7 +1138,7 @@ export class Camera extends Node {
     /**
      * Gets a ray in the forward direction from the camera.
      * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a workd space ray
+     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a world space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
@@ -1141,7 +1152,7 @@ export class Camera extends Node {
      * Gets a ray in the forward direction from the camera.
      * @param refRay the ray to (re)use when setting the values
      * @param length Defines the length of the ray to create
-     * @param transform Defines the transform to apply to the ray, by default the world matrx is used to create a workd space ray
+     * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a world space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
      */
@@ -1335,7 +1346,7 @@ export class Camera extends Node {
             this._cameraRigParams.vrMetrics.aspectRatioFov,
             this._cameraRigParams.vrMetrics.aspectRatio,
             this.minZ,
-            this.maxZ,
+            this.ignoreCameraMaxZ ? 0 : this.maxZ,
             this._cameraRigParams.vrWorkMatrix,
             true,
             this.getEngine().isNDCHalfZRange
@@ -1374,7 +1385,7 @@ export class Camera extends Node {
     public _updateRigCameras() {
         for (let i = 0; i < this._rigCameras.length; i++) {
             this._rigCameras[i].minZ = this.minZ;
-            this._rigCameras[i].maxZ = this.maxZ;
+            this._rigCameras[i].maxZ = this.ignoreCameraMaxZ ? 0 : this.maxZ;
             this._rigCameras[i].fov = this.fov;
             this._rigCameras[i].upVector.copyFrom(this.upVector);
         }

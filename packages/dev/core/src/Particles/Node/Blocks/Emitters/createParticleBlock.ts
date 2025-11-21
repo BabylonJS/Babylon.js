@@ -14,6 +14,8 @@ import { Vector2 } from "core/Maths/math.vector";
 import { RegisterClass } from "core/Misc/typeStore";
 import { PointParticleEmitter } from "core/Particles/EmitterTypes/pointParticleEmitter";
 
+const ColorDiff = new Color4();
+
 /**
  * @internal
  */
@@ -28,9 +30,13 @@ export class CreateParticleBlock extends NodeParticleBlock {
         this.registerInput("emitPower", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true, new Color4(1, 1, 1, 1));
+        this.registerInput("colorDead", NodeParticleBlockConnectionPointTypes.Color4, true, new Color4(0, 0, 0, 0));
         this.registerInput("scale", NodeParticleBlockConnectionPointTypes.Vector2, true, new Vector2(1, 1));
         this.registerInput("angle", NodeParticleBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("size", NodeParticleBlockConnectionPointTypes.Float, true, 1);
         this.registerOutput("particle", NodeParticleBlockConnectionPointTypes.Particle);
+
+        this.scale.acceptedConnectionPointTypes.push(NodeParticleBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -63,17 +69,31 @@ export class CreateParticleBlock extends NodeParticleBlock {
     }
 
     /**
+     * Gets the color dead input component
+     */
+    public get colorDead(): NodeParticleConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
      * Gets the scale input component
      */
     public get scale(): NodeParticleConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[4];
     }
 
     /**
      * Gets the angle input component
      */
     public get angle(): NodeParticleConnectionPoint {
-        return this._inputs[4];
+        return this._inputs[5];
+    }
+
+    /**
+     * Gets the size component
+     */
+    public get size(): NodeParticleConnectionPoint {
+        return this._inputs[6];
     }
 
     /**
@@ -99,17 +119,45 @@ export class CreateParticleBlock extends NodeParticleBlock {
 
         system._colorCreation.process = (particle: Particle) => {
             state.particleContext = particle;
-            particle.color.copyFrom(this.color.getConnectedValue(state));
+
+            const color = this.color.getConnectedValue(state);
+            if (color !== undefined) {
+                particle.color.copyFrom(color);
+            }
+        };
+
+        system._colorDeadCreation.process = (particle: Particle) => {
+            state.particleContext = particle;
+
+            particle.colorDead.copyFrom(this.colorDead.getConnectedValue(state));
+            particle.initialColor.copyFrom(particle.color);
+            particle.colorDead.subtractToRef(particle.initialColor, ColorDiff);
+            ColorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
         };
 
         system._sizeCreation.process = (particle: Particle) => {
             state.particleContext = particle;
-            particle.size = 1;
-            particle.scale.copyFrom(this.scale.getConnectedValue(state));
+
+            const size = this.size.getConnectedValue(state);
+            if (size !== undefined) {
+                particle.size = size;
+            } else {
+                particle.size = 1.0;
+            }
+
+            const scale = this.scale.getConnectedValue(state);
+            if (scale.x !== undefined) {
+                particle.scale.x = scale.x;
+                particle.scale.y = scale.y;
+            } else {
+                particle.scale.x = scale;
+                particle.scale.y = scale;
+            }
         };
 
         system._angleCreation.process = (particle: Particle) => {
             state.particleContext = particle;
+
             particle.angle = this.angle.getConnectedValue(state);
         };
 

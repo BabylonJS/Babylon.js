@@ -1,7 +1,6 @@
 import type { Nullable } from "core/types";
 import type { Material } from "core/Materials/material";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { IMaterial } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
@@ -47,7 +46,7 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtraAsync<boolean>(context, material, this.name, async (extraContext, extra) => {
             if (extra) {
-                if (!(babylonMaterial instanceof PBRMaterial)) {
+                if (!this._loader._pbrMaterialImpl) {
                     throw new Error(`${extraContext}: Material type not supported`);
                 }
 
@@ -59,7 +58,7 @@ export class MSFT_minecraftMesh implements IGLTFLoaderExtension {
                 }
 
                 babylonMaterial.backFaceCulling = babylonMaterial.forceDepthWrite;
-                babylonMaterial.twoSidedLighting = true;
+                (babylonMaterial as PBRMaterial).twoSidedLighting = true;
 
                 return await promise;
             }

@@ -257,6 +257,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
+                        <TextInputLineComponent label="Name" lockObject={this.props.globalState.lockObject} target={this.props.globalState.nodeRenderGraph} propertyName="name" />
                         <OptionsLine
                             label="Engine"
                             target={this}

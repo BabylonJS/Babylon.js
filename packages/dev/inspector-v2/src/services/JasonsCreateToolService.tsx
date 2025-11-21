@@ -3,9 +3,11 @@ import type { ISceneContext } from "./sceneContext";
 import type { IShellService } from "./shellService";
 
 import { makeStyles, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Button, Popover, PopoverTrigger, PopoverSurface, Input, Checkbox } from "@fluentui/react-components";
+import type { CheckboxOnChangeData, InputOnChangeData } from "@fluentui/react-components";
 import { ShellServiceIdentity } from "./shellService";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import { CollectionsAdd20Regular, Settings20Regular } from "@fluentui/react-icons";
 import { SceneContextIdentity } from "./sceneContext";
 import { useObservableState } from "../hooks/observableHooks";
@@ -19,9 +21,83 @@ import { Vector3 } from "core/Maths/math.vector";
 import { PointLight } from "core/Lights/pointLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { SpotLight } from "core/Lights/spotLight";
+import type { ArcRotateCamera } from "core/index";
+import { FilesInput } from "core/Misc/filesInput";
+
+type XYZ = { x: number; y: number; z: number };
+
+type SphereParams = {
+    name: string;
+    segments: number;
+    diameter: number;
+    diameterX: number;
+    diameterY: number;
+    diameterZ: number;
+    arc: number;
+    slice: number;
+    uniform: boolean;
+};
+
+type BoxParams = {
+    name: string;
+    size: number;
+    width: number;
+    height: number;
+    depth: number;
+};
+
+type CylinderParams = {
+    name: string;
+    height: number;
+    diameterTop: number;
+    diameterBottom: number;
+    diameter: number;
+    tessellation: number;
+    subdivisions: number;
+    arc: number;
+};
+
+type ConeParams = {
+    name: string;
+    height: number;
+    diameter: number;
+    diameterTop: number;
+    diameterBottom: number;
+    tessellation: number;
+    subdivisions: number;
+    arc: number;
+};
+
+type GroundParams = {
+    name: string;
+    width: number;
+    height: number;
+    subdivisions: number;
+    subdivisionsX: number;
+    subdivisionsY: number;
+};
+
+type SpotlightParams = {
+    name: string;
+    position: XYZ;
+    direction: XYZ;
+    angle: number;
+    exponent: number;
+};
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
+    container: {
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+    },
+    scrollArea: {
+        flex: 1,
+        overflowY: "auto",
+        paddingRight: tokens.spacingHorizontalS,
+        paddingBottom: tokens.spacingVerticalS,
+    },
     section: {
         display: "flex",
         flexDirection: "column",
@@ -30,7 +106,7 @@ const useStyles = makeStyles({
 });
 
 const setCamera = function(scene:Scene) {
-    const camera = scene.activeCamera;
+    const camera = scene.activeCamera as ArcRotateCamera;
     if (camera && camera.radius !== undefined) {
         camera.radius = 5;
     }
@@ -46,6 +122,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             title: "Creation Tools",
             icon: CollectionsAdd20Regular,
             horizontalLocation: "left",
+            verticalLocation: "top",
             content: () => {
                 const classes = useStyles();
 
@@ -55,7 +132,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 console.log(scene);
 
                 const [spherePopoverOpen, setSpherePopoverOpen] = useState(false);
-                const [sphereParams, setSphereParams] = useState({
+                const [sphereParams, setSphereParams] = useState<SphereParams>({
                     name: "Sphere",
                     segments: 32,
                     diameter: 1,
@@ -64,10 +141,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     diameterZ: 1,
                     arc: 1,
                     slice: 1,
-                    uniform: true, // Add this line
+                    uniform: true,
                 });
 
-                const handleSphereParamChange = (key, value) => {
+                const handleSphereParamChange = <K extends keyof SphereParams>(key: K, value: SphereParams[K]) => {
                     setSphereParams(prev => ({
                         ...prev,
                         [key]: value
@@ -75,7 +152,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 };
 
                 const [boxPopoverOpen, setBoxPopoverOpen] = useState(false);
-                const [boxParams, setBoxParams] = useState({
+                const [boxParams, setBoxParams] = useState<BoxParams>({
                     name: "Box",
                     size: 1,
                     width: 1,
@@ -83,7 +160,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     depth: 1,
                 });
 
-                const handleBoxParamChange = (key, value) => {
+                const handleBoxParamChange = <K extends keyof BoxParams>(key: K, value: BoxParams[K]) => {
                     setBoxParams(prev => ({
                         ...prev,
                         [key]: value
@@ -91,7 +168,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 };
 
                 const [cylinderPopoverOpen, setCylinderPopoverOpen] = useState(false);
-                const [cylinderParams, setCylinderParams] = useState({
+                const [cylinderParams, setCylinderParams] = useState<CylinderParams>({
                     name: "Cylinder",
                     height: 2,
                     diameterTop: 1,
@@ -102,7 +179,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     arc: 1,
                 });
 
-                const handleCylinderParamChange = (key, value) => {
+                const handleCylinderParamChange = <K extends keyof CylinderParams>(key: K, value: CylinderParams[K]) => {
                     setCylinderParams(prev => ({
                         ...prev,
                         [key]: value
@@ -110,10 +187,12 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 };
 
                 const [conePopoverOpen, setConePopoverOpen] = useState(false);
-                const [coneParams, setConeParams] = useState({
+                const [coneParams, setConeParams] = useState<ConeParams>({
                     name: "Cone",
                     height: 2,
                     diameter: 1,
+                    diameterTop: 0,
+                    diameterBottom: 1,
                     tessellation: 32,
                     subdivisions: 1,
                     arc: 1,
@@ -122,7 +201,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 const [isUpChecked, setIsUpChecked] = useState(false);
                 const [isDownChecked, setIsDownChecked] = useState(false);
 
-                const handleConeParamChange = (key, value) => {
+                const handleConeParamChange = <K extends keyof ConeParams>(key: K, value: ConeParams[K]) => {
                     setConeParams(prev => ({
                         ...prev,
                         [key]: value
@@ -130,7 +209,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 };
 
                 const [groundPopoverOpen, setGroundPopoverOpen] = useState(false);
-                const [groundParams, setGroundParams] = useState({
+                const [groundParams, setGroundParams] = useState<GroundParams>({
                     name: "Ground",
                     width: 10,
                     height: 10,
@@ -139,7 +218,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     subdivisionsY: 1,
                 });
 
-                const handleGroundParamChange = (key, value) => {
+                const handleGroundParamChange = <K extends keyof GroundParams>(key: K, value: GroundParams[K]) => {
                     setGroundParams(prev => ({
                         ...prev,
                         [key]: value
@@ -156,14 +235,14 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
 
                 const [pointLightPopoverOpen, setPointLightPopoverOpen] = useState(false);
                 const [pointLightName, setPointLightName] = useState("PointLight");
-                const [pointLightPosition, setPointLightPosition] = useState({ x: 0, y: 5, z: 0 });
+                const [pointLightPosition, setPointLightPosition] = useState<XYZ>({ x: 0, y: 5, z: 0 });
 
                 const [directionalLightPopoverOpen, setDirectionalLightPopoverOpen] = useState(false);
                 const [directionalLightName, setDirectionalLightName] = useState("DirectionalLight");
-                const [directionalLightDirection, setDirectionalLightDirection] = useState(new Vector3(1, -1, 0));
+                const [directionalLightDirection, setDirectionalLightDirection] = useState<XYZ>({ x: 1, y: -1, z: 0 });
 
                 const [spotlightPopoverOpen, setSpotlightPopoverOpen] = useState(false);
-                const [spotlightParams, setSpotlightParams] = useState({
+                const [spotlightParams, setSpotlightParams] = useState<SpotlightParams>({
                     name: "Spotlight",
                     position: { x: 0, y: 5, z: 0 },
                     direction: { x: 0, y: -1, z: 0 },
@@ -171,14 +250,64 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     exponent: 1,
                 });
 
-                const handleSpotlightParamChange = (key, value) => {
+                const fileInputRef = useRef<HTMLInputElement | null>(null);
+                const [importMeshPopoverOpen, setImportMeshPopoverOpen] = useState(false);
+                const [importMeshName, setImportMeshName] = useState("ImportedMesh");
+
+                const handleLocalMeshImport = (event: ChangeEvent<HTMLInputElement>) => {
+                    if (!scene) {
+                        alert("No scene available.");
+                        event.target.value = "";
+                        return;
+                    }
+
+                    const files = event.target.files;
+                    if (!files || files.length === 0) {
+                        return;
+                    }
+
+                    const filesArray = Array.from(files);
+                    if (importMeshName.trim().length > 0 && filesArray.length > 0) {
+                        const originalFile = filesArray[0];
+                        const extensionIndex = originalFile.name.lastIndexOf(".");
+                        const extension = extensionIndex >= 0 ? originalFile.name.substring(extensionIndex) : "";
+                        const sanitizedName = importMeshName.trim();
+                        const desiredFileName = sanitizedName.toLowerCase().endsWith(extension.toLowerCase()) ? sanitizedName : `${sanitizedName}${extension}`;
+                        filesArray[0] = new File([originalFile], desiredFileName, { type: originalFile.type, lastModified: originalFile.lastModified });
+                    }
+
+                    const filesInput = new FilesInput(
+                        scene.getEngine(),
+                        scene,
+                        () => {
+                            setCamera(scene);
+                        },
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        (_sceneFile, _scene, message) => {
+                            alert(message ? `Failed to import mesh: ${message}` : "Failed to import mesh.");
+                        },
+                        true
+                    );
+
+                    filesInput.displayLoadingUI = false;
+                    filesInput.loadFiles({ target: { files: filesArray } });
+                    filesInput.dispose();
+
+                    event.target.value = "";
+                };
+
+                const handleSpotlightParamChange = <K extends keyof SpotlightParams>(key: K, value: SpotlightParams[K]) => {
                     setSpotlightParams(prev => ({
                         ...prev,
                         [key]: value,
                     }));
                 };
 
-                const handleSpotlightPositionChange = (axis, value) => {
+                const handleSpotlightPositionChange = (axis: keyof XYZ, value: number) => {
                     setSpotlightParams(prev => ({
                         ...prev,
                         position: {
@@ -188,7 +317,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     }));
                 };
 
-                const handleSpotlightDirectionChange = (axis, value) => {
+                const handleSpotlightDirectionChange = (axis: keyof XYZ, value: number) => {
                     setSpotlightParams(prev => ({
                         ...prev,
                         direction: {
@@ -205,7 +334,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 const [standardMaterialName, setStandardMaterialName] = useState("StandardMaterial");
 
                 return (
-                    <>
+                    <div className={classes.container}>
+                        <div className={classes.scrollArea}>
                         <Accordion collapsible multiple defaultOpenItems={["Meshes", "Materials", "Lights"]}>
                             <AccordionItem key="Meshes" value="Meshes">
                                 <AccordionHeader expandIconPosition="end">
@@ -255,16 +385,16 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
     <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {/* Name and Segments */}
-            { [
+            { ([
                 { label: "Name", key: "name" },
                 { label: "Segments", key: "segments" },
-            ].map(({ label, key }) => (
+            ] as const).map(({ label, key }) => (
                 <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <label style={{ flex: "0 0 100px" }}>{label}</label>
                     <Input
                         type={key === "name" ? "text" : "number"}
-                        value={sphereParams[key]}
-                        onChange={e => handleSphereParamChange(key, key === "name" ? e.target.value : Number(e.target.value))}
+                        value={String(sphereParams[key])}
+                        onChange={(_, data: InputOnChangeData) => handleSphereParamChange(key, key === "name" ? data.value : Number(data.value))}
                         aria-label={label}
                         style={{ flex: "1 1 auto" }}
                     />
@@ -275,8 +405,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 <label style={{ flex: "0 0 100px" }}>Diameter</label>
                 <Input
                     type="number"
-                    value={sphereParams.diameter}
-                    onChange={e => handleSphereParamChange("diameter", Number(e.target.value))}
+                    value={sphereParams.diameter.toString()}
+                    onChange={(_, data: InputOnChangeData) => handleSphereParamChange("diameter", Number(data.value))}
                     aria-label="Diameter"
                     style={{ flex: "1 1 auto" }}
                     disabled={!sphereParams.uniform}
@@ -286,9 +416,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 108, marginTop: -8, marginBottom: 4 }}>
                 <Checkbox
                     checked={sphereParams.uniform}
-                    onChange={(_, data) => handleSphereParamChange("uniform", data.checked)}
+                    onChange={(_, data: CheckboxOnChangeData) => handleSphereParamChange("uniform", !!data.checked)}
                     aria-label="Uniform"
-                    size="small"
                 />
                 <span style={{ fontSize: 13 }}>Uniform</span>
             </div>
@@ -297,8 +426,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 <label style={{ flex: "0 0 100px" }}>Diameter X/Y/Z</label>
                 <Input
                     type="number"
-                    value={sphereParams.diameterX}
-                    onChange={e => handleSphereParamChange("diameterX", Number(e.target.value))}
+                    value={sphereParams.diameterX.toString()}
+                    onChange={(_, data: InputOnChangeData) => handleSphereParamChange("diameterX", Number(data.value))}
                     aria-label="Diameter X"
                     style={{ width: 60 }}
                     placeholder="X"
@@ -306,8 +435,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 />
                 <Input
                     type="number"
-                    value={sphereParams.diameterY}
-                    onChange={e => handleSphereParamChange("diameterY", Number(e.target.value))}
+                    value={sphereParams.diameterY.toString()}
+                    onChange={(_, data: InputOnChangeData) => handleSphereParamChange("diameterY", Number(data.value))}
                     aria-label="Diameter Y"
                     style={{ width: 60 }}
                     placeholder="Y"
@@ -315,8 +444,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 />
                 <Input
                     type="number"
-                    value={sphereParams.diameterZ}
-                    onChange={e => handleSphereParamChange("diameterZ", Number(e.target.value))}
+                    value={sphereParams.diameterZ.toString()}
+                    onChange={(_, data: InputOnChangeData) => handleSphereParamChange("diameterZ", Number(data.value))}
                     aria-label="Diameter Z"
                     style={{ width: 60 }}
                     placeholder="Z"
@@ -324,16 +453,16 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 />
             </div>
             {/* Arc and Slice */}
-            { [
+            { ([
                 { label: "Arc", key: "arc" },
                 { label: "Slice", key: "slice" },
-            ].map(({ label, key }) => (
+            ] as const).map(({ label, key }) => (
                 <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <label style={{ flex: "0 0 100px" }}>{label}</label>
                     <Input
                         type="number"
-                        value={sphereParams[key]}
-                        onChange={e => handleSphereParamChange(key, Number(e.target.value))}
+                        value={String(sphereParams[key])}
+                        onChange={(_, data: InputOnChangeData) => handleSphereParamChange(key, Number(data.value))}
                         aria-label={label}
                         style={{ flex: "1 1 auto" }}
                     />
@@ -350,7 +479,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 onClick={() => {
                     if (scene) {
                         // Create params object based on uniform checkbox
-                        const createParams = {
+                        const createParams: Partial<SphereParams> = {
                             segments: sphereParams.segments,
                             arc: sphereParams.arc,
                             slice: sphereParams.slice,
@@ -414,19 +543,19 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 <PopoverSurface>
                                                     <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
                                                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            {[
+                                                            {([
                                                                 { label: "Name", key: "name" },
                                                                 { label: "Size", key: "size" },
                                                                 { label: "Width", key: "width" },
                                                                 { label: "Height", key: "height" },
                                                                 { label: "Depth", key: "depth" },
-                                                            ].map(({ label, key }) => (
+                                                            ] as const).map(({ label, key }) => (
                                                                 <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                                     <label style={{ flex: "0 0 100px" }}>{label}</label>
                                                                     <Input
                                                                         type={key === "name" ? "text" : "number"}
-                                                                        value={boxParams[key]}
-                                                                        onChange={e => handleBoxParamChange(key, key === "name" ? e.target.value : Number(e.target.value))}
+                                                                        value={String(boxParams[key])}
+                                                                        onChange={(_, data: InputOnChangeData) => handleBoxParamChange(key, key === "name" ? data.value : Number(data.value))}
                                                                         aria-label={label}
                                                                         style={{ flex: "1 1 auto" }}
                                                                     />
@@ -490,7 +619,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 <PopoverSurface>
                                                     <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
                                                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            {[
+                                                            {([
                                                                 { label: "Name", key: "name" },
                                                                 { label: "Height", key: "height" },
                                                                 { label: "Diameter Top", key: "diameterTop" },
@@ -499,13 +628,13 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                 { label: "Tessellation", key: "tessellation" },
                                                                 { label: "Subdivisions", key: "subdivisions" },
                                                                 { label: "Arc", key: "arc" },
-                                                            ].map(({ label, key }) => (
+                                                            ] as const).map(({ label, key }) => (
                                                                 <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                                     <label style={{ flex: "0 0 100px" }}>{label}</label>
                                                                     <Input
                                                                         type={key === "name" ? "text" : "number"}
-                                                                        value={cylinderParams[key]}
-                                                                        onChange={e => handleCylinderParamChange(key, key === "name" ? e.target.value : Number(e.target.value))}
+                                                                        value={String(cylinderParams[key])}
+                                                                        onChange={(_, data: InputOnChangeData) => handleCylinderParamChange(key, key === "name" ? data.value : Number(data.value))}
                                                                         aria-label={label}
                                                                         style={{ flex: "1 1 auto" }}
                                                                     />
@@ -569,20 +698,20 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 <PopoverSurface>
                                                     <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
                                                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            {[
+                                                            {([
                                                                 { label: "Name", key: "name" },
                                                                 { label: "Height", key: "height" },
                                                                 { label: "Diameter", key: "diameter" },
                                                                 { label: "Tessellation", key: "tessellation" },
                                                                 { label: "Subdivisions", key: "subdivisions" },
                                                                 { label: "Arc", key: "arc" },
-                                                            ].map(({ label, key }) => (
+                                                            ] as const).map(({ label, key }) => (
                                                                 <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                                     <label style={{ flex: "0 0 100px" }}>{label}</label>
                                                                     <Input
                                                                         type={key === "name" ? "text" : "number"}
-                                                                        value={coneParams[key]}
-                                                                        onChange={e => handleConeParamChange(key, key === "name" ? e.target.value : Number(e.target.value))}
+                                                                        value={String(coneParams[key])}
+                                                                        onChange={(_, data: InputOnChangeData) => handleConeParamChange(key, key === "name" ? data.value : Number(data.value))}
                                                                         aria-label={label}
                                                                         style={{ flex: "1 1 auto" }}
                                                                     />
@@ -671,20 +800,20 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 <PopoverSurface>
                                                     <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
                                                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            {[
+                                                            {([
                                                                 { label: "Name", key: "name" },
                                                                 { label: "Width", key: "width" },
                                                                 { label: "Height", key: "height" },
                                                                 { label: "Subdivisions", key: "subdivisions" },
                                                                 { label: "Subdivisions X", key: "subdivisionsX" },
                                                                 { label: "Subdivisions Y", key: "subdivisionsY" },
-                                                            ].map(({ label, key }) => (
+                                                            ] as const).map(({ label, key }) => (
                                                                 <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                                     <label style={{ flex: "0 0 100px" }}>{label}</label>
                                                                     <Input
                                                                         type={key === "name" ? "text" : "number"}
-                                                                        value={groundParams[key]}
-                                                                        onChange={e => handleGroundParamChange(key, key === "name" ? e.target.value : Number(e.target.value))}
+                                                                        value={String(groundParams[key])}
+                                                                        onChange={(_, data: InputOnChangeData) => handleGroundParamChange(key, key === "name" ? data.value : Number(data.value))}
                                                                         aria-label={label}
                                                                         style={{ flex: "1 1 auto" }}
                                                                     />
@@ -805,6 +934,83 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                     </div>
                                                 </PopoverSurface>
                                             </Popover>
+                                        </div>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                            <Button
+                                                onClick={() => {
+                                                    if (!scene) {
+                                                        alert("No scene available.");
+                                                        return;
+                                                    }
+                                                    fileInputRef.current?.click();
+                                                }}
+                                            >
+                                                Import Mesh
+                                            </Button>
+                                            <Popover
+                                                open={importMeshPopoverOpen}
+                                                onOpenChange={(_, data) => setImportMeshPopoverOpen(data.open)}
+                                                positioning={{
+                                                    align: "start",
+                                                    overflowBoundary: document.body,
+                                                    autoSize: true,
+                                                }}
+                                                trapFocus
+                                            >
+                                                <PopoverTrigger disableButtonEnhancement>
+                                                    <Button
+                                                        icon={<Settings20Regular />}
+                                                        appearance="subtle"
+                                                        size="small"
+                                                        aria-label="Import Mesh Options"
+                                                        style={{
+                                                            borderTopLeftRadius: 0,
+                                                            borderBottomLeftRadius: 0,
+                                                            marginLeft: -1,
+                                                            height: "100%",
+                                                        }}
+                                                        onClick={() => setImportMeshPopoverOpen(true)}
+                                                    />
+                                                </PopoverTrigger>
+                                                <PopoverSurface>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                            <label style={{ flex: "0 0 100px" }}>Name</label>
+                                                            <Input
+                                                                type="text"
+                                                                value={importMeshName}
+                                                                onChange={(_, data: InputOnChangeData) => setImportMeshName(data.value)}
+                                                                aria-label="Import Mesh Name"
+                                                                style={{ flex: "1 1 auto" }}
+                                                            />
+                                                        </div>
+                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                                                            <Button
+                                                                size="small"
+                                                                appearance="primary"
+                                                                onClick={() => {
+                                                                    if (!scene) {
+                                                                        alert("No scene available.");
+                                                                        return;
+                                                                    }
+                                                                    setImportMeshPopoverOpen(false);
+                                                                    fileInputRef.current?.click();
+                                                                }}
+                                                            >
+                                                                Import
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </PopoverSurface>
+                                            </Popover>
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept=".babylon,.glb,.gltf,.obj,.stl,.ply,.mesh,.babylonmeshdata"
+                                                multiple
+                                                style={{ display: "none" }}
+                                                onChange={handleLocalMeshImport}
+                                            />
                                         </div>
                                     </div>
                                 </AccordionPanel>
@@ -928,7 +1134,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 <Button
                     onClick={() => {
                         if (scene) {
-                            const pbrMaterial = new PBRMaterial(pbrMaterialName, scene);
+                            new PBRMaterial(pbrMaterialName, scene);
                             // Optionally, you can add the material to the scene or log it
                         } else {
                             alert("No scene available.");
@@ -985,7 +1191,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                     appearance="primary"
                                     onClick={() => {
                                         if (scene) {
-                                            const pbrMaterial = new PBRMaterial(pbrMaterialName, scene);
+                                            new PBRMaterial(pbrMaterialName, scene);
                                             // Optionally, you can add the material to the scene or log it
                                         } else {
                                             alert("No scene available.");
@@ -1006,7 +1212,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 <Button
                     onClick={() => {
                         if (scene) {
-                            const standardMaterial = new StandardMaterial(standardMaterialName, scene);
+                            new StandardMaterial(standardMaterialName, scene);
                             // Optionally, you can add the material to the scene or log it
                         } else {
                             alert("No scene available.");
@@ -1063,7 +1269,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                     appearance="primary"
                                     onClick={() => {
                                         if (scene) {
-                                            const standardMaterial = new StandardMaterial(standardMaterialName, scene);
+                                            new StandardMaterial(standardMaterialName, scene);
                                             // Optionally, you can add the material to the scene or log it
                                         } else {
                                             alert("No scene available.");
@@ -1133,7 +1339,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                 <Input
                                                                     type="text"
                                                                     value={pointLightName}
-                                                                    onChange={e => setPointLightName(e.target.value)}
+                                                                    onChange={(_, data: InputOnChangeData) => setPointLightName(data.value)}
                                                                     aria-label="Name"
                                                                     style={{ flex: "1 1 auto" }}
                                                                 />
@@ -1141,36 +1347,23 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                                 <label style={{ flex: "0 0 100px" }}>Position</label>
                                                                 <div style={{ display: "flex", gap: 8 }}>
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                                        <label>x</label>
-                                                                        <Input
-                                                                            type="number"
-                                                                            value={pointLightPosition.x}
-                                                                            onChange={e => setPointLightPosition({ ...pointLightPosition, x: parseFloat(e.target.value) })}
-                                                                            aria-label="Position X"
-                                                                            style={{ width: 60 }}
-                                                                        />
-                                                                    </div>
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                                        <label>y</label>
-                                                                        <Input
-                                                                            type="number"
-                                                                            value={pointLightPosition.y}
-                                                                            onChange={e => setPointLightPosition({ ...pointLightPosition, y: parseFloat(e.target.value) })}
-                                                                            aria-label="Position Y"
-                                                                            style={{ width: 60 }}
-                                                                        />
-                                                                    </div>
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                                        <label>z</label>
-                                                                        <Input
-                                                                            type="number"
-                                                                            value={pointLightPosition.z}
-                                                                            onChange={e => setPointLightPosition({ ...pointLightPosition, z: parseFloat(e.target.value) })}
-                                                                            aria-label="Position Z"
-                                                                            style={{ width: 60 }}
-                                                                        />
-                                                                    </div>
+                                                                    {(["x", "y", "z"] as const).map(axis => (
+                                                                        <div key={axis} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                                                            <label>{axis}</label>
+                                                                            <Input
+                                                                                type="number"
+                                                                                value={pointLightPosition[axis].toString()}
+                                                                                onChange={(_, data: InputOnChangeData) =>
+                                                                                    setPointLightPosition(prev => ({
+                                                                                        ...prev,
+                                                                                        [axis]: Number(data.value),
+                                                                                    }))
+                                                                                }
+                                                                                aria-label={`Position ${axis.toUpperCase()}`}
+                                                                                style={{ width: 60 }}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1244,7 +1437,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                 <Input
                                                                     type="text"
                                                                     value={directionalLightName}
-                                                                    onChange={e => setDirectionalLightName(e.target.value)}
+                                                                    onChange={(_, data: InputOnChangeData) => setDirectionalLightName(data.value)}
                                                                     aria-label="Name"
                                                                     style={{ flex: "1 1 auto" }}
                                                                 />
@@ -1252,36 +1445,23 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                                 <label style={{ flex: "0 0 100px" }}>Direction</label>
                                                                 <div style={{ display: "flex", gap: 8 }}>
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                                        <label>x</label>
-                                                                        <Input
-                                                                            type="number"
-                                                                            value={directionalLightDirection.x}
-                                                                            onChange={e => setDirectionalLightDirection({ ...directionalLightDirection, x: parseFloat(e.target.value) })}
-                                                                            aria-label="Direction X"
-                                                                            style={{ width: 60 }}
-                                                                        />
-                                                                    </div>
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                                        <label>y</label>
-                                                                        <Input
-                                                                            type="number"
-                                                                            value={directionalLightDirection.y}
-                                                                            onChange={e => setDirectionalLightDirection({ ...directionalLightDirection, y: parseFloat(e.target.value) })}
-                                                                            aria-label="Direction Y"
-                                                                            style={{ width: 60 }}
-                                                                        />
-                                                                    </div>
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                                        <label>z</label>
-                                                                        <Input
-                                                                            type="number"
-                                                                            value={directionalLightDirection.z}
-                                                                            onChange={e => setDirectionalLightDirection({ ...directionalLightDirection, z: parseFloat(e.target.value) })}
-                                                                            aria-label="Direction Z"
-                                                                            style={{ width: 60 }}
-                                                                        />
-                                                                    </div>
+                                                                    {(["x", "y", "z"] as const).map(axis => (
+                                                                        <div key={axis} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                                                            <label>{axis}</label>
+                                                                            <Input
+                                                                                type="number"
+                                                                                value={directionalLightDirection[axis].toString()}
+                                                                                onChange={(_, data: InputOnChangeData) =>
+                                                                                    setDirectionalLightDirection(prev => ({
+                                                                                        ...prev,
+                                                                                        [axis]: Number(data.value),
+                                                                                    }))
+                                                                                }
+                                                                                aria-label={`Direction ${axis.toUpperCase()}`}
+                                                                                style={{ width: 60 }}
+                                                                            />
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1375,12 +1555,12 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <label style={{ flex: "0 0 100px" }}>Position</label>
-                {["x", "y", "z"].map(axis => (
+                {(["x", "y", "z"] as const).map(axis => (
                     <Input
                         key={axis}
                         type="number"
-                        value={spotlightParams.position[axis]}
-                        onChange={e => handleSpotlightPositionChange(axis, Number(e.target.value))}
+                        value={spotlightParams.position[axis].toString()}
+                        onChange={(_, data: InputOnChangeData) => handleSpotlightPositionChange(axis, Number(data.value))}
                         aria-label={`Position ${axis.toUpperCase()}`}
                         style={{ width: 60 }} // Consistent width for inputs
                     />
@@ -1388,12 +1568,12 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <label style={{ flex: "0 0 100px" }}>Direction</label>
-                {["x", "y", "z"].map(axis => (
+                {(["x", "y", "z"] as const).map(axis => (
                     <Input
                         key={axis}
                         type="number"
-                        value={spotlightParams.direction[axis]}
-                        onChange={e => handleSpotlightDirectionChange(axis, Number(e.target.value))}
+                        value={spotlightParams.direction[axis].toString()}
+                        onChange={(_, data: InputOnChangeData) => handleSpotlightDirectionChange(axis, Number(data.value))}
                         aria-label={`Direction ${axis.toUpperCase()}`}
                         style={{ width: 60 }} // Consistent width for inputs
                     />
@@ -1403,8 +1583,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 <label style={{ flex: "0 0 100px" }}>Angle</label>
                 <Input
                     type="number"
-                    value={spotlightParams.angle}
-                    onChange={e => handleSpotlightParamChange("angle", Number(e.target.value))}
+                    value={spotlightParams.angle.toString()}
+                    onChange={(_, data: InputOnChangeData) => handleSpotlightParamChange("angle", Number(data.value))}
                     aria-label="Angle"
                     style={{ flex: "1 1 auto" }}
                 />
@@ -1413,8 +1593,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 <label style={{ flex: "0 0 100px" }}>Exponent</label>
                 <Input
                     type="number"
-                    value={spotlightParams.exponent}
-                    onChange={e => handleSpotlightParamChange("exponent", Number(e.target.value))}
+                    value={spotlightParams.exponent.toString()}
+                    onChange={(_, data: InputOnChangeData) => handleSpotlightParamChange("exponent", Number(data.value))}
                     aria-label="Exponent"
                     style={{ flex: "1 1 auto" }}
                 />
@@ -1463,7 +1643,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                 </AccordionPanel>
                             </AccordionItem>
                         </Accordion>
-                    </>
+                        </div>
+                    </div>
                 );
             },
         });

@@ -10,6 +10,7 @@ import { TreeItemLabelComponent } from "../treeItemLabelComponent";
 import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
+import { GetInspectorGizmoManager } from "../../../inspectorGizmoManager";
 
 interface ICameraTreeItemComponentProps {
     camera: Camera;
@@ -73,9 +74,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
     toggleGizmo(): void {
         const camera = this.props.camera;
         if (camera.reservedDataStore && camera.reservedDataStore.cameraGizmo) {
-            if (camera.getScene().reservedDataStore && camera.getScene().reservedDataStore.gizmoManager) {
-                camera.getScene().reservedDataStore.gizmoManager.attachToMesh(null);
-            }
+            GetInspectorGizmoManager(camera.getScene(), false)?.attachToMesh(null);
             this.props.globalState.enableCameraGizmo(camera, false);
             this.setState({ isGizmoEnabled: false });
         } else {

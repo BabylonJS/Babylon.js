@@ -114,7 +114,7 @@ declare const _native: any;
 export function nativeOverride<T extends (...params: any[]) => boolean>(
     target: any,
     propertyKey: string,
-    descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>,
+    descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => any>,
     predicate?: T
 ) {
     // Cache the original JS function for later.
@@ -158,3 +158,39 @@ nativeOverride.filter = function <T extends (...params: any) => boolean>(predica
     return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(...params: Parameters<T>) => unknown>) =>
         nativeOverride(target, propertyKey, descriptor, predicate);
 };
+
+/**
+ * Adds accessors for a material property.
+ * @param setCallback - The name of the callback function to call when the property is set.
+ * @param targetKey - The key to use for the target property (defaults to the original property key).
+ * @returns A property decorator.
+ */
+export function addAccessorsForMaterialProperty(setCallback: string, targetKey: Nullable<string> = null) {
+    return (target: any, propertyKey: string) => {
+        const key = propertyKey;
+        const newKey = targetKey || "";
+        Object.defineProperty(target, newKey, {
+            get: function (this: any) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                return this[key].value;
+            },
+            set: function (this: any, value) {
+                // does this object (i.e. vector3) has an equals function? use it!
+                // Note - not using "with epsilon" here, it is expected te behave like the internal cache does.
+                if (typeof this[key]?.value?.equals === "function") {
+                    if (this[key].value.equals(value)) {
+                        return;
+                    }
+                }
+                if (this[key].value === value) {
+                    return;
+                }
+                this[key].value = value;
+
+                target[setCallback].apply(this);
+            },
+            enumerable: true,
+            configurable: true,
+        });
+    };
+}

@@ -1,6 +1,6 @@
 import { PropertyLedger } from "shared-ui-components/nodeGraphSystem/propertyLedger";
 import { ColorMergerPropertyTabComponent } from "./properties/colorMergerPropertyComponent";
-import { GenericPropertyComponent } from "./properties/genericNodePropertyComponent";
+import { DefaultPropertyTabComponent } from "./properties/genericNodePropertyComponent";
 import { GradientPropertyTabComponent } from "./properties/gradientNodePropertyComponent";
 import { ImageSourcePropertyTabComponent } from "./properties/imageSourcePropertyTabComponent";
 import { InputPropertyTabComponent } from "./properties/inputNodePropertyComponent";
@@ -11,7 +11,7 @@ import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePro
 import { DebugNodePropertyTabComponent } from "./properties/debugNodePropertyTabComponent";
 
 export const RegisterToPropertyTabManagers = () => {
-    PropertyLedger.DefaultControl = GenericPropertyComponent;
+    PropertyLedger.DefaultControl = DefaultPropertyTabComponent;
     PropertyLedger.RegisteredControls["NodeMaterialDebugBlock"] = DebugNodePropertyTabComponent;
     PropertyLedger.RegisteredControls["InputBlock"] = InputPropertyTabComponent;
     PropertyLedger.RegisteredControls["GradientBlock"] = GradientPropertyTabComponent;

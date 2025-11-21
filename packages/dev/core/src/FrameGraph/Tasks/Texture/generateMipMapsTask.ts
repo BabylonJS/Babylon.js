@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphTextureHandle } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 

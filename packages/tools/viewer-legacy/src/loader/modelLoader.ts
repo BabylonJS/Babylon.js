@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import { GLTFLoaderAnimationStartMode } from "loaders/glTF/glTFFileLoader";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync } from "core/Loading/sceneLoader";

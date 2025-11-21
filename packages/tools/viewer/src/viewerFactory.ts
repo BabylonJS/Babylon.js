@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { AbstractEngine, AbstractEngineOptions, EngineOptions, IDisposable, Nullable, WebGPUEngineOptions } from "core/index";
 import type { ViewerDetails, ViewerOptions } from "./viewer";
 
@@ -97,13 +96,11 @@ export async function CreateViewerForCanvas(
     let engine: AbstractEngine;
     switch (options.engine ?? GetDefaultEngine()) {
         case "WebGL": {
-            // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { Engine } = await import("core/Engines/engine");
             engine = new Engine(canvas, undefined, options);
             break;
         }
         case "WebGPU": {
-            // eslint-disable-next-line @typescript-eslint/naming-convention, no-case-declarations
             const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
             const webGPUEngine = new WebGPUEngine(canvas, options);
             await webGPUEngine.initAsync();

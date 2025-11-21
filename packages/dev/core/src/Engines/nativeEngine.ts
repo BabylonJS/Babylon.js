@@ -286,6 +286,7 @@ export class NativeEngine extends Engine {
             maxDrawBuffers: 8,
             maxFragmentUniformVectors: 16,
             maxVertexUniformVectors: 16,
+            shaderFloatPrecision: 23, // TODO: is this correct?
             standardDerivatives: true,
             astc: null,
             pvrtc: null,
@@ -297,6 +298,7 @@ export class NativeEngine extends Engine {
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
+            blendFloat: false,
             supportFloatTexturesResolve: false,
             rg11b10ufColorRenderable: false,
             textureFloat: true,
@@ -325,6 +327,8 @@ export class NativeEngine extends Engine {
             disableMorphTargetTexture: false,
             parallelShaderCompile: { COMPLETION_STATUS_KHR: 0 },
             textureNorm16: false,
+            blendParametersPerTarget: false,
+            dualSourceBlending: false,
         };
 
         this._features = {
@@ -387,6 +391,7 @@ export class NativeEngine extends Engine {
             };
         }
 
+        // TODO: Remove in next protocol version update
         if (typeof Blob === "undefined") {
             (window.Blob as any) = function (v: any) {
                 return v;
@@ -521,7 +526,7 @@ export class NativeEngine extends Engine {
         return null;
     }
 
-    public override clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public override clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, stencilClearValue = 0): void {
         if (this.useReverseDepthBuffer) {
             throw new Error("reverse depth buffer is not currently implemented");
         }
@@ -535,7 +540,7 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(depth ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(1);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(stencil ? 1 : 0);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32(stencilClearValue);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -1322,10 +1327,11 @@ export class NativeEngine extends Engine {
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the BABYLON.Constants.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+     * @param targetIndex defines the index of the target to set the alpha mode for (default is 0)
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
      */
-    public override setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
-        if (this._alphaMode === mode) {
+    public override setAlphaMode(mode: number, noDepthWriteChange: boolean = false, targetIndex = 0): void {
+        if (this._alphaMode[targetIndex] === mode) {
             return;
         }
 
@@ -1339,7 +1345,7 @@ export class NativeEngine extends Engine {
             this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
         }
 
-        this._alphaMode = mode;
+        this._alphaMode[targetIndex] = mode;
     }
 
     public override setInt(uniform: WebGLUniformLocation, int: number): boolean {
@@ -2058,20 +2064,20 @@ export class NativeEngine extends Engine {
      * @returns ImageBitmap
      */
     public override async createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        return await new Promise((resolve, reject) => {
-            if (Array.isArray(image)) {
-                const arr = <Array<ArrayBufferView>>image;
-                if (arr.length) {
-                    const image = this._engine.createImageBitmap(arr[0]);
-                    if (image) {
-                        resolve(image);
-                        return;
-                    }
-                }
+        // Back-compat: Because of the previous Blob hack, this could be an array of BlobParts.
+        if (Array.isArray(image)) {
+            const arr = <Array<ArrayBuffer>>image;
+            if (arr.length) {
+                return this._engine.createImageBitmap(arr[0]);
             }
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(`Unsupported data for createImageBitmap.`);
-        });
+        }
+
+        if (image instanceof Blob) {
+            const data = await image.arrayBuffer();
+            return this._engine.createImageBitmap(data);
+        }
+
+        throw new Error("Unsupported data for createImageBitmap.");
     }
 
     /**

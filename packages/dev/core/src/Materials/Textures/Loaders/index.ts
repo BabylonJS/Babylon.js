@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./internalTextureLoader";
 export * from "./ddsTextureLoader";
 export * from "./envTextureLoader";
@@ -8,5 +9,4 @@ export * from "./basisTextureLoader";
 export * from "./exrTextureLoader";
 export * from "./iesTextureLoader";
 export * from "./textureLoaderManager";
-// eslint-disable-next-line import/no-internal-modules
 export * from "./EXR/index";

@@ -90,6 +90,7 @@ export class MockedAudioObjects {
             .mockImplementation(() => {
                 return {
                     addEventListener: jest.fn().mockName("addEventListener"),
+                    canPlayType: jest.fn().mockName("canPlayType").mockReturnValue(""),
                     controls: true,
                     crossOrigin: null,
                     loop: false,
@@ -169,8 +170,12 @@ export class MockedAudioObjects {
                             return Promise.resolve();
                         }),
                     addEventListener: jest.fn().mockName("addEventListener"),
+                    removeEventListener: jest.fn().mockName("removeEventListener"),
                 };
             }) as any;
+
+        window.OfflineAudioContext = window.AudioContext as any;
+        window.GainNode = GainNodeMock as any;
     }
 
     get audioBufferSource() {

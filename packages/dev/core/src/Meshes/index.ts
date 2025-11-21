@@ -1,5 +1,5 @@
 /* eslint-disable import/export */
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./abstractMesh";
 import "./abstractMesh.decalMap";
 export * from "./abstractMesh.hotSpot";

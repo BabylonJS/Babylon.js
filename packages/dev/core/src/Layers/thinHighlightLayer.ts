@@ -1,16 +1,4 @@
-import type {
-    Observer,
-    Nullable,
-    Scene,
-    SubMesh,
-    AbstractMesh,
-    Mesh,
-    Effect,
-    IThinEffectLayerOptions,
-    Color3,
-    EffectWrapper,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
+import type { Observer, Nullable, Scene, SubMesh, AbstractMesh, Mesh, Effect, IThinEffectLayerOptions, Color3, EffectWrapper } from "core/index";
 import { Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Material } from "../Materials/material";

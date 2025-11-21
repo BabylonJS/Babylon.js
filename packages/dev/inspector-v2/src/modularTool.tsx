@@ -1,28 +1,40 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { IDisposable } from "core/index";
-
 import type { ComponentType, FunctionComponent } from "react";
+import type { TernaryDarkMode } from "usehooks-ts";
+
+import type { IDisposable } from "core/index";
 import type { IExtensionFeed } from "./extensibility/extensionFeed";
-import type { IExtension } from "./extensibility/extensionManager";
+import type { IExtension, InstallFailedInfo } from "./extensibility/extensionManager";
 import type { WeaklyTypedServiceDefinition } from "./modularity/serviceContainer";
 import type { IRootComponentService, ShellServiceOptions } from "./services/shellService";
 
-import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, FluentProvider, makeStyles, Spinner } from "@fluentui/react-components";
+import {
+    Body1,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    List,
+    ListItem,
+    makeStyles,
+    Spinner,
+    tokens,
+} from "@fluentui/react-components";
+import { ErrorCircleRegular } from "@fluentui/react-icons";
 import { createElement, Suspense, useCallback, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { useTernaryDarkMode } from "usehooks-ts";
 
-import { Logger } from "core/Misc";
 import { Deferred } from "core/Misc/deferred";
-
+import { Logger } from "core/Misc/logger";
+import { Theme } from "./components/theme";
 import { ExtensionManagerContext } from "./contexts/extensionManagerContext";
 import { ExtensionManager } from "./extensibility/extensionManager";
+import { SetThemeMode } from "./hooks/themeHooks";
 import { ServiceContainer } from "./modularity/serviceContainer";
-import { ExtensionListServiceDefinition } from "./services/extensionsListService";
 import { MakeShellServiceDefinition, RootComponentServiceIdentity } from "./services/shellService";
 import { ThemeSelectorServiceDefinition } from "./services/themeSelectorService";
-//import { DarkTheme, LightTheme } from "./themes/babylonTheme";
-import { webDarkTheme as DarkTheme, webLightTheme as LightTheme } from "@fluentui/react-components";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -40,6 +52,15 @@ const useStyles = makeStyles({
             to: { opacity: 1 },
         },
     },
+    extensionErrorTitleDiv: {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        gap: tokens.spacingHorizontalS,
+    },
+    extensionErrorIcon: {
+        color: tokens.colorPaletteRedForeground1,
+    },
 });
 
 export type ModularToolOptions = {
@@ -54,9 +75,14 @@ export type ModularToolOptions = {
     serviceDefinitions: readonly WeaklyTypedServiceDefinition[];
 
     /**
-     * Whether the tool should allow user selection of the theme (e.g. dark/light/system).
+     * The theme mode to use. If not specified, the default is "system", which uses the system/browser preference, and the last used mode is persisted.
      */
-    isThemeable?: boolean;
+    themeMode?: TernaryDarkMode;
+
+    /**
+     * Whether to show the theme selector in the toolbar. Default is true.
+     */
+    showThemeSelector?: boolean;
 
     /**
      * The extension feeds that provide optional extensions the user can install.
@@ -70,14 +96,17 @@ export type ModularToolOptions = {
  * @returns A token that can be used to dispose of the tool.
  */
 export function MakeModularTool(options: ModularToolOptions): IDisposable {
-    const { containerElement, serviceDefinitions, isThemeable = true, extensionFeeds = [] } = options;
+    const { containerElement, serviceDefinitions, themeMode, showThemeSelector = true, extensionFeeds = [] } = options;
+    if (themeMode) {
+        SetThemeMode(themeMode);
+    }
 
     const modularToolRootComponent: FunctionComponent = () => {
         const classes = useStyles();
         const [extensionManagerContext, setExtensionManagerContext] = useState<ExtensionManagerContext>();
-        const { isDarkMode } = useTernaryDarkMode();
         const [requiredExtensions, setRequiredExtensions] = useState<string[]>();
         const [requiredExtensionsDeferred, setRequiredExtensionsDeferred] = useState<Deferred<boolean>>();
+        const [extensionInstallError, setExtensionInstallError] = useState<InstallFailedInfo>();
 
         const [rootComponent, setRootComponent] = useState<ComponentType>();
 
@@ -104,11 +133,12 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
 
                 // Register the extension list service (for browsing/installing extensions) if extension feeds are provided.
                 if (extensionFeeds.length > 0) {
+                    const { ExtensionListServiceDefinition } = await import("./services/extensionsListService");
                     await serviceContainer.addServiceAsync(ExtensionListServiceDefinition);
                 }
 
                 // Register the theme selector service (for selecting the theme) if theming is configured.
-                if (isThemeable) {
+                if (showThemeSelector) {
                     await serviceContainer.addServiceAsync(ThemeSelectorServiceDefinition);
                 }
 
@@ -116,7 +146,7 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                 await serviceContainer.addServicesAsync(...serviceDefinitions);
 
                 // Create the extension manager, passing along the registry for runtime changes to the registered services.
-                const extensionManager = await ExtensionManager.CreateAsync(serviceContainer, extensionFeeds);
+                const extensionManager = await ExtensionManager.CreateAsync(serviceContainer, extensionFeeds, setExtensionInstallError);
 
                 // Check query params for required extensions. This lets users share links with sets of extensions.
                 const queryParams = new URLSearchParams(window.location.search);
@@ -182,13 +212,17 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
             requiredExtensionsDeferred?.resolve(false);
         }, [setRequiredExtensions, requiredExtensionsDeferred]);
 
+        const onAcknowledgedExtensionInstallError = useCallback(() => {
+            setExtensionInstallError(undefined);
+        }, [setExtensionInstallError]);
+
         // Show a spinner until a main view has been set.
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const Content: ComponentType = rootComponent ?? (() => <Spinner className={classes.spinner} />);
 
         return (
             <ExtensionManagerContext.Provider value={extensionManagerContext}>
-                <FluentProvider className={classes.app} theme={isDarkMode ? DarkTheme : LightTheme}>
+                <Theme className={classes.app}>
                     <>
                         <Dialog open={!!requiredExtensions} modalType="alert">
                             <DialogSurface>
@@ -209,11 +243,38 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
                                 </DialogBody>
                             </DialogSurface>
                         </Dialog>
+                        <Dialog open={!!extensionInstallError} modalType="alert">
+                            <DialogSurface>
+                                <DialogBody>
+                                    <DialogTitle>
+                                        <div className={classes.extensionErrorTitleDiv}>
+                                            Extension Install Error
+                                            <ErrorCircleRegular className={classes.extensionErrorIcon} />
+                                        </div>
+                                    </DialogTitle>
+                                    <DialogContent>
+                                        <List>
+                                            <ListItem>
+                                                <Body1>{`Extension "${extensionInstallError?.extension.name}" failed to install and was removed.`}</Body1>
+                                            </ListItem>
+                                            <ListItem>
+                                                <Body1>{`${extensionInstallError?.error}`}</Body1>
+                                            </ListItem>
+                                        </List>
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button appearance="primary" onClick={onAcknowledgedExtensionInstallError}>
+                                            Close
+                                        </Button>
+                                    </DialogActions>
+                                </DialogBody>
+                            </DialogSurface>
+                        </Dialog>
                         <Suspense fallback={<Spinner className={classes.spinner} />}>
                             <Content />
                         </Suspense>
                     </>
-                </FluentProvider>
+                </Theme>
             </ExtensionManagerContext.Provider>
         );
     };

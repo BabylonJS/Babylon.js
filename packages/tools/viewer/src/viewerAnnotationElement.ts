@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { IDisposable, Nullable } from "core/index";
 import type { PropertyValues } from "lit";
 

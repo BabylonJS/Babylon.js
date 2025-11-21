@@ -71,7 +71,7 @@ const identity = mat4x4f(
 
 struct Settings {
     morphTargetTextureInfo: vec3f,
-    morphTargetCount: i32,
+    morphTargetCount: f32,
     indexResult : u32,
 };
 
@@ -165,7 +165,7 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
 
 #ifdef MORPHTARGETS
     for (var i = 0; i < NUM_MORPH_INFLUENCERS; i = i + 1) {
-        if (i >= settings.morphTargetCount) {
+        if (f32(i) >= settings.morphTargetCount) {
             break;
         }
         positionUpdated = positionUpdated + (readVector3FromRawSampler(i, index) - position) * morphTargetInfluences[i];

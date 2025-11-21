@@ -7,6 +7,7 @@ module.exports = (env) => {
         outputPath: path.resolve(__dirname),
         entryPoints: {
             loaders: "./src/index.ts",
+            bvhFileLoader: "./src/bvhFileLoader.ts",
             glTF1FileLoader: "./src/glTF1FileLoader.ts",
             glTF2FileLoader: "./src/glTF2FileLoader.ts",
             glTFFileLoader: "./src/glTFFileLoader.ts",

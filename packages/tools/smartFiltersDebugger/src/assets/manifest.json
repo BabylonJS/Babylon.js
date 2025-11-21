@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Smart Filter Debugger",
+    "version": "0.1.0",
+    "description": "Debugger for Babylon.js Smart Filters",
+    "permissions": ["scripting", "activeTab"],
+    "background": {
+        "service_worker": "scripts/background.js"
+    },
+    "action": {
+        "default_icon": {
+            "16": "icons/smartFilter_16.png",
+            "24": "icons/smartFilter_24.png",
+            "32": "icons/smartFilter_32.png"
+        }
+    },
+    "icons": {
+        "16": "icons/smartFilter_16.png",
+        "24": "icons/smartFilter_24.png",
+        "128": "icons/smartFilter_128.png"
+    }
+}

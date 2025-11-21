@@ -1,21 +1,24 @@
-// eslint-disable-next-line import/no-internal-modules
-
 import type { CheckboxOnChangeData } from "@fluentui/react-components";
 import type { ChangeEvent, FunctionComponent } from "react";
 
-import { Checkbox as FluentCheckbox } from "@fluentui/react-components";
+import { Checkbox as FluentCheckbox, makeStyles } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
-import type { BaseComponentProps } from "../hoc/propertyLine";
+import type { PrimitiveProps } from "./primitive";
 
-export type CheckboxProps = BaseComponentProps<boolean>;
+const useCheckboxStyles = makeStyles({
+    indicator: {
+        margin: 0,
+    },
+});
 /**
  * This is a primitive fluent checkbox that can both read and write checked state
  * @param props
  * @returns Checkbox component
  */
-export const Checkbox: FunctionComponent<CheckboxProps> = (props) => {
+export const Checkbox: FunctionComponent<PrimitiveProps<boolean>> = (props) => {
+    Checkbox.displayName = "Checkbox";
     const [checked, setChecked] = useState(() => props.value ?? false);
-
+    const classes = useCheckboxStyles();
     useEffect(() => {
         if (props.value != undefined) {
             setChecked(props.value); // Update local state when props.checked changes
@@ -27,5 +30,5 @@ export const Checkbox: FunctionComponent<CheckboxProps> = (props) => {
         setChecked(ev.target.checked);
     };
 
-    return <FluentCheckbox checked={checked} onChange={onChange} disabled={props.disabled} />;
+    return <FluentCheckbox checked={checked} onChange={onChange} indicator={{ className: classes.indicator }} />;
 };

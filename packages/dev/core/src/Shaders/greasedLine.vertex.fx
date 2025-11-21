@@ -46,7 +46,7 @@ void main() {
 
         vec3 positionUpdated = position + grl_offsets;
         vec3 worldDir = normalize(grlNext - grlPrevious);
-        vec3 nearPosition = positionUpdated + (worldDir * 0.001);
+        vec3 nearPosition = positionUpdated + (worldDir * 0.01);
         vec4 grlFinalPosition = grlMatrix * vec4( positionUpdated , 1.0);
         vec4 screenNearPos = grlMatrix * vec4(nearPosition, 1.0);
         vec2 grlLinePosition = grlFix(grlFinalPosition, grlAspect);

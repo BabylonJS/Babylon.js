@@ -334,6 +334,11 @@ export class PostProcess {
     @serialize()
     public adaptScaleToCurrentViewport = false;
 
+    /**
+     * Specifies if the post process should be serialized
+     */
+    public doNotSerialize = false;
+
     private _camera: Camera;
     protected _scene: Scene;
     private _engine: AbstractEngine;
@@ -678,7 +683,7 @@ export class PostProcess {
             camera.attachPostProcess(this);
             this._engine = this._scene.getEngine();
 
-            this._scene.postProcesses.push(this);
+            this._scene.addPostProcess(this);
             this.uniqueId = this._scene.getUniqueId();
         } else if (engine) {
             this._engine = engine;
@@ -1147,10 +1152,7 @@ export class PostProcess {
 
         let index;
         if (this._scene) {
-            index = this._scene.postProcesses.indexOf(this);
-            if (index !== -1) {
-                this._scene.postProcesses.splice(index, 1);
-            }
+            index = this._scene.removePostProcess(this);
         }
 
         if (this._parentContainer) {

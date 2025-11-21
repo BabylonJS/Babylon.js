@@ -1,21 +1,22 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene } from "core/index";
 
 import { makeStyles, tokens } from "@fluentui/react-components";
 
 import { AbstractEngine } from "core/Engines/abstractEngine";
-
-import { AccordionPane } from "../accordionPane";
+import { TextPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
+import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { useObservableState } from "../../hooks/observableHooks";
+import { ExtensibleAccordion } from "../extensibleAccordion";
+import { SidePaneContainer } from "../pane";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
-    fixedStatsDiv: {
-        padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM} 0 ${tokens.spacingHorizontalM}`,
+    pinnedStatsPane: {
+        flex: "0 1 auto",
+        paddingBottom: tokens.spacingHorizontalM,
     },
 });
 
-export const StatsPane: typeof AccordionPane<Scene> = (props) => {
+export const StatsPane: typeof ExtensibleAccordion<Scene> = (props) => {
     const classes = useStyles();
 
     const scene = props.context;
@@ -23,11 +24,12 @@ export const StatsPane: typeof AccordionPane<Scene> = (props) => {
     const fps = useObservableState(() => Math.round(engine.getFps()), engine.onBeginFrameObservable);
 
     return (
-        // TODO: Use the new Fluent property line shared components.
         <>
-            <div className={classes.fixedStatsDiv}>Version: {AbstractEngine.Version}</div>
-            <div className={classes.fixedStatsDiv}>FPS: {fps}</div>
-            <AccordionPane {...props} />
+            <SidePaneContainer className={classes.pinnedStatsPane}>
+                <TextPropertyLine key="EngineVersion" label="Version" description="The Babylon.js engine version." value={AbstractEngine.Version} />
+                <StringifiedPropertyLine key="FPS" label="FPS:" description="The current framerate" value={fps} />
+            </SidePaneContainer>
+            <ExtensibleAccordion {...props} />
         </>
     );
 };

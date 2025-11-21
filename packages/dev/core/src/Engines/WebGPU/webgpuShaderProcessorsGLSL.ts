@@ -281,7 +281,8 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         defines: string[],
         isFragment: boolean,
         _processingContext: Nullable<_IShaderProcessingContext>,
-        _parameters?: { [key: string]: number | string | boolean | undefined }
+        _parameters: { [key: string]: number | string | boolean | undefined },
+        preProcessors: { [key: string]: string }
     ): string {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
@@ -325,6 +326,9 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 code = InjectStartingAndEndingCode(code, "void main", fragCoordCode);
             }
         } else {
+            if ("VERTEXOUTPUT_INVARIANT" in preProcessors) {
+                code = "invariant gl_Position;\n" + code;
+            }
             code = code.replace(/gl_InstanceID/g, "gl_InstanceIndex");
             code = code.replace(/gl_VertexID/g, "gl_VertexIndex");
             const hasMultiviewExtension = defines.indexOf("#define MULTIVIEW") !== -1;

@@ -16,7 +16,9 @@ import { HDRCubeTexture } from "../../Materials/Textures/hdrCubeTexture";
 import { AnimationGroup } from "../../Animations/animationGroup";
 import { Light } from "../../Lights/light";
 import { SceneComponentConstants } from "../../sceneComponent";
-import { SceneLoader } from "../../Loading/sceneLoader";
+import { RegisterSceneLoaderPlugin } from "../../Loading/sceneLoader";
+import { SceneLoaderFlags } from "../sceneLoaderFlags";
+import { Constants } from "../../Engines";
 import { AssetContainer } from "../../assetContainer";
 import { ActionManager } from "../../Actions/actionManager";
 import type { IParticleSystem } from "../../Particles/IParticleSystem";
@@ -152,7 +154,19 @@ const FindMaterial = (materialId: any, scene: Scene) => {
     return TempMaterialIndexContainer[materialId];
 };
 
-const LoadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
+/**
+ * @experimental
+ * Loads an AssetContainer from a serialized Babylon scene.
+ * @param scene The scene to load the asset container into.
+ * @param serializedScene The serialized scene data. This can be either a JSON string, or an object (e.g. from a call to JSON.parse).
+ * @param rootUrl The root URL for loading assets.
+ * @returns The loaded AssetContainer.
+ */
+export function LoadAssetContainerFromSerializedScene(scene: Scene, serializedScene: string | object, rootUrl: string): AssetContainer {
+    return LoadAssetContainer(scene, serializedScene, rootUrl);
+}
+
+const LoadAssetContainer = (scene: Scene, data: string | object, rootUrl: string, onError?: (message: string, exception?: any) => void, addToScene = false): AssetContainer => {
     const container = new AssetContainer(scene);
 
     // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
@@ -162,9 +176,9 @@ const LoadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
     let log = "importScene has failed JSON parse";
     try {
         // eslint-disable-next-line no-var
-        var parsedData = JSON.parse(data);
+        var parsedData = typeof data === "object" ? data : JSON.parse(data);
         log = "";
-        const fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
+        const fullDetails = SceneLoaderFlags.loggingLevel === Constants.SCENELOADER_DETAILED_LOGGING;
 
         let index: number;
         let cache: number;
@@ -424,10 +438,43 @@ const LoadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         }
 
         // Animation Groups
-        if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null) {
+        if (parsedData.animationGroups !== undefined && parsedData.animationGroups !== null && parsedData.animationGroups.length) {
+            // Build the nodeMap only for scenes with animationGroups
+            const nodeMap = new Map<Node["id"], Node>();
+            // Nodes in scene does not change when parsing animationGroups, so it's safe to build a map.
+            // This follows the order of scene.getNodeById: mesh, transformNode, light, camera, bone
+            for (let index = 0; index < scene.meshes.length; index++) {
+                // This follows the behavior of scene.getXXXById, which picks the first match
+                if (!nodeMap.has(scene.meshes[index].id)) {
+                    nodeMap.set(scene.meshes[index].id, scene.meshes[index]);
+                }
+            }
+            for (let index = 0; index < scene.transformNodes.length; index++) {
+                if (!nodeMap.has(scene.transformNodes[index].id)) {
+                    nodeMap.set(scene.transformNodes[index].id, scene.transformNodes[index]);
+                }
+            }
+            for (let index = 0; index < scene.lights.length; index++) {
+                if (!nodeMap.has(scene.lights[index].id)) {
+                    nodeMap.set(scene.lights[index].id, scene.lights[index]);
+                }
+            }
+            for (let index = 0; index < scene.cameras.length; index++) {
+                if (!nodeMap.has(scene.cameras[index].id)) {
+                    nodeMap.set(scene.cameras[index].id, scene.cameras[index]);
+                }
+            }
+            for (let skeletonIndex = 0; skeletonIndex < scene.skeletons.length; skeletonIndex++) {
+                const skeleton = scene.skeletons[skeletonIndex];
+                for (let boneIndex = 0; boneIndex < skeleton.bones.length; boneIndex++) {
+                    if (!nodeMap.has(skeleton.bones[boneIndex].id)) {
+                        nodeMap.set(skeleton.bones[boneIndex].id, skeleton.bones[boneIndex]);
+                    }
+                }
+            }
             for (index = 0, cache = parsedData.animationGroups.length; index < cache; index++) {
                 const parsedAnimationGroup = parsedData.animationGroups[index];
-                const animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene);
+                const animationGroup = AnimationGroup.Parse(parsedAnimationGroup, scene, nodeMap);
                 container.animationGroups.push(animationGroup);
                 animationGroup._parentContainer = container;
                 log += index === 0 ? "\n\tAnimationGroups:" : "";
@@ -602,15 +649,17 @@ const LoadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
         if (!addToScene) {
             container.removeAllFromScene();
         }
-        if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-            Logger.Log(logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+        if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
+            Logger.Log(
+                logOperation("loadAssets", parsedData ? parsedData.producer : "Unknown") + (SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_MINIMAL_LOGGING ? log : "")
+            );
         }
     }
 
     return container;
 };
 
-SceneLoader.RegisterPlugin({
+RegisterSceneLoaderPlugin({
     name: "babylon.js",
     extensions: ".babylon",
     canDirectLoad: (data: string) => {
@@ -640,7 +689,7 @@ SceneLoader.RegisterPlugin({
             // eslint-disable-next-line no-var
             var parsedData = JSON.parse(data);
             log = "";
-            const fullDetails = SceneLoader.loggingLevel === SceneLoader.DETAILED_LOGGING;
+            const fullDetails = SceneLoaderFlags.loggingLevel === Constants.SCENELOADER_DETAILED_LOGGING;
             if (!meshesNames) {
                 meshesNames = null;
             } else if (!Array.isArray(meshesNames)) {
@@ -946,8 +995,10 @@ SceneLoader.RegisterPlugin({
                 throw err;
             }
         } finally {
-            if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                Logger.Log(logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+            if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
+                Logger.Log(
+                    logOperation("importMesh", parsedData ? parsedData.producer : "Unknown") + (SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_MINIMAL_LOGGING ? log : "")
+                );
             }
             TempMaterialIndexContainer = {};
             TempMorphTargetManagerIndexContainer = {};
@@ -968,7 +1019,7 @@ SceneLoader.RegisterPlugin({
 
             // Scene
             if (parsedData.useDelayedTextureLoading !== undefined && parsedData.useDelayedTextureLoading !== null) {
-                scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !SceneLoader.ForceFullSceneLoadingForIncremental;
+                scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !SceneLoaderFlags.ForceFullSceneLoadingForIncremental;
             }
             if (parsedData.autoClear !== undefined && parsedData.autoClear !== null) {
                 scene.autoClear = parsedData.autoClear;
@@ -1070,8 +1121,10 @@ SceneLoader.RegisterPlugin({
                 throw err;
             }
         } finally {
-            if (log !== null && SceneLoader.loggingLevel !== SceneLoader.NO_LOGGING) {
-                Logger.Log(logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoader.loggingLevel !== SceneLoader.MINIMAL_LOGGING ? log : ""));
+            if (log !== null && SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_NO_LOGGING) {
+                Logger.Log(
+                    logOperation("importScene", parsedData ? parsedData.producer : "Unknown") + (SceneLoaderFlags.loggingLevel !== Constants.SCENELOADER_MINIMAL_LOGGING ? log : "")
+                );
             }
         }
         return false;

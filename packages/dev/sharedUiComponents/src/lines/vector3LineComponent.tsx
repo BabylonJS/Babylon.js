@@ -10,7 +10,7 @@ import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
-import { Vector3PropertyLine } from "../fluent/hoc/vectorPropertyLine";
+import { Vector3PropertyLine } from "../fluent/hoc/propertyLines/vectorPropertyLine";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
 
 interface IVector3LineComponentProps {
@@ -148,7 +148,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         return (
             <Vector3PropertyLine
                 label={this.props.label}
-                onChange={(val) => this.setState({ value: val })}
+                onChange={(val: Vector3) => this.setState({ value: val })}
                 value={this.props.target[this.props.propertyName!]}
                 onCopy={() => this.onCopyClick()}
             />

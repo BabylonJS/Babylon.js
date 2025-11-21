@@ -26,6 +26,8 @@ import { EngineStore } from "../../Engines/engineStore";
 import { Constants } from "../../Engines/constants";
 import type { WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 import { Tools } from "core/Misc/tools";
+import type { WebXRCamera } from "../webXRCamera";
+import type { Node } from "../../node";
 
 declare const XRHand: XRHand;
 
@@ -315,6 +317,11 @@ export class WebXRHand implements IDisposable {
     private _jointRadii = new Float32Array(HandJointReferenceArray.length);
 
     /**
+     * The hand mesh's top-most parent, if any.
+     */
+    private _handMeshRoot: Nullable<Node> = null;
+
+    /**
      * Get the hand mesh.
      */
     public get handMesh(): Nullable<AbstractMesh> {
@@ -405,6 +412,11 @@ export class WebXRHand implements IDisposable {
     public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>, _xrSessionManager?: WebXRSessionManager) {
         this._handMesh = handMesh;
 
+        this._handMeshRoot = this._handMesh;
+        while (this._handMeshRoot.parent) {
+            this._handMeshRoot = this._handMeshRoot.parent;
+        }
+
         // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
         handMesh.alwaysSelectAsActiveMesh = true;
         const children = handMesh.getChildMeshes();
@@ -431,8 +443,9 @@ export class WebXRHand implements IDisposable {
      * Update this hand from the latest xr frame.
      * @param xrFrame The latest frame received from WebXR.
      * @param referenceSpace The current viewer reference space.
+     * @param xrCamera the xr camera, used for parenting
      */
-    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
+    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrCamera: WebXRCamera) {
         const hand = this.xrController.inputSource.hand;
         if (!hand) {
             return;
@@ -477,6 +490,7 @@ export class WebXRHand implements IDisposable {
             jointMesh.position.copyFrom(jointTransform.position);
             jointMesh.rotationQuaternion!.copyFrom(jointTransform.rotationQuaternion!);
             jointMesh.scaling.setAll(scaledJointRadius);
+            jointMesh.parent = xrCamera.parent;
 
             // The WebXR data comes as right-handed, so we might need to do some conversions.
             if (!this._scene.useRightHandedSystem) {
@@ -494,7 +508,13 @@ export class WebXRHand implements IDisposable {
 
         if (this._handMesh) {
             this._handMesh.isVisible = true;
+
+            if (this._handMeshRoot) {
+                this._handMeshRoot.parent = xrCamera.parent;
+            }
         }
+
+        this.xrController.pointer.parent = xrCamera.parent;
     }
 
     /**
@@ -874,8 +894,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
-        this._trackingHands.left?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace);
-        this._trackingHands.right?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace);
+        this._trackingHands.left?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace, this.options.xrInput.xrCamera);
+        this._trackingHands.right?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace, this.options.xrInput.xrCamera);
     }
 
     private _attachHand = (xrController: WebXRInputSource) => {

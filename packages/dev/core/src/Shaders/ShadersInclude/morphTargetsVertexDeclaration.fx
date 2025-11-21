@@ -24,6 +24,6 @@
 		attribute vec4 color{X};
 		#endif
 	#elif {X} == 0
-		uniform int morphTargetCount;
+		uniform float morphTargetCount;
 	#endif
 #endif

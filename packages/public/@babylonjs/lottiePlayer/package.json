@@ -1,0 +1,48 @@
+{
+    "name": "@babylonjs/lottie-player",
+    "version": "8.37.0",
+    "main": "index.js",
+    "module": "index.js",
+    "types": "index.d.ts",
+    "esnext": "index.js",
+    "description": "Babylon.js Lottie Player",
+    "keywords": [
+        "animation",
+        "2D",
+        "javascript",
+        "html5",
+        "webgl",
+        "webgl2",
+        "webgpu",
+        "babylon",
+        "lottie"
+    ],
+    "license": "MIT",
+    "readme": "README.md",
+    "type": "module",
+    "sideEffects": true,
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "files": [
+        "**/*.js",
+        "**/*.d.ts",
+        "**/*.map",
+        "readme.md",
+        "license.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo -g && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|tasks.json|cjs)\" -g",
+        "compile": "tsc -b tsconfig.build.json",
+        "postcompile": "build-tools -c add-js-to-es6"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "^1.0.0",
+        "@dev/core": "^1.0.0"
+    },
+    "peerDependencies": {
+        "@babylonjs/core": "^7.47.3 || ^8.0.1"
+    }
+}

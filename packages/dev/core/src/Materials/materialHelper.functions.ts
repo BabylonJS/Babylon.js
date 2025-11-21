@@ -1,10 +1,8 @@
 import { Logger } from "../Misc/logger";
-import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Constants } from "../Engines/constants";
-import { Color3 } from "../Maths/math.color";
 import { EngineStore } from "../Engines/engineStore";
 import type { Mesh } from "../Meshes/mesh";
 import type { UniformBuffer } from "./uniformBuffer";
@@ -18,10 +16,18 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { PrepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
-import type { MorphTargetManager } from "core/Morph/morphTargetManager";
+import type { MorphTargetManager } from "../Morph/morphTargetManager";
+import type { IColor3Like } from "core/Maths/math.like";
+import { MaterialFlags } from "./materialFlags";
+import { Texture } from "./Textures/texture";
+import type { CubeTexture } from "./Textures/cubeTexture";
+import type { Color3 } from "core/Maths/math.color";
+
+// For backwards compatibility, we export everything from the pure version of this file.
+export * from "./materialHelper.functions.pure";
 
 // Temps
-const TempFogColor = Color3.Black();
+const TempFogColor: IColor3Like = { r: 0, g: 0, b: 0 };
 const TmpMorphInfluencers = {
     NUM_MORPH_INFLUENCERS: 0,
     NORMAL: false,
@@ -30,22 +36,6 @@ const TmpMorphInfluencers = {
     UV2: false,
     COLOR: false,
 };
-
-/**
- * Binds the logarithmic depth information from the scene to the effect for the given defines.
- * @param defines The generated defines used in the effect
- * @param effect The effect we are binding the data to
- * @param scene The scene we are willing to render with logarithmic scale for
- */
-export function BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-    if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
-        const camera = scene.activeCamera as Camera;
-        if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
-            Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
-        }
-        effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
-    }
-}
 
 /**
  * Binds the fog information from the scene to the effect for the given mesh.
@@ -264,6 +254,125 @@ export function BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Ef
  */
 export function BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
     sceneUbo.bindToEffect(effect, "Scene");
+}
+
+/**
+ * Update parameters for IBL
+ * @param scene The scene
+ * @param defines The list of shader defines for the material
+ * @param ubo The uniform buffer to update
+ * @param reflectionColor The color to use for the reflection
+ * @param reflectionTexture The IBL texture
+ * @param realTimeFiltering Whether realtime filtering of IBL texture is being used
+ * @param supportTextureInfo Whether the texture info is supported
+ * @param supportLocalProjection Whether local projection is supported
+ * @param usePBR Whether PBR is being used
+ * @param supportSH Whether spherical harmonics are supported
+ * @param useColor Whether to use the reflection color
+ * @param reflectionBlur The level of blur of the reflection
+ */
+export function BindIBLParameters(
+    scene: Scene,
+    defines: any,
+    ubo: UniformBuffer,
+    reflectionColor: Color3,
+    reflectionTexture: Nullable<BaseTexture> = null,
+    realTimeFiltering: boolean = false,
+    supportTextureInfo: boolean = false,
+    supportLocalProjection: boolean = false,
+    usePBR: boolean = false,
+    supportSH: boolean = false,
+    useColor: boolean = false,
+    reflectionBlur: number = 0
+): void {
+    if (scene.texturesEnabled) {
+        if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
+            ubo.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
+            ubo.updateFloat2("vReflectionInfos", reflectionTexture.level * scene.iblIntensity, reflectionBlur);
+
+            if (supportLocalProjection && (<any>reflectionTexture).boundingBoxSize) {
+                const cubeTexture = <CubeTexture>reflectionTexture;
+
+                ubo.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
+                ubo.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
+            }
+
+            if (realTimeFiltering) {
+                const width = reflectionTexture.getSize().width;
+                ubo.updateFloat2("vReflectionFilteringInfo", width, Math.log2(width));
+            }
+
+            if (supportSH && !defines.USEIRRADIANCEMAP) {
+                const polynomials = reflectionTexture.sphericalPolynomial;
+                if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {
+                    if (defines.SPHERICAL_HARMONICS) {
+                        const preScaledHarmonics = polynomials.preScaledHarmonics;
+                        ubo.updateVector3("vSphericalL00", preScaledHarmonics.l00);
+                        ubo.updateVector3("vSphericalL1_1", preScaledHarmonics.l1_1);
+                        ubo.updateVector3("vSphericalL10", preScaledHarmonics.l10);
+                        ubo.updateVector3("vSphericalL11", preScaledHarmonics.l11);
+                        ubo.updateVector3("vSphericalL2_2", preScaledHarmonics.l2_2);
+                        ubo.updateVector3("vSphericalL2_1", preScaledHarmonics.l2_1);
+                        ubo.updateVector3("vSphericalL20", preScaledHarmonics.l20);
+                        ubo.updateVector3("vSphericalL21", preScaledHarmonics.l21);
+                        ubo.updateVector3("vSphericalL22", preScaledHarmonics.l22);
+                    } else {
+                        ubo.updateFloat3("vSphericalX", polynomials.x.x, polynomials.x.y, polynomials.x.z);
+                        ubo.updateFloat3("vSphericalY", polynomials.y.x, polynomials.y.y, polynomials.y.z);
+                        ubo.updateFloat3("vSphericalZ", polynomials.z.x, polynomials.z.y, polynomials.z.z);
+                        ubo.updateFloat3("vSphericalXX_ZZ", polynomials.xx.x - polynomials.zz.x, polynomials.xx.y - polynomials.zz.y, polynomials.xx.z - polynomials.zz.z);
+                        ubo.updateFloat3("vSphericalYY_ZZ", polynomials.yy.x - polynomials.zz.x, polynomials.yy.y - polynomials.zz.y, polynomials.yy.z - polynomials.zz.z);
+                        ubo.updateFloat3("vSphericalZZ", polynomials.zz.x, polynomials.zz.y, polynomials.zz.z);
+                        ubo.updateFloat3("vSphericalXY", polynomials.xy.x, polynomials.xy.y, polynomials.xy.z);
+                        ubo.updateFloat3("vSphericalYZ", polynomials.yz.x, polynomials.yz.y, polynomials.yz.z);
+                        ubo.updateFloat3("vSphericalZX", polynomials.zx.x, polynomials.zx.y, polynomials.zx.z);
+                    }
+                }
+            } else if (usePBR) {
+                // If we're using an irradiance map with a dominant direction assigned, set it.
+                if (defines.USEIRRADIANCEMAP && defines.USE_IRRADIANCE_DOMINANT_DIRECTION) {
+                    ubo.updateVector3("vReflectionDominantDirection", reflectionTexture.irradianceTexture!._dominantDirection!);
+                }
+            }
+
+            if (supportTextureInfo) {
+                ubo.updateFloat3("vReflectionMicrosurfaceInfos", reflectionTexture.getSize().width, reflectionTexture.lodGenerationScale, reflectionTexture.lodGenerationOffset);
+            }
+        }
+    }
+    if (useColor) {
+        ubo.updateColor3("vReflectionColor", reflectionColor);
+    }
+}
+
+/**
+ * Update parameters for IBL
+ * @param scene The scene
+ * @param defines The list of shader defines for the material
+ * @param ubo The uniform buffer to update
+ * @param reflectionTexture The IBL texture
+ * @param realTimeFiltering Whether realtime filtering of IBL texture is being used
+ */
+export function BindIBLSamplers(scene: Scene, defines: any, ubo: UniformBuffer, reflectionTexture: Nullable<BaseTexture> = null, realTimeFiltering: boolean = false): void {
+    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
+        if (defines.LODBASEDMICROSFURACE) {
+            ubo.setTexture("reflectionSampler", reflectionTexture);
+        } else {
+            ubo.setTexture("reflectionSampler", reflectionTexture._lodTextureMid || reflectionTexture);
+            ubo.setTexture("reflectionSamplerLow", reflectionTexture._lodTextureLow || reflectionTexture);
+            ubo.setTexture("reflectionSamplerHigh", reflectionTexture._lodTextureHigh || reflectionTexture);
+        }
+
+        if (defines.USEIRRADIANCEMAP) {
+            ubo.setTexture("irradianceSampler", reflectionTexture.irradianceTexture);
+        }
+
+        //if realtime filtering and using CDF maps, set them.
+        const cdfGenerator = scene.iblCdfGenerator;
+        if (realTimeFiltering && cdfGenerator) {
+            ubo.setTexture("icdfSampler", cdfGenerator.getIcdfTexture());
+        }
+    }
 }
 
 /**
@@ -499,6 +608,9 @@ export function GetFogState(mesh: AbstractMesh, scene: Scene) {
  * @param alphaTest defines if alpha testing has to be turned on
  * @param defines defines the current list of defines
  * @param applyDecalAfterDetail Defines if the decal is applied after or before the detail
+ * @param useVertexPulling Defines if vertex pulling is used
+ * @param renderingMesh The mesh used for rendering
+ * @param setVertexOutputInvariant Defines if the vertex output should be invariant
  */
 export function PrepareDefinesForMisc(
     mesh: AbstractMesh,
@@ -508,7 +620,10 @@ export function PrepareDefinesForMisc(
     fogEnabled: boolean,
     alphaTest: boolean,
     defines: any,
-    applyDecalAfterDetail: boolean = false
+    applyDecalAfterDetail: boolean = false,
+    useVertexPulling: boolean = false,
+    renderingMesh?: AbstractMesh,
+    setVertexOutputInvariant?: boolean
 ): void {
     if (defines._areMiscDirty) {
         defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
@@ -517,6 +632,14 @@ export function PrepareDefinesForMisc(
         defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
         defines["ALPHATEST"] = alphaTest;
         defines["DECAL_AFTER_DETAIL"] = applyDecalAfterDetail;
+        defines["USE_VERTEX_PULLING"] = useVertexPulling;
+
+        const indexBuffer = renderingMesh?.geometry?.getIndexBuffer();
+
+        defines["VERTEX_PULLING_USE_INDEX_BUFFER"] = !!indexBuffer;
+        defines["VERTEX_PULLING_INDEX_BUFFER_32BITS"] = indexBuffer ? indexBuffer.is32Bits : false;
+
+        defines["VERTEXOUTPUT_INVARIANT"] = !!setVertexOutputInvariant;
     }
 }
 
@@ -559,7 +682,9 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
     defines["SHADOWS"] = state.shadowEnabled;
 
     // Resetting all other lights if any
-    for (let index = lightIndex; index < maxSimultaneousLights; index++) {
+    const maxLightCount = Math.max(maxSimultaneousLights, defines["MAXLIGHTCOUNT"] || 0);
+
+    for (let index = lightIndex; index < maxLightCount; index++) {
         if (defines["LIGHT" + index] !== undefined) {
             defines["LIGHT" + index] = false;
             defines["HEMILIGHT" + index] = false;
@@ -567,6 +692,7 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
             defines["DIRLIGHT" + index] = false;
             defines["SPOTLIGHT" + index] = false;
             defines["AREALIGHT" + index] = false;
+            defines["CLUSTLIGHT" + index] = false;
             defines["SHADOW" + index] = false;
             defines["SHADOWCSM" + index] = false;
             defines["SHADOWCSMDEBUG" + index] = false;
@@ -585,6 +711,8 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
         }
     }
 
+    defines["MAXLIGHTCOUNT"] = maxSimultaneousLights;
+
     const caps = scene.getEngine().getCaps();
 
     if (defines["SHADOWFLOAT"] === undefined) {
@@ -600,6 +728,142 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
     }
 
     return state.needNormals;
+}
+
+/**
+ * Prepare defines relating to IBL logic.
+ * @param scene The scene
+ * @param reflectionTexture The texture to use for IBL
+ * @param defines The defines to update
+ * @param realTimeFiltering Whether realtime filting of IBL texture is being used
+ * @param realTimeFilteringQuality The quality of realtime filtering
+ * @param forceSHInVertex Whether the SH are handled in the vertex shader
+ * @returns true if the defines were updated
+ */
+export function PrepareDefinesForIBL(
+    scene: Scene,
+    reflectionTexture: Nullable<BaseTexture>,
+    defines: any,
+    realTimeFiltering: boolean = false,
+    realTimeFilteringQuality: number = Constants.TEXTURE_FILTERING_QUALITY_LOW,
+    forceSHInVertex: boolean = false
+): boolean {
+    if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
+        if (!reflectionTexture.isReadyOrNotBlocking()) {
+            return false;
+        }
+        defines._needNormals = true;
+        defines.REFLECTION = true;
+        defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
+        defines.RGBDREFLECTION = reflectionTexture.isRGBD;
+        defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
+        defines.LINEARSPECULARREFLECTION = reflectionTexture.linearSpecularLOD;
+        defines.USEIRRADIANCEMAP = false;
+
+        const engine = scene.getEngine();
+        if (realTimeFiltering && realTimeFilteringQuality > 0) {
+            defines.NUM_SAMPLES = "" + realTimeFilteringQuality;
+            if (engine._features.needTypeSuffixInShaderConstants) {
+                defines.NUM_SAMPLES = defines.NUM_SAMPLES + "u";
+            }
+
+            defines.REALTIME_FILTERING = true;
+            if (scene.iblCdfGenerator) {
+                defines.IBL_CDF_FILTERING = true;
+            }
+        } else {
+            defines.REALTIME_FILTERING = false;
+        }
+
+        defines.INVERTCUBICMAP = reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE;
+        defines.REFLECTIONMAP_3D = reflectionTexture.isCube;
+        defines.REFLECTIONMAP_OPPOSITEZ = defines.REFLECTIONMAP_3D && scene.useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
+
+        defines.REFLECTIONMAP_CUBIC = false;
+        defines.REFLECTIONMAP_EXPLICIT = false;
+        defines.REFLECTIONMAP_PLANAR = false;
+        defines.REFLECTIONMAP_PROJECTION = false;
+        defines.REFLECTIONMAP_SKYBOX = false;
+        defines.REFLECTIONMAP_SPHERICAL = false;
+        defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
+        defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+
+        switch (reflectionTexture.coordinatesMode) {
+            case Texture.EXPLICIT_MODE:
+                defines.REFLECTIONMAP_EXPLICIT = true;
+                break;
+            case Texture.PLANAR_MODE:
+                defines.REFLECTIONMAP_PLANAR = true;
+                break;
+            case Texture.PROJECTION_MODE:
+                defines.REFLECTIONMAP_PROJECTION = true;
+                break;
+            case Texture.SKYBOX_MODE:
+                defines.REFLECTIONMAP_SKYBOX = true;
+                break;
+            case Texture.SPHERICAL_MODE:
+                defines.REFLECTIONMAP_SPHERICAL = true;
+                break;
+            case Texture.EQUIRECTANGULAR_MODE:
+                defines.REFLECTIONMAP_EQUIRECTANGULAR = true;
+                break;
+            case Texture.FIXED_EQUIRECTANGULAR_MODE:
+                defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = true;
+                break;
+            case Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
+                defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = true;
+                break;
+            case Texture.CUBIC_MODE:
+            case Texture.INVCUBIC_MODE:
+            default:
+                defines.REFLECTIONMAP_CUBIC = true;
+                defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
+                break;
+        }
+
+        if (reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
+            if (reflectionTexture.irradianceTexture) {
+                defines.USEIRRADIANCEMAP = true;
+                defines.USESPHERICALFROMREFLECTIONMAP = false;
+                defines.USESPHERICALINVERTEX = false;
+                if (reflectionTexture.irradianceTexture._dominantDirection) {
+                    defines.USE_IRRADIANCE_DOMINANT_DIRECTION = true;
+                }
+            }
+            // Assume using spherical polynomial if the reflection texture is a cube map
+            else if (reflectionTexture.isCube) {
+                defines.USESPHERICALFROMREFLECTIONMAP = true;
+                defines.USEIRRADIANCEMAP = false;
+                defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
+                defines.USESPHERICALINVERTEX = forceSHInVertex;
+            }
+        }
+    } else {
+        defines.REFLECTION = false;
+        defines.REFLECTIONMAP_3D = false;
+        defines.REFLECTIONMAP_SPHERICAL = false;
+        defines.REFLECTIONMAP_PLANAR = false;
+        defines.REFLECTIONMAP_CUBIC = false;
+        defines.USE_LOCAL_REFLECTIONMAP_CUBIC = false;
+        defines.REFLECTIONMAP_PROJECTION = false;
+        defines.REFLECTIONMAP_SKYBOX = false;
+        defines.REFLECTIONMAP_EXPLICIT = false;
+        defines.REFLECTIONMAP_EQUIRECTANGULAR = false;
+        defines.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
+        defines.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
+        defines.INVERTCUBICMAP = false;
+        defines.USESPHERICALFROMREFLECTIONMAP = false;
+        defines.USEIRRADIANCEMAP = false;
+        defines.USE_IRRADIANCE_DOMINANT_DIRECTION = false;
+        defines.USESPHERICALINVERTEX = false;
+        defines.REFLECTIONMAP_OPPOSITEZ = false;
+        defines.LODINREFLECTIONALPHA = false;
+        defines.GAMMAREFLECTION = false;
+        defines.RGBDREFLECTION = false;
+        defines.LINEARSPECULARREFLECTION = false;
+    }
+    return true;
 }
 
 /**
@@ -645,6 +909,7 @@ export function PrepareDefinesForLight(
     defines["POINTLIGHT" + lightIndex] = false;
     defines["DIRLIGHT" + lightIndex] = false;
     defines["AREALIGHT" + lightIndex] = false;
+    defines["CLUSTLIGHT" + lightIndex] = false;
 
     light.prepareLightSpecificDefines(defines, lightIndex);
 
@@ -1073,6 +1338,7 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
  * @param iesLightTexture defines if IES texture must be used
+ * @param clusteredLightTextures defines if the clustered light textures must be used
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -1081,7 +1347,8 @@ export function PrepareUniformsAndSamplersForLight(
     projectedLightTexture?: any,
     uniformBuffersList: Nullable<string[]> = null,
     updateOnlyBuffersList = false,
-    iesLightTexture = false
+    iesLightTexture = false,
+    clusteredLightTextures = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -1100,6 +1367,8 @@ export function PrepareUniformsAndSamplersForLight(
         "vLightHeight" + lightIndex,
         "vLightFalloff" + lightIndex,
         "vLightGround" + lightIndex,
+        "vSliceData" + lightIndex,
+        "vSliceRanges" + lightIndex,
         "lightMatrix" + lightIndex,
         "shadowsInfo" + lightIndex,
         "depthValues" + lightIndex
@@ -1124,6 +1393,55 @@ export function PrepareUniformsAndSamplersForLight(
     if (iesLightTexture) {
         samplersList.push("iesLightTexture" + lightIndex);
     }
+    if (clusteredLightTextures) {
+        samplersList.push("lightDataTexture" + lightIndex);
+        samplersList.push("tileMaskTexture" + lightIndex);
+    }
+}
+
+/**
+ * Append uniforms and samplers related to IBL to the provided lists
+ * @param uniformsList The list of uniforms to append to
+ * @param samplersList The list of samplers to append to
+ * @param useSH Whether to include spherical harmonics uniforms
+ */
+export function PrepareUniformsAndSamplersForIBL(uniformsList: string[], samplersList: string[], useSH: boolean): void {
+    const iblUniforms = [
+        "vReflectionMicrosurfaceInfos",
+        "vReflectionDominantDirection",
+        "reflectionMatrix",
+        "vReflectionInfos",
+        "vReflectionPosition",
+        "vReflectionSize",
+        "vReflectionColor",
+        "vReflectionFilteringInfo",
+    ];
+    if (useSH) {
+        iblUniforms.push(
+            "vSphericalX",
+            "vSphericalY",
+            "vSphericalZ",
+            "vSphericalXX_ZZ",
+            "vSphericalYY_ZZ",
+            "vSphericalZZ",
+            "vSphericalXY",
+            "vSphericalYZ",
+            "vSphericalZX",
+            "vSphericalL00",
+            "vSphericalL1_1",
+            "vSphericalL10",
+            "vSphericalL11",
+            "vSphericalL2_2",
+            "vSphericalL2_1",
+            "vSphericalL20",
+            "vSphericalL21",
+            "vSphericalL22"
+        );
+    }
+    uniformsList.push(...iblUniforms);
+
+    const iblSamplers = ["reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh", "irradianceSampler", "icdfSampler"];
+    samplersList.push(...iblSamplers);
 }
 
 /**
@@ -1162,7 +1480,8 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
             defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
             uniformBuffersList,
             false,
-            defines["IESLIGHTTEXTURE" + lightIndex]
+            defines["IESLIGHTTEXTURE" + lightIndex],
+            defines["CLUSTLIGHT" + lightIndex]
         );
     }
 
@@ -1176,5 +1495,65 @@ export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] |
         uniformsList.push("bakedVertexAnimationTextureSizeInverted");
         uniformsList.push("bakedVertexAnimationTime");
         samplersList.push("bakedVertexAnimationTexture");
+    }
+}
+
+/**
+ *
+ * @param ubo Add uniforms to UBO
+ * @param supportTextureInfo Add uniforms for texture info if true
+ * @param supportLocalProjection Add uniforms for local projection if true
+ * @param usePBR Add uniforms for IBL if true
+ * @param supportSH Add uniforms for spherical harmonics if true
+ * @param useColor Add uniforms for reflection color if true
+ */
+export function PrepareUniformLayoutForIBL(
+    ubo: UniformBuffer,
+    supportTextureInfo: boolean = false,
+    supportLocalProjection: boolean = false,
+    usePBR: boolean = false,
+    supportSH: boolean = false,
+    useColor: boolean = false
+): void {
+    ubo.addUniform("vReflectionInfos", 2);
+    ubo.addUniform("reflectionMatrix", 16);
+    if (supportTextureInfo) {
+        ubo.addUniform("vReflectionMicrosurfaceInfos", 3);
+    }
+
+    if (supportLocalProjection) {
+        ubo.addUniform("vReflectionPosition", 3);
+        ubo.addUniform("vReflectionSize", 3);
+    }
+
+    if (usePBR) {
+        ubo.addUniform("vReflectionFilteringInfo", 2);
+        ubo.addUniform("vReflectionDominantDirection", 3);
+    }
+
+    if (useColor) {
+        ubo.addUniform("vReflectionColor", 3);
+    }
+
+    if (supportSH) {
+        ubo.addUniform("vSphericalL00", 3);
+        ubo.addUniform("vSphericalL1_1", 3);
+        ubo.addUniform("vSphericalL10", 3);
+        ubo.addUniform("vSphericalL11", 3);
+        ubo.addUniform("vSphericalL2_2", 3);
+        ubo.addUniform("vSphericalL2_1", 3);
+        ubo.addUniform("vSphericalL20", 3);
+        ubo.addUniform("vSphericalL21", 3);
+        ubo.addUniform("vSphericalL22", 3);
+
+        ubo.addUniform("vSphericalX", 3);
+        ubo.addUniform("vSphericalY", 3);
+        ubo.addUniform("vSphericalZ", 3);
+        ubo.addUniform("vSphericalXX_ZZ", 3);
+        ubo.addUniform("vSphericalYY_ZZ", 3);
+        ubo.addUniform("vSphericalZZ", 3);
+        ubo.addUniform("vSphericalXY", 3);
+        ubo.addUniform("vSphericalYZ", 3);
+        ubo.addUniform("vSphericalZX", 3);
     }
 }

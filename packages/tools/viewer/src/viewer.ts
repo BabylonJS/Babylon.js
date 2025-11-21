@@ -3,6 +3,7 @@ import type {
     AbstractEngine,
     AbstractMesh,
     AnimationGroup,
+    ArcRotateCameraKeyboardMoveInput,
     AssetContainer,
     AutoRotationBehavior,
     BaseTexture,
@@ -11,6 +12,7 @@ import type {
     Engine,
     HDRCubeTexture,
     HotSpotQuery,
+    IblCdfGenerator,
     IblShadowsRenderPipeline,
     IDisposable,
     IMeshDataCache,
@@ -19,10 +21,9 @@ import type {
     Nullable,
     Observer,
     PickingInfo,
-    ShadowLight,
     ShaderMaterial,
     ShadowGenerator,
-    // eslint-disable-next-line import/no-internal-modules
+    SSAO2RenderingPipeline,
 } from "core/index";
 
 import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
@@ -30,7 +31,7 @@ import type { MaterialVariantsController } from "loaders/glTF/2.0/Extensions/KHR
 import { ArcRotateCamera, ComputeAlpha, ComputeBeta } from "core/Cameras/arcRotateCamera";
 import { Constants } from "core/Engines/constants";
 import { PointerEventTypes } from "core/Events/pointerEvents";
-import { SpotLight } from "core/Lights/spotLight";
+import { DirectionalLight } from "core/Lights/directionalLight";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { LoadAssetContainerAsync } from "core/Loading/sceneLoader";
 import { BackgroundMaterial } from "core/Materials/Background/backgroundMaterial";
@@ -38,7 +39,7 @@ import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConf
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { Clamp } from "core/Maths/math.scalar.functions";
+import { Clamp, Lerp } from "core/Maths/math.scalar.functions";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Viewport } from "core/Maths/math.viewport";
 import { GetHotSpotToRef } from "core/Meshes/abstractMesh.hotSpot";
@@ -49,13 +50,26 @@ import { BuildTuple } from "core/Misc/arrayTools";
 import { AsyncLock } from "core/Misc/asyncLock";
 import { deepMerge } from "core/Misc/deepMerger";
 import { AbortError } from "core/Misc/error";
+import { Lazy } from "core/Misc/lazy";
 import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { HardwareScalingOptimization, SceneOptimizer, SceneOptimizerOptions } from "core/Misc/sceneOptimizer";
 import { SnapshotRenderingHelper } from "core/Misc/snapshotRenderingHelper";
+import { _RetryWithInterval } from "core/Misc/timingTools";
 import { GetExtensionFromUrl } from "core/Misc/urlTools";
 import { Scene } from "core/scene";
 import { registerBuiltInLoaders } from "loaders/dynamic";
+
+// eslint-disable-next-line @typescript-eslint/promise-function-async
+const LazySSAODependenciesPromise = new Lazy(() =>
+    Promise.all([
+        import("core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline"),
+        import("core/Rendering/prePassRendererSceneComponent"),
+        import("core/Rendering/geometryBufferRendererSceneComponent"),
+        import("core/Engines/Extensions/engine.multiRender"),
+        import("core/Engines/WebGPU/Extensions/engine.multiRender"),
+    ])
+);
 
 export type ResetFlag = "source" | "environment" | "camera" | "animation" | "post-processing" | "material-variant" | "shadow";
 
@@ -64,6 +78,9 @@ export type ShadowQuality = (typeof shadowQualityOptions)[number];
 
 const toneMappingOptions = ["none", "standard", "aces", "neutral"] as const;
 export type ToneMapping = (typeof toneMappingOptions)[number];
+
+const ssaoOptions = ["enabled", "disabled", "auto"] as const;
+export type SSAOOptions = (typeof ssaoOptions)[number];
 
 const environmentMode = ["none", "auto", "url"] as const;
 type EnvironmentMode = (typeof environmentMode)[number];
@@ -131,22 +148,33 @@ export type PostProcessing = {
      * The exposure applied to the scene.
      */
     exposure: number;
+
+    /**
+     * Whether to enable screen space ambient occlusion (SSAO).
+     */
+    ssao: SSAOOptions;
 };
 
 type ShadowState = {
     normal?: {
-        generator: ShadowGenerator;
-        ground: Mesh;
-        light: ShadowLight;
+        readonly generator: ShadowGenerator;
+        readonly ground: Mesh;
+        readonly light: DirectionalLight;
         shouldRender: boolean;
+        readonly iblDirection: {
+            readonly iblCdfGenerator: IblCdfGenerator;
+            positionFactor: number;
+            direction: Vector3;
+        };
+        refreshLightPositionDirection(reflectionRotation: number): void;
     };
     high?: {
-        pipeline: IblShadowsRenderPipeline;
-        ground: Mesh;
-        groundMaterial: ShaderMaterial;
+        readonly pipeline: IblShadowsRenderPipeline;
+        readonly ground: Mesh;
+        readonly groundMaterial: ShaderMaterial;
         renderTimer?: Nullable<ReturnType<typeof setTimeout>>;
         shouldRender: boolean;
-        resizeObserver: Observer<Engine>;
+        readonly resizeObserver: Observer<Engine>;
     };
 };
 
@@ -168,6 +196,15 @@ export function IsShadowQuality(value: string): value is ShadowQuality {
     return shadowQualityOptions.includes(value as ShadowQuality);
 }
 
+/**
+ * Checks if the given value is a valid SSAO option.
+ * @param value The value to check.
+ * @returns True if the value is a valid SSAO option, otherwise false.
+ */
+export function isSSAOOptions(value: string): value is SSAOOptions {
+    return ssaoOptions.includes(value as SSAOOptions);
+}
+
 function throwIfAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
     for (const signal of abortSignals) {
         signal?.throwIfAborted();
@@ -178,11 +215,9 @@ async function createCubeTexture(url: string, scene: Scene, extension?: string) 
     extension = extension ?? GetExtensionFromUrl(url);
     const instantiateTexture = await (async () => {
         if (extension === ".hdr") {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             const { HDRCubeTexture } = await import("core/Materials/Textures/hdrCubeTexture");
             return () => new HDRCubeTexture(url, scene, 256, false, true, false, true, undefined, undefined, undefined, true, true);
         } else {
-            // eslint-disable-next-line @typescript-eslint/naming-convention
             const { CubeTexture } = await import("core/Materials/Textures/cubeTexture");
             return () => new CubeTexture(url, scene, null, false, null, null, null, undefined, true, extension, true);
         }
@@ -211,6 +246,7 @@ function createSkybox(scene: Scene, camera: Camera, reflectionTexture: BaseTextu
         hdrSkybox.material = hdrSkyboxMaterial;
         hdrSkybox.isPickable = false;
         hdrSkybox.infiniteDistance = true;
+        hdrSkybox.applyFog = false;
 
         updateSkybox(hdrSkybox, camera);
 
@@ -248,6 +284,30 @@ function reduceMeshesExtendsToBoundingInfo(maxExtents: Array<{ minimum: Vector3;
         size: size.asArray(),
         center: center.asArray(),
     };
+}
+
+/**
+ * Adjusts the light's target direction to ensure it's not too flat and points downwards.
+ * @param targetDirection The target direction of the light.
+ * @returns The adjusted target direction of the light.
+ */
+function adjustLightTargetDirection(targetDirection: Vector3): Vector3 {
+    const lightSteepnessThreshold = -0.01; // threshold to trigger steepness adjustment
+    const lightSteepnessFactor = 10; // the factor to multiply Y by if it's too flat
+    const minLightDirectionY = -0.05; // the minimum steepness for light direction Y
+    const adjustedDirection = targetDirection.clone();
+
+    // ensure light points downwards
+    if (adjustedDirection.y > 0) {
+        adjustedDirection.y *= -1;
+    }
+
+    // if light is too flat (pointing almost horizontally or very slightly down), make it steeper
+    if (adjustedDirection.y > lightSteepnessThreshold) {
+        adjustedDirection.y = Math.min(adjustedDirection.y * lightSteepnessFactor, minLightDirectionY);
+    }
+
+    return adjustedDirection;
 }
 
 /**
@@ -493,6 +553,7 @@ export const DefaultViewerOptions = {
         toneMapping: "neutral",
         contrast: 1,
         exposure: 1,
+        ssao: "auto",
     },
     useRightHandedSystem: false,
 } as const satisfies ViewerOptions;
@@ -610,6 +671,35 @@ export type ViewerBoundingInfo = {
     readonly center: readonly [x: number, y: number, z: number];
 };
 
+export type ViewerCameraConfig = {
+    /**
+     * The goal radius of the camera.
+     * @remarks This is the size of the scene bounds (times a factor)
+     */
+    radius: number;
+    /**
+     * The goal target of the camera.
+     * @remarks Center of the bounds of the scene or 0,0,0 by default
+     */
+    target: Vector3;
+    /**
+     * The minimum zoom distance of the camera.
+     */
+    lowerRadiusLimit: number;
+    /**
+     * The maximum zoom distance of the camera.
+     */
+    upperRadiusLimit: number;
+    /**
+     * The minZ of the camera.
+     */
+    minZ: number;
+    /**
+     * The maxZ of the camera.
+     */
+    maxZ: number;
+};
+
 export type Model = IDisposable & {
     /**
      * The asset container representing the model.
@@ -650,6 +740,11 @@ export type Model = IDisposable & {
      * @param options Options for activating the model.
      */
     makeActive(options?: ActivateModelOptions): void;
+
+    /**
+     * The selected material variant.
+     */
+    selectedMaterialVariant: Nullable<string>;
 };
 
 type ModelInternal = Model & {
@@ -785,6 +880,8 @@ export class Viewer implements IDisposable {
     private _toneMappingType: number;
     private _contrast: number;
     private _exposure: number;
+    private _ssaoOption: SSAOOptions = this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao;
+    private _ssaoPipeline: Nullable<SSAO2RenderingPipeline> = null;
 
     private readonly _autoSuspendRendering = this._options?.autoSuspendRendering ?? DefaultViewerOptions.autoSuspendRendering;
     private _sceneMutated = false;
@@ -821,6 +918,14 @@ export class Viewer implements IDisposable {
         {
             const scene = new Scene(this._engine);
             scene.useRightHandedSystem = this._options?.useRightHandedSystem ?? DefaultViewerOptions.useRightHandedSystem;
+
+            const defaultMaterial = new PBRMaterial("default Material", scene);
+            defaultMaterial.albedoColor = new Color3(0.4, 0.4, 0.4);
+            defaultMaterial.metallic = 0;
+            defaultMaterial.roughness = 1;
+            defaultMaterial.baseDiffuseRoughness = 1;
+            defaultMaterial.microSurface = 0;
+            scene.defaultMaterial = defaultMaterial;
 
             // Deduce tone mapping, contrast, and exposure from the scene (so the viewer stays in sync if anything mutates these values directly on the scene).
             this._toneMappingEnabled = scene.imageProcessingConfiguration.toneMappingEnabled;
@@ -859,6 +964,7 @@ export class Viewer implements IDisposable {
             const camera = new ArcRotateCamera("Viewer Default Camera", 0, 0, 1, Vector3.Zero(), scene);
             camera.useInputToRestoreState = false;
             camera.useAutoRotationBehavior = true;
+
             camera.onViewMatrixChangedObservable.add(() => {
                 this._markSceneMutated();
             });
@@ -1091,6 +1197,7 @@ export class Viewer implements IDisposable {
             toneMapping,
             contrast: this._contrast,
             exposure: this._exposure,
+            ssao: this._ssaoOption,
         };
     }
 
@@ -1124,7 +1231,12 @@ export class Viewer implements IDisposable {
             this._scene.imageProcessingConfiguration.exposure = value.exposure;
         }
 
-        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1;
+        if (value.ssao && this._ssaoOption !== value.ssao) {
+            this._ssaoOption = value.ssao;
+            this._updateSSAOPipeline();
+        }
+
+        this._scene.imageProcessingConfiguration.isEnabled = this._toneMappingEnabled || this._contrast !== 1 || this._exposure !== 1 || this._ssaoPipeline !== null;
 
         this._snapshotHelper.enableSnapshotRendering();
         this._markSceneMutated();
@@ -1167,11 +1279,68 @@ export class Viewer implements IDisposable {
             this._activeModelBacking = model;
             this._updateLight();
             observePromise(this._updateShadows());
+            this._updateSSAOPipeline();
             this._applyAnimationSpeed();
             this._selectAnimation(0, false);
             this.onSelectedMaterialVariantChanged.notifyObservers();
             this._reframeCamera(true, model ? [model] : undefined);
             this.onModelChanged.notifyObservers(options?.source ?? null);
+        }
+    }
+
+    private async _enableSSAOPipeline(mode: SSAOOptions) {
+        const hasModels = this._loadedModels.length > 0;
+        const hasMaterials = this._loadedModels.some((model) => model.assetContainer.materials.length > 0);
+        if (mode === "enabled" || (mode === "auto" && hasModels && !hasMaterials)) {
+            const [{ SSAO2RenderingPipeline }] = await LazySSAODependenciesPromise.value;
+
+            if (!this._ssaoPipeline) {
+                this._scene.postProcessRenderPipelineManager.onNewPipelineAddedObservable.add((pipeline) => {
+                    if (pipeline.name === "ssao") {
+                        this.onPostProcessingChanged.notifyObservers();
+                    }
+                });
+                this._scene.postProcessRenderPipelineManager.onPipelineRemovedObservable.add((pipeline) => {
+                    if (pipeline.name === "ssao") {
+                        this.onPostProcessingChanged.notifyObservers();
+                    }
+                });
+            }
+
+            const ssaoRatio = {
+                ssaoRatio: 1,
+                blurRatio: 1,
+            };
+            this._ssaoPipeline = new SSAO2RenderingPipeline("ssao", this._scene, ssaoRatio);
+            const worldBounds = this._getWorldBounds(this._loadedModels);
+            if (this._ssaoPipeline && worldBounds) {
+                const size = Vector3.FromArray(worldBounds.size).length();
+                this._ssaoPipeline.expensiveBlur = true;
+                this._ssaoPipeline.maxZ = size * 2;
+                // arbitrary max size to cap SSAO settings
+                const maxSceneSize = 50;
+                this._ssaoPipeline.radius = Clamp(Lerp(1, 5, Clamp((size - 1) / maxSceneSize, 0, 1)), 1, 5);
+                this._ssaoPipeline.totalStrength = Clamp(Lerp(0.3, 1.0, Clamp((size - 1) / maxSceneSize, 0, 1)), 0.3, 1.0);
+                this._ssaoPipeline.samples = Math.round(Clamp(Lerp(8, 32, Clamp((size - 1) / maxSceneSize, 0, 1)), 8, 32));
+            }
+            this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", this._camera);
+        }
+    }
+
+    private _disableSSAOPipeline() {
+        if (this._ssaoPipeline) {
+            this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", this._camera);
+            this._scene.postProcessRenderPipelineManager.removePipeline("ssao");
+            this._ssaoPipeline?.dispose();
+            this._ssaoPipeline = null;
+        }
+    }
+
+    protected _updateSSAOPipeline() {
+        if (!this._ssaoPipeline && (this._ssaoOption === "auto" || this._ssaoOption === "enabled")) {
+            observePromise(this._enableSSAOPipeline(this._ssaoOption));
+        } else if (this._ssaoOption === "disabled") {
+            this._disableSSAOPipeline();
         }
     }
 
@@ -1277,22 +1446,12 @@ export class Viewer implements IDisposable {
      * The currently selected material variant.
      */
     public get selectedMaterialVariant(): Nullable<string> {
-        return this._activeModel?.materialVariantsController?.selectedVariant ?? null;
+        return this._activeModel?.selectedMaterialVariant ?? null;
     }
 
     public set selectedMaterialVariant(value: Nullable<string>) {
-        if (this._activeModel?.materialVariantsController) {
-            if (!value) {
-                value = this._activeModel.materialVariantsController.variants[0];
-            }
-
-            if (value !== this.selectedMaterialVariant && this._activeModel.materialVariantsController.variants.includes(value)) {
-                this._snapshotHelper.disableSnapshotRendering();
-                this._activeModel.materialVariantsController.selectedVariant = value;
-                this._snapshotHelper.enableSnapshotRendering();
-                this._markSceneMutated();
-                this.onSelectedMaterialVariantChanged.notifyObservers();
-            }
+        if (this._activeModel && value) {
+            this._activeModel.selectedMaterialVariant = value;
         }
     }
 
@@ -1498,6 +1657,28 @@ export class Viewer implements IDisposable {
                 makeActive: (options?: ActivateModelOptions) => {
                     this._setActiveModel(model, options);
                 },
+                set selectedMaterialVariant(variantName: string) {
+                    if (materialVariantsController) {
+                        let value: Nullable<string> = variantName;
+                        if (!value) {
+                            value = materialVariantsController.variants[0];
+                        }
+
+                        if (value !== materialVariantsController.selectedVariant && materialVariantsController.variants.includes(value)) {
+                            viewer._snapshotHelper.disableSnapshotRendering();
+                            materialVariantsController.selectedVariant = value;
+                            viewer._snapshotHelper.enableSnapshotRendering();
+                            viewer._markSceneMutated();
+                            viewer.onSelectedMaterialVariantChanged.notifyObservers();
+                        }
+                    }
+                },
+                get selectedMaterialVariant(): Nullable<string> {
+                    if (materialVariantsController) {
+                        return materialVariantsController.selectedVariant;
+                    }
+                    return null;
+                },
             };
 
             this._loadedModelsBacking.push(model);
@@ -1532,8 +1713,11 @@ export class Viewer implements IDisposable {
             }
         });
 
-        // If there are PBR materials after the model load operation and an environment texture is not loaded, load the default environment.
-        if (!this._scene.environmentTexture && this._scene.materials.some((material) => material instanceof PBRMaterial)) {
+        const hasPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => material instanceof PBRMaterial));
+        const usesDefaultMaterial = this._loadedModels.some((model) => model.assetContainer.meshes.some((mesh) => !mesh.material));
+        // If PBR is used (either explicitly, or implicitly by a mesh not having a material and therefore using the default PBRMaterial)
+        // and an environment texture is not already loaded, then load the default environment.
+        if (!this._scene.environmentTexture && (hasPBRMaterials || usesDefaultMaterial)) {
             await this.resetEnvironment({ lighting: true }, abortSignal);
         }
 
@@ -1571,13 +1755,8 @@ export class Viewer implements IDisposable {
 
     private _rotateShadowLightWithEnvironment(): void {
         if (this._shadowQuality === "normal" && this._shadowState.normal) {
-            const x = Math.cos(this._reflectionsRotation);
-            const z = Math.sin(this._reflectionsRotation);
             if (this._shadowState.normal.light) {
-                const light = this._shadowState.normal.light;
-                const radius = light.position.y;
-                light.position.set(x * radius, light.position.y, z * radius);
-                light.direction.set(-x, -1, -z);
+                this._shadowState.normal.refreshLightPositionDirection(this._reflectionsRotation);
             }
         } else if (this._shadowQuality === "high" && this._shadowState.high) {
             this._shadowState.high.pipeline?.resetAccumulation();
@@ -1758,8 +1937,6 @@ export class Viewer implements IDisposable {
         high.pipeline.resetAccumulation();
         // shadow map
         this._shadowState.normal?.ground.setEnabled(false);
-        high.pipeline.toggleShadow(true);
-        high.ground.setEnabled(true);
         this._startIblShadowsRenderTime();
 
         this._shadowState.high = high;
@@ -1768,12 +1945,28 @@ export class Viewer implements IDisposable {
         this._markSceneMutated();
     }
 
+    /**
+     * Finds the light direction the environment (IBL).
+     * If the environment changes, it will explicitly trigger the generation of CDF maps.
+     * @param iblCdfGenerator The IblCdfGenerator to use for finding the dominant direction.
+     * @returns A promise that resolves to the dominant direction vector.
+     */
+    private async _findIblDominantDirection(iblCdfGenerator: IblCdfGenerator): Promise<Vector3> {
+        if (this._reflectionTexture && iblCdfGenerator.iblSource !== this._reflectionTexture) {
+            iblCdfGenerator.iblSource = this._reflectionTexture;
+            await iblCdfGenerator.renderWhenReady();
+        }
+        return await iblCdfGenerator.findDominantDirection();
+    }
+
     private async _updateShadowMap(abortSignal?: AbortSignal) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const [{ CreateDisc }, { RenderTargetTexture }, { ShadowGenerator }] = await Promise.all([
+        const [{ CreateDisc }, { RenderTargetTexture }, { ShadowGenerator }, { IblCdfGenerator }] = await Promise.all([
             import("core/Meshes/Builders/discBuilder"),
             import("core/Materials/Textures/renderTargetTexture"),
             import("core/Lights/Shadows/shadowGenerator"),
+            import("core/Rendering/iblCdfGenerator"),
+            import("core/Rendering/iblCdfGeneratorSceneComponent"),
             import("core/Lights/Shadows/shadowGeneratorSceneComponent"),
         ]);
 
@@ -1790,37 +1983,41 @@ export class Viewer implements IDisposable {
         }
 
         const radius = Vector3.FromArray(worldBounds.size).length();
-        const x = Math.cos(this._reflectionsRotation);
-        const z = Math.sin(this._reflectionsRotation);
 
         if (this._shadowQuality !== "normal") {
             return;
         }
 
+        const iblCdfGenerator = normal?.iblDirection.iblCdfGenerator ? normal?.iblDirection.iblCdfGenerator : new IblCdfGenerator(this._engine);
+        const iblDirection = await this._findIblDominantDirection(iblCdfGenerator);
+        this._throwIfDisposedOrAborted(abortSignal, this._loadModelAbortController?.signal, this._loadEnvironmentAbortController?.signal);
+
         this._snapshotHelper.disableSnapshotRendering();
 
         const size = 4096;
-        const positionFactor = 3;
         const groundFactor = 20;
         const groundSize = radius * groundFactor;
+        const positionFactor = radius * 3;
+        const iblLightStrength = iblDirection ? Clamp(iblDirection.length(), 0.0, 1.0) : 0.5;
 
-        const position = new Vector3(x * (radius * positionFactor), radius * positionFactor, z * (radius * positionFactor));
         if (!normal) {
-            const light = new SpotLight("shadowLight", position, new Vector3(-x, -1, -z), Math.PI / 3, 30, this._scene);
+            const light = new DirectionalLight("shadowMapDirectionalLight", Vector3.Zero(), this._scene);
+            light.autoUpdateExtends = false;
 
             const generator = new ShadowGenerator(size, light);
-            generator.setDarkness(0.8);
+            generator.setDarkness(Lerp(0.8, 0.2, iblLightStrength));
             generator.setTransparencyShadow(true);
             generator.filteringQuality = ShadowGenerator.QUALITY_HIGH;
             generator.useBlurExponentialShadowMap = true;
             generator.enableSoftTransparentShadow = true;
             generator.bias = radius / 1000;
             generator.useKernelBlur = true;
-            generator.blurKernel = 32;
+            generator.blurKernel = Math.floor(Lerp(64, 8, iblLightStrength));
 
             const shadowMap = generator.getShadowMap();
             if (shadowMap) {
                 shadowMap.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONEVERYFRAME;
+                shadowMap.renderList = this._scene.meshes.slice();
             }
 
             const shadowMaterial = new BackgroundMaterial("shadowMapGroundMaterial", this._scene);
@@ -1832,13 +2029,38 @@ export class Viewer implements IDisposable {
             ground.receiveShadows = true;
             ground.position.y = worldBounds.extents.min[1];
             ground.material = shadowMaterial;
-            light.includedOnlyMeshes = [ground];
 
             const newNormal: ShadowState["normal"] = (normal = {
                 light: light,
                 generator: generator,
                 ground: ground,
                 shouldRender: true,
+                iblDirection: {
+                    iblCdfGenerator: iblCdfGenerator,
+                    positionFactor: positionFactor,
+                    direction: iblDirection,
+                },
+                refreshLightPositionDirection(reflectionRotation: number) {
+                    let effectiveSourceDir = this.iblDirection.direction.normalizeToNew();
+
+                    if (this.light.getScene().useRightHandedSystem) {
+                        effectiveSourceDir.z *= -1;
+                    }
+
+                    const rotationYMatrix = Matrix.RotationY(reflectionRotation * -1);
+                    effectiveSourceDir = Vector3.TransformCoordinates(effectiveSourceDir, rotationYMatrix);
+
+                    this.light.position = effectiveSourceDir.scale(this.iblDirection.positionFactor);
+                    this.light.direction = adjustLightTargetDirection(effectiveSourceDir.negate());
+                },
+            });
+
+            await new Promise((resolve, reject) => {
+                _RetryWithInterval(
+                    () => shadowMap!.isReadyForRendering(),
+                    () => resolve(void 0),
+                    () => reject(new Error("Failed to get shadow map generator ready"))
+                );
             });
 
             // Since the light is not applied to the meshes of the model (we only want shadows, not lighting),
@@ -1849,15 +2071,14 @@ export class Viewer implements IDisposable {
             });
         }
 
-        normal.light.position = position;
+        normal.iblDirection.direction = iblDirection;
+        normal.iblDirection.positionFactor = positionFactor;
+        normal.refreshLightPositionDirection(this._reflectionsRotation);
+        normal.light.shadowFrustumSize = radius * 4;
 
         for (const model of this._loadedModelsBacking) {
-            // Add all root meshes to the shadow generator.
-            for (const mesh of model.assetContainer.meshes.filter((mesh) => !mesh.parent)) {
-                normal.generator.addShadowCaster(mesh, true);
-            }
-            // Set all meshes to receive shadows.
             for (const mesh of model.assetContainer.meshes) {
+                normal.generator.addShadowCaster(mesh, false);
                 mesh.receiveShadows = true;
             }
         }
@@ -1906,6 +2127,7 @@ export class Viewer implements IDisposable {
             normalShadow.generator.dispose();
             normalShadow.light.dispose();
             normalShadow.ground.dispose(true, true);
+            normalShadow.iblDirection.iblCdfGenerator.dispose();
             this._scene.removeMesh(normalShadow.ground);
         }
 
@@ -1997,7 +2219,6 @@ export class Viewer implements IDisposable {
             const whenTextureLoadedAsync = async (cubeTexture: CubeTexture | HDRCubeTexture) => {
                 await new Promise<void>((resolve, reject) => {
                     const successObserver = (cubeTexture.onLoadObservable as Observable<unknown>).addOnce(() => {
-                        successObserver.remove();
                         errorObserver.remove();
                         resolve();
                     });
@@ -2253,6 +2474,7 @@ export class Viewer implements IDisposable {
                 toneMapping: this._options?.postProcessing?.toneMapping ?? DefaultViewerOptions.postProcessing.toneMapping,
                 contrast: this._options?.postProcessing?.contrast ?? DefaultViewerOptions.postProcessing.contrast,
                 exposure: this._options?.postProcessing?.exposure ?? DefaultViewerOptions.postProcessing.exposure,
+                ssao: this._options?.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
             };
         }
 
@@ -2530,9 +2752,15 @@ export class Viewer implements IDisposable {
                     this._sceneMutated = false;
                     this._scene.render();
 
-                    // Update the camera panning sensitivity related properties based on the camera's distance from the target.
+                    // Update the camera panning sensitivity based on the camera's distance from the target.
                     this._camera.panningSensibility = 5000 / this._camera.radius;
+
+                    // Update the camera speed based on the camera's distance from the target.
+                    // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
                     this._camera.speed = this._camera.radius * 0.2;
+
+                    // Update the keyboard zooming sensitivity based on the camera's distance from the target.
+                    (this._camera.inputs.attached["keyboard"] as ArcRotateCameraKeyboardMoveInput).zoomingSensibility = 500 / this._camera.radius;
 
                     if (this.isAnimationPlaying) {
                         this.onAnimationProgressChanged.notifyObservers();
@@ -2570,6 +2798,41 @@ export class Viewer implements IDisposable {
         this._reframeCameraFromBounds(interpolate, models);
     }
 
+    protected _getWorldBounds(models: readonly Model[]): Nullable<ViewerBoundingInfo> {
+        return computeModelsBoundingInfos(models);
+    }
+
+    protected _getCameraConfig(models: readonly Model[]): ViewerCameraConfig {
+        let radius = 1;
+        let target = Vector3.Zero();
+        const worldBounds = this._getWorldBounds(models);
+        if (worldBounds) {
+            // get bounds and prepare framing/camera radius from its values
+            this._camera.lowerRadiusLimit = null;
+
+            radius = Vector3.FromArray(worldBounds.size).length() * 1.1;
+            target = Vector3.FromArray(worldBounds.center);
+            if (!isFinite(radius)) {
+                radius = 1;
+                target.copyFromFloats(0, 0, 0);
+            }
+        }
+
+        const lowerRadiusLimit = radius * 0.001;
+        const upperRadiusLimit = radius * 5;
+        const minZ = radius * 0.001;
+        const maxZ = radius * 1000;
+
+        return {
+            radius,
+            target,
+            lowerRadiusLimit,
+            upperRadiusLimit,
+            minZ,
+            maxZ,
+        };
+    }
+
     // For rotation/radius/target, undefined means default framing, NaN means keep current value.
     private _reframeCameraFromBounds(
         interpolate: boolean,
@@ -2581,35 +2844,24 @@ export class Viewer implements IDisposable {
         targetY?: number,
         targetZ?: number
     ): void {
+        let goalRadius = 1;
+        const goalTarget = Vector3.Zero();
         let goalAlpha = Math.PI / 2;
         let goalBeta = Math.PI / 2.4;
-        let goalRadius = 1;
-        let goalTarget = Vector3.Zero();
 
-        const worldBounds = computeModelsBoundingInfos(models);
-        if (worldBounds) {
-            // get bounds and prepare framing/camera radius from its values
-            this._camera.lowerRadiusLimit = null;
+        const { radius: sceneRadius, target: sceneTarget, lowerRadiusLimit, upperRadiusLimit, minZ, maxZ } = this._getCameraConfig(models);
 
-            goalRadius = Vector3.FromArray(worldBounds.size).length() * 1.1;
-            goalTarget = Vector3.FromArray(worldBounds.center);
-            if (!isFinite(goalRadius)) {
-                goalRadius = 1;
-                goalTarget.copyFromFloats(0, 0, 0);
-            }
-        }
-
-        this._camera.lowerRadiusLimit = goalRadius * 0.001;
-        this._camera.upperRadiusLimit = goalRadius * 5;
-        this._camera.minZ = goalRadius * 0.001;
-        this._camera.maxZ = goalRadius * 1000;
+        this._camera.lowerRadiusLimit = lowerRadiusLimit;
+        this._camera.upperRadiusLimit = upperRadiusLimit;
+        this._camera.minZ = minZ;
+        this._camera.maxZ = maxZ;
 
         goalAlpha = alpha ?? goalAlpha;
         goalBeta = beta ?? goalBeta;
-        goalRadius = radius ?? goalRadius;
-        goalTarget.x = targetX ?? goalTarget.x;
-        goalTarget.y = targetY ?? goalTarget.y;
-        goalTarget.z = targetZ ?? goalTarget.z;
+        goalRadius = radius ?? sceneRadius;
+        goalTarget.x = targetX ?? sceneTarget.x;
+        goalTarget.y = targetY ?? sceneTarget.y;
+        goalTarget.z = targetZ ?? sceneTarget.z;
 
         if (interpolate) {
             this._camera.interpolateTo(goalAlpha, goalBeta, goalRadius, goalTarget, undefined, 0.1);
@@ -2643,20 +2895,19 @@ export class Viewer implements IDisposable {
         updateSkybox(this._skybox, this._camera);
     }
 
-    private _updateLight() {
+    protected _updateLight() {
         let shouldHaveDefaultLight: boolean;
-        if (!this._activeModel) {
+        if (this._loadedModels.length === 0) {
             shouldHaveDefaultLight = false;
         } else {
-            const hasModelProvidedLights = this._activeModel.assetContainer.lights.length > 0;
+            const hasModelProvidedLights = this._loadedModels.some((model) => model.assetContainer.lights.length > 0);
             const hasImageBasedLighting = !!this._reflectionTexture;
-            const hasMaterials = this._activeModel.assetContainer.materials.length > 0;
-            const hasNonPBRMaterials = this._activeModel.assetContainer.materials.some((material) => !(material instanceof PBRMaterial));
+            const hasNonPBRMaterials = this._loadedModels.some((model) => model.assetContainer.materials.some((material) => !(material instanceof PBRMaterial)));
 
             if (hasModelProvidedLights) {
                 shouldHaveDefaultLight = false;
             } else {
-                shouldHaveDefaultLight = !hasImageBasedLighting || !hasMaterials || hasNonPBRMaterials;
+                shouldHaveDefaultLight = !hasImageBasedLighting || hasNonPBRMaterials;
             }
         }
 

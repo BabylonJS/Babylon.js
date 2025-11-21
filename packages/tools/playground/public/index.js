@@ -41,6 +41,7 @@ var Versions = {
     "7.54.2": [
         "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
         "https://cdn.babylonjs.com/v7.54.2/babylon.js",
+        "https://cdn.babylonjs.com/v7.54.2/addons/babylonjs.addons.js",
         "https://cdn.babylonjs.com/v7.54.2/gui/babylon.gui.min.js",
         "https://cdn.babylonjs.com/v7.54.2/inspector/babylon.inspector.bundle.js",
         "https://cdn.babylonjs.com/v7.54.2/nodeEditor/babylon.nodeEditor.js",
@@ -194,18 +195,24 @@ let checkBabylonVersionAsync = async function () {
         if (snapshot) {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot;
+            return "";
         } else if (version) {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
+            return version;
         } else if (activeVersion === "local") {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
+            return "";
         }
+
+        return activeVersion.includes(".") ? activeVersion : "";
     });
 };
 
-checkBabylonVersionAsync().then(() => {
-    loadScriptAsync("babylon.playground.js").then(() => {
+checkBabylonVersionAsync().then((version) => {
+    const bundle = (globalThis && globalThis.__PLAYGROUND_BUNDLE__) || "babylon.playground.js";
+    loadScriptAsync(bundle).then(() => {
         var hostElement = document.getElementById("host-element");
         let mode = undefined;
         if (window.location.href.includes("full.html")) {
@@ -214,6 +221,6 @@ checkBabylonVersionAsync().then(() => {
             mode = 2;
         }
         // eslint-disable-next-line no-undef
-        BABYLON.Playground.Show(hostElement, mode);
+        BABYLON.Playground.Show(hostElement, mode, version);
     });
 });

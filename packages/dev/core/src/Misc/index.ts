@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./andOrNotEvaluator";
 export * from "./assetsManager";
 export * from "./basis";
@@ -70,14 +70,14 @@ export * from "./snapshotRenderingHelper";
 // eslint-disable-next-line import/export
 export * from "./observableCoroutine";
 export * from "./copyTextureToTexture";
-/** @deprecated Use individual exports */
-export { DumpTools } from "./dumpTools";
+export { DumpTools, EncodeImageAsync } from "./dumpTools";
 export * from "./greasedLineTools";
 export * from "./equirectangularCapture";
 export * from "./decorators.serialization";
 export * from "./asyncLock";
 export * from "./bitArray";
 export * from "./urlTools";
+export * from "./lazy";
 
 // RGBDTextureTools
 export * from "../Shaders/rgbdDecode.fragment";
@@ -88,3 +88,5 @@ export * from "../ShadersWGSL/rgbdEncode.fragment";
 // CopyTextureToTexture
 export * from "../Shaders/copyTextureToTexture.fragment";
 export * from "../ShadersWGSL/copyTextureToTexture.fragment";
+
+export * from "./tools.internals";

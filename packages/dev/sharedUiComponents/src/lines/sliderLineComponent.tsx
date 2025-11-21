@@ -7,7 +7,7 @@ import { FloatLineComponent } from "./floatLineComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import copyIcon from "../imgs/copy.svg";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
-import { SyncedSliderLine } from "../fluent/hoc/syncedSliderLine";
+import { SyncedSliderPropertyLine } from "../fluent/hoc/propertyLines/syncedSliderPropertyLine";
 
 interface ISliderLineComponentProps {
     label: string;
@@ -144,7 +144,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
 
     renderFluent() {
         return (
-            <SyncedSliderLine
+            <SyncedSliderPropertyLine
                 label={this.props.label}
                 value={this.state.value}
                 onChange={(val) => this.onChange(val)}

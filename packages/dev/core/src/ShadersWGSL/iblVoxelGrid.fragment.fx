@@ -1,24 +1,30 @@
+var voxel_storage: texture_storage_3d<rgba8unorm, write>;
 varying vNormalizedPosition: vec3f;
-
-uniform nearPlane: f32;
-uniform farPlane: f32;
-uniform stepSize: f32;
+flat varying f_swizzle: i32;
 
 @fragment
 fn main(input: FragmentInputs) -> FragmentOutputs {
+    var size: vec3f = vec3f(textureDimensions(voxel_storage));
     var normPos: vec3f = input.vNormalizedPosition.xyz;
-    if (normPos.z < uniforms.nearPlane || normPos.z > uniforms.farPlane) {
-        discard;
+    var outputColor: vec4f = vec4f(0.0, 0.0, 0.0, 1.0);
+    switch (input.f_swizzle) {
+        case 0: {
+            normPos = normPos.zxy; 
+            outputColor = vec4f(1.0, 1.0, 0.0, 1.0);
+            break;
+        }
+        case 1: {
+            normPos = normPos.yzx;
+            outputColor = vec4f(1.0, 1.0, 1.0, 1.0);
+            break;
+        }
+        default: {
+            normPos = normPos.xyz;
+            outputColor = vec4f(1.0, 1.0, 0.0, 1.0);
+            break;
+        }
     }
 
-    fragmentOutputs.fragData0 = select(vec4f(0.0), vec4f(1.0), normPos.z < uniforms.nearPlane + uniforms.stepSize);
-    fragmentOutputs.fragData1 = select(vec4f(0.0), vec4f(1.0), normPos.z >= uniforms.nearPlane + uniforms.stepSize && normPos.z < uniforms.nearPlane + 2.0 * uniforms.stepSize);
-    fragmentOutputs.fragData2 = select(vec4f(0.0), vec4f(1.0), normPos.z >= uniforms.nearPlane + 2.0 * uniforms.stepSize && normPos.z < uniforms.nearPlane + 3.0 * uniforms.stepSize);
-    fragmentOutputs.fragData3 = select(vec4f(0.0), vec4f(1.0), normPos.z >= uniforms.nearPlane + 3.0 * uniforms.stepSize && normPos.z < uniforms.nearPlane + 4.0 * uniforms.stepSize);
-#if MAX_DRAW_BUFFERS > 4
-    fragmentOutputs.fragData4 = select(vec4f(0.0), vec4f(1.0), normPos.z >= uniforms.nearPlane + 4.0 * uniforms.stepSize && normPos.z < uniforms.nearPlane + 5.0 * uniforms.stepSize);
-    fragmentOutputs.fragData5 = select(vec4f(0.0), vec4f(1.0), normPos.z >= uniforms.nearPlane + 5.0 * uniforms.stepSize && normPos.z < uniforms.nearPlane + 6.0 * uniforms.stepSize);
-    fragmentOutputs.fragData6 = select(vec4f(0.0), vec4f(1.0), normPos.z >= uniforms.nearPlane + 6.0 * uniforms.stepSize && normPos.z < uniforms.nearPlane + 7.0 * uniforms.stepSize);
-    fragmentOutputs.fragData7 = select(vec4f(0.0), vec4f(1.0), normPos.z >= uniforms.nearPlane + 7.0 * uniforms.stepSize && normPos.z < uniforms.nearPlane + 8.0 * uniforms.stepSize);
-#endif
+    textureStore(voxel_storage, vec3<i32>(i32(normPos.x * size.x), i32(normPos.y * size.y), i32(normPos.z * size.z)), outputColor);
+    fragmentOutputs.color = vec4<f32>(vec3<f32>(normPos), 1.);
 }

@@ -130,7 +130,16 @@ export class PreviewManager {
 
         this._scene = scene;
 
-        this._dummyExternalTexture?.dispose();
+        const dummyTexture = this._dummyExternalTexture;
+
+        // The texture could be used by the command buffer that will be processed at the end of the frame, so we can't dispose it immediately
+        // We must call setTimeout(0) two times to make sure we dispose the texture at the right time (the first setTimeout(0) executes just after _initSceneAsync has been processed because it is async, which is too soon)
+        setTimeout(() => {
+            setTimeout(() => {
+                dummyTexture?.dispose();
+            }, 0);
+        }, 0);
+
         this._dummyExternalTexture = new Texture("https://assets.babylonjs.com/textures/Checker_albedo.png", this._scene, true);
         this._dummyExternalTexture.name = "Dummy external texture for preview NRGE";
 
@@ -422,7 +431,7 @@ export class PreviewManager {
 
         try {
             this._nodeRenderGraph.build();
-            await this._nodeRenderGraph.whenReadyAsync(16, 5000);
+            await this._nodeRenderGraph.whenReadyAsync();
             this._scene.frameGraph = this._nodeRenderGraph.frameGraph;
         } catch (err) {
             if (LogErrorTrace) {

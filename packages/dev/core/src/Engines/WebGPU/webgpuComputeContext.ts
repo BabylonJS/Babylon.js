@@ -11,6 +11,7 @@ import type { WebGPUCacheSampler } from "./webgpuCacheSampler";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 
 /** @internal */
 export class WebGPUComputeContext implements IComputeContext {
@@ -75,6 +76,21 @@ export class WebGPUComputeContext implements IComputeContext {
                                     resource: this._cacheSampler.getSampler(texture._texture!),
                                 });
                             }
+                            entries.push({
+                                binding: index,
+                                resource: hardwareTexture.view!,
+                            });
+                        }
+                        break;
+                    }
+
+                    case ComputeBindingType.InternalTexture: {
+                        const texture = object as InternalTexture;
+                        const hardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
+                        if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
+                            entries[indexInGroupEntries].resource = hardwareTexture.view!;
+                        } else {
+                            binding.indexInGroupEntries = entries.length;
                             entries.push({
                                 binding: index,
                                 resource: hardwareTexture.view!,

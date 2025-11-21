@@ -1021,7 +1021,7 @@ export class SkeletonViewer {
      * @param option String of the option name
      * @param value The numerical option value
      */
-    public changeDisplayOptions(option: string, value: number): void {
+    public changeDisplayOptions(option: string, value: number | boolean): void {
         const wasEnabled = this.isEnabled ? true : false;
         (this.options.displayOptions as any)[option] = value;
         this.isEnabled = false;

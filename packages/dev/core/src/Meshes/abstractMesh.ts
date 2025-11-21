@@ -238,12 +238,10 @@ class _InternalAbstractMeshDataInfo {
      * We use that as a clue to force the material to sideOrientation = null
      */
     public _sideOrientationHint = false;
-
     /**
-     * @internal
-     * if this is set to true, the mesh will be visible only if its parent(s) are also visible
+     * Used in frame graph mode only, to know which meshes to update when in frozen mode
      */
-    public _inheritVisibility = false;
+    public _wasActiveLastFrame = false;
 }
 
 /**
@@ -553,42 +551,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering#alpha-index
      */
     public alphaIndex = Number.MAX_VALUE;
-
-    /**
-     * If set to true, a mesh will only be visible only if its parent(s) are also visible (default is false)
-     */
-    public get inheritVisibility(): boolean {
-        return this._internalAbstractMeshDataInfo._inheritVisibility;
-    }
-
-    public set inheritVisibility(value: boolean) {
-        this._internalAbstractMeshDataInfo._inheritVisibility = value;
-    }
-
-    private _isVisible = true;
-    /**
-     * Gets or sets a boolean indicating if the mesh is visible (renderable). Default is true
-     */
-    public get isVisible(): boolean {
-        if (!this._isVisible || !this.inheritVisibility || !this._parentNode) {
-            return this._isVisible;
-        }
-        if (this._isVisible) {
-            let parent: Nullable<Node> = this._parentNode;
-            while (parent) {
-                const parentVisible = (parent as AbstractMesh).isVisible;
-                if (typeof parentVisible !== "undefined") {
-                    return parentVisible;
-                }
-                parent = parent.parent;
-            }
-        }
-        return this._isVisible;
-    }
-
-    public set isVisible(value: boolean) {
-        this._isVisible = value;
-    }
 
     /**
      * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
@@ -1349,6 +1311,27 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @param vertexData defines the map that stores the resulting data
      */
     public abstract copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void;
+
+    /**
+     * Returns the mesh VertexBuffer object from the requested `kind`
+     * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.NormalKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
+     * @returns a FloatArray or null if the mesh has no vertex buffer for this kind.
+     */
+    public abstract getVertexBuffer(kind: string, bypassInstanceData?: boolean): Nullable<VertexBuffer>;
 
     /**
      * Sets the vertex data of the mesh geometry for the requested `kind`.
@@ -2157,7 +2140,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             if (currentIntersectInfo) {
                 if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
                     intersectInfo = currentIntersectInfo;
-                    intersectInfo.subMeshId = index;
+                    intersectInfo.subMeshId = subMesh._id;
+                    intersectInfo._internalSubMeshId = index;
 
                     if (fastCheck) {
                         break;
@@ -2184,7 +2168,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             pickingInfo.bu = intersectInfo.bu || 0;
             pickingInfo.bv = intersectInfo.bv || 0;
             pickingInfo.subMeshFaceId = intersectInfo.faceId;
-            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo.subMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
+            pickingInfo.faceId = intersectInfo.faceId + subMeshes.data[intersectInfo._internalSubMeshId].indexStart / (this.getClassName().indexOf("LinesMesh") !== -1 ? 2 : 3);
             pickingInfo.subMeshId = intersectInfo.subMeshId;
             return pickingInfo;
         }
@@ -2774,7 +2758,6 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             return this;
         }
 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         const { OptimizeIndices } = await import("./mesh.vertexData.functions");
 
         OptimizeIndices(indices);

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Camera } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { Engine } from "../Engines/engine";

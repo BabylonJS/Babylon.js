@@ -1,5 +1,4 @@
 import type { Nullable } from "core/types";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { Material } from "core/Materials/material";
 
 import type { IMaterial } from "../glTFLoaderInterfaces";
@@ -62,20 +61,16 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
     // eslint-disable-next-line no-restricted-syntax
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, async (extensionContext, extension) => {
-            // eslint-disable-next-line github/no-then
-            return await this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
-                this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
-            });
+            await this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial);
+            this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
+            return await Promise.resolve();
         });
     }
 
     private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
-
         if (properties.emissiveStrength !== undefined) {
-            babylonMaterial.emissiveIntensity = properties.emissiveStrength;
+            const adapter = this._loader._getOrCreateMaterialAdapter(babylonMaterial);
+            adapter.emissionLuminance = properties.emissiveStrength;
         }
     }
 }

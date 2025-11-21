@@ -1,0 +1,36 @@
+{
+    "extends": "./tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "./.temp/"
+    },
+
+    "references": [
+        {
+            "path": "packages/dev/core/tsconfig.build.json"
+        },
+        {
+            "path": "packages/dev/gui/tsconfig.build.json"
+        },
+        {
+            "path": "packages/dev/sharedUiComponents/tsconfig.build.json"
+        },
+        {
+            "path": "packages/dev/smartFilters/tsconfig.build.json"
+        },
+        {
+            "path": "packages/dev/smartFilterBlocks/tsconfig.build.json"
+        },
+        {
+            "path": "packages/tools/smartFiltersEditorControl/tsconfig.build.json"
+        },
+        {
+            "path": "packages/tools/smartFiltersDebugger/tsconfig.build.json"
+        },
+        {
+            "path": "packages/tools/smartFiltersEditor/tsconfig.build.json"
+        }
+    ],
+    "include": []
+}

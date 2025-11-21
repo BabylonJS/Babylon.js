@@ -70,10 +70,10 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
             }
 
             this._isHovered = !!(pointerInfo.pickInfo && this._rootMesh.getChildMeshes().indexOf(<Mesh>pointerInfo.pickInfo.pickedMesh) != -1);
-            if (this._isHovered && pointerInfo.event.button === 0) {
+            if (this._isHovered && pointerInfo.type === PointerEventTypes.POINTERDOWN && pointerInfo.event.button === 0) {
                 this.onClickedObservable.notifyObservers(this._light);
             }
-        }, PointerEventTypes.POINTERDOWN);
+        });
     }
     protected _light: Nullable<Light> = null;
 

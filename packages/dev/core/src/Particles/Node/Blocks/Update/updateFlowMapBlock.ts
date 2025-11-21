@@ -15,7 +15,7 @@ import type { ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
  */
 export class UpdateFlowMapBlock extends NodeParticleBlock {
     /**
-     * Gets or sets the width of the sprite sheet
+     * Gets or sets the strenght of the flow map effect
      */
     @editableInPropertyPage("strength", PropertyTypeForEdition.Float, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
     public strength = 1;

@@ -1,14 +1,13 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph } from "core/index";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { FrameGraphFXAATask } from "core/FrameGraph/Tasks/PostProcesses/fxaaTask";
 import { ThinFXAAPostProcess } from "core/PostProcesses/thinFXAAPostProcess";
-import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
+import { NodeRenderGraphBaseWithPropertiesPostProcessBlock } from "./baseWithPropertiesPostProcessBlock";
 
 /**
  * Block that implements the FXAA post process
  */
-export class NodeRenderGraphFXAAPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
+export class NodeRenderGraphFXAAPostProcessBlock extends NodeRenderGraphBaseWithPropertiesPostProcessBlock {
     protected override _frameGraphTask: FrameGraphFXAATask;
 
     /**

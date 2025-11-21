@@ -2,6 +2,9 @@ import * as React from "react";
 import type { StateManager } from "./stateManager";
 import "./searchBox.scss";
 import { NodeLedger } from "./nodeLedger";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
+import { PositionedPopover } from "../fluent/primitives/positionedPopover";
+import { SearchBox } from "../fluent/primitives/searchBox";
 
 export interface ISearchBoxComponentProps {
     stateManager: StateManager;
@@ -74,7 +77,41 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
         }
     }
 
-    override render() {
+    renderFluent() {
+        // Note this function no longer uses other helpers from this file for easy non-fluent removal
+
+        // Sort and deduplicate the node names.
+        this._nodes = Array.from(new Set(NodeLedger.RegisteredNodeNames.sort()));
+        const formattedNodes = this._nodes.map((name) => NodeLedger.NameFormatter(name));
+
+        return (
+            <PositionedPopover
+                x={this._targetX}
+                y={this._targetY}
+                visible={this.state.isVisible}
+                hide={() => {
+                    this.props.stateManager.modalIsDisplayed = false;
+                }}
+            >
+                <SearchBox
+                    items={formattedNodes}
+                    onItemSelected={(item: string) => {
+                        const originalName = this._nodes[formattedNodes.indexOf(item)];
+                        this.props.stateManager.onNewBlockRequiredObservable.notifyObservers({
+                            type: originalName,
+                            targetX: this._targetX,
+                            targetY: this._targetY,
+                            needRepositioning: true,
+                            smartAdd: true,
+                        });
+                    }}
+                    title="Add a node"
+                />
+            </PositionedPopover>
+        );
+    }
+
+    renderOriginal() {
         if (!this.state.isVisible) {
             return null;
         }
@@ -141,5 +178,9 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
                 </div>
             </div>
         );
+    }
+
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

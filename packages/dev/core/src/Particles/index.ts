@@ -1,5 +1,5 @@
 /* eslint-disable import/export */
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./baseParticleSystem";
 export * from "./EmitterTypes/index";
 export * from "./webgl2ParticleSystem";

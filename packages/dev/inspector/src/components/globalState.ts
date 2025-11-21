@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { GLTFLoaderAnimationStartMode, GLTFLoaderCoordinateSystemMode } from "loaders/glTF/index";
 import type { IGLTFValidationResults } from "babylonjs-gltf2interface";
 
@@ -15,8 +15,9 @@ import { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import type { PropertyChangedEvent } from "./propertyChangedEvent";
 import { ReplayRecorder } from "./replayRecorder";
 import { DataStorage } from "core/Misc/dataStorage";
-// eslint-disable-next-line import/no-internal-modules
 import type { IGLTFLoaderExtension, GLTFFileLoader } from "loaders/glTF/index";
+import { UtilityLayerRenderer } from "core/Rendering/utilityLayerRenderer";
+import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 
 export class GlobalState {
     public onSelectionChangedObservable: Observable<any>;
@@ -57,6 +58,7 @@ export class GlobalState {
         KHR_materials_volume: { enabled: true },
         KHR_materials_dispersion: { enabled: true },
         KHR_lights_punctual: { enabled: true },
+        EXT_lights_area: { enabled: true },
         EXT_lights_ies: { enabled: true },
         KHR_texture_basisu: { enabled: true },
         KHR_texture_transform: { enabled: true },
@@ -64,7 +66,7 @@ export class GlobalState {
         EXT_mesh_gpu_instancing: { enabled: true },
         EXT_texture_webp: { enabled: true },
         EXT_texture_avif: { enabled: true },
-        EXT_materials_diffuse_roughness: { enabled: true },
+        KHR_materials_diffuse_roughness: { enabled: true },
     };
 
     public glTFLoaderOverrideConfig = false;
@@ -184,7 +186,10 @@ export class GlobalState {
                 light.reservedDataStore = {};
             }
             if (!light.reservedDataStore.lightGizmo) {
-                light.reservedDataStore.lightGizmo = new LightGizmo();
+                const scene = light.getScene();
+                const layer = scene.frameGraph ? FrameGraphUtils.CreateUtilityLayerRenderer(scene.frameGraph) : new UtilityLayerRenderer(scene);
+
+                light.reservedDataStore.lightGizmo = new LightGizmo(layer);
                 this.lightGizmos.push(light.reservedDataStore.lightGizmo);
                 light.reservedDataStore.lightGizmo.light = light;
                 light.reservedDataStore.lightGizmo.material.reservedDataStore = { hidden: true };
@@ -206,7 +211,10 @@ export class GlobalState {
                 camera.reservedDataStore = {};
             }
             if (!camera.reservedDataStore.cameraGizmo) {
-                camera.reservedDataStore.cameraGizmo = new CameraGizmo();
+                const scene = camera.getScene();
+                const layer = scene.frameGraph ? FrameGraphUtils.CreateUtilityLayerRenderer(scene.frameGraph) : new UtilityLayerRenderer(scene);
+
+                camera.reservedDataStore.cameraGizmo = new CameraGizmo(layer);
                 this.cameraGizmos.push(camera.reservedDataStore.cameraGizmo);
                 camera.reservedDataStore.cameraGizmo.camera = camera;
                 camera.reservedDataStore.cameraGizmo.material.reservedDataStore = { hidden: true };

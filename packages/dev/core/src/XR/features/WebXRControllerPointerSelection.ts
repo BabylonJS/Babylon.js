@@ -420,13 +420,13 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
             if (this._options.lookAndPickMode && controllerData.xrController?.inputSource.targetRayMode !== "transient-pointer") {
-                return;
+                continue;
             }
             if ((!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) || controllerData.disabledByNearInteraction) {
                 controllerData.selectionMesh.isVisible = false;
                 controllerData.laserPointer.isVisible = false;
                 controllerData.pick = null;
-                return;
+                continue;
             }
 
             controllerData.laserPointer.isVisible = this.displayLaserPointer;
@@ -444,7 +444,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
             } else {
-                return;
+                continue;
             }
 
             if (this._options.maxPointerDistance) {

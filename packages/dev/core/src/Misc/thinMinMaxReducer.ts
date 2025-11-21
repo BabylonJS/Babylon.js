@@ -1,4 +1,3 @@
-/* eslint-disable import/no-internal-modules */
 import type { Nullable, EffectWrapperCreationOptions, AbstractEngine, InternalTexture, Scene } from "core/index";
 import { Observable } from "./observable";
 import { EffectWrapper } from "../Materials/effectRenderer";

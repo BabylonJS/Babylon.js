@@ -204,7 +204,7 @@ export class GridMaterial extends PushMaterial {
             }
         }
 
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, false, this.fogEnabled, false, defines);
+        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, false, this.fogEnabled, false, defines, undefined, undefined, undefined, this._isVertexOutputInvariant);
 
         // Values that need to be evaluated on every frame
         PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), this, defines, !!useInstances);

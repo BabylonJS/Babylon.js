@@ -2,7 +2,7 @@
 	#ifdef MORPHTARGETS_TEXTURE
 		#if {X} == 0
 		for (var i = 0; i < NUM_MORPH_INFLUENCERS; i = i + 1) {
-			if (i >= uniforms.morphTargetCount) {
+			if (f32(i) >= uniforms.morphTargetCount) {
 				break;
 			}
 

@@ -79,7 +79,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * Default value used for legacyTranslucency.
      *
      * This property only exists for backward compatibility reasons.
-     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface transluceny. Default is false.
+     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface translucency. Default is false.
      */
     public static DEFAULT_LEGACY_TRANSLUCENCY = false;
 
@@ -362,10 +362,22 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
     /**
      * This property only exists for backward compatibility reasons.
-     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface transluceny. Default is false.
+     * Set it to true if your rendering in 8.0+ is different from that in 7 when you use sub-surface translucency. Default is false.
      */
     @serialize()
-    public legacyTransluceny = PBRSubSurfaceConfiguration.DEFAULT_LEGACY_TRANSLUCENCY;
+    public legacyTranslucency = PBRSubSurfaceConfiguration.DEFAULT_LEGACY_TRANSLUCENCY;
+
+    /**
+     * Keeping for backward compatibility... Should not be used anymore. It has been replaced by
+     * the property with the correct spelling.
+     * @see legacyTranslucency
+     */
+    public get legacyTransluceny(): boolean {
+        return this.legacyTranslucency;
+    }
+    public set legacyTransluceny(value: boolean) {
+        this.legacyTranslucency = value;
+    }
 
     private _scene: Scene;
 
@@ -412,6 +424,12 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             if (scene.texturesEnabled) {
                 if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                     if (!this._thicknessTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+
+                if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled) {
+                    if (!this._refractionIntensityTexture.isReadyOrNotBlocking()) {
                         return false;
                     }
                 }
@@ -481,7 +499,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_DISPERSION = this._isDispersionEnabled;
             defines.SS_TRANSLUCENCY = this._isTranslucencyEnabled;
             defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_THICKNESS = false;
-            defines.SS_TRANSLUCENCY_LEGACY = this.legacyTransluceny;
+            defines.SS_TRANSLUCENCY_LEGACY = this.legacyTranslucency;
             defines.SS_SCATTERING = this._isScatteringEnabled;
             defines.SS_THICKNESSANDMASK_TEXTURE = false;
             defines.SS_REFRACTIONINTENSITY_TEXTURE = false;
@@ -763,6 +781,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             activeTextures.push(this._refractionTexture);
         }
 
+        if (this._refractionIntensityTexture) {
+            activeTextures.push(this._refractionIntensityTexture);
+        }
+
         if (this._translucencyColorTexture) {
             activeTextures.push(this._translucencyColorTexture);
         }
@@ -779,6 +801,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
         if (this._refractionTexture && this._refractionTexture.animations && this._refractionTexture.animations.length > 0) {
             animatables.push(this._refractionTexture);
+        }
+
+        if (this._refractionIntensityTexture && this._refractionIntensityTexture.animations && this._refractionIntensityTexture.animations.length > 0) {
+            animatables.push(this._refractionIntensityTexture);
         }
 
         if (this._translucencyColorTexture && this._translucencyColorTexture.animations && this._translucencyColorTexture.animations.length > 0) {
@@ -798,6 +824,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
             if (this._refractionTexture) {
                 this._refractionTexture.dispose();
+            }
+
+            if (this._refractionIntensityTexture) {
+                this._refractionIntensityTexture.dispose();
             }
 
             if (this._translucencyColorTexture) {

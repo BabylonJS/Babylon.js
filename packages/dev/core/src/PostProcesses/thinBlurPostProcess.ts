@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, AbstractEngine, EffectWrapperCreationOptions, Vector2, Effect } from "core/index";
 import { EffectWrapper } from "../Materials/effectRenderer";
 import { ShaderLanguage } from "../Materials/shaderLanguage";

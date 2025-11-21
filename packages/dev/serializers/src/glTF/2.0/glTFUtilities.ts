@@ -1,28 +1,27 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import type { INode } from "babylonjs-gltf2interface";
 import { AccessorType, MeshPrimitiveMode } from "babylonjs-gltf2interface";
-import type { FloatArray, DataArray, IndicesArray } from "core/types";
+import type { FloatArray, DataArray, IndicesArray, DeepImmutable } from "core/types";
 import type { Vector4 } from "core/Maths/math.vector";
 import { Quaternion, TmpVectors, Matrix, Vector3 } from "core/Maths/math.vector";
 import { VertexBuffer } from "core/Buffers/buffer";
 import { Material } from "core/Materials/material";
 import { TransformNode } from "core/Meshes/transformNode";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { EnumerateFloatValues } from "core/Buffers/bufferUtils";
 import type { Node } from "core/node";
 import { Logger } from "core/Misc/logger";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import type { ShadowLight } from "core/Lights/shadowLight";
 import { Epsilon } from "core/Maths/math.constants";
-
-// Matrix that converts handedness on the X-axis. Can convert from LH to RH and vice versa.
-const ConvertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
+import { ConvertHandednessMatrix } from "../../exportUtils";
+import type { AreaLight } from "core/Lights/areaLight";
 
 // Default values for comparison.
-export const DefaultTranslation = Vector3.Zero();
-export const DefaultRotation = Quaternion.Identity();
-export const DefaultScale = Vector3.One();
-const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1);
+export const DefaultTranslation = Vector3.ZeroReadOnly;
+export const DefaultRotation = Quaternion.Identity() as DeepImmutable<Quaternion>;
+export const DefaultScale = Vector3.OneReadOnly;
+const DefaultLoaderCameraParentScaleLh = new Vector3(-1, 1, 1) as DeepImmutable<Vector3>;
 
 /**
  * Get the information necessary for enumerating a vertex buffer.
@@ -195,6 +194,12 @@ export function ConvertToRightHandedPosition(value: Vector3): Vector3 {
     return value;
 }
 
+/** @internal */
+export function ConvertToRightHandedTransformMatrix(matrix: Matrix): Matrix {
+    ConvertHandednessMatrix.invertToRef(TmpVectors.Matrix[0]).multiplyToRef(matrix, matrix).multiplyToRef(ConvertHandednessMatrix, matrix);
+    return matrix;
+}
+
 /**
  * Converts, in-place, a left-handed quaternion to a right-handed quaternion via a change of basis.
  * @param value the unit quaternion to convert
@@ -297,7 +302,7 @@ export function CollapseChildIntoParent(node: INode, parentNode: INode): void {
  * @param parentBabylonNode Target Babylon parent node.
  * @returns True if the two nodes can be merged, false otherwise.
  */
-export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, parentBabylonNode: Node): boolean {
+export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera | AreaLight, parentBabylonNode: Node): boolean {
     if (!(parentBabylonNode instanceof TransformNode)) {
         return false;
     }
@@ -320,52 +325,33 @@ export function IsChildCollapsible(babylonNode: ShadowLight | TargetCamera, pare
     return true;
 }
 
-export function IsNoopNode(node: Node, useRightHandedSystem: boolean): boolean {
-    if (!(node instanceof TransformNode)) {
-        return false;
-    }
-
-    // Transform
-    if (useRightHandedSystem) {
-        const matrix = node.getWorldMatrix();
-        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
-            return false;
-        }
-    } else {
-        const matrix = node.getWorldMatrix().multiplyToRef(ConvertHandednessMatrix, TmpVectors.Matrix[0]);
-        if (!matrix.equalsWithEpsilon(Matrix.IdentityReadOnly, Epsilon)) {
-            return false;
-        }
-    }
-
-    // Geometry
-    if (node instanceof AbstractMesh && node.geometry) {
-        return false;
-    }
-
-    return true;
-}
-
 /**
- * Converts an IndicesArray into either Uint32Array or Uint16Array, only copying if the data is number[].
+ * Converts an IndicesArray into either a Uint32Array or Uint16Array.
+ * If the `start` and `count` parameters specify a subset of the array, a new view is created.
+ * If the input is a number[], the data is copied into a new buffer.
  * @param indices input array to be converted
- * @param start starting index to copy from
- * @param count number of indices to copy
+ * @param start starting index
+ * @param count number of indices
+ * @param is32Bits whether the output should be Uint32Array (true) or Uint16Array (false) when indices is an `Array`
  * @returns a Uint32Array or Uint16Array
  * @internal
  */
-export function IndicesArrayToTypedArray(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint32Array | Uint16Array {
-    if (indices instanceof Uint16Array || indices instanceof Uint32Array) {
-        return indices;
+export function IndicesArrayToTypedSubarray(indices: IndicesArray, start: number, count: number, is32Bits: boolean): Uint32Array | Uint16Array {
+    let processedIndices = indices;
+    if (start !== 0 || count !== indices.length) {
+        processedIndices = Array.isArray(indices) ? indices.slice(start, start + count) : indices.subarray(start, start + count);
     }
 
-    // If Int32Array, cast the indices (which are all positive) to Uint32Array
-    if (indices instanceof Int32Array) {
-        return new Uint32Array(indices.buffer, indices.byteOffset, indices.length);
+    // If Int32Array, cast the indices (which should all be positive) to Uint32Array
+    if (processedIndices instanceof Int32Array) {
+        return new Uint32Array(processedIndices.buffer, processedIndices.byteOffset, processedIndices.length);
     }
 
-    const subarray = indices.slice(start, start + count);
-    return is32Bits ? new Uint32Array(subarray) : new Uint16Array(subarray);
+    if (Array.isArray(processedIndices)) {
+        return is32Bits ? new Uint32Array(processedIndices) : new Uint16Array(processedIndices);
+    }
+
+    return processedIndices;
 }
 
 export function DataArrayToUint8Array(data: DataArray): Uint8Array {

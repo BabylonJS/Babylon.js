@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as INSPECTOR from "../index";
 

@@ -10,7 +10,7 @@ import { ViewerModel, ModelState } from "./model/viewerModel";
 import { AnimationPlayMode, AnimationState } from "./model/modelAnimation";
 import { ILoaderPlugin } from "./loader/plugins/loaderPlugin";
 import { AbstractViewerNavbarButton } from "./templating/viewerTemplatePlugin";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { registerCustomOptimizer } from "./optimizer/custom/index";
 import { Logger } from "core/Misc/logger";
 
@@ -20,11 +20,11 @@ import { Logger } from "core/Misc/logger";
  * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
  */
 
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as BABYLON from "core/index";
 
 // load needed modules.
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import "loaders/index";
 import "pepjs";
 
@@ -70,8 +70,8 @@ export {
     AbstractViewerNavbarButton,
     registerCustomOptimizer,
 };
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export { GLTF2 } from "loaders/glTF/index";
 // export publicliy all configuration interfaces
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 export * from "./configuration/index";

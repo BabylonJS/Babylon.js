@@ -17,6 +17,7 @@ import { TBNBlock } from "./TBNBlock";
 
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 import { Constants } from "../../../../Engines/constants";
+import type { Nullable } from "../../../../types";
 
 /**
  * Block used to perturb normals based on a normal map
@@ -33,7 +34,17 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     @editableInPropertyPage("Invert Y axis", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: true } })
     public invertY = false;
     /** Gets or sets a boolean indicating that parallax occlusion should be enabled */
-    @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean, undefined, { embedded: true })
+    @editableInPropertyPage("Use parallax occlusion", PropertyTypeForEdition.Boolean, undefined, {
+        embedded: true,
+        notifiers: {
+            update: true,
+            callback: (_scene: Nullable<Scene>, block: PerturbNormalBlock) => {
+                block.parallaxScale._isInactive = block.useParallaxOcclusion;
+                block.parallaxHeight._isInactive = block.useParallaxOcclusion;
+                return true;
+            },
+        },
+    })
     public useParallaxOcclusion = false;
     /** Gets or sets a boolean indicating that sampling mode is in Object space */
     @editableInPropertyPage("Object Space Mode", PropertyTypeForEdition.Boolean, "PROPERTIES", { embedded: true, notifiers: { update: true } })
@@ -200,7 +211,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
     public override prepareDefines(defines: NodeMaterialDefines, nodeMaterial: NodeMaterial) {
         const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
-        const useParallax = this.viewDirection.isConnected && ((this.useParallaxOcclusion && normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
+        const useParallax =
+            this.viewDirection.isConnected && ((this.useParallaxOcclusion && !!normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
 
         defines.setValue("BUMP", true);
         defines.setValue("PARALLAX", useParallax, true);
@@ -277,7 +289,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         if (this.normalMapColor.connectedPoint) {
             normalSamplerName = (this.normalMapColor.connectedPoint._ownerBlock as TextureBlock).samplerName;
         }
-        const useParallax = this.viewDirection.isConnected && ((this.useParallaxOcclusion && normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
+        const useParallax =
+            this.viewDirection.isConnected && ((this.useParallaxOcclusion && !!normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
 
         const replaceForParallaxInfos = !this.parallaxScale.isConnectedToInputBlock
             ? "0.05"
@@ -452,6 +465,9 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this.invertY = serializationObject.invertY;
         this.useParallaxOcclusion = !!serializationObject.useParallaxOcclusion;
         this.useObjectSpaceNormalMap = !!serializationObject.useObjectSpaceNormalMap;
+
+        this.parallaxScale._isInactive = this.useParallaxOcclusion;
+        this.parallaxHeight._isInactive = this.useParallaxOcclusion;
     }
 }
 

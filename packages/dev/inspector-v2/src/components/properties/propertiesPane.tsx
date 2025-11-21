@@ -1,8 +1,6 @@
-// eslint-disable-next-line import/no-internal-modules
-
 import { Body1Strong, makeStyles, tokens } from "@fluentui/react-components";
 
-import { AccordionPane } from "../accordionPane";
+import { ExtensibleAccordion } from "../extensibleAccordion";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const useStyles = makeStyles({
@@ -11,13 +9,13 @@ const useStyles = makeStyles({
     },
 });
 
-export const PropertiesPane: typeof AccordionPane<unknown> = (props) => {
+export const PropertiesPane: typeof ExtensibleAccordion<unknown> = (props) => {
     const classes = useStyles();
 
     const entity = props.context;
 
     return entity != null ? (
-        <AccordionPane {...props} />
+        <ExtensibleAccordion {...props} />
     ) : (
         <div className={classes.placeholderDiv}>
             <Body1Strong italic>No entity selected.</Body1Strong>

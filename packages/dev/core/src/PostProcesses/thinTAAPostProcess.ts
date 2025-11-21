@@ -1,9 +1,9 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Nullable, AbstractEngine, EffectWrapperCreationOptions } from "core/index";
+import type { Nullable, EffectWrapperCreationOptions, Scene } from "core/index";
 import { Camera } from "../Cameras/camera";
 import { Halton2DSequence } from "core/Maths/halton2DSequence";
-import { Engine } from "core/Engines/engine";
+import { Vector2 } from "core/Maths/math.vector";
 import { EffectWrapper } from "core/Materials/effectRenderer";
+import { TAAMaterialManager } from "./RenderPipeline/Pipelines/taaMaterialManager";
 
 /**
  * Simple implementation of Temporal Anti-Aliasing (TAA).
@@ -74,6 +74,9 @@ export class ThinTAAPostProcess extends EffectWrapper {
             return;
         }
         this._disabled = value;
+        if (this._taaMaterialManager) {
+            this._taaMaterialManager.isEnabled = !value && this.reprojectHistory;
+        }
         this._reset();
     }
 
@@ -115,20 +118,69 @@ export class ThinTAAPostProcess extends EffectWrapper {
      */
     public disableOnCameraMove = true;
 
+    private _reprojectHistory = false;
+    /**
+     * Enables reprojecting the history texture with a per-pixel velocity.
+     * If set the "velocitySampler" has to be provided.
+     */
+    public get reprojectHistory(): boolean {
+        return this._reprojectHistory;
+    }
+
+    public set reprojectHistory(reproject: boolean) {
+        if (this._reprojectHistory === reproject) {
+            return;
+        }
+        this._reprojectHistory = reproject;
+
+        if (reproject) {
+            if (!this._taaMaterialManager) {
+                this._taaMaterialManager = new TAAMaterialManager(this._scene);
+            }
+            // The velocity buffer may be old so reset for one frame
+            this._reset();
+        }
+
+        if (this._taaMaterialManager) {
+            this._taaMaterialManager.isEnabled = reproject && !this._disabled;
+        }
+
+        this._updateEffect();
+    }
+
+    private _clampHistory = false;
+    /**
+     * Clamps the history pixel to the min and max of the 3x3 pixels surrounding the target pixel.
+     * This can help further reduce ghosting and artifacts.
+     */
+    public get clampHistory(): boolean {
+        return this._clampHistory;
+    }
+
+    public set clampHistory(clamp: boolean) {
+        if (this._clampHistory === clamp) {
+            return;
+        }
+        this._clampHistory = clamp;
+        this._updateEffect();
+    }
+
+    private _scene: Scene;
     private _hs: Halton2DSequence;
     private _firstUpdate = true;
+    private _taaMaterialManager: Nullable<TAAMaterialManager>;
 
     /**
      * Constructs a new TAA post process
      * @param name Name of the effect
-     * @param engine Engine to use to render the effect. If not provided, the last created engine will be used
+     * @param scene The scene the post process belongs to
      * @param options Options to configure the effect
      */
-    constructor(name: string, engine: Nullable<AbstractEngine> = null, options?: EffectWrapperCreationOptions) {
+    constructor(name: string, scene: Scene, options?: EffectWrapperCreationOptions) {
         super({
             ...options,
             name,
-            engine: engine || Engine.LastCreatedEngine!,
+            engine: scene.getEngine(),
             useShaderStore: true,
             useAsPostProcess: true,
             fragmentShader: ThinTAAPostProcess.FragmentUrl,
@@ -136,6 +188,7 @@ export class ThinTAAPostProcess extends EffectWrapper {
             samplers: ThinTAAPostProcess.Samplers,
         });
 
+        this._scene = scene;
         this._hs = new Halton2DSequence(this.samples);
     }
 
@@ -146,7 +199,27 @@ export class ThinTAAPostProcess extends EffectWrapper {
         this._firstUpdate = true;
     }
 
-    public updateProjectionMatrix(): void {
+    /** @internal */
+    public _updateJitter() {
+        if (this.reprojectHistory && this._taaMaterialManager) {
+            // Applying jitter to the projection matrix messes with the velocity buffer,
+            // so we do it as a final vertex step in a material plugin instead
+            this._nextJitterOffset(this._taaMaterialManager.jitter);
+        } else {
+            // Use the projection matrix by default since it supports most materials
+            this._updateProjectionMatrix();
+        }
+    }
+
+    protected _nextJitterOffset(output = new Vector2()): Vector2 {
+        if (!this.camera || !this.camera.hasMoved || !this.disableOnCameraMove) {
+            this._hs.next();
+        }
+        output.set(this._hs.x, this._hs.y);
+        return output;
+    }
+
+    protected _updateProjectionMatrix(): void {
         if (this.disabled) {
             return;
         }
@@ -177,5 +250,24 @@ export class ThinTAAPostProcess extends EffectWrapper {
         effect.setFloat("factor", (this.camera?.hasMoved && this.disableOnCameraMove) || this._firstUpdate ? 1 : this.factor);
 
         this._firstUpdate = false;
+    }
+
+    public override dispose() {
+        this._taaMaterialManager?.dispose();
+        super.dispose();
+    }
+
+    private _updateEffect(): void {
+        const defines: string[] = [];
+        // There seems to be an issue where `updateEffect` sometimes doesn't include the initial samplers
+        const samplers = ["textureSampler", "historySampler"];
+        if (this._reprojectHistory) {
+            defines.push("#define TAA_REPROJECT_HISTORY");
+            samplers.push("velocitySampler");
+        }
+        if (this._clampHistory) {
+            defines.push("#define TAA_CLAMP_HISTORY");
+        }
+        this.updateEffect(defines.join("\n"), null, samplers);
     }
 }

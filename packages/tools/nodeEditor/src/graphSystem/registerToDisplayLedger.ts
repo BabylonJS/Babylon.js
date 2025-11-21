@@ -17,6 +17,7 @@ import { TeleportOutDisplayManager } from "./display/teleportOutDisplayManager";
 import { TeleportInDisplayManager } from "./display/teleportInDisplayManager";
 import { LoopDisplayManager } from "./display/loopDisplayManager";
 import { DebugDisplayManager } from "./display/debugDisplayManager";
+import { DepthSourceDisplayManager } from "./display/depthSourceDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["NodeMaterialDebugBlock"] = DebugDisplayManager;
@@ -45,6 +46,7 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["SheenBlock"] = PBRDisplayManager;
     DisplayLedger.RegisteredControls["SubSurfaceBlock"] = PBRDisplayManager;
     DisplayLedger.RegisteredControls["ImageSourceBlock"] = ImageSourceDisplayManager;
+    DisplayLedger.RegisteredControls["DepthSourceBlock"] = DepthSourceDisplayManager;
     DisplayLedger.RegisteredControls["ElbowBlock"] = ElbowDisplayManager;
     DisplayLedger.RegisteredControls["MeshAttributeExistsBlock"] = MeshAttributeExistsDisplayManager;
     DisplayLedger.RegisteredControls["CurveBlock"] = CurveDisplayManager;

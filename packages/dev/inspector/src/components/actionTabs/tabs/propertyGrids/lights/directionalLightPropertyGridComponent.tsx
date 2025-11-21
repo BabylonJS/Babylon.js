@@ -13,6 +13,7 @@ import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineCo
 import type { ShadowGenerator } from "core/Lights/Shadows/shadowGenerator";
 import { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { DirectionalLightFrustumViewer } from "core/Debug/directionalLightFrustumViewer";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 
 interface IDirectionalLightPropertyGridComponentProps {
     globalState: GlobalState;
@@ -98,6 +99,12 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
                         propertyName="direction"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <CheckBoxLineComponent
+                        label="Auto Update Extends"
+                        target={light}
+                        propertyName="autoUpdateExtends"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     {!hideAutoCalcShadowZBounds && (
                         <CheckBoxLineComponent
                             label="Auto Calc Shadow ZBounds"
@@ -106,6 +113,34 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Ortho Left"
+                        target={light}
+                        propertyName="orthoLeft"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Ortho Right"
+                        target={light}
+                        propertyName="orthoRight"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Ortho Bottom"
+                        target={light}
+                        propertyName="orthoBottom"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Ortho Top"
+                        target={light}
+                        propertyName="orthoTop"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 </LineContainerComponent>
                 <CommonShadowLightPropertyGridComponent
                     globalState={this.props.globalState}

@@ -10,6 +10,11 @@ import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import type { NodeRenderGraphInputBlock } from "core/FrameGraph/Node/Blocks/inputBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
+import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
+import type { FrameGraphObjectList } from "core/FrameGraph/frameGraphObjectList";
+import type { Camera } from "core/Cameras/camera";
+import type { IShadowLight } from "core/Lights/shadowLight";
+import { Constants } from "core/Engines/constants";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<NodeRenderGraphInputBlock>>;
@@ -42,6 +47,9 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 const creationOptions = inputBlock.creationOptions;
                 if (!isExternal && !inputBlock.creationOptions) {
                     inputBlock.setDefaultValue();
+                }
+                if (!creationOptions.options.creationFlags) {
+                    creationOptions.options.creationFlags = [0];
                 }
                 return (
                     <>
@@ -120,6 +128,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     onChange={() => this.props.stateManager.onRebuildRequiredObservable.notifyObservers()}
                                 />
                                 <CheckBoxLineComponent
+                                    label="Create as storage texture"
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: boolean) => {
+                                        creationOptions.options.creationFlags![0] = value ? Constants.TEXTURE_CREATIONFLAG_STORAGE : 0;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    isSelected={() => creationOptions.options.creationFlags![0] === Constants.TEXTURE_CREATIONFLAG_STORAGE}
+                                />
+                                <CheckBoxLineComponent
                                     label="Create mipmaps"
                                     target={creationOptions.options}
                                     propertyName="createMipMaps"
@@ -133,7 +151,17 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                         creationOptions.options.useSRGBBuffers![0] = value;
                                         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                                     }}
-                                    extractValue={() => creationOptions.options.useSRGBBuffers![0]}
+                                    isSelected={() => creationOptions.options.useSRGBBuffers![0]}
+                                />
+                                <CheckBoxLineComponent
+                                    label="History texture"
+                                    target={creationOptions}
+                                    propertyName=""
+                                    onSelect={(value: boolean) => {
+                                        creationOptions.isHistoryTexture = value;
+                                        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                                    }}
+                                    isSelected={() => creationOptions.isHistoryTexture!}
                                 />
                             </>
                         )}
@@ -210,6 +238,36 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 />
                             </>
                         )}
+                    </>
+                );
+            }
+            case NodeRenderGraphBlockConnectionPointTypes.ObjectList: {
+                const objectList = inputBlock.value as FrameGraphObjectList;
+                return (
+                    <>
+                        <TextLineComponent label="Number of meshes" value={objectList.meshes ? "" + objectList.meshes.length : "Unknown (meshes from the scene)"} />
+                        <TextLineComponent
+                            label="Number of particle systems"
+                            value={objectList.particleSystems ? "" + objectList.particleSystems.length : "Unknown (particle systems from the scene)"}
+                        />
+                    </>
+                );
+            }
+            case NodeRenderGraphBlockConnectionPointTypes.Camera: {
+                const camera = inputBlock.value as Camera;
+                return (
+                    <>
+                        <TextLineComponent label="Name" value={camera?.name ?? ""} />
+                        <TextLineComponent label="Type" value={camera?.getClassName() ?? ""} />
+                    </>
+                );
+            }
+            case NodeRenderGraphBlockConnectionPointTypes.ShadowLight: {
+                const shadowLight = inputBlock.value as IShadowLight;
+                return (
+                    <>
+                        <TextLineComponent label="Name" value={shadowLight?.name ?? ""} />
+                        <TextLineComponent label="Type" value={shadowLight?.getClassName() ?? ""} />
                     </>
                 );
             }

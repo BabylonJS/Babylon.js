@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { Scene, FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, FrameGraphTextureHandle, Camera } from "core/index";
+import type { FrameGraph, FrameGraphObjectList, IShadowLight, WritableObject, FrameGraphTextureHandle, Camera } from "core/index";
 import { FrameGraphTask } from "../../frameGraphTask";
 import { ShadowGenerator } from "../../../Lights/Shadows/shadowGenerator";
 
@@ -295,9 +294,8 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
      * Creates a new shadow generator task.
      * @param name The name of the task.
      * @param frameGraph The frame graph the task belongs to.
-     * @param _scene The scene to create the shadow generator for.
      */
-    constructor(name: string, frameGraph: FrameGraph, _scene: Scene) {
+    constructor(name: string, frameGraph: FrameGraph) {
         super(name, frameGraph);
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
@@ -330,7 +328,12 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
             shadowMap.renderList = this.objectList.meshes;
             shadowMap.particleSystemList = this.objectList.particleSystems;
 
+            context.saveDepthStates();
+            context.setDepthStates(true, true);
+
             context.renderUnmanaged(shadowMap);
+
+            context.restoreDepthStates();
         });
 
         const passDisabled = this._frameGraph.addPass(this.name + "_disabled", true);

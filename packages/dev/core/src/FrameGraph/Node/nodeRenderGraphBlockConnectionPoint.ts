@@ -5,7 +5,6 @@ import type {
     NodeRenderGraphInputBlock,
     IShadowLight,
     FrameGraphShadowGeneratorTask,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { Observable } from "../../Misc/observable";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointCompatibilityStates, NodeRenderGraphConnectionPointDirection } from "./Types/nodeRenderGraphTypes";

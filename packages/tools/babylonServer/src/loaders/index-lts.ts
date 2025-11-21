@@ -1,5 +1,5 @@
 /* eslint-disable import/export */
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 // export * from "./legacy-glTF";
 // export * from "./legacy-glTF1";
 // export * from "./legacy-glTF2";
@@ -26,7 +26,7 @@ if (typeof GlobalObject !== "undefined") {
 
 export { FileLoader, Validation };
 
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as GLTF1 from "../../../../dev/loaders/src/glTF/1.0/index";
 
 /**
@@ -43,7 +43,7 @@ if (typeof GlobalObject !== "undefined") {
 
 export { GLTF1 };
 
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as Extensions from "../../../../dev/loaders/src/glTF/2.0/Extensions/index";
 import * as Interfaces from "../../../../dev/loaders/src/glTF/2.0/glTFLoaderInterfaces";
 import * as GLTF2 from "../../../../dev/loaders/src/glTF/2.0/index";
@@ -82,7 +82,7 @@ if (typeof GlobalObject !== "undefined") {
 
 export { GLTF2 };
 
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as OBJLoaders from "../../../../dev/loaders/src/OBJ/index";
 
 /**
@@ -97,7 +97,7 @@ if (typeof GlobalObject !== "undefined") {
 
 export * from "../../../../dev/loaders/src/OBJ/index";
 
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 import * as Loaders from "../../../../dev/loaders/src/STL/index";
 
 /**

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, FrameGraphRenderContext, AbstractEngine, IFrameGraphPass, FrameGraphTextureHandle, FrameGraphTask, FrameGraphRenderTarget } from "core/index";
 import { FrameGraphPass } from "./pass";
 
@@ -22,18 +21,35 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
     }
 
     /**
-     * Gets the render target(s) used by the render pass.
+     * Gets the handle(s) of the render target(s) used by the render pass.
      */
     public get renderTarget(): FrameGraphTextureHandle | FrameGraphTextureHandle[] | undefined {
         return this._renderTarget;
     }
 
     /**
-     * Gets the render target depth used by the render pass.
+     * Gets the handle of the render target depth used by the render pass.
      */
     public get renderTargetDepth(): FrameGraphTextureHandle | undefined {
         return this._renderTargetDepth;
     }
+
+    /**
+     * Gets the frame graph render target used by the render pass.
+     */
+    public get frameGraphRenderTarget(): FrameGraphRenderTarget | undefined {
+        return this._frameGraphRenderTarget;
+    }
+
+    /**
+     * If true, the depth attachment will be read-only (may allow some optimizations in WebGPU)
+     */
+    public depthReadOnly = false;
+
+    /**
+     * If true, the stencil attachment will be read-only (may allow some optimizations in WebGPU)
+     */
+    public stencilReadOnly = false;
 
     /** @internal */
     constructor(name: string, parentTask: FrameGraphTask, context: FrameGraphRenderContext, engine: AbstractEngine) {
@@ -62,7 +78,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
      * @param dependencies The dependencies to add.
      */
     public addDependencies(dependencies?: FrameGraphTextureHandle | FrameGraphTextureHandle[]) {
-        if (!dependencies) {
+        if (dependencies === undefined) {
             return;
         }
 
@@ -85,7 +101,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
             dependencies.add(key.value);
         }
 
-        if (this._renderTarget) {
+        if (this._renderTarget !== undefined) {
             if (Array.isArray(this._renderTarget)) {
                 for (const handle of this._renderTarget) {
                     if (handle !== undefined) {
@@ -97,20 +113,28 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
             }
         }
 
-        if (this._renderTargetDepth) {
+        if (this._renderTargetDepth !== undefined) {
             dependencies.add(this._renderTargetDepth);
         }
     }
 
     /** @internal */
     public override _execute() {
-        this._frameGraphRenderTarget = this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth);
+        this._frameGraphRenderTarget =
+            this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
 
         this._context.bindRenderTarget(this._frameGraphRenderTarget, `frame graph render pass - ${this.name}`);
 
         super._execute();
 
         this._context._flushDebugMessages();
+
+        const renderTargetWrapper = this._frameGraphRenderTarget.renderTargetWrapper;
+        if (renderTargetWrapper && (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)) {
+            // Unbinding the render target will trigger resolving MSAA textures.
+            this._context.bindRenderTarget(undefined, `frame graph render pass - ${this.name} - resolve MSAA`, true);
+            this._context._flushDebugMessages();
+        }
     }
 
     /** @internal */

@@ -100,9 +100,9 @@ describe("Interactivity math nodes", () => {
         PerformanceConfigurator.MatrixCurrentType = Array;
     });
 
-    it("should use math/e correctly", async () => {
+    it("should use math/E correctly", async () => {
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/e" }],
+            [{ op: "math/E" }],
             [
                 {
                     declaration: 0,
@@ -115,9 +115,9 @@ describe("Interactivity math nodes", () => {
         expect(logItem!.payload.value).toBe(Math.E);
     });
 
-    it("should use math/pi correctly", async () => {
+    it("should use math/Pi correctly", async () => {
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/pi" }],
+            [{ op: "math/Pi" }],
             [
                 {
                     declaration: 0,
@@ -130,10 +130,9 @@ describe("Interactivity math nodes", () => {
         expect(logItem!.payload.value).toBe(Math.PI);
     });
 
-    // math/inf
-    it("should use math/inf correctly", async () => {
+    it("should use math/Inf correctly", async () => {
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/inf" }],
+            [{ op: "math/Inf" }],
             [
                 {
                     declaration: 0,
@@ -146,10 +145,9 @@ describe("Interactivity math nodes", () => {
         expect(logItem!.payload.value).toBe(Infinity);
     });
 
-    // math/nan
-    it("should use math/nan correctly", async () => {
+    it("should use math/NaN correctly", async () => {
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/nan" }],
+            [{ op: "math/NaN" }],
             [
                 {
                     declaration: 0,
@@ -395,12 +393,12 @@ describe("Interactivity math nodes", () => {
             inputs: 2,
             returnLength: 1,
         },
-        "math/isnan": {
+        "math/isNaN": {
             operation: isNaN,
             types: ["float"],
             inputs: 1,
         },
-        "math/isinf": {
+        "math/isInf": {
             operation: (a: number) => !isFinite(a),
             types: ["float"],
             inputs: 1,
@@ -723,7 +721,7 @@ describe("Interactivity math nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        b: {
+                        angle: {
                             type: 1,
                             value: [Math.PI / 2],
                         },
@@ -751,7 +749,7 @@ describe("Interactivity math nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        b: {
+                        angle: {
                             type: 1,
                             value: [rotationAngleInRadians],
                         },
@@ -780,7 +778,7 @@ describe("Interactivity math nodes", () => {
                 {
                     declaration: 0,
                     values: {
-                        b: {
+                        angle: {
                             type: 1,
                             value: [rotationAngleInRadians],
                         },
@@ -814,7 +812,7 @@ describe("Interactivity math nodes", () => {
                             type: 0,
                             value: [1, 1, 1],
                         },
-                        b: {
+                        rotation: {
                             type: 1,
                             value: Quaternion.FromEulerAngles(Math.PI / 2, 0, 0).asArray(),
                         },
@@ -843,7 +841,7 @@ describe("Interactivity math nodes", () => {
                             type: 0,
                             value: vector.asArray(),
                         },
-                        b: {
+                        rotation: {
                             type: 1,
                             value: quaternion.asArray(),
                         },
@@ -1254,13 +1252,11 @@ describe("Interactivity math nodes", () => {
 
     // TODO math/inverse for matrix4
 
-    // math/matmul
-
-    it("should use math/matmul correctly - matrix2", async () => {
+    it("should use math/matMul correctly - matrix2", async () => {
         const randomMatrix1 = Array.from({ length: 4 }, () => Math.random() - 0.5);
         const randomMatrix2 = Array.from({ length: 4 }, () => Math.random() - 0.5);
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/matmul" }],
+            [{ op: "math/matMul" }],
             [
                 {
                     declaration: 0,
@@ -1293,11 +1289,11 @@ describe("Interactivity math nodes", () => {
         expect(resultArray).toEqual(expected);
     });
 
-    it("should use math/matmul correctly - matrix3", async () => {
+    it("should use math/matMul correctly - matrix3", async () => {
         const randomMatrix1 = Array.from({ length: 9 }, () => Math.random() - 0.5);
         const randomMatrix2 = Array.from({ length: 9 }, () => Math.random() - 0.5);
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/matmul" }],
+            [{ op: "math/matMul" }],
             [
                 {
                     declaration: 0,
@@ -1335,11 +1331,11 @@ describe("Interactivity math nodes", () => {
         expect(resultArray).toEqual(expected);
     });
 
-    it("should use math/matmul correctly - matrix4", async () => {
+    it("should use math/matMul correctly - matrix4", async () => {
         const randomMatrix1 = Array.from({ length: 16 }, () => Math.random() - 0.5).map((v: number) => round3(v));
         const randomMatrix2 = Array.from({ length: 16 }, () => Math.random() - 0.5).map((v: number) => round3(v));
         const graph = await generateSimpleNodeGraph(
-            [{ op: "math/matmul" }],
+            [{ op: "math/matMul" }],
             [
                 {
                     declaration: 0,

@@ -55,6 +55,7 @@ import type { InternalTextureCreationOptions, TextureSize } from "../Materials/T
 import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
+import { AlphaState } from "../States/alphaCullingState";
 
 import "../Buffers/buffer.align";
 
@@ -81,6 +82,7 @@ import { PerfCounter } from "../Misc/perfCounter";
 import "./AbstractEngine/abstractEngine.loadingScreen";
 import "./AbstractEngine/abstractEngine.dom";
 import "./AbstractEngine/abstractEngine.states";
+import "./AbstractEngine/abstractEngine.stencil";
 import "./AbstractEngine/abstractEngine.renderPass";
 import "../Audio/audioEngine";
 import { resetCachedPipeline } from "../Materials/effect.functions";
@@ -228,7 +230,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public readonly _clearReverseDepthValue = 0;
     /** @internal */
-    public readonly _clearStencilValue = 0;
+    public _clearStencilValue = 0;
     private readonly _defaultSampleCount = 4; // Only supported value for now.
 
     // Engine Life Cycle
@@ -244,6 +246,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         architecture: "",
         device: "",
         description: "",
+        subgroupMinSize: 0,
+        subgroupMaxSize: 0,
+        isFallbackAdapter: false,
     };
     private _adapterSupportedLimits: GPUSupportedLimits;
     /** @internal */
@@ -346,9 +351,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public override _currentDrawContext: WebGPUDrawContext;
     /** @internal */
-    public _currentMaterialContext: WebGPUMaterialContext;
+    public override _currentMaterialContext: WebGPUMaterialContext;
+    private _currentVertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
     private _currentIndexBuffer: Nullable<DataBuffer> = null;
+    private _dummyIndexBuffer: WebGPUDataBuffer;
     private _colorWriteLocal = true;
     private _forceEnableEffect = false;
 
@@ -784,6 +791,12 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                         label: "EmptyVertexBuffer",
                     });
 
+                    this._dummyIndexBuffer = this._bufferManager.createBuffer(
+                        new Uint16Array([0, 0, 0, 0]),
+                        WebGPUConstants.BufferUsage.Storage | WebGPUConstants.BufferUsage.CopyDst,
+                        "DummyIndices"
+                    );
+
                     this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
                     this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
@@ -842,7 +855,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
     private _initializeLimits(): void {
         // Init caps
-        // TODO WEBGPU Real Capability check once limits will be working.
+        const textureFormatsTier1 = this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureFormatsTier1) >= 0;
 
         this._caps = {
             maxTexturesImageUnits: this._deviceLimits.maxSampledTexturesPerShaderStage,
@@ -856,6 +869,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             maxVaryingVectors: this._deviceLimits.maxInterStageShaderVariables,
             maxFragmentUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
             maxVertexUniformVectors: Math.floor(this._deviceLimits.maxUniformBufferBindingSize / 4),
+            shaderFloatPrecision: 23, // WGSL always uses IEEE-754 binary32 floats (which have 23 bits of significand)
             standardDerivatives: true,
             astc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionASTC) >= 0 ? true : undefined) as any,
             s3tc: (this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.TextureCompressionBC) >= 0 ? true : undefined) as any,
@@ -868,6 +882,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
+            blendFloat: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.Float32Blendable) >= 0,
             supportFloatTexturesResolve: false, // See https://github.com/gpuweb/gpuweb/issues/3844
             rg11b10ufColorRenderable: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.RG11B10UFloatRenderable) >= 0,
             textureFloat: true,
@@ -899,7 +914,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             textureMaxLevel: true,
             texture2DArrayMaxLayerCount: this._deviceLimits.maxTextureArrayLayers,
             disableMorphTargetTexture: false,
-            textureNorm16: false, // in the works: https://github.com/gpuweb/gpuweb/issues/3001
+            textureNorm16: textureFormatsTier1,
+            blendParametersPerTarget: true,
+            dualSourceBlending: true,
         };
 
         this._features = {
@@ -931,6 +948,8 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: true,
             _collectUbosUpdatedInFrame: false,
         };
+
+        this._alphaState = new AlphaState(this._caps.blendParametersPerTarget);
     }
 
     private _initializeContextAndSwapChain(): void {
@@ -1269,7 +1288,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
     /** @internal */
     public applyStates() {
         this._stencilStateComposer.apply();
-        this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState.alphaBlend);
+        this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
     }
 
     /**
@@ -1296,10 +1315,9 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
 
             this._alphaState.reset();
-            this._alphaMode = Constants.ALPHA_ADD;
-            this._alphaEquation = Constants.ALPHA_DISABLE;
+            this._resetAlphaMode();
             this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
-            this._cacheRenderPipeline.setAlphaBlendEnabled(false);
+            this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState._alphaBlend, this._alphaState._numTargetEnabled);
 
             this.setColorWrite(true);
         }
@@ -1518,11 +1536,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @param backBuffer defines if the back buffer must be cleared
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
+     * @param stencilClearValue defines the value to use to clear the stencil buffer (default is 0)
      */
-    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false, stencilClearValue = 0): void {
         // Some PGs are using color3...
         if (color && color.a === undefined) {
             color.a = 1;
+        }
+
+        if (stencil) {
+            this._clearStencilValue = stencilClearValue;
         }
 
         const hasScissor = this._scissorIsActive();
@@ -1611,7 +1634,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             view = data;
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst, label);
+        const dataBuffer = this._bufferManager.createBuffer(
+            view,
+            WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Storage,
+            label
+        );
         return dataBuffer;
     }
 
@@ -1655,7 +1682,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
             }
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst, label);
+        const dataBuffer = this._bufferManager.createBuffer(
+            view,
+            WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Storage,
+            label
+        );
         dataBuffer.is32Bits = is32Bits;
         return dataBuffer;
     }
@@ -1782,18 +1813,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * Bind a list of vertex buffers with the engine
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
-     * @param effect defines the effect associated with the vertex buffers
+     * @param _effect defines the effect associated with the vertex buffers
      * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
      */
     public bindBuffers(
         vertexBuffers: { [key: string]: Nullable<VertexBuffer> },
         indexBuffer: Nullable<DataBuffer>,
-        effect: Effect,
+        _effect: Effect,
         overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
     ): void {
+        this._currentVertexBuffers = vertexBuffers;
         this._currentIndexBuffer = indexBuffer;
         this._currentOverrideVertexBuffers = overrideVertexBuffers ?? null;
-        this._cacheRenderPipeline.setBuffers(vertexBuffers, indexBuffer, this._currentOverrideVertexBuffers);
+        this._cacheRenderPipeline.setBuffers(this._currentVertexBuffers, this._currentIndexBuffer, this._currentOverrideVertexBuffers);
     }
 
     /**
@@ -2091,7 +2123,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      * @returns the new context
      */
     public createDrawContext(): WebGPUDrawContext | undefined {
-        return new WebGPUDrawContext(this._bufferManager);
+        return new WebGPUDrawContext(this._bufferManager, this._dummyIndexBuffer);
     }
 
     /**
@@ -3205,15 +3237,19 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     ? {
                           view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                           depthClearValue: mustClearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : undefined,
-                          depthLoadOp: mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
-                          depthStoreOp: WebGPUConstants.StoreOp.Store,
+                          depthLoadOp: rtWrapper.depthReadOnly ? undefined : mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
+                          depthStoreOp: rtWrapper.depthReadOnly ? undefined : WebGPUConstants.StoreOp.Store,
+                          depthReadOnly: rtWrapper.depthReadOnly,
                           stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
-                          stencilLoadOp: !depthTextureHasStencil
+                          stencilLoadOp: rtWrapper.stencilReadOnly
                               ? undefined
-                              : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                                ? WebGPUConstants.LoadOp.Clear
-                                : WebGPUConstants.LoadOp.Load,
-                          stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
+                              : !depthTextureHasStencil
+                                ? undefined
+                                : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
+                                  ? WebGPUConstants.LoadOp.Clear
+                                  : WebGPUConstants.LoadOp.Load,
+                          stencilStoreOp: rtWrapper.stencilReadOnly ? undefined : !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
+                          stencilReadOnly: rtWrapper.stencilReadOnly,
                       }
                     : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
@@ -3408,6 +3444,11 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         }
 
         // We don't create the render pass just now, we do a lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
+        // However, if snapshot rendering is enabled, we need to create the render pass immediately, to be sure currentRenderPass is not null when _endCurrentRenderPass() is called.
+        // (as in snapshot rendering mode, we may not have a call to clear() before _endCurrentRenderPass(), so lazy creation would not work)
+        if (this._snapshotRendering.play || this._snapshotRendering.record) {
+            this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);
+        }
 
         if (this._cachedViewport && !forceFullscreenViewport) {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
@@ -3638,6 +3679,14 @@ export class WebGPUEngine extends ThinWebGPUEngine {
 
         this.bindUniformBufferBase(this._currentRenderTarget ? this._ubInvertY : this._ubDontInvertY, 0, WebGPUShaderProcessor.InternalsUBOName);
 
+        this._currentDrawContext.setVertexPulling(
+            this._currentMaterialContext.useVertexPulling,
+            webgpuPipelineContext,
+            this._currentVertexBuffers,
+            this._cacheRenderPipeline.indexBuffer, // don't use this._currentIndexBuffer, it will have been set to null by _drawArraysType!
+            this._currentOverrideVertexBuffers
+        );
+
         if (webgpuPipelineContext.uniformBuffer) {
             webgpuPipelineContext.uniformBuffer.update();
             this.bindUniformBufferBase(webgpuPipelineContext.uniformBuffer.getBuffer()!, 0, WebGPUShaderProcessor.LeftOvertUBOName);
@@ -3691,6 +3740,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         this._currentMaterialContext.textureState = textureState;
 
         const pipeline = this._cacheRenderPipeline.getRenderPipeline(fillMode, this._currentEffect!, this.currentSampleCount, textureState);
+
         const bindGroups = this._cacheBindGroups.getBindGroups(webgpuPipelineContext, this._currentDrawContext, this._currentMaterialContext);
 
         if (!this._snapshotRendering.record) {
@@ -3735,7 +3785,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         // draw
         const nonCompatMode = !this.compatibilityMode && !this._snapshotRendering.record;
 
-        if (nonCompatMode && this._currentDrawContext.indirectDrawBuffer) {
+        if ((nonCompatMode || this._currentDrawContext._enableIndirectDrawInCompatMode) && this._currentDrawContext.indirectDrawBuffer) {
             this._currentDrawContext.setIndirectData(count, instancesCount || 1, start);
             if (drawType === 0) {
                 renderPass2.drawIndexedIndirect(this._currentDrawContext.indirectDrawBuffer, 0);
@@ -3897,6 +3947,16 @@ export class WebGPUEngine extends ThinWebGPUEngine {
      */
     public createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
         return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE, label);
+    }
+
+    /**
+     * Clears a storage buffer to zeroes
+     * @param storageBuffer the storage buffer to clear
+     * @param byteOffset the byte offset to start clearing (optional)
+     * @param byteLength the byte length to clear (optional)
+     */
+    public clearStorageBuffer(storageBuffer: DataBuffer, byteOffset?: number, byteLength?: number): void {
+        this._renderEncoder.clearBuffer(storageBuffer.underlyingResource, byteOffset, byteLength);
     }
 
     /**

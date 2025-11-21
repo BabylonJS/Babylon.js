@@ -1,5 +1,5 @@
 import { RenderOnlyConfigurationLoader } from "./renderOnlyLoader";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { getConfigurationType } from "./types/index";
 
 export class ConfigurationLoader extends RenderOnlyConfigurationLoader {

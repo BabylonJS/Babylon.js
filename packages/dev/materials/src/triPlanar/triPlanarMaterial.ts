@@ -207,7 +207,19 @@ export class TriPlanarMaterial extends PushMaterial {
         }
 
         // Misc.
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this.needAlphaTestingForMesh(mesh), defines);
+        PrepareDefinesForMisc(
+            mesh,
+            scene,
+            this._useLogarithmicDepth,
+            this.pointsCloud,
+            this.fogEnabled,
+            this.needAlphaTestingForMesh(mesh),
+            defines,
+            undefined,
+            undefined,
+            undefined,
+            this._isVertexOutputInvariant
+        );
 
         // Lights
         defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);

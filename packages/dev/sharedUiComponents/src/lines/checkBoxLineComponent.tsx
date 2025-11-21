@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import copyIcon from "../imgs/copy.svg";
 import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
-import { SwitchPropertyLine } from "../fluent/hoc/switchPropertyLine";
+import { SwitchPropertyLine } from "../fluent/hoc/propertyLines/switchPropertyLine";
 import { Checkbox } from "../fluent/primitives/checkbox";
 
 export interface ICheckBoxLineComponentProps {

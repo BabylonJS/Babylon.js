@@ -111,16 +111,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         // Connect to relevant events
         globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onRebuildRequiredObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onNodeMovedObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.stateManager.onNewNodeCreatedObservable.add(() => {
-            this._historyStack.store();
+            void this._historyStack.storeAsync();
         });
         globalState.onClearUndoStack.add(() => {
             this._historyStack.reset();
@@ -255,14 +255,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                 return;
             }
 
-            this._graphCanvas.handleKeyDown(
+            void this._graphCanvas.handleKeyDownAsync(
                 evt,
                 (nodeData) => {
                     this.props.globalState.nodeGeometry.removeBlock(nodeData.data as NodeGeometryBlock);
                 },
                 this._mouseLocationX,
                 this._mouseLocationY,
-                (nodeData) => {
+                async (nodeData) => {
                     const block = nodeData.data as NodeGeometryBlock;
                     const clone = block.clone();
 

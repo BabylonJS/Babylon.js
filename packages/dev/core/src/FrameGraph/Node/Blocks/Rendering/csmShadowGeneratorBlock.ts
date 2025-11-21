@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Scene, FrameGraph, NodeRenderGraphConnectionPoint, FrameGraphTextureHandle, NodeRenderGraphBuildState } from "core/index";
 import { NodeRenderGraphBaseShadowGeneratorBlock } from "./baseShadowGeneratorBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -39,7 +38,7 @@ export class NodeRenderGraphCascadedShadowGeneratorBlock extends NodeRenderGraph
 
         this._finalizeInputOutputRegistering();
 
-        this._frameGraphTask = new FrameGraphCascadedShadowGeneratorTask(this.name, frameGraph, scene);
+        this._frameGraphTask = new FrameGraphCascadedShadowGeneratorTask(this.name, frameGraph);
     }
 
     /** Sets the number of cascades */

@@ -5,10 +5,15 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterial } from "../../nodeMaterial";
-import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
 import { SfeModeDefine } from "../Fragment/smartFilterFragmentOutputBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
+import type { Nullable } from "../../../../types";
+import type { BaseTexture } from "../../../Textures/baseTexture";
+import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
+import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
+import { ImageSourceBlock } from "./imageSourceBlock";
 
 /**
  * Base block used for creating Smart Filter shader blocks for the SFE framework.
@@ -22,8 +27,30 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
      * A boolean indicating whether this block should be the main input for the SFE pipeline.
      * If true, it can be used in SFE for auto-disabling.
      */
-    @editableInPropertyPage("Is Main Input", PropertyTypeForEdition.Boolean, undefined, { notifiers: { rebuild: true } })
     public isMainInput: boolean = false;
+
+    /**
+     * Gets the sampler name associated with this texture
+     */
+    public override get samplerName(): string {
+        if (this.source.connectedPoint) {
+            return (this.source.connectedPoint.ownerBlock as ImageSourceBlock).samplerName;
+        }
+        return this._samplerName;
+    }
+
+    /**
+     * Gets or sets the texture associated with this block
+     */
+    public override get texture(): Nullable<BaseTexture> {
+        if (this.source.connectedPoint) {
+            return (this.source.connectedPoint.ownerBlock as ImageSourceBlock).texture;
+        }
+        return this._texture;
+    }
+    public override set texture(value: Nullable<BaseTexture>) {
+        this._texture = value;
+    }
 
     /**
      * Create a new SmartFilterTextureBlock
@@ -31,6 +58,28 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
      */
     public constructor(name: string) {
         super(name);
+
+        this.registerInput(
+            "source",
+            NodeMaterialBlockConnectionPointTypes.Object,
+            true,
+            NodeMaterialBlockTargets.VertexAndFragment,
+            new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+        );
+    }
+
+    /**
+     * Gets the source input component
+     */
+    public get source(): NodeMaterialConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
+     * Gets a boolean indicating that this block is linked to an ImageSourceBlock
+     */
+    public get hasImageSource(): boolean {
+        return this.source.isConnected;
     }
 
     /**
@@ -68,9 +117,11 @@ export class SmartFilterTextureBlock extends CurrentScreenBlock {
             // Wrap the varying in a define, as it won't be needed in SFE.
             state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2, SfeModeDefine, true);
 
-            // Append `// main` to denote this as the main input texture to composite
-            const annotation = this.isMainInput ? "// main" : undefined;
-            state._emit2DSampler(this._samplerName, undefined, undefined, annotation);
+            if (!this.hasImageSource) {
+                // Append `// main` to denote this as the main input texture to composite
+                const annotation = this.isMainInput ? "// main" : undefined;
+                state._emit2DSampler(this._samplerName, undefined, undefined, annotation);
+            }
         }
     }
 

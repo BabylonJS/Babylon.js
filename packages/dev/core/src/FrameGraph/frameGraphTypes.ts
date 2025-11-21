@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, TextureSize, FrameGraphContext } from "core/index";
 
 /**

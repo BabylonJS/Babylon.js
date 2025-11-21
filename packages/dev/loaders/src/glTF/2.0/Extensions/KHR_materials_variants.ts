@@ -87,7 +87,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
-        this.enabled = this._loader.isExtensionUsed(NAME);
+        this.enabled = this._loader.isExtensionUsed(NAME) && !this._loader.parent.skipMaterials;
     }
 
     /** @internal */

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { FrameGraph, FrameGraphRenderContext, FrameGraphRenderPass } from "core/index";
 import { ThinFXAAPostProcess } from "core/PostProcesses/thinFXAAPostProcess";
 import { FrameGraphPostProcessTask } from "./postProcessTask";

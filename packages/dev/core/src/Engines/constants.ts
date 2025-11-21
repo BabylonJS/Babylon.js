@@ -7,88 +7,93 @@ export class Constants {
     public static readonly DISABLEUA = "#define DISABLE_UNIFORMITY_ANALYSIS";
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
-    /** Defines that alpha blending is SRC ALPHA * SRC + DEST */
+    /** Defines that alpha blending is COLOR=SRC_ALPHA * SRC + DEST, ALPHA=DEST_ALPHA */
     public static readonly ALPHA_ADD = 1;
     /**
-     *  Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST
-     *  Blends src and dest using src alpha. Go-to for transparency. 100% alpha means source, 0% alpha means background. Glass, UI fade, smoke
+     *  Defines that alpha blending is COLOR=SRC_ALPHA * SRC + (1 - SRC_ALPHA) * DEST, ALPHA=SRC_ALPHA + DEST_ALPHA
+     *  Go-to for transparency. 100% alpha means source, 0% alpha means background. Glass, UI fade, smoke
      */
     public static readonly ALPHA_COMBINE = 2;
     /**
-     * Defines that alpha blending is DEST - SRC * DEST
+     * Defines that alpha blending is COLOR=(1 - SRC) * DEST, ALPHA=SRC_ALPHA - DEST_ALPHA
      * Subtracts source from destination, leading to darker results
      * */
     public static readonly ALPHA_SUBTRACT = 3;
-    /** Defines that alpha blending is SRC * DEST */
+    /** Defines that alpha blending is COLOR=DEST * SRC, ALPHA=SRC_ALPHA + DEST_ALPHA */
     public static readonly ALPHA_MULTIPLY = 4;
     /**
-     * Defines that alpha blending is SRC ALPHA * SRC + (1 - SRC) * DEST
+     * Defines that alpha blending is COLOR=SRC_ALPHA * SRC + (1 - SRC) * DEST, ALPHA=SRC_ALPHA + DEST_ALPHA
      * Prioritizes area with high source alpha, strongly emphasizes the source
      */
     public static readonly ALPHA_MAXIMIZED = 5;
     /**
-     * Defines that alpha blending is SRC + DEST
+     * Defines that alpha blending is COLOR=SRC + DEST, ALPHA=DEST_ALPHA
      * Source color is added to the destination color without alpha affecting the result. Great for additive glow effects (fire, magic, lasers)
      */
     public static readonly ALPHA_ONEONE = 6;
-    /** Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST */
+    /** Defines that alpha blending is COLOR=SRC + (1 - SRC_ALPHA) * DEST, ALPHA=SRC_ALPHA + DEST_ALPHA */
     public static readonly ALPHA_PREMULTIPLIED = 7;
-    /**
-     * Defines that alpha blending is SRC + (1 - SRC ALPHA) * DEST
-     * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
-     */
+    /** Defines that alpha blending is COLOR=SRC + (1 - SRC_ALPHA) * DEST, ALPHA=SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA */
     public static readonly ALPHA_PREMULTIPLIED_PORTERDUFF = 8;
     /**
-     * Defines that alpha blending is CST * SRC + (1 - CST) * DEST
+     * Defines that alpha blending is COLOR=CST * SRC + (1 - CST) * DEST, ALPHA=CST_ALPHA * SRC + (1 - CST_ALPHA) * DEST_ALPHA
      * Where CST is user-supplied color
      */
     public static readonly ALPHA_INTERPOLATE = 9;
     /**
-     * Defines that alpha blending is SRC + (1 - SRC) * DEST
-     * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
+     * Defines that alpha blending is COLOR=SRC + (1 - SRC) * DEST, ALPHA=SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA
      * Brightens, good for soft light or UI highlights (like photoshop's screen blend)
      */
     public static readonly ALPHA_SCREENMODE = 10;
     /**
-     * Defines that alpha blending is SRC + DST
-     * Alpha will be set to SRC ALPHA + DST ALPHA
+     * Defines that alpha blending is COLOR=SRC + DST, ALPHA=SRC_ALPHA + DEST_ALPHA
      * Straight addition of color and alpha- use when you want both source and destination colors and opacities to stack
      */
     public static readonly ALPHA_ONEONE_ONEONE = 11;
     /**
-     * Defines that alpha blending is SRC * DST ALPHA + DST
-     * Alpha will be set to 0
+     * Defines that alpha blending is COLOR=DEST_ALPHA * SRC + DST, ALPHA=0
      */
     public static readonly ALPHA_ALPHATOCOLOR = 12;
     /**
-     * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
+     * Defines that alpha blending is COLOR=(1 - DEST) * SRC + (1 - SRC) * DEST, ALPHA=(1 - DEST_ALPHA) * SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA
      * Result is between source and destination, used for experimental blending or styled effects
      */
     public static readonly ALPHA_REVERSEONEMINUS = 13;
     /**
-     * Defines that alpha blending is SRC + DST * (1 - SRC ALPHA)
-     * Alpha will be set to SRC ALPHA + DST ALPHA * (1 - SRC ALPHA)
+     * Defines that alpha blending is ALPHA=SRC + (1 - SRC ALPHA) * DEST, ALPHA=SRC_ALPHA + (1 - SRC ALPHA) * DEST_ALPHA
      * Smooths blending between source and destination, useful in layered alpha masks
      */
     public static readonly ALPHA_SRC_DSTONEMINUSSRCALPHA = 14;
     /**
-     * Defines that alpha blending is SRC + DST
-     * Alpha will be set to SRC ALPHA
+     * Defines that alpha blending is COLOR=SRC + DST, ALPHA=SRC_ALPHA
      * Color stacks, but only source alpha is kept
      */
     public static readonly ALPHA_ONEONE_ONEZERO = 15;
     /**
-     * Defines that alpha blending is SRC * (1 - DST) + DST * (1 - SRC)
-     * Alpha will be set to DST ALPHA
+     * Defines that alpha blending is COLOR=(1 - DEST) * SRC + (1 - SRC) * DEST, ALPHA=DEST_ALPHA
      * Produces inverted look (negative space), like 'exclusion' mode in photoshop
      */
     public static readonly ALPHA_EXCLUSION = 16;
     /**
-     * Defines that alpha blending is SRC * SRC ALPHA + DST * (1 - SRC ALPHA)
-     * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DST ALPHA
+     * Defines that alpha blending is COLOR=SRC_ALPHA * SRC + (1 - SRC ALPHA) * DEST, ALPHA=SRC_ALPHA + (1 - SRC_ALPHA) * DEST_ALPHA
      * Great for layered rendering (particles, fog volumes), accumulates transparency in a more physically accurate way
      */
     public static readonly ALPHA_LAYER_ACCUMULATE = 17;
+
+    /**
+     * Defines that alpha blending is COLOR=MIN(SRC, DEST), ALPHA=MIN(SRC_ALPHA, DEST_ALPHA)
+     */
+    public static readonly ALPHA_MIN = 18;
+
+    /**
+     * Defines that alpha blending is COLOR=MAX(SRC, DEST), ALPHA=MAX(SRC_ALPHA, DEST_ALPHA)
+     */
+    public static readonly ALPHA_MAX = 19;
+
+    /**
+     * Defines that alpha blending uses dual source blending and is COLOR=SRC + SRC1 * DEST, ALPHA=DST_ALPHA
+     */
+    public static readonly ALPHA_DUAL_SRC0_ADD_SRC1xDST = 20;
 
     /** Defines that alpha blending equation a SUM */
     public static readonly ALPHA_EQUATION_ADD = 0;
@@ -225,7 +230,7 @@ export class Constants {
 
     /** Compressed BC7 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
-    /** Compressed BC7 (SRGB) */
+    /** Compressed BC7 (SRGB+A) */
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM = 36493;
     /** Compressed BC6 unsigned float */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 36495;
@@ -233,11 +238,11 @@ export class Constants {
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT = 36494;
     /** Compressed BC3 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5 = 33779;
-    /** Compressed BC3 (SRGB) */
+    /** Compressed BC3 (SRGB+A) */
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = 35919;
     /** Compressed BC2 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT3 = 33778;
-    /** Compressed BC2 (SRGB) */
+    /** Compressed BC2 (SRGB+A) */
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT = 35918;
     /** Compressed BC1 (RGBA) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1 = 33777;
@@ -249,7 +254,7 @@ export class Constants {
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT = 35916;
     /** Compressed ASTC 4x4 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4 = 37808;
-    /** Compressed ASTC 4x4 (SRGB) */
+    /** Compressed ASTC 4x4 (SRGB+A) */
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 37840;
     /** Compressed ETC1 (RGB) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL = 36196;
@@ -261,9 +266,9 @@ export class Constants {
     public static readonly TEXTUREFORMAT_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37494;
     /** Compressed ETC2 (SRGB+A1)*/
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 = 37495;
-    /** Compressed ETC2 (RGB+A) */
+    /** Compressed ETC2 (RGBA) */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC = 37496;
-    /** Compressed ETC2 (SRGB+1) */
+    /** Compressed ETC2 (SRGB+A) */
     public static readonly TEXTUREFORMAT_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = 37497;
 
     /** UNSIGNED_BYTE */

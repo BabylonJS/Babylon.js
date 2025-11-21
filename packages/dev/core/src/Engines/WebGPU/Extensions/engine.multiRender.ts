@@ -62,9 +62,10 @@ declare module "../../abstractEngine" {
         /**
          * Creates a layout object to draw/clear on specific textures in a MRT
          * @param textureStatus textureStatus[i] indicates if the i-th is active
+         * @param backBufferLayout if true, the layout will be built to account for the back buffer only, and textureStatus won't be used
          * @returns A layout to be fed to the engine, calling `bindAttachments`.
          */
-        buildTextureLayout(textureStatus: boolean[]): number[];
+        buildTextureLayout(textureStatus: boolean[], backBufferLayout?: boolean): number[];
 
         /**
          * Restores the webgl state to only draw on the main color attachment
@@ -356,14 +357,18 @@ WebGPUEngine.prototype.bindAttachments = function (attachments: number[]): void 
     }
 };
 
-WebGPUEngine.prototype.buildTextureLayout = function (textureStatus: boolean[]): number[] {
+WebGPUEngine.prototype.buildTextureLayout = function (textureStatus: boolean[], backBufferLayout = false): number[] {
     const result = [];
 
-    for (let i = 0; i < textureStatus.length; i++) {
-        if (textureStatus[i]) {
-            result.push(i + 1);
-        } else {
-            result.push(0);
+    if (backBufferLayout) {
+        result.push(1);
+    } else {
+        for (let i = 0; i < textureStatus.length; i++) {
+            if (textureStatus[i]) {
+                result.push(i + 1);
+            } else {
+                result.push(0);
+            }
         }
     }
 

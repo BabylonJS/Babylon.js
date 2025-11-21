@@ -12,6 +12,13 @@ import type { Node } from "../node";
  * Class used to store an actual running animation
  */
 export class Animatable {
+    /**
+     * If true, the animatable will be processed even if it is considered actively paused (weight of 0 and previous weight of 0).
+     * This can be used to force the full processing of paused animatables in the animation engine.
+     * Default is false.
+     */
+    public static ProcessPausedAnimatables = false;
+
     private _localDelayOffset: Nullable<number> = null;
     private _pausedDelay: Nullable<number> = null;
     private _manualJumpDelay: Nullable<number> = null;
@@ -439,7 +446,7 @@ export class Animatable {
 
         this._goToFrame = null;
 
-        if (this._weight === 0 && this._previousWeight === 0) {
+        if (!Animatable.ProcessPausedAnimatables && this._weight === 0 && this._previousWeight === 0) {
             // We consider that an animatable with a weight === 0 is "actively" paused
             return true;
         }

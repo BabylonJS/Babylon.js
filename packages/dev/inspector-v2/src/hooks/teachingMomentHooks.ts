@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable } from "core/index";
 
 import type { OnOpenChangeData, PositioningImperativeRef } from "@fluentui/react-components";

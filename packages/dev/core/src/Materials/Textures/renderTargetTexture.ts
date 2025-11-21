@@ -100,6 +100,9 @@ export interface RenderTargetTextureOptions {
 
     /** If not provided (default), a new object renderer instance will be created */
     existingObjectRenderer?: ObjectRenderer;
+
+    /** True to enable clustered lights (default: false) */
+    enableClusteredLights?: boolean;
 }
 
 /**
@@ -198,6 +201,28 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
     public set renderSprites(value: boolean) {
         this._objectRenderer.renderSprites = value;
+    }
+
+    /**
+     * Define if bounding box rendering should be enabled (still subject to Mesh.showBoundingBox or scene.forceShowBoundingBoxes). (Default: false).
+     */
+    public get enableBoundingBoxRendering() {
+        return this._objectRenderer.enableBoundingBoxRendering;
+    }
+
+    public set enableBoundingBoxRendering(value: boolean) {
+        this._objectRenderer.enableBoundingBoxRendering = value;
+    }
+
+    /**
+     * Define if outline/overlay rendering should be enabled (still subject to Mesh.renderOutline/Mesh.renderOverlay). (Default: true).
+     */
+    public get enableOutlineRendering() {
+        return this._objectRenderer.enableOutlineRendering;
+    }
+
+    public set enableOutlineRendering(value: boolean) {
+        this._objectRenderer.enableOutlineRendering = value;
     }
 
     /**
@@ -603,6 +628,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         let colorAttachment: InternalTexture | undefined = undefined;
         let gammaSpace = true;
         let existingObjectRenderer: ObjectRenderer | undefined = undefined;
+        let enableClusteredLights = false;
         if (typeof generateMipMaps === "object") {
             const options = generateMipMaps;
             generateMipMaps = !!options.generateMipMaps;
@@ -622,6 +648,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             colorAttachment = options.colorAttachment;
             gammaSpace = options.gammaSpace ?? gammaSpace;
             existingObjectRenderer = options.existingObjectRenderer;
+            enableClusteredLights = !!options.enableClusteredLights;
         }
 
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
@@ -647,6 +674,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             new ObjectRenderer(name, scene, {
                 numPasses: isCube ? 6 : this.getRenderLayers() || 1,
                 doNotChangeAspectRatio,
+                enableClusteredLights,
             });
 
         this._onBeforeRenderingManagerRenderObserver = this._objectRenderer.onBeforeRenderingManagerRenderObservable.add(() => {

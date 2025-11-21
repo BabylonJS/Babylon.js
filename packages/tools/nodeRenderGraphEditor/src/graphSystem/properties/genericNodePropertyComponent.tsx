@@ -4,17 +4,19 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
+import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineComponent";
 import type { NodeRenderGraphBlock } from "core/FrameGraph/Node/nodeRenderGraphBlock";
-import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
-import type { IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
+import type { IEditablePropertyListOption, IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 import { PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
 import { Constants } from "core/Engines/constants";
 import { ForceRebuild } from "shared-ui-components/nodeGraphSystem/automaticProperties";
+import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const samplingModeList = [
@@ -254,6 +256,19 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     );
                     break;
                 }
+                case PropertyTypeForEdition.Vector3: {
+                    components.push(
+                        <Vector3LineComponent
+                            key={`vector3-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName}
+                            propertyName={propertyName}
+                            target={block}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
                 case PropertyTypeForEdition.List: {
                     components.push(
                         <OptionsLine
@@ -263,6 +278,19 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             target={block}
                             propertyName={propertyName}
                             onSelect={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.Color3: {
+                    components.push(
+                        <Color3LineComponent
+                            key={`color3-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName}
+                            propertyName={propertyName}
+                            target={block}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                         />
                     );
                     break;
@@ -316,6 +344,89 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                             target={block}
                             propertyName={propertyName}
                             onSelect={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.String: {
+                    components.push(
+                        <TextInputLineComponent
+                            key={`string-${propertyName}`}
+                            label={displayName}
+                            propertyName={propertyName}
+                            target={block}
+                            throttlePropertyChangedNotification={true}
+                            throttlePropertyChangedNotificationDelay={1000}
+                            lockObject={this.props.stateManager.lockObject}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.Matrix: {
+                    components.push(
+                        <MatrixLineComponent
+                            key={`matrix-${propertyName}`}
+                            label={displayName}
+                            propertyName={propertyName}
+                            target={block}
+                            lockObject={this.props.stateManager.lockObject}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    break;
+                }
+                case PropertyTypeForEdition.Viewport: {
+                    components.push(
+                        <SliderLineComponent
+                            key={`viewportx-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName + " X"}
+                            target={(block as any)[propertyName]}
+                            propertyName={"x"}
+                            step={0.001}
+                            minimum={0}
+                            maximum={1}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    components.push(
+                        <SliderLineComponent
+                            key={`viewporty-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName + " Y"}
+                            target={(block as any)[propertyName]}
+                            propertyName={"y"}
+                            step={0.001}
+                            minimum={0}
+                            maximum={1}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    components.push(
+                        <SliderLineComponent
+                            key={`viewportw-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName + " Width"}
+                            target={(block as any)[propertyName]}
+                            propertyName={"width"}
+                            step={0.001}
+                            minimum={0}
+                            maximum={1}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
+                        />
+                    );
+                    components.push(
+                        <SliderLineComponent
+                            key={`viewporth-${propertyName}`}
+                            lockObject={this.props.stateManager.lockObject}
+                            label={displayName + " Height"}
+                            target={(block as any)[propertyName]}
+                            propertyName={"height"}
+                            step={0.001}
+                            minimum={0}
+                            maximum={1}
+                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
                         />
                     );
                     break;

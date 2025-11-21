@@ -111,6 +111,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeMaterialSystemValues.Projection:
                     value = "Projection";
                     break;
+                case NodeMaterialSystemValues.ProjectionInverse:
+                    value = "Projection Inverse";
+                    break;
                 case NodeMaterialSystemValues.CameraPosition:
                     value = "Camera position";
                     break;

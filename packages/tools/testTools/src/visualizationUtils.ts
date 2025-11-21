@@ -96,7 +96,19 @@ export const evaluatePrepareScene = async (
         const runSnippet = async function () {
             const data = await fetch(globalConfig.snippetUrl + sceneMetadata.playgroundId!.replace(/#/g, "/"));
             const snippet = await data.json();
-            let code = JSON.parse(snippet.jsonPayload).code.toString();
+
+            const payload = JSON.parse(snippet.jsonPayload);
+            let code = "";
+            // Definitely v2 manifest
+            if (Object.prototype.hasOwnProperty.call(payload, "version")) {
+                const v2Manifest = JSON.parse(payload.code);
+                code = v2Manifest.files[v2Manifest.entry];
+                // Sanitize two common export types for existing and migrated PGs and newly-created PGs.
+                code = code.replace(/export default \w+/g, "").replace("export const ", "const ");
+            } else {
+                code = payload.code.toString();
+            }
+
             code = code
                 .replace(/"\/textures\//g, '"' + globalConfig.pgRoot + "/textures/")
                 .replace(/"textures\//g, '"' + globalConfig.pgRoot + "/textures/")

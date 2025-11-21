@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/naming-convention */
-// eslint-disable-next-line import/no-internal-modules
 import type { Nullable, Observable } from "core/index";
 import type { CSSResultGroup, PropertyValues, TemplateResult } from "lit";
-import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
+import type { CameraOrbit, EnvironmentOptions, HotSpot, ResetFlag, ShadowQuality, SSAOOptions, ToneMapping, ViewerDetails, ViewerHotSpotResult } from "./viewer";
 import type { CanvasViewerOptions } from "./viewerFactory";
 
 import { LitElement, css, html } from "lit";
@@ -212,6 +211,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
             (details) => details.viewer.onPostProcessingChanged,
             (details) => (details.viewer.postProcessing = { exposure: this.exposure ?? undefined }),
             (details) => (this.exposure = details.viewer.postProcessing.exposure)
+        ),
+        this._createPropertyBinding(
+            "ssao",
+            (details) => details.viewer.onPostProcessingChanged,
+            (details) => (details.viewer.postProcessing = { ssao: this.ssao ?? undefined }),
+            (details) => (this.ssao = details.viewer.postProcessing.ssao)
         ),
         this._createPropertyBinding(
             "cameraAutoOrbit",
@@ -725,6 +730,12 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
      */
     @property()
     public exposure: Nullable<number> = this._options.postProcessing?.exposure ?? null;
+
+    /**
+     * Enables or disables screen space ambient occlusion (SSAO).
+     */
+    @property({ type: String })
+    public ssao: Nullable<SSAOOptions> = this._options.postProcessing?.ssao ?? null;
 
     /**
      * The clear color (e.g. background color) for the viewer.
@@ -1351,6 +1362,7 @@ export abstract class ViewerElement<ViewerClass extends Viewer = Viewer> extends
                                             toneMapping: coerceToneMapping(viewerElement.getAttribute("tone-mapping")) ?? target.postProcessing?.toneMapping,
                                             contrast: coerceNumericAttribute(viewerElement.getAttribute("contrast")) ?? target.postProcessing?.contrast,
                                             exposure: coerceNumericAttribute(viewerElement.getAttribute("exposure")) ?? target.postProcessing?.exposure,
+                                            ssao: viewerElement.hasAttribute("ssao") || target.postProcessing?.ssao,
                                         };
                                     case "selectedMaterialVariant":
                                         return viewerElement.getAttribute("material-variant") ?? target.selectedMaterialVariant;

@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Observable } from "core/Misc/observable";
 import { Tools } from "core/Misc/tools";
-// eslint-disable-next-line import/no-internal-modules
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { isUrl, camelToKebab, kebabToCamel, deepmerge } from "../helper/index";
 
 import * as Handlebars from "handlebars";

@@ -1,0 +1,10 @@
+{
+    "extends": "../../../tsconfig.json",
+
+    "compilerOptions": {
+        "resolveJsonModule": true
+    },
+
+    "include": ["./src/**/*.ts", "./src/configuration/smartFilters/serialized/*.json"],
+    "exclude": ["**/node_modules", "**/.temp"]
+}

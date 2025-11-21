@@ -41,10 +41,13 @@ export class SpotLight extends ShadowLight {
 
     private _angle: number;
     private _innerAngle: number = 0;
-    private _cosHalfAngle: number;
+    /** @internal */
+    public _cosHalfAngle: number;
 
-    private _lightAngleScale: number;
-    private _lightAngleOffset: number;
+    /** @internal */
+    public _lightAngleScale: number;
+    /** @internal */
+    public _lightAngleOffset: number;
 
     private _iesProfileTexture: Nullable<BaseTexture> = null;
 
@@ -426,13 +429,21 @@ export class SpotLight extends ShadowLight {
      */
     public transferToEffect(effect: Effect, lightIndex: string): SpotLight {
         let normalizeDirection;
+        const offset = this._scene.floatingOriginOffset;
 
         if (this.computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this.transformedPosition.x, this.transformedPosition.y, this.transformedPosition.z, this.exponent, lightIndex);
+            this._uniformBuffer.updateFloat4(
+                "vLightData",
+                this.transformedPosition.x - offset.x,
+                this.transformedPosition.y - offset.y,
+                this.transformedPosition.z - offset.z,
+                this.exponent,
+                lightIndex
+            );
 
             normalizeDirection = Vector3.Normalize(this.transformedDirection);
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, this.exponent, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x - offset.x, this.position.y - offset.y, this.position.z - offset.z, this.exponent, lightIndex);
 
             normalizeDirection = Vector3.Normalize(this.direction);
         }

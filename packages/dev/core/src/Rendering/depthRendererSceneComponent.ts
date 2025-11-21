@@ -21,6 +21,7 @@ declare module "../scene" {
          * @param force32bitsFloat Forces 32 bits float when supported (else 16 bits float is prioritized over 32 bits float if supported)
          * @param samplingMode The sampling mode to be used with the render target (Linear, Nearest...)
          * @param storeCameraSpaceZ Defines whether the depth stored is the Z coordinate in camera space. If true, storeNonLinearDepth has no effect. (Default: false)
+         * @param existingRenderTargetTexture An existing render target texture to use (default: undefined). If not provided, a new render target texture will be created.
          * @returns the created depth renderer
          */
         enableDepthRenderer(
@@ -28,7 +29,8 @@ declare module "../scene" {
             storeNonLinearDepth?: boolean,
             force32bitsFloat?: boolean,
             samplingMode?: number,
-            storeCameraSpaceZ?: boolean
+            storeCameraSpaceZ?: boolean,
+            existingRenderTargetTexture?: RenderTargetTexture
         ): DepthRenderer;
 
         /**
@@ -44,7 +46,8 @@ Scene.prototype.enableDepthRenderer = function (
     storeNonLinearDepth = false,
     force32bitsFloat: boolean = false,
     samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-    storeCameraSpaceZ: boolean = false
+    storeCameraSpaceZ: boolean = false,
+    existingRenderTargetTexture?: RenderTargetTexture
 ): DepthRenderer {
     camera = camera || this.activeCamera;
     if (!camera) {
@@ -64,7 +67,7 @@ Scene.prototype.enableDepthRenderer = function (
         } else {
             textureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         }
-        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera, storeNonLinearDepth, samplingMode, storeCameraSpaceZ);
+        this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera, storeNonLinearDepth, samplingMode, storeCameraSpaceZ, undefined, existingRenderTargetTexture);
     }
 
     return this._depthRenderer[camera.id];

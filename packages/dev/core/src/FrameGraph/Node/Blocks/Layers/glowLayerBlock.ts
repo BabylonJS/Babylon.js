@@ -1,12 +1,4 @@
-import type {
-    Scene,
-    NodeRenderGraphBuildState,
-    FrameGraph,
-    FrameGraphTextureHandle,
-    NodeRenderGraphConnectionPoint,
-    FrameGraphObjectRendererTask,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
+import type { Scene, NodeRenderGraphBuildState, FrameGraph, FrameGraphTextureHandle, NodeRenderGraphConnectionPoint, FrameGraphObjectRendererTask } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes, NodeRenderGraphConnectionPointDirection } from "../../Types/nodeRenderGraphTypes";
@@ -21,6 +13,8 @@ import { NodeRenderGraphBaseObjectRendererBlock } from "../Rendering/baseObjectR
  */
 export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphGlowLayerTask;
+
+    public override _additionalConstructionParameters: [boolean, number, number | undefined, number];
 
     /**
      * Gets the frame graph task associated with this block
@@ -57,7 +51,7 @@ export class NodeRenderGraphGlowLayerBlock extends NodeRenderGraphBlock {
         this.registerInput(
             "objectRenderer",
             NodeRenderGraphBlockConnectionPointTypes.Object,
-            true,
+            false,
             new NodeRenderGraphConnectionPointCustomObject(
                 "objectRenderer",
                 this,

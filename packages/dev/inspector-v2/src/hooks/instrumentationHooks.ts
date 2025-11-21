@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, IReadonlyObservable } from "core/index";
+import type { IDisposable, IReadonlyObservable, Nullable } from "core/index";
 
 import { useEffect, useMemo } from "react";
 
@@ -15,34 +14,35 @@ import { InterceptProperty } from "../instrumentation/propertyInstrumentation";
  * @param propertyKey The key of the function/property to intercept.
  * @returns An observable that fires when the function/property is called/set.
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function useInterceptObservable<T extends object>(type: "function" | "property", target: T, propertyKey: keyof T): IReadonlyObservable<void> {
+export function useInterceptObservable<T extends object>(type: "function" | "property", target: T | null | undefined, propertyKey: keyof T): IReadonlyObservable<void> {
     // Create a cached observable. It effectively has the lifetime of the component that uses this hook.
     const observable = useMemo(() => new Observable<void>(), []);
 
-    // Whenver the type, target, or property key changes, we need to set up a new interceptor.
+    // Whenever the type, target, or property key changes, we need to set up a new interceptor.
     useEffect(() => {
-        let interceptToken: IDisposable;
+        let interceptToken: Nullable<IDisposable> = null;
 
-        if (type === "function") {
-            interceptToken = InterceptFunction(target, propertyKey, {
-                afterCall: () => {
-                    observable.notifyObservers();
-                },
-            });
-        } else if (type === "property") {
-            interceptToken = InterceptProperty(target, propertyKey, {
-                afterSet: () => {
-                    observable.notifyObservers();
-                },
-            });
-        } else {
-            throw new Error(`Unknown interceptor type: ${type}`);
+        if (target) {
+            if (type === "function") {
+                interceptToken = InterceptFunction(target, propertyKey, {
+                    afterCall: () => {
+                        observable.notifyObservers();
+                    },
+                });
+            } else if (type === "property") {
+                interceptToken = InterceptProperty(target, propertyKey, {
+                    afterSet: () => {
+                        observable.notifyObservers();
+                    },
+                });
+            } else {
+                throw new Error(`Unknown interceptor type: ${type}`);
+            }
         }
 
         // When the effect is cleaned up, we need to dispose of the interceptor.
         return () => {
-            interceptToken.dispose();
+            interceptToken?.dispose();
         };
     }, [type, target, propertyKey, observable]);
 

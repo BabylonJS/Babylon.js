@@ -1,4 +1,5 @@
 import { _StereoAudioSubNode } from "../../abstractAudio/subNodes/stereoAudioSubNode";
+import { _WebAudioParameterComponent } from "../components/webAudioParameterComponent";
 import type { _WebAudioEngine } from "../webAudioEngine";
 import type { IWebAudioInNode } from "../webAudioNode";
 
@@ -10,7 +11,7 @@ export async function _CreateStereoAudioSubNodeAsync(engine: _WebAudioEngine): P
 
 /** @internal */
 export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
-    private _pan: number = 0;
+    private _pan: _WebAudioParameterComponent;
 
     /** @internal */
     public override readonly engine: _WebAudioEngine;
@@ -23,17 +24,25 @@ export class _StereoWebAudioSubNode extends _StereoAudioSubNode {
         super(engine);
 
         this.node = new StereoPannerNode(engine._audioContext);
+
+        this._pan = new _WebAudioParameterComponent(engine, this.node.pan);
+    }
+
+    /** @internal */
+    public override dispose(): void {
+        super.dispose();
+
+        this._pan.dispose();
     }
 
     /** @internal */
     public get pan(): number {
-        return this._pan;
+        return this._pan.targetValue;
     }
 
     /** @internal */
     public set pan(value: number) {
-        this._pan = value;
-        this.engine._setAudioParam(this.node.pan, value);
+        this._pan.targetValue = value;
     }
 
     /** @internal */

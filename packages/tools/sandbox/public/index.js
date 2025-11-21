@@ -35,23 +35,23 @@ let loadScriptAsync = function (url, instantResolve) {
 
 const Versions = {
     dist: [
-        "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
-        "https://preview.babylonjs.com/babylon.js",
-        "https://preview.babylonjs.com/addons/babylonjs.addons.min.js",
-        "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js",
-        "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js",
-        "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js",
-        "https://preview.babylonjs.com/gui/babylon.gui.min.js",
-        "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js",
+        { url: "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(), instantResolve: false },
+        { url: "https://preview.babylonjs.com/babylon.js", instantResolve: false },
+        { url: "https://preview.babylonjs.com/addons/babylonjs.addons.min.js", instantResolve: false, minVersion: "7.32.4" },
+        { url: "https://preview.babylonjs.com/loaders/babylonjs.loaders.min.js", instantResolve: false },
+        { url: "https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js", instantResolve: true },
+        { url: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", instantResolve: true },
+        { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: true },
+        { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
     ],
     local: [
-        `//${window.location.hostname}:1337/babylon.js`,
-        `//${window.location.hostname}:1337/addons/babylonjs.addons.js`,
-        `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`,
-        `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`,
-        `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`,
-        `//${window.location.hostname}:1337/gui/babylon.gui.min.js`,
-        `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`,
+        { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/addons/babylonjs.addons.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/loaders/babylonjs.loaders.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/serializers/babylonjs.serializers.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
     ],
 };
 
@@ -60,8 +60,33 @@ let loadInSequence = async function (versions, index, resolve) {
         resolve();
         return;
     }
-    await loadScriptAsync(versions[index], index > 2);
+
+    await loadScriptAsync(versions[index].url, versions[index].instantResolve);
+
     loadInSequence(versions, index + 1, resolve);
+};
+
+const isVersionGreaterOrEqual = function (version1, version2) {
+    // Split versions into parts and convert to numbers
+    const v1Parts = version1.split(".").map(Number);
+    const v2Parts = version2.split(".").map(Number);
+
+    // Compare major, minor, and revision in order
+    for (let i = 0; i < 3; i++) {
+        const v1Part = v1Parts[i] ?? 0; // Default to 0 if part is missing
+        const v2Part = v2Parts[i] ?? 0;
+
+        if (v1Part > v2Part) {
+            return true;
+        }
+        if (v1Part < v2Part) {
+            return false;
+        }
+        // If equal, continue to next part
+    }
+
+    // All parts are equal
+    return true;
 };
 
 let checkBabylonVersionAsync = function () {
@@ -90,9 +115,17 @@ let checkBabylonVersionAsync = function () {
 
     let versions = Versions[activeVersion] || Versions["dist"];
     if (snapshot && activeVersion === "dist") {
-        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot));
+        versions = versions.map((v) => ({
+            url: v.url.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot),
+            instantResolve: v.instantResolve,
+        }));
     } else if (version && activeVersion === "dist") {
-        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version));
+        versions = versions
+            .filter((v) => !v.minVersion || isVersionGreaterOrEqual(version, v.minVersion))
+            .map((v) => ({
+                url: v.url.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version),
+                instantResolve: v.instantResolve,
+            }));
     }
 
     return new Promise((resolve, _reject) => {
@@ -109,11 +142,13 @@ let checkBabylonVersionAsync = function () {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
         }
+
+        return version;
     });
 };
 
-checkBabylonVersionAsync().then(() => {
+checkBabylonVersionAsync().then((version) => {
     loadScriptAsync("babylon.sandbox.js").then(() => {
-        BABYLON.Sandbox.Show(hostElement);
+        BABYLON.Sandbox.Show(hostElement, version);
     });
 });

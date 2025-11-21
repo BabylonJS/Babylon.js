@@ -6,7 +6,6 @@ import type {
     FrameGraphTextureHandle,
     Camera,
     NodeRenderGraphGeometryRendererBlock,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -20,6 +19,8 @@ import { NodeRenderGraphBasePostProcessBlock } from "./basePostProcessBlock";
  */
 export class NodeRenderGraphSSRPostProcessBlock extends NodeRenderGraphBasePostProcessBlock {
     protected override _frameGraphTask: FrameGraphSSRRenderingPipelineTask;
+
+    public override _additionalConstructionParameters: [number];
 
     /**
      * Gets the frame graph task associated with this block

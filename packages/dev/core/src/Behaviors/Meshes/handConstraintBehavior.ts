@@ -349,11 +349,11 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
             Tools.Error("XR features manager must be available or provided directly for the Hand Menu to work");
         } else {
             try {
-                this._eyeTracking = featuresManager.getEnabledFeature(WebXRFeatureName.EYE_TRACKING) as WebXREyeTracking;
+                this._eyeTracking = featuresManager.getEnabledFeature(WebXRFeatureName.EYE_TRACKING);
             } catch {}
 
             try {
-                this._handTracking = featuresManager.getEnabledFeature(WebXRFeatureName.HAND_TRACKING) as WebXRHandTracking;
+                this._handTracking = featuresManager.getEnabledFeature(WebXRFeatureName.HAND_TRACKING);
             } catch {
                 Tools.Error("Hand tracking must be enabled for the Hand Menu to work");
             }

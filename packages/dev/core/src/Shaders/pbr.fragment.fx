@@ -16,7 +16,9 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
+#if SCENE_MRT_COUNT > 0
 #include<prePassDeclaration>[SCENE_MRT_COUNT]
+#endif
 
 precision highp float;
 #include<oitDeclaration>
@@ -70,6 +72,8 @@ precision highp float;
 #include<pbrBlockClearcoat>
 #include<pbrBlockIridescence>
 #include<pbrBlockSubSurface>
+
+#include<pbrClusteredLightingFunctions>
 
 // _____________________________ MAIN FUNCTION ____________________________
 void main(void) {

@@ -1,71 +1,82 @@
-// eslint-disable-next-line import/no-internal-modules
-import type { IDisposable, IInspectorOptions, Nullable, Scene } from "core/index";
+import type { IDisposable, Scene } from "core/scene";
+import type { Nullable } from "core/types";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
 import type { ModularToolOptions } from "./modularTool";
 import type { ISceneContext } from "./services/sceneContext";
 import type { IShellService } from "./services/shellService";
 
 import { makeStyles } from "@fluentui/react-components";
-import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
-import { BuiltInsExtensionFeed } from "./extensibility/builtInsExtensionFeed";
+import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
+import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
 import { MakeModularTool } from "./modularTool";
+import { GizmoServiceDefinition } from "./services/gizmoService";
+import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
+import { MiniStatsServiceDefinition } from "./services/miniStatsService";
 import { DebugServiceDefinition } from "./services/panes/debugService";
+import { AnimationGroupPropertiesServiceDefinition } from "./services/panes/properties/animationGroupPropertiesService";
+import { AnimationPropertiesServiceDefinition } from "./services/panes/properties/animationPropertiesService";
+import { AtmospherePropertiesServiceDefinition } from "./services/panes/properties/atmospherePropertiesService";
+import { CameraPropertiesServiceDefinition } from "./services/panes/properties/cameraPropertiesService";
 import { CommonPropertiesServiceDefinition } from "./services/panes/properties/commonPropertiesService";
-import { MeshPropertiesServiceDefinition } from "./services/panes/properties/meshPropertiesService";
+import { EffectLayerPropertiesServiceDefinition } from "./services/panes/properties/effectLayerPropertiesService";
+import { FrameGraphPropertiesServiceDefinition } from "./services/panes/properties/frameGraphPropertiesService";
+import { LightPropertiesServiceDefinition } from "./services/panes/properties/lightPropertiesServices";
+import { MaterialPropertiesServiceDefinition } from "./services/panes/properties/materialPropertiesService";
+import { MetadataPropertiesServiceDefinition } from "./services/panes/properties/metadataPropertiesService";
 import { NodePropertiesServiceDefinition } from "./services/panes/properties/nodePropertiesService";
+import { ParticleSystemPropertiesServiceDefinition } from "./services/panes/properties/particleSystemPropertiesService";
+import { PhysicsPropertiesServiceDefinition } from "./services/panes/properties/physicsPropertiesService";
+import { PostProcessPropertiesServiceDefinition } from "./services/panes/properties/postProcessPropertiesService";
 import { PropertiesServiceDefinition } from "./services/panes/properties/propertiesService";
-import { TransformNodePropertiesServiceDefinition } from "./services/panes/properties/transformNodePropertiesService";
+import { RenderingPipelinePropertiesServiceDefinition } from "./services/panes/properties/renderingPipelinePropertiesService";
+import { ScenePropertiesServiceDefinition } from "./services/panes/properties/scenePropertiesService";
+import { SkeletonPropertiesServiceDefinition } from "./services/panes/properties/skeletonPropertiesService";
+import { SpritePropertiesServiceDefinition } from "./services/panes/properties/spritePropertiesService";
+import { TexturePropertiesServiceDefinition } from "./services/panes/properties/texturePropertiesService";
+import { TransformPropertiesServiceDefinition } from "./services/panes/properties/transformPropertiesService";
+import { AnimationGroupExplorerServiceDefinition } from "./services/panes/scene/animationGroupExplorerService";
+import { AtmosphereExplorerServiceDefinition } from "./services/panes/scene/atmosphereExplorerService";
+import { EffectLayerExplorerServiceDefinition } from "./services/panes/scene/effectLayersExplorerService";
+import { FrameGraphExplorerServiceDefinition } from "./services/panes/scene/frameGraphExplorerService";
+import { GuiExplorerServiceDefinition } from "./services/panes/scene/guiExplorerService";
 import { MaterialExplorerServiceDefinition } from "./services/panes/scene/materialExplorerService";
-import { NodeHierarchyServiceDefinition } from "./services/panes/scene/nodeExplorerService";
+import { NodeExplorerServiceDefinition } from "./services/panes/scene/nodeExplorerService";
+import { ParticleSystemExplorerServiceDefinition } from "./services/panes/scene/particleSystemExplorerService";
+import { PostProcessExplorerServiceDefinition } from "./services/panes/scene/postProcessExplorerService";
+import { RenderingPipelineExplorerServiceDefinition } from "./services/panes/scene/renderingPipelinesExplorerService";
 import { SceneExplorerServiceDefinition } from "./services/panes/scene/sceneExplorerService";
-import { TextureHierarchyServiceDefinition } from "./services/panes/scene/texturesExplorerService";
+import { SkeletonExplorerServiceDefinition } from "./services/panes/scene/skeletonExplorerService";
+import { SpriteManagerExplorerServiceDefinition } from "./services/panes/scene/spriteManagerExplorerService";
+import { TextureExplorerServiceDefinition } from "./services/panes/scene/texturesExplorerService";
 import { SettingsServiceDefinition } from "./services/panes/settingsService";
 import { StatsServiceDefinition } from "./services/panes/statsService";
 import { ToolsServiceDefinition } from "./services/panes/toolsService";
+import { PickingServiceDefinition } from "./services/pickingService";
 import { SceneContextIdentity } from "./services/sceneContext";
 import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
+import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
-let CurrentInspectorToken: Nullable<IDisposable> = null;
+export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
-type InspectorV2Options = Pick<ModularToolOptions, "serviceDefinitions" | "isThemeable"> & {
-    isExtensible?: boolean;
-};
+// TODO: The key should probably be the Canvas, because we only want to show one inspector instance per canvas.
+//       If it is called for a different scene that is rendering to the same canvas, then we should probably
+//       switch the inspector instance to that scene (once this is supported).
+const InspectorTokens = new WeakMap<Scene, IDisposable>();
 
-export function IsInspectorVisible(): boolean {
-    return CurrentInspectorToken != null;
-}
-
-export function ShowInspector(scene: Scene, options?: Partial<IInspectorOptions & InspectorV2Options>) {
-    _ShowInspector(scene, options ?? {});
-}
-
-function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions & InspectorV2Options>) {
-    // TODO: Lots more work to do to respect all the Inspector v1 options.
+export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): IDisposable {
     options = {
-        overlay: false,
-        showExplorer: true,
-        showInspector: true,
-        embedMode: false,
-        enableClose: true,
-        handleResize: true,
-        enablePopup: true,
-        isExtensible: true,
-        isThemeable: false,
+        autoResizeEngine: true,
         ...options,
     };
 
-    if (!scene) {
-        scene = EngineStore.LastCreatedScene;
-    }
+    const inspectorToken = {
+        dispose: () => {},
+    };
 
-    if (!scene || scene.isDisposed) {
-        return;
-    }
-
-    let parentElement = options.globalRoot ?? null;
+    let parentElement = options.containerElement ?? null;
     if (!parentElement) {
         parentElement = scene.getEngine().getRenderingCanvas()?.parentElement ?? null;
         while (parentElement) {
@@ -79,11 +90,13 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     }
 
     if (!parentElement) {
-        return;
+        return inspectorToken;
     }
 
-    if (IsInspectorVisible()) {
-        HideInspector();
+    const existingToken = InspectorTokens.get(scene);
+    if (existingToken) {
+        existingToken.dispose();
+        InspectorTokens.delete(scene);
     }
 
     const disposeActions: (() => void)[] = [];
@@ -147,13 +160,9 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         },
     };
 
-    if (options.handleResize) {
+    if (options.autoResizeEngine) {
         const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
         disposeActions.push(() => observer.remove());
-    }
-
-    if (options.showExplorer) {
-        // TODO
     }
 
     const modularTool = MakeModularTool({
@@ -165,18 +174,47 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Provides access to the scene in a generic way (other tools might provide a scene in a different way).
             sceneContextServiceDefinition,
 
+            // Helps with managing gizmos and a shared utility layer.
+            GizmoServiceDefinition,
+
             // Scene explorer tab and related services.
             SceneExplorerServiceDefinition,
-            NodeHierarchyServiceDefinition,
+            NodeExplorerServiceDefinition,
+            SkeletonExplorerServiceDefinition,
             MaterialExplorerServiceDefinition,
-            TextureHierarchyServiceDefinition,
+            TextureExplorerServiceDefinition,
+            PostProcessExplorerServiceDefinition,
+            RenderingPipelineExplorerServiceDefinition,
+            EffectLayerExplorerServiceDefinition,
+            ParticleSystemExplorerServiceDefinition,
+            SpriteManagerExplorerServiceDefinition,
+            AnimationGroupExplorerServiceDefinition,
+            GuiExplorerServiceDefinition,
+            FrameGraphExplorerServiceDefinition,
+            AtmosphereExplorerServiceDefinition,
 
             // Properties pane tab and related services.
+            ScenePropertiesServiceDefinition,
             PropertiesServiceDefinition,
+            TexturePropertiesServiceDefinition,
             CommonPropertiesServiceDefinition,
+            TransformPropertiesServiceDefinition,
+            AnimationPropertiesServiceDefinition,
             NodePropertiesServiceDefinition,
-            MeshPropertiesServiceDefinition,
-            TransformNodePropertiesServiceDefinition,
+            PhysicsPropertiesServiceDefinition,
+            SkeletonPropertiesServiceDefinition,
+            MaterialPropertiesServiceDefinition,
+            LightPropertiesServiceDefinition,
+            SpritePropertiesServiceDefinition,
+            ParticleSystemPropertiesServiceDefinition,
+            CameraPropertiesServiceDefinition,
+            PostProcessPropertiesServiceDefinition,
+            RenderingPipelinePropertiesServiceDefinition,
+            EffectLayerPropertiesServiceDefinition,
+            FrameGraphPropertiesServiceDefinition,
+            AnimationGroupPropertiesServiceDefinition,
+            MetadataPropertiesServiceDefinition,
+            AtmospherePropertiesServiceDefinition,
 
             // Debug pane tab and related services.
             DebugServiceDefinition,
@@ -193,53 +231,56 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
             SelectionServiceDefinition,
 
+            // Gizmos for manipulating objects in the scene.
+            GizmoToolbarServiceDefinition,
+
+            // Allows picking objects from the scene to select them.
+            PickingServiceDefinition,
+
+            // Adds entry points for user feedback on Inspector v2 (probably eventually will be removed).
+            UserFeedbackServiceDefinition,
+
+            // Adds always present "mini stats" (like fps) to the toolbar, etc.
+            MiniStatsServiceDefinition,
+
+            // Legacy service to support custom inspectable properties on objects.
+            LegacyInspectableObjectPropertiesServiceDefinition,
+
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),
         ],
-        isThemeable: options.isThemeable ?? true,
-        extensionFeeds: options.isExtensible ? [new BuiltInsExtensionFeed()] : [],
+        themeMode: options.themeMode,
+        showThemeSelector: options.showThemeSelector,
+        extensionFeeds: [DefaultInspectorExtensionFeed, ...(options.extensionFeeds ?? [])],
+        layoutMode: options.layoutMode,
         toolbarMode: "compact",
+        sidePaneRemapper: options.sidePaneRemapper,
     });
     disposeActions.push(() => modularTool.dispose());
 
     let disposed = false;
-    CurrentInspectorToken = {
-        dispose: () => {
-            if (disposed) {
-                return;
-            }
+    inspectorToken.dispose = () => {
+        if (disposed) {
+            return;
+        }
 
-            disposeActions.reverse().forEach((dispose) => dispose());
-            if (options.handleResize) {
-                scene.getEngine().resize();
-            }
+        disposeActions.reverse().forEach((dispose) => dispose());
+        if (options.autoResizeEngine) {
+            scene.getEngine().resize();
+        }
 
-            disposed = true;
-        },
+        disposed = true;
     };
 
     const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
-        HideInspector();
+        inspectorToken.dispose();
     });
 
     disposeActions.push(() => sceneDisposedObserver.remove());
-}
 
-export function HideInspector() {
-    CurrentInspectorToken?.dispose();
-    CurrentInspectorToken = null;
-}
+    disposeActions.push(() => {
+        InspectorTokens.delete(scene);
+    });
 
-export class Inspector {
-    public static get IsVisible(): boolean {
-        return IsInspectorVisible();
-    }
-
-    public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
-        _ShowInspector(scene, userOptions);
-    }
-
-    public static Hide() {
-        HideInspector();
-    }
+    return inspectorToken;
 }

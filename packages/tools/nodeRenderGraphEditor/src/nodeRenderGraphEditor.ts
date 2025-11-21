@@ -10,6 +10,7 @@ import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyL
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 import type { Scene } from "core/scene";
 import { CreatePopup } from "shared-ui-components/popupHelper";
+import type { INodeRenderGraphCustomBlockDescription } from "core/FrameGraph/Node/Types/nodeRenderGraphTypes";
 
 /**
  * Interface used to specify creation options for the node editor
@@ -20,6 +21,7 @@ export interface INodeEditorOptions {
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<void> };
     customLoadObservable?: Observable<any>;
+    customBlockDescriptions?: INodeRenderGraphCustomBlockDescription[];
 }
 
 /**
@@ -61,10 +63,12 @@ export class NodeRenderGraphEditor {
         globalState.nodeRenderGraph = options.nodeRenderGraph;
         globalState.hostElement = hostElement;
         globalState.hostDocument = hostElement.ownerDocument!;
+        globalState.hostScene = options.hostScene;
         globalState.customSave = options.customSave;
         globalState.hostWindow = hostElement.ownerDocument.defaultView!;
         globalState.stateManager.hostDocument = globalState.hostDocument;
         globalState.noAutoFillExternalInputs = options.hostScene !== undefined && options.hostScene !== null;
+        globalState.customBlockDescriptions = options.customBlockDescriptions;
 
         const graphEditor = React.createElement(GraphEditor, {
             globalState: globalState,

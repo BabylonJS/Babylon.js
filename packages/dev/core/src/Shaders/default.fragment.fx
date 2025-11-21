@@ -26,6 +26,10 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
+
 #include<mainUVVaryingDeclaration>[1..7]
 
 // Helper functions
@@ -118,7 +122,7 @@ void main(void) {
 #ifdef NORMAL
 	vec3 normalW = normalize(vNormalW);
 #else
-	vec3 normalW = normalize(-cross(dFdx(vPositionW), dFdy(vPositionW)));
+	vec3 normalW = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
 #endif
 
 #include<bumpFragment>
@@ -425,6 +429,7 @@ color.rgb = max(color.rgb, 0.);
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
+#if SCENE_MRT_COUNT > 0
 	float writeGeometryInfo = color.a > 0.4 ? 1.0 : 0.0;
 
     #ifdef PREPASS_COLOR
@@ -495,6 +500,7 @@ color.rgb = max(color.rgb, 0.);
 			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
 		#endif
 	#endif
+#endif
 #endif
 
 #if !defined(PREPASS) || defined(WEBGL2)

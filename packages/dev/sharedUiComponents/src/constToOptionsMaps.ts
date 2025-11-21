@@ -1,5 +1,5 @@
-import { Constants } from "core/Engines";
-import { ParticleSystem } from "core/Particles";
+import { Constants } from "core/Engines/constants";
+import { ParticleSystem } from "core/Particles/particleSystem";
 
 /**
  * Used by both particleSystem and alphaBlendModes

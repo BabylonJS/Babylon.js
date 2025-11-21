@@ -2,6 +2,7 @@ const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
 
 module.exports = (env) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
         ...webpackTools.commonDevWebpackConfiguration(
@@ -9,6 +10,7 @@ module.exports = (env) => {
                 ...env,
                 outputFilename: "babylon.sandbox.js",
                 dirName: __dirname,
+                enableHotReload: true,
             },
             {
                 static: ["public"],
@@ -50,9 +52,13 @@ module.exports = (env) => {
             // React, react dom etc'
         ],
         module: {
-            rules: webpackTools.getRules(),
+            rules: webpackTools.getRules({
+                includeAssets: true,
+                includeCSS: true,
+                sideEffects: true,
+                enableFastRefresh: !production,
+            }),
         },
-        plugins: [],
     };
     return commonConfig;
 };

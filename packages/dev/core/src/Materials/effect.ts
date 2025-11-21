@@ -1,3 +1,4 @@
+import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { FloatArray, Nullable } from "../types";
 import { Constants } from "../Engines/constants";
@@ -292,6 +293,8 @@ export class Effect implements IDisposable {
     private _processCodeAfterIncludes: ShaderCustomProcessingFunction | undefined = undefined;
     private _processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
 
+    private _onReleaseEffectsObserver: Nullable<Observer<AbstractEngine>> = null;
+
     /**
      * Gets the shader language type used to write vertex and fragment source code.
      */
@@ -403,7 +406,8 @@ export class Effect implements IDisposable {
             }
         }
 
-        this._engine.onReleaseEffectsObservable.addOnce(() => {
+        this._onReleaseEffectsObserver = this._engine.onReleaseEffectsObservable.addOnce(() => {
+            this._onReleaseEffectsObserver = null;
             if (this.isDisposed) {
                 return;
             }
@@ -1520,6 +1524,11 @@ export class Effect implements IDisposable {
         if (this._refCount > 0 || this._isDisposed) {
             // Others are still using the effect or the effect was already disposed
             return;
+        }
+
+        if (this._onReleaseEffectsObserver) {
+            this._engine.onReleaseEffectsObservable.remove(this._onReleaseEffectsObserver);
+            this._onReleaseEffectsObserver = null;
         }
 
         if (this._pipelineContext) {

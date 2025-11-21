@@ -16,6 +16,10 @@ varying vNormalW: vec3f;
 varying vColor: vec4f;
 #endif
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying vViewDepth: f32;
+#endif
+
 #include<mainUVVaryingDeclaration>[1..7]
 
 // Helper functions
@@ -109,7 +113,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #ifdef NORMAL
 	var normalW: vec3f = normalize(fragmentInputs.vNormalW);
 #else
-	var normalW: vec3f = normalize(-cross(dpdx(fragmentInputs.vPositionW), dpdy(fragmentInputs.vPositionW)));
+	var normalW: vec3f = normalize(cross(dpdx(fragmentInputs.vPositionW), dpdy(fragmentInputs.vPositionW))) *  scene.vEyePosition.w;
 #endif
 
 #include<bumpFragment>
@@ -418,6 +422,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
+#if SCENE_MRT_COUNT > 0
 	var writeGeometryInfo: f32 = select(0.0, 1.0, color.a > 0.4);
 	var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 
@@ -515,6 +520,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 	#if SCENE_MRT_COUNT > 7
 		fragmentOutputs.fragData7 = fragData[7];
 	#endif
+#endif
 #endif
 
 #if !defined(PREPASS) && !defined(ORDER_INDEPENDENT_TRANSPARENCY)

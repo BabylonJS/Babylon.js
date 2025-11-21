@@ -71,6 +71,10 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+varying float vViewDepth;
+#endif
+
 #include<logDepthDeclaration>
 #define CUSTOM_VERTEX_DEFINITIONS
 
@@ -154,6 +158,10 @@ void main(void) {
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 	vDirectionW = normalize(vec3(finalWorld * vec4(positionUpdated, 0.0)));
+#endif
+
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
+    vViewDepth = (view * worldPos).z;
 #endif
 
 	// Texture coordinates

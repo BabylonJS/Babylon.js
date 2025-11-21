@@ -1,5 +1,7 @@
 import type { Nullable } from "../../types";
+import type { IAudioParameterRampOptions } from "../audioParameter";
 import type { AbstractAudioNode, AbstractNamedAudioNode } from "./abstractAudioNode";
+import type { AbstractSound } from "./abstractSound";
 import type { AbstractSoundSource, ISoundSourceOptions } from "./abstractSoundSource";
 import type { AudioBus, IAudioBusOptions } from "./audioBus";
 import type { IMainAudioBusOptions, MainAudioBus } from "./mainAudioBus";
@@ -50,6 +52,8 @@ export type AudioEngineV2State = "closed" | "interrupted" | "running" | "suspend
 export abstract class AudioEngineV2 {
     /** Not owned, but all items should be in `_nodes` container, too, which is owned. */
     private readonly _mainBuses = new Set<MainAudioBus>();
+    private readonly _sounds = new Set<AbstractSound>();
+    private _soundsArray: Nullable<Array<AbstractSound>> = null;
 
     /** Owned top-level sound and bus nodes. */
     private readonly _nodes = new Set<AbstractNamedAudioNode>();
@@ -128,10 +132,19 @@ export abstract class AudioEngineV2 {
     }
 
     /**
+     * The list of static and streaming sounds created by the audio engine.
+     */
+    public get sounds(): ReadonlyArray<AbstractSound> {
+        if (!this._soundsArray) {
+            this._soundsArray = Array.from(this._sounds);
+        }
+        return this._soundsArray;
+    }
+
+    /**
      * Creates a new audio bus.
      * @param name - The name of the audio bus.
      * @param options - The options to use when creating the audio bus.
-     * @param engine - The audio engine.
      * @returns A promise that resolves with the created audio bus.
      */
     public abstract createBusAsync(name: string, options?: Partial<IAudioBusOptions>): Promise<AudioBus>;
@@ -169,7 +182,6 @@ export abstract class AudioEngineV2 {
      * Creates a new static sound buffer.
      * @param source - The source of the sound buffer.
      * @param options - The options for the static sound buffer.
-     * @param engine - The audio engine.
      * @returns A promise that resolves to the created static sound buffer.
      */
     public abstract createSoundBufferAsync(
@@ -210,6 +222,9 @@ export abstract class AudioEngineV2 {
 
         this._mainBuses.clear();
         this._nodes.clear();
+        this._sounds.clear();
+
+        this._disposeSoundsArray();
 
         this._defaultMainBus = null;
     }
@@ -232,6 +247,15 @@ export abstract class AudioEngineV2 {
      * @returns A promise that resolves when the audio engine is running.
      */
     public abstract resumeAsync(): Promise<void>;
+
+    /**
+     * Sets the audio output volume with optional ramping.
+     * If the duration is 0 then the volume is set immediately, otherwise it is ramped to the new value over the given duration using the given shape.
+     * If a ramp is already in progress then the volume is not set and an error is thrown.
+     * @param value The value to set the volume to.
+     * @param options The options to use for ramping the volume change.
+     */
+    public abstract setVolume(value: number, options?: Partial<IAudioParameterRampOptions>): void;
 
     /**
      * Unlocks the audio engine if it is locked.
@@ -262,6 +286,25 @@ export abstract class AudioEngineV2 {
 
     protected _removeNode(node: AbstractNamedAudioNode): void {
         this._nodes.delete(node);
+    }
+
+    protected _addSound(sound: AbstractSound): void {
+        this._disposeSoundsArray();
+        this._sounds.add(sound);
+        this._addNode(sound);
+    }
+
+    protected _removeSound(sound: AbstractSound): void {
+        this._disposeSoundsArray();
+        this._sounds.delete(sound);
+        this._removeNode(sound);
+    }
+
+    private _disposeSoundsArray(): void {
+        if (this._soundsArray) {
+            this._soundsArray.length = 0;
+            this._soundsArray = null;
+        }
     }
 }
 

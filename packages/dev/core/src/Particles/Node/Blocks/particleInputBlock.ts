@@ -95,6 +95,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;
                 case NodeParticleSystemSources.Emitter:
+                case NodeParticleSystemSources.CameraPosition:
                     this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                     break;
             }
@@ -133,15 +134,22 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleContextualSources.Position:
                 case NodeParticleContextualSources.Direction:
                 case NodeParticleContextualSources.ScaledDirection:
+                case NodeParticleContextualSources.InitialDirection:
+                case NodeParticleContextualSources.LocalPositionUpdated:
                     this._type = NodeParticleBlockConnectionPointTypes.Vector3;
                     break;
                 case NodeParticleContextualSources.Color:
+                case NodeParticleContextualSources.InitialColor:
+                case NodeParticleContextualSources.ColorDead:
+                case NodeParticleContextualSources.ColorStep:
+                case NodeParticleContextualSources.ScaledColorStep:
                     this._type = NodeParticleBlockConnectionPointTypes.Color4;
                     break;
                 case NodeParticleContextualSources.Age:
                 case NodeParticleContextualSources.Lifetime:
                 case NodeParticleContextualSources.Angle:
                 case NodeParticleContextualSources.AgeGradient:
+                case NodeParticleContextualSources.Size:
                     this._type = NodeParticleBlockConnectionPointTypes.Float;
                     break;
                 case NodeParticleContextualSources.SpriteCellEnd:
@@ -260,8 +268,11 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 return state.getContextualValue(this._contextualSource);
             };
         } else {
-            this.output._storedFunction = null;
             this.output._storedValue = this.value;
+            // As a function to let the user dynamically change the value at runtime
+            this.output._storedFunction = () => {
+                return this.value;
+            };
         }
     }
 

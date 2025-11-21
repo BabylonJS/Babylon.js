@@ -8,7 +8,6 @@ import type {
     FrameGraph,
     NodeRenderGraphResourceContainerBlock,
     FrameGraphTextureHandle,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
@@ -288,6 +287,14 @@ export class NodeRenderGraphBlock {
 
         const dependencies = this.getInputByName("dependencies")!;
 
+        Object.defineProperty(this, "dependencies", {
+            get: function (this: FrameGraphTask) {
+                return dependencies;
+            },
+            enumerable: true,
+            configurable: true,
+        });
+
         dependencies.addExcludedConnectionPointFromAllowedTypes(
             NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer |
                 NodeRenderGraphBlockConnectionPointTypes.ResourceContainer |
@@ -445,6 +452,7 @@ export class NodeRenderGraphBlock {
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
+        serializationObject.comments = this.comments;
         serializationObject.visibleOnFrame = this.visibleOnFrame;
         serializationObject.disabled = this.disabled;
         if (this._additionalConstructionParameters) {

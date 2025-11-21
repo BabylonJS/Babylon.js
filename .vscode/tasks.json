@@ -44,6 +44,76 @@
             "problemMatcher": ["$tsc-watch"]
         },
         {
+            "label": "Watch Smart Filters",
+            "type": "shell",
+            "command": "npm run watch:source:smart-filters",
+            "dependsOn": ["Watch Smart Filters Assets", "Watch Assets"],
+            "isBackground": true,
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "presentation": {
+                "group": "watch"
+            },
+            "problemMatcher": ["$tsc-watch"]
+        },
+        {
+            "label": "Watch Smart Filters Assets",
+            "type": "shell",
+            "command": "npm run watch:assets:smart-filters",
+            "isBackground": true,
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "presentation": {
+                "group": "watch"
+            },
+            "problemMatcher": {
+                "fileLocation": "relative",
+                "pattern": {
+                    "regexp": "(error|warning|info)",
+                    "file": 1,
+                    "location": 2,
+                    "severity": 3,
+                    "code": 4,
+                    "message": 5
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "Watching for changes"
+                }
+            }
+        },
+        {
+            "label": "Watch Assets",
+            "type": "shell",
+            "command": "npm run watch:assets",
+            "isBackground": true,
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "presentation": {
+                "group": "watch"
+            },
+            "problemMatcher": {
+                "fileLocation": "relative",
+                "pattern": {
+                    "regexp": "(error|warning|info)",
+                    "file": 1,
+                    "location": 2,
+                    "severity": 3,
+                    "code": 4,
+                    "message": 5
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Babylon.js build tools",
+                    "endsPattern": "watching for asset changes..."
+                }
+            }
+        },
+        {
             "label": "Build (Dev)",
             "type": "shell",
             "command": "npm run build:dev",
@@ -497,6 +567,24 @@
                 "cwd": "${workspaceFolder}"
             },
             "args": ["run", "serve", "-w", "@tools/node-particle-editor"],
+            "isBackground": true,
+            "presentation": {
+                "group": "serve"
+            },
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+        },
+        {
+            "label": "Smart Filter Editor Serve (Dev)",
+            "type": "shell",
+            "command": "npm",
+            "dependsOn": "Watch Smart Filters",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/smart-filters-editor"],
             "isBackground": true,
             "presentation": {
                 "group": "serve"

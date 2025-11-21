@@ -196,6 +196,16 @@ export class RenderTargetWrapper {
     public resolveMSAAStencil = false;
 
     /**
+     * Indicates if the depth texture is in read-only mode (may allow some optimizations in WebGPU)
+     */
+    public depthReadOnly = false;
+
+    /**
+     * Indicates if the stencil texture is in read-only mode (may allow some optimizations in WebGPU)
+     */
+    public stencilReadOnly = false;
+
+    /**
      * Gets the base array layer of a texture in the textures array
      * This is an number that is calculated based on the layer and face indices set for this texture at that index
      * @param index The index of the texture in the textures array to get the base array layer for

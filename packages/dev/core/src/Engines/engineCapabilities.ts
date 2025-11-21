@@ -27,6 +27,8 @@ export interface EngineCapabilities {
     maxVertexUniformVectors: number;
     /** Maximum number of uniforms per fragment shader */
     maxFragmentUniformVectors: number;
+    /** The number of bits that can be accurately represented in shader floats */
+    shaderFloatPrecision: number;
     /** Defines if standard derivatives (dx/dy) are supported */
     standardDerivatives: boolean;
     /** Defines if s3tc texture compression is supported */
@@ -80,6 +82,8 @@ export interface EngineCapabilities {
     depthTextureExtension: boolean;
     /** Defines if float color buffer are supported */
     colorBufferFloat: boolean;
+    /** Defines if float color blending is supported */
+    blendFloat: boolean;
     /** Defines if half float color buffer are supported */
     colorBufferHalfFloat?: boolean;
     /** Gets disjoint timer query extension (null if not supported) */
@@ -124,4 +128,8 @@ export interface EngineCapabilities {
     rg11b10ufColorRenderable: boolean;
     /** Defines if EXT_texture_norm16 is available which enables the following texture formats: R16_EXT, RG16_EXT, RGB16_EXT, RGBA16_EXT, R16_SNORM_EXT, RG16_SNORM_EXT, RGB16_SNORM_EXT, RGBA16_SNORM_EXT */
     textureNorm16: boolean;
+    /** Defines if blend parameters can be defined per target */
+    blendParametersPerTarget: boolean;
+    /** Defines if dual source blending is supported */
+    dualSourceBlending: boolean;
 }

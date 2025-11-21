@@ -1,17 +1,9 @@
-import { Body1, Button, makeStyles, tokens } from "@fluentui/react-components";
-import type { ButtonProps as FluentButtonProps } from "@fluentui/react-components";
-import { LineContainer } from "./propertyLine";
+import { LineContainer } from "./propertyLines/propertyLine";
 import type { FunctionComponent } from "react";
+import { Button } from "../primitives/button";
+import type { ButtonProps } from "../primitives/button";
 
-const useButtonLineStyles = makeStyles({
-    button: {
-        border: `1px solid ${tokens.colorBrandBackground}`,
-    },
-});
-
-type ButtonLineProps = FluentButtonProps & {
-    label: string;
-};
+type ButtonLineProps = Omit<ButtonProps, "label"> & { label: string }; // Require a label when button is the entire line (by default, label is optional on a button)
 
 /**
  * Wraps a button with a label in a line container
@@ -19,12 +11,11 @@ type ButtonLineProps = FluentButtonProps & {
  * @returns A button inside a line
  */
 export const ButtonLine: FunctionComponent<ButtonLineProps> = (props) => {
-    const classes = useButtonLineStyles();
+    ButtonLine.displayName = "ButtonLine";
+
     return (
         <LineContainer>
-            <Button className={classes.button} {...props}>
-                <Body1>{props.label}</Body1>
-            </Button>
+            <Button {...props} />
         </LineContainer>
     );
 };

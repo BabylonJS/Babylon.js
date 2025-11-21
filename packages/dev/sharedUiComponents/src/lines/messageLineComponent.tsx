@@ -1,6 +1,8 @@
 import * as React from "react";
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ToolContext } from "../fluent/hoc/fluentToolWrapper";
+import { MessageBar } from "../fluent/primitives/messageBar";
 
 interface IMessageLineComponentProps {
     text: string;
@@ -13,7 +15,16 @@ export class MessageLineComponent extends React.Component<IMessageLineComponentP
         super(props);
     }
 
-    override render() {
+    renderFluent() {
+        return (
+            <MessageBar
+                title=""
+                message={this.props.text}
+                intent={this.props.color === "Red" ? "error" : this.props.color === "Green" ? "success" : this.props.color === "Yellow" ? "warning" : "info"}
+            />
+        );
+    }
+    renderOriginal() {
         if (this.props.icon) {
             return (
                 <div className="iconMessageLine">
@@ -34,5 +45,8 @@ export class MessageLineComponent extends React.Component<IMessageLineComponentP
                 </div>
             </div>
         );
+    }
+    override render() {
+        return <ToolContext.Consumer>{({ useFluent }) => (useFluent ? this.renderFluent() : this.renderOriginal())}</ToolContext.Consumer>;
     }
 }

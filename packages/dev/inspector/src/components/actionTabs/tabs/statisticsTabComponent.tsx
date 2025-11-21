@@ -69,6 +69,11 @@ export class StatisticsTabComponent extends PaneComponent {
         const engineInstrumentation = this._engineInstrumentation;
         const caps = engine.getCaps();
 
+        let activeMeshesCount = scene.getActiveMeshes().length;
+        for (const objectRenderer of scene.objectRenderers) {
+            activeMeshesCount += objectRenderer.getActiveMeshes().length;
+        }
+
         return (
             <div className="pane">
                 <TextLineComponent label="Version" value={Engine.Version} color="rgb(113, 159, 255)" />
@@ -76,7 +81,7 @@ export class StatisticsTabComponent extends PaneComponent {
                 <PerformanceViewerComponent scene={scene} />
                 <LineContainerComponent title="COUNT">
                     <TextLineComponent label="Total meshes" value={scene.meshes.length.toString()} />
-                    <TextLineComponent label="Active meshes" value={scene.getActiveMeshes().length.toString()} />
+                    <TextLineComponent label="Active meshes" value={activeMeshesCount.toString()} />
                     <TextLineComponent label="Active indices" value={scene.getActiveIndices().toString()} />
                     <TextLineComponent label="Active faces" value={(scene.getActiveIndices() / 3).toString()} />
                     <TextLineComponent label="Active bones" value={scene.getActiveBones().toString()} />

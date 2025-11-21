@@ -45,6 +45,7 @@ import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
 import { PhysicsBodyGridComponent } from "./physics/physicsBodyGridComponent";
 import { Constants } from "core/Engines/constants";
+import { FrameGraphUtils } from "core/FrameGraph/frameGraphUtils";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -83,6 +84,17 @@ export class MeshPropertyGridComponent extends React.Component<
         const scene = mesh.getScene();
 
         if (mesh.reservedDataStore && mesh.reservedDataStore.wireframeOver) {
+            const frameGraph = scene.frameGraph;
+            if (frameGraph) {
+                const objectRenderer = FrameGraphUtils.FindMainObjectRenderer(frameGraph);
+                if (objectRenderer && objectRenderer.objectList.meshes) {
+                    const idx = objectRenderer.objectList.meshes.indexOf(mesh.reservedDataStore.wireframeOver);
+                    if (idx !== -1) {
+                        objectRenderer.objectList.meshes!.splice(idx, 1);
+                    }
+                }
+            }
+
             mesh.reservedDataStore.wireframeOver.dispose(false, true);
             mesh.reservedDataStore.wireframeOver = null;
 
@@ -115,6 +127,14 @@ export class MeshPropertyGridComponent extends React.Component<
         }
 
         mesh.reservedDataStore.wireframeOver = wireframeOver;
+
+        const frameGraph = scene.frameGraph;
+        if (frameGraph) {
+            const objectRenderer = FrameGraphUtils.FindMainObjectRenderer(frameGraph);
+            if (objectRenderer && objectRenderer.objectList.meshes) {
+                objectRenderer.objectList.meshes.push(wireframeOver);
+            }
+        }
 
         this.forceUpdate();
     }

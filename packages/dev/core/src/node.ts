@@ -35,6 +35,8 @@ class _InternalNodeDataInfo {
     public _isReady = true;
     public _onEnabledStateChangedObservable = new Observable<boolean>();
     public _onClonedObservable = new Observable<Node>();
+    public _inheritVisibility = false;
+    public _isVisible = true;
 }
 
 /**
@@ -262,6 +264,34 @@ export class Node implements IBehaviorAware<Node> {
     }
 
     /**
+     * If set to true, this node, when renderable, will only be visible if its parent(s) are also visible.
+     * @default false
+     */
+    public get inheritVisibility(): boolean {
+        return this._nodeDataStorage._inheritVisibility;
+    }
+
+    public set inheritVisibility(value: boolean) {
+        this._nodeDataStorage._inheritVisibility = value;
+    }
+
+    /**
+     * Gets or sets a boolean indicating whether this node is visible, either this node itself when it is renderable or its renderable child nodes when `inheritVisibility` is true.
+     * @default true
+     */
+    public get isVisible(): boolean {
+        if (this.inheritVisibility && this._parentNode && !this._parentNode.isVisible) {
+            return false;
+        }
+
+        return this._nodeDataStorage._isVisible;
+    }
+
+    public set isVisible(value: boolean) {
+        this._nodeDataStorage._isVisible = value;
+    }
+
+    /**
      * @internal
      */
     public _serializeAsParent(serializationObject: any): void {
@@ -400,7 +430,10 @@ export class Node implements IBehaviorAware<Node> {
         if (this._scene.isLoading && !attachImmediately) {
             // We defer the attach when the scene will be loaded
             this._scene.onDataLoadedObservable.addOnce(() => {
-                behavior.attach(this);
+                // Make sure the behavior has not been removed.
+                if (this._behaviors.includes(behavior)) {
+                    behavior.attach(this);
+                }
             });
         } else {
             behavior.attach(this);

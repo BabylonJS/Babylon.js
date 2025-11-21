@@ -6,7 +6,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import { Texture } from "core/Materials/Textures/texture";
 import type { ImageSourceBlock } from "core/Materials/Node/Blocks/Dual/imageSourceBlock";
-import { GeneralPropertyTabComponent, GenericPropertyTabComponent } from "./genericNodePropertyComponent";
+import { GetGeneralProperties, GetGenericProperties } from "./genericNodePropertyComponent";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
@@ -15,6 +15,8 @@ import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineCompon
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
+import { PropertyTabComponentBase } from "shared-ui-components/components/propertyTabComponentBase";
+import { SmartFilterTextureBlock } from "core/Materials";
 
 export class ImageSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isEmbedded: boolean }> {
     get imageSourceBlock(): ImageSourceBlock {
@@ -47,8 +49,16 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     }
 
     updateAfterTextureLoad() {
-        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.nodeData.data as NodeMaterialBlock);
+        const block = this.props.nodeData.data as ImageSourceBlock;
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+
+        const connections = block.source.connectedBlocks;
+
+        for (const connection of connections) {
+            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(connection);
+        }
+
         this.forceUpdate();
     }
 
@@ -73,7 +83,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         }
 
         if (!texture) {
-            this.imageSourceBlock.texture = new Texture(null, (this.props.stateManager.data as GlobalState).nodeMaterial.getScene(), false, false);
+            const isFrozenTexture = this.imageSourceBlock.source.connectedBlocks.some((b) => b instanceof SmartFilterTextureBlock);
+            this.imageSourceBlock.texture = new Texture(null, (this.props.stateManager.data as GlobalState).nodeMaterial.getScene(), false, isFrozenTexture);
             texture = this.imageSourceBlock.texture;
             texture.coordinatesMode = Texture.EQUIRECTANGULAR_MODE;
         }
@@ -129,6 +140,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
         url = url.replace(/\?nocache=\d+/, "");
 
+        const isFrozenTexture = this.imageSourceBlock.source.connectedBlocks.some((b) => b instanceof SmartFilterTextureBlock);
+
         const samplingMode = [
             { label: "Nearest", value: Texture.NEAREST_NEAREST }, // 1
             { label: "Linear", value: Texture.LINEAR_LINEAR }, // 2
@@ -149,10 +162,10 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         ];
 
         return (
-            <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+            <PropertyTabComponentBase>
+                {GetGeneralProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
                 <LineContainerComponent title="PROPERTIES">
-                    {texture && texture.updateSamplingMode && (
+                    {texture && !isFrozenTexture && texture.updateSamplingMode && (
                         <OptionsLine
                             label="Sampling"
                             options={samplingMode}
@@ -165,7 +178,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <CheckBoxLineComponent
                             label="Clamp U"
                             isSelected={() => texture.wrapU === Texture.CLAMP_ADDRESSMODE}
@@ -175,7 +188,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <CheckBoxLineComponent
                             label="Clamp V"
                             isSelected={() => texture.wrapV === Texture.CLAMP_ADDRESSMODE}
@@ -185,7 +198,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <FloatLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Offset U"
@@ -196,7 +209,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <FloatLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Offset V"
@@ -207,7 +220,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <FloatLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Scale U"
@@ -218,7 +231,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <FloatLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Scale V"
@@ -229,7 +242,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <SliderLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Rotation U"
@@ -244,7 +257,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <SliderLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Rotation V"
@@ -259,7 +272,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                             }}
                         />
                     )}
-                    {texture && (
+                    {texture && !isFrozenTexture && (
                         <SliderLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             label="Rotation W"
@@ -299,8 +312,8 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                     )}
                     {texture && <ButtonLineComponent label="Remove" onClick={() => this.removeTexture()} />}
                 </LineContainerComponent>
-                <GenericPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-            </div>
+                {GetGenericProperties({ stateManager: this.props.stateManager, nodeData: this.props.nodeData })}
+            </PropertyTabComponentBase>
         );
     }
 }

@@ -1,4 +1,4 @@
-/* eslint-disable import/no-internal-modules */
+/* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./ktx2Decoder";
 export * from "./ktx2FileReader";
 export * from "./transcoder";

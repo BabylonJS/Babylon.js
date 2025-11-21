@@ -132,9 +132,21 @@ export interface AbstractEngineOptions {
     doNotHandleTouchAction?: boolean;
 
     /**
-     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default.
+     * Note that setting useLargeWorldRendering will also set high precision matrices
      */
     useHighPrecisionMatrix?: boolean;
+
+    /**
+     * @experimental
+     * LargeWorldRendering helps avoid floating point imprecision of rendering large worlds by
+     * 1. Forcing highPrecisionMatrices (matrix computations in 64 bits instead of 32)
+     * 2. Enabling floatingOriginMode in all scenes -- offsetting position-related uniform and attribute values before passing to shader so that active camera is centered at origin and world is offset by active camera position
+     *
+     * NOTE that if this mode is set during engineCreation, all scenes will have floatingOrigin offset and you do not need to send floatingOriginMode option to each scene creation.
+     * If you'd like to have only specific scenes using the offset logic, you can set the flag on those scenes directly -- however, to achieve proper large world rendering, you must also set the useHighPrecisionMatrix option on engine.
+     */
+    readonly useLargeWorldRendering?: boolean;
 
     /**
      * Defines whether to adapt to the device's viewport characteristics (default: false)
@@ -210,11 +222,11 @@ export abstract class AbstractEngine {
     /** @internal */
     public _stencilState = new StencilState();
     /** @internal */
-    public _alphaState = new AlphaState();
+    public _alphaState = new AlphaState(false);
     /** @internal */
-    public _alphaMode = Constants.ALPHA_ADD;
+    public _alphaMode = Array(8).fill(-1);
     /** @internal */
-    public _alphaEquation = Constants.ALPHA_DISABLE;
+    public _alphaEquation = Array(8).fill(-1);
 
     protected _activeRequests: IFileRequest[] = [];
 
@@ -249,6 +261,8 @@ export abstract class AbstractEngine {
     protected _cachedViewport: Nullable<IViewportLike>;
     /** @internal */
     public _currentDrawContext: IDrawContext;
+    /** @internal */
+    public _currentMaterialContext: IMaterialContext;
 
     /** @internal */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
@@ -337,8 +351,16 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+    public _getShaderProcessor(_shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
         return this._shaderProcessor;
+    }
+
+    /**
+     * @internal
+     */
+    public _resetAlphaMode(): void {
+        this._alphaMode.fill(-1);
+        this._alphaEquation.fill(-1);
     }
 
     /**
@@ -1392,8 +1414,9 @@ export abstract class AbstractEngine {
      * @param backBuffer defines if the back buffer must be cleared
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
+     * @param stencilClearValue defines the value to use to clear the stencil buffer
      */
-    public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+    public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean, stencilClearValue?: number): void;
 
     /**
      * Gets a boolean indicating that only power of 2 textures are supported
@@ -1896,14 +1919,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.13.0";
+        return "babylonjs@8.37.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.13.0";
+        return "8.37.0";
     }
 
     /**
@@ -2008,6 +2031,7 @@ export abstract class AbstractEngine {
 
     /**
      * Gets the options used for engine creation
+     * NOTE that modifying the object after engine creation will have no effect
      * @returns EngineOptions object
      */
     public getCreationOptions() {
@@ -2026,7 +2050,9 @@ export abstract class AbstractEngine {
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
 
-        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+        // LargeWorldRendering set to true will set high precision matrix, regardless of useHighPrecisionMatrix value
+        // It will also set all scenes to use floatingOriginMode upon their creation
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useLargeWorldRendering || !!options.useHighPrecisionMatrix);
 
         if (IsNavigatorAvailable() && navigator.userAgent) {
             // Detect if we are running on a faulty buggy OS.
@@ -2591,7 +2617,7 @@ export abstract class AbstractEngine {
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
         onProgress?: (data: any) => void,
-        offlineProvider?: IOfflineProvider,
+        offlineProvider?: Nullable<IOfflineProvider>,
         useArrayBuffer?: boolean,
         onError?: (request?: IWebRequest, exception?: any) => void
     ): IFileRequest {

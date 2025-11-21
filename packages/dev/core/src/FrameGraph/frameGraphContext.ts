@@ -1,17 +1,12 @@
-import type {
-    AbstractEngine,
-    FrameGraphTextureManager,
-    Scene,
-    FrameGraphTextureHandle,
-    Nullable,
-    InternalTexture,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/index";
+import type { AbstractEngine, FrameGraphTextureManager, Scene, FrameGraphTextureHandle, Nullable, InternalTexture, IViewportLike } from "core/index";
 
 /**
  * Base class for frame graph context.
  */
 export class FrameGraphContext {
+    private _depthTest: boolean;
+    private _depthWrite: boolean;
+
     /** @internal */
     constructor(
         protected readonly _engine: AbstractEngine,
@@ -23,14 +18,19 @@ export class FrameGraphContext {
      * Renders a component without managing the render target.
      * Use this method when you have a component that handles its own rendering logic which is not fully integrated into the frame graph system.
      * @param component The component to render.
+     * @param intermediateRendering If true, the scene's intermediate rendering flag will be set to true during the render call (default: true)
      */
-    public renderUnmanaged(component: { render: () => void }): void {
+    public renderUnmanaged(component: { render: () => void }, intermediateRendering = true): void {
         const currentRenderTarget = this._engine._currentRenderTarget;
 
         this._scene.incrementRenderId();
         this._scene.resetCachedMaterial();
 
+        this._scene._intermediateRendering = intermediateRendering;
+
         component.render();
+
+        this._scene._intermediateRendering = false;
 
         if (this._engine._currentRenderTarget !== currentRenderTarget) {
             if (!currentRenderTarget) {
@@ -64,5 +64,41 @@ export class FrameGraphContext {
      */
     public popDebugGroup() {
         this._engine._debugPopGroup?.(1);
+    }
+
+    /**
+     * Saves the current depth states (depth testing and depth writing)
+     */
+    public saveDepthStates(): void {
+        this._depthTest = this._engine.getDepthBuffer();
+        this._depthWrite = this._engine.getDepthWrite();
+    }
+
+    /**
+     * Restores the depth states saved by saveDepthStates
+     */
+    public restoreDepthStates(): void {
+        this._engine.setDepthBuffer(this._depthTest);
+        this._engine.setDepthWrite(this._depthWrite);
+    }
+
+    /**
+     * Sets the depth states for the current render target
+     * @param depthTest If true, depth testing is enabled
+     * @param depthWrite If true, depth writing is enabled
+     */
+    public setDepthStates(depthTest: boolean, depthWrite: boolean): void {
+        this._engine.setDepthBuffer(depthTest);
+        this._engine.setDepthWrite(depthWrite);
+    }
+
+    /**
+     * Sets the current viewport
+     * @param viewport defines the viewport element to be used
+     * @param requiredWidth defines the width required for rendering. If not provided, the width of the render texture is used.
+     * @param requiredHeight defines the height required for rendering. If not provided the height of the render texture is used.
+     */
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+        this._engine.setViewport(viewport, requiredHeight, requiredWidth);
     }
 }

@@ -19,6 +19,7 @@ import { DepthReducer } from "../../Misc/depthReducer";
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Camera } from "../../Cameras/camera";
+import { FloatingOriginCurrentScene, GetOffsetTransformMatrices } from "../../Materials/floatingOriginMatrixOverrides";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -263,6 +264,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     private _projectionMatrices: Array<Matrix>;
     private _transformMatrices: Array<Matrix>;
     private _transformMatricesAsArray: Float32Array;
+    private _tempTransformMatricesAsArray: Float32Array;
     private _frustumLengths: Array<number>;
     private _lightSizeUVCorrection: Array<number>;
     private _depthCorrection: Array<number>;
@@ -804,6 +806,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     protected override _createTargetRenderTexture(): void {
         const engine = this._scene.getEngine();
+        this._shadowMap?.dispose();
         const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
         this._shadowMap = new RenderTargetTexture(
             this._light.name + "_CSMShadowMap",
@@ -838,6 +841,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         this._transformMatricesAsArray = new Float32Array(this._numCascades * 16);
+        this._tempTransformMatricesAsArray = new Float32Array(this._numCascades * 16);
         this._viewSpaceFrustumsZ = new Array(this._numCascades);
         this._frustumLengths = new Array(this._numCascades);
         this._lightSizeUVCorrection = new Array(this._numCascades * 2);
@@ -886,6 +890,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             if (this._filter === ShadowGenerator.FILTER_PCF) {
                 engine.setColorWrite(false);
             }
+            FloatingOriginCurrentScene.eyeAtCamera = false;
             this._scene.setTransformMatrix(this.getCascadeViewMatrix(layer)!, this.getCascadeProjectionMatrix(layer)!);
             if (this._useUBO) {
                 this._scene.getSceneUniformBuffer().unbindEffect();
@@ -970,7 +975,13 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         const width = shadowMap.getSize().width;
 
-        effect.setMatrices("lightMatrix" + lightIndex, this._transformMatricesAsArray);
+        const transform = this._transformMatricesAsArray;
+        // Doing the check for floatingOrigin here to avoid unnecessary matrix operations when offset is 0
+        const lightMatrix = scene.floatingOriginMode
+            ? GetOffsetTransformMatrices(this._scene.floatingOriginOffset, this._viewMatrices, this._projectionMatrices, this._numCascades, this._tempTransformMatricesAsArray)
+            : transform;
+
+        effect.setMatrices("lightMatrix" + lightIndex, lightMatrix);
         effect.setArray("viewFrustumZ" + lightIndex, this._viewSpaceFrustumsZ);
         effect.setFloat("cascadeBlendFactor" + lightIndex, this.cascadeBlendPercentage === 0 ? 10000 : 1 / this.cascadeBlendPercentage);
         effect.setArray("frustumLengths" + lightIndex, this._frustumLengths);

@@ -228,6 +228,10 @@ module.exports = (env) => {
             to: "/node-render-graph-editor.d.ts",
         },
         {
+            from: "/nodeParticleEditor/babylon.nodeParticleEditor.js",
+            to: "/nodeParticleEditor/babylon.nodeParticleEditor.min.js",
+        },
+        {
             from: "/nodeParticleEditor/babylon.nodeParticleEditor.d.ts",
             to: "/node-particle-editor.d.ts",
         },

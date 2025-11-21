@@ -897,7 +897,10 @@ export class PrePassRenderer {
             if (this.renderTargets[i].renderTargetTexture) {
                 postProcesses = this._getPostProcessesSource(this.renderTargets[i]);
             } else {
-                const camera = this._scene.activeCamera;
+                // When there are multiple active cameras, we have to choose one. We assume it's the first one and not scene.activeCamera, because in a number of cases,
+                // _update() will be called from an async method, meaning the active camera will be the last one in the list of active cameras,
+                // which is generally not the right camera to use for the prepass setup.
+                const camera = this._scene.activeCameras && this._scene.activeCameras.length > 0 ? this._scene.activeCameras[0] : this._scene.activeCamera;
                 if (!camera) {
                     continue;
                 }

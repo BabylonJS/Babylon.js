@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { NodeRenderGraphConnectionPoint, Scene, FrameGraphTextureHandle, FrameGraph, NodeRenderGraphBuildState } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -61,7 +60,7 @@ export class NodeRenderGraphGenerateMipmapsBlock extends NodeRenderGraphBlock {
     protected override _buildBlock(state: NodeRenderGraphBuildState) {
         super._buildBlock(state);
 
-        this._propagateInputValueToOutput(this.target, this.output);
+        this.output.value = this._frameGraphTask.outputTexture;
 
         this._frameGraphTask.targetTexture = this.target.connectedPoint?.value as FrameGraphTextureHandle;
     }

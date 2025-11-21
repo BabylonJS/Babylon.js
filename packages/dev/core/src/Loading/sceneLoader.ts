@@ -390,7 +390,7 @@ type DefaultPluginOptions<BasePluginOptions> = {
 // This captures the type defined inline for the pluginOptions property, which is just SceneLoaderPluginOptions wrapped with DefaultPluginOptions.
 // We do it this way rather than explicitly defining the type here and then using it in SceneLoaderOptions because we want the full expanded type
 // to show up in the user's intellisense to make it easier to understand what options are available.
-type PluginOptions = ISceneLoaderOptions["pluginOptions"];
+export type PluginOptions = ISceneLoaderOptions["pluginOptions"];
 
 type SceneSource = string | File | ArrayBufferView;
 
@@ -1708,6 +1708,7 @@ export class SceneLoader {
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
      * @param name defines the name of the file, if the data is binary
+     * @param pluginOptions defines the options to use with the plugin
      * @deprecated Please use the module level {@link ImportMeshAsync} instead
      */
     public static ImportMesh(
@@ -1719,10 +1720,11 @@ export class SceneLoader {
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
         pluginExtension?: Nullable<string>,
-        name?: string
+        name?: string,
+        pluginOptions?: PluginOptions
     ): void {
         // eslint-disable-next-line github/no-then
-        importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name).catch((error) =>
+        importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name, pluginOptions).catch((error) =>
             onError?.(EngineStore.LastCreatedScene!, error?.message, error)
         );
     }

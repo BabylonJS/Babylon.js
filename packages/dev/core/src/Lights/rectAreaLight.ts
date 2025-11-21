@@ -114,8 +114,17 @@ export class RectAreaLight extends AreaLight {
      * @returns The point light
      */
     public transferToEffect(effect: Effect, lightIndex: string): RectAreaLight {
+        const offset = this._scene.floatingOriginOffset;
+
         if (this._computeTransformedInformation()) {
-            this._uniformBuffer.updateFloat4("vLightData", this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4(
+                "vLightData",
+                this._pointTransformedPosition.x - offset.x,
+                this._pointTransformedPosition.y - offset.y,
+                this._pointTransformedPosition.z - offset.z,
+                0,
+                lightIndex
+            );
             this._uniformBuffer.updateFloat4("vLightWidth", this._pointTransformedWidth.x / 2, this._pointTransformedWidth.y / 2, this._pointTransformedWidth.z / 2, 0, lightIndex);
             this._uniformBuffer.updateFloat4(
                 "vLightHeight",
@@ -126,7 +135,7 @@ export class RectAreaLight extends AreaLight {
                 lightIndex
             );
         } else {
-            this._uniformBuffer.updateFloat4("vLightData", this.position.x, this.position.y, this.position.z, 0, lightIndex);
+            this._uniformBuffer.updateFloat4("vLightData", this.position.x - offset.x, this.position.y - offset.y, this.position.z - offset.z, 0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightWidth", this._width.x / 2, this._width.y / 2, this._width.z / 2, 0.0, lightIndex);
             this._uniformBuffer.updateFloat4("vLightHeight", this._height.x / 2, this._height.y / 2, this._height.z / 2, 0.0, lightIndex);
         }
@@ -134,10 +143,17 @@ export class RectAreaLight extends AreaLight {
     }
 
     public transferToNodeMaterialEffect(effect: Effect, lightDataUniformName: string) {
+        const offset = this._scene.floatingOriginOffset;
+
         if (this._computeTransformedInformation()) {
-            effect.setFloat3(lightDataUniformName, this._pointTransformedPosition.x, this._pointTransformedPosition.y, this._pointTransformedPosition.z);
+            effect.setFloat3(
+                lightDataUniformName,
+                this._pointTransformedPosition.x - offset.x,
+                this._pointTransformedPosition.y - offset.y,
+                this._pointTransformedPosition.z - offset.z
+            );
         } else {
-            effect.setFloat3(lightDataUniformName, this.position.x, this.position.y, this.position.z);
+            effect.setFloat3(lightDataUniformName, this.position.x - offset.x, this.position.y - offset.y, this.position.z - offset.z);
         }
         return this;
     }

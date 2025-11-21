@@ -19,6 +19,7 @@ uniform vec2 dataTextureSize;
 uniform vec2 focal;
 uniform float kernelSize;
 uniform vec3 eyePosition;
+uniform vec3 viewDirectionFactor;
 
 uniform sampler2D covariancesATexture;
 uniform sampler2D covariancesBTexture;
@@ -56,7 +57,7 @@ void main () {
     mat3 normWorldRot = inverseMat3(worldRot);
 
     vec3 dir = normalize(normWorldRot * (worldPos.xyz - eyePosition));
-    dir *= vec3(1.,1.,-1.); // convert to Babylon Space
+    dir *= viewDirectionFactor;
     vColor.xyz = splat.color.xyz + computeSH(splat, dir);
 #endif
 

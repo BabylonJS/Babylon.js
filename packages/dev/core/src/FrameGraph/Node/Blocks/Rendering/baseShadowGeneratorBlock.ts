@@ -7,7 +7,6 @@ import type {
     FrameGraphObjectList,
     FrameGraphShadowGeneratorTask,
     Camera,
-    // eslint-disable-next-line import/no-internal-modules
 } from "core/index";
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Types/nodeRenderGraphTypes";

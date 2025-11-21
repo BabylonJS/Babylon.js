@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-internal-modules
 import type { MaterialDefines, Effect, Mesh, AbstractMesh, Material } from "core/index";
 import { Constants } from "core/Engines/constants";
 import { Matrix } from "core/Maths/math.vector";

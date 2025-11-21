@@ -125,28 +125,8 @@ export class FlowMap {
      * @returns a promise fulfilled when image data is loaded
      */
     public static async ExtractFromTextureAsync(texture: Texture) {
-        return await new Promise<FlowMap>((resolve, reject) => {
-            if (!texture.isReady()) {
-                // eslint-disable-next-line @typescript-eslint/no-misused-promises
-                texture.onLoadObservable.addOnce(async () => {
-                    try {
-                        const result = await this.ExtractFromTextureAsync(texture);
-                        resolve(result);
-                    } catch (e) {
-                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-                        reject(e);
-                    }
-                });
-                return;
-            }
-            const size = texture.getSize();
-            TextureTools.GetTextureDataAsync(texture, size.width, size.height)
-                // eslint-disable-next-line github/no-then
-                .then((data) => {
-                    resolve(new FlowMap(size.width, size.height, new Uint8ClampedArray(data)));
-                })
-                // eslint-disable-next-line github/no-then
-                .catch(reject);
-        });
+        const data = await TextureTools.GetTextureDataAsync(texture);
+        const { width, height } = texture.getSize();
+        return new FlowMap(width, height, new Uint8ClampedArray(data));
     }
 }
