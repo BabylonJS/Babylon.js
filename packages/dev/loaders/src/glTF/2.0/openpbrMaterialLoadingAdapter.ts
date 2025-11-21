@@ -691,6 +691,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._material.transmissionScatter = value;
     }
 
+    public get transmissionScatter(): Color3 {
+        return this._material.transmissionScatter;
+    }
+
     /**
      * Sets the transmission scattering anisotropy.
      * @param value The anisotropy intensity value (-1 to 1)

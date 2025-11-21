@@ -25,7 +25,8 @@ declare module "../../glTFFileLoader" {
 function multiScatterToSingleScatterAlbedo(multiScatter: Color3): Vector3 {
     const multiScatterAlbedo = new Vector3(multiScatter.r, multiScatter.g, multiScatter.b);
     const s: Vector3 = new Vector3(4.09712, 4.09712, 4.09712);
-    s.multiplyInPlace(new Vector3(4.20863, 4.20863, 4.20863).multiplyInPlace(multiScatterAlbedo));
+    s.multiplyInPlace(multiScatterAlbedo);
+    s.addInPlace(new Vector3(4.20863, 4.20863, 4.20863));
 
     const p: Vector3 = new Vector3(9.59217, 9.59217, 9.59217);
     p.addInPlace(new Vector3(41.6808, 41.6808, 41.6808).multiplyInPlace(multiScatterAlbedo));
@@ -53,7 +54,7 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
     /**
      * Defines a number that determines the order the extensions are applied.
      */
-    public order = 174;
+    public order = 172;
 
     private _loader: GLTFLoader;
 
@@ -120,7 +121,7 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
                 Math.exp(-absorptionCoefficient.z * absorptionDistance)
             );
             adapter.transmissionDepth = absorptionDistance;
-            adapter.transmissionScatter = scatteringCoefficient;
+            adapter.transmissionScatter.set(scatteringCoefficient.x, scatteringCoefficient.y, scatteringCoefficient.z);
             adapter.transmissionScatterAnisotropy = scatterAnisotropy;
         }
         // Subsurface volume

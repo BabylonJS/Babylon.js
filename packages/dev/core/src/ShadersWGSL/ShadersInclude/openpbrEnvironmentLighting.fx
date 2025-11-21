@@ -241,7 +241,7 @@
         let slab_fuzz_ibl = fuzzEnvironmentLight * uniforms.vLightingIntensity.z;
     #endif
 
-    var slab_translucent_base_ibl: vec3f = slab_translucent_background.rgb;
+    var slab_translucent_base_ibl: vec3f = slab_translucent_background.rgb * transmission_absorption;
     #ifdef REFRACTED_ENVIRONMENT
         
         let refractionAlphaG: f32 = transmission_roughness * transmission_roughness;
@@ -339,13 +339,11 @@
                 #endif
                 , uniforms.vReflectionInfos
                 , viewDirectionW
-                , 0.0f
-                , vec3f(1.0f)
+                , 1.0f
+                , multi_scatter_color
             );
 
             isoScatteredEnvironmentLight *= multi_scatter_color * density; // also modulate by some absorption
-            // Lerp iso fog to refraction based on 1-density
-            // isoScatteredEnvironmentLight = mix(environmentRefraction.rgb, isoScatteredEnvironmentLight, density);
             
             // BACK Scattering
             let backscatterScale: f32 = clamp(1.0f + transmission_scatter_anisotropy, 0.1f, 1.0f);
@@ -360,15 +358,8 @@
                     , uniforms.vReflectionFilteringInfo
                 #endif
             );
-            // backscatteredEnvironmentLight *= transmission_absorption;
-
+            
             if (transmission_depth > 0.0f) {
-                // float modified_thickness = min(geometry_thickness / length(isoScatteredEnvironmentLight), geometry_thickness);
-                // vec3 modified_absorption = exp(-absorption_coeff*modified_thickness);
-                // float scaled_aniso = min(1.0 - transmission_scatter_anisotropy, 1.0);
-                // isoScatteredEnvironmentLight.rgb = mix(backscatteredEnvironmentLight, isoScatteredEnvironmentLight, backscatterScale);
-                // slab_translucent_base_ibl += mix(isoScatteredEnvironmentLight, environmentRefraction.rgb, max(transmission_scatter_anisotropy, 0.0));
-
                 // Direct Transmission
                 slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
                 // Back Scattering
@@ -379,8 +370,7 @@
                 slab_translucent_base_ibl += environmentRefraction.rgb;
             }
         #else
-            slab_translucent_base_ibl += environmentRefraction;
-            slab_translucent_base_ibl *= transmission_absorption;
+            slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
         #endif
     #endif
 

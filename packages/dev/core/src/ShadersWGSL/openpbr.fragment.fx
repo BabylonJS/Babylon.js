@@ -214,9 +214,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             multi_scatter_color = singleScatterToMultiScatterAlbedo(ss_albedo);
 
             // Reduced scattering takes anisotropy into account.
-            let scatter_coeff_reduced: vec3f = scatter_coeff * (1.0f - abs(transmission_scatter_anisotropy));           // reduced scattering for diffusion length
-            extinction_coeff_reduced = absorption_coeff + scatter_coeff_reduced;
-            transmission_absorption = exp(-extinction_coeff_reduced * geometry_thickness);
+            // let scatter_coeff_reduced: vec3f = scatter_coeff * (1.0f - abs(transmission_scatter_anisotropy));           // reduced scattering for diffusion length
+            // extinction_coeff_reduced = absorption_coeff + scatter_coeff_reduced;
+            transmission_absorption = exp(-absorption_coeff * geometry_thickness);
         } else {
             // We'll account for double-absorption here, assuming light enters and then exits the
             // volume before reaching the eye. 

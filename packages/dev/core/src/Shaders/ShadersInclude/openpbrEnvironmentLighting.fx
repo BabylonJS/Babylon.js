@@ -234,7 +234,7 @@
         vec3 slab_fuzz_ibl = fuzzEnvironmentLight * vLightingIntensity.z;
     #endif
 
-    vec3 slab_translucent_base_ibl = slab_translucent_background.rgb;
+    vec3 slab_translucent_base_ibl = slab_translucent_background.rgb * transmission_absorption;
     #ifdef REFRACTED_ENVIRONMENT
         
         float refractionAlphaG = transmission_roughness * transmission_roughness;
@@ -307,26 +307,44 @@
             float density = sqrt(min(1.0 / transmission_depth * max3(extinction_coeff), 1.0));
             vec3 isoscatterVector = mix(vReflectionDominantDirection, normalW, density);
             vec3 isoScatteredEnvironmentLight = sampleIrradiance(
-                isoscatterVector, reflectionMatrix, irradianceSampler, vReflectionDominantDirection, vReflectionFilteringInfo, icdfSampler, vReflectionInfos, viewDirectionW, 0.0, vec3(1.0));
+                isoscatterVector
+                #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                    , vEnvironmentIrradiance
+                #endif
+                #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                    , reflectionMatrix
+                #endif
+                #ifdef USEIRRADIANCEMAP
+                    , irradianceSampler
+                    #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                        , vReflectionDominantDirection
+                    #endif
+                #endif
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , icdfSampler
+                    #endif
+                #endif
+                , vReflectionInfos
+                , viewDirectionW
+                , 1.0
+                , multi_scatter_color
+            );
 
             isoScatteredEnvironmentLight *= multi_scatter_color * density; // also modulate by some absorption
-            // Lerp iso fog to refraction based on 1-density
-            // isoScatteredEnvironmentLight = mix(environmentRefraction.rgb, isoScatteredEnvironmentLight, density);
             
             // BACK Scattering
             float backscatterScale = clamp(1.0 + transmission_scatter_anisotropy, 0.1, 1.0);
             // For backscattering, generate a reflection vector relative to the view direction
             vec3 backscatterVector = createReflectionCoords(vPositionW, normalize(mix(viewDirectionW, normalW, backscatterScale)));
-            vec3 backscatteredEnvironmentLight = sampleRadiance(0.1, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos, baseGeoInfo, reflectionSampler, backscatterVector, vReflectionFilteringInfo);
-            // backscatteredEnvironmentLight *= transmission_absorption;
-
+            vec3 backscatteredEnvironmentLight = sampleRadiance(0.1, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos, baseGeoInfo, reflectionSampler, backscatterVector
+                #ifdef REALTIME_FILTERING
+                    , vReflectionFilteringInfo
+                #endif
+            );
+            
             if (transmission_depth>0.0) {
-                // float modified_thickness = min(geometry_thickness / length(isoScatteredEnvironmentLight), geometry_thickness);
-                // vec3 modified_absorption = exp(-absorption_coeff*modified_thickness);
-                // float scaled_aniso = min(1.0 - transmission_scatter_anisotropy, 1.0);
-                // isoScatteredEnvironmentLight.rgb = mix(backscatteredEnvironmentLight, isoScatteredEnvironmentLight, backscatterScale);
-                // slab_translucent_base_ibl += mix(isoScatteredEnvironmentLight, environmentRefraction.rgb, max(transmission_scatter_anisotropy, 0.0));
-
                 // Direct Transmission
                 slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
                 // Back Scattering
@@ -337,8 +355,7 @@
                 slab_translucent_base_ibl += environmentRefraction.rgb;
             }
         #else
-            slab_translucent_base_ibl += environmentRefraction;
-            slab_translucent_base_ibl *= transmission_absorption;
+            slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
         #endif
     #endif
 
