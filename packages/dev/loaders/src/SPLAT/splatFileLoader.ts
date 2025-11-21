@@ -279,7 +279,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         babylonMeshesArray.push(gaussianSplatting);
                         gaussianSplatting.updateData(parsedSPZ.data, parsedSPZ.sh);
                         scene._blockEntityCollection = false;
-                        this.#applyAutoCameraLimits(parsedSPZ, scene);
+                        this.applyAutoCameraLimits(parsedSPZ, scene);
                         resolve(babylonMeshesArray);
                     });
                 })
@@ -327,7 +327,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                 throw new Error("Unsupported Splat mode");
                         }
                         scene._blockEntityCollection = false;
-                        this.#applyAutoCameraLimits(parsedPLY, scene);
+                        this.applyAutoCameraLimits(parsedPLY, scene);
                         resolve(babylonMeshesArray);
                     });
                 });
@@ -339,7 +339,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param meta parsed splat meta data
      * @param scene
      */
-    #applyAutoCameraLimits(meta: IParsedSplat, scene: Scene): void {
+    private applyAutoCameraLimits(meta: IParsedSplat, scene: Scene): void {
         if (this._loadingOptions.disableAutoCameraLimits) {
             return;
         }
