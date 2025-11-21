@@ -89,9 +89,6 @@ export class GeospatialCameraMovement extends CameraMovement {
         this._hitPointRadius = undefined;
     }
 
-    public get isDragging() {
-        return this._hitPointRadius !== undefined;
-    }
     /**
      * The previous drag plane hit point in local space is stored to compute the movement delta.
      * As the drag movement occurs, we will continuously recalculate this point. The delta between the previous and current hit points is the delta we will apply to the camera's localtranslation
@@ -161,7 +158,8 @@ export class GeospatialCameraMovement extends CameraMovement {
         }
 
         // If a pan drag is occurring, stop zooming.
-        if (this.isDragging) {
+        const isDragging = this._hitPointRadius !== undefined;
+        if (isDragging) {
             this._zoomSpeedMultiplier = 0;
             this._zoomVelocity = 0;
         } else {
