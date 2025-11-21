@@ -309,7 +309,79 @@
             // and so we want to include more of this indirect lighting.
             environmentRefraction *= max(refractionAlphaG * refractionAlphaG - 0.1f, 0.0f);
         #endif
-        slab_translucent_base_ibl += environmentRefraction.rgb;
+
+        #ifdef SCATTERING
+            // IF Transmission Scatter
+            // ISO Scattering
+            let density: f32 = sqrt(min(1.0f / transmission_depth * max3(extinction_coeff), 1.0f));
+            let isoscatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, density);
+            var isoScatteredEnvironmentLight: vec3f = sampleIrradiance(
+                isoscatterVector
+                #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
+                    , vEnvironmentIrradiance //SH
+                #endif
+                #if (defined(USESPHERICALFROMREFLECTIONMAP) && (!defined(NORMAL) || !defined(USESPHERICALINVERTEX))) || (defined(USEIRRADIANCEMAP) && defined(REFLECTIONMAP_3D))
+                    , uniforms.reflectionMatrix
+                #endif
+                #ifdef USEIRRADIANCEMAP
+                    , irradianceSampler
+                    , irradianceSamplerSampler
+                    #ifdef USE_IRRADIANCE_DOMINANT_DIRECTION
+                        , uniforms.vReflectionDominantDirection
+                    #endif
+                #endif
+                #ifdef REALTIME_FILTERING
+                    , uniforms.vReflectionFilteringInfo
+                    #ifdef IBL_CDF_FILTERING
+                        , icdfSampler
+                        , icdfSamplerSampler
+                    #endif
+                #endif
+                , uniforms.vReflectionInfos
+                , viewDirectionW
+                , 0.0f
+                , vec3f(1.0f)
+            );
+
+            isoScatteredEnvironmentLight *= multi_scatter_color * density; // also modulate by some absorption
+            // Lerp iso fog to refraction based on 1-density
+            // isoScatteredEnvironmentLight = mix(environmentRefraction.rgb, isoScatteredEnvironmentLight, density);
+            
+            // BACK Scattering
+            let backscatterScale: f32 = clamp(1.0f + transmission_scatter_anisotropy, 0.1f, 1.0f);
+            // For backscattering, generate a reflection vector relative to the view direction
+            let backscatterVector: vec3f = createReflectionCoords(fragmentInputs.vPositionW, normalize(mix(viewDirectionW, normalW, backscatterScale)));
+            var backscatteredEnvironmentLight: vec3f = sampleRadiance(0.1f, uniforms.vReflectionMicrosurfaceInfos.rgb, uniforms.vReflectionInfos
+                , baseGeoInfo
+                , reflectionSampler
+                , reflectionSamplerSampler
+                , backscatterVector
+                #ifdef REALTIME_FILTERING
+                    , uniforms.vReflectionFilteringInfo
+                #endif
+            );
+            // backscatteredEnvironmentLight *= transmission_absorption;
+
+            if (transmission_depth > 0.0f) {
+                // float modified_thickness = min(geometry_thickness / length(isoScatteredEnvironmentLight), geometry_thickness);
+                // vec3 modified_absorption = exp(-absorption_coeff*modified_thickness);
+                // float scaled_aniso = min(1.0 - transmission_scatter_anisotropy, 1.0);
+                // isoScatteredEnvironmentLight.rgb = mix(backscatteredEnvironmentLight, isoScatteredEnvironmentLight, backscatterScale);
+                // slab_translucent_base_ibl += mix(isoScatteredEnvironmentLight, environmentRefraction.rgb, max(transmission_scatter_anisotropy, 0.0));
+
+                // Direct Transmission
+                slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
+                // Back Scattering
+                slab_translucent_base_ibl += backscatteredEnvironmentLight * ss_integrated_factor * phase_function * absorption_at_mfp * density;
+                // Iso Scattering
+                slab_translucent_base_ibl += isoScatteredEnvironmentLight * absorption_at_mfp * (1.0f - abs(transmission_scatter_anisotropy));
+            } else {
+                slab_translucent_base_ibl += environmentRefraction.rgb;
+            }
+        #else
+            slab_translucent_base_ibl += environmentRefraction;
+            slab_translucent_base_ibl *= transmission_absorption;
+        #endif
     #endif
 
     // TEMP
@@ -320,7 +392,7 @@
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
     let material_opaque_base_ibl: vec3f = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
-    let material_dielectric_base_ibl: vec3f = mix(material_opaque_base_ibl, slab_translucent_base_ibl * transmission_absorption, transmission_weight);
+    let material_dielectric_base_ibl: vec3f = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
     let material_dielectric_gloss_ibl: vec3f = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     let material_base_substrate_ibl: vec3f = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     let material_coated_base_ibl: vec3f = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3f(1.0f));

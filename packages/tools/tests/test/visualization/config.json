@@ -3217,8 +3217,18 @@
             "excludedEngines": ["webgl1"]
         },
         {
-            "title": "OpenPBR Transmission Dispersion VS IOR - Analytic Lights",
+            "title": "OpenPBR Transmission Dispersion VS IOR - IBL",
             "playgroundId": "#GRQHVV#143",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Forward Scatter and Absorption - IBL",
+            "playgroundId": "#GRQHVV#149",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "OpenPBR Transmission Scatter Anisotropy - IBL",
+            "playgroundId": "#GRQHVV#150",
             "excludedEngines": ["webgl1"]
         },
         {

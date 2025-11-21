@@ -4,6 +4,8 @@
 float transmission_weight = vTransmissionWeight;
 vec3 transmission_color = vTransmissionColor.rgb;
 float transmission_depth = vTransmissionDepth;
+vec3 transmission_scatter = vTransmissionScatter.rgb;
+float transmission_scatter_anisotropy = vTransmissionScatterAnisotropy;
 float transmission_dispersion_scale = vTransmissionDispersionScale;
 float transmission_dispersion_abbe_number = vTransmissionDispersionAbbeNumber;
 
@@ -18,6 +20,10 @@ float transmission_dispersion_abbe_number = vTransmissionDispersionAbbeNumber;
 
 #ifdef TRANSMISSION_DEPTH
     vec4 transmissionDepthFromTexture = texture2D(transmissionDepthSampler, vTransmissionDepthUV + uvOffset);
+#endif
+
+#ifdef TRANSMISSION_SCATTER
+    vec4 transmissionScatterFromTexture = texture2D(transmissionScatterSampler, vTransmissionScatterUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_DISPERSION_SCALE
@@ -41,6 +47,10 @@ float transmission_dispersion_abbe_number = vTransmissionDispersionAbbeNumber;
 
 #ifdef TRANSMISSION_DEPTH
     transmission_depth *= transmissionDepthFromTexture.r;
+#endif
+
+#ifdef TRANSMISSION_SCATTER
+    transmission_scatter *= transmissionScatterFromTexture.rgb;
 #endif
 
 #ifdef TRANSMISSION_DISPERSION_SCALE

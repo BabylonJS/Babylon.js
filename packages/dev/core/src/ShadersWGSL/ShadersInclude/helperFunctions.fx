@@ -238,3 +238,16 @@ fn sqrtClamped(value: f32) -> f32 {
 fn avg(value: vec3f) -> f32 {
     return dot(value, vec3f(0.333333333));
 }
+
+fn singleScatterToMultiScatterAlbedo(rho_ss: vec3f) -> vec3f {
+  let s: vec3f = sqrt(max(vec3f(1.0) - rho_ss, vec3f(0.0)));
+  return (vec3f(1.0) - s) * (vec3f(1.0) - vec3f(0.139) * s) / (vec3f(1.0) + vec3f(1.17) * s);
+}
+
+fn min3(v: vec3f) -> f32 {
+    return min(v.x, min(v.y, v.z));
+}
+
+fn max3(v: vec3f) -> f32 {
+    return max(v.x, max(v.y, v.z));
+}

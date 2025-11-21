@@ -290,6 +290,7 @@
             #ifdef DISPERSION
                 }
             #endif
+            // environmentRefraction *= transmission_absorption;
         #endif
         #ifdef REFRACTED_BACKGROUND
             // Scale the refraction so that we only see it at higher roughnesses
@@ -299,7 +300,46 @@
             // and so we want to include more of this indirect lighting.
             environmentRefraction *= max(refractionAlphaG * refractionAlphaG - 0.1, 0.0);
         #endif
-        slab_translucent_base_ibl += environmentRefraction.rgb;
+
+        #ifdef SCATTERING
+            // IF Transmission Scatter
+            // ISO Scattering
+            float density = sqrt(min(1.0 / transmission_depth * max3(extinction_coeff), 1.0));
+            vec3 isoscatterVector = mix(vReflectionDominantDirection, normalW, density);
+            vec3 isoScatteredEnvironmentLight = sampleIrradiance(
+                isoscatterVector, reflectionMatrix, irradianceSampler, vReflectionDominantDirection, vReflectionFilteringInfo, icdfSampler, vReflectionInfos, viewDirectionW, 0.0, vec3(1.0));
+
+            isoScatteredEnvironmentLight *= multi_scatter_color * density; // also modulate by some absorption
+            // Lerp iso fog to refraction based on 1-density
+            // isoScatteredEnvironmentLight = mix(environmentRefraction.rgb, isoScatteredEnvironmentLight, density);
+            
+            // BACK Scattering
+            float backscatterScale = clamp(1.0 + transmission_scatter_anisotropy, 0.1, 1.0);
+            // For backscattering, generate a reflection vector relative to the view direction
+            vec3 backscatterVector = createReflectionCoords(vPositionW, normalize(mix(viewDirectionW, normalW, backscatterScale)));
+            vec3 backscatteredEnvironmentLight = sampleRadiance(0.1, vReflectionMicrosurfaceInfos.rgb, vReflectionInfos, baseGeoInfo, reflectionSampler, backscatterVector, vReflectionFilteringInfo);
+            // backscatteredEnvironmentLight *= transmission_absorption;
+
+            if (transmission_depth>0.0) {
+                // float modified_thickness = min(geometry_thickness / length(isoScatteredEnvironmentLight), geometry_thickness);
+                // vec3 modified_absorption = exp(-absorption_coeff*modified_thickness);
+                // float scaled_aniso = min(1.0 - transmission_scatter_anisotropy, 1.0);
+                // isoScatteredEnvironmentLight.rgb = mix(backscatteredEnvironmentLight, isoScatteredEnvironmentLight, backscatterScale);
+                // slab_translucent_base_ibl += mix(isoScatteredEnvironmentLight, environmentRefraction.rgb, max(transmission_scatter_anisotropy, 0.0));
+
+                // Direct Transmission
+                slab_translucent_base_ibl += environmentRefraction * transmission_absorption;
+                // Back Scattering
+                slab_translucent_base_ibl += backscatteredEnvironmentLight * ss_integrated_factor * phase_function * absorption_at_mfp * density;
+                // Iso Scattering
+                slab_translucent_base_ibl += isoScatteredEnvironmentLight * absorption_at_mfp * (1.0 - abs(transmission_scatter_anisotropy));
+            } else {
+                slab_translucent_base_ibl += environmentRefraction.rgb;
+            }
+        #else
+            slab_translucent_base_ibl += environmentRefraction;
+            slab_translucent_base_ibl *= transmission_absorption;
+        #endif
     #endif
 
     // TEMP
@@ -311,7 +351,7 @@
     // _____________________________ IBL Material Layer Composition ______________________________________
     #define CUSTOM_FRAGMENT_BEFORE_IBLLAYERCOMPOSITION
     vec3 material_opaque_base_ibl = mix(slab_diffuse_ibl, slab_subsurface_ibl, subsurface_weight);
-    vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl * transmission_absorption, transmission_weight);
+    vec3 material_dielectric_base_ibl = mix(material_opaque_base_ibl, slab_translucent_base_ibl, transmission_weight);
     vec3 material_dielectric_gloss_ibl = material_dielectric_base_ibl * (1.0 - dielectricIblFresnel) + slab_glossy_ibl * dielectricIblColoredFresnel;
     vec3 material_base_substrate_ibl = mix(material_dielectric_gloss_ibl, slab_metal_ibl, base_metalness);
     vec3 material_coated_base_ibl = layer(material_base_substrate_ibl, slab_coat_ibl, coatIblFresnel, coatAbsorption, vec3(1.0));

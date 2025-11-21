@@ -292,6 +292,11 @@ export class OpenPBRMaterialDefines extends ImageProcessingDefinesMixin(OpenPBRM
     public DISPERSION = false;
 
     /**
+     * Enables subsurface scattering
+     */
+    public SCATTERING = false;
+
+    /**
      * Refraction of the 2D background texture. Might include the rest of the scene or just the background.
      */
     public REFRACTED_BACKGROUND = false;
@@ -666,6 +671,33 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
     @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionDepthTexture")
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _transmissionDepthTexture: Sampler = new Sampler("transmission_depth", "transmissionDepth", "TRANSMISSION_DEPTH");
+
+    /**
+     * Transmission scatter of the surface.
+     * See OpenPBR's specs for transmission_scatter
+     */
+    public transmissionScatter: Color3;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionScatter")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _transmissionScatter: Property<Color3> = new Property<Color3>("transmission_scatter", Color3.Black(), "vTransmissionScatter", 3, 0);
+
+    /**
+     * Transmission scatter texture.
+     * See OpenPBR's specs for transmission_scatter
+     */
+    public transmissionScatterTexture: Nullable<BaseTexture>;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionScatterTexture")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _transmissionScatterTexture: Sampler = new Sampler("transmission_scatter", "transmissionScatter", "TRANSMISSION_SCATTER");
+
+    /**
+     * Transmission scatter anisotropy
+     * See OpenPBR's specs for transmission_scatter_anisotropy
+     */
+    public transmissionScatterAnisotropy: number;
+    @addAccessorsForMaterialProperty("_markAllSubMeshesAsTexturesDirty", "transmissionScatterAnisotropy")
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _transmissionScatterAnisotropy: Property<number> = new Property<number>("transmission_scatter_anisotropy", 0.0, "vTransmissionScatterAnisotropy", 1, 0);
 
     /**
      * Transmission Dispersion Scale factor.
@@ -1780,6 +1812,9 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         this._transmissionColorTexture;
         this._transmissionDepth;
         this._transmissionDepthTexture;
+        this._transmissionScatter;
+        this._transmissionScatterTexture;
+        this._transmissionScatterAnisotropy;
         this._transmissionDispersionScale;
         this._transmissionDispersionScaleTexture;
         this._transmissionDispersionAbbeNumber;
@@ -2967,6 +3002,7 @@ export class OpenPBRMaterial extends OpenPBRMaterialBase {
         defines.THIN_FILM = this.thinFilmWeight > 0.0;
         defines.IRIDESCENCE = this.thinFilmWeight > 0.0;
         defines.DISPERSION = this.transmissionDispersionScale > 0.0;
+        defines.SCATTERING = this.transmissionScatter.equals(Color3.Black()) === false;
 
         defines.FUZZ = this.fuzzWeight > 0 && MaterialFlags.ReflectionTextureEnabled;
         if (defines.FUZZ) {

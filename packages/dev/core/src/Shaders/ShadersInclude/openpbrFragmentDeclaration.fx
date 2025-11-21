@@ -91,6 +91,26 @@ uniform vec2 vGeometryThicknessInfos;
 uniform vec2 vEmissionColorInfos;
 #endif
 
+#ifdef TRANSMISSION_WEIGHT
+uniform vec2 vTransmissionWeightInfos;
+#endif
+
+#ifdef TRANSMISSION_COLOR
+uniform vec2 vTransmissionColorInfos;
+#endif
+
+#ifdef TRANSMISSION_DEPTH
+uniform vec2 vTransmissionDepthInfos;
+#endif
+
+#ifdef TRANSMISSION_SCATTER
+uniform vec2 vTransmissionScatterInfos;
+#endif
+
+#ifdef TRANSMISSION_DISPERSION_SCALE
+uniform vec2 vTransmissionDispersionScaleInfos;
+#endif
+
 #ifdef COAT_WEIGHT
 uniform vec2 vCoatWeightInfos;
 #endif

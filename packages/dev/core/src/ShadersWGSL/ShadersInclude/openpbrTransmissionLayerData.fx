@@ -4,6 +4,8 @@
 var transmission_weight: f32 = uniforms.vTransmissionWeight;
 var transmission_color: vec3f = uniforms.vTransmissionColor.rgb;
 var transmission_depth: f32 = uniforms.vTransmissionDepth;
+var transmission_scatter: vec3f = uniforms.vTransmissionScatter.rgb;
+var transmission_scatter_anisotropy: f32 = uniforms.vTransmissionScatterAnisotropy;
 var transmission_dispersion_scale: f32 = uniforms.vTransmissionDispersionScale;
 var transmission_dispersion_abbe_number: f32 = uniforms.vTransmissionDispersionAbbeNumber;
 
@@ -18,6 +20,10 @@ var transmission_dispersion_abbe_number: f32 = uniforms.vTransmissionDispersionA
 
 #ifdef TRANSMISSION_DEPTH
     let transmissionDepthFromTexture: vec4f = textureSample(transmissionDepthSampler, transmissionDepthSamplerSampler, fragmentInputs.vTransmissionDepthUV + uvOffset);
+#endif
+
+#ifdef TRANSMISSION_SCATTER
+    let transmissionScatterFromTexture: vec4f = textureSample(transmissionScatterSampler, transmissionScatterSamplerSampler, fragmentInputs.vTransmissionScatterUV + uvOffset);
 #endif
 
 #ifdef TRANSMISSION_DISPERSION_SCALE
@@ -41,6 +47,10 @@ var transmission_dispersion_abbe_number: f32 = uniforms.vTransmissionDispersionA
 
 #ifdef TRANSMISSION_DEPTH
     transmission_depth *= transmissionDepthFromTexture.r;
+#endif
+
+#ifdef TRANSMISSION_SCATTER
+    transmission_scatter *= transmissionScatterFromTexture.rgb;
 #endif
 
 #ifdef TRANSMISSION_DISPERSION_SCALE

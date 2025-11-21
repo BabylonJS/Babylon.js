@@ -189,19 +189,50 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
         // Transmission blurriness is affected by IOR so we scale the roughness accordingly
         let transmission_roughness: f32 = specular_roughness * clamp(4.0f * (specular_ior - 1.0f), 0.001f, 1.0f);
+
+        var extinction_coeff: vec3f = vec3f(0.0f);
+        var scatter_coeff: vec3f = vec3f(0.0f);
+        var absorption_coeff: vec3f = vec3f(0.0f);
+        var ss_albedo: vec3f = vec3f(0.0f);
+        var multi_scatter_color: vec3f = vec3f(1.0f);
+        var extinction_coeff_reduced: vec3f = vec3f(0.0f);
         // Absorption is volumetric if transmission depth is > 0.
         // Otherwise, absorption is considered instantaneous at the surface.
         if (transmission_depth > 0.0f) {
-            // Beer's Law for absorption in transmissive materials
+            // Figure out coefficients based on OpenPBR spec.
             let invDepth: vec3f = vec3f(1.f / maxEps(transmission_depth));
-            
-            let absorption_coeff: vec3f = -log(transmission_color.rgb) * invDepth;
-            transmission_absorption = exp((-absorption_coeff.rgb * geometry_thickness));
+            extinction_coeff = -log(transmission_color.rgb) * invDepth;
+            scatter_coeff = transmission_scatter.rgb * invDepth;
+            absorption_coeff = extinction_coeff - scatter_coeff.rgb;
+            let minCoeff: f32 = min3(absorption_coeff);
+            if (minCoeff < 0.0f) {
+                absorption_coeff -= vec3f(minCoeff);
+            }
+            // Set extinction coefficient after shifting the absorption to be non-negative.
+            extinction_coeff = absorption_coeff + scatter_coeff;
+            ss_albedo = scatter_coeff / (extinction_coeff);
+            multi_scatter_color = singleScatterToMultiScatterAlbedo(ss_albedo);
+
+            // Reduced scattering takes anisotropy into account.
+            let scatter_coeff_reduced: vec3f = scatter_coeff * (1.0f - abs(transmission_scatter_anisotropy));           // reduced scattering for diffusion length
+            extinction_coeff_reduced = absorption_coeff + scatter_coeff_reduced;
+            transmission_absorption = exp(-extinction_coeff_reduced * geometry_thickness);
         } else {
             // We'll account for double-absorption here, assuming light enters and then exits the
             // volume before reaching the eye. 
             transmission_absorption = transmission_color.rgb * transmission_color.rgb;
         }
+
+        // Transmission Scattering
+        let direct_transmission: vec3f = exp(-extinction_coeff * geometry_thickness);
+        let ss_integrated_factor: vec3f = scatter_coeff * (vec3f(1.0f) - direct_transmission) / max(vec3f(1e-6), extinction_coeff);
+        let k: f32 = (1.0f + transmission_scatter_anisotropy) / max(1.0f - transmission_scatter_anisotropy, 0.0001f);
+        let phase_function: f32 = max((1.0f - k * k) / max(pow(1.0f - k * baseGeoInfo.NdotV, 2.0f), 0.0001f), 0.0f);
+        
+        // Calculated viewable distance based on reduced extinction and use that to
+        // determine absorption at mean free path.
+        let transport_mfp: vec3f = vec3f(1.0f) / max3(extinction_coeff_reduced);
+        let absorption_at_mfp: vec3f = exp(clamp(-absorption_coeff * transport_mfp, vec3f(0.0f), vec3f(1.0f)));
     #endif
     // __________________ Transmitted Light From Background Refraction ___________________________
     #include<openpbrBackgroundTransmission>

@@ -49,6 +49,8 @@ uniform Material {
     float vTransmissionWeight;
     vec3 vTransmissionColor;
     float vTransmissionDepth;
+    vec3 vTransmissionScatter;
+    float vTransmissionScatterAnisotropy;
     float vTransmissionDispersionScale;
     float vTransmissionDispersionAbbeNumber;
     float vCoatWeight;
@@ -89,6 +91,8 @@ uniform Material {
     mat4 transmissionColorMatrix;
     vec2 vTransmissionDepthInfos;
     mat4 transmissionDepthMatrix;
+    vec2 vTransmissionScatterInfos;
+    mat4 transmissionScatterMatrix;
     vec2 vTransmissionDispersionScaleInfos;
     mat4 transmissionDispersionScaleMatrix;
     vec2 vCoatWeightInfos;

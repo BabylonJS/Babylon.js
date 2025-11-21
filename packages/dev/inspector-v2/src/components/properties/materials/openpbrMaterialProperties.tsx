@@ -175,6 +175,25 @@ export const OpenPBRMaterialTransmissionProperties: FunctionComponent<{ material
                     }
                 }}
             />
+            <BoundProperty component={Color3PropertyLine} label="Transmission Scatter" target={material} propertyKey="transmissionScatter" isLinearMode />
+            <FileUploadLine
+                label="Transmission Scatter"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.transmissionScatterTexture = texture));
+                    }
+                }}
+            />
+            <BoundProperty
+                component={SyncedSliderPropertyLine}
+                label="Transmission Scatter Anisotropy"
+                target={material}
+                propertyKey="transmissionScatterAnisotropy"
+                min={-1}
+                max={1}
+                step={0.01}
+            />
             <BoundProperty
                 component={SyncedSliderPropertyLine}
                 label="Transmission Dispersion Abbe Number"
@@ -447,6 +466,16 @@ export const OpenPBRMaterialGeometryProperties: FunctionComponent<{ material: Op
                 onClick={(files) => {
                     if (files.length > 0) {
                         UpdateTexture(files[0], material, (texture) => (material.geometryCoatTangentTexture = texture));
+                    }
+                }}
+            />
+            <BoundProperty component={SyncedSliderPropertyLine} label="Geometry Thickness" target={material} propertyKey="geometryThickness" min={0} step={0.1} />
+            <FileUploadLine
+                label="Geometry Thickness"
+                accept=".jpg, .png, .tga, .dds, .env, .exr"
+                onClick={(files) => {
+                    if (files.length > 0) {
+                        UpdateTexture(files[0], material, (texture) => (material.geometryThicknessTexture = texture));
                     }
                 }}
             />
