@@ -21,7 +21,6 @@ import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { AddClipPlaneUniforms, BindClipPlane, PrepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
-import { GetTypeByteLength } from "../Buffers/bufferUtils";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
 import {
@@ -31,8 +30,12 @@ import {
     BindMorphTargetParameters,
     BindSceneUniformBuffer,
     PrepareDefinesAndAttributesForMorphTargets,
+    PrepareDefinesForVertexPullingMetadata,
+    PrepareVertexPullingUniforms,
+    BindVertexPullingUniforms,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
+import type { IVertexPullingMetadata } from "./materialHelper.functions";
 import type { IColor3Like, IColor4Like, IVector2Like, IVector3Like, IVector4Like } from "core/Maths/math.like";
 import type { InternalTexture } from "./Textures/internalTexture";
 
@@ -148,6 +151,7 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview = false;
+    private _vertexPullingMetadata: Map<string, IVertexPullingMetadata> | null = null;
 
     /**
      * @internal
@@ -920,22 +924,8 @@ export class ShaderMaterial extends PushMaterial {
             // Add vertex buffer metadata defines for proper stride/offset handling
             const geometry = renderingMesh.geometry;
             if (geometry) {
-                const vertexBuffers = geometry.getVertexBuffers();
-                if (vertexBuffers) {
-                    for (const attributeName in vertexBuffers) {
-                        const vertexBuffer = vertexBuffers[attributeName];
-                        if (vertexBuffer) {
-                            const componentBytes = GetTypeByteLength(vertexBuffer.type);
-                            const upperName = attributeName.toUpperCase();
-                            const stride = vertexBuffer.effectiveByteStride / 4;
-                            const offset = vertexBuffer.effectiveByteOffset / 4;
-
-                            defines.push(`#define ${upperName}_STRIDE ${stride}`);
-                            defines.push(`#define ${upperName}_OFFSET ${offset}`);
-                            defines.push(`#define ${upperName}_COMPONENT_BYTES ${componentBytes}`);
-                        }
-                    }
-                }
+                PrepareDefinesForVertexPullingMetadata(geometry, defines);
+                this._vertexPullingMetadata = PrepareVertexPullingUniforms(geometry);
             }
         }
 
@@ -1106,6 +1096,10 @@ export class ShaderMaterial extends PushMaterial {
 
             // Clip plane
             BindClipPlane(effect, this, scene);
+
+            if (this._vertexPullingMetadata) {
+                BindVertexPullingUniforms(effect, this._vertexPullingMetadata);
+            }
 
             // Misc
             if (this._useLogarithmicDepth) {
