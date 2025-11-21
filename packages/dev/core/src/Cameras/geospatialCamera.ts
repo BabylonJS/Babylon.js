@@ -35,6 +35,7 @@ export class GeospatialCamera extends Camera {
 
     // Temp vars
     private _tempPosition: Vector3 = new Vector3();
+    private _tempCenter: Vector3 = new Vector3();
 
     private _viewMatrix = new Matrix();
     private _isViewMatrixDirty: boolean;
@@ -211,6 +212,7 @@ export class GeospatialCamera extends Camera {
         this._flyingBehavior.updateProperties(this._flyToTargets);
     }
 
+    private _customKeys = new Map();
     /**
      * Animate camera towards passed in property values. If undefined, will use current value
      * @param targetYaw
@@ -219,6 +221,7 @@ export class GeospatialCamera extends Camera {
      * @param targetCenter
      * @param flightDurationMs
      * @param easingFunction
+     * @param overshootRadiusScale If defined, will first fly to radius*scale before flying to targetRadius to create a "bounce" effect
      * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
      */
     public async flyToAsync(
@@ -227,16 +230,31 @@ export class GeospatialCamera extends Camera {
         targetRadius?: number,
         targetCenter?: Vector3,
         flightDurationMs: number = 1000,
-        easingFunction?: EasingFunction
+        easingFunction?: EasingFunction,
+        overshootRadiusScale?: number
     ): Promise<void> {
         this._flyToTargets.clear();
+        this._customKeys.clear();
 
         this._flyToTargets.set("yaw", targetYaw);
         this._flyToTargets.set("pitch", targetPitch);
         this._flyToTargets.set("radius", targetRadius);
         this._flyToTargets.set("center", targetCenter);
 
-        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
+        const overshootRadius = overshootRadiusScale !== undefined ? this.radius * overshootRadiusScale : undefined;
+        if (overshootRadius !== undefined && overshootRadius !== targetRadius) {
+            // Start the animation with overshoot radius
+            const frameRate = 60;
+            const totalFrames = (flightDurationMs / 1000) * frameRate;
+            const midFrame = totalFrames / 2;
+
+            this._customKeys.set("radius", [
+                { frame: 0, value: this.radius },
+                { frame: midFrame, value: overshootRadius },
+                { frame: totalFrames, value: targetRadius },
+            ]);
+        }
+        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction, this._customKeys);
     }
 
     /**
@@ -245,12 +263,13 @@ export class GeospatialCamera extends Camera {
      * @param radiusScale value between 0 and 1, % of radius to move
      * @param durationMs duration of flight, default 1s
      * @param easingFn optional easing function for flight interpolation of properties
+     * @param overshootRadiusScale optional scale to apply to the current radius to achieve a 'hop' animation
      */
-    public async flyToPointAsync(destination: Vector3, radiusScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction) {
+    public async flyToPointAsync(destination: Vector3, radiusScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction, overshootRadiusScale?: number) {
         // Zoom to radiusScale% of radius towards the given destination point
         const zoomDistance = this.radius * radiusScale;
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, zoomDistance, this._tempCenter);
-        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn);
+        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn, overshootRadiusScale);
     }
 
     private _limits: GeospatialLimits;
@@ -377,7 +396,6 @@ export class GeospatialCamera extends Camera {
         }
     }
 
-    private _tempCenter = new Vector3();
     private _zoomToPoint(targetPoint: Vector3, distance: number) {
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._tempCenter);
         // Apply the new orientation
