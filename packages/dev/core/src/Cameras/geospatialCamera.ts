@@ -361,16 +361,16 @@ export class GeospatialCamera extends Camera {
         const zoomDelta = this.movement.zoomDeltaCurrentFrame;
         const pickedPoint = this.movement.computedPerFrameZoomPickPoint;
 
-        if (pickedPoint && this.movement.zoomToCursor) {
+        if (pickedPoint) {
             // Zoom toward the picked point under cursor
-            this._zoomTowardPoint(pickedPoint, zoomDelta);
+            this._zoomToPoint(pickedPoint, zoomDelta);
         } else {
             // Zoom along lookAt vector (fallback when no surface under cursor)
             this._zoomAlongLookAt(zoomDelta);
         }
     }
 
-    private _zoomTowardPoint(targetPoint: Vector3, distance: number) {
+    private _zoomToPoint(targetPoint: Vector3, distance: number) {
         const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._center);
         // Apply the new orientation
         this._setOrientation(this._yaw, this._pitch, newRadius, this._center);
