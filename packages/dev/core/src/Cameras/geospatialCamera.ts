@@ -220,7 +220,7 @@ export class GeospatialCamera extends Camera {
      * @param targetCenter
      * @param flightDurationMs
      * @param easingFunction
-     * @param overshootRadius If defined, will first fly to this radius before flying to targetRadius to create a "bounce" effect
+     * @param overshootRadiusScale If defined, will first fly to radius*scale before flying to targetRadius to create a "bounce" effect
      * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
      */
     public async flyToAsync(
@@ -230,7 +230,7 @@ export class GeospatialCamera extends Camera {
         targetCenter?: Vector3,
         flightDurationMs: number = 1000,
         easingFunction?: EasingFunction,
-        overshootRadius?: number
+        overshootRadiusScale?: number
     ): Promise<void> {
         this._flyToTargets.clear();
 
@@ -238,15 +238,26 @@ export class GeospatialCamera extends Camera {
         this._flyToTargets.set("pitch", targetPitch);
         this._flyToTargets.set("radius", targetRadius);
         this._flyToTargets.set("center", targetCenter);
-        let animationDuration = flightDurationMs;
+
+        const overshootRadius = overshootRadiusScale !== undefined ? this.radius * overshootRadiusScale : undefined;
         if (overshootRadius !== undefined && overshootRadius !== targetRadius) {
-            // If we have an overshoot radius, we will do a 2-part animation: first to overshoot radius, then to targetRadius
-            animationDuration = flightDurationMs / 2;
+            // Set initial radius target to overshoot
             this._flyToTargets.set("radius", overshootRadius);
-            await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, animationDuration, easingFunction);
+
+            // Start the animation with overshoot radius
+            const animationPromise = this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
+
+            // Schedule the radius update to happen halfway through
+            setTimeout(() => {
+                this.updateFlyToDestination(undefined, undefined, targetRadius, undefined);
+            }, flightDurationMs / 2);
+
+            return await animationPromise;
+        } else {
+            // Normal animation without overshoot
             this._flyToTargets.set("radius", targetRadius);
+            return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction);
         }
-        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, animationDuration, easingFunction);
     }
 
     /**
@@ -255,12 +266,36 @@ export class GeospatialCamera extends Camera {
      * @param radiusScale value between 0 and 1, % of radius to move
      * @param durationMs duration of flight, default 1s
      * @param easingFn optional easing function for flight interpolation of properties
+     * @param overshootRadiusScale optional scale to apply to the current radius to achieve a 'hop' animation
      */
-    public async flyToPointAsync(destination: Vector3, radiusScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction) {
-        const direction = destination.subtractToRef(this.position, this._tempPosition).normalize();
+    public async flyToPointAsync(destination: Vector3, radiusScale: number = 0.5, durationMs: number = 1000, easingFn?: EasingFunction, overshootRadiusScale?: number) {
         // Zoom to radiusScale% of radius towards the given destination point
-        const newRadius = this._getRadiusAndCenterFromZoomTowards(direction, this.radius * radiusScale, this._tempCenter);
-        await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn);
+        // const newRadius = this._getCenterAndRadiusFromZoomToPoint(destination, this.radius * radiusScale, this._tempCenter);
+        // await this.flyToAsync(undefined, undefined, newRadius, this._tempCenter, durationMs, easingFn);
+        // Calculate new radius
+        const zoomDistance = this.radius * radiusScale;
+        const newRadius = Clamp(this.radius - zoomDistance, this.limits.radiusMin, this.limits.radiusMax);
+        const actualZoomDistance = this.radius - newRadius;
+        const zoomRatio = actualZoomDistance / this.radius;
+
+        // Move center toward destination by the zoom ratio
+        const directionToDestination = TmpVectors.Vector3[0];
+        destination.subtractToRef(this._center, directionToDestination);
+
+        const centerOffset = TmpVectors.Vector3[1];
+        directionToDestination.scaleToRef(zoomRatio, centerOffset);
+
+        const newCenter = new Vector3();
+        this._center.addToRef(centerOffset, newCenter);
+
+        // Preserve center altitude (distance from planet origin)
+        const currentCenterRadius = this._center.length();
+        const newCenterRadius = newCenter.length();
+        if (newCenterRadius > Epsilon) {
+            newCenter.scaleInPlace(currentCenterRadius / newCenterRadius);
+        }
+
+        await this.flyToAsync(undefined, undefined, newRadius, newCenter, durationMs, easingFn, overshootRadiusScale);
     }
 
     private _limits: GeospatialLimits;
