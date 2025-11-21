@@ -3,6 +3,7 @@
 
 import { Logger } from "@dev/core";
 import type { ThinEngine, Scene } from "@dev/core";
+import { typescript } from "monaco-editor";
 import type * as monacoNs from "monaco-editor/esm/vs/editor/editor.api";
 import * as lexer from "es-module-lexer";
 import type { TsPipeline } from "../ts/tsPipeline";
@@ -156,7 +157,7 @@ export async function CreateV2Runner(manifest: V2Manifest, opts: V2RunnerOptions
         const modelsToCheck = monaco.editor.getModels().filter((m) => /[.]tsx?$/.test(m.uri.path));
 
         // Wait for ATA completion before running diagnostics to avoid race conditions
-        const worker = await monaco.languages.typescript.getTypeScriptWorker();
+        const worker = await typescript.getTypeScriptWorker();
 
         // Process models sequentially to avoid worker contention
         for (let i = 0; i < modelsToCheck.length; i++) {
