@@ -333,29 +333,6 @@ export class GeospatialCamera extends Camera {
         }
     }
 
-    /**
-     * Apply zoom by moving the camera toward/away from a target point.
-     */
-    private _applyZoom() {
-        const zoomDelta = this.movement.zoomDeltaCurrentFrame;
-        const pickedPoint = this.movement.computedPerFrameZoomPickPoint;
-
-        if (pickedPoint) {
-            // Zoom toward the picked point under cursor
-            this._zoomToPoint(pickedPoint, zoomDelta);
-        } else {
-            // Zoom along lookAt vector (fallback when no surface under cursor)
-            this._zoomAlongLookAt(zoomDelta);
-        }
-    }
-
-    private _tempCenter = new Vector3();
-    private _zoomToPoint(targetPoint: Vector3, distance: number) {
-        const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._tempCenter);
-        // Apply the new orientation
-        this._setOrientation(this._yaw, this._pitch, newRadius, this._tempCenter);
-    }
-
     private _getCenterAndRadiusFromZoomToPoint(targetPoint: Vector3, distance: number, newCenter: Vector3): number {
         // Clamp new radius to limits
         const requestedRadius = this._radius - distance;
@@ -382,6 +359,29 @@ export class GeospatialCamera extends Camera {
         }
 
         return newRadius;
+    }
+
+    /**
+     * Apply zoom by moving the camera toward/away from a target point.
+     */
+    private _applyZoom() {
+        const zoomDelta = this.movement.zoomDeltaCurrentFrame;
+        const pickedPoint = this.movement.computedPerFrameZoomPickPoint;
+
+        if (pickedPoint) {
+            // Zoom toward the picked point under cursor
+            this._zoomToPoint(pickedPoint, zoomDelta);
+        } else {
+            // Zoom along lookAt vector (fallback when no surface under cursor)
+            this._zoomAlongLookAt(zoomDelta);
+        }
+    }
+
+    private _tempCenter = new Vector3();
+    private _zoomToPoint(targetPoint: Vector3, distance: number) {
+        const newRadius = this._getCenterAndRadiusFromZoomToPoint(targetPoint, distance, this._tempCenter);
+        // Apply the new orientation
+        this._setOrientation(this._yaw, this._pitch, newRadius, this._tempCenter);
     }
 
     private _zoomAlongLookAt(distance: number) {
