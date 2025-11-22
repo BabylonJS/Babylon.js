@@ -6,6 +6,8 @@ import type { ISceneContext } from "./services/sceneContext";
 import type { IShellService } from "./services/shellService";
 
 import { makeStyles } from "@fluentui/react-components";
+import { AsyncLock } from "core/Misc/asyncLock";
+import { Logger } from "core/Misc/logger";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
@@ -66,222 +68,255 @@ export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoR
 //       switch the inspector instance to that scene (once this is supported).
 const InspectorTokens = new WeakMap<Scene, IDisposable>();
 
+// This async lock is used to sequentialize all calls to ShowInspector and dispose of existing inspectors.
+// This is needed because each time Inspector is shown or hidden, it is potentially mutating the same DOM element.
+const InspectorLock = new AsyncLock();
+
 export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): IDisposable {
+    // Dispose of any existing inspector for this scene.
+    InspectorTokens.get(scene)?.dispose();
+
+    // Default the dispose logic to a no-op until we know that we are actually going
+    // to show the Inspector and there will be cleanup work to do.
+    let disposeAsync = async () => await Promise.resolve();
+
+    // Create an inspector dispose token. The dispose will use the same async lock to
+    // make sure async dispose (hide) does not actually start until async show is finished.
+    const inspectorToken = {
+        dispose: () => {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
+            InspectorLock.lockAsync(async () => {
+                await disposeAsync();
+            });
+        },
+    } as const;
+
+    // Track the inspector token for the scene.
+    InspectorTokens.set(scene, inspectorToken);
+
+    // Set default options.
     options = {
         autoResizeEngine: true,
         ...options,
     };
 
-    const inspectorToken = {
-        dispose: () => {},
-    };
-
-    let parentElement = options.containerElement ?? null;
-    if (!parentElement) {
-        parentElement = scene.getEngine().getRenderingCanvas()?.parentElement ?? null;
-        while (parentElement) {
-            const rootNode = parentElement.getRootNode();
-            // TODO: Right now we never parent the inspector within a ShadowRoot because we need to do more work to get FluentProvider to work correctly in this context.
-            if (!(rootNode instanceof ShadowRoot)) {
-                break;
+    // Sequentialize showing the inspector (e.g. don't start showing until after a previous hide (for example) is finished).
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    InspectorLock.lockAsync(async () => {
+        let parentElement = options.containerElement ?? null;
+        // If a container element was not found, find an appropriate one above the engine's rendering canvas.
+        if (!parentElement) {
+            parentElement = scene.getEngine().getRenderingCanvas()?.parentElement ?? null;
+            while (parentElement) {
+                const rootNode = parentElement.getRootNode();
+                // TODO: Right now we never parent the inspector within a ShadowRoot because we need to do more work to get FluentProvider to work correctly in this context.
+                if (!(rootNode instanceof ShadowRoot)) {
+                    break;
+                }
+                parentElement = rootNode.host.parentElement;
             }
-            parentElement = rootNode.host.parentElement;
         }
-    }
 
-    if (!parentElement) {
-        return inspectorToken;
-    }
-
-    const existingToken = InspectorTokens.get(scene);
-    if (existingToken) {
-        existingToken.dispose();
-        InspectorTokens.delete(scene);
-    }
-
-    InspectorTokens.set(scene, inspectorToken);
-
-    const disposeActions: (() => void)[] = [];
-
-    const canvasContainerDisplay = parentElement.style.display;
-    const canvasContainerChildren: ChildNode[] = [];
-
-    canvasContainerChildren.push(...parentElement.childNodes);
-
-    disposeActions.push(() => {
-        canvasContainerChildren.forEach((child) => parentElement.appendChild(child));
-    });
-
-    // This service is responsible for injecting the passed in canvas as the "central content" of the shell UI (the main area between the side panes and toolbars).
-    const canvasInjectorServiceDefinition: ServiceDefinition<[], [IShellService]> = {
-        friendlyName: "Canvas Injector",
-        consumes: [ShellServiceIdentity],
-        factory: (shellService) => {
-            const useStyles = makeStyles({
-                canvasContainer: {
-                    display: canvasContainerDisplay,
-                    width: "100%",
-                    height: "100%",
-                },
-            });
-
-            const registration = shellService.addCentralContent({
-                key: "Canvas Injector",
-                component: () => {
-                    const classes = useStyles();
-                    const canvasContainerRef = useRef<HTMLDivElement>(null);
-                    useEffect(() => {
-                        if (canvasContainerRef.current) {
-                            for (const child of canvasContainerChildren) {
-                                canvasContainerRef.current.appendChild(child);
-                            }
-                        }
-                    }, []);
-
-                    return <div ref={canvasContainerRef} className={classes.canvasContainer} />;
-                },
-            });
-
-            return {
-                dispose: () => {
-                    registration.dispose();
-                },
-            };
-        },
-    };
-
-    // This service exposes the scene that was passed into Inspector through ISceneContext, which is used by other services that may be used in other contexts outside of Inspector.
-    const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
-        friendlyName: "Inspector Scene Context",
-        produces: [SceneContextIdentity],
-        factory: () => {
-            return {
-                currentScene: scene,
-                currentSceneObservable: new Observable<Nullable<Scene>>(),
-            };
-        },
-    };
-
-    if (options.autoResizeEngine) {
-        const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
-        disposeActions.push(() => observer.remove());
-    }
-
-    const modularTool = MakeModularTool({
-        containerElement: parentElement,
-        serviceDefinitions: [
-            // Injects the canvas the scene is rendering to into the central "content" area of the shell UI.
-            canvasInjectorServiceDefinition,
-
-            // Provides access to the scene in a generic way (other tools might provide a scene in a different way).
-            sceneContextServiceDefinition,
-
-            // Helps with managing gizmos and a shared utility layer.
-            GizmoServiceDefinition,
-
-            // Scene explorer tab and related services.
-            SceneExplorerServiceDefinition,
-            NodeExplorerServiceDefinition,
-            SkeletonExplorerServiceDefinition,
-            MaterialExplorerServiceDefinition,
-            TextureExplorerServiceDefinition,
-            PostProcessExplorerServiceDefinition,
-            RenderingPipelineExplorerServiceDefinition,
-            EffectLayerExplorerServiceDefinition,
-            ParticleSystemExplorerServiceDefinition,
-            SpriteManagerExplorerServiceDefinition,
-            AnimationGroupExplorerServiceDefinition,
-            GuiExplorerServiceDefinition,
-            FrameGraphExplorerServiceDefinition,
-            AtmosphereExplorerServiceDefinition,
-
-            // Properties pane tab and related services.
-            ScenePropertiesServiceDefinition,
-            PropertiesServiceDefinition,
-            TexturePropertiesServiceDefinition,
-            CommonPropertiesServiceDefinition,
-            TransformPropertiesServiceDefinition,
-            AnimationPropertiesServiceDefinition,
-            NodePropertiesServiceDefinition,
-            PhysicsPropertiesServiceDefinition,
-            SkeletonPropertiesServiceDefinition,
-            MaterialPropertiesServiceDefinition,
-            LightPropertiesServiceDefinition,
-            SpritePropertiesServiceDefinition,
-            ParticleSystemPropertiesServiceDefinition,
-            CameraPropertiesServiceDefinition,
-            PostProcessPropertiesServiceDefinition,
-            RenderingPipelinePropertiesServiceDefinition,
-            EffectLayerPropertiesServiceDefinition,
-            FrameGraphPropertiesServiceDefinition,
-            AnimationGroupPropertiesServiceDefinition,
-            MetadataPropertiesServiceDefinition,
-            AtmospherePropertiesServiceDefinition,
-
-            // Debug pane tab and related services.
-            DebugServiceDefinition,
-
-            // Stats pane tab and related services.
-            StatsServiceDefinition,
-
-            // Tools pane tab and related services.
-            ToolsServiceDefinition,
-
-            // Settings pane tab and related services.
-            SettingsServiceDefinition,
-
-            // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
-            SelectionServiceDefinition,
-
-            // Gizmos for manipulating objects in the scene.
-            GizmoToolbarServiceDefinition,
-
-            // Allows picking objects from the scene to select them.
-            PickingServiceDefinition,
-
-            // Adds entry points for user feedback on Inspector v2 (probably eventually will be removed).
-            UserFeedbackServiceDefinition,
-
-            // Adds always present "mini stats" (like fps) to the toolbar, etc.
-            MiniStatsServiceDefinition,
-
-            // Legacy service to support custom inspectable properties on objects.
-            LegacyInspectableObjectPropertiesServiceDefinition,
-
-            // Additional services passed in to the Inspector.
-            ...(options.serviceDefinitions ?? []),
-        ],
-        themeMode: options.themeMode,
-        showThemeSelector: options.showThemeSelector,
-        extensionFeeds: [DefaultInspectorExtensionFeed, ...(options.extensionFeeds ?? [])],
-        layoutMode: options.layoutMode,
-        toolbarMode: "compact",
-        sidePaneRemapper: options.sidePaneRemapper,
-    });
-    disposeActions.push(() => modularTool.dispose());
-
-    let disposed = false;
-    inspectorToken.dispose = () => {
-        if (disposed) {
+        // If we couldn't find a parent element, we can't show the inspector.
+        if (!parentElement) {
+            Logger.Warn("Unable to find a parent element to host the Inspector.");
             return;
         }
 
-        disposeActions.reverse().forEach((dispose) => dispose());
+        // This will keep track of all the cleanup work we need to do when hiding the inspector.
+        const disposeActions: (() => void | Promise<void>)[] = [];
+
+        // Update the disposeAsync function to walk the dispose actions in reverse order
+        // and call each one.
+        let disposed = false;
+        disposeAsync = async () => {
+            if (disposed) {
+                return;
+            }
+            disposed = true;
+
+            for (const disposeAction of disposeActions.reverse()) {
+                const result = disposeAction();
+                if (result) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await result;
+                }
+            }
+        };
+
+        // If we were responsible for resizing the engine, resize one more after the inspector UI is hidden.
+        disposeActions.push(() => {
+            if (options.autoResizeEngine) {
+                scene.getEngine().resize();
+            }
+        });
+
+        // Remove all the existing children from the parent element.
+        const canvasContainerDisplay = parentElement.style.display;
+        const canvasContainerChildren = [...parentElement.childNodes];
+        parentElement.replaceChildren();
+
+        disposeActions.push(async () => {
+            // When the ModularTool token is disposed, it unmounts the react element, which asynchronously
+            // removes all children from the parentElement. We need to wait for that to complete before
+            // re-adding the canvas children back to the parentElement.
+            await new Promise((resolve) => setTimeout(resolve));
+            parentElement.replaceChildren(...canvasContainerChildren);
+        });
+
+        // This service is responsible for injecting the passed in canvas as the "central content" of the shell UI (the main area between the side panes and toolbars).
+        const canvasInjectorServiceDefinition: ServiceDefinition<[], [IShellService]> = {
+            friendlyName: "Canvas Injector",
+            consumes: [ShellServiceIdentity],
+            factory: (shellService) => {
+                const useStyles = makeStyles({
+                    canvasContainer: {
+                        display: canvasContainerDisplay,
+                        width: "100%",
+                        height: "100%",
+                    },
+                });
+
+                const registration = shellService.addCentralContent({
+                    key: "Canvas Injector",
+                    component: () => {
+                        const classes = useStyles();
+                        const canvasContainerRef = useRef<HTMLDivElement>(null);
+                        useEffect(() => {
+                            canvasContainerRef.current?.replaceChildren(...canvasContainerChildren);
+                        }, []);
+
+                        return <div ref={canvasContainerRef} className={classes.canvasContainer} />;
+                    },
+                });
+
+                return {
+                    dispose: () => {
+                        registration.dispose();
+                    },
+                };
+            },
+        };
+
+        // This service exposes the scene that was passed into Inspector through ISceneContext, which is used by other services that may be used in other contexts outside of Inspector.
+        const sceneContextServiceDefinition: ServiceDefinition<[ISceneContext], []> = {
+            friendlyName: "Inspector Scene Context",
+            produces: [SceneContextIdentity],
+            factory: () => {
+                return {
+                    currentScene: scene,
+                    currentSceneObservable: new Observable<Nullable<Scene>>(),
+                };
+            },
+        };
+
         if (options.autoResizeEngine) {
-            scene.getEngine().resize();
+            const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
+            disposeActions.push(() => observer.remove());
         }
 
-        disposed = true;
-    };
+        const modularTool = MakeModularTool({
+            containerElement: parentElement,
+            serviceDefinitions: [
+                // Injects the canvas the scene is rendering to into the central "content" area of the shell UI.
+                canvasInjectorServiceDefinition,
 
-    const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
-        inspectorToken.dispose();
-    });
+                // Provides access to the scene in a generic way (other tools might provide a scene in a different way).
+                sceneContextServiceDefinition,
 
-    disposeActions.push(() => sceneDisposedObserver.remove());
+                // Helps with managing gizmos and a shared utility layer.
+                GizmoServiceDefinition,
 
-    disposeActions.push(() => {
-        InspectorTokens.delete(scene);
+                // Scene explorer tab and related services.
+                SceneExplorerServiceDefinition,
+                NodeExplorerServiceDefinition,
+                SkeletonExplorerServiceDefinition,
+                MaterialExplorerServiceDefinition,
+                TextureExplorerServiceDefinition,
+                PostProcessExplorerServiceDefinition,
+                RenderingPipelineExplorerServiceDefinition,
+                EffectLayerExplorerServiceDefinition,
+                ParticleSystemExplorerServiceDefinition,
+                SpriteManagerExplorerServiceDefinition,
+                AnimationGroupExplorerServiceDefinition,
+                GuiExplorerServiceDefinition,
+                FrameGraphExplorerServiceDefinition,
+                AtmosphereExplorerServiceDefinition,
+
+                // Properties pane tab and related services.
+                ScenePropertiesServiceDefinition,
+                PropertiesServiceDefinition,
+                TexturePropertiesServiceDefinition,
+                CommonPropertiesServiceDefinition,
+                TransformPropertiesServiceDefinition,
+                AnimationPropertiesServiceDefinition,
+                NodePropertiesServiceDefinition,
+                PhysicsPropertiesServiceDefinition,
+                SkeletonPropertiesServiceDefinition,
+                MaterialPropertiesServiceDefinition,
+                LightPropertiesServiceDefinition,
+                SpritePropertiesServiceDefinition,
+                ParticleSystemPropertiesServiceDefinition,
+                CameraPropertiesServiceDefinition,
+                PostProcessPropertiesServiceDefinition,
+                RenderingPipelinePropertiesServiceDefinition,
+                EffectLayerPropertiesServiceDefinition,
+                FrameGraphPropertiesServiceDefinition,
+                AnimationGroupPropertiesServiceDefinition,
+                MetadataPropertiesServiceDefinition,
+                AtmospherePropertiesServiceDefinition,
+
+                // Debug pane tab and related services.
+                DebugServiceDefinition,
+
+                // Stats pane tab and related services.
+                StatsServiceDefinition,
+
+                // Tools pane tab and related services.
+                ToolsServiceDefinition,
+
+                // Settings pane tab and related services.
+                SettingsServiceDefinition,
+
+                // Tracks entity selection state (e.g. which Mesh or Material or other entity is currently selected in scene explorer and bound to the properties pane, etc.).
+                SelectionServiceDefinition,
+
+                // Gizmos for manipulating objects in the scene.
+                GizmoToolbarServiceDefinition,
+
+                // Allows picking objects from the scene to select them.
+                PickingServiceDefinition,
+
+                // Adds entry points for user feedback on Inspector v2 (probably eventually will be removed).
+                UserFeedbackServiceDefinition,
+
+                // Adds always present "mini stats" (like fps) to the toolbar, etc.
+                MiniStatsServiceDefinition,
+
+                // Legacy service to support custom inspectable properties on objects.
+                LegacyInspectableObjectPropertiesServiceDefinition,
+
+                // Additional services passed in to the Inspector.
+                ...(options.serviceDefinitions ?? []),
+            ],
+            themeMode: options.themeMode,
+            showThemeSelector: options.showThemeSelector,
+            extensionFeeds: [DefaultInspectorExtensionFeed, ...(options.extensionFeeds ?? [])],
+            layoutMode: options.layoutMode,
+            toolbarMode: "compact",
+            sidePaneRemapper: options.sidePaneRemapper,
+        });
+        disposeActions.push(() => modularTool.dispose());
+
+        const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
+            inspectorToken.dispose();
+        });
+
+        disposeActions.push(() => sceneDisposedObserver.remove());
+
+        disposeActions.push(() => {
+            InspectorTokens.delete(scene);
+        });
     });
 
     return inspectorToken;
