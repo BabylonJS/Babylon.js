@@ -726,6 +726,19 @@ export class WebGPUTextureHelper {
         return false;
     }
 
+    public static HasDepthAspect(format: GPUTextureFormat): boolean {
+        switch (format) {
+            case WebGPUConstants.TextureFormat.Depth16Unorm:
+            case WebGPUConstants.TextureFormat.Depth24Plus:
+            case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
+            case WebGPUConstants.TextureFormat.Depth32Float:
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
+                return true;
+        }
+
+        return false;
+    }
+
     public static HasDepthAndStencilAspects(format: GPUTextureFormat): boolean {
         switch (format) {
             case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
