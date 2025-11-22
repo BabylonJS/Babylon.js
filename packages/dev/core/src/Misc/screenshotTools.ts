@@ -714,15 +714,7 @@ export async function CreateScreenshotForFrameGraphAsync(
      */
     engine.getCaps().parallelShaderCompile = undefined;
 
-    frameGraph.build();
-
-    // We don't want the frame graph to render while waiting for whenReadyAsync to complete
-    frameGraph.pausedExecution = true;
-
-    await frameGraph.whenReadyAsync();
-
-    // eslint-disable-next-line require-atomic-updates
-    frameGraph.pausedExecution = false;
+    await frameGraph.buildAsync();
 
     const numberOfFrames = numberOfFramesToRender ?? (textureManager.hasHistoryTextures ? 32 : 1);
 
@@ -752,9 +744,7 @@ export async function CreateScreenshotForFrameGraphAsync(
 
     textureManager.resetBackBufferTextures();
 
-    frameGraph.build();
-
-    await frameGraph.whenReadyAsync();
+    await frameGraph.buildAsync();
 
     // eslint-disable-next-line require-atomic-updates
     frameGraph.pausedExecution = pausedExecution;

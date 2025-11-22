@@ -4,13 +4,13 @@ import { NullEngine } from "core/Engines/nullEngine";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraphAction } from "core/FlowGraph/flowGraphLogger";
+import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "core/FlowGraph/flowGraphMath";
 import { ParseFlowGraphAsync } from "core/FlowGraph/flowGraphParser";
 import { Quaternion, Vector3 } from "core/Maths/math.vector";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 import { InteractivityGraphToFlowGraphParser } from "loaders/glTF/2.0/Extensions/KHR_interactivity/interactivityGraphParser";
 import { GetPathToObjectConverter } from "loaders/glTF/2.0/Extensions/objectModelMapping";
-import { GetAngleBetweenQuaternions, GetQuaternionFromDirections } from "../../../../core/src/Maths/math.vector.functions";
 
 const typesAndLengths: {
     [key: string]: number;

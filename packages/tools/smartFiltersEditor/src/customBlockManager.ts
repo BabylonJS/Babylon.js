@@ -52,6 +52,7 @@ export class CustomBlockManager {
      * @param namespace - The namespace of the block to create
      * @param name - The name to assign to this new instance of the block, or null to use the default name
      * @param smartFilterDeserializer - The deserializer to use
+     * @param data - Additional data to pass to the block deserializer
      * @returns The instantiated block, or null if the block type is not registered
      */
     public async createBlockFromBlockTypeAndNamespaceAsync(
@@ -60,7 +61,8 @@ export class CustomBlockManager {
         blockType: string,
         namespace: Nullable<string>,
         name: Nullable<string>,
-        smartFilterDeserializer: SmartFilterDeserializer
+        smartFilterDeserializer: SmartFilterDeserializer,
+        data: any
     ): Promise<Nullable<BaseBlock>> {
         namespace = namespace || CustomBlocksNamespace;
         const blockDefinition = this._customBlockDefinitions.get(GetBlockKey(blockType, namespace));
@@ -68,7 +70,7 @@ export class CustomBlockManager {
             return null;
         }
 
-        return await this.createBlockFromBlockDefinitionAsync(smartFilter, engine, blockDefinition, name, smartFilterDeserializer);
+        return await this.createBlockFromBlockDefinitionAsync(smartFilter, engine, blockDefinition, name, smartFilterDeserializer, data);
     }
 
     /**
@@ -78,6 +80,7 @@ export class CustomBlockManager {
      * @param blockDefinition - The serialized block definition
      * @param name - The name to assign to this new instance of the block, or null to use the default name
      * @param smartFilterDeserializer - The deserializer to use
+     * @param data - The data property from the serialized block, if applicable
      * @returns The instantiated block, or null if the block type is not registered
      */
     public async createBlockFromBlockDefinitionAsync(
@@ -85,11 +88,12 @@ export class CustomBlockManager {
         engine: ThinEngine,
         blockDefinition: SerializedBlockDefinition,
         name: Nullable<string>,
-        smartFilterDeserializer: SmartFilterDeserializer
+        smartFilterDeserializer: SmartFilterDeserializer,
+        data: any
     ): Promise<BaseBlock> {
         switch (blockDefinition.format) {
             case "shaderBlockDefinition":
-                return CustomShaderBlock.Create(smartFilter, name || this._getDefaultName(blockDefinition), blockDefinition);
+                return CustomShaderBlock.Create(smartFilter, name || this._getDefaultName(blockDefinition), blockDefinition, data);
             case "smartFilter":
                 return await CustomAggregateBlock.Create(smartFilter, engine, name || this._getDefaultName(blockDefinition), blockDefinition, smartFilterDeserializer);
         }

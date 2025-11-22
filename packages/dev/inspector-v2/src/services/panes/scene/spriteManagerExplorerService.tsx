@@ -52,7 +52,7 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
             getEntityRemovedObservables: () => [scene.onSpriteManagerRemovedObservable],
         });
 
-        const spritePlayStopCommandRegistration = sceneExplorerService.addCommand({
+        const spritePlayStopCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof Sprite,
             order: DefaultCommandsOrder.SpritePlay,
             getCommand: (sprite) => {

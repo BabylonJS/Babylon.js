@@ -5,6 +5,7 @@ import { Node } from "../node";
 
 import "./Inputs/freeCameraDeviceOrientationInput";
 import { Axis } from "../Maths/math.axis";
+import type { Nullable } from "../types";
 
 Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
     return () => new DeviceOrientationCamera(name, Vector3.Zero(), scene);
@@ -16,7 +17,7 @@ Node.AddNodeConstructor("DeviceOrientationCamera", (name, scene) => {
  * being tilted forward or back and left or right.
  */
 export class DeviceOrientationCamera extends FreeCamera {
-    private _initialQuaternion: Quaternion;
+    private _initialQuaternion: Nullable<Quaternion>;
     private _quaternionCache: Quaternion;
     private _tmpDragQuaternion = new Quaternion();
     private _disablePointerInputWhenUsingDeviceOrientation = true;
@@ -89,9 +90,11 @@ export class DeviceOrientationCamera extends FreeCamera {
      */
     public override _checkInputs(): void {
         super._checkInputs();
-        this._quaternionCache.copyFrom(this.rotationQuaternion);
-        if (this._initialQuaternion) {
-            this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+        if (this.rotationQuaternion) {
+            this._quaternionCache.copyFrom(this.rotationQuaternion);
+            if (this._initialQuaternion) {
+                this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
+            }
         }
     }
 

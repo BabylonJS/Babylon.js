@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./systemBlock";
+export * from "./particleFloatToIntBlock";
 export * from "./particleInputBlock";
 export * from "./particleSourceTextureBlock";
 export * from "./particleMathBlock";

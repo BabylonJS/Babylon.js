@@ -40,12 +40,6 @@ export class SystemBlock extends NodeParticleBlock {
     public capacity = 1000;
 
     /**
-     * Gets or sets the emit rate
-     */
-    @editableInPropertyPage("Emit rate", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: 0 })
-    public emitRate = 10;
-
-    /**
      * Gets or sets the manual emit count
      */
     @editableInPropertyPage("Manual emit count", PropertyTypeForEdition.Int, "ADVANCED", { embedded: true, notifiers: { rebuild: true }, min: -1 })
@@ -112,12 +106,13 @@ export class SystemBlock extends NodeParticleBlock {
         this._isSystem = true;
 
         this.registerInput("particle", NodeParticleBlockConnectionPointTypes.Particle);
+        this.registerInput("emitRate", NodeParticleBlockConnectionPointTypes.Int, true, 10, 0);
         this.registerInput("texture", NodeParticleBlockConnectionPointTypes.Texture);
-        this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
-        this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerInput("translationPivot", NodeParticleBlockConnectionPointTypes.Vector2, true);
         this.registerInput("textureMask", NodeParticleBlockConnectionPointTypes.Color4, true);
         this.registerInput("targetStopDuration", NodeParticleBlockConnectionPointTypes.Float, true, 0, 0);
+        this.registerInput("onStart", NodeParticleBlockConnectionPointTypes.System, true);
+        this.registerInput("onEnd", NodeParticleBlockConnectionPointTypes.System, true);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
 
@@ -137,45 +132,52 @@ export class SystemBlock extends NodeParticleBlock {
     }
 
     /**
-     * Gets the texture input component
+     * Gets the emitRate input component
      */
-    public get texture(): NodeParticleConnectionPoint {
+    public get emitRate(): NodeParticleConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the onStart input component
+     * Gets the texture input component
      */
-    public get onStart(): NodeParticleConnectionPoint {
+    public get texture(): NodeParticleConnectionPoint {
         return this._inputs[2];
-    }
-
-    /**
-     * Gets the onEnd input component
-     */
-    public get onEnd(): NodeParticleConnectionPoint {
-        return this._inputs[3];
     }
 
     /**
      * Gets the translationPivot input component
      */
     public get translationPivot(): NodeParticleConnectionPoint {
-        return this._inputs[4];
+        return this._inputs[3];
     }
 
     /**
      * Gets the textureMask input component
      */
     public get textureMask(): NodeParticleConnectionPoint {
-        return this._inputs[5];
+        return this._inputs[4];
     }
 
     /**
      * Gets the targetStopDuration input component
      */
     public get targetStopDuration(): NodeParticleConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
+     * Gets the onStart input component
+     */
+    public get onStart(): NodeParticleConnectionPoint {
         return this._inputs[6];
+    }
+
+    /**
+     * Gets the onEnd input component
+     */
+    public get onEnd(): NodeParticleConnectionPoint {
+        return this._inputs[7];
     }
 
     /**
@@ -198,7 +200,7 @@ export class SystemBlock extends NodeParticleBlock {
 
         const particleSystem = this.particle.getConnectedValue(state) as ParticleSystem;
         particleSystem.particleTexture = this.texture.getConnectedValue(state);
-        particleSystem.emitRate = this.emitRate;
+        particleSystem.emitRate = this.emitRate.getConnectedValue(state) as number;
         particleSystem.manualEmitCount = this.manualEmitCount;
         particleSystem.updateSpeed = this.updateSpeed;
         particleSystem.preWarmCycles = this.preWarmCycles;
@@ -212,6 +214,12 @@ export class SystemBlock extends NodeParticleBlock {
         particleSystem.textureMask = this.textureMask.getConnectedValue(state) ?? new Color4(1, 1, 1, 1);
         particleSystem.isLocal = this.isLocal;
         particleSystem.disposeOnStop = this.disposeOnStop;
+
+        // The emit rate can vary if it is connected to another block like a gradient
+        particleSystem._calculateEmitRate = () => {
+            state.systemContext = particleSystem;
+            return this.emitRate.getConnectedValue(state) as number;
+        };
 
         this.system._storedValue = this;
 
@@ -264,7 +272,6 @@ export class SystemBlock extends NodeParticleBlock {
         const serializationObject = super.serialize();
 
         serializationObject.capacity = this.capacity;
-        serializationObject.emitRate = this.emitRate;
         serializationObject.manualEmitCount = this.manualEmitCount;
         serializationObject.blendMode = this.blendMode;
         serializationObject.updateSpeed = this.updateSpeed;
@@ -287,7 +294,6 @@ export class SystemBlock extends NodeParticleBlock {
         super._deserialize(serializationObject);
 
         this.capacity = serializationObject.capacity;
-        this.emitRate = serializationObject.emitRate;
         this.manualEmitCount = serializationObject.manualEmitCount ?? -1;
         this.updateSpeed = serializationObject.updateSpeed ?? 0.0167;
         this.preWarmCycles = serializationObject.preWarmCycles ?? 0;
@@ -296,6 +302,10 @@ export class SystemBlock extends NodeParticleBlock {
         this.isLocal = serializationObject.isLocal ?? false;
         this.disposeOnStop = serializationObject.disposeOnStop ?? false;
         this.doNoStart = !!serializationObject.doNoStart;
+
+        if (serializationObject.emitRate !== undefined) {
+            this.emitRate.value = serializationObject.emitRate;
+        }
 
         if (serializationObject.blendMode !== undefined) {
             this.blendMode = serializationObject.blendMode;
