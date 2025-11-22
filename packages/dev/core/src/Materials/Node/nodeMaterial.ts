@@ -2345,6 +2345,8 @@ export class NodeMaterial extends NodeMaterialBase {
             this.clear();
         }
 
+        SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
+
         const map: { [key: number]: NodeMaterialBlock } = {};
 
         // Create blocks
@@ -2430,9 +2432,6 @@ export class NodeMaterial extends NodeMaterialBase {
             this.editorData.map = blockMap;
         }
 
-        if (source.forceAlphaBlending) {
-            this.forceAlphaBlending = true;
-        }
         Material.ParseAlphaMode(source, this);
 
         if (!merge) {
@@ -2448,7 +2447,6 @@ export class NodeMaterial extends NodeMaterialBase {
      * @deprecated Please use the parseSerializedObject method instead
      */
     public loadFromSerialization(source: any, rootUrl: string = "", merge = false) {
-        SerializationHelper.ParseProperties(source, this, this.getScene(), rootUrl);
         this.parseSerializedObject(source, rootUrl, merge);
     }
 
