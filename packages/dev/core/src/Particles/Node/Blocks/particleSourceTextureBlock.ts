@@ -7,6 +7,16 @@ import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import type { Nullable } from "core/types";
 import { TextureTools } from "core/Misc/textureTools";
 import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
+import { ProceduralTexture } from "../../../Materials";
+
+/**
+ * Interface used to define texture data
+ */
+export interface INodeParticleTextureData {
+    width: number;
+    height: number;
+    data: Uint8ClampedArray;
+}
 
 /**
  * Block used to provide a texture for particles in a particle system
@@ -15,11 +25,7 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
     private _url: string = "";
     private _textureDataUrl: string = "";
     private _sourceTexture: Nullable<BaseTexture> = null;
-    private _cachedData: Nullable<{
-        width: number;
-        height: number;
-        data: Uint8ClampedArray;
-    }> = null;
+    private _cachedData: Nullable<INodeParticleTextureData> = null;
 
     /**
      * Indicates if the texture data should be serialized as a base64 string.
@@ -136,19 +142,37 @@ export class ParticleTextureSourceBlock extends NodeParticleBlock {
                 return;
             }
             const size = texture.getSize();
-            TextureTools.GetTextureDataAsync(texture, size.width, size.height)
-                // eslint-disable-next-line github/no-then
-                .then((data) => {
-                    this._cachedData = {
-                        width: size.width,
-                        height: size.height,
-                        data: new Uint8ClampedArray(data),
-                    };
-                    texture.dispose();
-                    resolve(this._cachedData);
-                })
-                // eslint-disable-next-line github/no-then
-                .catch(reject);
+            if (texture.getContent) {
+                const proceduralTexture = texture as ProceduralTexture;
+                proceduralTexture
+                    .getContent()
+                    // eslint-disable-next-line github/no-then
+                    ?.then((data) => {
+                        this._cachedData = {
+                            width: size.width,
+                            height: size.height,
+                            data: data as Uint8ClampedArray,
+                        };
+                        texture.dispose();
+                        resolve(this._cachedData);
+                    })
+                    // eslint-disable-next-line github/no-then
+                    .catch(reject);
+            } else {
+                TextureTools.GetTextureDataAsync(texture, size.width, size.height)
+                    // eslint-disable-next-line github/no-then
+                    .then((data) => {
+                        this._cachedData = {
+                            width: size.width,
+                            height: size.height,
+                            data: new Uint8ClampedArray(data),
+                        };
+                        texture.dispose();
+                        resolve(this._cachedData);
+                    })
+                    // eslint-disable-next-line github/no-then
+                    .catch(reject);
+            }
         });
     }
 

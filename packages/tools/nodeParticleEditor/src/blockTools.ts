@@ -1,6 +1,5 @@
 import { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { ParticleTextureSourceBlock } from "core/Particles/Node/Blocks/particleSourceTextureBlock";
-import { ParticleTextureFetchBlock } from "core/Particles/Node/Blocks/particleTextureFetchBlock";
 import { UpdateDirectionBlock } from "core/Particles/Node/Blocks/Update/updateDirectionBlock";
 import { UpdatePositionBlock } from "core/Particles/Node/Blocks/Update/updatePositionBlock";
 import { SystemBlock } from "core/Particles/Node/Blocks/systemBlock";
@@ -29,6 +28,7 @@ import { SetupSpriteSheetBlock } from "core/Particles/Node/Blocks/Emitters/setup
 import { BasicSpriteUpdateBlock } from "core/Particles/Node/Blocks/Update/basicSpriteUpdateBlock";
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
+import { UpdateNoiseBlock } from "core/Particles/Node/Blocks/Update/updateNoiseBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
@@ -151,14 +151,14 @@ export class BlockTools {
                 return new UpdateAgeBlock("Update age");
             case "UpdateFlowMapBlock":
                 return new UpdateFlowMapBlock("Update flow map");
+            case "UpdateNoiseBlock":
+                return new UpdateNoiseBlock("Update noise");
             case "UpdateAttractorBlock":
                 return new UpdateAttractorBlock("Update attractor");
             case "SystemBlock":
                 return new SystemBlock("System");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
-            case "TextureFetchBlock":
-                return new ParticleTextureFetchBlock("Texture fetch");
             case "BoxShapeBlock":
                 return new BoxShapeBlock("Box shape");
             case "ConeShapeBlock":
