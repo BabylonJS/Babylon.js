@@ -1,7 +1,7 @@
 import type { GriffelRenderer, MenuTriggerProps } from "@fluentui/react-components";
 import type { ComponentType, FunctionComponent } from "react";
 
-import type { IDisposable } from "core/index";
+import type { IDisposable, Nullable } from "core/index";
 import type { IService, ServiceDefinition } from "../modularity/serviceDefinition";
 
 import {
@@ -156,8 +156,14 @@ export type SidePaneDefinition = {
 };
 
 type RegisteredSidePane = {
-    key: string;
+    readonly key: string;
     select(): void;
+};
+
+type SidePaneContainer = {
+    readonly isDocked: boolean;
+    dock(): void;
+    undock(): void;
 };
 
 /**
@@ -224,12 +230,24 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
     resetSidePaneLayout(): void;
 
     /**
+     * The left side pane container.
+     */
+    readonly leftSidePaneContainer: SidePaneContainer;
+
+    /**
+     * The right side pane container.
+     */
+    readonly rightSidePaneContainer: SidePaneContainer;
+
+    /**
      * The side panes currently present in the shell.
      */
     readonly sidePanes: readonly RegisteredSidePane[];
 }
 
 type ToolbarMode = "full" | "compact";
+
+type LayoutMode = "inline" | "overlay";
 
 /**
  * Options for configuring the shell service.
@@ -268,7 +286,12 @@ export type ShellServiceOptions = {
      * @param sidePane The side pane to remap.
      * @returns The new location for the side pane.
      */
-    sidePaneRemapper?: (sidePane: Readonly<SidePaneDefinition>) => { horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation };
+    sidePaneRemapper?: (sidePane: Readonly<SidePaneDefinition>) => Nullable<{ horizontalLocation: HorizontalLocation; verticalLocation: VerticalLocation }>;
+
+    /**
+     * Determines whether the side panes and toolbars are displayed inline with the central content, or overlayed on top of it.
+     */
+    layoutMode?: LayoutMode;
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -356,6 +379,17 @@ const useStyles = makeStyles({
         flexDirection: "column",
         overflowX: "hidden",
         overflowY: "hidden",
+        zIndex: 1,
+    },
+    paneContainerOverlay: {
+        position: "absolute",
+        height: "100%",
+    },
+    paneContainerOverlayLeft: {
+        left: 0,
+    },
+    paneContainerOverlayRight: {
+        right: 0,
     },
     paneContent: {
         display: "flex",
@@ -643,6 +677,7 @@ const SidePaneTab: FunctionComponent<
 // In "full" mode, the returned tab list is later injected into the toolbar.
 function usePane(
     location: HorizontalLocation,
+    layoutMode: LayoutMode,
     defaultWidth: number,
     minWidth: number,
     sidePanes: SidePaneDefinition[],
@@ -948,6 +983,9 @@ function usePane(
                     const onParentWindowUnload = () => childWindow.close();
                     window.addEventListener("unload", onParentWindowUnload);
                     disposeActions.push(() => window.removeEventListener("unload", onParentWindowUnload));
+                } else {
+                    // If creating a child window failed (e.g. popup blocked), then just revert to docked mode.
+                    setUndocked(false);
                 }
                 disposeActions.push(() => childWindow?.close());
             }
@@ -1057,7 +1095,15 @@ function usePane(
         if (!windowState) {
             // If there is no window state, then we are docked, so render the resizable div and the collapse container.
             return (
-                <div ref={paneContainerRef} className={classes.paneContainer}>
+                <div
+                    ref={paneContainerRef}
+                    className={mergeClasses(
+                        classes.paneContainer,
+                        layoutMode === "inline"
+                            ? undefined
+                            : mergeClasses(classes.paneContainerOverlay, location === "left" ? classes.paneContainerOverlayLeft : classes.paneContainerOverlayRight)
+                    )}
+                >
                     {(topPanes.length > 0 || bottomPanes.length > 0) && (
                         <div className={`${classes.pane} ${location === "left" ? classes.paneLeft : classes.paneRight}`}>
                             <Collapse orientation="horizontal" visible={!collapsed}>
@@ -1097,7 +1143,7 @@ function usePane(
         }
     }, [collapsed, corePane, windowState]);
 
-    return [topPaneTabList, pane, collapsed, setCollapsed] as const;
+    return [topPaneTabList, pane, collapsed, setCollapsed, undocked, setUndocked] as const;
 }
 
 export function MakeShellServiceDefinition({
@@ -1107,6 +1153,7 @@ export function MakeShellServiceDefinition({
     rightPaneMinWidth = 350,
     toolbarMode = "full",
     sidePaneRemapper = undefined,
+    layoutMode = "inline",
 }: ShellServiceOptions = {}): ServiceDefinition<[IShellService, IRootComponentService], []> {
     return {
         friendlyName: "MainView",
@@ -1117,6 +1164,18 @@ export function MakeShellServiceDefinition({
             const centralContentCollection = new ObservableCollection<Readonly<CentralContentDefinition>>();
 
             const onSelectSidePane = new Observable<string>(undefined, true);
+
+            const onDockChanged = new Observable<{ location: HorizontalLocation; dock: boolean }>(undefined, true);
+            const leftSidePaneContainerState = {
+                isDocked: true as boolean,
+                dock: () => onDockChanged.notifyObservers({ location: "left", dock: true }),
+                undock: () => onDockChanged.notifyObservers({ location: "left", dock: false }),
+            } satisfies SidePaneContainer;
+            const rightSidePaneContainerState = {
+                isDocked: true as boolean,
+                dock: () => onDockChanged.notifyObservers({ location: "right", dock: true }),
+                undock: () => onDockChanged.notifyObservers({ location: "right", dock: false }),
+            } satisfies SidePaneContainer;
 
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
@@ -1144,31 +1203,37 @@ export function MakeShellServiceDefinition({
                 const coercedSidePaneCache = useRef(new Map<string, SidePaneDefinition>());
                 const coercedSidePanes = useMemo(() => {
                     // First pass - apply overrides and respect the side pane mode.
-                    const coercedSidePanes = sidePanes.map((sidePaneDefinition) => {
-                        let coercedSidePane = coercedSidePaneCache.current.get(sidePaneDefinition.key);
-                        if (!coercedSidePane) {
-                            coercedSidePane = { ...sidePaneDefinition };
-                            coercedSidePaneCache.current.set(sidePaneDefinition.key, coercedSidePane);
-                        }
+                    const coercedSidePanes = sidePanes
+                        .map((sidePaneDefinition) => {
+                            let coercedSidePane = coercedSidePaneCache.current.get(sidePaneDefinition.key);
+                            if (!coercedSidePane) {
+                                coercedSidePane = { ...sidePaneDefinition };
+                                coercedSidePaneCache.current.set(sidePaneDefinition.key, coercedSidePane);
+                            }
 
-                        const override = sidePaneDockOverrides[sidePaneDefinition.key];
-                        if (override) {
-                            // Override (user manually re-docked) has the highest priority.
-                            coercedSidePane.horizontalLocation = override.horizontalLocation;
-                            coercedSidePane.verticalLocation = override.verticalLocation;
-                        } else if (sidePaneRemapper) {
-                            // A side pane remapper has the next highest priority.
-                            const { horizontalLocation, verticalLocation } = sidePaneRemapper(sidePaneDefinition);
-                            coercedSidePane.horizontalLocation = horizontalLocation;
-                            coercedSidePane.verticalLocation = verticalLocation;
-                        } else {
-                            // Otherwise use the default defined location.
-                            coercedSidePane.horizontalLocation = sidePaneDefinition.horizontalLocation;
-                            coercedSidePane.verticalLocation = sidePaneDefinition.verticalLocation;
-                        }
+                            const override = sidePaneDockOverrides[sidePaneDefinition.key];
+                            if (override) {
+                                // Override (user manually re-docked) has the highest priority.
+                                coercedSidePane.horizontalLocation = override.horizontalLocation;
+                                coercedSidePane.verticalLocation = override.verticalLocation;
+                            } else if (sidePaneRemapper) {
+                                // A side pane remapper has the next highest priority.
+                                const remapping = sidePaneRemapper(sidePaneDefinition);
+                                if (!remapping) {
+                                    coercedSidePane = undefined;
+                                } else {
+                                    coercedSidePane.horizontalLocation = remapping.horizontalLocation;
+                                    coercedSidePane.verticalLocation = remapping.verticalLocation;
+                                }
+                            } else {
+                                // Otherwise use the default defined location.
+                                coercedSidePane.horizontalLocation = sidePaneDefinition.horizontalLocation;
+                                coercedSidePane.verticalLocation = sidePaneDefinition.verticalLocation;
+                            }
 
-                        return coercedSidePane;
-                    });
+                            return coercedSidePane;
+                        })
+                        .filter((sidePane): sidePane is SidePaneDefinition => !!sidePane);
 
                     // Second pass - correct any invalid state, specifically if there are only bottom panes, force them to be top panes.
                     for (const side of ["left", "right"] as const) {
@@ -1270,8 +1335,9 @@ export function MakeShellServiceDefinition({
 
                 const centralContents = useOrderedObservableCollection(centralContentCollection);
 
-                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed] = usePane(
+                const [leftPaneTabList, leftPane, leftPaneCollapsed, setLeftPaneCollapsed, leftPaneUndocked, setLeftPaneUndocked] = usePane(
                     "left",
+                    layoutMode,
                     leftPaneDefaultWidth,
                     leftPaneMinWidth,
                     coercedSidePanes,
@@ -1282,8 +1348,14 @@ export function MakeShellServiceDefinition({
                     bottomBarLeftItems
                 );
 
-                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed] = usePane(
+                useEffect(() => {
+                    // Propagate shorter lived React component state out to longer lived service state.
+                    leftSidePaneContainerState.isDocked = !leftPaneUndocked;
+                }, [leftPaneUndocked]);
+
+                const [rightPaneTabList, rightPane, rightPaneCollapsed, setRightPaneCollapsed, rightPaneUndocked, setRightPaneUndocked] = usePane(
                     "right",
+                    layoutMode,
                     rightPaneDefaultWidth,
                     rightPaneMinWidth,
                     coercedSidePanes,
@@ -1293,6 +1365,28 @@ export function MakeShellServiceDefinition({
                     topBarRightItems,
                     bottomBarRightItems
                 );
+
+                useEffect(() => {
+                    // Propagate shorter lived React component state out to longer lived service state.
+                    rightSidePaneContainerState.isDocked = !rightPaneUndocked;
+                }, [rightPaneUndocked]);
+
+                useEffect(() => {
+                    // If at the service level dock state change is requested, propagate to the React component state.
+                    const observer = onDockChanged.add(({ location, dock }) => {
+                        if (location === "left") {
+                            setLeftPaneUndocked(!dock);
+                        } else {
+                            setRightPaneUndocked(!dock);
+                        }
+                    });
+
+                    return () => {
+                        observer.remove();
+                        leftSidePaneContainerState.isDocked = true;
+                        rightSidePaneContainerState.isDocked = true;
+                    };
+                }, [setLeftPaneUndocked, setRightPaneUndocked]);
 
                 return (
                     <div className={classes.mainView}>
@@ -1371,6 +1465,9 @@ export function MakeShellServiceDefinition({
                 },
                 addCentralContent: (entry) => centralContentCollection.add(entry),
                 resetSidePaneLayout: () => localStorage.removeItem("Babylon/Settings/SidePaneDockOverrides"),
+                leftSidePaneContainer: leftSidePaneContainerState,
+                rightSidePaneContainer: rightSidePaneContainerState,
+                onDockChanged,
                 get sidePanes() {
                     return [...sidePaneCollection.items].map((sidePaneDefinition) => {
                         return {

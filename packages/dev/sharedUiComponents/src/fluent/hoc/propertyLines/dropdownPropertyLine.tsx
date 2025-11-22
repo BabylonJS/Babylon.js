@@ -21,7 +21,7 @@ type DropdownPropertyLineProps<V extends AcceptedDropdownValue> = DropdownProps<
  * @returns property-line wrapped dropdown
  */
 
-const DropdownPropertyLine = forwardRef<HTMLDivElement, DropdownPropertyLineProps<AcceptedDropdownValue>>((props, ref) => {
+export const DropdownPropertyLine = forwardRef<HTMLDivElement, DropdownPropertyLineProps<AcceptedDropdownValue>>((props, ref) => {
     DropdownPropertyLine.displayName = "DropdownPropertyLine";
     const classes = useStyles();
     return (

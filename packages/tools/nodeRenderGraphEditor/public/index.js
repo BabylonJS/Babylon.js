@@ -127,7 +127,7 @@ checkBabylonVersionAsync().then(() => {
 
                     try {
                         let xmlHttp = new XMLHttpRequest();
-                        xmlHttp.onreadystatechange = function () {
+                        xmlHttp.onreadystatechange = async function () {
                             if (xmlHttp.readyState == 4) {
                                 if (xmlHttp.status == 200) {
                                     let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
@@ -138,7 +138,7 @@ checkBabylonVersionAsync().then(() => {
                                     } else {
                                         nodeRenderGraph.parseSerializedObject(serializationObject);
                                         try {
-                                            nodeRenderGraph.build();
+                                            await nodeRenderGraph.buildAsync();
                                         } catch (err) {
                                             // Swallow the error here
                                         }
@@ -233,7 +233,7 @@ checkBabylonVersionAsync().then(() => {
 
                 nodeRenderGraph = new BABYLON.NodeRenderGraph("node", scene);
                 nodeRenderGraph.setToDefault();
-                nodeRenderGraph.build();
+                await nodeRenderGraph.buildAsync();
 
                 showEditor();
             } else {

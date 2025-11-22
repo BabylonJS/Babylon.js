@@ -14,6 +14,10 @@ export const enum AudioParameterRampShape {
      * The ramp is logarithmic.
      */
     Logarithmic = "logarithmic",
+    /**
+     * No ramp is used; the value is set immediately.
+     */
+    None = "none",
 }
 
 /**

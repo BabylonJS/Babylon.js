@@ -3,11 +3,11 @@ import type { FilesInput } from "core/Misc/filesInput";
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
 
-let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/inspector")> | null = null;
+let InspectorV2ModulePromise: Promise<typeof import("inspector-v2/legacy/inspector")> | null = null;
 // eslint-disable-next-line @typescript-eslint/promise-function-async
 function ImportInspectorV2() {
     if (!InspectorV2ModulePromise) {
-        InspectorV2ModulePromise = import("inspector-v2/inspector");
+        InspectorV2ModulePromise = import("inspector-v2/legacy/inspector");
     }
     return InspectorV2ModulePromise;
 }
@@ -42,36 +42,40 @@ export class GlobalState {
     }
 
     public showDebugLayer() {
-        this.isDebugLayerEnabled = true;
-        if (this.currentScene) {
-            if (this._isInspectorV2ModeRequested && !this._isInspectorV2ModeEnabled) {
-                alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
-            }
+        if (!this.isDebugLayerEnabled) {
+            this.isDebugLayerEnabled = true;
+            if (this.currentScene) {
+                if (this._isInspectorV2ModeRequested && !this._isInspectorV2ModeEnabled) {
+                    alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
+                }
 
-            if (!this._isInspectorV2ModeEnabled) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.currentScene.debugLayer.show();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                (async () => {
-                    const inspectorV2Module = await ImportInspectorV2();
-                    inspectorV2Module.ShowInspector(this.currentScene);
-                })();
+                if (!this._isInspectorV2ModeEnabled) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this.currentScene.debugLayer.show();
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    (async () => {
+                        const inspectorV2Module = await ImportInspectorV2();
+                        inspectorV2Module.Inspector.Show(this.currentScene, {});
+                    })();
+                }
             }
         }
     }
 
     public hideDebugLayer() {
-        this.isDebugLayerEnabled = false;
-        if (this.currentScene) {
-            if (!this._isInspectorV2ModeEnabled) {
-                this.currentScene.debugLayer.hide();
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                (async () => {
-                    const inspectorV2Module = await ImportInspectorV2();
-                    inspectorV2Module.HideInspector();
-                })();
+        if (this.isDebugLayerEnabled) {
+            this.isDebugLayerEnabled = false;
+            if (this.currentScene) {
+                if (!this._isInspectorV2ModeEnabled) {
+                    this.currentScene.debugLayer.hide();
+                } else {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    (async () => {
+                        const inspectorV2Module = await ImportInspectorV2();
+                        inspectorV2Module.Inspector.Hide();
+                    })();
+                }
             }
         }
     }
@@ -80,7 +84,7 @@ export class GlobalState {
         if (this.currentScene) {
             // openedPanes was not available until 7.44.0, so we may need to fallback to the inspector's _OpenedPane property
             const isInspectorV1Enabled = (this.currentScene.debugLayer.openedPanes ?? (this.currentScene.debugLayer as any).BJSINSPECTOR?.Inspector?._OpenedPane) !== 0;
-            const isInspectorV2Enabled = InspectorV2ModulePromise && (await InspectorV2ModulePromise).IsInspectorVisible();
+            const isInspectorV2Enabled = InspectorV2ModulePromise && (await InspectorV2ModulePromise).Inspector.IsVisible;
             const isInspectorEnabled = isInspectorV1Enabled || isInspectorV2Enabled;
 
             if (isInspectorEnabled) {
@@ -89,10 +93,10 @@ export class GlobalState {
                         alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
                     } else {
                         this.currentScene.debugLayer.hide();
-                        (await ImportInspectorV2()).ShowInspector(this.currentScene);
+                        (await ImportInspectorV2()).Inspector.Show(this.currentScene, {});
                     }
                 } else if (isInspectorV2Enabled && !this._isInspectorV2ModeEnabled) {
-                    (await ImportInspectorV2()).HideInspector();
+                    (await ImportInspectorV2()).Inspector.Hide();
                     await this.currentScene.debugLayer.show();
                 }
             }

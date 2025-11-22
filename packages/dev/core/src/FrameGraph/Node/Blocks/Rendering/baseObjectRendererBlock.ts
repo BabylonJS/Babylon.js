@@ -246,6 +246,26 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this._createFrameGraphObjectWithState(this.doNotChangeAspectRatio, value);
     }
 
+    /** If true, MSAA color textures will be resolved at the end of the render pass (default: true) */
+    @editableInPropertyPage("Resolve MSAA colors", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get resolveMSAAColors() {
+        return this._frameGraphTask.resolveMSAAColors;
+    }
+
+    public set resolveMSAAColors(value: boolean) {
+        this._frameGraphTask.resolveMSAAColors = value;
+    }
+
+    /** If true, MSAA depth texture will be resolved at the end of the render pass (default: false) */
+    @editableInPropertyPage("Resolve MSAA depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get resolveMSAADepth() {
+        return this._frameGraphTask.resolveMSAADepth;
+    }
+
+    public set resolveMSAADepth(value: boolean) {
+        this._frameGraphTask.resolveMSAADepth = value;
+    }
+
     /**
      * Gets the current class name
      * @returns the class name
@@ -358,6 +378,8 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         codes.push(`${this._codeVariableName}.enableOutlineRendering = ${this.enableOutlineRendering};`);
         codes.push(`${this._codeVariableName}.disableShadows = ${this.disableShadows};`);
         codes.push(`${this._codeVariableName}.renderInLinearSpace = ${this.renderInLinearSpace};`);
+        codes.push(`${this._codeVariableName}.resolveMSAAColors = ${this.resolveMSAAColors};`);
+        codes.push(`${this._codeVariableName}.resolveMSAADepth = ${this.resolveMSAADepth};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -373,6 +395,8 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         serializationObject.enableOutlineRendering = this.enableOutlineRendering;
         serializationObject.disableShadows = this.disableShadows;
         serializationObject.renderInLinearSpace = this.renderInLinearSpace;
+        serializationObject.resolveMSAAColors = this.resolveMSAAColors;
+        serializationObject.resolveMSAADepth = this.resolveMSAADepth;
         return serializationObject;
     }
 
@@ -388,5 +412,7 @@ export class NodeRenderGraphBaseObjectRendererBlock extends NodeRenderGraphBlock
         this.enableOutlineRendering = serializationObject.enableOutlineRendering ?? true;
         this.disableShadows = serializationObject.disableShadows;
         this.renderInLinearSpace = !!serializationObject.renderInLinearSpace;
+        this.resolveMSAAColors = serializationObject.resolveMSAAColors ?? true;
+        this.resolveMSAADepth = serializationObject.resolveMSAADepth ?? false;
     }
 }

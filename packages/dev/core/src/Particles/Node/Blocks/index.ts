@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-restricted-imports */
 export * from "./systemBlock";
+export * from "./particleFloatToIntBlock";
 export * from "./particleInputBlock";
 export * from "./particleSourceTextureBlock";
 export * from "./particleMathBlock";
@@ -8,6 +9,7 @@ export * from "./Update/updateDirectionBlock";
 export * from "./Update/updatePositionBlock";
 export * from "./Update/updateColorBlock";
 export * from "./Update/updateScaleBlock";
+export * from "./Update/updateSizeBlock";
 export * from "./Update/updateAngleBlock";
 export * from "./Update/updateAgeBlock";
 export * from "./Update/basicPositionUpdateBlock";

@@ -56,7 +56,7 @@ export class FlyCamera extends TargetCamera {
      * Define the current local rotation of the camera as a quaternion to prevent Gimbal lock.
      * This overrides and empties cameraRotation.
      */
-    public override rotationQuaternion: Quaternion;
+    public override rotationQuaternion: Nullable<Quaternion>;
 
     /**
      * Track Roll to maintain the wanted Rolling when looking around.

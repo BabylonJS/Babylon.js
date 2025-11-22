@@ -2,31 +2,31 @@ import type { Nullable, AbstractEngine, IFrameGraphPass, FrameGraphContext, Fram
 import { FrameGraphPass } from "./pass";
 
 /**
- * Cull pass used to filter objects that are not visible.
+ * Object list pass used to generate a list of objects.
  */
-export class FrameGraphCullPass extends FrameGraphPass<FrameGraphContext> {
+export class FrameGraphObjectListPass extends FrameGraphPass<FrameGraphContext> {
     protected readonly _engine: AbstractEngine;
     protected _objectList: FrameGraphObjectList;
 
     /**
-     * Checks if a pass is a cull pass.
+     * Checks if a pass is an object list pass.
      * @param pass The pass to check.
-     * @returns True if the pass is a cull pass, else false.
+     * @returns True if the pass is an object list pass, else false.
      */
-    public static IsCullPass(pass: IFrameGraphPass): pass is FrameGraphCullPass {
-        return (pass as FrameGraphCullPass).setObjectList !== undefined;
+    public static IsObjectListPass(pass: IFrameGraphPass): pass is FrameGraphObjectListPass {
+        return (pass as FrameGraphObjectListPass).setObjectList !== undefined;
     }
 
     /**
-     * Gets the object list used by the cull pass.
+     * Gets the object list used by the pass.
      */
     public get objectList(): FrameGraphObjectList {
         return this._objectList;
     }
 
     /**
-     * Sets the object list to use for culling.
-     * @param objectList The object list to use for culling.
+     * Sets the object list to use for the pass.
+     * @param objectList The object list to use for the pass.
      */
     public setObjectList(objectList: FrameGraphObjectList) {
         this._objectList = objectList;

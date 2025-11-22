@@ -197,8 +197,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     /** @internal */
     public _colorDiff = new Color4(0, 0, 0, 0);
     /** @internal */
-    public _scaledDirection = Vector3.Zero();
-    /** @internal */
     public _scaledGravity = Vector3.Zero();
     private _currentRenderId = -1;
     private _alive: boolean;
@@ -283,8 +281,6 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     private _noiseCreation: _IExecutionQueueItem;
     private _createQueueStart: Nullable<_IExecutionQueueItem> = null;
 
-    /** @internal */
-    public _directionScale: number;
     /** @internal */
     public _tempScaledUpdateSpeed: number;
     /** @internal */
@@ -716,7 +712,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 }
 
                 this._ratio = particle.age / particle.lifeTime;
-                this._directionScale = this._tempScaledUpdateSpeed;
+                particle._directionScale = this._tempScaledUpdateSpeed;
 
                 // Processing queue
                 let currentQueueItem = this._updateQueueStart;
@@ -754,11 +750,11 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /** @internal */
-    public _emitFromParticle: (particle: Particle) => void = (particle) => {
+    public _emitFromParticle: (particle: Particle) => void = (_particle) => {
         // Do nothing
     };
 
-    serialize(serializeTexture: boolean) {
+    serialize(_serializeTexture: boolean) {
         throw new Error("Method not implemented.");
     }
 
@@ -766,9 +762,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * Clones the particle system.
      * @param name The name of the cloned object
      * @param newEmitter The new emitter to use
-     * @param cloneTexture Also clone the textures if true
+     * @param _cloneTexture Also clone the textures if true
      */
-    public clone(name: string, newEmitter: any, cloneTexture = false): ThinParticleSystem {
+    public clone(name: string, newEmitter: any, _cloneTexture = false): ThinParticleSystem {
         throw new Error("Method not implemented.");
     }
 
@@ -2054,21 +2050,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._newPartsExcess = 0;
             this.manualEmitCount = 0;
         } else {
-            let rate = this.emitRate;
-
-            if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {
-                const ratio = this._actualFrame / this.targetStopDuration;
-                GradientHelper.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
-                    if (currentGradient !== this._currentEmitRateGradient) {
-                        this._currentEmitRate1 = this._currentEmitRate2;
-                        this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();
-                        this._currentEmitRateGradient = <FactorGradient>currentGradient;
-                    }
-
-                    rate = Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
-                });
-            }
-
+            const rate = this._calculateEmitRate();
             newParticles = (rate * this._scaledUpdateSpeed) >> 0;
             this._newPartsExcess += rate * this._scaledUpdateSpeed - newParticles;
         }
@@ -2121,6 +2103,30 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         if (this.manualEmitCount === 0 && this.disposeOnStop) {
             this.stop();
         }
+    }
+
+    /**
+     * Internal only. Calculates the current emit rate based on the gradients if any.
+     * @returns The emit rate
+     * @internal
+     */
+    public _calculateEmitRate(): number {
+        let rate = this.emitRate;
+
+        if (this._emitRateGradients && this._emitRateGradients.length > 0 && this.targetStopDuration) {
+            const ratio = this._actualFrame / this.targetStopDuration;
+            GradientHelper.GetCurrentGradient(ratio, this._emitRateGradients, (currentGradient, nextGradient, scale) => {
+                if (currentGradient !== this._currentEmitRateGradient) {
+                    this._currentEmitRate1 = this._currentEmitRate2;
+                    this._currentEmitRate2 = (<FactorGradient>nextGradient).getFactor();
+                    this._currentEmitRateGradient = <FactorGradient>currentGradient;
+                }
+
+                rate = Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
+            });
+        }
+
+        return rate;
     }
 
     private _appendParticleVertices(offset: number, particle: Particle) {

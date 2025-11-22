@@ -1,4 +1,3 @@
-import type { IInspectorOptions } from "core/Debug/debugLayer";
 import type { IDisposable, Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import type { ServiceDefinition } from "./modularity/serviceDefinition";
@@ -7,10 +6,10 @@ import type { ISceneContext } from "./services/sceneContext";
 import type { IShellService } from "./services/shellService";
 
 import { makeStyles } from "@fluentui/react-components";
-import { EngineStore } from "core/Engines/engineStore";
 import { Observable } from "core/Misc/observable";
 import { useEffect, useRef } from "react";
 import { DefaultInspectorExtensionFeed } from "./extensibility/defaultInspectorExtensionFeed";
+import { LegacyInspectableObjectPropertiesServiceDefinition } from "./legacy/inspectableCustomPropertiesService";
 import { MakeModularTool } from "./modularTool";
 import { GizmoServiceDefinition } from "./services/gizmoService";
 import { GizmoToolbarServiceDefinition } from "./services/gizmoToolbarService";
@@ -60,40 +59,24 @@ import { SelectionServiceDefinition } from "./services/selectionService";
 import { ShellServiceIdentity } from "./services/shellService";
 import { UserFeedbackServiceDefinition } from "./services/userFeedbackService";
 
-let CurrentInspectorToken: Nullable<IDisposable> = null;
+export type InspectorOptions = Omit<ModularToolOptions, "toolbarMode"> & { autoResizeEngine?: boolean };
 
-type InspectorV2Options = Omit<ModularToolOptions, "containerElement" | "sidePaneRemapper" | "toolbarMode">;
+// TODO: The key should probably be the Canvas, because we only want to show one inspector instance per canvas.
+//       If it is called for a different scene that is rendering to the same canvas, then we should probably
+//       switch the inspector instance to that scene (once this is supported).
+const InspectorTokens = new WeakMap<Scene, IDisposable>();
 
-export function IsInspectorVisible(): boolean {
-    return CurrentInspectorToken != null;
-}
-
-export function ShowInspector(scene: Scene, options?: Partial<IInspectorOptions & InspectorV2Options>) {
-    _ShowInspector(scene, options ?? {});
-}
-
-function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptions & InspectorV2Options>) {
-    // TODO: Lots more work to do to respect all the Inspector v1 options.
+export function ShowInspector(scene: Scene, options: Partial<InspectorOptions> = {}): IDisposable {
     options = {
-        overlay: false,
-        showExplorer: true,
-        showInspector: true,
-        embedMode: false,
-        enableClose: true,
-        handleResize: true,
-        enablePopup: true,
+        autoResizeEngine: true,
         ...options,
     };
 
-    if (!scene) {
-        scene = EngineStore.LastCreatedScene;
-    }
+    const inspectorToken = {
+        dispose: () => {},
+    };
 
-    if (!scene || scene.isDisposed) {
-        return;
-    }
-
-    let parentElement = options.globalRoot ?? null;
+    let parentElement = options.containerElement ?? null;
     if (!parentElement) {
         parentElement = scene.getEngine().getRenderingCanvas()?.parentElement ?? null;
         while (parentElement) {
@@ -107,12 +90,16 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
     }
 
     if (!parentElement) {
-        return;
+        return inspectorToken;
     }
 
-    if (IsInspectorVisible()) {
-        HideInspector();
+    const existingToken = InspectorTokens.get(scene);
+    if (existingToken) {
+        existingToken.dispose();
+        InspectorTokens.delete(scene);
     }
+
+    InspectorTokens.set(scene, inspectorToken);
 
     const disposeActions: (() => void)[] = [];
 
@@ -175,13 +162,9 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
         },
     };
 
-    if (options.handleResize) {
+    if (options.autoResizeEngine) {
         const observer = scene.onBeforeRenderObservable.add(() => scene.getEngine().resize());
         disposeActions.push(() => observer.remove());
-    }
-
-    if (options.showExplorer) {
-        // TODO
     }
 
     const modularTool = MakeModularTool({
@@ -262,71 +245,44 @@ function _ShowInspector(scene: Nullable<Scene>, options: Partial<IInspectorOptio
             // Adds always present "mini stats" (like fps) to the toolbar, etc.
             MiniStatsServiceDefinition,
 
+            // Legacy service to support custom inspectable properties on objects.
+            LegacyInspectableObjectPropertiesServiceDefinition,
+
             // Additional services passed in to the Inspector.
             ...(options.serviceDefinitions ?? []),
         ],
         themeMode: options.themeMode,
         showThemeSelector: options.showThemeSelector,
         extensionFeeds: [DefaultInspectorExtensionFeed, ...(options.extensionFeeds ?? [])],
+        layoutMode: options.layoutMode,
         toolbarMode: "compact",
-        sidePaneRemapper: options.embedMode
-            ? (sidePane) => {
-                  if (sidePane.horizontalLocation === "right") {
-                      // All right panes go to right bottom.
-                      return {
-                          horizontalLocation: "right",
-                          verticalLocation: "bottom",
-                      };
-                  } else {
-                      // All left panes go to right top.
-                      return {
-                          horizontalLocation: "right",
-                          verticalLocation: "top",
-                      };
-                  }
-              }
-            : undefined,
+        sidePaneRemapper: options.sidePaneRemapper,
     });
     disposeActions.push(() => modularTool.dispose());
 
     let disposed = false;
-    CurrentInspectorToken = {
-        dispose: () => {
-            if (disposed) {
-                return;
-            }
+    inspectorToken.dispose = () => {
+        if (disposed) {
+            return;
+        }
 
-            disposeActions.reverse().forEach((dispose) => dispose());
-            if (options.handleResize) {
-                scene.getEngine().resize();
-            }
+        disposeActions.reverse().forEach((dispose) => dispose());
+        if (options.autoResizeEngine) {
+            scene.getEngine().resize();
+        }
 
-            disposed = true;
-        },
+        disposed = true;
     };
 
     const sceneDisposedObserver = scene.onDisposeObservable.addOnce(() => {
-        HideInspector();
+        inspectorToken.dispose();
     });
 
     disposeActions.push(() => sceneDisposedObserver.remove());
-}
 
-export function HideInspector() {
-    CurrentInspectorToken?.dispose();
-    CurrentInspectorToken = null;
-}
+    disposeActions.push(() => {
+        InspectorTokens.delete(scene);
+    });
 
-export class Inspector {
-    public static get IsVisible(): boolean {
-        return IsInspectorVisible();
-    }
-
-    public static Show(scene: Scene, userOptions: Partial<IInspectorOptions>) {
-        _ShowInspector(scene, userOptions);
-    }
-
-    public static Hide() {
-        HideInspector();
-    }
+    return inspectorToken;
 }

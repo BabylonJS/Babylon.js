@@ -1,7 +1,7 @@
 import type { Scene, AbstractEngine, FrameGraphTask, Nullable, NodeRenderGraph, IDisposable } from "core/index";
 import { FrameGraphPass } from "./Passes/pass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
-import { FrameGraphCullPass } from "./Passes/cullPass";
+import { FrameGraphObjectListPass } from "./Passes/objectListPass";
 import { FrameGraphRenderContext } from "./frameGraphRenderContext";
 import { FrameGraphContext } from "./frameGraphContext";
 import { FrameGraphTextureManager } from "./frameGraphTextureManager";
@@ -16,7 +16,7 @@ import "core/Engines/WebGPU/Extensions/engine.multiRender";
 enum FrameGraphPassType {
     Normal = 0,
     Render = 1,
-    Cull = 2,
+    ObjectList = 2,
 }
 
 /**
@@ -34,6 +34,7 @@ export class FrameGraph implements IDisposable {
     private readonly _tasks: FrameGraphTask[] = [];
     private readonly _passContext: FrameGraphContext;
     private readonly _renderContext: FrameGraphRenderContext;
+    private readonly _initAsyncPromises: Promise<void>[] = [];
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
 
@@ -147,6 +148,7 @@ export class FrameGraph implements IDisposable {
         }
 
         this._tasks.push(task);
+        this._initAsyncPromises.push(task.initAsync());
     }
 
     /**
@@ -170,13 +172,13 @@ export class FrameGraph implements IDisposable {
     }
 
     /**
-     * Adds a cull pass to a task. This method can only be called during a Task.record execution.
+     * Adds an object list pass to a task. This method can only be called during a Task.record execution.
      * @param name The name of the pass
      * @param whenTaskDisabled If true, the pass will be added to the list of passes to execute when the task is disabled (default is false)
-     * @returns The cull pass created
+     * @returns The object list pass created
      */
-    public addCullPass(name: string, whenTaskDisabled = false): FrameGraphCullPass {
-        return this._addPass(name, FrameGraphPassType.Cull, whenTaskDisabled) as FrameGraphCullPass;
+    public addObjectListPass(name: string, whenTaskDisabled = false): FrameGraphObjectListPass {
+        return this._addPass(name, FrameGraphPassType.ObjectList, whenTaskDisabled) as FrameGraphObjectListPass;
     }
 
     private _addPass(name: string, passType: FrameGraphPassType, whenTaskDisabled = false): FrameGraphPass<FrameGraphContext> | FrameGraphRenderPass {
@@ -190,8 +192,8 @@ export class FrameGraph implements IDisposable {
             case FrameGraphPassType.Render:
                 pass = new FrameGraphRenderPass(name, this._currentProcessedTask, this._renderContext, this._engine);
                 break;
-            case FrameGraphPassType.Cull:
-                pass = new FrameGraphCullPass(name, this._currentProcessedTask, this._passContext, this._engine);
+            case FrameGraphPassType.ObjectList:
+                pass = new FrameGraphObjectListPass(name, this._currentProcessedTask, this._passContext, this._engine);
                 break;
             default:
                 pass = new FrameGraphPass(name, this._currentProcessedTask, this._passContext);
@@ -203,14 +205,37 @@ export class FrameGraph implements IDisposable {
         return pass;
     }
 
+    /** @internal */
+    public async _whenAsynchronousInitializationDoneAsync(): Promise<void> {
+        if (this._initAsyncPromises.length > 0) {
+            await Promise.all(this._initAsyncPromises);
+            this._initAsyncPromises.length = 0;
+        }
+    }
+
+    /**
+     * @deprecated Use buildAsync instead
+     */
+    public build(): void {
+        void this.buildAsync(false);
+    }
+
+    private _built = false; // TODO: to be removed when build() is removed
+
     /**
      * Builds the frame graph.
      * This method should be called after all tasks have been added to the frame graph (FrameGraph.addTask) and before the graph is executed (FrameGraph.execute).
+     * @param waitForReadiness If true, the method will wait for the frame graph to be ready before returning (default is true)
      */
-    public build(): void {
+    public async buildAsync(waitForReadiness = true): Promise<void> {
         this.textureManager._releaseTextures(false);
 
+        this.pausedExecution = true;
+        this._built = false;
+
         try {
+            await this._whenAsynchronousInitializationDoneAsync();
+
             for (const task of this._tasks) {
                 task._reset();
 
@@ -233,25 +258,61 @@ export class FrameGraph implements IDisposable {
                 task.onTexturesAllocatedObservable.notifyObservers(this._renderContext);
             }
 
+            this._built = true;
+
             this.onBuildObservable.notifyObservers(this);
+
+            if (waitForReadiness) {
+                await this.whenReadyAsync();
+            }
         } catch (e) {
             this._tasks.length = 0;
             this._currentProcessedTask = null;
             this.textureManager._isRecordingTask = false;
             throw e;
+        } finally {
+            this.pausedExecution = false;
+            this._built = true;
         }
     }
 
     /**
-     * Returns a promise that resolves when the frame graph is ready to be executed
-     * This method must be called after the graph has been built (FrameGraph.build called)!
+     * Checks if the frame graph is ready to be executed.
+     * Note that you can use the whenReadyAsync method to wait for the frame graph to be ready.
+     * @returns True if the frame graph is ready to be executed, else false
+     */
+    public isReady(): boolean {
+        let ready = this._renderContext._isReady();
+        for (const task of this._tasks) {
+            ready &&= task.isReady();
+        }
+        return ready;
+    }
+
+    /**
+     * Returns a promise that resolves when the frame graph is ready to be executed.
+     * In general, calling “await buildAsync()” should suffice, as this function also waits for readiness by default.
      * @param timeStep Time step in ms between retries (default is 16)
-     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 5000)
+     * @param maxTimeout Maximum time in ms to wait for the graph to be ready (default is 10000)
      * @returns The promise that resolves when the graph is ready
      */
-    public async whenReadyAsync(timeStep = 16, maxTimeout = 5000): Promise<void> {
+    public async whenReadyAsync(timeStep = 16, maxTimeout = 10000): Promise<void> {
         let firstNotReadyTask: FrameGraphTask | null = null;
-        return await new Promise((resolve) => {
+
+        // TODO: to be removed when build() is removed
+        await new Promise((resolve) => {
+            const checkBuilt = () => {
+                if (this._built) {
+                    resolve(void 0);
+                    return;
+                }
+                setTimeout(checkBuilt, 16);
+            };
+            checkBuilt();
+        });
+        // END TODO
+
+        return await new Promise((resolve, reject) => {
             this._whenReadyAsyncCancel = _RetryWithInterval(
                 () => {
                     let ready = this._renderContext._isReady();
@@ -286,6 +347,7 @@ export class FrameGraph implements IDisposable {
                             Logger.Error(err);
                         }
                     }
+                    reject(new Error(err));
                 },
                 timeStep,
                 maxTimeout

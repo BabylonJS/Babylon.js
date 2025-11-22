@@ -1,5 +1,5 @@
 import type { FrameGraph, FrameGraphObjectList, IFrameGraphPass, Nullable, FrameGraphTextureHandle, InternalTexture, FrameGraphRenderContext } from "core/index";
-import { FrameGraphCullPass } from "./Passes/cullPass";
+import { FrameGraphObjectListPass } from "./Passes/objectListPass";
 import { FrameGraphRenderPass } from "./Passes/renderPass";
 import { Observable } from "core/Misc/observable";
 
@@ -67,6 +67,16 @@ export abstract class FrameGraphTask {
     public abstract record(skipCreationOfDisabledPasses?: boolean): void;
 
     /**
+     * This function is called once after the task has been added to the frame graph and before the frame graph is built for the first time.
+     * This allows you to initialize asynchronous resources, which is not possible in the constructor.
+     * @returns A promise that resolves when the initialization is complete.
+     */
+    // eslint-disable-next-line @typescript-eslint/promise-function-async, no-restricted-syntax
+    public initAsync(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /**
      * An observable that is triggered after the textures have been allocated.
      */
     public onTexturesAllocatedObservable: Observable<FrameGraphRenderContext> = new Observable();
@@ -112,6 +122,12 @@ export abstract class FrameGraphTask {
 
     /** @internal */
     public _reset() {
+        for (const pass of this._passes) {
+            pass._dispose();
+        }
+        for (const pass of this._passesDisabled) {
+            pass._dispose();
+        }
         this._passes.length = 0;
         this._passesDisabled.length = 0;
     }
@@ -145,7 +161,7 @@ export abstract class FrameGraphTask {
                     }
                 }
                 outputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.textureManager.getTextureFromHandle(pass.renderTargetDepth) : null;
-            } else if (FrameGraphCullPass.IsCullPass(pass)) {
+            } else if (FrameGraphObjectListPass.IsObjectListPass(pass)) {
                 outputObjectList = pass.objectList;
             }
         }
@@ -170,7 +186,7 @@ export abstract class FrameGraphTask {
                 }
                 disabledOutputTextureHandle = handles;
                 disabledOutputDepthTexture = pass.renderTargetDepth !== undefined ? this._frameGraph.textureManager.getTextureFromHandle(pass.renderTargetDepth) : null;
-            } else if (FrameGraphCullPass.IsCullPass(pass)) {
+            } else if (FrameGraphObjectListPass.IsObjectListPass(pass)) {
                 disabledOutputObjectList = pass.objectList;
             }
         }
