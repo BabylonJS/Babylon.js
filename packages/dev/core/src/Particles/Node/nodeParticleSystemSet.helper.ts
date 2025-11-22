@@ -1,6 +1,8 @@
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Texture } from "core/Materials/Textures/texture";
+import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { Mesh } from "core/Meshes/mesh";
 import type { ColorGradient, FactorGradient } from "core/Misc";
 import type { ParticleSystem } from "core/Particles/particleSystem";
@@ -43,6 +45,7 @@ import { SphereShapeBlock } from "./Blocks/Emitters/sphereShapeBlock";
 import { UpdateAngleBlock } from "./Blocks/Update/updateAngleBlock";
 import { UpdateColorBlock } from "./Blocks/Update/updateColorBlock";
 import { UpdateDirectionBlock } from "./Blocks/Update/updateDirectionBlock";
+import { UpdateNoiseBlock } from "./Blocks/Update/updateNoiseBlock";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { UpdateSizeBlock } from "./Blocks/Update/updateSizeBlock";
 
@@ -420,10 +423,10 @@ function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
  * @returns The output connection point after all updates have been applied
  */
 function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
-    let updateBlockGroupOutput: NodeParticleConnectionPoint = inputParticle;
+    let updatedParticle: NodeParticleConnectionPoint = inputParticle;
 
-    updateBlockGroupOutput = _UpdateParticleColorBlockGroup(updateBlockGroupOutput, oldSystem._colorGradients, context);
-    updateBlockGroupOutput = _UpdateParticleAngleBlockGroup(updateBlockGroupOutput, oldSystem, context);
+    updatedParticle = _UpdateParticleColorBlockGroup(updatedParticle, oldSystem._colorGradients, context);
+    updatedParticle = _UpdateParticleAngleBlockGroup(updatedParticle, oldSystem, context);
 
     if (oldSystem._velocityGradients && oldSystem._velocityGradients.length > 0) {
         context.scaledDirection = _UpdateParticleVelocityGradientBlockGroup(oldSystem._velocityGradients, context);
@@ -433,21 +436,25 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
         context.scaledDirection = _UpdateParticleDragGradientBlockGroup(oldSystem._dragGradients, context);
     }
 
-    updateBlockGroupOutput = _UpdateParticlePositionBlockGroup(updateBlockGroupOutput, oldSystem.isLocal, context);
+    updatedParticle = _UpdateParticlePositionBlockGroup(updatedParticle, oldSystem.isLocal, context);
 
     if (oldSystem._limitVelocityGradients && oldSystem._limitVelocityGradients.length > 0 && oldSystem.limitVelocityDamping !== 0) {
-        updateBlockGroupOutput = _UpdateParticleVelocityLimitGradientBlockGroup(updateBlockGroupOutput, oldSystem._limitVelocityGradients, oldSystem.limitVelocityDamping, context);
+        updatedParticle = _UpdateParticleVelocityLimitGradientBlockGroup(updatedParticle, oldSystem._limitVelocityGradients, oldSystem.limitVelocityDamping, context);
+    }
+
+    if (oldSystem.noiseTexture && oldSystem.noiseStrength) {
+        updatedParticle = _UpdateParticleNoiseBlockGroup(updatedParticle, oldSystem.noiseTexture, oldSystem.noiseStrength);
     }
 
     if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
-        updateBlockGroupOutput = _UpdateParticleSizeGradientBlockGroup(updateBlockGroupOutput, oldSystem._sizeGradients, context);
+        updatedParticle = _UpdateParticleSizeGradientBlockGroup(updatedParticle, oldSystem._sizeGradients, context);
     }
 
     if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
-        updateBlockGroupOutput = _UpdateParticleGravityBlockGroup(updateBlockGroupOutput, oldSystem.gravity);
+        updatedParticle = _UpdateParticleGravityBlockGroup(updatedParticle, oldSystem.gravity);
     }
 
-    return updateBlockGroupOutput;
+    return updatedParticle;
 }
 
 /**
@@ -600,6 +607,21 @@ function _UpdateParticleVelocityLimitGradientBlockGroup(
     compareSpeed.output.connectTo(updateDirection.direction);
 
     return updateDirection.output;
+}
+
+/**
+ * Creates the group of blocks that represent the particle noise update
+ * @param inputParticle The particle to update
+ * @param noiseTexture The noise texture
+ * @param noiseStrength The strength of the noise
+ * @returns The output of the group of blocks that represent the particle noise update
+ */
+function _UpdateParticleNoiseBlockGroup(inputParticle: NodeParticleConnectionPoint, noiseTexture: ProceduralTexture, noiseStrength: Vector3): NodeParticleConnectionPoint {
+    const noiseUpdate = new UpdateNoiseBlock("Noise Update");
+    inputParticle.connectTo(noiseUpdate.particle);
+    _CreateTextureBlock(noiseTexture).connectTo(noiseUpdate.noiseTexture);
+    _CreateAndConnectInput("Noise Strength", noiseStrength, noiseUpdate.strength);
+    return noiseUpdate.output;
 }
 
 /**
@@ -789,7 +811,7 @@ function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversion
     newSystem.disposeOnStop = oldSystem.disposeOnStop;
 
     _SystemEmitRateValue(oldSystem, newSystem, context);
-    _SystemTextureBlock(oldSystem).connectTo(newSystem.texture);
+    _CreateTextureBlock(oldSystem.particleTexture).connectTo(newSystem.texture);
     _SystemTargetStopDuration(oldSystem, newSystem, context);
 
     return newSystem;
@@ -810,19 +832,6 @@ function _SystemEmitRateValue(oldSystem: ParticleSystem, newSystem: SystemBlock,
     } else {
         newSystem.emitRate.value = oldSystem.emitRate;
     }
-}
-
-function _SystemTextureBlock(oldSystem: ParticleSystem): NodeParticleConnectionPoint {
-    // Texture
-    const textureBlock = new ParticleTextureSourceBlock("Texture");
-    const url = (oldSystem.particleTexture as Texture).url || "";
-    if (url) {
-        textureBlock.url = url;
-    } else {
-        textureBlock.sourceTexture = oldSystem.particleTexture;
-    }
-
-    return textureBlock.texture;
 }
 
 function _SystemTargetStopDuration(oldSystem: ParticleSystem, newSystem: SystemBlock, context: RuntimeConversionContext): void {
@@ -1025,4 +1034,17 @@ function _CreateGradientValueBlockGroup(
     }
 
     return gradientValueBlock.output;
+}
+
+function _CreateTextureBlock(texture: Nullable<BaseTexture>): NodeParticleConnectionPoint {
+    // Texture
+    const textureBlock = new ParticleTextureSourceBlock("Texture");
+    const url = (texture as Texture).url || "";
+    if (url) {
+        textureBlock.url = url;
+    } else {
+        textureBlock.sourceTexture = texture;
+    }
+
+    return textureBlock.texture;
 }

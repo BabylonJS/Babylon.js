@@ -28,6 +28,7 @@ import { SetupSpriteSheetBlock } from "core/Particles/Node/Blocks/Emitters/setup
 import { BasicSpriteUpdateBlock } from "core/Particles/Node/Blocks/Update/basicSpriteUpdateBlock";
 import { UpdateSpriteCellIndexBlock } from "core/Particles/Node/Blocks/Update/updateSpriteCellIndexBlock";
 import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlowMapBlock";
+import { UpdateNoiseBlock } from "core/Particles/Node/Blocks/Update/updateNoiseBlock";
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
@@ -150,6 +151,8 @@ export class BlockTools {
                 return new UpdateAgeBlock("Update age");
             case "UpdateFlowMapBlock":
                 return new UpdateFlowMapBlock("Update flow map");
+            case "UpdateNoiseBlock":
+                return new UpdateNoiseBlock("Update noise");
             case "UpdateAttractorBlock":
                 return new UpdateAttractorBlock("Update attractor");
             case "SystemBlock":

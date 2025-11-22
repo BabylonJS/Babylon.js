@@ -216,7 +216,7 @@ export function _ProcessDragGradients(particle: Particle, system: ThinParticleSy
 
 /** @internal */
 export function _CreateNoiseData(particle: Particle, _system: ThinParticleSystem) {
-    if (particle._randomNoiseCoordinates1) {
+    if (particle._randomNoiseCoordinates1 && particle._randomNoiseCoordinates2) {
         particle._randomNoiseCoordinates1.copyFromFloats(Math.random(), Math.random(), Math.random());
         particle._randomNoiseCoordinates2.copyFromFloats(Math.random(), Math.random(), Math.random());
     } else {
@@ -230,7 +230,7 @@ export function _ProcessNoise(particle: Particle, system: ThinParticleSystem) {
     const noiseTextureData = system._noiseTextureData;
     const noiseTextureSize = system._noiseTextureSize;
 
-    if (noiseTextureData && noiseTextureSize && particle._randomNoiseCoordinates1) {
+    if (noiseTextureData && noiseTextureSize && particle._randomNoiseCoordinates1 && particle._randomNoiseCoordinates2) {
         const fetchedColorR = system._fetchR(
             particle._randomNoiseCoordinates1.x,
             particle._randomNoiseCoordinates1.y,
