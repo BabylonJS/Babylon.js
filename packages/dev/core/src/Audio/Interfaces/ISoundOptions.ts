@@ -40,7 +40,7 @@ export interface ISoundOptions {
      * Define the distance attenuation model the sound will follow.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
-    distanceModel?: string;
+    distanceModel?: "linear" | "inverse" | "exponential";
     /**
      * Defines the playback speed (1 by default)
      */
