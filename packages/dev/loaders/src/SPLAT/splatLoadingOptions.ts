@@ -21,4 +21,9 @@ export type SPLATLoadingOptions = {
      * @example import * as fflate from 'fflate';
      */
     fflate?: unknown;
+
+    /**
+     * Disable automatic camera limits from being applied if they exist in the splat file
+     */
+    disableAutoCameraLimits?: boolean;
 };

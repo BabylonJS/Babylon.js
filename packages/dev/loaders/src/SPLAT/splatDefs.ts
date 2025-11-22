@@ -11,7 +11,7 @@ export const enum Mode {
 /**
  * A parsed buffer and how to use it
  */
-export interface IParsedPLY {
+export interface IParsedSplat {
     data: ArrayBuffer;
     mode: Mode;
     faces?: number[];
@@ -20,4 +20,8 @@ export interface IParsedPLY {
     trainedWithAntialiasing?: boolean;
     compressed?: boolean;
     rawSplat?: boolean;
+    safeOrbitCameraRadiusMin?: number;
+    safeOrbitCameraElevationMinMax?: [number, number];
+    upAxis?: "X" | "Y" | "Z";
+    chirality?: "LeftHanded" | "RightHanded";
 }

@@ -1,5 +1,5 @@
 import type { Scene } from "core/scene";
-import type { IParsedPLY } from "./splatDefs";
+import type { IParsedSplat } from "./splatDefs";
 import { Mode } from "./splatDefs";
 import { Scalar } from "core/Maths/math.scalar";
 import type { AbstractEngine } from "core/Engines";
@@ -139,7 +139,7 @@ async function LoadWebpImageData(rootUrlOrData: string | Uint8Array, filename: s
     return await promise;
 }
 
-async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], scene: Scene): Promise<IParsedPLY> {
+async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], scene: Scene): Promise<IParsedSplat> {
     const splatCount = data.count ? data.count : data.means.shape[0];
     const rowOutputLength = 3 * 4 + 3 * 4 + 4 + 4; // 32
     const buffer = new ArrayBuffer(rowOutputLength * splatCount);
@@ -375,7 +375,7 @@ async function ParseSogDatas(data: SOGRootData, imageDataArrays: IWebPImage[], s
  * @param scene The Babylon.js scene
  * @returns Parsed data
  */
-export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene): Promise<IParsedPLY> {
+export async function ParseSogMeta(dataOrFiles: SOGRootData | Map<string, Uint8Array>, rootUrl: string, scene: Scene): Promise<IParsedSplat> {
     let data: SOGRootData;
     let files: Map<string, Uint8Array> | undefined;
 
