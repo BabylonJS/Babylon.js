@@ -1,19 +1,20 @@
 // ts/tsPipeline.ts
+import { typescript } from "monaco-editor";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 /**
  *
  */
 
-const TsOptions: monaco.languages.typescript.CompilerOptions = {
+const TsOptions: typescript.CompilerOptions = {
     allowJs: true,
     allowSyntheticDefaultImports: true,
     esModuleInterop: true,
-    module: monaco.languages.typescript.ModuleKind.ESNext,
-    moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+    module: typescript.ModuleKind.ESNext,
+    moduleResolution: typescript.ModuleResolutionKind.NodeJs,
     resolvePackageJsonExports: true,
     resolvePackageJsonImports: true,
-    target: monaco.languages.typescript.ScriptTarget.ESNext,
+    target: typescript.ScriptTarget.ESNext,
     noEmit: false,
     allowNonTsExtensions: true,
     skipLibCheck: true,
@@ -27,18 +28,18 @@ const TsOptions: monaco.languages.typescript.CompilerOptions = {
     inlineSourceMap: true,
     inlineSources: true,
     sourceRoot: "file:///pg/",
-    jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+    jsx: typescript.JsxEmit.ReactJSX,
     jsxFactory: "JSXAlone.createElement",
     lib: ["es2020", "dom", "dom.iterable"],
 };
 
-const JsOptions: monaco.languages.typescript.CompilerOptions = {
+const JsOptions: typescript.CompilerOptions = {
     ...TsOptions,
     checkJs: false,
     noImplicitAny: false,
     allowJs: true,
     jsxFactory: "JSXAlone.createElement",
-    jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+    jsx: typescript.JsxEmit.ReactJSX,
 };
 /**
  *
@@ -54,18 +55,18 @@ export class TsPipeline {
             const options = { ...TsOptions, paths: this._paths };
             const jsOptions = { ...JsOptions, paths: this._paths };
 
-            monaco.languages.typescript.typescriptDefaults.setCompilerOptions(options);
-            monaco.languages.typescript.javascriptDefaults.setCompilerOptions(jsOptions);
+            typescript.typescriptDefaults.setCompilerOptions(options);
+            typescript.javascriptDefaults.setCompilerOptions(jsOptions);
 
-            monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
-            monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
+            typescript.typescriptDefaults.setEagerModelSync(true);
+            typescript.javascriptDefaults.setEagerModelSync(true);
 
             this._setupDone = true;
         }
 
         if (libContent) {
-            const tsDisposable = monaco.languages.typescript.typescriptDefaults.addExtraLib(libContent, "file:///external/babylon.globals.d.ts");
-            const jsDisposable = monaco.languages.typescript.javascriptDefaults.addExtraLib(libContent, "file:///external/babylon.globals.d.ts");
+            const tsDisposable = typescript.typescriptDefaults.addExtraLib(libContent, "file:///external/babylon.globals.d.ts");
+            const jsDisposable = typescript.javascriptDefaults.addExtraLib(libContent, "file:///external/babylon.globals.d.ts");
             this._extraLibDisposables.push(tsDisposable, jsDisposable);
         }
 
@@ -73,8 +74,8 @@ export class TsPipeline {
 declare module "*.wgsl" { const content: string; export default content; }
 declare module "*.glsl" { const content: string; export default content; }
 declare module "*.fx"   { const content: string; export default content; }`;
-        const shaderTsDisposable = monaco.languages.typescript.typescriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
-        const shaderJsDisposable = monaco.languages.typescript.javascriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
+        const shaderTsDisposable = typescript.typescriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
+        const shaderJsDisposable = typescript.javascriptDefaults.addExtraLib(shaderDts, "file:///external/shaders.d.ts");
         this._extraLibDisposables.push(shaderTsDisposable, shaderJsDisposable);
 
         // Global shim for legacy PG with less strict checking
@@ -86,15 +87,15 @@ declare module "*.fx"   { const content: string; export default content; }`;
         }
         this._paths[raw] = [canonical];
 
-        monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        typescript.typescriptDefaults.setCompilerOptions({
             ...TsOptions,
             paths: { ...this._paths },
         });
-        monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+        typescript.javascriptDefaults.setCompilerOptions({
             ...JsOptions,
             paths: { ...this._paths },
         });
-        monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+        typescript.typescriptDefaults.setDiagnosticsOptions({
             noSemanticValidation: false,
             noSyntaxValidation: false,
             noSuggestionDiagnostics: false,
@@ -112,7 +113,7 @@ declare module "*.fx"   { const content: string; export default content; }`;
 
         const dts = `declare module "${raw}" {` + ` export * from "${canonical}";` + ` export { default } from "${canonical}";` + `}\n`;
 
-        monaco.languages.typescript.typescriptDefaults.addExtraLib(dts, uri);
+        typescript.typescriptDefaults.addExtraLib(dts, uri);
         this._extraLibUris.add(uri);
     }
 
@@ -135,7 +136,7 @@ declare module "*.fx"   { const content: string; export default content; }`;
     }> {
         const clean = path.replace(/^\//, "");
         const uri = monaco.Uri.parse(`file:///pg/${clean}`);
-        const wf = await monaco.languages.typescript.getTypeScriptWorker();
+        const wf = await typescript.getTypeScriptWorker();
         const svc = await wf(uri);
         const out = await svc.getEmitOutput(uri.toString());
         if (out.emitSkipped) {
@@ -156,7 +157,7 @@ declare module "*.fx"   { const content: string; export default content; }`;
      */
     forceSyncModels() {
         // Ensure TypeScript service is aware of all models
-        const ts = monaco.languages.typescript;
+        const ts = typescript;
 
         // Force worker restart to pick up all models
         ts.typescriptDefaults.setDiagnosticsOptions({
@@ -205,8 +206,8 @@ export {};
         const uri = "file:///pg/__playground_any_shim.d.ts";
 
         if (!this._extraLibUris.has(uri)) {
-            const disp = monaco.languages.typescript.typescriptDefaults.addExtraLib(stub, uri);
-            const dispJs = monaco.languages.typescript.javascriptDefaults.addExtraLib(stub, uri);
+            const disp = typescript.typescriptDefaults.addExtraLib(stub, uri);
+            const dispJs = typescript.javascriptDefaults.addExtraLib(stub, uri);
             this._extraLibDisposables.push(disp);
             this._extraLibDisposables.push(dispJs);
             this._extraLibUris.add(uri);

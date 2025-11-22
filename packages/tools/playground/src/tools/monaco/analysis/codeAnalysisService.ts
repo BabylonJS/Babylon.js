@@ -1,4 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
+import { typescript } from "monaco-editor";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import type { GlobalState } from "../../../globalState";
 
@@ -23,7 +24,7 @@ export class CodeAnalysisService {
         }
 
         const uri = model.uri;
-        const worker = globalState.language === "JS" ? await monaco.languages.typescript.getJavaScriptWorker() : await monaco.languages.typescript.getTypeScriptWorker();
+        const worker = globalState.language === "JS" ? await typescript.getJavaScriptWorker() : await typescript.getTypeScriptWorker();
 
         const languageService = await worker(uri);
         const source = "[preview]";
