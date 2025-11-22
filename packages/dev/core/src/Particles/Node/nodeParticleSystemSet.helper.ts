@@ -423,10 +423,10 @@ function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
  * @returns The output connection point after all updates have been applied
  */
 function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
-    let updatedInputParticleOutput: NodeParticleConnectionPoint = inputParticle;
+    let updatedParticle: NodeParticleConnectionPoint = inputParticle;
 
-    updatedInputParticleOutput = _UpdateParticleColorBlockGroup(updatedInputParticleOutput, oldSystem._colorGradients, context);
-    updatedInputParticleOutput = _UpdateParticleAngleBlockGroup(updatedInputParticleOutput, oldSystem, context);
+    updatedParticle = _UpdateParticleColorBlockGroup(updatedParticle, oldSystem._colorGradients, context);
+    updatedParticle = _UpdateParticleAngleBlockGroup(updatedParticle, oldSystem, context);
 
     if (oldSystem._velocityGradients && oldSystem._velocityGradients.length > 0) {
         context.scaledDirection = _UpdateParticleVelocityGradientBlockGroup(oldSystem._velocityGradients, context);
@@ -436,30 +436,25 @@ function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, o
         context.scaledDirection = _UpdateParticleDragGradientBlockGroup(oldSystem._dragGradients, context);
     }
 
-    updatedInputParticleOutput = _UpdateParticlePositionBlockGroup(updatedInputParticleOutput, oldSystem.isLocal, context);
+    updatedParticle = _UpdateParticlePositionBlockGroup(updatedParticle, oldSystem.isLocal, context);
 
     if (oldSystem._limitVelocityGradients && oldSystem._limitVelocityGradients.length > 0 && oldSystem.limitVelocityDamping !== 0) {
-        updatedInputParticleOutput = _UpdateParticleVelocityLimitGradientBlockGroup(
-            updatedInputParticleOutput,
-            oldSystem._limitVelocityGradients,
-            oldSystem.limitVelocityDamping,
-            context
-        );
+        updatedParticle = _UpdateParticleVelocityLimitGradientBlockGroup(updatedParticle, oldSystem._limitVelocityGradients, oldSystem.limitVelocityDamping, context);
     }
 
     if (oldSystem.noiseTexture && oldSystem.noiseStrength) {
-        updatedInputParticleOutput = _UpdateParticleNoiseBlockGroup(updatedInputParticleOutput, oldSystem.noiseTexture, oldSystem.noiseStrength);
+        updatedParticle = _UpdateParticleNoiseBlockGroup(updatedParticle, oldSystem.noiseTexture, oldSystem.noiseStrength);
     }
 
     if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
-        updatedInputParticleOutput = _UpdateParticleSizeGradientBlockGroup(updatedInputParticleOutput, oldSystem._sizeGradients, context);
+        updatedParticle = _UpdateParticleSizeGradientBlockGroup(updatedParticle, oldSystem._sizeGradients, context);
     }
 
     if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
-        updatedInputParticleOutput = _UpdateParticleGravityBlockGroup(updatedInputParticleOutput, oldSystem.gravity);
+        updatedParticle = _UpdateParticleGravityBlockGroup(updatedParticle, oldSystem.gravity);
     }
 
-    return updatedInputParticleOutput;
+    return updatedParticle;
 }
 
 /**
