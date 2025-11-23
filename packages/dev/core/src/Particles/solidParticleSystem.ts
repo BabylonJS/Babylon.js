@@ -161,7 +161,9 @@ export class SolidParticleSystem implements IDisposable {
      */
     public updateSpeed = 0.01;
     /** @internal */
-    protected _scaledUpdateSpeed: number;
+    public _scaledUpdateSpeed: number;
+    /** @internal */
+    public _actualFrame = 0;
 
     /**
      * Creates a SPS (Solid Particle System) object.
@@ -1184,6 +1186,7 @@ export class SolidParticleSystem implements IDisposable {
         // Calculate scaled update speed based on animation ratio (for FPS independence)
         if (this._started && !this._stopped) {
             this._scaledUpdateSpeed = this.updateSpeed * (this._scene?.getAnimationRatio() || 1);
+            this._actualFrame += this._scaledUpdateSpeed;
         }
 
         for (let p = start; p <= end; p++) {
@@ -2104,6 +2107,7 @@ export class SolidParticleSystem implements IDisposable {
 
         this._started = true;
         this._stopped = false;
+        this._actualFrame = 0;
 
         // Register update loop
         if (this._scene) {
