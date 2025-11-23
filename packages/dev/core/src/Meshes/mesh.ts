@@ -3426,7 +3426,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     private _convertToUnIndexedMesh(flattenNormals: boolean = false): Mesh {
         const kinds = this.getVerticesDataKinds().filter((kind) => !this.getVertexBuffer(kind)?.getIsInstanced());
-        const indices = this.getIndices()!;
+        const indices = this.getIndices(false, true)!;
         const data: { [kind: string]: FloatArray } = {};
 
         const separateVertices = (data: FloatArray, size: number): Float32Array => {

@@ -1,9 +1,9 @@
-import type { ComponentType, PropsWithChildren } from "react";
+import type { ComponentType, PropsWithChildren, Ref } from "react";
 
 import type { AccordionSectionProps } from "shared-ui-components/fluent/primitives/accordion";
 
 import { makeStyles } from "@fluentui/react-components";
-import { Children, isValidElement, useMemo } from "react";
+import { Children, isValidElement, useImperativeHandle, useLayoutEffect, useMemo, useState } from "react";
 
 import { Accordion, AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { CompactModeContextProvider } from "../components/compactModeContextProvider";
@@ -64,16 +64,21 @@ const useStyles = makeStyles({
     },
 });
 
+export type SectionsImperativeRef = {
+    highlightSections: (sections: readonly string[]) => void;
+};
+
 export function ExtensibleAccordion<ContextT = unknown>(
     props: PropsWithChildren<{
         sections: readonly DynamicAccordionSection[];
         sectionContent: readonly DynamicAccordionSectionContent<ContextT>[];
         context: ContextT;
+        sectionsRef?: Ref<SectionsImperativeRef>;
     }>
 ) {
     const classes = useStyles();
 
-    const { children, sections, sectionContent, context } = props;
+    const { children, sections, sectionContent, context, sectionsRef } = props;
 
     const defaultSections = useMemo(() => {
         const defaultSections: DynamicAccordionSection[] = [];
@@ -172,11 +177,31 @@ export function ExtensibleAccordion<ContextT = unknown>(
             .filter((section) => section !== null);
     }, [mergedSections, mergedSectionContent, context]);
 
+    const [highlightSections, setHighlightSections] = useState<readonly string[]>();
+
+    // When the context changes, clear any existing highlights.
+    useLayoutEffect(() => {
+        setHighlightSections(undefined);
+    }, [context]);
+
+    // This just assigns the returned object to any type of React ref, whether it is
+    // a mutable ref with a 'current' property or whether it is a callback, useImperativeHandle
+    // will deal with it.
+    useImperativeHandle(sectionsRef, () => {
+        return {
+            highlightSections: (sectionsToHighlight: readonly string[]) => {
+                if (sectionsToHighlight.length > 0) {
+                    setHighlightSections(sectionsToHighlight);
+                }
+            },
+        };
+    }, []);
+
     return (
         <div className={classes.rootDiv}>
             {visibleSections.length > -1 && (
                 <CompactModeContextProvider>
-                    <Accordion>
+                    <Accordion highlightSections={highlightSections}>
                         {...visibleSections.map((section) => {
                             return (
                                 <AccordionSection key={section.identity} title={section.identity} collapseByDefault={section.collapseByDefault}>

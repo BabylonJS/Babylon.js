@@ -1,16 +1,15 @@
 import type { Scene } from "core/scene";
-import type { NodeParticleConnectionPoint } from "./nodeParticleBlockConnectionPoint";
-import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
-import { Particle } from "../particle";
 import type { Nullable } from "core/types";
-import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
-import { Vector2, Vector3 } from "core/Maths/math.vector";
-import { SolidParticle } from "../solidParticle";
-import { ThinParticleSystem } from "../thinParticleSystem";
-import { Color4 } from "core/Maths/math.color";
-import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { SolidParticleSystem } from "../solidParticleSystem";
+import type { Particle } from "core/Particles/particle";
+import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
+import type { NodeParticleConnectionPoint } from "core/Particles/Node/nodeParticleBlockConnectionPoint";
+
+import { Color4 } from "core/Maths/math.color";
+import { Vector2, Vector3 } from "core/Maths/math.vector";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
+import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 /**
  * Class used to store node based geometry build state
@@ -38,18 +37,12 @@ export class NodeParticleBuildState {
     /**
      * Gets or sets the particle context for contextual data
      */
-    public particleContext: Nullable<Particle | SolidParticle> = null;
+    public particleContext: Nullable<Particle> = null;
 
     /**
      * Gets or sets the system context for contextual data
-     * Can be either ThinParticleSystem or SolidParticleSystem
      */
-    public systemContext: Nullable<ThinParticleSystem | SolidParticleSystem> = null;
-
-    /**
-     * Gets or sets the delta time for physics calculations
-     */
-    public deltaTime: number = 0.016; // 60 FPS default
+    public systemContext: Nullable<ThinParticleSystem> = null;
 
     /**
      * Gets or sets the index of the gradient to use
@@ -108,173 +101,61 @@ export class NodeParticleBuildState {
     }
 
     /**
-     * Type guard to check if particle context is a Particle and system context is ThinParticleSystem
-     * @returns true when the contexts are Particle + ThinParticleSystem
-     */
-    private _isParticleWithThinSystem(): this is this & { particleContext: Particle; systemContext: ThinParticleSystem } {
-        return this.particleContext instanceof Particle && this.systemContext instanceof ThinParticleSystem;
-    }
-
-    /**
-     * Type guard to check if particle context is a Particle
-     * @returns true when the particle context is a Particle
-     */
-    private _isParticle(): this is this & { particleContext: Particle } {
-        return this.particleContext instanceof Particle;
-    }
-
-    /**
-     * Type guard to check if particle context is a SolidParticle
-     * @returns true when the particle context is a SolidParticle
-     */
-    private _isSolidParticle(): this is this & { particleContext: SolidParticle } {
-        return this.particleContext instanceof SolidParticle;
-    }
-
-    /**
-     * Type guard to check if system context is a ThinParticleSystem
-     * @returns true when the system context is a ThinParticleSystem
-     */
-    private _isThinParticleSystem(): this is this & { systemContext: ThinParticleSystem } {
-        return this.systemContext instanceof ThinParticleSystem;
-    }
-
-    /**
-     * Type guard to check if system context is a SolidParticleSystem
-     * @returns true when the system context is a SolidParticleSystem
-     */
-    private _isSolidParticleSystem(): this is this & { systemContext: SolidParticleSystem } {
-        return this.systemContext instanceof SolidParticleSystem;
-    }
-
-    /**
      * Gets the value associated with a contextual source
      * @param source Source of the contextual value
      * @returns the value associated with the source
      */
     public getContextualValue(source: NodeParticleContextualSources) {
-        if (!this.particleContext) {
+        if (!this.particleContext || !this.systemContext) {
             return null;
         }
 
         switch (source) {
-            // Common properties available on both Particle and SolidParticle
             case NodeParticleContextualSources.Position:
                 return this.particleContext.position;
+            case NodeParticleContextualSources.Direction:
+                return this.particleContext.direction;
+            case NodeParticleContextualSources.DirectionScale:
+                return this.particleContext._directionScale;
+            case NodeParticleContextualSources.ScaledDirection:
+                this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
+                return this.particleContext._scaledDirection;
             case NodeParticleContextualSources.Color:
                 return this.particleContext.color;
-            case NodeParticleContextualSources.Scale:
-                if (this._isParticle()) {
-                    return this.particleContext.scale;
-                }
-                if (this._isSolidParticle()) {
-                    // Convert Vector3 scaling to Vector2 for compatibility
-                    const scaling = this.particleContext.scaling;
-                    return new Vector2(scaling.x, scaling.y);
-                }
-                return null;
-
-            case NodeParticleContextualSources.Direction:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
-                return this.particleContext.direction;
-
-            case NodeParticleContextualSources.ScaledDirection:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
-                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
-                return this.systemContext._scaledDirection;
-
             case NodeParticleContextualSources.InitialColor:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.initialColor;
-
             case NodeParticleContextualSources.ColorDead:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.colorDead;
-
             case NodeParticleContextualSources.Age:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.age;
-
             case NodeParticleContextualSources.Lifetime:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.lifeTime;
-
             case NodeParticleContextualSources.Angle:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.angle;
-
+            case NodeParticleContextualSources.Scale:
+                return this.particleContext.scale;
             case NodeParticleContextualSources.Size:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.size;
             case NodeParticleContextualSources.AgeGradient:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.age / this.particleContext.lifeTime;
-
+            case NodeParticleContextualSources.SpriteCellEnd:
+                return this.systemContext.endSpriteCellID;
             case NodeParticleContextualSources.SpriteCellIndex:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.cellIndex;
-
+            case NodeParticleContextualSources.SpriteCellStart:
+                return this.systemContext.startSpriteCellID;
             case NodeParticleContextualSources.InitialDirection:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext._initialDirection;
-
             case NodeParticleContextualSources.ColorStep:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 return this.particleContext.colorStep;
-
             case NodeParticleContextualSources.ScaledColorStep:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
                 this.particleContext.colorStep.scaleToRef(this.systemContext._scaledUpdateSpeed, this.systemContext._scaledColorStep);
                 return this.systemContext._scaledColorStep;
-
             case NodeParticleContextualSources.LocalPositionUpdated:
-                if (!this._isParticleWithThinSystem()) {
-                    return null;
-                }
-                this.particleContext.direction.scaleToRef(this.systemContext._directionScale, this.systemContext._scaledDirection);
-                if (this.particleContext._localPosition) {
-                    this.particleContext._localPosition.addInPlace(this.systemContext._scaledDirection);
-                    Vector3.TransformCoordinatesToRef(this.particleContext._localPosition, this.systemContext._emitterWorldMatrix, this.particleContext.position);
-                }
+                this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
+                this.particleContext._localPosition!.addInPlace(this.particleContext._scaledDirection);
+                Vector3.TransformCoordinatesToRef(this.particleContext._localPosition!, this.systemContext._emitterWorldMatrix, this.particleContext.position);
                 return this.particleContext.position;
-
-            case NodeParticleContextualSources.SpriteCellEnd:
-                if (!this._isThinParticleSystem()) {
-                    return null;
-                }
-                return this.systemContext.endSpriteCellID;
-
-            case NodeParticleContextualSources.SpriteCellStart:
-                if (!this._isThinParticleSystem()) {
-                    return null;
-                }
-                return this.systemContext.startSpriteCellID;
         }
 
         return null;
@@ -284,7 +165,7 @@ export class NodeParticleBuildState {
      * Gets the emitter world matrix
      */
     public get emitterWorldMatrix() {
-        if (!this._isThinParticleSystem()) {
+        if (!this.systemContext) {
             return null;
         }
         return this.systemContext._emitterWorldMatrix;
@@ -294,7 +175,7 @@ export class NodeParticleBuildState {
      * Gets the emitter inverse world matrix
      */
     public get emitterInverseWorldMatrix() {
-        if (!this._isThinParticleSystem()) {
+        if (!this.systemContext) {
             return null;
         }
         return this.systemContext._emitterInverseWorldMatrix;
@@ -308,14 +189,6 @@ export class NodeParticleBuildState {
             return null;
         }
 
-        if (this._isSolidParticleSystem()) {
-            return this.systemContext.mesh?.absolutePosition || Vector3.Zero();
-        }
-
-        if (!this._isThinParticleSystem()) {
-            return null;
-        }
-
         if (!this.systemContext.emitter) {
             return null;
         }
@@ -324,27 +197,7 @@ export class NodeParticleBuildState {
             return this.systemContext.emitter;
         }
 
-        return (this.systemContext.emitter as AbstractMesh).absolutePosition;
-    }
-
-    /**
-     * Gets the actual frame number
-     */
-    public get actualFrame() {
-        if (this._isThinParticleSystem()) {
-            return this.systemContext._actualFrame;
-        }
-        return this.scene.getFrameId() || 0;
-    }
-
-    /**
-     * Gets the delta time
-     */
-    public get delta() {
-        if (this._isThinParticleSystem()) {
-            return this.systemContext._scaledUpdateSpeed;
-        }
-        return this.scene.getEngine().getDeltaTime() || this.deltaTime;
+        return (<AbstractMesh>this.systemContext.emitter).absolutePosition;
     }
 
     /**
@@ -353,15 +206,15 @@ export class NodeParticleBuildState {
      * @returns the value associated with the source
      */
     public getSystemValue(source: NodeParticleSystemSources) {
-        if (!this.particleContext || !this.systemContext) {
+        if (!this.systemContext) {
             return null;
         }
 
         switch (source) {
             case NodeParticleSystemSources.Time:
-                return this.actualFrame;
+                return this.systemContext._actualFrame;
             case NodeParticleSystemSources.Delta:
-                return this.delta;
+                return this.systemContext._scaledUpdateSpeed;
             case NodeParticleSystemSources.Emitter:
                 return this.emitterPosition;
             case NodeParticleSystemSources.CameraPosition:

@@ -22,13 +22,16 @@ import { NodeParticleSystemSet } from "./nodeParticleSystemSet";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
+import { ParticleFloatToIntBlock, ParticleFloatToIntBlockOperations } from "./Blocks/particleFloatToIntBlock";
 import { ParticleGradientBlock } from "./Blocks/particleGradientBlock";
 import { ParticleGradientValueBlock } from "./Blocks/particleGradientValueBlock";
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
 import { ParticleRandomBlock, ParticleRandomBlockLocks } from "./Blocks/particleRandomBlock";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
+import { ParticleVectorLengthBlock } from "./Blocks/particleVectorLengthBlock";
 import { SystemBlock } from "./Blocks/systemBlock";
+import { ParticleConditionBlock, ParticleConditionBlockTests } from "./Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { ConeShapeBlock } from "./Blocks/Emitters/coneShapeBlock";
@@ -46,9 +49,14 @@ import { UpdateSizeBlock } from "./Blocks/Update/updateSizeBlock";
 /** Represents blocks or groups of blocks that can be used in multiple places in the graph, so they are stored in this context to be reused */
 type ConversionContext = {
     targetStopDurationBlockOutput: NodeParticleConnectionPoint;
+    // Connections that represent calculated ratios values
     timeToStopTimeRatioBlockGroupOutput: NodeParticleConnectionPoint;
-    sizeGradientValue0Output: NodeParticleConnectionPoint;
     ageToLifeTimeRatioBlockGroupOutput: NodeParticleConnectionPoint;
+    // Connections for the start value of a gradient. These are stored so they can be reused for the Creation phase and the Update phase of the particle
+    sizeGradientValue0Output: NodeParticleConnectionPoint;
+    colorGradientValue0Output: NodeParticleConnectionPoint;
+    // Updated scaled direction direction based on velocity and drag
+    scaledDirection: NodeParticleConnectionPoint;
 };
 
 type RuntimeConversionContext = Partial<ConversionContext>;
@@ -76,92 +84,38 @@ export async function ConvertToNodeParticleSystemSetAsync(name: string, particle
 }
 
 async function _ExtractDatafromParticleSystemAsync(newSet: NodeParticleSystemSet, oldSystem: ParticleSystem, context: RuntimeConversionContext): Promise<void> {
-    // CreateParticle block
-    const createParticleBlock = _CreateParticleBlockGroup(oldSystem, context);
+    // CreateParticle block group
+    const createParticleOutput = _CreateParticleBlockGroup(oldSystem, context);
 
     // Emitter Shape block
-    const shapeBlock = _EmitterShapeBlock(oldSystem);
-    createParticleBlock.particle.connectTo(shapeBlock.particle);
+    const shapeOutput = _EmitterShapeBlock(oldSystem);
+    createParticleOutput.particle.connectTo(shapeOutput.particle);
 
-    // Update the particle position
-    const positionUpdatedParticle = _UpdateParticleBlockGroup(shapeBlock.output, oldSystem, context);
-
-    // Color update
-    const colorUpdateBlock = _CreateColorUpdateBlock(oldSystem, createParticleBlock);
-    positionUpdatedParticle.connectTo(colorUpdateBlock.particle);
+    // UpdateParticle block group
+    const updateParticleOutput = _UpdateParticleBlockGroup(shapeOutput.output, oldSystem, context);
 
     // System block
     const newSystem = _SystemBlockGroup(oldSystem, context);
-    colorUpdateBlock.output.connectTo(newSystem.particle);
+    updateParticleOutput.connectTo(newSystem.particle);
 
     // Register
     newSet.systemBlocks.push(newSystem);
 }
 
-// ------------- SYSTEM FUNCTIONS -------------
-
-function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): SystemBlock {
-    const newSystem = new SystemBlock(oldSystem.name);
-
-    _CreateAndConnectInput("Translation pivot", oldSystem.translationPivot, newSystem.translationPivot);
-    _CreateAndConnectInput("Texture mask", oldSystem.textureMask, newSystem.textureMask);
-    _CreateTargetStopDurationInputBlock(oldSystem, context).connectTo(newSystem.targetStopDuration);
-
-    newSystem.emitRate = oldSystem.emitRate;
-    newSystem.manualEmitCount = oldSystem.manualEmitCount;
-    newSystem.blendMode = oldSystem.blendMode;
-    newSystem.capacity = oldSystem.getCapacity();
-    newSystem.startDelay = oldSystem.startDelay;
-    newSystem.updateSpeed = oldSystem.updateSpeed;
-    newSystem.preWarmCycles = oldSystem.preWarmCycles;
-    newSystem.preWarmStepOffset = oldSystem.preWarmStepOffset;
-    newSystem.isBillboardBased = oldSystem.isBillboardBased;
-    newSystem.isLocal = oldSystem.isLocal;
-    newSystem.disposeOnStop = oldSystem.disposeOnStop;
-
-    // Texture
-    const textureBlock = new ParticleTextureSourceBlock("Texture");
-    const url = (oldSystem.particleTexture as Texture).url || "";
-    if (url) {
-        textureBlock.url = url;
-    } else {
-        textureBlock.sourceTexture = oldSystem.particleTexture;
-    }
-    textureBlock.texture.connectTo(newSystem.texture);
-
-    return newSystem;
-}
-
 // ------------- CREATE PARTICLE FUNCTIONS -------------
 
 // The creation of the different properties follows the order they are added to the CreationQueue in ThinParticleSystem:
-// Lifetime, Position, Direction, Emit, Size, Scale/StartSize, Angle, Velocity, VelocityLimit, Color, Drag, Noise, ColorDead, Ramp, Sheet
+// Lifetime, Emit Power, Size, Scale/StartSize, Angle, Color, Noise, ColorDead, Ramp, Sheet
 function _CreateParticleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): CreateParticleBlock {
-    // Create particle
+    // Create particle block
     const createParticleBlock = new CreateParticleBlock("Create Particle");
 
-    // Lifetime
     _CreateParticleLifetimeBlockGroup(oldSystem, context).connectTo(createParticleBlock.lifeTime);
-
-    // Emit power (Speed)
-    const randomEmitPowerBlock = new ParticleRandomBlock("Random Emit Power");
-    _CreateAndConnectInput("Min Emit Power", oldSystem.minEmitPower, randomEmitPowerBlock.min);
-    _CreateAndConnectInput("Max Emit Power", oldSystem.maxEmitPower, randomEmitPowerBlock.max);
-    randomEmitPowerBlock.output.connectTo(createParticleBlock.emitPower);
-
-    // Size
+    _CreateParticleEmitPowerBlockGroup(oldSystem).connectTo(createParticleBlock.emitPower);
     _CreateParticleSizeBlockGroup(oldSystem, context).connectTo(createParticleBlock.size);
-
-    // Scale/Start Size
     _CreateParticleScaleBlockGroup(oldSystem, context).connectTo(createParticleBlock.scale);
-
-    // Angle (rotation)
-    const randomRotationBlock = new ParticleRandomBlock("Random Rotation");
-    _CreateAndConnectInput("Min Rotation", oldSystem.minInitialRotation, randomRotationBlock.min);
-    _CreateAndConnectInput("Max Rotation", oldSystem.maxInitialRotation, randomRotationBlock.max);
-    randomRotationBlock.output.connectTo(createParticleBlock.angle);
-
-    // Color is handled when we do the color update block to manage gradients
+    _CreateParticleAngleBlockGroup(oldSystem).connectTo(createParticleBlock.angle);
+    _CreateParticleColorBlockGroup(oldSystem, context).connectTo(createParticleBlock.color);
 
     // Dead color
     _CreateAndConnectInput("Dead Color", oldSystem.colorDead, createParticleBlock.colorDead);
@@ -194,15 +148,27 @@ function _CreateParticleLifetimeBlockGroup(oldSystem: ParticleSystem, context: R
 }
 
 /**
+ * Creates the group of blocks that represent the particle emit power
+ * @param oldSystem The old particle system to convert
+ * @returns The output of the group of blocks that represent the particle emit power
+ */
+function _CreateParticleEmitPowerBlockGroup(oldSystem: ParticleSystem): NodeParticleConnectionPoint {
+    const randomEmitPowerBlock = new ParticleRandomBlock("Random Emit Power");
+    _CreateAndConnectInput("Min Emit Power", oldSystem.minEmitPower, randomEmitPowerBlock.min);
+    _CreateAndConnectInput("Max Emit Power", oldSystem.maxEmitPower, randomEmitPowerBlock.max);
+    return randomEmitPowerBlock.output;
+}
+
+/**
  * Creates the group of blocks that represent the particle size
  * @param oldSystem The old particle system to convert
  * @param context The context of the current conversion
- * @returns The output of the group of blocks that represent the particle lifetime
+ * @returns The output of the group of blocks that represent the particle size
  */
 function _CreateParticleSizeBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
-        const sizeGradientBlockGroupOutput = _CreateParticleSizeGradientBlockGroup(oldSystem._sizeGradients, context);
-        return sizeGradientBlockGroupOutput;
+        context.sizeGradientValue0Output = _CreateParticleInitialValueFromGradient(oldSystem._sizeGradients);
+        return context.sizeGradientValue0Output;
     } else {
         const randomSizeBlock = new ParticleRandomBlock("Random size");
         _CreateAndConnectInput("Min size", oldSystem.minSize, randomSizeBlock.min);
@@ -211,6 +177,12 @@ function _CreateParticleSizeBlockGroup(oldSystem: ParticleSystem, context: Runti
     }
 }
 
+/**
+ * Creates the group of blocks that represent the particle scale
+ * @param oldSystem The old particle system to convert
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle scale
+ */
 function _CreateParticleScaleBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     // Create the random scale
     const randomScaleBlock = new ParticleRandomBlock("Random Scale");
@@ -239,28 +211,56 @@ function _CreateParticleScaleBlockGroup(oldSystem: ParticleSystem, context: Runt
     }
 }
 
-function _CreateParticleSizeGradientBlockGroup(sizeGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
-    if (sizeGradients.length === 0) {
-        throw new Error("No size gradients provided.");
-    }
-
-    const initialParticleSize = _CreateSizeFromGradientStep(sizeGradients[0], 0);
-    context.sizeGradientValue0Output = initialParticleSize;
-    return initialParticleSize;
+/**
+ * Creates the group of blocks that represent the particle angle (rotation)
+ * @param oldSystem The old particle system to convert
+ * @returns The output of the group of blocks that represent the particle angle (rotation)
+ */
+function _CreateParticleAngleBlockGroup(oldSystem: ParticleSystem): NodeParticleConnectionPoint {
+    const randomRotationBlock = new ParticleRandomBlock("Random Rotation");
+    _CreateAndConnectInput("Min Rotation", oldSystem.minInitialRotation, randomRotationBlock.min);
+    _CreateAndConnectInput("Max Rotation", oldSystem.maxInitialRotation, randomRotationBlock.max);
+    return randomRotationBlock.output;
 }
 
-function _CreateSizeFromGradientStep(gradientStep: FactorGradient, index: number): NodeParticleConnectionPoint {
-    if (gradientStep.factor2 !== undefined) {
+/**
+ * Creates the group of blocks that represent the particle color
+ * @param oldSystem The old particle system to convert
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle color
+ */
+function _CreateParticleColorBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    if (oldSystem._colorGradients && oldSystem._colorGradients.length > 0) {
+        context.colorGradientValue0Output = _CreateParticleInitialValueFromGradient(oldSystem._colorGradients);
+        return context.colorGradientValue0Output;
+    } else {
+        const randomColorBlock = new ParticleRandomBlock("Random color");
+        _CreateAndConnectInput("Color 1", oldSystem.color1, randomColorBlock.min);
+        _CreateAndConnectInput("Color 2", oldSystem.color2, randomColorBlock.max);
+        return randomColorBlock.output;
+    }
+}
+
+function _CreateParticleInitialValueFromGradient(gradients: Array<FactorGradient> | Array<ColorGradient>): NodeParticleConnectionPoint {
+    if (gradients.length === 0) {
+        throw new Error("No gradients provided.");
+    }
+
+    const gradientStep = gradients[0];
+    const value1 = (gradientStep as any).factor1 ?? (gradientStep as any).color1;
+    const value2 = (gradientStep as any).factor2 ?? (gradientStep as any).color2;
+
+    if (value2 !== undefined) {
         // Create a random between value1 and value2
-        const randomBlock = new ParticleRandomBlock("Random Value " + index);
+        const randomBlock = new ParticleRandomBlock("Random Value 0");
         randomBlock.lockMode = ParticleRandomBlockLocks.OncePerParticle;
-        _CreateAndConnectInput("Value 1", gradientStep.factor1, randomBlock.min);
-        _CreateAndConnectInput("Value 2", gradientStep.factor2, randomBlock.max);
+        _CreateAndConnectInput("Value 1", value1, randomBlock.min);
+        _CreateAndConnectInput("Value 2", value2, randomBlock.max);
         return randomBlock.output;
     } else {
         // Single value
         const sizeBlock = new ParticleInputBlock("Value");
-        sizeBlock.value = gradientStep.factor1;
+        sizeBlock.value = value1;
         return sizeBlock.output;
     }
 }
@@ -420,49 +420,229 @@ function _EmitterShapeBlock(oldSystem: IParticleSystem): IShapeBlock {
  * @returns The output connection point after all updates have been applied
  */
 function _UpdateParticleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
-    let outputUpdate: NodeParticleConnectionPoint = inputParticle;
+    let updateBlockGroupOutput: NodeParticleConnectionPoint = inputParticle;
 
-    if (oldSystem.minAngularSpeed !== 0 || oldSystem.maxAngularSpeed !== 0) {
-        outputUpdate = _UpdateParticleAngularSpeedBlockGroup(outputUpdate, oldSystem.minAngularSpeed, oldSystem.maxAngularSpeed);
+    updateBlockGroupOutput = _UpdateParticleColorBlockGroup(updateBlockGroupOutput, oldSystem._colorGradients, context);
+    updateBlockGroupOutput = _UpdateParticleAngleBlockGroup(updateBlockGroupOutput, oldSystem, context);
+
+    if (oldSystem._velocityGradients && oldSystem._velocityGradients.length > 0) {
+        context.scaledDirection = _UpdateParticleVelocityGradientBlockGroup(oldSystem._velocityGradients, context);
     }
 
-    outputUpdate = _UpdateParticlePositionBlockGroup(outputUpdate, oldSystem.isLocal);
+    if (oldSystem._dragGradients && oldSystem._dragGradients.length > 0) {
+        context.scaledDirection = _UpdateParticleDragGradientBlockGroup(oldSystem._dragGradients, context);
+    }
+
+    updateBlockGroupOutput = _UpdateParticlePositionBlockGroup(updateBlockGroupOutput, oldSystem.isLocal, context);
+
+    if (oldSystem._limitVelocityGradients && oldSystem._limitVelocityGradients.length > 0 && oldSystem.limitVelocityDamping !== 0) {
+        updateBlockGroupOutput = _UpdateParticleVelocityLimitGradientBlockGroup(updateBlockGroupOutput, oldSystem._limitVelocityGradients, oldSystem.limitVelocityDamping, context);
+    }
 
     if (oldSystem._sizeGradients && oldSystem._sizeGradients.length > 0) {
-        outputUpdate = _UpdateParticleSizeGradientBlockGroup(outputUpdate, oldSystem._sizeGradients, context);
+        updateBlockGroupOutput = _UpdateParticleSizeGradientBlockGroup(updateBlockGroupOutput, oldSystem._sizeGradients, context);
     }
 
     if (oldSystem.gravity.equalsToFloats(0, 0, 0) === false) {
-        outputUpdate = _UpdateParticleGravityBlockGroup(outputUpdate, oldSystem.gravity);
+        updateBlockGroupOutput = _UpdateParticleGravityBlockGroup(updateBlockGroupOutput, oldSystem.gravity);
     }
 
-    return outputUpdate;
+    return updateBlockGroupOutput;
 }
 
-function _UpdateParticleAngularSpeedBlockGroup(inputParticle: NodeParticleConnectionPoint, minAngularSpeed: number, maxAngularSpeed: number): NodeParticleConnectionPoint {
-    // Random value between for the angular speed of the particle
-    const randomAngularSpeedBlock = new ParticleRandomBlock("Random Angular Speed");
-    _CreateAndConnectInput("Min Angular Speed", minAngularSpeed, randomAngularSpeedBlock.min);
-    _CreateAndConnectInput("Max Angular Speed", maxAngularSpeed, randomAngularSpeedBlock.max);
+/**
+ * Creates the group of blocks that represent the particle color update
+ * @param inputParticle The input particle to update
+ * @param colorGradients The color gradients (if any)
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle color update
+ */
+function _UpdateParticleColorBlockGroup(
+    inputParticle: NodeParticleConnectionPoint,
+    colorGradients: Nullable<Array<ColorGradient>>,
+    context: RuntimeConversionContext
+): NodeParticleConnectionPoint {
+    let colorCalculation: NodeParticleConnectionPoint | undefined = undefined;
+    if (colorGradients && colorGradients.length > 0) {
+        if (context.colorGradientValue0Output === undefined) {
+            throw new Error("Initial color gradient values not found in context.");
+        }
 
-    // Create the angular speed delta
-    const angleSpeedDeltaOutput = _CreateDeltaModifiedInput("Angular Speed", randomAngularSpeedBlock.output);
+        context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+        colorCalculation = _CreateGradientBlockGroup(context.ageToLifeTimeRatioBlockGroupOutput, colorGradients, ParticleRandomBlockLocks.OncePerParticle, "Color", [
+            context.colorGradientValue0Output,
+        ]);
+    } else {
+        colorCalculation = _BasicColorUpdateBlockGroup();
+    }
 
-    // Add it to the angle
-    const addAngle = new ParticleMathBlock("Add Angular Speed to Angle");
-    addAngle.operation = ParticleMathBlockOperations.Add;
-    _CreateAndConnectContextualSource("Angle", NodeParticleContextualSources.Angle, addAngle.left);
-    angleSpeedDeltaOutput.connectTo(addAngle.right);
+    // Create the color update block clamping alpha >= 0
+    const colorUpdateBlock = new UpdateColorBlock("Color update");
+    inputParticle.connectTo(colorUpdateBlock.particle);
+    _ClampUpdateColorAlpha(colorCalculation).connectTo(colorUpdateBlock.color);
 
-    // Update the particle angle
-    const updateAngle = new UpdateAngleBlock("Angle Update with Angular Speed");
-    inputParticle.connectTo(updateAngle.particle);
-    addAngle.output.connectTo(updateAngle.angle);
-
-    return updateAngle.output;
+    return colorUpdateBlock.output;
 }
 
-function _UpdateParticlePositionBlockGroup(inputParticle: NodeParticleConnectionPoint, isLocal: boolean): NodeParticleConnectionPoint {
+/**
+ * Creates the group of blocks that represent the particle angle update
+ * @param inputParticle The input particle to update
+ * @param oldSystem The old particle system to convert
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle color update
+ */
+function _UpdateParticleAngleBlockGroup(inputParticle: NodeParticleConnectionPoint, oldSystem: ParticleSystem, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    // We will try to use gradients if they exist
+    // If not, we will try to use min/max angular speed
+    let angularSpeedCalculation = null;
+    if (oldSystem._angularSpeedGradients && oldSystem._angularSpeedGradients.length > 0) {
+        angularSpeedCalculation = _UpdateParticleAngularSpeedGradientBlockGroup(oldSystem._angularSpeedGradients, context);
+    } else if (oldSystem.minAngularSpeed !== 0 || oldSystem.maxAngularSpeed !== 0) {
+        angularSpeedCalculation = _UpdateParticleAngularSpeedBlockGroup(oldSystem.minAngularSpeed, oldSystem.maxAngularSpeed);
+    }
+
+    // If we have an angular speed calculation, then update the angle
+    if (angularSpeedCalculation) {
+        // Create the angular speed delta
+        const angleSpeedDeltaOutput = _CreateDeltaModifiedInput("Angular Speed", angularSpeedCalculation);
+
+        // Add it to the angle
+        const addAngle = new ParticleMathBlock("Add Angular Speed to Angle");
+        addAngle.operation = ParticleMathBlockOperations.Add;
+        _CreateAndConnectContextualSource("Angle", NodeParticleContextualSources.Angle, addAngle.left);
+        angleSpeedDeltaOutput.connectTo(addAngle.right);
+
+        // Update the particle angle
+        const updateAngle = new UpdateAngleBlock("Angle Update with Angular Speed");
+        inputParticle.connectTo(updateAngle.particle);
+        addAngle.output.connectTo(updateAngle.angle);
+
+        return updateAngle.output;
+    } else {
+        return inputParticle;
+    }
+}
+
+/**
+ * Creates the group of blocks that represent the particle velocity update
+ * @param velocityGradients The velocity gradients
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle velocity update
+ */
+function _UpdateParticleVelocityGradientBlockGroup(velocityGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+
+    // Generate the gradient
+    const velocityValueOutput = _CreateGradientBlockGroup(context.ageToLifeTimeRatioBlockGroupOutput, velocityGradients, ParticleRandomBlockLocks.OncePerParticle, "Velocity");
+
+    // Update the direction scale based on the velocity
+    const multiplyScaleByVelocity = new ParticleMathBlock("Multiply Direction Scale by Velocity");
+    multiplyScaleByVelocity.operation = ParticleMathBlockOperations.Multiply;
+    velocityValueOutput.connectTo(multiplyScaleByVelocity.left);
+    _CreateAndConnectContextualSource("Direction Scale", NodeParticleContextualSources.DirectionScale, multiplyScaleByVelocity.right);
+
+    // Update the particle direction scale
+    const multiplyDirection = new ParticleMathBlock("Scaled Direction");
+    multiplyDirection.operation = ParticleMathBlockOperations.Multiply;
+    multiplyScaleByVelocity.output.connectTo(multiplyDirection.left);
+    _CreateAndConnectContextualSource("Direction", NodeParticleContextualSources.Direction, multiplyDirection.right);
+
+    // Store the new calculation of the scaled direction in the context
+    context.scaledDirection = multiplyDirection.output;
+    return multiplyDirection.output;
+}
+
+/**
+ * Creates the group of blocks that represent the particle velocity limit update
+ * @param inputParticle The input particle to update
+ * @param velocityLimitGradients The velocity limit gradients
+ * @param limitVelocityDamping The limit velocity damping factor
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle velocity limit update
+ */
+function _UpdateParticleVelocityLimitGradientBlockGroup(
+    inputParticle: NodeParticleConnectionPoint,
+    velocityLimitGradients: Array<FactorGradient>,
+    limitVelocityDamping: number,
+    context: RuntimeConversionContext
+): NodeParticleConnectionPoint {
+    context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+
+    // Calculate the current speed
+    const currentSpeedBlock = new ParticleVectorLengthBlock("Current Speed");
+    _CreateAndConnectContextualSource("Direction", NodeParticleContextualSources.Direction, currentSpeedBlock.input);
+
+    // Calculate the velocity limit from the gradient
+    const velocityLimitValueOutput = _CreateGradientBlockGroup(
+        context.ageToLifeTimeRatioBlockGroupOutput,
+        velocityLimitGradients,
+        ParticleRandomBlockLocks.OncePerParticle,
+        "Velocity Limit"
+    );
+
+    // Blocks that will calculate the new velocity if over the limit
+    const damped = new ParticleMathBlock("Damped Speed");
+    damped.operation = ParticleMathBlockOperations.Multiply;
+    _CreateAndConnectContextualSource("Direction", NodeParticleContextualSources.Direction, damped.left);
+    _CreateAndConnectInput("Limit Velocity Damping", limitVelocityDamping, damped.right);
+
+    // Compare current speed and limit
+    const compareSpeed = new ParticleConditionBlock("Compare Speed to Limit");
+    compareSpeed.test = ParticleConditionBlockTests.GreaterThan;
+    currentSpeedBlock.output.connectTo(compareSpeed.left);
+    velocityLimitValueOutput.connectTo(compareSpeed.right);
+    damped.output.connectTo(compareSpeed.ifTrue);
+    _CreateAndConnectContextualSource("Direction", NodeParticleContextualSources.Direction, compareSpeed.ifFalse);
+
+    // Update the direction based on the calculted value
+    const updateDirection = new UpdateDirectionBlock("Direction Update");
+    inputParticle.connectTo(updateDirection.particle);
+    compareSpeed.output.connectTo(updateDirection.direction);
+
+    return updateDirection.output;
+}
+
+/**
+ * Creates the group of blocks that represent the particle drag update
+ * @param dragGradients The drag gradients
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle drag update
+ */
+function _UpdateParticleDragGradientBlockGroup(dragGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
+
+    // Generate the gradient
+    const dragValueOutput = _CreateGradientBlockGroup(context.ageToLifeTimeRatioBlockGroupOutput, dragGradients, ParticleRandomBlockLocks.OncePerParticle, "Drag");
+
+    // Calculate drag factor
+    const oneMinusDragBlock = new ParticleMathBlock("1 - Drag");
+    oneMinusDragBlock.operation = ParticleMathBlockOperations.Subtract;
+    _CreateAndConnectInput("One", 1, oneMinusDragBlock.left);
+    dragValueOutput.connectTo(oneMinusDragBlock.right);
+
+    // Multiply the scaled direction by drag factor
+    const multiplyDirection = new ParticleMathBlock("Scaled Direction with Drag");
+    multiplyDirection.operation = ParticleMathBlockOperations.Multiply;
+    oneMinusDragBlock.output.connectTo(multiplyDirection.left);
+    if (context.scaledDirection === undefined) {
+        _CreateAndConnectContextualSource("Scaled Direction", NodeParticleContextualSources.ScaledDirection, multiplyDirection.right);
+    } else {
+        context.scaledDirection.connectTo(multiplyDirection.right);
+    }
+
+    // Store the new calculation of the scaled direction in the context
+    context.scaledDirection = multiplyDirection.output;
+    return multiplyDirection.output;
+}
+
+/**
+ * Creates the group of blocks that represent the particle position update
+ * @param inputParticle The input particle to update
+ * @param isLocal Whether the particle coordinate system is local or not
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle position update
+ */
+function _UpdateParticlePositionBlockGroup(inputParticle: NodeParticleConnectionPoint, isLocal: boolean, context: RuntimeConversionContext): NodeParticleConnectionPoint {
     // Update the particle position
     const updatePosition = new UpdatePositionBlock("Position Update");
     inputParticle.connectTo(updatePosition.particle);
@@ -474,13 +654,25 @@ function _UpdateParticlePositionBlockGroup(inputParticle: NodeParticleConnection
         const addPositionBlock = new ParticleMathBlock("Add Position");
         addPositionBlock.operation = ParticleMathBlockOperations.Add;
         _CreateAndConnectContextualSource("Position", NodeParticleContextualSources.Position, addPositionBlock.left);
-        _CreateAndConnectContextualSource("Scaled Direction", NodeParticleContextualSources.ScaledDirection, addPositionBlock.right);
+        if (context.scaledDirection === undefined) {
+            _CreateAndConnectContextualSource("Scaled Direction", NodeParticleContextualSources.ScaledDirection, addPositionBlock.right);
+        } else {
+            context.scaledDirection.connectTo(addPositionBlock.right);
+        }
+
         addPositionBlock.output.connectTo(updatePosition.position);
     }
 
     return updatePosition.output;
 }
 
+/**
+ * Creates the group of blocks that represent the particle size update
+ * @param inputParticle The input particle to update
+ * @param sizeGradients The size gradients (if any)
+ * @param context The context of the current conversion
+ * @returns The output of the group of blocks that represent the particle size update
+ */
 function _UpdateParticleSizeGradientBlockGroup(
     inputParticle: NodeParticleConnectionPoint,
     sizeGradients: Array<FactorGradient>,
@@ -505,6 +697,12 @@ function _UpdateParticleSizeGradientBlockGroup(
     return updateSizeBlock.output;
 }
 
+/**
+ * Creates the group of blocks that represent the particle gravity update
+ * @param inputParticle The input particle to update
+ * @param gravity The gravity vector to apply
+ * @returns The output of the group of blocks that represent the particle gravity update
+ */
 function _UpdateParticleGravityBlockGroup(inputParticle: NodeParticleConnectionPoint, gravity: Vector3): NodeParticleConnectionPoint {
     // Create the gravity delta
     const gravityDeltaOutput = _CreateDeltaModifiedInput("Gravity", gravity);
@@ -523,110 +721,40 @@ function _UpdateParticleGravityBlockGroup(inputParticle: NodeParticleConnectionP
     return updateDirection.output;
 }
 
-function _CreateColorUpdateBlock(oldSystem: IParticleSystem, createParticleBlock: CreateParticleBlock): UpdateColorBlock {
-    if (!oldSystem) {
-        throw new Error("Invalid particle system");
-    }
+function _UpdateParticleAngularSpeedGradientBlockGroup(angularSpeedGradients: Array<FactorGradient>, context: RuntimeConversionContext): NodeParticleConnectionPoint {
+    context.ageToLifeTimeRatioBlockGroupOutput = _CreateAgeToLifeTimeRatioBlockGroup(context);
 
-    // Calculate the color
-    const colorGradients = oldSystem.getColorGradients();
-    let colorBlock: Nullable<ParticleGradientBlock | ParticleMathBlock> = null;
-    if (colorGradients && colorGradients.length > 0) {
-        colorBlock = _CreateGradientColorUpdate(oldSystem, colorGradients, createParticleBlock);
-    } else {
-        colorBlock = _CreateBasicColorUpdate(oldSystem, createParticleBlock);
-    }
-
-    // Clamp alpha >= 0
-    const clampedColor = _ClampUpdateColorAlpha(colorBlock);
-
-    // Create the color update block
-    const colorUpdateBlock = new UpdateColorBlock("Color update");
-    clampedColor.colorOut.connectTo(colorUpdateBlock.color);
-
-    return colorUpdateBlock;
+    // Generate the gradient
+    const angularSpeedValueOutput = _CreateGradientBlockGroup(
+        context.ageToLifeTimeRatioBlockGroupOutput,
+        angularSpeedGradients,
+        ParticleRandomBlockLocks.OncePerParticle,
+        "Angular Speed"
+    );
+    return angularSpeedValueOutput;
 }
 
-function _CreateGradientColorUpdate(oldSystem: IParticleSystem, gradient: Array<ColorGradient>, createParticleBlock: CreateParticleBlock): ParticleGradientBlock {
-    const colorGradientBlock = new ParticleGradientBlock("Color Gradient");
-    _CreateAndConnectContextualSource("gradient", NodeParticleContextualSources.Age, colorGradientBlock.gradient);
-
-    let tempColor: Nullable<ParticleInputBlock | ParticleRandomBlock> = null;
-    let colorStart: Nullable<ParticleInputBlock | ParticleRandomBlock> = null;
-    let colorEnd: Nullable<ParticleInputBlock | ParticleRandomBlock> = null;
-    for (let i = 0; i < gradient.length; i++) {
-        const gradientStep = gradient[i];
-        const gradientValueBlock = new ParticleGradientValueBlock("Color Gradient Value " + i);
-        gradientValueBlock.reference = gradientStep.gradient;
-
-        if (gradientStep.color2) {
-            // Create a random between color1 and color2
-            const randomColorBlock = new ParticleRandomBlock("Random Color for Gradient " + i);
-            randomColorBlock.lockMode = ParticleRandomBlockLocks.PerSystem;
-            _CreateAndConnectInput("Color 1", gradientStep.color1, randomColorBlock.min);
-            _CreateAndConnectInput("Color 2", gradientStep.color2, randomColorBlock.max);
-            randomColorBlock.output.connectTo(gradientValueBlock.value);
-            tempColor = randomColorBlock;
-        } else {
-            // Single color
-            const input = new ParticleInputBlock("Color " + i);
-            input.value = gradientStep.color1;
-            input.output.connectTo(gradientValueBlock.value);
-            tempColor = input;
-        }
-
-        if (gradientStep.gradient === 0) {
-            colorStart = tempColor;
-        } else if (gradientStep.gradient === 1) {
-            colorEnd = tempColor;
-        }
-
-        gradientValueBlock.output.connectTo(colorGradientBlock.inputs[i + 1]);
-    }
-
-    _UpdateCreateParticleColor(oldSystem, colorStart, colorEnd, createParticleBlock);
-
-    return colorGradientBlock;
+function _UpdateParticleAngularSpeedBlockGroup(minAngularSpeed: number, maxAngularSpeed: number): NodeParticleConnectionPoint {
+    // Random value between for the angular speed of the particle
+    const randomAngularSpeedBlock = new ParticleRandomBlock("Random Angular Speed");
+    randomAngularSpeedBlock.lockMode = ParticleRandomBlockLocks.OncePerParticle;
+    _CreateAndConnectInput("Min Angular Speed", minAngularSpeed, randomAngularSpeedBlock.min);
+    _CreateAndConnectInput("Max Angular Speed", maxAngularSpeed, randomAngularSpeedBlock.max);
+    return randomAngularSpeedBlock.output;
 }
 
-function _CreateBasicColorUpdate(oldSystem: IParticleSystem, createParticleBlock: CreateParticleBlock): ParticleMathBlock {
+function _BasicColorUpdateBlockGroup(): NodeParticleConnectionPoint {
     const addColorBlock = new ParticleMathBlock("Add Color");
     addColorBlock.operation = ParticleMathBlockOperations.Add;
     _CreateAndConnectContextualSource("Color", NodeParticleContextualSources.Color, addColorBlock.left);
     _CreateAndConnectContextualSource("Scaled Color Step", NodeParticleContextualSources.ScaledColorStep, addColorBlock.right);
-
-    _UpdateCreateParticleColor(oldSystem, null, null, createParticleBlock);
-
-    return addColorBlock;
+    return addColorBlock.output;
 }
 
-function _UpdateCreateParticleColor(
-    oldSystem: IParticleSystem,
-    colorStart: Nullable<ParticleInputBlock | ParticleRandomBlock>,
-    colorEnd: Nullable<ParticleInputBlock | ParticleRandomBlock>,
-    createParticleBlock: CreateParticleBlock
-): void {
-    if (colorStart === null) {
-        colorStart = new ParticleInputBlock("Color Start");
-        colorStart.value = oldSystem.color1;
-    }
-
-    if (colorEnd === null) {
-        colorEnd = new ParticleInputBlock("Color End");
-        colorEnd.value = oldSystem.color2;
-    }
-
-    const randomColorBlock = new ParticleRandomBlock("Random color");
-    randomColorBlock.lockMode = ParticleRandomBlockLocks.PerParticle;
-    colorStart.output.connectTo(randomColorBlock.min);
-    colorEnd.output.connectTo(randomColorBlock.max);
-    randomColorBlock.output.connectTo(createParticleBlock.color);
-}
-
-function _ClampUpdateColorAlpha(colorBlock: ParticleMathBlock | ParticleGradientBlock): ParticleConverterBlock {
+function _ClampUpdateColorAlpha(colorCalculationOutput: NodeParticleConnectionPoint): NodeParticleConnectionPoint {
     // Decompose color to clamp alpha
     const decomposeColorBlock = new ParticleConverterBlock("Decompose Color");
-    colorBlock.outputs[0].connectTo(decomposeColorBlock.colorIn);
+    colorCalculationOutput.connectTo(decomposeColorBlock.colorIn);
 
     // Clamp alpha to be >= 0
     const maxAlphaBlock = new ParticleMathBlock("Alpha >= 0");
@@ -639,7 +767,73 @@ function _ClampUpdateColorAlpha(colorBlock: ParticleMathBlock | ParticleGradient
     decomposeColorBlock.xyzOut.connectTo(composeColorBlock.xyzIn);
     maxAlphaBlock.output.connectTo(composeColorBlock.wIn);
 
-    return composeColorBlock;
+    return composeColorBlock.colorOut;
+}
+
+// ------------- SYSTEM FUNCTIONS -------------
+
+function _SystemBlockGroup(oldSystem: ParticleSystem, context: RuntimeConversionContext): SystemBlock {
+    const newSystem = new SystemBlock(oldSystem.name);
+
+    newSystem.translationPivot.value = oldSystem.translationPivot;
+    newSystem.textureMask.value = oldSystem.textureMask;
+    newSystem.manualEmitCount = oldSystem.manualEmitCount;
+    newSystem.blendMode = oldSystem.blendMode;
+    newSystem.capacity = oldSystem.getCapacity();
+    newSystem.startDelay = oldSystem.startDelay;
+    newSystem.updateSpeed = oldSystem.updateSpeed;
+    newSystem.preWarmCycles = oldSystem.preWarmCycles;
+    newSystem.preWarmStepOffset = oldSystem.preWarmStepOffset;
+    newSystem.isBillboardBased = oldSystem.isBillboardBased;
+    newSystem.isLocal = oldSystem.isLocal;
+    newSystem.disposeOnStop = oldSystem.disposeOnStop;
+
+    _SystemEmitRateValue(oldSystem, newSystem, context);
+    _SystemTextureBlock(oldSystem).connectTo(newSystem.texture);
+    _SystemTargetStopDuration(oldSystem, newSystem, context);
+
+    return newSystem;
+}
+
+function _SystemEmitRateValue(oldSystem: ParticleSystem, newSystem: SystemBlock, context: RuntimeConversionContext): void {
+    const emitGradients = oldSystem.getEmitRateGradients();
+    if (emitGradients && emitGradients.length > 0 && oldSystem.targetStopDuration > 0) {
+        // Create the emit gradients
+        context.timeToStopTimeRatioBlockGroupOutput = _CreateTimeToStopTimeRatioBlockGroup(oldSystem, context);
+        const gradientValue = _CreateGradientBlockGroup(context.timeToStopTimeRatioBlockGroupOutput, emitGradients, ParticleRandomBlockLocks.PerSystem, "Emit Rate");
+
+        // Round the value to an int
+        const roundBlock = new ParticleFloatToIntBlock("Round to Int");
+        roundBlock.operation = ParticleFloatToIntBlockOperations.Round;
+        gradientValue.connectTo(roundBlock.input);
+        roundBlock.output.connectTo(newSystem.emitRate);
+    } else {
+        newSystem.emitRate.value = oldSystem.emitRate;
+    }
+}
+
+function _SystemTextureBlock(oldSystem: ParticleSystem): NodeParticleConnectionPoint {
+    // Texture
+    const textureBlock = new ParticleTextureSourceBlock("Texture");
+    const url = (oldSystem.particleTexture as Texture).url || "";
+    if (url) {
+        textureBlock.url = url;
+    } else {
+        textureBlock.sourceTexture = oldSystem.particleTexture;
+    }
+
+    return textureBlock.texture;
+}
+
+function _SystemTargetStopDuration(oldSystem: ParticleSystem, newSystem: SystemBlock, context: RuntimeConversionContext): void {
+    // If something else uses the target stop duration (like a gradient),
+    // then the block is already created and stored in the context
+    if (context.targetStopDurationBlockOutput) {
+        context.targetStopDurationBlockOutput.connectTo(newSystem.targetStopDuration);
+    } else {
+        // If no one used it, do not create a block just set the value
+        newSystem.targetStopDuration.value = oldSystem.targetStopDuration;
+    }
 }
 
 // ------------- UTILITY FUNCTIONS -------------
@@ -769,7 +963,7 @@ function _CreateAgeToLifeTimeRatioBlockGroup(context: RuntimeConversionContext):
  */
 function _CreateGradientBlockGroup(
     gradientSelector: NodeParticleConnectionPoint,
-    gradientValues: Array<FactorGradient>,
+    gradientValues: Array<FactorGradient> | Array<ColorGradient>,
     randomLockMode: ParticleRandomBlockLocks,
     prefix: string,
     initialValues: NodeParticleConnectionPoint[] = []
@@ -806,20 +1000,28 @@ function _CreateGradientBlockGroup(
  * @param index The index of the gradient step
  * @returns The output connection point of the gradient value block
  */
-function _CreateGradientValueBlockGroup(gradientStep: FactorGradient, randomLockMode: ParticleRandomBlockLocks, prefix: string, index: number): NodeParticleConnectionPoint {
+function _CreateGradientValueBlockGroup(
+    gradientStep: FactorGradient | ColorGradient,
+    randomLockMode: ParticleRandomBlockLocks,
+    prefix: string,
+    index: number
+): NodeParticleConnectionPoint {
     const gradientValueBlock = new ParticleGradientValueBlock(prefix + " Gradient Value " + index);
     gradientValueBlock.reference = gradientStep.gradient;
 
-    if (gradientStep.factor2 !== undefined) {
+    const value1 = (gradientStep as any).factor1 ?? (gradientStep as any).color1;
+    const value2 = (gradientStep as any).factor2 ?? (gradientStep as any).color2;
+
+    if (value2 !== undefined) {
         // Create a random between value1 and value2
         const randomBlock = new ParticleRandomBlock("Random Value " + index);
         randomBlock.lockMode = randomLockMode;
-        _CreateAndConnectInput("Value 1", gradientStep.factor1, randomBlock.min);
-        _CreateAndConnectInput("Value 2", gradientStep.factor2, randomBlock.max);
+        _CreateAndConnectInput("Value 1", value1, randomBlock.min);
+        _CreateAndConnectInput("Value 2", value2, randomBlock.max);
         randomBlock.output.connectTo(gradientValueBlock.value);
     } else {
         // Single value
-        _CreateAndConnectInput("Value", gradientStep.factor1, gradientValueBlock.value);
+        _CreateAndConnectInput("Value", value1, gradientValueBlock.value);
     }
 
     return gradientValueBlock.output;

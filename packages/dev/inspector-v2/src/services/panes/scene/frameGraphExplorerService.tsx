@@ -21,7 +21,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
         }
 
         const sectionRegistration = sceneExplorerService.addSection({
-            displayName: "Frame Graph",
+            displayName: "Frame Graphs",
             order: DefaultSectionsOrder.FrameGraphs,
             getRootEntities: () => scene.frameGraphs,
             getEntityDisplayInfo: (frameGraph) => {
@@ -49,7 +49,7 @@ export const FrameGraphExplorerServiceDefinition: ServiceDefinition<[], [ISceneE
             getEntityRemovedObservables: () => [scene.onFrameGraphRemovedObservable],
         });
 
-        const activeFrameGraphCommandRegistration = sceneExplorerService.addCommand({
+        const activeFrameGraphCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof FrameGraph,
             order: DefaultCommandsOrder.FrameGraphPlay,
             getCommand: (frameGraph) => {

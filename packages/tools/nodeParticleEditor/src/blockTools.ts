@@ -44,6 +44,7 @@ import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleL
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
 import { SPSMeshSourceBlock, SPSSystemBlock, SPSCreateBlock, SPSInitBlock, SPSUpdateBlock, SPSParticleConfigBlock } from "core/Particles/Node/Blocks";
+import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 
 /**
  * Static class for BlockTools
@@ -190,6 +191,11 @@ export class BlockTools {
             case "DirectionBlock": {
                 const block = new ParticleInputBlock("Direction");
                 block.contextualValue = NodeParticleContextualSources.Direction;
+                return block;
+            }
+            case "DirectionScaleBlock": {
+                const block = new ParticleInputBlock("Direction scale");
+                block.contextualValue = NodeParticleContextualSources.DirectionScale;
                 return block;
             }
             case "ScaledDirectionBlock": {
@@ -434,6 +440,9 @@ export class BlockTools {
             }
             case "RandomBlock": {
                 return new ParticleRandomBlock("Random");
+            }
+            case "FloatToIntBlock": {
+                return new ParticleFloatToIntBlock("Float to Int");
             }
         }
 

@@ -1,12 +1,13 @@
+import type { Color4 } from "core/Maths/math.color";
 import type { Vector2, Vector3 } from "core/Maths/math.vector";
-import { BlockTools } from "../../blockTools";
+import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+
+import { BlockTools } from "../../blockTools";
 import * as styles from "./inputDisplayManager.module.scss";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
-import type { Color4 } from "core/Maths/math.color";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 export class InputDisplayManager implements IDisplayManager {
@@ -79,6 +80,9 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeParticleContextualSources.Direction:
                     value = "Direction";
+                    break;
+                case NodeParticleContextualSources.DirectionScale:
+                    value = "Direction Scale";
                     break;
                 case NodeParticleContextualSources.ScaledDirection:
                     value = "Scaled Direction";

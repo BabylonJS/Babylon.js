@@ -24,6 +24,8 @@ import {
     ExpectedBlendBlockComboMain2,
     TestHelperAccessesUniformBlockGlsl,
     TestHelperHasParamWithSameNameAsUniformBlockGlsl,
+    HasConstBlockGlsl,
+    HasConstPropertyBlockGlsl,
 } from "./smartFilterOptimizer.testData.js";
 
 describe("smartFilterOptimizer", () => {
@@ -37,6 +39,8 @@ describe("smartFilterOptimizer", () => {
     const testBlockNonOptimizableDefinition = importCustomBlockDefinition(NonOptimizableSimpleBlockGlsl) as SerializedShaderBlockDefinition;
     const testBlockBlendDefinition = importCustomBlockDefinition(BlendBlockGlsl) as SerializedShaderBlockDefinition;
     const testHelperHasParamWithSameNameAsUniformDefinition = importCustomBlockDefinition(TestHelperHasParamWithSameNameAsUniformBlockGlsl) as SerializedShaderBlockDefinition;
+    const testBlockHasConstDefinition = importCustomBlockDefinition(HasConstBlockGlsl) as SerializedShaderBlockDefinition;
+    const testBlockHasConstPropertyDefinition = importCustomBlockDefinition(HasConstPropertyBlockGlsl) as SerializedShaderBlockDefinition;
 
     describe("when a block has multiple overloads of a helper function", () => {
         it("should emit all of them in the optimized shader block", () => {
@@ -346,6 +350,70 @@ describe("smartFilterOptimizer", () => {
             // used by the leftmost instance which is the one that connects to the non-optimizable block (via
             // this connection point).
             expect(optimizedBlock!.findInput("input1_2")).not.toBeNull();
+        });
+    });
+
+    describe("when a block type has a const and there are multiple instances of that block", () => {
+        it("should create only one const declaration in the optimized shader", () => {
+            // Arrange
+            const smartFilter = new SmartFilter("Test");
+            const testConstBlock1 = CustomShaderBlock.Create(smartFilter, "TestBlock1", testBlockHasConstDefinition);
+            const testConstBlock2 = CustomShaderBlock.Create(smartFilter, "TestBlock2", testBlockHasConstDefinition);
+            const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
+
+            textureInputBlock.output.connectTo(testConstBlock1.findInput("input")!);
+            testConstBlock1.output.connectTo(testConstBlock2.findInput("input")!);
+            testConstBlock2.output.connectTo(smartFilter.output);
+
+            const optimizer = new SmartFilterOptimizer(smartFilter, {
+                maxSamplersInFragmentShader: 16,
+                removeDisabledBlocks: false,
+            });
+
+            // Act
+            const optimizedSmartFilter = optimizer.optimize();
+
+            // Assert
+            const optimizedBlock = optimizedSmartFilter!.attachedBlocks.find((b) => b.name === "optimized");
+            const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
+            const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
+            expect(optimizedShaderProgram.fragment.const).toEqual("const float _myConst_ = 0.5;\n");
+            expect(optimizedShaderProgram.fragment.constPerInstance).toBeUndefined();
+            expect(countOfRegexMatches(fragmentShaderCode!, /(?<!\w)_myConst_(?!\w)/g)).toBe(2);
+        });
+    });
+
+    describe("when a block type has a const property and there are multiple instances of that block", () => {
+        it("should create separate const definitions in the optimized shader", () => {
+            // Arrange
+            const smartFilter = new SmartFilter("Test");
+            const testConstBlock1 = CustomShaderBlock.Create(smartFilter, "TestBlock1", testBlockHasConstPropertyDefinition);
+            const testConstBlock2 = CustomShaderBlock.Create(smartFilter, "TestBlock2", testBlockHasConstPropertyDefinition);
+            const textureInputBlock = new InputBlock(smartFilter, "texture", ConnectionPointType.Texture, null);
+
+            (testConstBlock1 as any)["myConstProp"] = 1;
+            (testConstBlock2 as any)["myConstProp"] = 2;
+
+            textureInputBlock.output.connectTo(testConstBlock1.findInput("input")!);
+            testConstBlock1.output.connectTo(testConstBlock2.findInput("input")!);
+            testConstBlock2.output.connectTo(smartFilter.output);
+
+            const optimizer = new SmartFilterOptimizer(smartFilter, {
+                maxSamplersInFragmentShader: 16,
+                removeDisabledBlocks: false,
+            });
+
+            // Act
+            const optimizedSmartFilter = optimizer.optimize();
+
+            // Assert
+            const optimizedBlock = optimizedSmartFilter!.attachedBlocks.find((b) => b.name === "optimized");
+            const optimizedShaderProgram = (optimizedBlock as ShaderBlock).getShaderProgram();
+            const fragmentShaderCode = optimizedShaderProgram.fragment.functions[0]?.code;
+            expect(optimizedShaderProgram.fragment.const).toEqual("const float _myConstProp_ = 2.;\nconst float _myConstProp_2_ = 1.;\n");
+            expect(optimizedShaderProgram.fragment.constPerInstance).toBeUndefined();
+            expect(countOfRegexMatches(fragmentShaderCode!, /(?<!\w)_myConstProp_(?!\w)/g)).toBe(1);
+            expect(countOfRegexMatches(fragmentShaderCode!, /(?<!\w)_myConstProp_2_(?!\w)/g)).toBe(1);
         });
     });
 });
