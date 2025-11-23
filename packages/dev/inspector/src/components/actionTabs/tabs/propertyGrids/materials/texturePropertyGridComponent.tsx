@@ -393,6 +393,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                     {texture.isRenderTarget && <TextLineComponent label="Depth/stencil texture format" value={oformatDepthStencil?.label ?? "no"} />}
                     {texture instanceof Texture && <TextLineComponent label="Stored as inverted on Y" value={texture.invertY ? "Yes" : "No"} />}
                     <TextLineComponent label="Has mipmaps" value={!texture.noMipmap ? "Yes" : "No"} />
+                    <TextLineComponent label="Samples" value={texture._texture?.samples.toString() ?? "unknown"} />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
                         label="UV set"
