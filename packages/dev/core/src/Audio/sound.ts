@@ -212,6 +212,14 @@ export class Sound {
 
     private readonly _optionsV2: Partial<IStaticSoundOptions>;
     private readonly _soundV2: _WebAudioSoundSource | _WebAudioStaticSound | _WebAudioStreamingSound;
+    private _onReadyObservable: Nullable<Observable<void>> = null;
+
+    private get _onReady(): Observable<void> {
+        if (!this._onReadyObservable) {
+            this._onReadyObservable = new Observable<void>();
+        }
+        return this._onReadyObservable;
+    }
 
     /**
      * @internal
@@ -365,6 +373,10 @@ export class Sound {
         this._scene.mainSoundTrack.addSound(this);
         this._isReadyToPlay = true;
         this._readyToPlayCallback();
+
+        if (this._onReadyObservable) {
+            this._onReadyObservable.notifyObservers();
+        }
 
         if (this._optionsV2.autoplay) {
             this.play();
@@ -770,6 +782,13 @@ export class Sound {
      * @param time Define time for gradual change to new volume
      */
     public setVolume(newVolume: number, time?: number): void {
+        if (!this.isReady()) {
+            this._onReady.addOnce(() => {
+                this.setVolume(newVolume, time);
+            });
+            return;
+        }
+
         TmpRampOptions.duration = time || 0;
         this._soundV2.setVolume(newVolume, TmpRampOptions);
         this._volume = newVolume;
