@@ -26,11 +26,11 @@ export interface ISpsParticleConfigData {
     meshData: ISpsMeshSourceData | null;
     count: number;
     material?: Material;
-    position?: Vector3;
-    velocity?: Vector3;
-    color?: Color4;
-    scaling?: Vector3;
-    rotation?: Vector3;
-    lifeTime?: number;
+    position?: () => Vector3;
+    velocity?: () => Vector3;
+    color?: () => Color4;
+    scaling?: () => Vector3;
+    rotation?: () => Vector3;
+    lifeTime?: () => number;
     updateBlock?: ISpsUpdateData | null;
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { Color4, Vector3 } from "../../../../Maths";
+import type { Color4, Vector3 } from "../../../../Maths";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
@@ -75,14 +75,18 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
     public override _build(state: NodeParticleBuildState) {
         const meshData = this.mesh.getConnectedValue(state);
         const count = (this.count.getConnectedValue(state) as number) ?? 1;
-        const lifeTime = (this.lifeTime.getConnectedValue(state) as number) ?? Infinity;
+        const lifeTime = this.lifeTime.isConnected
+            ? () => {
+                  return (this.lifeTime.getConnectedValue(state) as number) ?? Infinity;
+              }
+            : undefined;
         const material = this.material.getConnectedValue(state);
 
-        const position = (this.position.getConnectedValue(state) as Vector3) ?? new Vector3(0, 0, 0);
-        const velocity = (this.velocity.getConnectedValue(state) as Vector3) ?? new Vector3(0, 0, 0);
-        const color = (this.color.getConnectedValue(state) as Color4) ?? new Color4(1, 1, 1, 1);
-        const scaling = (this.scaling.getConnectedValue(state) as Vector3) ?? new Vector3(1, 1, 1);
-        const rotation = (this.rotation.getConnectedValue(state) as Vector3) ?? new Vector3(0, 0, 0);
+        const position = this.position.isConnected ? () => this.position.getConnectedValue(state) as Vector3 : undefined;
+        const velocity = this.velocity.isConnected ? () => this.velocity.getConnectedValue(state) as Vector3 : undefined;
+        const color = this.color.isConnected ? () => this.color.getConnectedValue(state) as Color4 : undefined;
+        const scaling = this.scaling.isConnected ? () => this.scaling.getConnectedValue(state) as Vector3 : undefined;
+        const rotation = this.rotation.isConnected ? () => this.rotation.getConnectedValue(state) as Vector3 : undefined;
 
         const particleConfig: ISpsParticleConfigData = {
             meshData,
@@ -94,6 +98,7 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
             color,
             scaling,
             rotation,
+            updateBlock: null,
         };
 
         this.config._storedValue = particleConfig;

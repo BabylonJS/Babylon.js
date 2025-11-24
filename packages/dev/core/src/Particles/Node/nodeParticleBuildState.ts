@@ -176,6 +176,11 @@ export class NodeParticleBuildState {
                     return null;
                 }
                 return this.systemContext.startSpriteCellID;
+            case NodeParticleContextualSources.SolidParticleIndex:
+                if (!(this.particleContext instanceof SolidParticle)) {
+                    return null;
+                }
+                return this.particleContext.idx;
             case NodeParticleContextualSources.InitialDirection:
                 if (this.particleContext instanceof SolidParticle) {
                     return null;

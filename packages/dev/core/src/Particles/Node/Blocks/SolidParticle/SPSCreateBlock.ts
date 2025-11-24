@@ -141,25 +141,28 @@ export class SPSCreateBlock extends NodeParticleBlock {
                     state.systemContext = sps;
 
                     if (lifeTime) {
-                        particle.lifeTime = lifeTime;
+                        particle.lifeTime = lifeTime();
                         particle.age = 0;
                         particle.alive = true;
                     }
 
                     if (position) {
-                        particle.position.copyFrom(position);
+                        particle.position.copyFrom(position());
                     }
                     if (velocity) {
-                        particle.velocity.copyFrom(velocity);
+                        particle.velocity.copyFrom(velocity());
                     }
                     if (color) {
-                        particle.color?.copyFrom(color);
+                        const particleColor = particle.color;
+                        if (particleColor) {
+                            particleColor.copyFrom(color());
+                        }
                     }
                     if (scaling) {
-                        particle.scaling.copyFrom(scaling);
+                        particle.scaling.copyFrom(scaling());
                     }
                     if (rotation) {
-                        particle.rotation.copyFrom(rotation);
+                        particle.rotation.copyFrom(rotation());
                     }
                 }
             } finally {

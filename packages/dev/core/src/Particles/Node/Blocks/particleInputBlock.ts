@@ -156,6 +156,7 @@ export class ParticleInputBlock extends NodeParticleBlock {
                 case NodeParticleContextualSources.SpriteCellEnd:
                 case NodeParticleContextualSources.SpriteCellStart:
                 case NodeParticleContextualSources.SpriteCellIndex:
+                case NodeParticleContextualSources.SolidParticleIndex:
                     this._type = NodeParticleBlockConnectionPointTypes.Int;
                     break;
             }

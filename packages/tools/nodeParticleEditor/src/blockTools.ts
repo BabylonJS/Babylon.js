@@ -263,6 +263,11 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.SpriteCellIndex;
                 return block;
             }
+            case "SolidParticleIndexBlock": {
+                const block = new ParticleInputBlock("Solid Particle Index");
+                block.contextualValue = NodeParticleContextualSources.SolidParticleIndex;
+                return block;
+            }
             case "SpriteCellStartBlock": {
                 const block = new ParticleInputBlock("Sprite cell start");
                 block.contextualValue = NodeParticleContextualSources.SpriteCellStart;
