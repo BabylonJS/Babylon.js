@@ -204,6 +204,13 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         NodeParticleSystemSet.ParseFromSnippetAsync(snippedId, nodeParticleSet)
             .then(async () => {
+                if (nodeParticleSet.editorData?.mode !== undefined && nodeParticleSet.editorData?.mode !== null) {
+                    this.props.globalState.mode = nodeParticleSet.editorData.mode;
+                    this.props.globalState.onResetRequiredObservable.notifyObservers(true);
+                } else {
+                    this.props.globalState.mode = NodeParticleModes.Particle;
+                }
+
                 await nodeParticleSet.buildAsync(this.props.globalState.hostScene);
                 this.props.globalState.onClearUndoStack.notifyObservers();
             })
