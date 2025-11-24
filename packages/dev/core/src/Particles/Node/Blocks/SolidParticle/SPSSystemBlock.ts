@@ -20,11 +20,6 @@ export class SPSSystemBlock extends NodeParticleBlock {
     })
     public billboard = false;
 
-    @editableInPropertyPage("Dispose on end", PropertyTypeForEdition.Boolean, "ADVANCED", {
-        embedded: true,
-    })
-    public disposeOnEnd = false;
-
     public _internalId = SPSSystemBlock._IdCounter++;
 
     public constructor(name: string) {
@@ -39,12 +34,8 @@ export class SPSSystemBlock extends NodeParticleBlock {
         return "SPSSystemBlock";
     }
 
-    public get lifeTime(): NodeParticleConnectionPoint {
-        return this._inputs[0];
-    }
-
     public get solidParticle(): NodeParticleConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[0];
     }
 
     public get system(): NodeParticleConnectionPoint {
@@ -64,29 +55,19 @@ export class SPSSystemBlock extends NodeParticleBlock {
 
         solidParticle.billboard = this.billboard;
         solidParticle.name = this.name;
-        if (this.lifeTime.isConnected) {
-            const connectedLifetime = this.lifeTime.getConnectedValue(state) as number;
-            solidParticle.lifetime = connectedLifetime ?? 0;
-        } else {
-            solidParticle.lifetime = this.lifeTime.value;
-        }
-        solidParticle.disposeOnEnd = this.disposeOnEnd;
+
         return solidParticle;
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.billboard = this.billboard;
-        serializationObject.lifeTime = this.lifeTime.value;
-        serializationObject.disposeOnEnd = this.disposeOnEnd;
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
         this.billboard = !!serializationObject.billboard;
-        this.lifeTime.value = serializationObject.lifeTime ?? 0;
-        this.disposeOnEnd = !!serializationObject.disposeOnEnd;
     }
 }
 
