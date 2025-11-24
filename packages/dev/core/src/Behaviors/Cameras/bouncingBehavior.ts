@@ -90,8 +90,15 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
         }
     }
 
+    /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<ArcRotateCamera> {
+        return this._attachedCamera;
+    }
+
     // Connection
-    private _attachedCamera: Nullable<ArcRotateCamera>;
+    private _attachedCamera: Nullable<ArcRotateCamera> = null;
     private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
     private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<TransformNode>>>;
 
