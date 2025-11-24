@@ -5,7 +5,7 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISpsUpdateData } from "./ISPSData";
+import type { ISpsParticleConfigData, ISpsUpdateData } from "./ISPSData";
 
 /**
  * Block used to generate update function for SPS particles
@@ -14,40 +14,45 @@ export class SPSUpdateBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
+        this.registerInput("config", NodeParticleBlockConnectionPointTypes.SolidParticleConfig);
         this.registerInput("position", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("velocity", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true);
         this.registerInput("scaling", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("rotation", NodeParticleBlockConnectionPointTypes.Vector3, true);
 
-        this.registerOutput("updateData", NodeParticleBlockConnectionPointTypes.System);
+        this.registerOutput("output", NodeParticleBlockConnectionPointTypes.SolidParticleConfig);
     }
 
     public override getClassName() {
         return "SPSUpdateBlock";
     }
 
-    public get position(): NodeParticleConnectionPoint {
+    public get configInput(): NodeParticleConnectionPoint {
         return this._inputs[0];
     }
 
-    public get velocity(): NodeParticleConnectionPoint {
+    public get position(): NodeParticleConnectionPoint {
         return this._inputs[1];
     }
 
-    public get color(): NodeParticleConnectionPoint {
+    public get velocity(): NodeParticleConnectionPoint {
         return this._inputs[2];
     }
 
-    public get scaling(): NodeParticleConnectionPoint {
+    public get color(): NodeParticleConnectionPoint {
         return this._inputs[3];
     }
 
-    public get rotation(): NodeParticleConnectionPoint {
+    public get scaling(): NodeParticleConnectionPoint {
         return this._inputs[4];
     }
 
-    public get updateData(): NodeParticleConnectionPoint {
+    public get rotation(): NodeParticleConnectionPoint {
+        return this._inputs[5];
+    }
+
+    public get output(): NodeParticleConnectionPoint {
         return this._outputs[0];
     }
 
@@ -78,7 +83,7 @@ export class SPSUpdateBlock extends NodeParticleBlock {
                 return this.rotation.getConnectedValue(state);
             };
         }
-        this.updateData._storedValue = updateData;
+        this.output._storedValue = { ...(this.configInput.getConnectedValue(state) as ISpsParticleConfigData), updateBlock: updateData };
     }
 
     public override serialize(): any {

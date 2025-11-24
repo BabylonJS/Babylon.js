@@ -6,24 +6,24 @@ import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleB
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISpsParticleConfigData, ISpsUpdateData } from "./ISPSData";
+import type { ISpsParticleConfigData } from "./ISPSData";
 
 /**
- * Block used to configure SPS particle parameters (mesh, count, material, initBlock, updateBlock)
+ * Block used to configure SPS particle parameters (mesh, count, material, position, velocity, color, scaling, rotation)
  */
 export class SPSParticleConfigBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
-        this.registerInput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
+
         this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 1);
-        this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true);
+        this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, Infinity);
         this.registerInput("position", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("velocity", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true);
         this.registerInput("scaling", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("rotation", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
         this.registerInput("material", NodeParticleBlockConnectionPointTypes.Material, true);
-        this.registerInput("updateBlock", NodeParticleBlockConnectionPointTypes.System, true);
 
         this.registerOutput("config", NodeParticleBlockConnectionPointTypes.SolidParticleConfig);
     }
@@ -68,10 +68,6 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
         return this._inputs[8];
     }
 
-    public get updateBlock(): NodeParticleConnectionPoint {
-        return this._inputs[9];
-    }
-
     public get config(): NodeParticleConnectionPoint {
         return this._outputs[0];
     }
@@ -88,8 +84,6 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
         const scaling = (this.scaling.getConnectedValue(state) as Vector3) ?? new Vector3(1, 1, 1);
         const rotation = (this.rotation.getConnectedValue(state) as Vector3) ?? new Vector3(0, 0, 0);
 
-        const updateBlock = this.updateBlock.isConnected ? (this.updateBlock.getConnectedValue(state) as ISpsUpdateData) : null;
-
         const particleConfig: ISpsParticleConfigData = {
             meshData,
             count,
@@ -100,7 +94,6 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
             color,
             scaling,
             rotation,
-            updateBlock,
         };
 
         this.config._storedValue = particleConfig;
