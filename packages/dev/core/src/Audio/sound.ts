@@ -210,7 +210,6 @@ export class Sound {
     private _isOutputConnected = false;
     private _url: Nullable<string> = null;
 
-    // private readonly _audioEngineV2: AudioEngineV2;
     private readonly _optionsV2: Partial<IStaticSoundOptions>;
     private readonly _soundV2: _WebAudioSoundSource | _WebAudioStaticSound | _WebAudioStreamingSound;
 
