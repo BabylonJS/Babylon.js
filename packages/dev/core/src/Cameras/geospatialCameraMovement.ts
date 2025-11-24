@@ -233,7 +233,7 @@ export class GeospatialCameraMovement extends CameraMovement {
 }
 
 export function ClampCenterFromPolesInPlace(center: Vector3) {
-    const sineOfSphericalLatitudeLimit = 0.9999; // ~89.95 degrees
+    const sineOfSphericalLatitudeLimit = 0.998749218; // ~90 degrees
     const centerMagnitude = center.length(); // distance from planet origin
     if (centerMagnitude > Epsilon) {
         const sineSphericalLat = centerMagnitude === 0 ? 0 : center.z / centerMagnitude;
