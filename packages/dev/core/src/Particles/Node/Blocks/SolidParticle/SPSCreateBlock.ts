@@ -111,7 +111,6 @@ export class SPSCreateBlock extends NodeParticleBlock {
 
             const mesh = new Mesh(`${this.name}_shape_${i}`, state.scene);
             creatData.meshData.vertexData.applyToMesh(mesh, true);
-            mesh.isVisible = false;
             if (creatData.material) {
                 mesh.material = creatData.material;
             }
@@ -133,28 +132,34 @@ export class SPSCreateBlock extends NodeParticleBlock {
                 for (let p = 0; p < sps.nbParticles; p++) {
                     const particle = sps.particles[p];
                     const particleCreateData = createBlocks.get(particle.shapeId);
-                    const initBlock = particleCreateData?.initBlock;
-                    if (!initBlock) {
+                    if (!particleCreateData) {
                         continue;
                     }
+                    const { lifeTime, position, velocity, color, scaling, rotation } = particleCreateData;
 
                     state.particleContext = particle;
                     state.systemContext = sps;
 
-                    if (initBlock.position) {
-                        particle.position.copyFrom(initBlock.position());
+                    if (lifeTime) {
+                        particle.lifeTime = lifeTime;
+                        particle.age = 0;
+                        particle.alive = true;
                     }
-                    if (initBlock.velocity) {
-                        particle.velocity.copyFrom(initBlock.velocity());
+
+                    if (position) {
+                        particle.position.copyFrom(position);
                     }
-                    if (initBlock.color) {
-                        particle.color?.copyFrom(initBlock.color());
+                    if (velocity) {
+                        particle.velocity.copyFrom(velocity);
                     }
-                    if (initBlock.scaling) {
-                        particle.scaling.copyFrom(initBlock.scaling());
+                    if (color) {
+                        particle.color?.copyFrom(color);
                     }
-                    if (initBlock.rotation) {
-                        particle.rotation.copyFrom(initBlock.rotation());
+                    if (scaling) {
+                        particle.scaling.copyFrom(scaling);
+                    }
+                    if (rotation) {
+                        particle.rotation.copyFrom(rotation);
                     }
                 }
             } finally {

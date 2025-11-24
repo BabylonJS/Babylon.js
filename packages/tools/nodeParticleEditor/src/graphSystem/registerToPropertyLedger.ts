@@ -20,7 +20,6 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["SPSParticleConfigBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSCreateBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSSystemBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["SPSInitBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SPSUpdateBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SpsParticlePropsSetBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SpsParticlePropsGetBlock"] = GenericPropertyComponent;

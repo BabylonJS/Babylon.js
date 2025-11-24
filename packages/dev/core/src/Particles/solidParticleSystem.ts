@@ -1566,7 +1566,9 @@ export class SolidParticleSystem implements IDisposable {
      */
     public dispose(): void {
         this.stop();
-        this.mesh.dispose();
+        if (this.mesh) {
+            this.mesh.dispose();
+        }
         this.vars = null;
         // drop references to internal big arrays for the GC
         (<any>this._positions) = null;

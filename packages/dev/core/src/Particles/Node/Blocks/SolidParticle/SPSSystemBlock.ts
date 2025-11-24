@@ -25,7 +25,6 @@ export class SPSSystemBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
         this._isSystem = true;
-        this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("solidParticle", NodeParticleBlockConnectionPointTypes.SolidParticle);
         this.registerOutput("system", NodeParticleBlockConnectionPointTypes.System);
     }
