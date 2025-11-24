@@ -49,7 +49,7 @@ import {
     CreateSolidParticleBlock,
     UpdateSolidParticleBlock,
     InitSolidParticleBlock,
-    NodeMaterialBlock,
+    NodeMaterialSourceBlock,
 } from "core/Particles/Node/Blocks";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 
@@ -166,8 +166,8 @@ export class BlockTools {
                 return new MeshSourceBlock("Mesh Source for SPS");
             case "InitSolidParticleBlock":
                 return new InitSolidParticleBlock("Init Solid Particle");
-            case "NodeMaterialBlock":
-                return new NodeMaterialBlock("Node Material for SPS");
+            case "NodeMaterialSourceBlock":
+                return new NodeMaterialSourceBlock("Node Material Source for SPS");
             case "SolidParticleSystemBlock":
                 return new SolidParticleSystemBlock("SPS System");
             case "CreateSolidParticleBlock":

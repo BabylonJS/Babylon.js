@@ -45,7 +45,7 @@ export class GlobalState {
     updateState: (left: string, right: string) => void;
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
-    mode: NodeParticleModes = NodeParticleModes.Standard;
+    mode: NodeParticleModes = NodeParticleModes.Particle;
 
     public constructor() {
         this.stateManager = new StateManager();

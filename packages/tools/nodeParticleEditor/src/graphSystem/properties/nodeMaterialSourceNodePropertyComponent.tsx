@@ -7,10 +7,10 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import type { NodeMaterialBlock } from "core/Particles/Node/Blocks";
+import type { NodeMaterialSourceBlock } from "core/Particles/Node/Blocks";
 
-export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
-    private _onValueChangedObserver: Nullable<Observer<NodeMaterialBlock>> = null;
+export class NodeMaterialSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
+    private _onValueChangedObserver: Nullable<Observer<NodeMaterialSourceBlock>> = null;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -18,7 +18,7 @@ export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyC
     }
 
     override componentDidMount(): void {
-        const block = this.props.nodeData.data as NodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialSourceBlock;
         this._onValueChangedObserver = block.onValueChangedObservable.add(() => {
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
             this.forceUpdate();
@@ -26,7 +26,7 @@ export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyC
     }
 
     override componentWillUnmount(): void {
-        const block = this.props.nodeData.data as NodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialSourceBlock;
         if (this._onValueChangedObserver) {
             block.onValueChangedObservable.remove(this._onValueChangedObserver);
             this._onValueChangedObserver = null;
@@ -36,7 +36,7 @@ export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyC
     async loadMaterialAsync(file: File) {
         this.setState({ isLoading: true });
         const text = await file.text();
-        const block = this.props.nodeData.data as NodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialSourceBlock;
         block.setSerializedMaterial(text, file.name);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
@@ -45,7 +45,7 @@ export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyC
     }
 
     removeMaterial() {
-        const block = this.props.nodeData.data as NodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialSourceBlock;
         block.clearMaterial();
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
@@ -53,8 +53,7 @@ export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyC
     }
 
     override render() {
-        const block = this.props.nodeData.data as NodeMaterialBlock;
-
+        const block = this.props.nodeData.data as NodeMaterialSourceBlock;
         return (
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />

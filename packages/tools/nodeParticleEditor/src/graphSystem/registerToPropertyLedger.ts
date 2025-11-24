@@ -6,7 +6,7 @@ import { DebugPropertyTabComponent } from "./properties/debugNodePropertyCompone
 import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
 import { MeshShapePropertyTabComponent } from "./properties/meshShapeNodePropertyComponent";
 import { MeshSourcePropertyTabComponent } from "./properties/meshSourceNodePropertyComponent";
-import { NodeMaterialPropertyTabComponent } from "./properties/nodeMaterialNodePropertyComponent";
+import { NodeMaterialSourcePropertyTabComponent } from "./properties/nodeMaterialSourceNodePropertyComponent";
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
@@ -21,5 +21,5 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["CreateSolidParticleBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SolidParticleSystemBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["UpdateSolidParticleBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["NodeMaterialBlock"] = NodeMaterialPropertyTabComponent;
+    PropertyLedger.RegisteredControls["NodeMaterialSourceBlock"] = NodeMaterialSourcePropertyTabComponent;
 };

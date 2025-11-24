@@ -4,4 +4,4 @@ export * from "./initSolidParticleBlock";
 export * from "./solidParticleSystemBlock";
 export * from "./updateSolidParticleBlock";
 export * from "./createSolidParticleBlock";
-export * from "./nodeMaterialBlock";
+export * from "./nodeMaterialSourceBlock";
