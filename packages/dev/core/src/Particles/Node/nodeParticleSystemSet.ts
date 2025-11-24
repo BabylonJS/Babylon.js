@@ -16,14 +16,14 @@ import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock"
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
-import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
-import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
-import type { Nullable } from "core/types";
-import { Color4 } from "core/Maths/math.color";
-import { SolidParticleSystemBlock } from "./Blocks";
 import { ParticleSystem } from "core/Particles/particleSystem";
+import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTeleportOutBlock";
+import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
+import type { Nullable } from "core/types";
+import type { Color4 } from "core/Maths/math.color";
+import type { SolidParticleSystemBlock } from "./Blocks";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;

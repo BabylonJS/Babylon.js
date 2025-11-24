@@ -11,7 +11,7 @@ import { EngineStore } from "core/Engines/engineStore";
 import type { Nullable } from "core/types";
 import type { Scene } from "core/scene";
 import type { Mesh } from "core/Meshes/mesh";
-import { MeshSourceBlock } from "core/Particles/Node/Blocks";
+import type { MeshSourceBlock } from "core/Particles/Node/Blocks";
 import type { Observer } from "core/Misc/observable";
 
 export class MeshSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
@@ -42,7 +42,7 @@ export class MeshSourcePropertyTabComponent extends React.Component<IPropertyCom
         nodeData.__spsMeshScene = scene || null;
     }
 
-    async loadMesh(file: File) {
+    async loadMeshAsync(file: File) {
         if (!EngineStore.LastCreatedEngine) {
             return;
         }
@@ -115,7 +115,7 @@ export class MeshSourcePropertyTabComponent extends React.Component<IPropertyCom
                 <LineContainerComponent title="CUSTOM MESH">
                     {block.hasCustomMesh ? <TextLineComponent label="Active" value={block.customMeshName || "Custom mesh"} /> : <TextLineComponent label="Active" value="None" />}
                     {this.state.isLoading && <TextLineComponent label="Status" value="Loading..." ignoreValue={true} />}
-                    {!this.state.isLoading && <FileButtonLine label="Load" accept=".glb,.gltf,.babylon" onClick={async (file) => await this.loadMesh(file)} />}
+                    {!this.state.isLoading && <FileButtonLine label="Load" accept=".glb,.gltf,.babylon" onClick={async (file) => await this.loadMeshAsync(file)} />}
                     {scene && meshOptions.length > 1 && (
                         <OptionsLine
                             label="Loaded Mesh"

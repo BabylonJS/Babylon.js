@@ -7,7 +7,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import { NodeMaterialBlock } from "core/Particles/Node/Blocks";
+import type { NodeMaterialBlock } from "core/Particles/Node/Blocks";
 
 export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
     private _onValueChangedObserver: Nullable<Observer<NodeMaterialBlock>> = null;
@@ -33,7 +33,7 @@ export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyC
         }
     }
 
-    async loadMaterial(file: File) {
+    async loadMaterialAsync(file: File) {
         this.setState({ isLoading: true });
         const text = await file.text();
         const block = this.props.nodeData.data as NodeMaterialBlock;
@@ -63,7 +63,7 @@ export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyC
                 <LineContainerComponent title="NODE MATERIAL">
                     {block.hasCustomMaterial && <TextLineComponent label="Custom material" value={block.customMaterialName} />}
                     {this.state.isLoading && <TextLineComponent label="Status" value="Loading..." ignoreValue={true} />}
-                    {!this.state.isLoading && <FileButtonLine label="Load" onClick={async (file) => await this.loadMaterial(file)} accept=".json" />}
+                    {!this.state.isLoading && <FileButtonLine label="Load" onClick={async (file) => await this.loadMaterialAsync(file)} accept=".json" />}
                     {block.hasCustomMaterial && <ButtonLineComponent label="Remove" onClick={() => this.removeMaterial()} />}
                 </LineContainerComponent>
             </div>
