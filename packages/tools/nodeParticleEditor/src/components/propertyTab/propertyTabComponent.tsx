@@ -223,10 +223,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         if (loadDefault) {
             switch (value) {
-                case NodeParticleModes.Standard:
+                case NodeParticleModes.Particle:
                     this.props.globalState.nodeParticleSet.setToDefault();
                     break;
-                case NodeParticleModes.SPS:
+                case NodeParticleModes.SolidParticle:
                     this.props.globalState.nodeParticleSet.setToDefaultSps();
                     break;
             }
@@ -285,8 +285,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         <OptionsLine
                             label="Mode"
                             options={[
-                                { label: "Standard", value: NodeParticleModes.Standard },
-                                { label: "SPS", value: NodeParticleModes.SPS },
+                                { label: "Particle", value: NodeParticleModes.Particle },
+                                { label: "Solid Particle", value: NodeParticleModes.SolidParticle },
                             ]}
                             target={this.props.globalState}
                             propertyName="mode"

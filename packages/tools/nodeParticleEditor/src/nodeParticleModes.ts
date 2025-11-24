@@ -3,7 +3,7 @@
  */
 export enum NodeParticleModes {
     /** Standard particle system */
-    Standard = 0,
+    Particle = 0,
     /** SPS (Solid Particle System) */
-    SPS = 1,
+    SolidParticle = 1,
 }
