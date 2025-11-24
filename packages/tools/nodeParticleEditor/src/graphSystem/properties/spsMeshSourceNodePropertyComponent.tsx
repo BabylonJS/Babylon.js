@@ -113,11 +113,7 @@ export class SPSMeshSourcePropertyTabComponent extends React.Component<IProperty
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="CUSTOM MESH">
-                    {block.hasCustomMesh ? (
-                        <TextLineComponent label="Active" value={block.customMeshName || "Custom mesh"} />
-                    ) : (
-                        <TextLineComponent label="Active" value="None" />
-                    )}
+                    {block.hasCustomMesh ? <TextLineComponent label="Active" value={block.customMeshName || "Custom mesh"} /> : <TextLineComponent label="Active" value="None" />}
                     {this.state.isLoading && <TextLineComponent label="Status" value="Loading..." ignoreValue={true} />}
                     {!this.state.isLoading && <FileButtonLine label="Load" accept=".glb,.gltf,.babylon" onClick={async (file) => await this.loadMesh(file)} />}
                     {scene && meshOptions.length > 1 && (
@@ -139,12 +135,9 @@ export class SPSMeshSourcePropertyTabComponent extends React.Component<IProperty
                             }}
                         />
                     )}
-                    {block.hasCustomMesh && (
-                        <ButtonLineComponent label="Remove custom mesh" onClick={() => this.removeData()} />
-                    )}
+                    {block.hasCustomMesh && <ButtonLineComponent label="Remove custom mesh" onClick={() => this.removeData()} />}
                 </LineContainerComponent>
             </div>
         );
     }
 }
-

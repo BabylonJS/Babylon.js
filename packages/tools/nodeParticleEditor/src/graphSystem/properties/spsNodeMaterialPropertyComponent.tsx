@@ -70,4 +70,3 @@ export class SPSNodeMaterialPropertyTabComponent extends React.Component<IProper
         );
     }
 }
-
