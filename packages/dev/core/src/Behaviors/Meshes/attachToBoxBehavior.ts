@@ -49,11 +49,18 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
     private _tmpVector = new Vector3();
 
     /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<Mesh> {
+        return this._target;
+    }
+
+    /**
      * Creates the AttachToBoxBehavior, used to attach UI to the closest face of the box to a camera
      * @param _ui The transform node that should be attached to the mesh
      */
     constructor(private _ui: TransformNode) {
-        /* Does nothing */
+        this._target = null!;
     }
 
     /**
@@ -180,5 +187,6 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
      */
     detach() {
         this._scene.onBeforeRenderObservable.remove(this._onRenderObserver);
+        this._target = null!;
     }
 }

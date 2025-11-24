@@ -1,5 +1,4 @@
 import type { Behavior } from "../../Behaviors/behavior";
-import type { Mesh } from "../../Meshes/mesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import type { Nullable } from "../../types";
@@ -37,7 +36,7 @@ type VirtualMeshInfo = {
  * Creates virtual meshes that are dragged around
  * And observables for position/rotation changes
  */
-export class BaseSixDofDragBehavior implements Behavior<Mesh> {
+export class BaseSixDofDragBehavior implements Behavior<TransformNode> {
     protected static _VirtualScene: Scene;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _attachedToElement: boolean = false;
@@ -57,7 +56,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
 
     protected _scene: Scene;
     protected _moving = false;
-    protected _ownerNode: TransformNode;
+    protected _ownerNode: TransformNode = null!;
     protected _dragging = this._dragType.NONE;
 
     /**
@@ -137,6 +136,13 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
      */
     public get isMoving(): boolean {
         return this._moving;
+    }
+
+    /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<TransformNode> {
+        return this._ownerNode;
     }
 
     /**
@@ -501,5 +507,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
         this.onDragEndObservable.clear();
         this.onDragObservable.clear();
         this.onDragStartObservable.clear();
+
+        this._ownerNode = null!;
     }
 }

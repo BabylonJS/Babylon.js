@@ -36,6 +36,13 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
      */
     public transitionDuration = 450;
 
+    /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<C> {
+        return this._attachedCamera;
+    }
+
     private _attachedCamera: Nullable<C> = null;
     private _animatables: Map<string, Animatable> = new Map<string, Animatable>();
     private _promiseResolve?: () => void;
