@@ -9,6 +9,43 @@ import type { AllConnectionPointTypes, ConnectionPointValue } from "../../connec
 import type { ShaderProgram } from "../../utils/shaderCodeUtils.js";
 
 /**
+ * Description of a const property exposed by a shader block.
+ */
+type ConstPropertyMetadataBase = {
+    /**
+     * The name of the const in the shader code
+     */
+    name: string;
+
+    /**
+     * A friendly name for the property to be displayed in the Smart Filters Editor UI.
+     * This is the undecorated name of the const in the shader code.
+     */
+    friendlyName: string;
+
+    /**
+     * The type of the property
+     */
+    type: string;
+};
+
+type ConstPropertyMetadataFloat = ConstPropertyMetadataBase & {
+    type: "float";
+
+    /**
+     * The default value of the property
+     */
+    defaultValue: number;
+
+    /**
+     * Optional mapping of values to strings to be displayed in the Smart Filters Editor UI for this property.
+     */
+    options?: { [key: string]: number };
+};
+
+export type ConstPropertyMetadata = ConstPropertyMetadataFloat;
+
+/**
  * The V1 definition of a serialized shader block. This block definition is loaded by a CustomShaderBlock and defines how a
  * blockType works. This should not be confused with an ISerializedBockV1, which is a serialized instance of a block in a
  * serialized SmartFilter graph. It is referenced by blockType in a serialized SmartFilter.
@@ -47,6 +84,11 @@ export type SerializedShaderBlockDefinitionV1 = {
      * The input connection points of the block.
      */
     inputConnectionPoints: SerializedInputConnectionPointV1[];
+
+    /**
+     * Properties which map to consts in the fragment shader.
+     */
+    fragmentConstProperties?: ConstPropertyMetadata[];
 
     /**
      * If true, the optimizer will not attempt to optimize this block.

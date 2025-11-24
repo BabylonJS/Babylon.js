@@ -246,3 +246,38 @@ vec4 blockMain(vec2 vUV) { // main
     return texture2D(input, helperDoesNotActuallyUseUniform(vUV));
 }
 `;
+
+export const HasConstBlockGlsl = `
+/*
+{
+    "smartFilterBlockType": "HasConstBlock",
+    "namespace": "Babylon.Test"
+}
+*/
+
+const float myConst = 0.5;
+uniform sampler2D input; // main
+
+vec4 blockMain(vec2 vUV) { // main
+    vec4 color = texture2D(input, vUV);
+    return vec4(color, myConst);
+}
+`;
+
+export const HasConstPropertyBlockGlsl = `
+/*
+{
+    "smartFilterBlockType": "HasConstPropertyBlock",
+    "namespace": "Babylon.Test"
+}
+*/
+
+// { "property": true }
+const float myConstProp = 0.5;
+uniform sampler2D input; // main
+
+vec4 blockMain(vec2 vUV) { // main
+    vec4 color = texture2D(input, vUV);
+    return vec4(color, myConstProp);
+}
+`;

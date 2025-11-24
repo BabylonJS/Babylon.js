@@ -94,4 +94,8 @@ export class FrameGraphRenderTarget {
 
         return this._renderTargetDepth === other._renderTargetDepth;
     }
+
+    public dispose() {
+        this._renderTargetWrapper?.dispose();
+    }
 }

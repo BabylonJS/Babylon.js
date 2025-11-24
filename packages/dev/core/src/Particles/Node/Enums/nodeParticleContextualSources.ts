@@ -43,4 +43,6 @@ export enum NodeParticleContextualSources {
     LocalPositionUpdated = 0x0018,
     /** Size */
     Size = 0x0019,
+    /** Direction Scale */
+    DirectionScale = 0x0020,
 }

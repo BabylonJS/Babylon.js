@@ -86,7 +86,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
                     />
                 );
             case NodeParticleBlockConnectionPointTypes.Color4:
-                return <Color4PropertyTabComponent lockObject={this.props.lockObject} globalState={this.props.globalState} inputBlock={block} />;
+                return <Color4PropertyTabComponent key={block.uniqueId} lockObject={this.props.lockObject} globalState={this.props.globalState} inputBlock={block} />;
         }
         return null;
     }

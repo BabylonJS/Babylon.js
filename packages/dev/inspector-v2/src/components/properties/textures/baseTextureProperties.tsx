@@ -120,6 +120,7 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
     const type = useProperty(internalTexture, "type") ?? NaN;
     const depth = useProperty(internalTexture, "depth");
     const useSRGBBuffer = useProperty(internalTexture, "_useSRGBBuffer");
+    const samples = useProperty(internalTexture, "samples") ?? "?";
 
     const displayFormat = FindTextureFormat(format === -1 ? Constants.TEXTUREFORMAT_RGBA : format);
     const displayType = FindTextureType(type === -1 ? Constants.TEXTURETYPE_UNSIGNED_BYTE : type);
@@ -145,6 +146,7 @@ export const BaseTextureCharacteristicProperties: FunctionComponent<{ texture: B
             <BooleanBadgePropertyLine label="Cube" value={texture.isCube} />
             <BooleanBadgePropertyLine label="Render Target" value={texture.isRenderTarget} />
             <BooleanBadgePropertyLine label="Mipmaps" value={!texture.noMipmap} />
+            <TextPropertyLine label="Samples" value={samples.toString()} />
             <BoundProperty component={SyncedSliderPropertyLine} label="UV Set" target={texture} propertyKey="coordinatesIndex" min={0} max={3} step={1} />
             <BoundProperty component={NumberDropdownPropertyLine} label="Mode" target={texture} propertyKey="coordinatesMode" options={CoordinatesMode} />
             <BoundProperty component={SyncedSliderPropertyLine} label="Level" target={texture} propertyKey="level" min={0} max={2} step={0.01} />
