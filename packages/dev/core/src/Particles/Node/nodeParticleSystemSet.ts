@@ -12,10 +12,12 @@ import { Constants } from "core/Engines/constants";
 import { Tools } from "core/Misc/tools";
 import { AbstractEngine } from "core/Engines/abstractEngine";
 import { ParticleInputBlock } from "./Blocks/particleInputBlock";
+import { NodeParticleBlockConnectionPointTypes } from "./Enums/nodeParticleBlockConnectionPointTypes";
 import { ParticleTextureSourceBlock } from "./Blocks/particleSourceTextureBlock";
 import { NodeParticleContextualSources } from "./Enums/nodeParticleContextualSources";
 import { UpdatePositionBlock } from "./Blocks/Update/updatePositionBlock";
 import { ParticleMathBlock, ParticleMathBlockOperations } from "./Blocks/particleMathBlock";
+import { ParticleTrigonometryBlock, ParticleTrigonometryBlockOperations } from "./Blocks/particleTrigonometryBlock";
 import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import { ParticleSystem } from "core/Particles/particleSystem";
@@ -23,7 +25,10 @@ import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTelepor
 import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
-import type { SolidParticleSystemBlock } from "./Blocks";
+import { SolidParticleSystemBlock, MeshSourceBlock, InitSolidParticleBlock, UpdateSolidParticleBlock, CreateSolidParticleBlock } from "./Blocks";
+import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
+import { VertexData } from "core/Meshes/mesh.vertexData";
+import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
 declare let NODEPARTICLEEDITOR: any;
@@ -341,6 +346,120 @@ export class NodeParticleSystemSet {
     public setToDefaultSps() {
         this.clear();
         this.editorData = null;
+
+        // Mesh source with a tiny box shape so something renders immediately
+        const meshSource = new MeshSourceBlock("Mesh Source");
+        const defaultMeshData = VertexData.CreateBox({ size: 0.5 });
+        meshSource.setCustomVertexData(defaultMeshData, "Box");
+
+        // Solid particle index contextual input
+        const solidIndex = new ParticleInputBlock("Solid Particle Index", NodeParticleBlockConnectionPointTypes.Int);
+        solidIndex.contextualValue = NodeParticleContextualSources.SolidParticleIndex;
+
+        // Helpers to center and space particles
+        const centerOffset = new ParticleInputBlock("Center Offset", NodeParticleBlockConnectionPointTypes.Float);
+        centerOffset.value = 1;
+
+        const spacing = new ParticleInputBlock("Spacing", NodeParticleBlockConnectionPointTypes.Float);
+        spacing.value = 2;
+
+        const centeredIndex = new ParticleMathBlock("Index - Center");
+        centeredIndex.operation = ParticleMathBlockOperations.Subtract;
+        solidIndex.output.connectTo(centeredIndex.left);
+        centerOffset.output.connectTo(centeredIndex.right);
+
+        const spacedIndex = new ParticleMathBlock("Index * Spacing");
+        spacedIndex.operation = ParticleMathBlockOperations.Multiply;
+        centeredIndex.output.connectTo(spacedIndex.left);
+        spacing.output.connectTo(spacedIndex.right);
+
+        const absIndex = new ParticleTrigonometryBlock("Abs Index");
+        absIndex.operation = ParticleTrigonometryBlockOperations.Abs;
+        centeredIndex.output.connectTo(absIndex.input);
+
+        const orbitRadius = new ParticleInputBlock("Orbit Radius", NodeParticleBlockConnectionPointTypes.Float);
+        orbitRadius.value = 1;
+
+        const zeroFloat = new ParticleInputBlock("Zero Float", NodeParticleBlockConnectionPointTypes.Float);
+        zeroFloat.value = 0;
+
+        const basePositionVector = new ParticleConverterBlock("Base Position");
+        spacedIndex.output.connectTo(basePositionVector.xIn);
+        zeroFloat.output.connectTo(basePositionVector.yIn);
+        zeroFloat.output.connectTo(basePositionVector.zIn);
+
+        const orbitPositionVector = new ParticleConverterBlock("Orbit Position");
+
+        // Time-based rotation for the update block
+        const timeInput = new ParticleInputBlock("Time", NodeParticleBlockConnectionPointTypes.Float);
+        timeInput.systemSource = NodeParticleSystemSources.Time;
+
+        const rotationSpeed = new ParticleInputBlock("Rotation Speed", NodeParticleBlockConnectionPointTypes.Float);
+        rotationSpeed.value = 2;
+
+        const timeScale = new ParticleMathBlock("Time * Speed");
+        timeScale.operation = ParticleMathBlockOperations.Multiply;
+        timeInput.output.connectTo(timeScale.left);
+        rotationSpeed.output.connectTo(timeScale.right);
+
+        const orbitSin = new ParticleTrigonometryBlock("Orbit Sin");
+        orbitSin.operation = ParticleTrigonometryBlockOperations.Sin;
+        timeScale.output.connectTo(orbitSin.input);
+
+        const orbitCos = new ParticleTrigonometryBlock("Orbit Cos");
+        orbitCos.operation = ParticleTrigonometryBlockOperations.Cos;
+        timeScale.output.connectTo(orbitCos.input);
+
+        const orbitMagnitude = new ParticleMathBlock("Orbit Magnitude");
+        orbitMagnitude.operation = ParticleMathBlockOperations.Multiply;
+        absIndex.output.connectTo(orbitMagnitude.left);
+        orbitRadius.output.connectTo(orbitMagnitude.right);
+
+        const orbitSinRadius = new ParticleMathBlock("Orbit Sin * Radius");
+        orbitSinRadius.operation = ParticleMathBlockOperations.Multiply;
+        orbitSin.output.connectTo(orbitSinRadius.left);
+        orbitMagnitude.output.connectTo(orbitSinRadius.right);
+
+        const orbitCosRadius = new ParticleMathBlock("Orbit Cos * Radius");
+        orbitCosRadius.operation = ParticleMathBlockOperations.Multiply;
+        orbitCos.output.connectTo(orbitCosRadius.left);
+        orbitMagnitude.output.connectTo(orbitCosRadius.right);
+
+        const orbitCosSigned = new ParticleMathBlock("Orbit Cos * Sign");
+        orbitCosSigned.operation = ParticleMathBlockOperations.Multiply;
+        orbitCosRadius.output.connectTo(orbitCosSigned.left);
+        centeredIndex.output.connectTo(orbitCosSigned.right);
+
+        orbitCosSigned.output.connectTo(orbitPositionVector.xIn);
+        orbitSinRadius.output.connectTo(orbitPositionVector.yIn);
+        zeroFloat.output.connectTo(orbitPositionVector.zIn);
+
+        const rotationVector = new ParticleConverterBlock("Rotation Vector");
+        zeroFloat.output.connectTo(rotationVector.xIn);
+        timeScale.output.connectTo(rotationVector.yIn);
+        zeroFloat.output.connectTo(rotationVector.zIn);
+
+        // Particle init (mesh and base state)
+        const initBlock = new InitSolidParticleBlock("Init Solid Particle");
+        initBlock.count.value = 3;
+        meshSource.mesh.connectTo(initBlock.mesh);
+        basePositionVector.xyzOut.connectTo(initBlock.position);
+
+        // Update block applying rotation
+        const updateBlock = new UpdateSolidParticleBlock("Update Solid Particle");
+        initBlock.config.connectTo(updateBlock.configInput);
+        rotationVector.xyzOut.connectTo(updateBlock.rotation);
+        orbitPositionVector.xyzOut.connectTo(updateBlock.position);
+
+        // Create the SPS from the config
+        const createBlock = new CreateSolidParticleBlock("Create Solid Particle");
+        updateBlock.output.connectTo(createBlock.config);
+
+        // System block exposes the SPS instance
+        const systemBlock = new SolidParticleSystemBlock("SPS System");
+        createBlock.solidParticle.connectTo(systemBlock.solidParticle);
+
+        this._systemBlocks.push(systemBlock);
     }
 
     /**
