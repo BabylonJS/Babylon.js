@@ -7,10 +7,10 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import { SPSNodeMaterialBlock } from "core/Particles/Node/Blocks";
+import { NodeMaterialBlock } from "core/Particles/Node/Blocks";
 
-export class SPSNodeMaterialPropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
-    private _onValueChangedObserver: Nullable<Observer<SPSNodeMaterialBlock>> = null;
+export class NodeMaterialPropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
+    private _onValueChangedObserver: Nullable<Observer<NodeMaterialBlock>> = null;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -18,7 +18,7 @@ export class SPSNodeMaterialPropertyTabComponent extends React.Component<IProper
     }
 
     override componentDidMount(): void {
-        const block = this.props.nodeData.data as SPSNodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialBlock;
         this._onValueChangedObserver = block.onValueChangedObservable.add(() => {
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
             this.forceUpdate();
@@ -26,7 +26,7 @@ export class SPSNodeMaterialPropertyTabComponent extends React.Component<IProper
     }
 
     override componentWillUnmount(): void {
-        const block = this.props.nodeData.data as SPSNodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialBlock;
         if (this._onValueChangedObserver) {
             block.onValueChangedObservable.remove(this._onValueChangedObserver);
             this._onValueChangedObserver = null;
@@ -36,7 +36,7 @@ export class SPSNodeMaterialPropertyTabComponent extends React.Component<IProper
     async loadMaterial(file: File) {
         this.setState({ isLoading: true });
         const text = await file.text();
-        const block = this.props.nodeData.data as SPSNodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialBlock;
         block.setSerializedMaterial(text, file.name);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
@@ -45,7 +45,7 @@ export class SPSNodeMaterialPropertyTabComponent extends React.Component<IProper
     }
 
     removeMaterial() {
-        const block = this.props.nodeData.data as SPSNodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialBlock;
         block.clearMaterial();
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
@@ -53,7 +53,7 @@ export class SPSNodeMaterialPropertyTabComponent extends React.Component<IProper
     }
 
     override render() {
-        const block = this.props.nodeData.data as SPSNodeMaterialBlock;
+        const block = this.props.nodeData.data as NodeMaterialBlock;
 
         return (
             <div>

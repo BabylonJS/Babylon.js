@@ -11,18 +11,18 @@ import { Observable } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { Tools } from "core/Misc/tools";
 import { ImportMeshAsync } from "core/Loading/sceneLoader";
-import type { ISpsMeshSourceData } from "./ISPSData";
+import type { ISolidParticleMeshSourceData } from "./ISolidParticleData";
 
 /**
  * Block used to provide mesh source for SPS
  */
-export class SPSMeshSourceBlock extends NodeParticleBlock {
+export class MeshSourceBlock extends NodeParticleBlock {
     private _customVertexData: Nullable<VertexData> = null;
     private _customMeshName = "";
     private _isRemoteMeshLoading = false;
 
     /** Gets an observable raised when the block data changes */
-    public onValueChangedObservable = new Observable<SPSMeshSourceBlock>();
+    public onValueChangedObservable = new Observable<MeshSourceBlock>();
 
     /** Optional remote mesh URL used to auto load geometry */
     public remoteMeshUrl = "";
@@ -36,7 +36,7 @@ export class SPSMeshSourceBlock extends NodeParticleBlock {
     }
 
     public override getClassName() {
-        return "SPSMeshSourceBlock";
+        return "MeshSourceBlock";
     }
 
     public get mesh(): NodeParticleConnectionPoint {
@@ -148,7 +148,7 @@ export class SPSMeshSourceBlock extends NodeParticleBlock {
             return;
         }
 
-        const meshData: ISpsMeshSourceData = {
+        const meshData: ISolidParticleMeshSourceData = {
             vertexData: this._customVertexData,
             customMeshName: this._customMeshName,
         };
@@ -179,4 +179,4 @@ export class SPSMeshSourceBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.SPSMeshSourceBlock", SPSMeshSourceBlock);
+RegisterClass("BABYLON.MeshSourceBlock", MeshSourceBlock);

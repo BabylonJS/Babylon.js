@@ -12,7 +12,7 @@ import type { Texture } from "core/Materials/Textures/texture";
 /**
  * Block used to load a node material for SPS
  */
-export class SPSNodeMaterialBlock extends NodeParticleBlock {
+export class NodeMaterialBlock extends NodeParticleBlock {
     private _serializedMaterial: Nullable<string> = null;
     private _customMaterialName = "";
 
@@ -23,11 +23,11 @@ export class SPSNodeMaterialBlock extends NodeParticleBlock {
     }
 
     public override getClassName() {
-        return "SPSNodeMaterialBlock";
+        return "NodeMaterialBlock";
     }
 
     /** Raised when material data changes */
-    public onValueChangedObservable = new Observable<SPSNodeMaterialBlock>();
+    public onValueChangedObservable = new Observable<NodeMaterialBlock>();
 
     public get texture(): NodeParticleConnectionPoint {
         return this._inputs[0];
@@ -121,4 +121,4 @@ export class SPSNodeMaterialBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.SPSNodeMaterialBlock", SPSNodeMaterialBlock);
+RegisterClass("BABYLON.NodeMaterialBlock", NodeMaterialBlock);

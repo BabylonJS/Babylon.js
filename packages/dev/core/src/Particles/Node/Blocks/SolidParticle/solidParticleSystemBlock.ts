@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
@@ -11,7 +9,7 @@ import type { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 /**
  * Block used to create SolidParticleSystem and collect all Create blocks
  */
-export class SPSSystemBlock extends NodeParticleBlock {
+export class SolidParticleSystemBlock extends NodeParticleBlock {
     private static _IdCounter = 0;
 
     @editableInPropertyPage("Billboard", PropertyTypeForEdition.Boolean, "ADVANCED", {
@@ -20,7 +18,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
     })
     public billboard = false;
 
-    public _internalId = SPSSystemBlock._IdCounter++;
+    public _internalId = SolidParticleSystemBlock._IdCounter++;
 
     public constructor(name: string) {
         super(name);
@@ -30,7 +28,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
     }
 
     public override getClassName() {
-        return "SPSSystemBlock";
+        return "SolidParticleSystemBlock";
     }
 
     public get solidParticle(): NodeParticleConnectionPoint {
@@ -49,7 +47,7 @@ export class SPSSystemBlock extends NodeParticleBlock {
         const solidParticle = this.solidParticle.getConnectedValue(state) as SolidParticleSystem;
 
         if (!solidParticle) {
-            throw new Error("No SolidParticleSystem connected to SPSSystemBlock");
+            throw new Error("No SolidParticleSystem connected to SolidParticleSystemBlock");
         }
 
         solidParticle.billboard = this.billboard;
@@ -70,4 +68,4 @@ export class SPSSystemBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.SPSSystemBlock", SPSSystemBlock);
+RegisterClass("BABYLON.SolidParticleSystemBlock", SolidParticleSystemBlock);

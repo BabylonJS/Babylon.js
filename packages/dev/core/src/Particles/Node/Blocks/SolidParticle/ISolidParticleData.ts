@@ -3,15 +3,18 @@ import type { Color4 } from "core/Maths/math.color";
 import type { Material } from "core/Materials/material";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
 
-export interface ISpsMeshSourceData {
+/**
+ *  Interface for solid particle mesh source data
+ */
+export interface ISolidParticleMeshSourceData {
     customMeshName?: string;
     vertexData?: VertexData;
 }
 
 /**
- * Interface for SPS update block data
+ * Interface for solid particle update block data
  */
-export interface ISpsUpdateData {
+export interface ISolidParticleUpdateData {
     position?: () => Vector3;
     velocity?: () => Vector3;
     color?: () => Color4;
@@ -20,10 +23,10 @@ export interface ISpsUpdateData {
 }
 
 /**
- * Interface for SPS create block data
+ * Interface for solid particle create block data
  */
-export interface ISpsParticleConfigData {
-    meshData: ISpsMeshSourceData | null;
+export interface ISolidParticleInitData {
+    meshData: ISolidParticleMeshSourceData | null;
     count: number;
     material?: Material;
     position?: () => Vector3;
@@ -32,5 +35,5 @@ export interface ISpsParticleConfigData {
     scaling?: () => Vector3;
     rotation?: () => Vector3;
     lifeTime?: () => number;
-    updateBlock?: ISpsUpdateData | null;
+    updateBlock?: ISolidParticleUpdateData | null;
 }

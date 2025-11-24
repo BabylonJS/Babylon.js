@@ -43,7 +43,14 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
-import { SPSMeshSourceBlock, SPSSystemBlock, SPSCreateBlock, SPSUpdateBlock, SPSParticleConfigBlock, SPSNodeMaterialBlock } from "core/Particles/Node/Blocks";
+import {
+    MeshSourceBlock,
+    SolidParticleSystemBlock,
+    CreateSolidParticleBlock,
+    UpdateSolidParticleBlock,
+    InitSolidParticleBlock,
+    NodeMaterialBlock,
+} from "core/Particles/Node/Blocks";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 
 /**
@@ -155,18 +162,18 @@ export class BlockTools {
                 return new UpdateAttractorBlock("Update attractor");
             case "SystemBlock":
                 return new SystemBlock("System");
-            case "SPSMeshSourceBlock":
-                return new SPSMeshSourceBlock("SPS Mesh Source");
-            case "SPSParticleConfigBlock":
-                return new SPSParticleConfigBlock("SPS Particle Config");
-            case "SPSNodeMaterialBlock":
-                return new SPSNodeMaterialBlock("SPS Node Material");
-            case "SPSSystemBlock":
-                return new SPSSystemBlock("SPS System");
-            case "SPSCreateBlock":
-                return new SPSCreateBlock("SPS Create");
-            case "SPSUpdateBlock":
-                return new SPSUpdateBlock("SPS Update");
+            case "MeshSourceBlock":
+                return new MeshSourceBlock("Mesh Source for SPS");
+            case "InitSolidParticleBlock":
+                return new InitSolidParticleBlock("Init Solid Particle");
+            case "NodeMaterialBlock":
+                return new NodeMaterialBlock("Node Material for SPS");
+            case "SolidParticleSystemBlock":
+                return new SolidParticleSystemBlock("SPS System");
+            case "CreateSolidParticleBlock":
+                return new CreateSolidParticleBlock("Create Solid Particle");
+            case "UpdateSolidParticleBlock":
+                return new UpdateSolidParticleBlock("SPS Update");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":

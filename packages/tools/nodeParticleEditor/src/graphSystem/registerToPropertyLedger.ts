@@ -5,8 +5,8 @@ import { TextureSourcePropertyTabComponent } from "./properties/textureSourceNod
 import { DebugPropertyTabComponent } from "./properties/debugNodePropertyComponent";
 import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
 import { MeshShapePropertyTabComponent } from "./properties/meshShapeNodePropertyComponent";
-import { SPSMeshSourcePropertyTabComponent } from "./properties/spsMeshSourceNodePropertyComponent";
-import { SPSNodeMaterialPropertyTabComponent } from "./properties/spsNodeMaterialPropertyComponent";
+import { MeshSourcePropertyTabComponent } from "./properties/meshSourceNodePropertyComponent";
+import { NodeMaterialPropertyTabComponent } from "./properties/nodeMaterialNodePropertyComponent";
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;
@@ -16,12 +16,10 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutPropertyTabComponent;
     PropertyLedger.RegisteredControls["MeshShapeBlock"] = MeshShapePropertyTabComponent;
 
-    PropertyLedger.RegisteredControls["SPSMeshSourceBlock"] = SPSMeshSourcePropertyTabComponent;
-    PropertyLedger.RegisteredControls["SPSParticleConfigBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["SPSCreateBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["SPSSystemBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["SPSUpdateBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["SpsParticlePropsSetBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["SpsParticlePropsGetBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["SPSNodeMaterialBlock"] = SPSNodeMaterialPropertyTabComponent;
+    PropertyLedger.RegisteredControls["MeshSourceBlock"] = MeshSourcePropertyTabComponent;
+    PropertyLedger.RegisteredControls["InitSolidParticleBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["CreateSolidParticleBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["SolidParticleSystemBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["NodeMaterialBlock"] = NodeMaterialPropertyTabComponent;
 };

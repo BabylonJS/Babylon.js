@@ -11,11 +11,11 @@ import { EngineStore } from "core/Engines/engineStore";
 import type { Nullable } from "core/types";
 import type { Scene } from "core/scene";
 import type { Mesh } from "core/Meshes/mesh";
-import { SPSMeshSourceBlock } from "core/Particles/Node/Blocks";
+import { MeshSourceBlock } from "core/Particles/Node/Blocks";
 import type { Observer } from "core/Misc/observable";
 
-export class SPSMeshSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
-    private _onValueChangedObserver: Nullable<Observer<SPSMeshSourceBlock>> = null;
+export class MeshSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
+    private _onValueChangedObserver: Nullable<Observer<MeshSourceBlock>> = null;
 
     constructor(props: IPropertyComponentProps) {
         super(props);
@@ -23,7 +23,7 @@ export class SPSMeshSourcePropertyTabComponent extends React.Component<IProperty
     }
 
     override componentDidMount(): void {
-        const block = this.props.nodeData.data as SPSMeshSourceBlock;
+        const block = this.props.nodeData.data as MeshSourceBlock;
         this._onValueChangedObserver = block.onValueChangedObservable.add(() => {
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
             this.forceUpdate();
@@ -58,7 +58,7 @@ export class SPSMeshSourcePropertyTabComponent extends React.Component<IProperty
 
         const meshes = scene.meshes.filter((m) => !!m.name && m.getTotalVertices() > 0) as Mesh[];
         if (meshes.length) {
-            const block = this.props.nodeData.data as SPSMeshSourceBlock;
+            const block = this.props.nodeData.data as MeshSourceBlock;
             block.setCustomMesh(meshes[0]);
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         }
@@ -67,7 +67,7 @@ export class SPSMeshSourcePropertyTabComponent extends React.Component<IProperty
     }
 
     removeData() {
-        const block = this.props.nodeData.data as SPSMeshSourceBlock;
+        const block = this.props.nodeData.data as MeshSourceBlock;
         block.clearCustomMesh();
         this._setNodeScene(null);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
@@ -75,7 +75,7 @@ export class SPSMeshSourcePropertyTabComponent extends React.Component<IProperty
     }
 
     applyMesh(mesh: Nullable<Mesh>) {
-        const block = this.props.nodeData.data as SPSMeshSourceBlock;
+        const block = this.props.nodeData.data as MeshSourceBlock;
         block.setCustomMesh(mesh ?? null);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         this.forceUpdate();
@@ -87,7 +87,7 @@ export class SPSMeshSourcePropertyTabComponent extends React.Component<IProperty
             scene.dispose();
         }
         (this.props.nodeData as any).__spsMeshScene = null;
-        const block = this.props.nodeData.data as SPSMeshSourceBlock;
+        const block = this.props.nodeData.data as MeshSourceBlock;
         if (this._onValueChangedObserver) {
             block.onValueChangedObservable.remove(this._onValueChangedObserver);
             this._onValueChangedObserver = null;
@@ -95,7 +95,7 @@ export class SPSMeshSourcePropertyTabComponent extends React.Component<IProperty
     }
 
     override render() {
-        const block = this.props.nodeData.data as SPSMeshSourceBlock;
+        const block = this.props.nodeData.data as MeshSourceBlock;
         const scene = this._getNodeScene();
 
         const meshes = scene ? (scene.meshes.filter((m) => !!m.name && m.getTotalVertices() > 0) as Mesh[]) : [];

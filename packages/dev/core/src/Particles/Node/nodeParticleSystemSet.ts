@@ -22,7 +22,7 @@ import { BoxShapeBlock } from "./Blocks/Emitters/boxShapeBlock";
 import { CreateParticleBlock } from "./Blocks/Emitters/createParticleBlock";
 import type { Nullable } from "core/types";
 import { Color4 } from "core/Maths/math.color";
-import { SPSSystemBlock } from "./Blocks";
+import { SolidParticleSystemBlock } from "./Blocks";
 import { ParticleSystem } from "core/Particles/particleSystem";
 
 // declare NODEPARTICLEEDITOR namespace for compilation issue
@@ -47,7 +47,7 @@ export interface INodeParticleEditorOptions {
  * PG: #ZT509U#1
  */
 export class NodeParticleSystemSet {
-    private _systemBlocks: (SystemBlock | SPSSystemBlock)[] = [];
+    private _systemBlocks: (SystemBlock | SolidParticleSystemBlock)[] = [];
     private _buildId: number = 0;
 
     /** Define the Url to load node editor script */
@@ -92,7 +92,7 @@ export class NodeParticleSystemSet {
     /**
      * Gets the system blocks
      */
-    public get systemBlocks(): (SystemBlock | SPSSystemBlock)[] {
+    public get systemBlocks(): (SystemBlock | SolidParticleSystemBlock)[] {
         return this._systemBlocks;
     }
 

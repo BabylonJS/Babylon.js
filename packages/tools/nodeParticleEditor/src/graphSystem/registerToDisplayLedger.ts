@@ -38,12 +38,12 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["UpdateFlowMapBlock"] = UpdateDisplayManager;
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
 
-    DisplayLedger.RegisteredControls["SPSMeshSourceBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["SPSNodeMaterialBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["SPSParticleConfigBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["SPSCreateBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["SPSSystemBlock"] = SystemDisplayManager;
-    DisplayLedger.RegisteredControls["SPSUpdateBlock"] = UpdateDisplayManager;
+    DisplayLedger.RegisteredControls["MeshSourceBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["NodeMaterialBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["InitSolidParticleBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["CreateSolidParticleBlock"] = EmitterDisplayManager;
+    DisplayLedger.RegisteredControls["SolidParticleSystemBlock"] = SystemDisplayManager;
+    DisplayLedger.RegisteredControls["UpdateSolidParticleBlock"] = UpdateDisplayManager;
 
     DisplayLedger.RegisteredControls["ParticleDebugBlock"] = DebugDisplayManager;
     DisplayLedger.RegisteredControls["ParticleElbowBlock"] = ElbowDisplayManager;
@@ -51,6 +51,4 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["ParticleTeleportOutBlock"] = TeleportOutDisplayManager;
     DisplayLedger.RegisteredControls["BasicConditionBlock"] = ConditionDisplayManager;
     DisplayLedger.RegisteredControls["ParticleTriggerBlock"] = TriggerDisplayManager;
-    DisplayLedger.RegisteredControls["SpsParticlePropsGetBlock"] = InputDisplayManager;
-    DisplayLedger.RegisteredControls["SpsParticlePropsSetBlock"] = InputDisplayManager;
 };

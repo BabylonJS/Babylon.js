@@ -1,17 +1,15 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 import type { Color4, Vector3 } from "../../../../Maths";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISpsParticleConfigData } from "./ISPSData";
+import type { ISolidParticleInitData } from "./ISolidParticleData";
 
 /**
  * Block used to configure SPS particle parameters (mesh, count, material, position, velocity, color, scaling, rotation)
  */
-export class SPSParticleConfigBlock extends NodeParticleBlock {
+export class InitSolidParticleBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
@@ -29,7 +27,7 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
     }
 
     public override getClassName() {
-        return "SPSParticleConfigBlock";
+        return "InitSolidParticleBlock";
     }
 
     public get count(): NodeParticleConnectionPoint {
@@ -88,7 +86,7 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
         const scaling = this.scaling.isConnected ? () => this.scaling.getConnectedValue(state) as Vector3 : undefined;
         const rotation = this.rotation.isConnected ? () => this.rotation.getConnectedValue(state) as Vector3 : undefined;
 
-        const particleConfig: ISpsParticleConfigData = {
+        const particleConfig: ISolidParticleInitData = {
             meshData,
             count,
             material,
@@ -105,4 +103,4 @@ export class SPSParticleConfigBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.SPSParticleConfigBlock", SPSParticleConfigBlock);
+RegisterClass("BABYLON.InitSolidParticleBlock", InitSolidParticleBlock);

@@ -1,16 +1,14 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import type { ISpsParticleConfigData, ISpsUpdateData } from "./ISPSData";
+import type { ISolidParticleInitData, ISolidParticleUpdateData } from "./ISolidParticleData";
 
 /**
  * Block used to generate update function for SPS particles
  */
-export class SPSUpdateBlock extends NodeParticleBlock {
+export class UpdateSolidParticleBlock extends NodeParticleBlock {
     public constructor(name: string) {
         super(name);
 
@@ -25,7 +23,7 @@ export class SPSUpdateBlock extends NodeParticleBlock {
     }
 
     public override getClassName() {
-        return "SPSUpdateBlock";
+        return "UpdateSolidParticleBlock";
     }
 
     public get configInput(): NodeParticleConnectionPoint {
@@ -57,7 +55,7 @@ export class SPSUpdateBlock extends NodeParticleBlock {
     }
 
     public override _build(state: NodeParticleBuildState) {
-        const updateData: ISpsUpdateData = {} as ISpsUpdateData;
+        const updateData: ISolidParticleUpdateData = {} as ISolidParticleUpdateData;
         if (this.position.isConnected) {
             updateData.position = () => {
                 return this.position.getConnectedValue(state);
@@ -83,7 +81,7 @@ export class SPSUpdateBlock extends NodeParticleBlock {
                 return this.rotation.getConnectedValue(state);
             };
         }
-        this.output._storedValue = { ...(this.configInput.getConnectedValue(state) as ISpsParticleConfigData), updateBlock: updateData };
+        this.output._storedValue = { ...(this.configInput.getConnectedValue(state) as ISolidParticleInitData), updateBlock: updateData };
     }
 
     public override serialize(): any {
@@ -96,4 +94,4 @@ export class SPSUpdateBlock extends NodeParticleBlock {
     }
 }
 
-RegisterClass("BABYLON.SPSUpdateBlock", SPSUpdateBlock);
+RegisterClass("BABYLON.UpdateSolidParticleBlock", UpdateSolidParticleBlock);
