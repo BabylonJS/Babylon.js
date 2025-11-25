@@ -17,7 +17,7 @@ export const enum Channel {
 export const VolumePrecision = 1;
 
 /** The range of acceptable volume values for realtime audio tests. */
-const RealtimeVolumeRange = 0.2;
+export const RealtimeVolumeRange = 0.2;
 
 export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
