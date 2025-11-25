@@ -89,9 +89,11 @@ interface IPLYConversionBuffers {
     sh?: [];
 }
 
-interface _CameraViewInfo {
+interface ICameraViewInfo {
+    camera: Camera;
     cameraDirection: Vector3;
     mesh: Mesh;
+    frameIdLastUpdate: number;
 }
 /**
  * Representation of the types
@@ -281,7 +283,6 @@ export interface PLYHeader {
 export class GaussianSplattingMesh extends Mesh {
     private _vertexCount = 0;
     private _worker: Nullable<Worker> = null;
-    private _frameIdLastUpdate = -1;
     private _modelViewMatrix = Matrix.Identity();
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
@@ -315,7 +316,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _viewDirectionFactor = new Vector3(1, 1, -1);
 
     private static readonly _BatchSize = 16; // 16 splats per instance
-    private _cameraViewInfos = new Map<number, _CameraViewInfo>();
+    private _cameraViewInfos = new Map<number, ICameraViewInfo>();
     /**
      * View direction factor used to compute the SH view direction in the shader.
      */
@@ -528,15 +529,26 @@ export class GaussianSplattingMesh extends Mesh {
     public _postToWorker(forced = false): void {
         const scene = this._scene;
         const frameId = scene.getFrameId();
-        if ((forced || frameId !== this._frameIdLastUpdate) && this._worker && (this._scene.activeCameras || this._scene.activeCamera) && this._canPostToWorker) {
-            const cameras = this._scene.activeCameras ?? [this._scene.activeCamera!];
-            //const cameras = [this._scene.activeCamera!];
+        // force update or at least frame update for camera is outdated
+        let outdated = false;
+        this._cameraViewInfos.forEach((cameraViewInfos) => {
+            if (cameraViewInfos.frameIdLastUpdate !== frameId) {
+                outdated = true;
+            }
+        });
+
+        if ((forced || outdated) && this._worker && (this._scene.activeCameras || this._scene.activeCamera) && this._canPostToWorker) {
+            // array of cameras used for rendering
+            const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
+            // list view infos for active cameras
+            const activeViewInfos: ICameraViewInfo[] = [];
             cameras.forEach((camera) => {
                 const cameraId = camera.uniqueId;
-                const cameraDirection = this._getCameraDirection(camera);
 
-                let cameraViewInfos = this._cameraViewInfos.get(cameraId);
-                if (!cameraViewInfos) {
+                const cameraViewInfos = this._cameraViewInfos.get(cameraId);
+                if (cameraViewInfos) {
+                    activeViewInfos.push(cameraViewInfos);
+                } else {
                     // mesh doesn't exist yet for this camera
                     const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
                     // not visible with inspector
@@ -545,18 +557,32 @@ export class GaussianSplattingMesh extends Mesh {
                     GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
                     cameraMesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
 
-                    this._cameraViewInfos.set(cameraId, { cameraDirection: new Vector3(0, 0, 0), mesh: cameraMesh });
-
-                    cameraViewInfos = this._cameraViewInfos.get(cameraId)!;
+                    const newViewInfos: ICameraViewInfo = { camera: camera, cameraDirection: new Vector3(0, 0, 0), mesh: cameraMesh, frameIdLastUpdate: frameId };
+                    activeViewInfos.push(newViewInfos);
+                    this._cameraViewInfos.set(cameraId, newViewInfos);
                 }
+            });
+            // sort view infos by last updated frame id: first item is the least recently updated
+            activeViewInfos.sort((a, b) => a.frameIdLastUpdate - b.frameIdLastUpdate);
+
+            // view infos sorted by least recent updated frame id
+            activeViewInfos.forEach((cameraViewInfos) => {
+                const camera = cameraViewInfos.camera;
+                const cameraDirection = this._getCameraDirection(camera);
+
                 const previousCameraDirection = cameraViewInfos.cameraDirection;
                 const dot = Vector3.Dot(cameraDirection, previousCameraDirection);
-                if ((forced || Math.abs(dot - 1) >= 0.01) && this._canPostToWorker) {
+                if ((forced || cameraViewInfos.frameIdLastUpdate !== frameId || Math.abs(dot - 1) >= 0.01) && this._canPostToWorker) {
                     cameraViewInfos.cameraDirection.copyFrom(cameraDirection);
-                    this._frameIdLastUpdate = frameId;
+                    cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;
                     this._worker!.postMessage(
-                        { view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem, cameraId: camera.uniqueId },
+                        {
+                            view: this._modelViewMatrix.m,
+                            depthMix: this._depthMix,
+                            useRightHandedSystem: this._scene.useRightHandedSystem,
+                            cameraId: camera.uniqueId,
+                        },
                         [this._depthMix.buffer]
                     );
                 }
