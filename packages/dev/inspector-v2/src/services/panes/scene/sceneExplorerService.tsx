@@ -31,7 +31,13 @@ export interface ISceneExplorerService extends IService<typeof SceneExplorerServ
      * Adds a new command (e.g. "Delete", "Rename", etc.) that can be executed on entities in the scene explorer.
      * @param command A description of the command to add.
      */
-    addCommand<T extends EntityBase>(command: SceneExplorerCommandProvider<T>): IDisposable;
+    addEntityCommand<T extends EntityBase>(command: SceneExplorerCommandProvider<T>): IDisposable;
+
+    /**
+     * Adds a new command that can be executed on sections in the scene explorer.
+     * @param command A description of the command to add.
+     */
+    addSectionCommand<T extends string>(command: SceneExplorerCommandProvider<T, "contextMenu">): IDisposable;
 }
 
 /**
@@ -43,7 +49,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
     consumes: [SceneContextIdentity, ShellServiceIdentity, SelectionServiceIdentity],
     factory: (sceneContext, shellService, selectionService) => {
         const sectionsCollection = new ObservableCollection<SceneExplorerSection<EntityBase>>();
-        const commandsCollection = new ObservableCollection<SceneExplorerCommandProvider<EntityBase>>();
+        const entityCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<EntityBase>>();
+        const sectionCommandsCollection = new ObservableCollection<SceneExplorerCommandProvider<string, "contextMenu">>();
 
         const registration = shellService.addSidePane({
             key: "Scene Explorer",
@@ -54,7 +61,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
             suppressTeachingMoment: true,
             content: () => {
                 const sections = useOrderedObservableCollection(sectionsCollection);
-                const commands = useOrderedObservableCollection(commandsCollection);
+                const entityCommands = useOrderedObservableCollection(entityCommandsCollection);
+                const sectionCommands = useOrderedObservableCollection(sectionCommandsCollection);
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
                 const entity = useObservableState(() => selectionService.selectedEntity, selectionService.onSelectedEntityChanged);
 
@@ -63,7 +71,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
                         {scene && (
                             <SceneExplorer
                                 sections={sections}
-                                commandProviders={commands}
+                                entityCommandProviders={entityCommands}
+                                sectionCommandProviders={sectionCommands}
                                 scene={scene}
                                 selectedEntity={entity}
                                 setSelectedEntity={(entity) => (selectionService.selectedEntity = entity)}
@@ -76,7 +85,8 @@ export const SceneExplorerServiceDefinition: ServiceDefinition<[ISceneExplorerSe
 
         return {
             addSection: (section) => sectionsCollection.add(section as SceneExplorerSection<EntityBase>),
-            addCommand: (command) => commandsCollection.add(command as SceneExplorerCommandProvider<EntityBase>),
+            addEntityCommand: (command) => entityCommandsCollection.add(command as SceneExplorerCommandProvider<EntityBase>),
+            addSectionCommand: (command) => sectionCommandsCollection.add(command as unknown as SceneExplorerCommandProvider<string, "contextMenu">),
             dispose: () => registration.dispose(),
         };
     },

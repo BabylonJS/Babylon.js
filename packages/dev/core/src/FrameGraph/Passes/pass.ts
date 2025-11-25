@@ -37,4 +37,7 @@ export class FrameGraphPass<T extends FrameGraphContext> implements IFrameGraphP
     public _isValid(): Nullable<string> {
         return this._executeFunc !== undefined ? null : "Execute function is not set (call setExecuteFunc to set it)";
     }
+
+    /** @internal */
+    public _dispose() {}
 }

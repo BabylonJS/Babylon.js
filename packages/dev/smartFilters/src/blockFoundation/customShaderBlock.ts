@@ -4,12 +4,14 @@ import { ConnectionPointType, type ConnectionPointValue } from "../connection/co
 import { ShaderBinding } from "../runtime/shaderRuntime.js";
 import { CreateStrongRef } from "../runtime/strongRef.js";
 import type { SerializedShaderBlockDefinition } from "../serialization/serializedShaderBlockDefinition.js";
-import type { SerializedInputConnectionPointV1 } from "../serialization/v1/shaderBlockSerialization.types.js";
+import type { SerializedInputConnectionPointV1, ConstPropertyMetadata } from "../serialization/v1/shaderBlockSerialization.types.js";
 import type { SmartFilter } from "../smartFilter.js";
-import type { ShaderProgram } from "../utils/shaderCodeUtils.js";
+import { CloneShaderProgram, type ShaderProgram } from "../utils/shaderCodeUtils.js";
 import { ShaderBlock } from "./shaderBlock.js";
 import type { RuntimeData } from "../connection/connectionPoint.js";
 import type { Nullable } from "core/types.js";
+import { EditableInPropertyPage, type IEditablePropertyOption, PropertyTypeForEdition } from "../editorUtils/editableInPropertyPage.js";
+import type { CustomShaderBlockData } from "./customShaderBlock.serializer.js";
 
 /**
  * The binding for a CustomShaderBlock
@@ -95,20 +97,33 @@ export class CustomShaderBlock extends ShaderBlock {
      * @param smartFilter - The smart filter this block belongs to
      * @param name - Defines the name of the block
      * @param blockDefinition - The serialized block definition
+     * @param data - The data property from the serialized block, if applicable
      * @returns The deserialized CustomShaderBlock instance
      */
-    public static Create(smartFilter: SmartFilter, name: string, blockDefinition: SerializedShaderBlockDefinition): CustomShaderBlock {
+    public static Create(smartFilter: SmartFilter, name: string, blockDefinition: SerializedShaderBlockDefinition, data?: any): CustomShaderBlock {
         // When a new version of SerializedBlockDefinition is created, this function should be updated to handle the new properties.
 
-        return new CustomShaderBlock(
+        const newBlock = new CustomShaderBlock(
             smartFilter,
             name,
             blockDefinition.disableOptimization,
             blockDefinition.blockType,
             blockDefinition.namespace,
             blockDefinition.inputConnectionPoints,
+            blockDefinition.fragmentConstProperties || [],
             blockDefinition.shaderProgram
         );
+
+        if (data && (data as CustomShaderBlockData).customProperties) {
+            const customProperties = (data as CustomShaderBlockData).customProperties;
+            for (const customProperty of customProperties) {
+                if (newBlock.dynamicPropertyNames.indexOf(customProperty.name) !== -1) {
+                    (newBlock as any)[customProperty.name] = customProperty.value;
+                }
+            }
+        }
+
+        return newBlock;
     }
 
     /**
@@ -119,7 +134,15 @@ export class CustomShaderBlock extends ShaderBlock {
     private readonly _shaderProgram: ShaderProgram;
     private readonly _blockType: string;
     private readonly _namespace: Nullable<string>;
+    private readonly _fragmentConstProperties: ConstPropertyMetadata[];
     private _autoBoundInputs: Nullable<SerializedInputConnectionPointV1[]> = null;
+
+    /**
+     * A list of the names of the properties added to this instance of the block, for example,
+     * fragment const properties.
+     *
+     */
+    public readonly dynamicPropertyNames: string[] = [];
 
     /**
      * The type of the block - used when serializing / deserializing the block, and in the editor.
@@ -144,6 +167,7 @@ export class CustomShaderBlock extends ShaderBlock {
      * @param blockType - The type of the block
      * @param namespace - The namespace of the block
      * @param inputConnectionPoints - The input connection points of the
+     * @param fragmentConstProperties - The define properties for the block
      * @param shaderProgram - The shader program for the block
      */
     private constructor(
@@ -153,17 +177,22 @@ export class CustomShaderBlock extends ShaderBlock {
         blockType: string,
         namespace: Nullable<string>,
         inputConnectionPoints: SerializedInputConnectionPointV1[],
+        fragmentConstProperties: ConstPropertyMetadata[],
         shaderProgram: ShaderProgram
     ) {
         super(smartFilter, name, disableOptimization);
         this._blockType = blockType;
         this._namespace = namespace;
+        this._shaderProgram = shaderProgram;
+        this._fragmentConstProperties = fragmentConstProperties;
 
         for (const input of inputConnectionPoints) {
             this._registerSerializedInputConnectionPointV1(input);
         }
 
-        this._shaderProgram = shaderProgram;
+        for (const constProperty of fragmentConstProperties) {
+            this._createConstProperty(constProperty);
+        }
     }
 
     /**
@@ -171,7 +200,52 @@ export class CustomShaderBlock extends ShaderBlock {
      * @returns The shader program to use to render the block
      */
     public override getShaderProgram() {
-        return this._shaderProgram;
+        if (this._fragmentConstProperties.length === 0) {
+            return this._shaderProgram;
+        } else {
+            // Make a copy of the shader program and append const properties to the fragment shader consts
+            const shaderProgramForThisInstance = CloneShaderProgram(this._shaderProgram);
+            shaderProgramForThisInstance.fragment.constPerInstance =
+                this._fragmentConstProperties
+                    .map((property) => {
+                        switch (property.type) {
+                            case "float": {
+                                const value = (this as any)[property.friendlyName] as number;
+                                const valueStr = Number.isInteger(value) ? value.toString() + "." : value.toString();
+                                return `const float ${property.name} = ${valueStr};`;
+                            }
+                        }
+                    })
+                    .join("\n") + "\n";
+
+            return shaderProgramForThisInstance;
+        }
+    }
+
+    /**
+     * Creates a dynamic property for the supplied const property with EditableInPropertyPage decorator.
+     * @param constProperty - The const property metadata
+     */
+    private _createConstProperty(constProperty: ConstPropertyMetadata): void {
+        // Create the property and assign the default value
+        (this as any)[constProperty.friendlyName] = constProperty.defaultValue;
+        this.dynamicPropertyNames.push(constProperty.friendlyName);
+
+        // Use the EditableInPropertyPage decorator to make the property editable in the Smart Filters Editor
+        const editablePropertyOptions: IEditablePropertyOption = {
+            notifiers: { rebuild: true },
+            blockType: this._blockType,
+        };
+        if (constProperty.options) {
+            editablePropertyOptions.options = Object.keys(constProperty.options).map((key) => {
+                return { label: key, value: (constProperty.options as any)[key] };
+            });
+        }
+
+        const propertyType: PropertyTypeForEdition = constProperty.options ? PropertyTypeForEdition.List : PropertyTypeForEdition.Float;
+
+        const decoratorApplier = EditableInPropertyPage(constProperty.friendlyName, propertyType, "PROPERTIES", editablePropertyOptions);
+        decoratorApplier(this, constProperty.friendlyName);
     }
 
     /**

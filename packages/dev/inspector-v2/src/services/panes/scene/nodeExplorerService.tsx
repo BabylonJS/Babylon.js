@@ -100,7 +100,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             getEntityMovedObservables: () => [nodeMovedObservable],
         });
 
-        const abstractMeshBoundingBoxCommandRegistration = sceneExplorerService.addCommand({
+        const abstractMeshBoundingBoxCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
             order: DefaultCommandsOrder.MeshBoundingBox,
             getCommand: (mesh) => {
@@ -130,7 +130,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
-        const abstractMeshVisibilityCommandRegistration = sceneExplorerService.addCommand({
+        const abstractMeshVisibilityCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown): entity is AbstractMesh => entity instanceof AbstractMesh && entity.getTotalVertices() > 0,
             order: DefaultCommandsOrder.MeshVisibility,
             getCommand: (mesh) => {
@@ -160,7 +160,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             },
         });
 
-        const activeCameraCommandRegistration = sceneExplorerService.addCommand({
+        const activeCameraCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof Camera,
             order: DefaultCommandsOrder.CameraActive,
             getCommand: (camera) => {
@@ -194,7 +194,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         });
 
         function addGizmoCommand<NodeT extends Node>(nodeClass: abstract new (...args: any[]) => NodeT, getGizmoRef: (node: NodeT) => IDisposable) {
-            return sceneExplorerService.addCommand({
+            return sceneExplorerService.addEntityCommand({
                 predicate: (entity: unknown): entity is NodeT => entity instanceof nodeClass,
                 order: DefaultCommandsOrder.GizmoActive,
                 getCommand: (node) => {
@@ -236,7 +236,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
 
         const cameraGizmoCommandRegistration = addGizmoCommand(Camera, gizmoService.getCameraGizmo.bind(gizmoService));
 
-        const lightEnabledCommandRegistration = sceneExplorerService.addCommand({
+        const lightEnabledCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown): entity is Light => entity instanceof Light,
             order: DefaultCommandsOrder.LightActive,
             getCommand: (light) => {

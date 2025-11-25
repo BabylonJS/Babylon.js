@@ -572,9 +572,9 @@ export class VRExperienceHelper {
                 if (this._scene.activeCamera instanceof TargetCamera && this._scene.activeCamera.rotation) {
                     const targetCamera = this._scene.activeCamera;
                     if (targetCamera.rotationQuaternion) {
-                        this._deviceOrientationCamera.rotationQuaternion.copyFrom(targetCamera.rotationQuaternion);
+                        this._deviceOrientationCamera.rotationQuaternion?.copyFrom(targetCamera.rotationQuaternion);
                     } else {
-                        this._deviceOrientationCamera.rotationQuaternion.copyFrom(
+                        this._deviceOrientationCamera.rotationQuaternion?.copyFrom(
                             Quaternion.RotationYawPitchRoll(targetCamera.rotation.y, targetCamera.rotation.x, targetCamera.rotation.z)
                         );
                     }
