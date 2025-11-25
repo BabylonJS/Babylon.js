@@ -150,6 +150,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "kernelSize",
         "viewDirectionFactor",
     ];
+    private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
      * Checks whether the material is ready to be rendered for a given mesh.
      * @param mesh The mesh to render
@@ -182,8 +183,12 @@ export class GaussianSplattingMaterial extends PushMaterial {
             return true;
         }
 
+        if (!this._sourceMesh) {
+            return false;
+        }
+
         const engine = scene.getEngine();
-        const gsMesh = mesh as GaussianSplattingMesh;
+        const gsMesh = this._sourceMesh;
 
         // Misc.
         PrepareDefinesForMisc(
@@ -271,6 +276,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
+     * GaussianSplattingMaterial belongs to a single mesh
+     * @param mesh mesh this material belongs to
+     */
+    public setSourceMesh(mesh: GaussianSplattingMesh) {
+        this._sourceMesh = mesh;
+    }
+    /**
      * Bind material effect for a specific Gaussian Splatting mesh
      * @param mesh Gaussian splatting mesh
      * @param effect Splatting material or node material
@@ -283,8 +295,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const renderWidth = engine.getRenderWidth();
         const renderHeight = engine.getRenderHeight();
 
-        const gsMesh = mesh as GaussianSplattingMesh;
-        const gsMaterial = gsMesh.material as GaussianSplattingMaterial;
+        const gsMaterial = mesh.material as GaussianSplattingMaterial;
+
+        if (!gsMaterial._sourceMesh) {
+            return;
+        }
+
+        const gsMesh = gsMaterial._sourceMesh;
 
         // check if rigcamera, get number of rigs
         const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
