@@ -134,6 +134,10 @@ export class Sound {
     public set maxDistance(value: number) {
         this._optionsV2.spatialMaxDistance = value;
 
+        if (this.useCustomAttenuation) {
+            return;
+        }
+
         if (this._soundV2) {
             this._initSpatial();
             this._soundV2.spatial.maxDistance = value;
@@ -298,6 +302,9 @@ export class Sound {
         this._optionsV2.autoplay = options.autoplay || false;
 
         this.useCustomAttenuation = options.useCustomAttenuation ?? false;
+        if (this.useCustomAttenuation) {
+            optionsV2.spatialMaxDistance = Number.MAX_VALUE;
+        }
 
         let streaming = options?.streaming || false;
 
