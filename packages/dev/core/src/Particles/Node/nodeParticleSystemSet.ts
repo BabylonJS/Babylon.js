@@ -25,7 +25,11 @@ import type { ParticleTeleportOutBlock } from "./Blocks/Teleport/particleTelepor
 import type { ParticleTeleportInBlock } from "./Blocks/Teleport/particleTeleportInBlock";
 import type { Nullable } from "core/types";
 import type { Color4 } from "core/Maths/math.color";
-import { SolidParticleSystemBlock, MeshSourceBlock, InitSolidParticleBlock, UpdateSolidParticleBlock, CreateSolidParticleBlock } from "./Blocks";
+import { SolidParticleSystemBlock } from "./Blocks/SolidParticle/solidParticleSystemBlock";
+import { MeshSourceBlock } from "./Blocks/SolidParticle/meshSourceBlock";
+import { InitSolidParticleBlock } from "./Blocks/SolidParticle/initSolidParticleBlock";
+import { UpdateSolidParticleBlock } from "./Blocks/SolidParticle/updateSolidParticleBlock";
+import { CreateSolidParticleBlock } from "./Blocks/SolidParticle/createSolidParticleBlock";
 import { ParticleConverterBlock } from "./Blocks/particleConverterBlock";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import { NodeParticleSystemSources } from "./Enums/nodeParticleSystemSources";

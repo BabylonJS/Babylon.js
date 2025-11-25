@@ -43,14 +43,12 @@ import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicCo
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
-import {
-    MeshSourceBlock,
-    SolidParticleSystemBlock,
-    CreateSolidParticleBlock,
-    UpdateSolidParticleBlock,
-    InitSolidParticleBlock,
-    NodeMaterialSourceBlock,
-} from "core/Particles/Node/Blocks";
+import { MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
+import { InitSolidParticleBlock } from "core/Particles/Node/Blocks/SolidParticle/initSolidParticleBlock";
+import { UpdateSolidParticleBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleBlock";
+import { CreateSolidParticleBlock } from "core/Particles/Node/Blocks/SolidParticle/createSolidParticleBlock";
+import { NodeMaterialSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/nodeMaterialSourceBlock";
+import { SolidParticleSystemBlock } from "core/Particles/Node/Blocks/SolidParticle/solidParticleSystemBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 
 /**
