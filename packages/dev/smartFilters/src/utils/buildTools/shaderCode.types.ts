@@ -28,6 +28,12 @@ export type ShaderCode = {
     const?: string;
 
     /**
+     * The declaration of const variables which can be modified by each instance of the block using
+     * this ShaderCode. The optimizer will not consolidate when there are multiple instances of the same block.
+     */
+    constPerInstance?: string;
+
+    /**
      * The declaration of the uniform variables.
      */
     uniform?: string;

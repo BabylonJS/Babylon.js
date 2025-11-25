@@ -136,6 +136,13 @@ export class PointerEventsCaptureBehavior implements Behavior<AbstractMesh> {
         this._attachedMesh = value;
     }
 
+    /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): AbstractMesh | null {
+        return this._attachedMesh;
+    }
+
     constructor(
         private _captureCallback: () => void,
         private _releaseCallback: () => void,

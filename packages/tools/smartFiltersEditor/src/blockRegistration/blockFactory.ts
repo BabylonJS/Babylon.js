@@ -41,7 +41,8 @@ export async function blockFactory(
             serializedBlock.blockType,
             serializedBlock.namespace,
             serializedBlock.name,
-            smartFilterDeserializer
+            smartFilterDeserializer,
+            serializedBlock.data
         );
     }
 

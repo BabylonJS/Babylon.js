@@ -19,6 +19,13 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
     private _sceneRenderObserver: Nullable<Observer<Scene>> = null;
 
     /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<Mesh> {
+        return this._ownerNode;
+    }
+
+    /**
      * Instantiate a new behavior that when attached to a mesh will allow the mesh to be scaled
      */
     constructor() {
@@ -26,6 +33,7 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
         this._dragBehaviorA.moveAttached = false;
         this._dragBehaviorB = new PointerDragBehavior({});
         this._dragBehaviorB.moveAttached = false;
+        this._ownerNode = null!;
     }
 
     /**
@@ -108,5 +116,6 @@ export class MultiPointerScaleBehavior implements Behavior<Mesh> {
             behavior.onDragObservable.clear();
             this._ownerNode.removeBehavior(behavior);
         }
+        this._ownerNode = null!;
     }
 }

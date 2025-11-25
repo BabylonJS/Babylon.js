@@ -51,6 +51,13 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
     private _time: number = 300;
 
     /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<Mesh> {
+        return this._ownerNode;
+    }
+
+    /**
      * Instantiates the FadeInOutBehavior
      */
     constructor() {}
