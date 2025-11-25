@@ -304,6 +304,7 @@ export class Sound {
         this.useCustomAttenuation = options.useCustomAttenuation ?? false;
         if (this.useCustomAttenuation) {
             optionsV2.spatialMaxDistance = Number.MAX_VALUE;
+            optionsV2.volume = 0;
         }
 
         let streaming = options?.streaming || false;
