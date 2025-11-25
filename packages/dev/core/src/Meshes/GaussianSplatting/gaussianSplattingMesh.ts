@@ -94,6 +94,7 @@ interface ICameraViewInfo {
     cameraDirection: Vector3;
     mesh: Mesh;
     frameIdLastUpdate: number;
+    splatIndexBufferSet: boolean;
 }
 /**
  * Representation of the types
@@ -512,6 +513,7 @@ export class GaussianSplattingMesh extends Mesh {
             this._postToWorker(true);
             return false;
         }
+
         return true;
     }
 
@@ -551,13 +553,19 @@ export class GaussianSplattingMesh extends Mesh {
                 } else {
                     // mesh doesn't exist yet for this camera
                     const cameraMesh = new Mesh(this.name + "_cameraMesh_" + cameraId, this._scene);
-                    // not visible with inspector
+                    // not visible with inspector or the scene graph
                     cameraMesh.reservedDataStore = { hidden: true };
+                    cameraMesh.setEnabled(false);
                     cameraMesh.material = this.material;
                     GaussianSplattingMesh._MakeSplatGeometryForMesh(cameraMesh);
-                    cameraMesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
 
-                    const newViewInfos: ICameraViewInfo = { camera: camera, cameraDirection: new Vector3(0, 0, 0), mesh: cameraMesh, frameIdLastUpdate: frameId };
+                    const newViewInfos: ICameraViewInfo = {
+                        camera: camera,
+                        cameraDirection: new Vector3(0, 0, 0),
+                        mesh: cameraMesh,
+                        frameIdLastUpdate: frameId,
+                        splatIndexBufferSet: false,
+                    };
                     activeViewInfos.push(newViewInfos);
                     this._cameraViewInfos.set(cameraId, newViewInfos);
                 }
@@ -601,7 +609,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         const cameraId = this._scene.activeCamera!.uniqueId;
         const cameraViewInfos = this._cameraViewInfos.get(cameraId);
-        if (!cameraViewInfos) {
+        if (!cameraViewInfos || !cameraViewInfos.splatIndexBufferSet) {
             return this;
         }
 
@@ -1760,7 +1768,12 @@ export class GaussianSplattingMesh extends Mesh {
             // get mesh for camera and update its instance buffer
             const cameraViewInfos = this._cameraViewInfos.get(cameraId);
             if (cameraViewInfos) {
-                cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
+                if (cameraViewInfos.splatIndexBufferSet) {
+                    cameraViewInfos.mesh.thinInstanceBufferUpdated("splatIndex");
+                } else {
+                    cameraViewInfos.mesh.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
+                    cameraViewInfos.splatIndexBufferSet = true;
+                }
             }
             this._canPostToWorker = true;
             this._readyToDisplay = true;

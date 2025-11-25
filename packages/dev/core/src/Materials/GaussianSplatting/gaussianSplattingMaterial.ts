@@ -292,8 +292,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const engine = scene.getEngine();
         const camera = scene.activeCamera;
 
-        const renderWidth = engine.getRenderWidth();
-        const renderHeight = engine.getRenderHeight();
+        const renderWidth = engine.getRenderWidth() * camera!.viewport.width;
+        const renderHeight = engine.getRenderHeight() * camera!.viewport.height;
 
         const gsMaterial = mesh.material as GaussianSplattingMaterial;
 
