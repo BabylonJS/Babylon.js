@@ -3159,6 +3159,10 @@
         {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
+        },
+        {
+            "title": "Lighting Volume",
+            "playgroundId": "#MU9P6L#1"
         }
     ]
 }
