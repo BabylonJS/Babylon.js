@@ -1,40 +1,100 @@
 import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISceneContext } from "./sceneContext";
 import type { IShellService } from "./shellService";
-
-import { makeStyles, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Popover, PopoverTrigger, PopoverSurface, Input, Button as FluentButton } from "@fluentui/react-components";
-import { Button } from "shared-ui-components/fluent/primitives/button";
-import { Checkbox } from "shared-ui-components/fluent/primitives/checkbox";
-import type { InputOnChangeData } from "@fluentui/react-components";
+import { Accordion as BabylonAccordion, AccordionSection as BabylonAccordionSection } from "shared-ui-components/fluent/primitives/accordion";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { ShellServiceIdentity } from "./shellService";
-
-import { useRef, useState } from "react";
-import type { ChangeEvent } from "react";
-import { CollectionsAdd20Regular, Settings20Regular } from "@fluentui/react-icons";
+import { CollectionsAdd20Regular } from "@fluentui/react-icons";
 import { SceneContextIdentity } from "./sceneContext";
 import { useObservableState } from "../hooks/observableHooks";
-import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { useState, useRef } from "react";
+import type { ChangeEvent, FunctionComponent, PropsWithChildren } from "react";
+import type { Scene } from "core/scene";
+
+// Babylon.js imports
+import { MeshBuilder } from "core/Meshes";
+import { FilesInput } from "core/Misc/filesInput";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
-import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PointLight } from "core/Lights/pointLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { SpotLight } from "core/Lights/spotLight";
-import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
-import { UniversalCamera } from "core/Cameras/universalCamera";
-import { FilesInput } from "core/Misc/filesInput";
+import { Vector3 } from "core/Maths/math.vector";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
 import { Texture } from "core/Materials/Textures/texture";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { UniversalCamera } from "core/Cameras/universalCamera";
 
 // Side-effect import needed for GPUParticleSystem
 import "core/Particles/webgl2ParticleSystem";
 
-type XYZ = { x: number; y: number; z: number };
+// UI Components
+import { Button } from "shared-ui-components/fluent/primitives/button";
+import { TextInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
+import { SpinButtonPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/spinButtonPropertyLine";
+import { CheckboxPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/checkboxPropertyLine";
+import { Vector3PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
+import { Popover, PopoverTrigger, PopoverSurface } from "@fluentui/react-components";
+import { Settings20Regular } from "@fluentui/react-icons";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const useStyles = makeStyles({
+    container: {
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+    },
+    scrollArea: {
+        flex: 1,
+        overflowY: "auto",
+        paddingRight: tokens.spacingHorizontalS,
+        paddingBottom: tokens.spacingVerticalS,
+    },
+    section: {
+        display: "flex",
+        flexDirection: "column",
+        rowGap: tokens.spacingVerticalM,
+    },
+    row: { display: "flex", alignItems: "center", gap: "4px" },
+});
+
+
+
+export const SettingsPopover: FunctionComponent<PropsWithChildren<{}>> = (props) => {
+    const { children } = props;
+    const [popoverOpen, setPopoverOpen] = useState(false);
+
+    return (
+        <Popover open={popoverOpen} onOpenChange={(_, data) => setPopoverOpen(data.open)} positioning="below-start" trapFocus>
+            <PopoverTrigger disableButtonEnhancement>
+                <button
+                    type="button"
+                    onClick={() => setPopoverOpen(true)}
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                        padding: "5px 8px",
+                        borderRadius: "4px",
+                    }}
+                >
+                    <Settings20Regular />
+                </button>
+            </PopoverTrigger>
+            <PopoverSurface>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 16, minWidth: 300, maxWidth: 400 }}>{children}</div>
+            </PopoverSurface>
+        </Popover>
+    );
+};
+
+// Mesh Types
 type SphereParams = {
     name: string;
     segments: number;
@@ -86,54 +146,685 @@ type GroundParams = {
     subdivisionsY: number;
 };
 
-type SpotlightParams = {
-    name: string;
-    position: XYZ;
-    direction: XYZ;
-    angle: number;
-    exponent: number;
-};
-
-type ArcRotateCameraParams = {
-    name: string;
-    target: XYZ;
-    radius: number;
-    alpha: number;
-    beta: number;
-    useRadians: boolean;
-};
-
-type UniversalCameraParams = {
-    name: string;
-    position: XYZ;
-};
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const useStyles = makeStyles({
-    container: {
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-    },
-    scrollArea: {
-        flex: 1,
-        overflowY: "auto",
-        paddingRight: tokens.spacingHorizontalS,
-        paddingBottom: tokens.spacingVerticalS,
-    },
-    section: {
-        display: "flex",
-        flexDirection: "column",
-        rowGap: tokens.spacingVerticalM,
-    },
-});
-
-const setCamera = function(scene:Scene) {
+const SetCamera = function (scene: Scene) {
     const camera = scene.activeCamera as ArcRotateCamera;
     if (camera && camera.radius !== undefined) {
         camera.radius = 5;
     }
-}
+};
+
+const MeshesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    const classes = useStyles();
+    const [sphereParams, setSphereParams] = useState<SphereParams>({
+        name: "Sphere",
+        segments: 32,
+        diameter: 1,
+        diameterX: 1,
+        diameterY: 1,
+        diameterZ: 1,
+        arc: 1,
+        slice: 1,
+        uniform: true,
+    });
+
+    const handleSphereParamChange = <K extends keyof SphereParams>(key: K, value: SphereParams[K]) => {
+        setSphereParams((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
+    const [boxParams, setBoxParams] = useState<BoxParams>({
+        name: "Box",
+        size: 1,
+        width: 1,
+        height: 1,
+        depth: 1,
+    });
+
+    const handleBoxParamChange = <K extends keyof BoxParams>(key: K, value: BoxParams[K]) => {
+        setBoxParams((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
+    const [cylinderParams, setCylinderParams] = useState<CylinderParams>({
+        name: "Cylinder",
+        height: 2,
+        diameterTop: 1,
+        diameterBottom: 1,
+        diameter: 1,
+        tessellation: 32,
+        subdivisions: 1,
+        arc: 1,
+    });
+
+    const handleCylinderParamChange = <K extends keyof CylinderParams>(key: K, value: CylinderParams[K]) => {
+        setCylinderParams((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
+    const [coneParams, setConeParams] = useState<ConeParams>({
+        name: "Cone",
+        height: 2,
+        diameter: 1,
+        diameterTop: 0,
+        diameterBottom: 1,
+        tessellation: 32,
+        subdivisions: 1,
+        arc: 1,
+    });
+
+    const [coneUp, setConeUp] = useState(true);
+
+    const handleConeParamChange = <K extends keyof ConeParams>(key: K, value: ConeParams[K]) => {
+        setConeParams((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
+    const [groundParams, setGroundParams] = useState<GroundParams>({
+        name: "Ground",
+        width: 10,
+        height: 10,
+        subdivisions: 1,
+        subdivisionsX: 1,
+        subdivisionsY: 1,
+    });
+
+    const handleGroundParamChange = <K extends keyof GroundParams>(key: K, value: GroundParams[K]) => {
+        setGroundParams((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [importMeshName, setImportMeshName] = useState("ImportedMesh");
+
+    const handleLocalMeshImport = (event: ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) {
+            return;
+        }
+
+        const filesArray = Array.from(files);
+        if (importMeshName.trim().length > 0 && filesArray.length > 0) {
+            const originalFile = filesArray[0];
+            const extensionIndex = originalFile.name.lastIndexOf(".");
+            const extension = extensionIndex >= 0 ? originalFile.name.substring(extensionIndex) : "";
+            const sanitizedName = importMeshName.trim();
+            const desiredFileName = sanitizedName.toLowerCase().endsWith(extension.toLowerCase()) ? sanitizedName : `${sanitizedName}${extension}`;
+            filesArray[0] = new File([originalFile], desiredFileName, { type: originalFile.type, lastModified: originalFile.lastModified });
+        }
+
+        const filesInput = new FilesInput(
+            scene.getEngine(),
+            scene,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            (_sceneFile, _scene, message) => {
+                alert(message ? `Failed to import mesh: ${message}` : "Failed to import mesh.");
+            },
+            true
+        );
+
+        filesInput.displayLoadingUI = false;
+        filesInput.loadFiles({ target: { files: filesArray } });
+        filesInput.dispose();
+
+        event.target.value = "";
+    };
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.row}>
+                <Button
+                    onClick={() => {
+                        MeshBuilder.CreateSphere("Sphere", {}, scene);
+                        SetCamera(scene);
+                    }}
+                    label="Sphere"
+                />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={sphereParams.name} onChange={(val: string) => handleSphereParamChange("name", val)} />
+                    <SpinButtonPropertyLine label="Segments" value={sphereParams.segments} min={0} onChange={(val: number) => handleSphereParamChange("segments", val)} />
+                    <SpinButtonPropertyLine
+                        label="Diameter"
+                        value={sphereParams.diameter}
+                        min={0}
+                        step={0.1}
+                        onChange={(val: number) => handleSphereParamChange("diameter", val)}
+                        disabled={!sphereParams.uniform}
+                    />
+                    <CheckboxPropertyLine label="Uniform" value={sphereParams.uniform} onChange={(checked) => handleSphereParamChange("uniform", checked)} />
+                    <SpinButtonPropertyLine
+                        label="Diameter X"
+                        value={sphereParams.diameterX}
+                        min={0}
+                        step={0.1}
+                        onChange={(val: number) => handleSphereParamChange("diameterX", val)}
+                        disabled={sphereParams.uniform}
+                    />
+                    <SpinButtonPropertyLine
+                        label="Diameter Y"
+                        value={sphereParams.diameterY}
+                        min={0}
+                        step={0.1}
+                        onChange={(val: number) => handleSphereParamChange("diameterY", val)}
+                        disabled={sphereParams.uniform}
+                    />
+                    <SpinButtonPropertyLine
+                        label="Diameter Z"
+                        value={sphereParams.diameterZ}
+                        min={0}
+                        step={0.1}
+                        onChange={(val: number) => handleSphereParamChange("diameterZ", val)}
+                        disabled={sphereParams.uniform}
+                    />
+                    <SpinButtonPropertyLine label="Arc" value={sphereParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleSphereParamChange("arc", val)} />
+                    <SpinButtonPropertyLine label="Slice" value={sphereParams.slice} min={0} max={1} step={0.1} onChange={(val: number) => handleSphereParamChange("slice", val)} />
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                        <Button
+                            appearance="primary"
+                            onClick={() => {
+                                const createParams: Partial<SphereParams> = {
+                                    segments: sphereParams.segments,
+                                    arc: sphereParams.arc,
+                                    slice: sphereParams.slice,
+                                };
+                                if (sphereParams.uniform) {
+                                    createParams.diameter = sphereParams.diameter;
+                                } else {
+                                    createParams.diameterX = sphereParams.diameterX;
+                                    createParams.diameterY = sphereParams.diameterY;
+                                    createParams.diameterZ = sphereParams.diameterZ;
+                                }
+                                MeshBuilder.CreateSphere(sphereParams.name, createParams, scene);
+                                SetCamera(scene);
+                            }}
+                            label="Create"
+                        />
+                    </div>
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button
+                    onClick={() => {
+                        MeshBuilder.CreateBox("Box", {}, scene);
+                        SetCamera(scene);
+                    }}
+                    label="Box"
+                />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={boxParams.name} onChange={(val: string) => handleBoxParamChange("name", val)} />
+                    <SpinButtonPropertyLine label="Size" value={boxParams.size} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("size", val)} />
+                    <SpinButtonPropertyLine label="Width" value={boxParams.width} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("width", val)} />
+                    <SpinButtonPropertyLine label="Height" value={boxParams.height} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("height", val)} />
+                    <SpinButtonPropertyLine label="Depth" value={boxParams.depth} min={0} step={0.1} onChange={(val: number) => handleBoxParamChange("depth", val)} />
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                        <Button
+                            appearance="primary"
+                            onClick={() => {
+                                MeshBuilder.CreateBox(boxParams.name, boxParams, scene);
+                                SetCamera(scene);
+                            }}
+                            label="Create"
+                        />
+                    </div>
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button
+                    onClick={() => {
+                        MeshBuilder.CreateCylinder("Cylinder", {}, scene);
+                        SetCamera(scene);
+                    }}
+                    label="Cylinder"
+                />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={cylinderParams.name} onChange={(val: string) => handleCylinderParamChange("name", val)} />
+                    <SpinButtonPropertyLine label="Height" value={cylinderParams.height} min={0} step={0.1} onChange={(val: number) => handleCylinderParamChange("height", val)} />
+                    <SpinButtonPropertyLine
+                        label="Diameter Top"
+                        value={cylinderParams.diameterTop}
+                        min={0}
+                        step={0.1}
+                        onChange={(val: number) => handleCylinderParamChange("diameterTop", val)}
+                    />
+                    <SpinButtonPropertyLine
+                        label="Diameter Bottom"
+                        value={cylinderParams.diameterBottom}
+                        min={0}
+                        step={0.1}
+                        onChange={(val: number) => handleCylinderParamChange("diameterBottom", val)}
+                    />
+                    <SpinButtonPropertyLine
+                        label="Diameter"
+                        value={cylinderParams.diameter}
+                        min={0}
+                        step={0.1}
+                        onChange={(val: number) => handleCylinderParamChange("diameter", val)}
+                    />
+                    <SpinButtonPropertyLine
+                        label="Tessellation"
+                        value={cylinderParams.tessellation}
+                        min={3}
+                        onChange={(val: number) => handleCylinderParamChange("tessellation", val)}
+                    />
+                    <SpinButtonPropertyLine
+                        label="Subdivisions"
+                        value={cylinderParams.subdivisions}
+                        min={1}
+                        onChange={(val: number) => handleCylinderParamChange("subdivisions", val)}
+                    />
+                    <SpinButtonPropertyLine label="Arc" value={cylinderParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleCylinderParamChange("arc", val)} />
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                        <Button
+                            appearance="primary"
+                            onClick={() => {
+                                MeshBuilder.CreateCylinder(cylinderParams.name, cylinderParams, scene);
+                                SetCamera(scene);
+                            }}
+                            label="Create"
+                        />
+                    </div>
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button
+                    onClick={() => {
+                        MeshBuilder.CreateCylinder("Cone", { diameterTop: 0 }, scene);
+                        SetCamera(scene);
+                    }}
+                    label="Cone"
+                />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={coneParams.name} onChange={(val: string) => handleConeParamChange("name", val)} />
+                    <SpinButtonPropertyLine label="Height" value={coneParams.height} min={0} step={0.1} onChange={(val: number) => handleConeParamChange("height", val)} />
+                    <SpinButtonPropertyLine label="Diameter" value={coneParams.diameter} min={0} step={0.1} onChange={(val: number) => handleConeParamChange("diameter", val)} />
+                    <SpinButtonPropertyLine label="Tessellation" value={coneParams.tessellation} min={3} onChange={(val: number) => handleConeParamChange("tessellation", val)} />
+                    <SpinButtonPropertyLine label="Subdivisions" value={coneParams.subdivisions} min={1} onChange={(val: number) => handleConeParamChange("subdivisions", val)} />
+                    <SpinButtonPropertyLine label="Arc" value={coneParams.arc} min={0} max={1} step={0.1} onChange={(val: number) => handleConeParamChange("arc", val)} />
+                    <CheckboxPropertyLine label="Up" value={coneUp} onChange={(val: boolean) => setConeUp(val)} />
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                        <Button
+                            appearance="primary"
+                            onClick={() => {
+                                const coneParamsToUse = {
+                                    ...coneParams,
+                                    diameterTop: coneUp ? 0 : coneParams.diameterTop,
+                                    diameterBottom: coneUp ? coneParams.diameterBottom : 0,
+                                };
+                                MeshBuilder.CreateCylinder(coneParams.name, coneParamsToUse, scene);
+                                SetCamera(scene);
+                            }}
+                            label="Create"
+                        />
+                    </div>
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button
+                    onClick={() => {
+                        MeshBuilder.CreateGround("Ground", {}, scene);
+                        SetCamera(scene);
+                    }}
+                    label="Ground"
+                />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={groundParams.name} onChange={(val: string) => handleGroundParamChange("name", val)} />
+                    <SpinButtonPropertyLine label="Width" value={groundParams.width} min={0} step={0.1} onChange={(val: number) => handleGroundParamChange("width", val)} />
+                    <SpinButtonPropertyLine label="Height" value={groundParams.height} min={0} step={0.1} onChange={(val: number) => handleGroundParamChange("height", val)} />
+                    <SpinButtonPropertyLine
+                        label="Subdivisions"
+                        value={groundParams.subdivisions}
+                        min={1}
+                        onChange={(val: number) => handleGroundParamChange("subdivisions", val)}
+                    />
+                    <SpinButtonPropertyLine
+                        label="Subdivisions X"
+                        value={groundParams.subdivisionsX}
+                        min={1}
+                        onChange={(val: number) => handleGroundParamChange("subdivisionsX", val)}
+                    />
+                    <SpinButtonPropertyLine
+                        label="Subdivisions Y"
+                        value={groundParams.subdivisionsY}
+                        min={1}
+                        onChange={(val: number) => handleGroundParamChange("subdivisionsY", val)}
+                    />
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                        <Button
+                            appearance="primary"
+                            onClick={() => {
+                                MeshBuilder.CreateGround(groundParams.name, groundParams, scene);
+                                SetCamera(scene);
+                            }}
+                            label="Create"
+                        />
+                    </div>
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button
+                    onClick={() => {
+                        fileInputRef.current?.click();
+                    }}
+                    label="Import Mesh"
+                />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={importMeshName} onChange={(val: string) => setImportMeshName(val)} />
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                        <Button
+                            appearance="primary"
+                            onClick={() => {
+                                fileInputRef.current?.click();
+                            }}
+                            label="Import"
+                        />
+                    </div>
+                </SettingsPopover>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".babylon,.glb,.gltf,.obj,.stl,.ply,.mesh,.babylonmeshdata"
+                    multiple
+                    style={{ display: "none" }}
+                    onChange={handleLocalMeshImport}
+                />
+            </div>
+        </div>
+    );
+};
+
+const MaterialsContent: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    const classes = useStyles();
+    const [nodeMaterialName, setNodeMaterialName] = useState("Node Material");
+    const [nodeMaterialSnippetId, setNodeMaterialSnippetId] = useState("");
+    const [pbrMaterialName, setPbrMaterialName] = useState("PBR Material");
+    const [standardMaterialName, setStandardMaterialName] = useState("Standard Material");
+
+    const handleCreateNodeMaterialAsync = async () => {
+        if (nodeMaterialSnippetId) {
+            try {
+                const nodeMaterial = await NodeMaterial.ParseFromSnippetAsync(nodeMaterialSnippetId, scene);
+                nodeMaterial.name = nodeMaterialName;
+            } catch (e) {
+                alert("Failed to load Node Material from snippet: " + e);
+            }
+        } else {
+            const nodeMaterial = new NodeMaterial(nodeMaterialName, scene);
+            nodeMaterial.build();
+        }
+    };
+
+    const handleCreatePBRMaterial = () => {
+        new PBRMaterial(pbrMaterialName, scene);
+    };
+
+    const handleCreateStandardMaterial = () => {
+        new StandardMaterial(standardMaterialName, scene);
+    };
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.row}>
+                <Button onClick={handleCreateNodeMaterialAsync} label="Node Material" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={nodeMaterialName} onChange={(value) => setNodeMaterialName(value)} />
+                    <TextInputPropertyLine label="Snippet ID" value={nodeMaterialSnippetId} onChange={(value) => setNodeMaterialSnippetId(value)} />
+                    <Button appearance="primary" onClick={handleCreateNodeMaterialAsync} label="Create" />
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button onClick={handleCreatePBRMaterial} label="PBR Material" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={pbrMaterialName} onChange={(value) => setPbrMaterialName(value)} />
+                    <Button appearance="primary" onClick={handleCreatePBRMaterial} label="Create" />
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button onClick={handleCreateStandardMaterial} label="Standard Material" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={standardMaterialName} onChange={(value) => setStandardMaterialName(value)} />
+                    <Button appearance="primary" onClick={handleCreateStandardMaterial} label="Create" />
+                </SettingsPopover>
+            </div>
+        </div>
+    );
+};
+
+const LightsContent: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    const classes = useStyles();
+    const [pointLightName, setPointLightName] = useState("Point Light");
+    const [pointLightPosition, setPointLightPosition] = useState(new Vector3(0, 5, 0));
+    const [directionalLightName, setDirectionalLightName] = useState("Directional Light");
+    const [directionalLightDirection, setDirectionalLightDirection] = useState(new Vector3(1, -1, 0));
+    const [spotlightName, setSpotlightName] = useState("Spotlight");
+    const [spotlightPosition, setSpotlightPosition] = useState(new Vector3(0, 5, 0));
+    const [spotlightDirection, setSpotlightDirection] = useState(new Vector3(0, -1, 0));
+    const [spotlightAngle, setSpotlightAngle] = useState(1);
+    const [spotlightExponent, setSpotlightExponent] = useState(1);
+
+    const handleCreatePointLight = () => {
+        const light = new PointLight(pointLightName, pointLightPosition, scene);
+        light.intensity = 1.0;
+    };
+
+    const handleCreateDirectionalLight = () => {
+        const dirLight = new DirectionalLight(directionalLightName, directionalLightDirection, scene);
+        dirLight.intensity = 1.0;
+    };
+
+    const handleCreateSpotlight = () => {
+        const spotlight = new SpotLight(spotlightName, spotlightPosition, spotlightDirection, spotlightAngle, spotlightExponent, scene);
+        spotlight.intensity = 1.0;
+    };
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.row}>
+                <Button onClick={handleCreatePointLight} label="Point Light" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={pointLightName} onChange={(value) => setPointLightName(value)} />
+                    <Vector3PropertyLine label="Position" value={pointLightPosition} onChange={(value) => setPointLightPosition(value)} />
+                    <Button appearance="primary" onClick={handleCreatePointLight} label="Create" />
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button onClick={handleCreateDirectionalLight} label="Directional Light" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={directionalLightName} onChange={(value) => setDirectionalLightName(value)} />
+                    <Vector3PropertyLine label="Direction" value={directionalLightDirection} onChange={(value) => setDirectionalLightDirection(value)} />
+                    <Button appearance="primary" onClick={handleCreateDirectionalLight} label="Create" />
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button onClick={handleCreateSpotlight} label="Spotlight" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={spotlightName} onChange={(value) => setSpotlightName(value)} />
+                    <Vector3PropertyLine label="Position" value={spotlightPosition} onChange={(value) => setSpotlightPosition(value)} />
+                    <Vector3PropertyLine label="Direction" value={spotlightDirection} onChange={(value) => setSpotlightDirection(value)} />
+                    <SpinButtonPropertyLine label="Angle" value={spotlightAngle} onChange={(value) => setSpotlightAngle(value)} min={0} max={Math.PI} step={0.1} />
+                    <SpinButtonPropertyLine label="Exponent" value={spotlightExponent} onChange={(value) => setSpotlightExponent(value)} min={0} max={10} step={0.1} />
+                    <Button appearance="primary" onClick={handleCreateSpotlight} label="Create" />
+                </SettingsPopover>
+            </div>
+        </div>
+    );
+};
+
+const ParticlesContent: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    const classes = useStyles();
+    const [cpuParticleSystemName, setCpuParticleSystemName] = useState("Particle System");
+    const [cpuParticleSystemCapacity, setCpuParticleSystemCapacity] = useState(2000);
+    const [gpuParticleSystemName, setGpuParticleSystemName] = useState("GPU Particle System");
+    const [gpuParticleSystemCapacity, setGpuParticleSystemCapacity] = useState(2000);
+    const [nodeParticleSystemName, setNodeParticleSystemName] = useState("Node Particle System");
+    const [nodeParticleSystemSnippetId, setNodeParticleSystemSnippetId] = useState("");
+
+    const handleCreateCPUParticleSystem = () => {
+        setTimeout(() => {
+            const system = new ParticleSystem(cpuParticleSystemName, cpuParticleSystemCapacity, scene);
+            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+            system.start();
+        }, 0);
+    };
+
+    const handleCreateGPUParticleSystem = () => {
+        if (GPUParticleSystem.IsSupported) {
+            setTimeout(() => {
+                const system = new GPUParticleSystem(gpuParticleSystemName, { capacity: gpuParticleSystemCapacity }, scene);
+                system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+                system.start();
+            }, 0);
+        } else {
+            alert("GPU Particle System is not supported.");
+        }
+    };
+
+    const handleCreateNodeParticleSystemAsync = async () => {
+        try {
+            let nodeParticleSet;
+            const snippetId = nodeParticleSystemSnippetId.trim();
+            if (snippetId) {
+                nodeParticleSet = await NodeParticleSystemSet.ParseFromSnippetAsync(snippetId);
+                nodeParticleSet.name = nodeParticleSystemName;
+            } else {
+                nodeParticleSet = NodeParticleSystemSet.CreateDefault(nodeParticleSystemName);
+            }
+            const particleSystemSet = await nodeParticleSet.buildAsync(scene);
+            for (const system of particleSystemSet.systems) {
+                system.name = nodeParticleSystemName;
+            }
+            particleSystemSet.start();
+        } catch (e) {
+            global.console.error("Error creating Node Particle System:", e);
+            alert("Failed to create Node Particle System: " + e);
+        }
+    };
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.row}>
+                <Button onClick={handleCreateCPUParticleSystem} label="CPU Particle System" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={cpuParticleSystemName} onChange={(value) => setCpuParticleSystemName(value)} />
+                    <SpinButtonPropertyLine
+                        label="Capacity"
+                        value={cpuParticleSystemCapacity}
+                        onChange={(value) => setCpuParticleSystemCapacity(value)}
+                        min={1}
+                        max={100000}
+                        step={100}
+                    />
+                    <Button appearance="primary" onClick={handleCreateCPUParticleSystem} label="Create" />
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button onClick={handleCreateGPUParticleSystem} label="GPU Particle System" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={gpuParticleSystemName} onChange={(value) => setGpuParticleSystemName(value)} />
+                    <SpinButtonPropertyLine
+                        label="Capacity"
+                        value={gpuParticleSystemCapacity}
+                        onChange={(value) => setGpuParticleSystemCapacity(value)}
+                        min={1}
+                        max={1000000}
+                        step={1000}
+                    />
+                    <Button appearance="primary" onClick={handleCreateGPUParticleSystem} label="Create" />
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button onClick={handleCreateNodeParticleSystemAsync} label="Node Particle System" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={nodeParticleSystemName} onChange={(value) => setNodeParticleSystemName(value)} />
+                    <TextInputPropertyLine label="Snippet ID" value={nodeParticleSystemSnippetId} onChange={(value) => setNodeParticleSystemSnippetId(value)} />
+                    <Button appearance="primary" onClick={handleCreateNodeParticleSystemAsync} label="Create" />
+                </SettingsPopover>
+            </div>
+        </div>
+    );
+};
+
+const CamerasContent: FunctionComponent<{ scene: Scene }> = ({ scene }) => {
+    const classes = useStyles();
+    const [arcRotateCameraName, setArcRotateCameraName] = useState("ArcRotate Camera");
+    const [arcRotateCameraTarget, setArcRotateCameraTarget] = useState(new Vector3(0, 0, 0));
+    const [arcRotateCameraRadius, setArcRotateCameraRadius] = useState(10);
+    const [arcRotateCameraAlpha, setArcRotateCameraAlpha] = useState(0);
+    const [arcRotateCameraBeta, setArcRotateCameraBeta] = useState(45);
+    const [arcRotateCameraUseRadians, setArcRotateCameraUseRadians] = useState(false);
+    const [universalCameraName, setUniversalCameraName] = useState("Universal Camera");
+    const [universalCameraPosition, setUniversalCameraPosition] = useState(new Vector3(0, 1, -10));
+
+    const handleCreateArcRotateCamera = () => {
+        const alpha = arcRotateCameraUseRadians ? arcRotateCameraAlpha : (arcRotateCameraAlpha * Math.PI) / 180;
+        const beta = arcRotateCameraUseRadians ? arcRotateCameraBeta : (arcRotateCameraBeta * Math.PI) / 180;
+        const camera = new ArcRotateCamera(arcRotateCameraName, alpha, beta, arcRotateCameraRadius, arcRotateCameraTarget, scene);
+        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+        if (!scene.activeCamera) {
+            scene.activeCamera = camera;
+        }
+    };
+
+    const handleCreateUniversalCamera = () => {
+        const camera = new UniversalCamera(universalCameraName, universalCameraPosition, scene);
+        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+        if (!scene.activeCamera) {
+            scene.activeCamera = camera;
+        }
+    };
+
+    return (
+        <div className={classes.section}>
+            <div className={classes.row}>
+                <Button onClick={handleCreateArcRotateCamera} label="ArcRotate Camera" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={arcRotateCameraName} onChange={(value) => setArcRotateCameraName(value)} />
+                    <Vector3PropertyLine label="Target" value={arcRotateCameraTarget} onChange={(value) => setArcRotateCameraTarget(value)} />
+                    <SpinButtonPropertyLine label="Radius" value={arcRotateCameraRadius} onChange={(value) => setArcRotateCameraRadius(value)} min={0.1} max={1000} step={0.5} />
+                    <SpinButtonPropertyLine
+                        label={`Alpha ${arcRotateCameraUseRadians ? "(rad)" : "(deg)"}`}
+                        value={arcRotateCameraAlpha}
+                        onChange={(value) => setArcRotateCameraAlpha(value)}
+                        min={arcRotateCameraUseRadians ? -Math.PI * 2 : -360}
+                        max={arcRotateCameraUseRadians ? Math.PI * 2 : 360}
+                        step={arcRotateCameraUseRadians ? 0.1 : 5}
+                    />
+                    <SpinButtonPropertyLine
+                        label={`Beta ${arcRotateCameraUseRadians ? "(rad)" : "(deg)"}`}
+                        value={arcRotateCameraBeta}
+                        onChange={(value) => setArcRotateCameraBeta(value)}
+                        min={arcRotateCameraUseRadians ? 0 : 0}
+                        max={arcRotateCameraUseRadians ? Math.PI : 180}
+                        step={arcRotateCameraUseRadians ? 0.1 : 5}
+                    />
+                    <CheckboxPropertyLine label="Use Radians" value={arcRotateCameraUseRadians} onChange={(value) => setArcRotateCameraUseRadians(value)} />
+                    <Button appearance="primary" onClick={handleCreateArcRotateCamera} label="Create" />
+                </SettingsPopover>
+            </div>
+            <div className={classes.row}>
+                <Button onClick={handleCreateUniversalCamera} label="Universal Camera" />
+                <SettingsPopover>
+                    <TextInputPropertyLine label="Name" value={universalCameraName} onChange={(value) => setUniversalCameraName(value)} />
+                    <Vector3PropertyLine label="Position" value={universalCameraPosition} onChange={(value) => setUniversalCameraPosition(value)} />
+                    <Button appearance="primary" onClick={handleCreateUniversalCamera} label="Create" />
+                </SettingsPopover>
+            </div>
+        </div>
+    );
+};
 
 // TODO: This is just a placeholder for a dynamically installed extension that brings in asset creation tools (node materials, etc.).
 export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService, ISceneContext]> = {
@@ -154,2011 +845,23 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 // eslint-disable-next-line no-console
                 console.log(scene);
 
-                const [spherePopoverOpen, setSpherePopoverOpen] = useState(false);
-                const [sphereParams, setSphereParams] = useState<SphereParams>({
-                    name: "Sphere",
-                    segments: 32,
-                    diameter: 1,
-                    diameterX: 1,
-                    diameterY: 1,
-                    diameterZ: 1,
-                    arc: 1,
-                    slice: 1,
-                    uniform: true,
-                });
-
-                const handleSphereParamChange = <K extends keyof SphereParams>(key: K, value: SphereParams[K]) => {
-                    setSphereParams(prev => ({
-                        ...prev,
-                        [key]: value
-                    }));
-                };
-
-                const [boxPopoverOpen, setBoxPopoverOpen] = useState(false);
-                const [boxParams, setBoxParams] = useState<BoxParams>({
-                    name: "Box",
-                    size: 1,
-                    width: 1,
-                    height: 1,
-                    depth: 1,
-                });
-
-                const handleBoxParamChange = <K extends keyof BoxParams>(key: K, value: BoxParams[K]) => {
-                    setBoxParams(prev => ({
-                        ...prev,
-                        [key]: value
-                    }));
-                };
-
-                const [cylinderPopoverOpen, setCylinderPopoverOpen] = useState(false);
-                const [cylinderParams, setCylinderParams] = useState<CylinderParams>({
-                    name: "Cylinder",
-                    height: 2,
-                    diameterTop: 1,
-                    diameterBottom: 1,
-                    diameter: 1,
-                    tessellation: 32,
-                    subdivisions: 1,
-                    arc: 1,
-                });
-
-                const handleCylinderParamChange = <K extends keyof CylinderParams>(key: K, value: CylinderParams[K]) => {
-                    setCylinderParams(prev => ({
-                        ...prev,
-                        [key]: value
-                    }));
-                };
-
-                const [conePopoverOpen, setConePopoverOpen] = useState(false);
-                const [coneParams, setConeParams] = useState<ConeParams>({
-                    name: "Cone",
-                    height: 2,
-                    diameter: 1,
-                    diameterTop: 0,
-                    diameterBottom: 1,
-                    tessellation: 32,
-                    subdivisions: 1,
-                    arc: 1,
-                });
-
-                const [isUpChecked, setIsUpChecked] = useState(false);
-                const [isDownChecked, setIsDownChecked] = useState(false);
-
-                const handleConeParamChange = <K extends keyof ConeParams>(key: K, value: ConeParams[K]) => {
-                    setConeParams(prev => ({
-                        ...prev,
-                        [key]: value
-                    }));
-                };
-
-                const [groundPopoverOpen, setGroundPopoverOpen] = useState(false);
-                const [groundParams, setGroundParams] = useState<GroundParams>({
-                    name: "Ground",
-                    width: 10,
-                    height: 10,
-                    subdivisions: 1,
-                    subdivisionsX: 1,
-                    subdivisionsY: 1,
-                });
-
-                const handleGroundParamChange = <K extends keyof GroundParams>(key: K, value: GroundParams[K]) => {
-                    setGroundParams(prev => ({
-                        ...prev,
-                        [key]: value
-                    }));
-                };
-
-                const [nodeMaterialPopoverOpen, setNodeMaterialPopoverOpen] = useState(false);
-                const [nodeMaterialName, setNodeMaterialName] = useState("NodeMaterial");
-                const [nodeMaterialSnippetId, setNodeMaterialSnippetId] = useState("");
-
-                const [pointLightPopoverOpen, setPointLightPopoverOpen] = useState(false);
-                const [pointLightName, setPointLightName] = useState("PointLight");
-                const [pointLightPosition, setPointLightPosition] = useState<XYZ>({ x: 0, y: 5, z: 0 });
-
-                const [directionalLightPopoverOpen, setDirectionalLightPopoverOpen] = useState(false);
-                const [directionalLightName, setDirectionalLightName] = useState("DirectionalLight");
-                const [directionalLightDirection, setDirectionalLightDirection] = useState<XYZ>({ x: 1, y: -1, z: 0 });
-
-                const [spotlightPopoverOpen, setSpotlightPopoverOpen] = useState(false);
-                const [spotlightParams, setSpotlightParams] = useState<SpotlightParams>({
-                    name: "Spotlight",
-                    position: { x: 0, y: 5, z: 0 },
-                    direction: { x: 0, y: -1, z: 0 },
-                    angle: 1,
-                    exponent: 1,
-                });
-
-                const fileInputRef = useRef<HTMLInputElement | null>(null);
-                const [importMeshPopoverOpen, setImportMeshPopoverOpen] = useState(false);
-                const [importMeshName, setImportMeshName] = useState("ImportedMesh");
-
-                const [cpuParticleSystemPopoverOpen, setCpuParticleSystemPopoverOpen] = useState(false);
-                const [cpuParticleSystemName, setCpuParticleSystemName] = useState("ParticleSystem");
-                const [cpuParticleSystemCapacity, setCpuParticleSystemCapacity] = useState(2000);
-
-                const [gpuParticleSystemPopoverOpen, setGpuParticleSystemPopoverOpen] = useState(false);
-                const [gpuParticleSystemName, setGpuParticleSystemName] = useState("GPUParticleSystem");
-                const [gpuParticleSystemCapacity, setGpuParticleSystemCapacity] = useState(2000);
-
-                const [nodeParticleSystemPopoverOpen, setNodeParticleSystemPopoverOpen] = useState(false);
-                const [nodeParticleSystemName, setNodeParticleSystemName] = useState("NodeParticleSystem");
-                const [nodeParticleSystemSnippetId, setNodeParticleSystemSnippetId] = useState("");
-
-                // Camera state
-                const [arcRotateCameraPopoverOpen, setArcRotateCameraPopoverOpen] = useState(false);
-                const [arcRotateCameraParams, setArcRotateCameraParams] = useState<ArcRotateCameraParams>({
-                    name: "ArcRotateCamera",
-                    target: { x: 0, y: 0, z: 0 },
-                    radius: 10,
-                    alpha: 0,
-                    beta: 45,
-                    useRadians: false,
-                });
-
-                const handleArcRotateCameraParamChange = <K extends keyof ArcRotateCameraParams>(key: K, value: ArcRotateCameraParams[K]) => {
-                    setArcRotateCameraParams(prev => ({
-                        ...prev,
-                        [key]: value
-                    }));
-                };
-
-                const [universalCameraPopoverOpen, setUniversalCameraPopoverOpen] = useState(false);
-                const [universalCameraParams, setUniversalCameraParams] = useState<UniversalCameraParams>({
-                    name: "UniversalCamera",
-                    position: { x: 0, y: 1, z: -10 },
-                });
-
-                const handleUniversalCameraParamChange = <K extends keyof UniversalCameraParams>(key: K, value: UniversalCameraParams[K]) => {
-                    setUniversalCameraParams(prev => ({
-                        ...prev,
-                        [key]: value
-                    }));
-                };
-
-                const handleLocalMeshImport = (event: ChangeEvent<HTMLInputElement>) => {
-                    if (!scene) {
-                        alert("No scene available.");
-                        event.target.value = "";
-                        return;
-                    }
-
-                    const files = event.target.files;
-                    if (!files || files.length === 0) {
-                        return;
-                    }
-
-                    const filesArray = Array.from(files);
-                    if (importMeshName.trim().length > 0 && filesArray.length > 0) {
-                        const originalFile = filesArray[0];
-                        const extensionIndex = originalFile.name.lastIndexOf(".");
-                        const extension = extensionIndex >= 0 ? originalFile.name.substring(extensionIndex) : "";
-                        const sanitizedName = importMeshName.trim();
-                        const desiredFileName = sanitizedName.toLowerCase().endsWith(extension.toLowerCase()) ? sanitizedName : `${sanitizedName}${extension}`;
-                        filesArray[0] = new File([originalFile], desiredFileName, { type: originalFile.type, lastModified: originalFile.lastModified });
-                    }
-
-                    const filesInput = new FilesInput(
-                        scene.getEngine(),
-                        scene,
-                        () => {
-                            setCamera(scene);
-                        },
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        (_sceneFile, _scene, message) => {
-                            alert(message ? `Failed to import mesh: ${message}` : "Failed to import mesh.");
-                        },
-                        true
-                    );
-
-                    filesInput.displayLoadingUI = false;
-                    filesInput.loadFiles({ target: { files: filesArray } });
-                    filesInput.dispose();
-
-                    event.target.value = "";
-                };
-
-                const handleSpotlightParamChange = <K extends keyof SpotlightParams>(key: K, value: SpotlightParams[K]) => {
-                    setSpotlightParams(prev => ({
-                        ...prev,
-                        [key]: value,
-                    }));
-                };
-
-                const handleSpotlightPositionChange = (axis: keyof XYZ, value: number) => {
-                    setSpotlightParams(prev => ({
-                        ...prev,
-                        position: {
-                            ...prev.position,
-                            [axis]: value,
-                        },
-                    }));
-                };
-
-                const handleSpotlightDirectionChange = (axis: keyof XYZ, value: number) => {
-                    setSpotlightParams(prev => ({
-                        ...prev,
-                        direction: {
-                            ...prev.direction,
-                            [axis]: value,
-                        },
-                    }));
-                };
-
-                const [pbrMaterialPopoverOpen, setPbrMaterialPopoverOpen] = useState(false);
-                const [pbrMaterialName, setPbrMaterialName] = useState("PBRMaterial");
-
-                const [standardMaterialPopoverOpen, setStandardMaterialPopoverOpen] = useState(false);
-                const [standardMaterialName, setStandardMaterialName] = useState("StandardMaterial");
-
                 return (
                     <div className={classes.container}>
                         <div className={classes.scrollArea}>
-                        <Accordion collapsible multiple>
-                            <AccordionItem key="Meshes" value="Meshes">
-                                <AccordionHeader expandIconPosition="end">
-                                    <Text size={500}>Meshes</Text>
-                                </AccordionHeader>
-                                <AccordionPanel>
-                                    <div className={classes.section}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        MeshBuilder.CreateSphere("Sphere", {}, scene);
-                                                        setCamera(scene);
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Sphere"
-                                            />
-                                            <Popover
-                                                open={spherePopoverOpen}
-                                                onOpenChange={(_, data) => setSpherePopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Sphere Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1, // visually connects the buttons
-                                                            height: "100%", // match main button height
-                                                        }}
-                                                        onClick={() => setSpherePopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {/* Name and Segments */}
-            { ([
-                { label: "Name", key: "name" },
-                { label: "Segments", key: "segments" },
-            ] as const).map(({ label, key }) => (
-                <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <label style={{ flex: "0 0 100px" }}>{label}</label>
-                    <Input
-                        type={key === "name" ? "text" : "number"}
-                        value={String(sphereParams[key])}
-                        onChange={(_, data: InputOnChangeData) => handleSphereParamChange(key, key === "name" ? data.value : Number(data.value))}
-                        aria-label={label}
-                        style={{ flex: "1 1 auto" }}
-                    />
-                </div>
-            ))}
-            {/* Diameter */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ flex: "0 0 100px" }}>Diameter</label>
-                <Input
-                    type="number"
-                    value={sphereParams.diameter.toString()}
-                    onChange={(_, data: InputOnChangeData) => handleSphereParamChange("diameter", Number(data.value))}
-                    aria-label="Diameter"
-                    style={{ flex: "1 1 auto" }}
-                    disabled={!sphereParams.uniform}
-                />
-            </div>
-            {/* Uniform checkbox */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 108, marginTop: -8, marginBottom: 4 }}>
-                <Checkbox
-                    value={sphereParams.uniform}
-                    onChange={(checked) => handleSphereParamChange("uniform", checked)}
-                    aria-label="Uniform"
-                />
-                <span style={{ fontSize: 13 }}>Uniform</span>
-            </div>
-            {/* Diameter X/Y/Z in a single row */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ flex: "0 0 100px" }}>Diameter X/Y/Z</label>
-                <Input
-                    type="number"
-                    value={sphereParams.diameterX.toString()}
-                    onChange={(_, data: InputOnChangeData) => handleSphereParamChange("diameterX", Number(data.value))}
-                    aria-label="Diameter X"
-                    style={{ width: 60 }}
-                    placeholder="X"
-                    disabled={sphereParams.uniform}
-                />
-                <Input
-                    type="number"
-                    value={sphereParams.diameterY.toString()}
-                    onChange={(_, data: InputOnChangeData) => handleSphereParamChange("diameterY", Number(data.value))}
-                    aria-label="Diameter Y"
-                    style={{ width: 60 }}
-                    placeholder="Y"
-                    disabled={sphereParams.uniform}
-                />
-                <Input
-                    type="number"
-                    value={sphereParams.diameterZ.toString()}
-                    onChange={(_, data: InputOnChangeData) => handleSphereParamChange("diameterZ", Number(data.value))}
-                    aria-label="Diameter Z"
-                    style={{ width: 60 }}
-                    placeholder="Z"
-                    disabled={sphereParams.uniform}
-                />
-            </div>
-            {/* Arc and Slice */}
-            { ([
-                { label: "Arc", key: "arc" },
-                { label: "Slice", key: "slice" },
-            ] as const).map(({ label, key }) => (
-                <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <label style={{ flex: "0 0 100px" }}>{label}</label>
-                    <Input
-                        type="number"
-                        value={String(sphereParams[key])}
-                        onChange={(_, data: InputOnChangeData) => handleSphereParamChange(key, Number(data.value))}
-                        aria-label={label}
-                        style={{ flex: "1 1 auto" }}
-                    />
-                </div>
-            ))}
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-            <Button onClick={() => setSpherePopoverOpen(false)} label="Cancel" />
-            <Button
-                appearance={"primary" as any}
-                onClick={() => {
-                    if (scene) {
-                        // Create params object based on uniform checkbox
-                        const createParams: Partial<SphereParams> = {
-                            segments: sphereParams.segments,
-                            arc: sphereParams.arc,
-                            slice: sphereParams.slice,
-                        };
-                        
-                        if (sphereParams.uniform) {
-                            // If uniform is checked, use diameter
-                            createParams.diameter = sphereParams.diameter;
-                        } else {
-                            // If uniform is unchecked, use individual diameters
-                            createParams.diameterX = sphereParams.diameterX;
-                            createParams.diameterY = sphereParams.diameterY;
-                            createParams.diameterZ = sphereParams.diameterZ;
-                        }
-                        
-                        MeshBuilder.CreateSphere(sphereParams.name, createParams, scene);
-                        setCamera(scene);
-                    }
-                    setSpherePopoverOpen(false);
-                }}
-                label="Create"
-            />
-        </div>
-    </div>
-</PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        MeshBuilder.CreateBox("Box", {}, scene);
-                                                        setCamera(scene);
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Box"
-                                            />
-                                            <Popover
-                                                open={boxPopoverOpen}
-                                                onOpenChange={(_, data) => setBoxPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Box Options"
-                                                        onClick={() => setBoxPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            {([
-                                                                { label: "Name", key: "name" },
-                                                                { label: "Size", key: "size" },
-                                                                { label: "Width", key: "width" },
-                                                                { label: "Height", key: "height" },
-                                                                { label: "Depth", key: "depth" },
-                                                            ] as const).map(({ label, key }) => (
-                                                                <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                    <label style={{ flex: "0 0 100px" }}>{label}</label>
-                                                                    <Input
-                                                                        type={key === "name" ? "text" : "number"}
-                                                                        value={String(boxParams[key])}
-                                                                        onChange={(_, data: InputOnChangeData) => handleBoxParamChange(key, key === "name" ? data.value : Number(data.value))}
-                                                                        aria-label={label}
-                                                                        style={{ flex: "1 1 auto" }}
-                                                                    />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setBoxPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        MeshBuilder.CreateBox(boxParams.name, boxParams, scene);
-                                                                        setCamera(scene);
-                                                                    }
-                                                                    setBoxPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        MeshBuilder.CreateCylinder("Cylinder", {}, scene);
-                                                        setCamera(scene);
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Cylinder"
-                                            />
-                                            <Popover
-                                                open={cylinderPopoverOpen}
-                                                onOpenChange={(_, data) => setCylinderPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Cylinder Options"
-                                                        onClick={() => setCylinderPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            {([
-                                                                { label: "Name", key: "name" },
-                                                                { label: "Height", key: "height" },
-                                                                { label: "Diameter Top", key: "diameterTop" },
-                                                                { label: "Diameter Bottom", key: "diameterBottom" },
-                                                                { label: "Diameter", key: "diameter" },
-                                                                { label: "Tessellation", key: "tessellation" },
-                                                                { label: "Subdivisions", key: "subdivisions" },
-                                                                { label: "Arc", key: "arc" },
-                                                            ] as const).map(({ label, key }) => (
-                                                                <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                    <label style={{ flex: "0 0 100px" }}>{label}</label>
-                                                                    <Input
-                                                                        type={key === "name" ? "text" : "number"}
-                                                                        value={String(cylinderParams[key])}
-                                                                        onChange={(_, data: InputOnChangeData) => handleCylinderParamChange(key, key === "name" ? data.value : Number(data.value))}
-                                                                        aria-label={label}
-                                                                        style={{ flex: "1 1 auto" }}
-                                                                    />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setCylinderPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        MeshBuilder.CreateCylinder(cylinderParams.name, cylinderParams, scene);
-                                                                        setCamera(scene);
-                                                                    }
-                                                                    setCylinderPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        MeshBuilder.CreateCylinder("Cone", { diameterTop: 0 }, scene);
-                                                        setCamera(scene);
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Cone"
-                                            />
-                                            <Popover
-                                                open={conePopoverOpen}
-                                                onOpenChange={(_, data) => setConePopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Cone Options"
-                                                        onClick={() => setConePopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            {([
-                                                                { label: "Name", key: "name" },
-                                                                { label: "Height", key: "height" },
-                                                                { label: "Diameter", key: "diameter" },
-                                                                { label: "Tessellation", key: "tessellation" },
-                                                                { label: "Subdivisions", key: "subdivisions" },
-                                                                { label: "Arc", key: "arc" },
-                                                            ] as const).map(({ label, key }) => (
-                                                                <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                    <label style={{ flex: "0 0 100px" }}>{label}</label>
-                                                                    <Input
-                                                                        type={key === "name" ? "text" : "number"}
-                                                                        value={String(coneParams[key])}
-                                                                        onChange={(_, data: InputOnChangeData) => handleConeParamChange(key, key === "name" ? data.value : Number(data.value))}
-                                                                        aria-label={label}
-                                                                        style={{ flex: "1 1 auto" }}
-                                                                    />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                            <label style={{ flex: "0 0 100px" }}>Up</label>
-                                                            <Checkbox
-                                                                value={isUpChecked}
-                                                                onChange={() => {
-                                                                    setIsUpChecked(true);
-                                                                    setIsDownChecked(false);
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                            <label style={{ flex: "0 0 100px" }}>Down</label>
-                                                            <Checkbox
-                                                                value={isDownChecked}
-                                                                onChange={() => {
-                                                                    setIsUpChecked(false);
-                                                                    setIsDownChecked(true);
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setConePopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        const coneParamsToUse = {
-                                                                            ...coneParams,
-                                                                            diameterTop: isUpChecked ? 0 : coneParams.diameterTop,
-                                                                            diameterBottom: isDownChecked ? 0 : coneParams.diameterBottom,
-                                                                        };
-                                                                        MeshBuilder.CreateCylinder(coneParams.name, coneParamsToUse, scene);
-                                                                        setCamera(scene);
-                                                                    }
-                                                                    setConePopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        MeshBuilder.CreateGround("Ground", {}, scene);
-                                                        setCamera(scene);
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Ground"
-                                            />
-                                            <Popover
-                                                open={groundPopoverOpen}
-                                                onOpenChange={(_, data) => setGroundPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Ground Options"
-                                                        onClick={() => setGroundPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            {([
-                                                                { label: "Name", key: "name" },
-                                                                { label: "Width", key: "width" },
-                                                                { label: "Height", key: "height" },
-                                                                { label: "Subdivisions", key: "subdivisions" },
-                                                                { label: "Subdivisions X", key: "subdivisionsX" },
-                                                                { label: "Subdivisions Y", key: "subdivisionsY" },
-                                                            ] as const).map(({ label, key }) => (
-                                                                <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                    <label style={{ flex: "0 0 100px" }}>{label}</label>
-                                                                    <Input
-                                                                        type={key === "name" ? "text" : "number"}
-                                                                        value={String(groundParams[key])}
-                                                                        onChange={(_, data: InputOnChangeData) => handleGroundParamChange(key, key === "name" ? data.value : Number(data.value))}
-                                                                        aria-label={label}
-                                                                        style={{ flex: "1 1 auto" }}
-                                                                    />
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setGroundPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        MeshBuilder.CreateGround(groundParams.name, groundParams, scene);
-                                                                        setCamera(scene);
-                                                                    }
-                                                                    setGroundPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (!scene) {
-                                                        alert("No scene available.");
-                                                        return;
-                                                    }
-                                                    fileInputRef.current?.click();
-                                                }}
-                                                label="Import Mesh"
-                                            />
-                                            <Popover
-                                                open={importMeshPopoverOpen}
-                                                onOpenChange={(_, data) => setImportMeshPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Import Mesh Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1,
-                                                            height: "100%",
-                                                        }}
-                                                        onClick={() => setImportMeshPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                            <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                            <Input
-                                                                type="text"
-                                                                value={importMeshName}
-                                                                onChange={(_, data: InputOnChangeData) => setImportMeshName(data.value)}
-                                                                aria-label="Import Mesh Name"
-                                                                style={{ flex: "1 1 auto" }}
-                                                            />
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (!scene) {
-                                                                        alert("No scene available.");
-                                                                        return;
-                                                                    }
-                                                                    setImportMeshPopoverOpen(false);
-                                                                    fileInputRef.current?.click();
-                                                                }}
-                                                                label="Import"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                            <input
-                                                ref={fileInputRef}
-                                                type="file"
-                                                accept=".babylon,.glb,.gltf,.obj,.stl,.ply,.mesh,.babylonmeshdata"
-                                                multiple
-                                                style={{ display: "none" }}
-                                                onChange={handleLocalMeshImport}
-                                            />
-                                        </div>
-                                    </div>
-                                </AccordionPanel>
-                            </AccordionItem>
-                            <AccordionItem key="Materials" value="Materials">
-    <AccordionHeader expandIconPosition="end">
-        <Text size={500}>Materials</Text>
-    </AccordionHeader>
-    <AccordionPanel>
-        <div className={classes.section}>
-            {/* Node Material */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <Button
-                    onClick={async () => {
-                        if (scene) {
-                            if (nodeMaterialSnippetId) {
-                                try {
-                                    // Try to load from snippet
-                                    const nodeMaterial = await NodeMaterial.ParseFromSnippetAsync(nodeMaterialSnippetId, scene);
-                                    nodeMaterial.name = nodeMaterialName;
-                                } catch (e) {
-                                    alert("Failed to load Node Material from snippet: " + e);
-                                }
-                            } else {
-                                // Create default node material
-                                const nodeMaterial = new NodeMaterial(nodeMaterialName, scene);
-                                nodeMaterial.build();
-                            }
-                        } else {
-                            alert("No scene available.");
-                        }
-                    }}
-                    label="Node Material"
-                />
-                <Popover
-                    open={nodeMaterialPopoverOpen}
-                    onOpenChange={(_, data) => setNodeMaterialPopoverOpen(data.open)}
-                    positioning={{
-                        align: "start",
-                        overflowBoundary: document.body,
-                        autoSize: true,
-                    }}
-                    trapFocus
-                >
-                    <PopoverTrigger disableButtonEnhancement>
-                        <FluentButton
-                            icon={<Settings20Regular />}
-                            appearance="subtle"
-                            title="Node Material Options"
-                            style={{
-                                borderTopLeftRadius: 0,
-                                borderBottomLeftRadius: 0,
-                                marginLeft: -1,
-                                height: "100%",
-                            }}
-                            onClick={() => setNodeMaterialPopoverOpen(true)}
-                        />
-                    </PopoverTrigger>
-                    <PopoverSurface>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    <label style={{ flex: "0 0 100px" }}>Name</label>
-                                    <Input
-                                        type="text"
-                                        value={nodeMaterialName}
-                                        onChange={e => setNodeMaterialName(e.target.value)}
-                                        aria-label="Name"
-                                        style={{ flex: "1 1 auto" }}
-                                    />
-                                </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    <label style={{ flex: "0 0 100px" }}>Snippet ID</label>
-                                    <Input
-                                        type="text"
-                                        value={nodeMaterialSnippetId}
-                                        onChange={e => setNodeMaterialSnippetId(e.target.value)}
-                                        aria-label="Snippet ID"
-                                        style={{ flex: "1 1 auto" }}
-                                    />
-                                </div>
-                            </div>
-                            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                <Button onClick={() => setNodeMaterialPopoverOpen(false)} label="Cancel" />
-                                <Button
-                                    appearance={"primary" as any}
-                                    onClick={async () => {
-                                        if (scene) {
-                                            if (nodeMaterialSnippetId) {
-                                                try {
-                                                    const nodeMaterial = await NodeMaterial.ParseFromSnippetAsync(nodeMaterialSnippetId, scene);
-                                                    nodeMaterial.name = nodeMaterialName;
-                                                } catch (e) {
-                                                    alert("Failed to load Node Material from snippet: " + e);
-                                                }
-                                            } else {
-                                                const nodeMaterial = new NodeMaterial(nodeMaterialName, scene);
-                                                nodeMaterial.build();
-                                            }
-                                        } else {
-                                            alert("No scene available.");
-                                        }
-                                        setNodeMaterialPopoverOpen(false);
-                                    }}
-                                    label="Create"
-                                />
-                            </div>
-                        </div>
-                    </PopoverSurface>
-                </Popover>
-            </div>
-
-            {/* PBR Material */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <Button
-                    onClick={() => {
-                        if (scene) {
-                            new PBRMaterial(pbrMaterialName, scene);
-                            // Optionally, you can add the material to the scene or log it
-                        } else {
-                            alert("No scene available.");
-                        }
-                    }}
-                    label="PBR Material"
-                />
-                <Popover
-                    open={pbrMaterialPopoverOpen}
-                    onOpenChange={(_, data) => setPbrMaterialPopoverOpen(data.open)}
-                    positioning={{
-                        align: "start",
-                        overflowBoundary: document.body,
-                        autoSize: true,
-                    }}
-                    trapFocus
-                >
-                    <PopoverTrigger disableButtonEnhancement>
-                        <FluentButton
-                            icon={<Settings20Regular />}
-                            appearance="subtle"
-                            title="PBR Material Options"
-                            style={{
-                                borderTopLeftRadius: 0,
-                                borderBottomLeftRadius: 0,
-                                marginLeft: -1,
-                                height: "100%",
-                            }}
-                            onClick={() => setPbrMaterialPopoverOpen(true)}
-                        />
-                    </PopoverTrigger>
-                    <PopoverSurface>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    <label style={{ flex: "0 0 100px" }}>Name</label>
-                                    <Input
-                                        type="text"
-                                        value={pbrMaterialName}
-                                        onChange={e => setPbrMaterialName(e.target.value)}
-                                        aria-label="Name"
-                                        style={{ flex: "1 1 auto" }}
-                                    />
-                                </div>
-                            </div>
-                            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                <Button onClick={() => setPbrMaterialPopoverOpen(false)} label="Cancel" />
-                                <Button
-                                    appearance={"primary" as any}
-                                    onClick={() => {
-                                        if (scene) {
-                                            new PBRMaterial(pbrMaterialName, scene);
-                                            // Optionally, you can add the material to the scene or log it
-                                        } else {
-                                            alert("No scene available.");
-                                        }
-                                        setPbrMaterialPopoverOpen(false);
-                                    }}
-                                    label="Create"
-                                />
-                            </div>
-                        </div>
-                    </PopoverSurface>
-                </Popover>
-            </div>
-
-            {/* Standard Material */}
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <Button
-                    onClick={() => {
-                        if (scene) {
-                            new StandardMaterial(standardMaterialName, scene);
-                            // Optionally, you can add the material to the scene or log it
-                        } else {
-                            alert("No scene available.");
-                        }
-                    }}
-                    label="Standard Material"
-                />
-                <Popover
-                    open={standardMaterialPopoverOpen}
-                    onOpenChange={(_, data) => setStandardMaterialPopoverOpen(data.open)}
-                    positioning={{
-                        align: "start",
-                        overflowBoundary: document.body,
-                        autoSize: true,
-                    }}
-                    trapFocus
-                >
-                    <PopoverTrigger disableButtonEnhancement>
-                        <FluentButton
-                            icon={<Settings20Regular />}
-                            appearance="subtle"
-                            title="Standard Material Options"
-                            style={{
-                                borderTopLeftRadius: 0,
-                                borderBottomLeftRadius: 0,
-                                marginLeft: -1,
-                                height: "100%",
-                            }}
-                            onClick={() => setStandardMaterialPopoverOpen(true)}
-                        />
-                    </PopoverTrigger>
-                    <PopoverSurface>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    <label style={{ flex: "0 0 100px" }}>Name</label>
-                                    <Input
-                                        type="text"
-                                        value={standardMaterialName}
-                                        onChange={e => setStandardMaterialName(e.target.value)}
-                                        aria-label="Name"
-                                        style={{ flex: "1 1 auto" }}
-                                    />
-                                </div>
-                            </div>
-                            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                <Button onClick={() => setStandardMaterialPopoverOpen(false)} label="Cancel" />
-                                <Button
-                                    appearance={"primary" as any}
-                                    onClick={() => {
-                                        if (scene) {
-                                            new StandardMaterial(standardMaterialName, scene);
-                                            // Optionally, you can add the material to the scene or log it
-                                        } else {
-                                            alert("No scene available.");
-                                        }
-                                        setStandardMaterialPopoverOpen(false);
-                                    }}
-                                    label="Create"
-                                />
-                            </div>
-                        </div>
-                    </PopoverSurface>
-                </Popover>
-            </div>
-        </div>
-    </AccordionPanel>
-</AccordionItem>
-                            <AccordionItem key="Lights" value="Lights">
-                                <AccordionHeader expandIconPosition="end">
-                                    <Text size={500}>Lights</Text>
-                                </AccordionHeader>
-                                <AccordionPanel>
-                                    <div className={classes.section}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        const light = new PointLight("PointLight", new Vector3(0, 5, 0), scene);
-                                                        light.intensity = 1.0;
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Point Light"
-                                            />
-                                            <Popover
-                                                open={pointLightPopoverOpen}
-                                                onOpenChange={(_, data) => setPointLightPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Point Light Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1,
-                                                            height: "100%",
-                                                        }}
-                                                        onClick={() => setPointLightPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={pointLightName}
-                                                                    onChange={(_, data: InputOnChangeData) => setPointLightName(data.value)}
-                                                                    aria-label="Name"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Position</label>
-                                                                <div style={{ display: "flex", gap: 8 }}>
-                                                                    {(["x", "y", "z"] as const).map(axis => (
-                                                                        <div key={axis} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                                            <label>{axis}</label>
-                                                                            <Input
-                                                                                type="number"
-                                                                                value={pointLightPosition[axis].toString()}
-                                                                                onChange={(_, data: InputOnChangeData) =>
-                                                                                    setPointLightPosition(prev => ({
-                                                                                        ...prev,
-                                                                                        [axis]: Number(data.value),
-                                                                                    }))
-                                                                                }
-                                                                                aria-label={`Position ${axis.toUpperCase()}`}
-                                                                                style={{ width: 60 }}
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setPointLightPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        const light = new PointLight(pointLightName, new Vector3(pointLightPosition.x, pointLightPosition.y, pointLightPosition.z), scene);
-                                                                        light.intensity = 1.0;
-                                                                    } else {
-                                                                        alert("No scene available.");
-                                                                    }
-                                                                    setPointLightPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        const dirLight = new DirectionalLight("DirectionalLight", new Vector3(1, -1, 0), scene);
-                                                        dirLight.intensity = 1;
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Directional Light"
-                                            />
-                                            <Popover
-                                                open={directionalLightPopoverOpen}
-                                                onOpenChange={(_, data) => setDirectionalLightPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Directional Light Options"
-                                                        onClick={() => setDirectionalLightPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={directionalLightName}
-                                                                    onChange={(_, data: InputOnChangeData) => setDirectionalLightName(data.value)}
-                                                                    aria-label="Name"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Direction</label>
-                                                                <div style={{ display: "flex", gap: 8 }}>
-                                                                    {(["x", "y", "z"] as const).map(axis => (
-                                                                        <div key={axis} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                                                            <label>{axis}</label>
-                                                                            <Input
-                                                                                type="number"
-                                                                                value={directionalLightDirection[axis].toString()}
-                                                                                onChange={(_, data: InputOnChangeData) =>
-                                                                                    setDirectionalLightDirection(prev => ({
-                                                                                        ...prev,
-                                                                                        [axis]: Number(data.value),
-                                                                                    }))
-                                                                                }
-                                                                                aria-label={`Direction ${axis.toUpperCase()}`}
-                                                                                style={{ width: 60 }}
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setDirectionalLightPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        const dirLight = new DirectionalLight(
-                                                                            directionalLightName,
-                                                                            new Vector3(directionalLightDirection.x, directionalLightDirection.y, directionalLightDirection.z),
-                                                                            scene
-                                                                        );
-                                                                        dirLight.intensity = 1.0;
-                                                                    } else {
-                                                                        alert("No scene available.");
-                                                                    }
-                                                                    setDirectionalLightPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        const spotlight = new SpotLight(
-                                                            "SpotLight",
-                                                            new Vector3(0, 5, 0),
-                                                            new Vector3(0, -1, 0),
-                                                            1,
-                                                            1,
-                                                            scene
-                                                        );
-                                                        spotlight.intensity = 1.0;
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Spotlight"
-                                            />
-                                            <Popover
-                                                open={spotlightPopoverOpen}
-                                                onOpenChange={(_, data) => setSpotlightPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Spotlight Options"
-                                                        onClick={() => setSpotlightPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-    <div
-        style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-            padding: 16,
-            width: 300, // Fixed width to match other popovers
-        }}
-    >
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ flex: "0 0 100px" }}>Name</label>
-                <Input
-                    type="text"
-                    value={spotlightParams.name}
-                    onChange={e => handleSpotlightParamChange("name", e.target.value)}
-                    aria-label="Name"
-                    style={{ flex: "1 1 auto" }}
-                />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ flex: "0 0 100px" }}>Position</label>
-                {(["x", "y", "z"] as const).map(axis => (
-                    <Input
-                        key={axis}
-                        type="number"
-                        value={spotlightParams.position[axis].toString()}
-                        onChange={(_, data: InputOnChangeData) => handleSpotlightPositionChange(axis, Number(data.value))}
-                        aria-label={`Position ${axis.toUpperCase()}`}
-                        style={{ width: 60 }} // Consistent width for inputs
-                    />
-                ))}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ flex: "0 0 100px" }}>Direction</label>
-                {(["x", "y", "z"] as const).map(axis => (
-                    <Input
-                        key={axis}
-                        type="number"
-                        value={spotlightParams.direction[axis].toString()}
-                        onChange={(_, data: InputOnChangeData) => handleSpotlightDirectionChange(axis, Number(data.value))}
-                        aria-label={`Direction ${axis.toUpperCase()}`}
-                        style={{ width: 60 }} // Consistent width for inputs
-                    />
-                ))}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ flex: "0 0 100px" }}>Angle</label>
-                <Input
-                    type="number"
-                    value={spotlightParams.angle.toString()}
-                    onChange={(_, data: InputOnChangeData) => handleSpotlightParamChange("angle", Number(data.value))}
-                    aria-label="Angle"
-                    style={{ flex: "1 1 auto" }}
-                />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <label style={{ flex: "0 0 100px" }}>Exponent</label>
-                <Input
-                    type="number"
-                    value={spotlightParams.exponent.toString()}
-                    onChange={(_, data: InputOnChangeData) => handleSpotlightParamChange("exponent", Number(data.value))}
-                    aria-label="Exponent"
-                    style={{ flex: "1 1 auto" }}
-                />
-            </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-            <Button onClick={() => setSpotlightPopoverOpen(false)} label="Cancel" />
-            <Button
-                appearance={"primary" as any}
-                onClick={() => {
-                    if (scene) {
-                        const spotlight = new SpotLight(
-                            spotlightParams.name,
-                            new Vector3(
-                                spotlightParams.position.x,
-                                spotlightParams.position.y,
-                                spotlightParams.position.z
-                            ),
-                            new Vector3(
-                                spotlightParams.direction.x,
-                                spotlightParams.direction.y,
-                                spotlightParams.direction.z
-                            ),
-                            spotlightParams.angle,
-                            spotlightParams.exponent,
-                            scene
-                        );
-                        spotlight.intensity = 1.0;
-                    } else {
-                        alert("No scene available.");
-                    }
-                    setSpotlightPopoverOpen(false);
-                }}
-                label="Create"
-            />
-        </div>
-    </div>
-</PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                    </div>
-                                </AccordionPanel>
-                            </AccordionItem>
-                            <AccordionItem key="Particles" value="Particles">
-                                <AccordionHeader expandIconPosition="end">
-                                    <Text size={500}>Particles</Text>
-                                </AccordionHeader>
-                                <AccordionPanel>
-                                    <div className={classes.section}>
-                                        {/* CPU Particle System */}
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        setTimeout(() => {
-                                                            const system = new ParticleSystem("ParticleSystem", 2000, scene);
-                                                            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
-                                                            system.start();
-                                                        }, 0);
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="CPU Particle System"
-                                            />
-                                            <Popover
-                                                open={cpuParticleSystemPopoverOpen}
-                                                onOpenChange={(_, data) => setCpuParticleSystemPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="CPU Particle System Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1,
-                                                            height: "100%",
-                                                        }}
-                                                        onClick={() => setCpuParticleSystemPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={cpuParticleSystemName}
-                                                                    onChange={(_, data: InputOnChangeData) => setCpuParticleSystemName(data.value)}
-                                                                    aria-label="Name"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Capacity</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={cpuParticleSystemCapacity.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => setCpuParticleSystemCapacity(Number(data.value))}
-                                                                    aria-label="Capacity"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setCpuParticleSystemPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        setTimeout(() => {
-                                                                            const system = new ParticleSystem(cpuParticleSystemName, cpuParticleSystemCapacity, scene);
-                                                                            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
-                                                                            system.start();
-                                                                        }, 0);
-                                                                    } else {
-                                                                        alert("No scene available.");
-                                                                    }
-                                                                    setCpuParticleSystemPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-
-                                        {/* GPU Particle System */}
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        if (GPUParticleSystem.IsSupported) {
-                                                            // Create without adding to scene
-                                                            const system = new GPUParticleSystem("GPUParticleSystem", { capacity: 2000 }, scene.getEngine());
-                                                            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
-                                                            // Manually add to scene to trigger observable
-                                                            scene.addParticleSystem(system);
-                                                            system.start();
-                                                        } else {
-                                                            alert("GPU Particle System is not supported.");
-                                                        }
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="GPU Particle System"
-                                            />
-                                            <Popover
-                                                open={gpuParticleSystemPopoverOpen}
-                                                onOpenChange={(_, data) => setGpuParticleSystemPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="GPU Particle System Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1,
-                                                            height: "100%",
-                                                        }}
-                                                        onClick={() => setGpuParticleSystemPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={gpuParticleSystemName}
-                                                                    onChange={(_, data: InputOnChangeData) => setGpuParticleSystemName(data.value)}
-                                                                    aria-label="Name"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Capacity</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={gpuParticleSystemCapacity.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => setGpuParticleSystemCapacity(Number(data.value))}
-                                                                    aria-label="Capacity"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setGpuParticleSystemPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        if (GPUParticleSystem.IsSupported) {
-                                                                            // Create without adding to scene
-                                                                            const system = new GPUParticleSystem(gpuParticleSystemName, { capacity: gpuParticleSystemCapacity }, scene.getEngine());
-                                                                            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
-                                                                            // Manually add to scene to trigger observable
-                                                                            scene.addParticleSystem(system);
-                                                                            system.start();
-                                                                        } else {
-                                                                            alert("GPU Particle System is not supported.");
-                                                                        }
-                                                                    } else {
-                                                                        alert("No scene available.");
-                                                                    }
-                                                                    setGpuParticleSystemPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                                            </Popover>
-                                        </div>
-
-                                        {/* Node Particle System */}
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={async () => {
-                                                    if (scene) {
-                                                        // Always create default when clicking main button
-                                                        const nodeParticleSet = NodeParticleSystemSet.CreateDefault("Node Particle System");
-                                                        const particleSystemSet = await nodeParticleSet.buildAsync(scene);
-                                                        // Rename the particle systems to use a descriptive name
-                                                        for (const system of particleSystemSet.systems) {
-                                                            system.name = "Node Particle System";
-                                                        }
-                                                        particleSystemSet.start();
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                                label="Node Particle System"
-                                            />
-                                            <Popover
-                                                open={nodeParticleSystemPopoverOpen}
-                                                onOpenChange={(_, data) => setNodeParticleSystemPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Node Particle System Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1,
-                                                            height: "100%",
-                                                        }}
-                                                        onClick={() => setNodeParticleSystemPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={nodeParticleSystemName}
-                                                                    onChange={(_, data: InputOnChangeData) => setNodeParticleSystemName(data.value)}
-                                                                    aria-label="Name"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Snippet ID</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={nodeParticleSystemSnippetId}
-                                                                    onChange={(_, data: InputOnChangeData) => setNodeParticleSystemSnippetId(data.value)}
-                                                                    aria-label="Snippet ID"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setNodeParticleSystemPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={async () => {
-                                                                    if (scene) {
-                                                                        try {
-                                                                            let nodeParticleSet;
-                                                                            const snippetId = nodeParticleSystemSnippetId.trim();
-                                                                            if (snippetId) {
-                                                                                // Pass snippet ID directly - ParseFromSnippetAsync handles the format
-                                                                                // Supports formats like "#KNJOQO#1" or "KNJOQO#1"
-                                                                                nodeParticleSet = await NodeParticleSystemSet.ParseFromSnippetAsync(snippetId);
-                                                                                // Override the name with user's custom name
-                                                                                nodeParticleSet.name = nodeParticleSystemName;
-                                                                            } else {
-                                                                                nodeParticleSet = NodeParticleSystemSet.CreateDefault(nodeParticleSystemName);
-                                                                            }
-                                                                            const particleSystemSet = await nodeParticleSet.buildAsync(scene);
-                                                                            // Rename the particle systems
-                                                                            for (const system of particleSystemSet.systems) {
-                                                                                system.name = nodeParticleSystemName;
-                                                                            }
-                                                                            particleSystemSet.start();
-                                                                        } catch (e) {
-                                                                            console.error("Error creating Node Particle System:", e);
-                                                                            alert("Failed to create Node Particle System: " + e);
-                                                                        }
-                                                                    } else {
-                                                                        alert("No scene available.");
-                                                                    }
-                                                                    setNodeParticleSystemPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                    </div>
-                                </AccordionPanel>
-                            </AccordionItem>
-
-                            {/* Cameras */}
-                            <AccordionItem key="Cameras" value="Cameras">
-                                <AccordionHeader expandIconPosition="end">
-                                    <Text size={500}>Cameras</Text>
-                                </AccordionHeader>
-                                <AccordionPanel>
-                                    <div className={classes.section}>
-                                        {/* ArcRotate Camera */}
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        // Convert degrees to radians if needed
-                                                        const alpha = arcRotateCameraParams.useRadians 
-                                                            ? arcRotateCameraParams.alpha 
-                                                            : (arcRotateCameraParams.alpha * Math.PI) / 180;
-                                                        const beta = arcRotateCameraParams.useRadians 
-                                                            ? arcRotateCameraParams.beta 
-                                                            : (arcRotateCameraParams.beta * Math.PI) / 180;
-                                                        
-                                                        const camera = new ArcRotateCamera(
-                                                            arcRotateCameraParams.name,
-                                                            alpha,
-                                                            beta,
-                                                            arcRotateCameraParams.radius,
-                                                            new Vector3(
-                                                                arcRotateCameraParams.target.x,
-                                                                arcRotateCameraParams.target.y,
-                                                                arcRotateCameraParams.target.z
-                                                            ),
-                                                            scene
-                                                        );
-                                                        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
-                                                        // Set as active camera if none exists
-                                                        if (!scene.activeCamera) {
-                                                            scene.activeCamera = camera;
-                                                        }
-                                                    }
-                                                }}
-                                                label="ArcRotate Camera"
-                                            />
-                                            <Popover
-                                                open={arcRotateCameraPopoverOpen}
-                                                onOpenChange={(_, data) => setArcRotateCameraPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="ArcRotate Camera Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1,
-                                                            height: "100%",
-                                                        }}
-                                                        onClick={() => setArcRotateCameraPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={arcRotateCameraParams.name}
-                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("name", data.value)}
-                                                                    aria-label="Name"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <Text weight="semibold" size={200}>Target Point</Text>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>X</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={arcRotateCameraParams.target.x.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("target", { ...arcRotateCameraParams.target, x: parseFloat(data.value) || 0 })}
-                                                                    aria-label="Target X"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Y</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={arcRotateCameraParams.target.y.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("target", { ...arcRotateCameraParams.target, y: parseFloat(data.value) || 0 })}
-                                                                    aria-label="Target Y"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Z</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={arcRotateCameraParams.target.z.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("target", { ...arcRotateCameraParams.target, z: parseFloat(data.value) || 0 })}
-                                                                    aria-label="Target Z"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <Text weight="semibold" size={200}>Camera Settings</Text>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Radius</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={arcRotateCameraParams.radius.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("radius", parseFloat(data.value) || 10)}
-                                                                    aria-label="Radius"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Alpha {arcRotateCameraParams.useRadians ? "(rad)" : "(deg)"}</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={arcRotateCameraParams.alpha.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("alpha", parseFloat(data.value) || 0)}
-                                                                    aria-label="Alpha"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Beta {arcRotateCameraParams.useRadians ? "(rad)" : "(deg)"}</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={arcRotateCameraParams.beta.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("beta", parseFloat(data.value) || 0)}
-                                                                    aria-label="Beta"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                                                <Checkbox
-                                                                    value={arcRotateCameraParams.useRadians}
-                                                                    onChange={(checked) => handleArcRotateCameraParamChange("useRadians", checked)}
-                                                                />
-                                                                <span>Switch to radians</span>
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setArcRotateCameraPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        // Convert degrees to radians if needed
-                                                                        const alpha = arcRotateCameraParams.useRadians 
-                                                                            ? arcRotateCameraParams.alpha 
-                                                                            : (arcRotateCameraParams.alpha * Math.PI) / 180;
-                                                                        const beta = arcRotateCameraParams.useRadians 
-                                                                            ? arcRotateCameraParams.beta 
-                                                                            : (arcRotateCameraParams.beta * Math.PI) / 180;
-                                                                        
-                                                                        const camera = new ArcRotateCamera(
-                                                                            arcRotateCameraParams.name,
-                                                                            alpha,
-                                                                            beta,
-                                                                            arcRotateCameraParams.radius,
-                                                                            new Vector3(
-                                                                                arcRotateCameraParams.target.x,
-                                                                                arcRotateCameraParams.target.y,
-                                                                                arcRotateCameraParams.target.z
-                                                                            ),
-                                                                            scene
-                                                                        );
-                                                                        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
-                                                                        // Set as active camera if none exists
-                                                                        if (!scene.activeCamera) {
-                                                                            scene.activeCamera = camera;
-                                                                        }
-                                                                    }
-                                                                    setArcRotateCameraPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-
-                                        {/* Universal Camera */}
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        const camera = new UniversalCamera(
-                                                            universalCameraParams.name,
-                                                            new Vector3(
-                                                                universalCameraParams.position.x,
-                                                                universalCameraParams.position.y,
-                                                                universalCameraParams.position.z
-                                                            ),
-                                                            scene
-                                                        );
-                                                        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
-                                                        // Set as active camera if none exists
-                                                        if (!scene.activeCamera) {
-                                                            scene.activeCamera = camera;
-                                                        }
-                                                    }
-                                                }}
-                                                label="Universal Camera"
-                                            />
-                                            <Popover
-                                                open={universalCameraPopoverOpen}
-                                                onOpenChange={(_, data) => setUniversalCameraPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <FluentButton
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        title="Universal Camera Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1,
-                                                            height: "100%",
-                                                        }}
-                                                        onClick={() => setUniversalCameraPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={universalCameraParams.name}
-                                                                    onChange={(_, data: InputOnChangeData) => handleUniversalCameraParamChange("name", data.value)}
-                                                                    aria-label="Name"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <Text weight="semibold" size={200}>Position</Text>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>X</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={universalCameraParams.position.x.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleUniversalCameraParamChange("position", { ...universalCameraParams.position, x: parseFloat(data.value) || 0 })}
-                                                                    aria-label="Position X"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Y</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={universalCameraParams.position.y.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleUniversalCameraParamChange("position", { ...universalCameraParams.position, y: parseFloat(data.value) || 0 })}
-                                                                    aria-label="Position Y"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Z</label>
-                                                                <Input
-                                                                    type="number"
-                                                                    value={universalCameraParams.position.z.toString()}
-                                                                    onChange={(_, data: InputOnChangeData) => handleUniversalCameraParamChange("position", { ...universalCameraParams.position, z: parseFloat(data.value) || 0 })}
-                                                                    aria-label="Position Z"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button onClick={() => setUniversalCameraPopoverOpen(false)} label="Cancel" />
-                                                            <Button
-                                                                appearance={"primary" as any}
-                                                                onClick={() => {
-                                                                    if (scene) {
-                                                                        const camera = new UniversalCamera(
-                                                                            universalCameraParams.name,
-                                                                            new Vector3(
-                                                                                universalCameraParams.position.x,
-                                                                                universalCameraParams.position.y,
-                                                                                universalCameraParams.position.z
-                                                                            ),
-                                                                            scene
-                                                                        );
-                                                                        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
-                                                                        // Set as active camera if none exists
-                                                                        if (!scene.activeCamera) {
-                                                                            scene.activeCamera = camera;
-                                                                        }
-                                                                    }
-                                                                    setUniversalCameraPopoverOpen(false);
-                                                                }}
-                                                                label="Create"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                    </div>
-                                </AccordionPanel>
-                            </AccordionItem>
-                        </Accordion>
+                            {/* <BabylonAccordion multiple> */}
+                            <BabylonAccordion>
+                                <BabylonAccordionSection title="Meshes">{scene && <MeshesContent scene={scene} />}</BabylonAccordionSection>
+                                <BabylonAccordionSection title="Materials">{scene && <MaterialsContent scene={scene} />}</BabylonAccordionSection>
+                                <BabylonAccordionSection title="Lights">{scene && <LightsContent scene={scene} />}</BabylonAccordionSection>
+                                <BabylonAccordionSection title="Particles">{scene && <ParticlesContent scene={scene} />}</BabylonAccordionSection>
+                                <BabylonAccordionSection title="Cameras">{scene && <CamerasContent scene={scene} />}</BabylonAccordionSection>
+                            </BabylonAccordion>
                         </div>
                     </div>
                 );
             },
-        });        return {
+        });
+        return {
             dispose: () => registration.dispose(),
         };
     },
@@ -2167,4 +870,3 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
 export default {
     serviceDefinitions: [CreateToolsServiceDefinition],
 } as const;
-
