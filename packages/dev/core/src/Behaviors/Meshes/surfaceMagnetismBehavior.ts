@@ -15,7 +15,7 @@ import type { Behavior } from "../behavior";
  */
 export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
     private _scene: Scene;
-    private _attachedMesh: Nullable<Mesh>;
+    private _attachedMesh: Nullable<Mesh> = null;
     private _attachPointLocalOffset: Vector3 = new Vector3();
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _workingPosition: Vector3 = new Vector3();
@@ -71,6 +71,13 @@ export class SurfaceMagnetismBehavior implements Behavior<Mesh> {
      * Maximum distance for the node to stick to the surface
      */
     public maxStickingDistance = 0.8;
+
+    /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<Mesh> {
+        return this._attachedMesh;
+    }
 
     /**
      * Attaches the behavior to a transform node
