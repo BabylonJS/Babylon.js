@@ -2,7 +2,8 @@ import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISceneContext } from "./sceneContext";
 import type { IShellService } from "./shellService";
 
-import { makeStyles, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Button, Popover, PopoverTrigger, PopoverSurface, Input, Checkbox } from "@fluentui/react-components";
+import { makeStyles, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Popover, PopoverTrigger, PopoverSurface, Input, Checkbox, Button as FluentButton } from "@fluentui/react-components";
+import { Button } from "shared-ui-components/fluent/primitives/button";
 import type { CheckboxOnChangeData, InputOnChangeData } from "@fluentui/react-components";
 import { ShellServiceIdentity } from "./shellService";
 
@@ -15,7 +16,6 @@ import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math.vector";
 import { PointLight } from "core/Lights/pointLight";
@@ -23,6 +23,13 @@ import { DirectionalLight } from "core/Lights/directionalLight";
 import { SpotLight } from "core/Lights/spotLight";
 import type { ArcRotateCamera } from "core/index";
 import { FilesInput } from "core/Misc/filesInput";
+import { ParticleSystem } from "core/Particles/particleSystem";
+import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
+import { NodeParticleSystemSet } from "core/Particles/Node/nodeParticleSystemSet";
+import { Texture } from "core/Materials/Textures/texture";
+
+// Side-effect import needed for GPUParticleSystem
+import "core/Particles/webgl2ParticleSystem";
 
 type XYZ = { x: number; y: number; z: number };
 
@@ -225,10 +232,6 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     }));
                 };
 
-                const [nodeGeometryPopoverOpen, setNodeGeometryPopoverOpen] = useState(false);
-                const [nodeGeometryName, setNodeGeometryName] = useState("NodeGeometry");
-                const [nodeGeometrySnippetId, setNodeGeometrySnippetId] = useState("");
-
                 const [nodeMaterialPopoverOpen, setNodeMaterialPopoverOpen] = useState(false);
                 const [nodeMaterialName, setNodeMaterialName] = useState("NodeMaterial");
                 const [nodeMaterialSnippetId, setNodeMaterialSnippetId] = useState("");
@@ -253,6 +256,18 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 const fileInputRef = useRef<HTMLInputElement | null>(null);
                 const [importMeshPopoverOpen, setImportMeshPopoverOpen] = useState(false);
                 const [importMeshName, setImportMeshName] = useState("ImportedMesh");
+
+                const [cpuParticleSystemPopoverOpen, setCpuParticleSystemPopoverOpen] = useState(false);
+                const [cpuParticleSystemName, setCpuParticleSystemName] = useState("ParticleSystem");
+                const [cpuParticleSystemCapacity, setCpuParticleSystemCapacity] = useState(2000);
+
+                const [gpuParticleSystemPopoverOpen, setGpuParticleSystemPopoverOpen] = useState(false);
+                const [gpuParticleSystemName, setGpuParticleSystemName] = useState("GPUParticleSystem");
+                const [gpuParticleSystemCapacity, setGpuParticleSystemCapacity] = useState(2000);
+
+                const [nodeParticleSystemPopoverOpen, setNodeParticleSystemPopoverOpen] = useState(false);
+                const [nodeParticleSystemName, setNodeParticleSystemName] = useState("NodeParticleSystem");
+                const [nodeParticleSystemSnippetId, setNodeParticleSystemSnippetId] = useState("");
 
                 const handleLocalMeshImport = (event: ChangeEvent<HTMLInputElement>) => {
                     if (!scene) {
@@ -336,7 +351,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 return (
                     <div className={classes.container}>
                         <div className={classes.scrollArea}>
-                        <Accordion collapsible multiple defaultOpenItems={["Meshes", "Materials", "Lights"]}>
+                        <Accordion collapsible multiple>
                             <AccordionItem key="Meshes" value="Meshes">
                                 <AccordionHeader expandIconPosition="end">
                                     <Text size={500}>Meshes</Text>
@@ -353,9 +368,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         alert("No scene available.");
                                                     }
                                                 }}
-                                            >
-                                                Sphere
-                                            </Button>
+                                                label="Sphere"
+                                            />
                                             <Popover
                                                 open={spherePopoverOpen}
                                                 onOpenChange={(_, data) => setSpherePopoverOpen(data.open)}
@@ -367,11 +381,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Sphere Options"
+                                                        title="Sphere Options"
                                                         style={{
                                                             borderTopLeftRadius: 0,
                                                             borderBottomLeftRadius: 0,
@@ -470,12 +483,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             ))}
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-            <Button size="small" onClick={() => setSpherePopoverOpen(false)}>
-                Cancel
-            </Button>
+            <Button onClick={() => setSpherePopoverOpen(false)} label="Cancel" />
             <Button
-                size="small"
-                appearance="primary"
+                appearance={"primary" as any}
                 onClick={() => {
                     if (scene) {
                         // Create params object based on uniform checkbox
@@ -500,9 +510,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     }
                     setSpherePopoverOpen(false);
                 }}
-            >
-                Create
-            </Button>
+                label="Create"
+            />
         </div>
     </div>
 </PopoverSurface>
@@ -518,9 +527,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         alert("No scene available.");
                                                     }
                                                 }}
-                                            >
-                                                Box
-                                            </Button>
+                                                label="Box"
+                                            />
                                             <Popover
                                                 open={boxPopoverOpen}
                                                 onOpenChange={(_, data) => setBoxPopoverOpen(data.open)}
@@ -532,11 +540,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Box Options"
+                                                        title="Box Options"
                                                         onClick={() => setBoxPopoverOpen(true)}
                                                     />
                                                 </PopoverTrigger>
@@ -563,12 +570,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                             ))}
                                                         </div>
                                                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button size="small" onClick={() => setBoxPopoverOpen(false)}>
-                                                                Cancel
-                                                            </Button>
+                                                            <Button onClick={() => setBoxPopoverOpen(false)} label="Cancel" />
                                                             <Button
-                                                                size="small"
-                                                                appearance="primary"
+                                                                appearance={"primary" as any}
                                                                 onClick={() => {
                                                                     if (scene) {
                                                                         MeshBuilder.CreateBox(boxParams.name, boxParams, scene);
@@ -576,9 +580,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                     }
                                                                     setBoxPopoverOpen(false);
                                                                 }}
-                                                            >
-                                                                Create
-                                                            </Button>
+                                                                label="Create"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </PopoverSurface>
@@ -594,9 +597,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         alert("No scene available.");
                                                     }
                                                 }}
-                                            >
-                                                Cylinder
-                                            </Button>
+                                                label="Cylinder"
+                                            />
                                             <Popover
                                                 open={cylinderPopoverOpen}
                                                 onOpenChange={(_, data) => setCylinderPopoverOpen(data.open)}
@@ -608,11 +610,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Cylinder Options"
+                                                        title="Cylinder Options"
                                                         onClick={() => setCylinderPopoverOpen(true)}
                                                     />
                                                 </PopoverTrigger>
@@ -642,12 +643,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                             ))}
                                                         </div>
                                                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button size="small" onClick={() => setCylinderPopoverOpen(false)}>
-                                                                Cancel
-                                                            </Button>
+                                                            <Button onClick={() => setCylinderPopoverOpen(false)} label="Cancel" />
                                                             <Button
-                                                                size="small"
-                                                                appearance="primary"
+                                                                appearance={"primary" as any}
                                                                 onClick={() => {
                                                                     if (scene) {
                                                                         MeshBuilder.CreateCylinder(cylinderParams.name, cylinderParams, scene);
@@ -655,9 +653,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                     }
                                                                     setCylinderPopoverOpen(false);
                                                                 }}
-                                                            >
-                                                                Create
-                                                            </Button>
+                                                                label="Create"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </PopoverSurface>
@@ -673,9 +670,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         alert("No scene available.");
                                                     }
                                                 }}
-                                            >
-                                                Cone
-                                            </Button>
+                                                label="Cone"
+                                            />
                                             <Popover
                                                 open={conePopoverOpen}
                                                 onOpenChange={(_, data) => setConePopoverOpen(data.open)}
@@ -687,11 +683,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Cone Options"
+                                                        title="Cone Options"
                                                         onClick={() => setConePopoverOpen(true)}
                                                     />
                                                 </PopoverTrigger>
@@ -739,12 +734,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                             />
                                                         </div>
                                                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button size="small" onClick={() => setConePopoverOpen(false)}>
-                                                                Cancel
-                                                            </Button>
+                                                            <Button onClick={() => setConePopoverOpen(false)} label="Cancel" />
                                                             <Button
-                                                                size="small"
-                                                                appearance="primary"
+                                                                appearance={"primary" as any}
                                                                 onClick={() => {
                                                                     if (scene) {
                                                                         const coneParamsToUse = {
@@ -757,9 +749,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                     }
                                                                     setConePopoverOpen(false);
                                                                 }}
-                                                            >
-                                                                Create
-                                                            </Button>
+                                                                label="Create"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </PopoverSurface>
@@ -775,9 +766,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         alert("No scene available.");
                                                     }
                                                 }}
-                                            >
-                                                Ground
-                                            </Button>
+                                                label="Ground"
+                                            />
                                             <Popover
                                                 open={groundPopoverOpen}
                                                 onOpenChange={(_, data) => setGroundPopoverOpen(data.open)}
@@ -789,11 +779,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Ground Options"
+                                                        title="Ground Options"
                                                         onClick={() => setGroundPopoverOpen(true)}
                                                     />
                                                 </PopoverTrigger>
@@ -821,12 +810,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                             ))}
                                                         </div>
                                                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button size="small" onClick={() => setGroundPopoverOpen(false)}>
-                                                                Cancel
-                                                            </Button>
+                                                            <Button onClick={() => setGroundPopoverOpen(false)} label="Cancel" />
                                                             <Button
-                                                                size="small"
-                                                                appearance="primary"
+                                                                appearance={"primary" as any}
                                                                 onClick={() => {
                                                                     if (scene) {
                                                                         MeshBuilder.CreateGround(groundParams.name, groundParams, scene);
@@ -834,102 +820,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                     }
                                                                     setGroundPopoverOpen(false);
                                                                 }}
-                                                            >
-                                                                Create
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </PopoverSurface>
-                                            </Popover>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                                            <Button
-                                                onClick={() => {
-                                                    if (scene) {
-                                                        const nodeGeometry = NodeGeometry.CreateDefault("NodeGeometry");
-                                                        nodeGeometry.build();
-                                                        nodeGeometry.createMesh("NodeGeometry");
-                                                        setCamera(scene);
-                                                    } else {
-                                                        alert("No scene available.");
-                                                    }
-                                                }}
-                                            >
-                                                Node Geometry
-                                            </Button>
-                                            <Popover
-                                                open={nodeGeometryPopoverOpen}
-                                                onOpenChange={(_, data) => setNodeGeometryPopoverOpen(data.open)}
-                                                positioning={{
-                                                    align: "start",
-                                                    overflowBoundary: document.body,
-                                                    autoSize: true,
-                                                }}
-                                                trapFocus
-                                            >
-                                                <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
-                                                        icon={<Settings20Regular />}
-                                                        appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Node Geometry Options"
-                                                        onClick={() => setNodeGeometryPopoverOpen(true)}
-                                                    />
-                                                </PopoverTrigger>
-                                                <PopoverSurface>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
-                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={nodeGeometryName}
-                                                                    onChange={e => setNodeGeometryName(e.target.value)}
-                                                                    aria-label="Name"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                                <label style={{ flex: "0 0 100px" }}>Snippet ID</label>
-                                                                <Input
-                                                                    type="text"
-                                                                    value={nodeGeometrySnippetId}
-                                                                    onChange={e => setNodeGeometrySnippetId(e.target.value)}
-                                                                    aria-label="Snippet ID"
-                                                                    style={{ flex: "1 1 auto" }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button size="small" onClick={() => setNodeGeometryPopoverOpen(false)}>
-                                                                Cancel
-                                                            </Button>
-                                                            <Button
-                                                                size="small"
-                                                                appearance="primary"
-                                                                onClick={async () => {
-                                                                    if (scene) {
-                                                                        try {
-                                                                            let nodeGeometry;
-                                                                            if (nodeGeometrySnippetId.trim() === "") {
-                                                                                nodeGeometry = NodeGeometry.CreateDefault(nodeGeometryName || "NodeGeometry");
-                                                                            } else {
-                                                                                nodeGeometry = await NodeGeometry.ParseFromSnippetAsync(nodeGeometrySnippetId.trim());
-                                                                            }
-                                                                            nodeGeometry.build();
-                                                                            nodeGeometry.createMesh(nodeGeometryName || "NodeGeometry");
-                                                                            setCamera(scene);
-                                                                        } catch (error) {
-                                                                            alert("Failed to load Node Geometry from snippet ID.");
-                                                                        }
-                                                                    } else {
-                                                                        alert("No scene available.");
-                                                                    }
-                                                                    setNodeGeometryPopoverOpen(false);
-                                                                }}
-                                                            >
-                                                                Create
-                                                            </Button>
+                                                                label="Create"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </PopoverSurface>
@@ -944,9 +836,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                     }
                                                     fileInputRef.current?.click();
                                                 }}
-                                            >
-                                                Import Mesh
-                                            </Button>
+                                                label="Import Mesh"
+                                            />
                                             <Popover
                                                 open={importMeshPopoverOpen}
                                                 onOpenChange={(_, data) => setImportMeshPopoverOpen(data.open)}
@@ -958,11 +849,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Import Mesh Options"
+                                                        title="Import Mesh Options"
                                                         style={{
                                                             borderTopLeftRadius: 0,
                                                             borderBottomLeftRadius: 0,
@@ -986,8 +876,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         </div>
                                                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                                                             <Button
-                                                                size="small"
-                                                                appearance="primary"
+                                                                appearance={"primary" as any}
                                                                 onClick={() => {
                                                                     if (!scene) {
                                                                         alert("No scene available.");
@@ -996,9 +885,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                     setImportMeshPopoverOpen(false);
                                                                     fileInputRef.current?.click();
                                                                 }}
-                                                            >
-                                                                Import
-                                                            </Button>
+                                                                label="Import"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </PopoverSurface>
@@ -1043,9 +931,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                             alert("No scene available.");
                         }
                     }}
-                >
-                    Node Material
-                </Button>
+                    label="Node Material"
+                />
                 <Popover
                     open={nodeMaterialPopoverOpen}
                     onOpenChange={(_, data) => setNodeMaterialPopoverOpen(data.open)}
@@ -1057,11 +944,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     trapFocus
                 >
                     <PopoverTrigger disableButtonEnhancement>
-                        <Button
+                        <FluentButton
                             icon={<Settings20Regular />}
                             appearance="subtle"
-                            size="small"
-                            aria-label="Node Material Options"
+                            title="Node Material Options"
                             style={{
                                 borderTopLeftRadius: 0,
                                 borderBottomLeftRadius: 0,
@@ -1096,12 +982,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                 </div>
                             </div>
                             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                <Button size="small" onClick={() => setNodeMaterialPopoverOpen(false)}>
-                                    Cancel
-                                </Button>
+                                <Button onClick={() => setNodeMaterialPopoverOpen(false)} label="Cancel" />
                                 <Button
-                                    size="small"
-                                    appearance="primary"
+                                    appearance={"primary" as any}
                                     onClick={async () => {
                                         if (scene) {
                                             if (nodeMaterialSnippetId) {
@@ -1120,9 +1003,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                         }
                                         setNodeMaterialPopoverOpen(false);
                                     }}
-                                >
-                                    Create
-                                </Button>
+                                    label="Create"
+                                />
                             </div>
                         </div>
                     </PopoverSurface>
@@ -1140,9 +1022,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                             alert("No scene available.");
                         }
                     }}
-                >
-                    PBR Material
-                </Button>
+                    label="PBR Material"
+                />
                 <Popover
                     open={pbrMaterialPopoverOpen}
                     onOpenChange={(_, data) => setPbrMaterialPopoverOpen(data.open)}
@@ -1154,11 +1035,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     trapFocus
                 >
                     <PopoverTrigger disableButtonEnhancement>
-                        <Button
+                        <FluentButton
                             icon={<Settings20Regular />}
                             appearance="subtle"
-                            size="small"
-                            aria-label="PBR Material Options"
+                            title="PBR Material Options"
                             style={{
                                 borderTopLeftRadius: 0,
                                 borderBottomLeftRadius: 0,
@@ -1183,12 +1063,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                 </div>
                             </div>
                             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                <Button size="small" onClick={() => setPbrMaterialPopoverOpen(false)}>
-                                    Cancel
-                                </Button>
+                                <Button onClick={() => setPbrMaterialPopoverOpen(false)} label="Cancel" />
                                 <Button
-                                    size="small"
-                                    appearance="primary"
+                                    appearance={"primary" as any}
                                     onClick={() => {
                                         if (scene) {
                                             new PBRMaterial(pbrMaterialName, scene);
@@ -1198,9 +1075,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                         }
                                         setPbrMaterialPopoverOpen(false);
                                     }}
-                                >
-                                    Create
-                                </Button>
+                                    label="Create"
+                                />
                             </div>
                         </div>
                     </PopoverSurface>
@@ -1218,9 +1094,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                             alert("No scene available.");
                         }
                     }}
-                >
-                    Standard Material
-                </Button>
+                    label="Standard Material"
+                />
                 <Popover
                     open={standardMaterialPopoverOpen}
                     onOpenChange={(_, data) => setStandardMaterialPopoverOpen(data.open)}
@@ -1232,11 +1107,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     trapFocus
                 >
                     <PopoverTrigger disableButtonEnhancement>
-                        <Button
+                        <FluentButton
                             icon={<Settings20Regular />}
                             appearance="subtle"
-                            size="small"
-                            aria-label="Standard Material Options"
+                            title="Standard Material Options"
                             style={{
                                 borderTopLeftRadius: 0,
                                 borderBottomLeftRadius: 0,
@@ -1261,12 +1135,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                 </div>
                             </div>
                             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                <Button size="small" onClick={() => setStandardMaterialPopoverOpen(false)}>
-                                    Cancel
-                                </Button>
+                                <Button onClick={() => setStandardMaterialPopoverOpen(false)} label="Cancel" />
                                 <Button
-                                    size="small"
-                                    appearance="primary"
+                                    appearance={"primary" as any}
                                     onClick={() => {
                                         if (scene) {
                                             new StandardMaterial(standardMaterialName, scene);
@@ -1276,9 +1147,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                         }
                                         setStandardMaterialPopoverOpen(false);
                                     }}
-                                >
-                                    Create
-                                </Button>
+                                    label="Create"
+                                />
                             </div>
                         </div>
                     </PopoverSurface>
@@ -1303,9 +1173,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         alert("No scene available.");
                                                     }
                                                 }}
-                                            >
-                                                Point Light
-                                            </Button>
+                                                label="Point Light"
+                                            />
                                             <Popover
                                                 open={pointLightPopoverOpen}
                                                 onOpenChange={(_, data) => setPointLightPopoverOpen(data.open)}
@@ -1317,11 +1186,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Point Light Options"
+                                                        title="Point Light Options"
                                                         style={{
                                                             borderTopLeftRadius: 0,
                                                             borderBottomLeftRadius: 0,
@@ -1368,12 +1236,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                             </div>
                                                         </div>
                                                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button size="small" onClick={() => setPointLightPopoverOpen(false)}>
-                                                                Cancel
-                                                            </Button>
+                                                            <Button onClick={() => setPointLightPopoverOpen(false)} label="Cancel" />
                                                             <Button
-                                                                size="small"
-                                                                appearance="primary"
+                                                                appearance={"primary" as any}
                                                                 onClick={() => {
                                                                     if (scene) {
                                                                         const light = new PointLight(pointLightName, new Vector3(pointLightPosition.x, pointLightPosition.y, pointLightPosition.z), scene);
@@ -1383,9 +1248,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                     }
                                                                     setPointLightPopoverOpen(false);
                                                                 }}
-                                                            >
-                                                                Create
-                                                            </Button>
+                                                                label="Create"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </PopoverSurface>
@@ -1401,9 +1265,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         alert("No scene available.");
                                                     }
                                                 }}
-                                            >
-                                                Directional Light
-                                            </Button>
+                                                label="Directional Light"
+                                            />
                                             <Popover
                                                 open={directionalLightPopoverOpen}
                                                 onOpenChange={(_, data) => setDirectionalLightPopoverOpen(data.open)}
@@ -1415,17 +1278,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Directional Light Options"
-                                                        style={{
-                                                            borderTopLeftRadius: 0,
-                                                            borderBottomLeftRadius: 0,
-                                                            marginLeft: -1,
-                                                            height: "100%",
-                                                        }}
+                                                        title="Directional Light Options"
                                                         onClick={() => setDirectionalLightPopoverOpen(true)}
                                                     />
                                                 </PopoverTrigger>
@@ -1466,12 +1322,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                             </div>
                                                         </div>
                                                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-                                                            <Button size="small" onClick={() => setDirectionalLightPopoverOpen(false)}>
-                                                                Cancel
-                                                            </Button>
+                                                            <Button onClick={() => setDirectionalLightPopoverOpen(false)} label="Cancel" />
                                                             <Button
-                                                                size="small"
-                                                                appearance="primary"
+                                                                appearance={"primary" as any}
                                                                 onClick={() => {
                                                                     if (scene) {
                                                                         const dirLight = new DirectionalLight(
@@ -1485,9 +1338,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                     }
                                                                     setDirectionalLightPopoverOpen(false);
                                                                 }}
-                                                            >
-                                                                Create
-                                                            </Button>
+                                                                label="Create"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </PopoverSurface>
@@ -1510,9 +1362,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         alert("No scene available.");
                                                     }
                                                 }}
-                                            >
-                                                Spotlight
-                                            </Button>
+                                                label="Spotlight"
+                                            />
                                             <Popover
                                                 open={spotlightPopoverOpen}
                                                 onOpenChange={(_, data) => setSpotlightPopoverOpen(data.open)}
@@ -1524,11 +1375,10 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                 trapFocus
                                             >
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button
+                                                    <FluentButton
                                                         icon={<Settings20Regular />}
                                                         appearance="subtle"
-                                                        size="small"
-                                                        aria-label="Spotlight Options"
+                                                        title="Spotlight Options"
                                                         onClick={() => setSpotlightPopoverOpen(true)}
                                                     />
                                                 </PopoverTrigger>
@@ -1601,12 +1451,9 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             </div>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
-            <Button size="small" onClick={() => setSpotlightPopoverOpen(false)}>
-                Cancel
-            </Button>
+            <Button onClick={() => setSpotlightPopoverOpen(false)} label="Cancel" />
             <Button
-                size="small"
-                appearance="primary"
+                appearance={"primary" as any}
                 onClick={() => {
                     if (scene) {
                         const spotlight = new SpotLight(
@@ -1631,12 +1478,313 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     }
                     setSpotlightPopoverOpen(false);
                 }}
-            >
-                Create
-            </Button>
+                label="Create"
+            />
         </div>
     </div>
 </PopoverSurface>
+                                            </Popover>
+                                        </div>
+                                    </div>
+                                </AccordionPanel>
+                            </AccordionItem>
+                            <AccordionItem key="Particles" value="Particles">
+                                <AccordionHeader expandIconPosition="end">
+                                    <Text size={500}>Particles</Text>
+                                </AccordionHeader>
+                                <AccordionPanel>
+                                    <div className={classes.section}>
+                                        {/* CPU Particle System */}
+                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                            <Button
+                                                onClick={() => {
+                                                    if (scene) {
+                                                        setTimeout(() => {
+                                                            const system = new ParticleSystem("ParticleSystem", 2000, scene);
+                                                            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+                                                            system.start();
+                                                        }, 0);
+                                                    } else {
+                                                        alert("No scene available.");
+                                                    }
+                                                }}
+                                                label="CPU Particle System"
+                                            />
+                                            <Popover
+                                                open={cpuParticleSystemPopoverOpen}
+                                                onOpenChange={(_, data) => setCpuParticleSystemPopoverOpen(data.open)}
+                                                positioning={{
+                                                    align: "start",
+                                                    overflowBoundary: document.body,
+                                                    autoSize: true,
+                                                }}
+                                                trapFocus
+                                            >
+                                                <PopoverTrigger disableButtonEnhancement>
+                                                    <FluentButton
+                                                        icon={<Settings20Regular />}
+                                                        appearance="subtle"
+                                                        title="CPU Particle System Options"
+                                                        style={{
+                                                            borderTopLeftRadius: 0,
+                                                            borderBottomLeftRadius: 0,
+                                                            marginLeft: -1,
+                                                            height: "100%",
+                                                        }}
+                                                        onClick={() => setCpuParticleSystemPopoverOpen(true)}
+                                                    />
+                                                </PopoverTrigger>
+                                                <PopoverSurface>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
+                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
+                                                                <Input
+                                                                    type="text"
+                                                                    value={cpuParticleSystemName}
+                                                                    onChange={(_, data: InputOnChangeData) => setCpuParticleSystemName(data.value)}
+                                                                    aria-label="Name"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Capacity</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={cpuParticleSystemCapacity.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => setCpuParticleSystemCapacity(Number(data.value))}
+                                                                    aria-label="Capacity"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                                                            <Button onClick={() => setCpuParticleSystemPopoverOpen(false)} label="Cancel" />
+                                                            <Button
+                                                                appearance={"primary" as any}
+                                                                onClick={() => {
+                                                                    if (scene) {
+                                                                        setTimeout(() => {
+                                                                            const system = new ParticleSystem(cpuParticleSystemName, cpuParticleSystemCapacity, scene);
+                                                                            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+                                                                            system.start();
+                                                                        }, 0);
+                                                                    } else {
+                                                                        alert("No scene available.");
+                                                                    }
+                                                                    setCpuParticleSystemPopoverOpen(false);
+                                                                }}
+                                                                label="Create"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </PopoverSurface>
+                                            </Popover>
+                                        </div>
+
+                                        {/* GPU Particle System */}
+                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                            <Button
+                                                onClick={() => {
+                                                    if (scene) {
+                                                        if (GPUParticleSystem.IsSupported) {
+                                                            // Create without adding to scene
+                                                            const system = new GPUParticleSystem("GPUParticleSystem", { capacity: 2000 }, scene.getEngine());
+                                                            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+                                                            // Manually add to scene to trigger observable
+                                                            scene.addParticleSystem(system);
+                                                            system.start();
+                                                        } else {
+                                                            alert("GPU Particle System is not supported.");
+                                                        }
+                                                    } else {
+                                                        alert("No scene available.");
+                                                    }
+                                                }}
+                                                label="GPU Particle System"
+                                            />
+                                            <Popover
+                                                open={gpuParticleSystemPopoverOpen}
+                                                onOpenChange={(_, data) => setGpuParticleSystemPopoverOpen(data.open)}
+                                                positioning={{
+                                                    align: "start",
+                                                    overflowBoundary: document.body,
+                                                    autoSize: true,
+                                                }}
+                                                trapFocus
+                                            >
+                                                <PopoverTrigger disableButtonEnhancement>
+                                                    <FluentButton
+                                                        icon={<Settings20Regular />}
+                                                        appearance="subtle"
+                                                        title="GPU Particle System Options"
+                                                        style={{
+                                                            borderTopLeftRadius: 0,
+                                                            borderBottomLeftRadius: 0,
+                                                            marginLeft: -1,
+                                                            height: "100%",
+                                                        }}
+                                                        onClick={() => setGpuParticleSystemPopoverOpen(true)}
+                                                    />
+                                                </PopoverTrigger>
+                                                <PopoverSurface>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
+                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
+                                                                <Input
+                                                                    type="text"
+                                                                    value={gpuParticleSystemName}
+                                                                    onChange={(_, data: InputOnChangeData) => setGpuParticleSystemName(data.value)}
+                                                                    aria-label="Name"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Capacity</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={gpuParticleSystemCapacity.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => setGpuParticleSystemCapacity(Number(data.value))}
+                                                                    aria-label="Capacity"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                                                            <Button onClick={() => setGpuParticleSystemPopoverOpen(false)} label="Cancel" />
+                                                            <Button
+                                                                appearance={"primary" as any}
+                                                                onClick={() => {
+                                                                    if (scene) {
+                                                                        if (GPUParticleSystem.IsSupported) {
+                                                                            // Create without adding to scene
+                                                                            const system = new GPUParticleSystem(gpuParticleSystemName, { capacity: gpuParticleSystemCapacity }, scene.getEngine());
+                                                                            system.particleTexture = new Texture("https://assets.babylonjs.com/textures/flare.png", scene);
+                                                                            // Manually add to scene to trigger observable
+                                                                            scene.addParticleSystem(system);
+                                                                            system.start();
+                                                                        } else {
+                                                                            alert("GPU Particle System is not supported.");
+                                                                        }
+                                                                    } else {
+                                                                        alert("No scene available.");
+                                                                    }
+                                                                    setGpuParticleSystemPopoverOpen(false);
+                                                                }}
+                                                                label="Create"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </PopoverSurface>
+                                                            </Popover>
+                                        </div>
+
+                                        {/* Node Particle System */}
+                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                            <Button
+                                                onClick={async () => {
+                                                    if (scene) {
+                                                        // Always create default when clicking main button
+                                                        const nodeParticleSet = NodeParticleSystemSet.CreateDefault("Node Particle System");
+                                                        const particleSystemSet = await nodeParticleSet.buildAsync(scene);
+                                                        // Rename the particle systems to use a descriptive name
+                                                        for (const system of particleSystemSet.systems) {
+                                                            system.name = "Node Particle System";
+                                                        }
+                                                        particleSystemSet.start();
+                                                    } else {
+                                                        alert("No scene available.");
+                                                    }
+                                                }}
+                                                label="Node Particle System"
+                                            />
+                                            <Popover
+                                                open={nodeParticleSystemPopoverOpen}
+                                                onOpenChange={(_, data) => setNodeParticleSystemPopoverOpen(data.open)}
+                                                positioning={{
+                                                    align: "start",
+                                                    overflowBoundary: document.body,
+                                                    autoSize: true,
+                                                }}
+                                                trapFocus
+                                            >
+                                                <PopoverTrigger disableButtonEnhancement>
+                                                    <FluentButton
+                                                        icon={<Settings20Regular />}
+                                                        appearance="subtle"
+                                                        title="Node Particle System Options"
+                                                        style={{
+                                                            borderTopLeftRadius: 0,
+                                                            borderBottomLeftRadius: 0,
+                                                            marginLeft: -1,
+                                                            height: "100%",
+                                                        }}
+                                                        onClick={() => setNodeParticleSystemPopoverOpen(true)}
+                                                    />
+                                                </PopoverTrigger>
+                                                <PopoverSurface>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
+                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
+                                                                <Input
+                                                                    type="text"
+                                                                    value={nodeParticleSystemName}
+                                                                    onChange={(_, data: InputOnChangeData) => setNodeParticleSystemName(data.value)}
+                                                                    aria-label="Name"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Snippet ID</label>
+                                                                <Input
+                                                                    type="text"
+                                                                    value={nodeParticleSystemSnippetId}
+                                                                    onChange={(_, data: InputOnChangeData) => setNodeParticleSystemSnippetId(data.value)}
+                                                                    aria-label="Snippet ID"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                                                            <Button onClick={() => setNodeParticleSystemPopoverOpen(false)} label="Cancel" />
+                                                            <Button
+                                                                appearance={"primary" as any}
+                                                                onClick={async () => {
+                                                                    if (scene) {
+                                                                        try {
+                                                                            let nodeParticleSet;
+                                                                            const snippetId = nodeParticleSystemSnippetId.trim();
+                                                                            if (snippetId) {
+                                                                                // Pass snippet ID directly - ParseFromSnippetAsync handles the format
+                                                                                // Supports formats like "#KNJOQO#1" or "KNJOQO#1"
+                                                                                nodeParticleSet = await NodeParticleSystemSet.ParseFromSnippetAsync(snippetId);
+                                                                                // Override the name with user's custom name
+                                                                                nodeParticleSet.name = nodeParticleSystemName;
+                                                                            } else {
+                                                                                nodeParticleSet = NodeParticleSystemSet.CreateDefault(nodeParticleSystemName);
+                                                                            }
+                                                                            const particleSystemSet = await nodeParticleSet.buildAsync(scene);
+                                                                            // Rename the particle systems
+                                                                            for (const system of particleSystemSet.systems) {
+                                                                                system.name = nodeParticleSystemName;
+                                                                            }
+                                                                            particleSystemSet.start();
+                                                                        } catch (e) {
+                                                                            console.error("Error creating Node Particle System:", e);
+                                                                            alert("Failed to create Node Particle System: " + e);
+                                                                        }
+                                                                    } else {
+                                                                        alert("No scene available.");
+                                                                    }
+                                                                    setNodeParticleSystemPopoverOpen(false);
+                                                                }}
+                                                                label="Create"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </PopoverSurface>
                                             </Popover>
                                         </div>
                                     </div>
@@ -1647,9 +1795,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                     </div>
                 );
             },
-        });
-
-        return {
+        });        return {
             dispose: () => registration.dispose(),
         };
     },
@@ -1658,3 +1804,4 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
 export default {
     serviceDefinitions: [CreateToolsServiceDefinition],
 } as const;
+
