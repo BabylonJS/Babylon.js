@@ -2,9 +2,10 @@ import type { ServiceDefinition } from "../modularity/serviceDefinition";
 import type { ISceneContext } from "./sceneContext";
 import type { IShellService } from "./shellService";
 
-import { makeStyles, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Popover, PopoverTrigger, PopoverSurface, Input, Checkbox, Button as FluentButton } from "@fluentui/react-components";
+import { makeStyles, tokens, Accordion, AccordionItem, AccordionHeader, AccordionPanel, Text, Popover, PopoverTrigger, PopoverSurface, Input, Button as FluentButton } from "@fluentui/react-components";
 import { Button } from "shared-ui-components/fluent/primitives/button";
-import type { CheckboxOnChangeData, InputOnChangeData } from "@fluentui/react-components";
+import { Checkbox } from "shared-ui-components/fluent/primitives/checkbox";
+import type { InputOnChangeData } from "@fluentui/react-components";
 import { ShellServiceIdentity } from "./shellService";
 
 import { useRef, useState } from "react";
@@ -21,7 +22,8 @@ import { Vector3 } from "core/Maths/math.vector";
 import { PointLight } from "core/Lights/pointLight";
 import { DirectionalLight } from "core/Lights/directionalLight";
 import { SpotLight } from "core/Lights/spotLight";
-import type { ArcRotateCamera } from "core/index";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { UniversalCamera } from "core/Cameras/universalCamera";
 import { FilesInput } from "core/Misc/filesInput";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
@@ -90,6 +92,20 @@ type SpotlightParams = {
     direction: XYZ;
     angle: number;
     exponent: number;
+};
+
+type ArcRotateCameraParams = {
+    name: string;
+    target: XYZ;
+    radius: number;
+    alpha: number;
+    beta: number;
+    useRadians: boolean;
+};
+
+type UniversalCameraParams = {
+    name: string;
+    position: XYZ;
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -269,6 +285,37 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                 const [nodeParticleSystemName, setNodeParticleSystemName] = useState("NodeParticleSystem");
                 const [nodeParticleSystemSnippetId, setNodeParticleSystemSnippetId] = useState("");
 
+                // Camera state
+                const [arcRotateCameraPopoverOpen, setArcRotateCameraPopoverOpen] = useState(false);
+                const [arcRotateCameraParams, setArcRotateCameraParams] = useState<ArcRotateCameraParams>({
+                    name: "ArcRotateCamera",
+                    target: { x: 0, y: 0, z: 0 },
+                    radius: 10,
+                    alpha: 0,
+                    beta: 45,
+                    useRadians: false,
+                });
+
+                const handleArcRotateCameraParamChange = <K extends keyof ArcRotateCameraParams>(key: K, value: ArcRotateCameraParams[K]) => {
+                    setArcRotateCameraParams(prev => ({
+                        ...prev,
+                        [key]: value
+                    }));
+                };
+
+                const [universalCameraPopoverOpen, setUniversalCameraPopoverOpen] = useState(false);
+                const [universalCameraParams, setUniversalCameraParams] = useState<UniversalCameraParams>({
+                    name: "UniversalCamera",
+                    position: { x: 0, y: 1, z: -10 },
+                });
+
+                const handleUniversalCameraParamChange = <K extends keyof UniversalCameraParams>(key: K, value: UniversalCameraParams[K]) => {
+                    setUniversalCameraParams(prev => ({
+                        ...prev,
+                        [key]: value
+                    }));
+                };
+
                 const handleLocalMeshImport = (event: ChangeEvent<HTMLInputElement>) => {
                     if (!scene) {
                         alert("No scene available.");
@@ -428,8 +475,8 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
             {/* Uniform checkbox */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 108, marginTop: -8, marginBottom: 4 }}>
                 <Checkbox
-                    checked={sphereParams.uniform}
-                    onChange={(_, data: CheckboxOnChangeData) => handleSphereParamChange("uniform", !!data.checked)}
+                    value={sphereParams.uniform}
+                    onChange={(checked) => handleSphereParamChange("uniform", checked)}
                     aria-label="Uniform"
                 />
                 <span style={{ fontSize: 13 }}>Uniform</span>
@@ -716,7 +763,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                             <label style={{ flex: "0 0 100px" }}>Up</label>
                                                             <Checkbox
-                                                                checked={isUpChecked}
+                                                                value={isUpChecked}
                                                                 onChange={() => {
                                                                     setIsUpChecked(true);
                                                                     setIsDownChecked(false);
@@ -726,7 +773,7 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                             <label style={{ flex: "0 0 100px" }}>Down</label>
                                                             <Checkbox
-                                                                checked={isDownChecked}
+                                                                value={isDownChecked}
                                                                 onChange={() => {
                                                                     setIsUpChecked(false);
                                                                     setIsDownChecked(true);
@@ -1779,6 +1826,322 @@ export const CreateToolsServiceDefinition: ServiceDefinition<[], [IShellService,
                                                                         alert("No scene available.");
                                                                     }
                                                                     setNodeParticleSystemPopoverOpen(false);
+                                                                }}
+                                                                label="Create"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </PopoverSurface>
+                                            </Popover>
+                                        </div>
+                                    </div>
+                                </AccordionPanel>
+                            </AccordionItem>
+
+                            {/* Cameras */}
+                            <AccordionItem key="Cameras" value="Cameras">
+                                <AccordionHeader expandIconPosition="end">
+                                    <Text size={500}>Cameras</Text>
+                                </AccordionHeader>
+                                <AccordionPanel>
+                                    <div className={classes.section}>
+                                        {/* ArcRotate Camera */}
+                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                            <Button
+                                                onClick={() => {
+                                                    if (scene) {
+                                                        // Convert degrees to radians if needed
+                                                        const alpha = arcRotateCameraParams.useRadians 
+                                                            ? arcRotateCameraParams.alpha 
+                                                            : (arcRotateCameraParams.alpha * Math.PI) / 180;
+                                                        const beta = arcRotateCameraParams.useRadians 
+                                                            ? arcRotateCameraParams.beta 
+                                                            : (arcRotateCameraParams.beta * Math.PI) / 180;
+                                                        
+                                                        const camera = new ArcRotateCamera(
+                                                            arcRotateCameraParams.name,
+                                                            alpha,
+                                                            beta,
+                                                            arcRotateCameraParams.radius,
+                                                            new Vector3(
+                                                                arcRotateCameraParams.target.x,
+                                                                arcRotateCameraParams.target.y,
+                                                                arcRotateCameraParams.target.z
+                                                            ),
+                                                            scene
+                                                        );
+                                                        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+                                                        // Set as active camera if none exists
+                                                        if (!scene.activeCamera) {
+                                                            scene.activeCamera = camera;
+                                                        }
+                                                    }
+                                                }}
+                                                label="ArcRotate Camera"
+                                            />
+                                            <Popover
+                                                open={arcRotateCameraPopoverOpen}
+                                                onOpenChange={(_, data) => setArcRotateCameraPopoverOpen(data.open)}
+                                                positioning={{
+                                                    align: "start",
+                                                    overflowBoundary: document.body,
+                                                    autoSize: true,
+                                                }}
+                                                trapFocus
+                                            >
+                                                <PopoverTrigger disableButtonEnhancement>
+                                                    <FluentButton
+                                                        icon={<Settings20Regular />}
+                                                        appearance="subtle"
+                                                        title="ArcRotate Camera Options"
+                                                        style={{
+                                                            borderTopLeftRadius: 0,
+                                                            borderBottomLeftRadius: 0,
+                                                            marginLeft: -1,
+                                                            height: "100%",
+                                                        }}
+                                                        onClick={() => setArcRotateCameraPopoverOpen(true)}
+                                                    />
+                                                </PopoverTrigger>
+                                                <PopoverSurface>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
+                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
+                                                                <Input
+                                                                    type="text"
+                                                                    value={arcRotateCameraParams.name}
+                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("name", data.value)}
+                                                                    aria-label="Name"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <Text weight="semibold" size={200}>Target Point</Text>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>X</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={arcRotateCameraParams.target.x.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("target", { ...arcRotateCameraParams.target, x: parseFloat(data.value) || 0 })}
+                                                                    aria-label="Target X"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Y</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={arcRotateCameraParams.target.y.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("target", { ...arcRotateCameraParams.target, y: parseFloat(data.value) || 0 })}
+                                                                    aria-label="Target Y"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Z</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={arcRotateCameraParams.target.z.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("target", { ...arcRotateCameraParams.target, z: parseFloat(data.value) || 0 })}
+                                                                    aria-label="Target Z"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <Text weight="semibold" size={200}>Camera Settings</Text>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Radius</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={arcRotateCameraParams.radius.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("radius", parseFloat(data.value) || 10)}
+                                                                    aria-label="Radius"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Alpha {arcRotateCameraParams.useRadians ? "(rad)" : "(deg)"}</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={arcRotateCameraParams.alpha.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("alpha", parseFloat(data.value) || 0)}
+                                                                    aria-label="Alpha"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Beta {arcRotateCameraParams.useRadians ? "(rad)" : "(deg)"}</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={arcRotateCameraParams.beta.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleArcRotateCameraParamChange("beta", parseFloat(data.value) || 0)}
+                                                                    aria-label="Beta"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                                                <Checkbox
+                                                                    value={arcRotateCameraParams.useRadians}
+                                                                    onChange={(checked) => handleArcRotateCameraParamChange("useRadians", checked)}
+                                                                />
+                                                                <span>Switch to radians</span>
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                                                            <Button onClick={() => setArcRotateCameraPopoverOpen(false)} label="Cancel" />
+                                                            <Button
+                                                                appearance={"primary" as any}
+                                                                onClick={() => {
+                                                                    if (scene) {
+                                                                        // Convert degrees to radians if needed
+                                                                        const alpha = arcRotateCameraParams.useRadians 
+                                                                            ? arcRotateCameraParams.alpha 
+                                                                            : (arcRotateCameraParams.alpha * Math.PI) / 180;
+                                                                        const beta = arcRotateCameraParams.useRadians 
+                                                                            ? arcRotateCameraParams.beta 
+                                                                            : (arcRotateCameraParams.beta * Math.PI) / 180;
+                                                                        
+                                                                        const camera = new ArcRotateCamera(
+                                                                            arcRotateCameraParams.name,
+                                                                            alpha,
+                                                                            beta,
+                                                                            arcRotateCameraParams.radius,
+                                                                            new Vector3(
+                                                                                arcRotateCameraParams.target.x,
+                                                                                arcRotateCameraParams.target.y,
+                                                                                arcRotateCameraParams.target.z
+                                                                            ),
+                                                                            scene
+                                                                        );
+                                                                        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+                                                                        // Set as active camera if none exists
+                                                                        if (!scene.activeCamera) {
+                                                                            scene.activeCamera = camera;
+                                                                        }
+                                                                    }
+                                                                    setArcRotateCameraPopoverOpen(false);
+                                                                }}
+                                                                label="Create"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </PopoverSurface>
+                                            </Popover>
+                                        </div>
+
+                                        {/* Universal Camera */}
+                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                            <Button
+                                                onClick={() => {
+                                                    if (scene) {
+                                                        const camera = new UniversalCamera(
+                                                            universalCameraParams.name,
+                                                            new Vector3(
+                                                                universalCameraParams.position.x,
+                                                                universalCameraParams.position.y,
+                                                                universalCameraParams.position.z
+                                                            ),
+                                                            scene
+                                                        );
+                                                        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+                                                        // Set as active camera if none exists
+                                                        if (!scene.activeCamera) {
+                                                            scene.activeCamera = camera;
+                                                        }
+                                                    }
+                                                }}
+                                                label="Universal Camera"
+                                            />
+                                            <Popover
+                                                open={universalCameraPopoverOpen}
+                                                onOpenChange={(_, data) => setUniversalCameraPopoverOpen(data.open)}
+                                                positioning={{
+                                                    align: "start",
+                                                    overflowBoundary: document.body,
+                                                    autoSize: true,
+                                                }}
+                                                trapFocus
+                                            >
+                                                <PopoverTrigger disableButtonEnhancement>
+                                                    <FluentButton
+                                                        icon={<Settings20Regular />}
+                                                        appearance="subtle"
+                                                        title="Universal Camera Options"
+                                                        style={{
+                                                            borderTopLeftRadius: 0,
+                                                            borderBottomLeftRadius: 0,
+                                                            marginLeft: -1,
+                                                            height: "100%",
+                                                        }}
+                                                        onClick={() => setUniversalCameraPopoverOpen(true)}
+                                                    />
+                                                </PopoverTrigger>
+                                                <PopoverSurface>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: 16, minWidth: 300 }}>
+                                                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Name</label>
+                                                                <Input
+                                                                    type="text"
+                                                                    value={universalCameraParams.name}
+                                                                    onChange={(_, data: InputOnChangeData) => handleUniversalCameraParamChange("name", data.value)}
+                                                                    aria-label="Name"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <Text weight="semibold" size={200}>Position</Text>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>X</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={universalCameraParams.position.x.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleUniversalCameraParamChange("position", { ...universalCameraParams.position, x: parseFloat(data.value) || 0 })}
+                                                                    aria-label="Position X"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Y</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={universalCameraParams.position.y.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleUniversalCameraParamChange("position", { ...universalCameraParams.position, y: parseFloat(data.value) || 0 })}
+                                                                    aria-label="Position Y"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                                <label style={{ flex: "0 0 100px" }}>Z</label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={universalCameraParams.position.z.toString()}
+                                                                    onChange={(_, data: InputOnChangeData) => handleUniversalCameraParamChange("position", { ...universalCameraParams.position, z: parseFloat(data.value) || 0 })}
+                                                                    aria-label="Position Z"
+                                                                    style={{ flex: "1 1 auto" }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+                                                            <Button onClick={() => setUniversalCameraPopoverOpen(false)} label="Cancel" />
+                                                            <Button
+                                                                appearance={"primary" as any}
+                                                                onClick={() => {
+                                                                    if (scene) {
+                                                                        const camera = new UniversalCamera(
+                                                                            universalCameraParams.name,
+                                                                            new Vector3(
+                                                                                universalCameraParams.position.x,
+                                                                                universalCameraParams.position.y,
+                                                                                universalCameraParams.position.z
+                                                                            ),
+                                                                            scene
+                                                                        );
+                                                                        camera.attachControl(scene.getEngine().getRenderingCanvas(), true);
+                                                                        // Set as active camera if none exists
+                                                                        if (!scene.activeCamera) {
+                                                                            scene.activeCamera = camera;
+                                                                        }
+                                                                    }
+                                                                    setUniversalCameraPopoverOpen(false);
                                                                 }}
                                                                 label="Create"
                                                             />
