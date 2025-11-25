@@ -89,6 +89,17 @@ interface IPLYConversionBuffers {
     sh?: [];
 }
 
+/**
+ * To support multiple camera rendering, rendered mesh is separated from the GaussianSplattingMesh itself.
+ * The GS mesh serves as a proxy and a different mesh is rendered for each camera. This hot switch is done
+ * in the render() function. Each camera has a corresponding ICameraViewInfo object. The key is the camera unique id.
+ * ICameraViewInfo and the rendered mesh are created in method `_postToWorker`
+ * Mesh are disabled to not let the scene render them directly.
+ * ICameraViewInfo are sorted per last frame id update to prioritize the less recently updated ones.
+ * There is 1 web worker per GaussianSplattingMesh to avoid too many copies between main thread and workers.
+ * So, only one sort is being done at a time per GaussianSplattingMesh. If multiple cameras need an update,
+ * they will be processed one by one in subsequent frames.
+ */
 interface ICameraViewInfo {
     camera: Camera;
     cameraDirection: Vector3;
