@@ -291,11 +291,11 @@ export class Sound {
             optionsV2.spatialConeOuterAngle = _SpatialAudioDefaults.coneOuterAngle;
             optionsV2.spatialConeOuterVolume = _SpatialAudioDefaults.coneOuterVolume;
             optionsV2.spatialMinUpdateTime = 0;
-            optionsV2.spatialOrientation = _SpatialAudioDefaults.orientation;
+            optionsV2.spatialOrientation = _SpatialAudioDefaults.orientation.clone();
             optionsV2.spatialPanningModel = (this._scene.headphone ? "HRTF" : "equalpower") as "equalpower" | "HRTF";
-            optionsV2.spatialPosition = _SpatialAudioDefaults.position;
-            optionsV2.spatialRotation = _SpatialAudioDefaults.rotation;
-            optionsV2.spatialRotationQuaternion = _SpatialAudioDefaults.rotationQuaternion;
+            optionsV2.spatialPosition = _SpatialAudioDefaults.position.clone();
+            optionsV2.spatialRotation = _SpatialAudioDefaults.rotation.clone();
+            optionsV2.spatialRotationQuaternion = _SpatialAudioDefaults.rotationQuaternion.clone();
 
             if (optionsV2.spatialMaxDistance === undefined) {
                 optionsV2.spatialMaxDistance = 100;
