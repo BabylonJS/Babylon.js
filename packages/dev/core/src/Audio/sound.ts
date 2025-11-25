@@ -296,6 +296,10 @@ export class Sound {
             optionsV2.spatialPosition = _SpatialAudioDefaults.position;
             optionsV2.spatialRotation = _SpatialAudioDefaults.rotation;
             optionsV2.spatialRotationQuaternion = _SpatialAudioDefaults.rotationQuaternion;
+
+            if (optionsV2.spatialMaxDistance === undefined) {
+                optionsV2.spatialMaxDistance = 100;
+            }
         }
 
         this._optionsV2 = { ...optionsV2 };
