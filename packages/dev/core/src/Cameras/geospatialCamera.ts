@@ -15,8 +15,6 @@ import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavio
 import type { EasingFunction } from "../Animations/easing";
 import type { Animation } from "../Animations/animation";
 
-const TWO_PI = 2 * Math.PI;
-
 type CameraOptions = {
     planetRadius: number; // Radius of the planet
 };
