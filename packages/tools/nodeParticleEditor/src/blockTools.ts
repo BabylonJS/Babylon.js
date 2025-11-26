@@ -496,17 +496,14 @@ export class BlockTools {
             case NodeParticleBlockConnectionPointTypes.SolidParticle:
                 color = "#2e8b57";
                 break;
+            case NodeParticleBlockConnectionPointTypes.SolidParticleConfig:
+                color = "#1f6f5a";
+                break;
             case NodeParticleBlockConnectionPointTypes.Mesh:
                 color = "#4682b4";
                 break;
             case NodeParticleBlockConnectionPointTypes.Material:
                 color = "#daa520";
-                break;
-            case NodeParticleBlockConnectionPointTypes.Camera:
-                color = "#9370db";
-                break;
-            case NodeParticleBlockConnectionPointTypes.Function:
-                color = "#ff6347";
                 break;
         }
 
@@ -529,14 +526,12 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.Matrix;
             case "SolidParticle":
                 return NodeParticleBlockConnectionPointTypes.SolidParticle;
+            case "SolidParticleConfig":
+                return NodeParticleBlockConnectionPointTypes.SolidParticleConfig;
             case "Mesh":
                 return NodeParticleBlockConnectionPointTypes.Mesh;
             case "Material":
                 return NodeParticleBlockConnectionPointTypes.Material;
-            case "Camera":
-                return NodeParticleBlockConnectionPointTypes.Camera;
-            case "Function":
-                return NodeParticleBlockConnectionPointTypes.Function;
         }
 
         return NodeParticleBlockConnectionPointTypes.AutoDetect;
@@ -558,14 +553,12 @@ export class BlockTools {
                 return "Matrix";
             case NodeParticleBlockConnectionPointTypes.SolidParticle:
                 return "SolidParticle";
+            case NodeParticleBlockConnectionPointTypes.SolidParticleConfig:
+                return "SolidParticleConfig";
             case NodeParticleBlockConnectionPointTypes.Mesh:
                 return "Mesh";
             case NodeParticleBlockConnectionPointTypes.Material:
                 return "Material";
-            case NodeParticleBlockConnectionPointTypes.Camera:
-                return "Camera";
-            case NodeParticleBlockConnectionPointTypes.Function:
-                return "Function";
         }
 
         return "";
