@@ -36,20 +36,12 @@ export enum NodeParticleBlockConnectionPointTypes {
     Mesh = 0x8000,
     /** Material */
     Material = 0x10000,
-    /** Camera */
-    Camera = 0x20000,
-    /** Function */
-    Function = 0x40000,
-    /** Vector4 */
-    Vector4 = 0x80000,
-    /** Boolean */
-    Boolean = 0x100000,
     /** Detect type based on connection */
-    AutoDetect = 0x200000,
+    AutoDetect = 0x20000,
     /** Output type that will be defined by input type */
-    BasedOnInput = 0x400000,
+    BasedOnInput = 0x40000,
     /** Undefined */
-    Undefined = 0x800000,
+    Undefined = 0x80000,
     /** Bitmask of all types */
-    All = 0xffffff,
+    All = 0x1ffff,
 }
