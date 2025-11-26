@@ -1655,12 +1655,12 @@ export class GaussianSplattingMesh extends Mesh {
         }
         this._updateSplatIndexBuffer(this._vertexCount);
 
-        // Start the worker thread
-        this._worker?.terminate();
-
-        if (!this._worker) {
+        if (_native) {
             return;
         }
+
+        // Start the worker thread
+        this._worker?.terminate();
 
         this._worker = new Worker(
             URL.createObjectURL(
