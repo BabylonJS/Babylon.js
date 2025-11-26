@@ -1661,7 +1661,6 @@ export class GaussianSplattingMesh extends Mesh {
 
         // Start the worker thread
         this._worker?.terminate();
-
         this._worker = new Worker(
             URL.createObjectURL(
                 new Blob(["(", GaussianSplattingMesh._CreateWorker.toString(), ")(self)"], {
