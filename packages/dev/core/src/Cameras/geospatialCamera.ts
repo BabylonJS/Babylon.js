@@ -8,11 +8,12 @@ import type { DeepImmutable } from "../types";
 import { GeospatialLimits } from "./Limits/geospatialLimits";
 import { ClampCenterFromPolesInPlace, ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialCameraMovement";
 import type { IVector3Like } from "../Maths/math.like";
-import { Vector3CopyToRef } from "../Maths/math.vector.functions";
-import { Clamp, Normalize, NormalizeRadians } from "../Maths/math.scalar.functions";
+import { Vector3CopyToRef, Vector3Distance } from "../Maths/math.vector.functions";
+import { Clamp, NormalizeRadians } from "../Maths/math.scalar.functions";
 import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
 import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 import type { EasingFunction } from "../Animations/easing";
+import type { Animation } from "../Animations/animation";
 
 type CameraOptions = {
     planetRadius: number; // Radius of the planet
@@ -213,7 +214,6 @@ export class GeospatialCamera extends Camera {
         this._flyingBehavior.updateProperties(this._flyToTargets);
     }
 
-    private _customKeys = new Map();
     /**
      * Animate camera towards passed in property values. If undefined, will use current value
      * @param targetYaw
@@ -222,7 +222,7 @@ export class GeospatialCamera extends Camera {
      * @param targetCenter
      * @param flightDurationMs
      * @param easingFunction
-     * @param overshootRadiusScale If defined, will first fly to radius*scale before flying to targetRadius to create a "bounce" effect
+     * @param centerHopScale If supplied, will define the parabolic hop height scale for center animation to create a "bounce" effect
      * @returns Promise that will return when the animation is complete (or interuppted by pointer input)
      */
     public async flyToAsync(
@@ -232,30 +232,47 @@ export class GeospatialCamera extends Camera {
         targetCenter?: Vector3,
         flightDurationMs: number = 1000,
         easingFunction?: EasingFunction,
-        overshootRadiusScale?: number
+        centerHopScale?: number
     ): Promise<void> {
         this._flyToTargets.clear();
-        this._customKeys.clear();
 
         this._flyToTargets.set("yaw", targetYaw !== undefined ? NormalizeRadians(targetYaw) : undefined);
         this._flyToTargets.set("pitch", targetPitch !== undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
         this._flyToTargets.set("center", targetCenter);
 
-        const overshootRadius = overshootRadiusScale !== undefined ? this.radius * overshootRadiusScale : undefined;
-        if (overshootRadius !== undefined && overshootRadius !== targetRadius) {
-            // Start the animation with overshoot radius
-            const frameRate = 60;
-            const totalFrames = (flightDurationMs / 1000) * frameRate;
-            const midFrame = totalFrames / 2;
+        let overrideAnimationFunction;
+        if (targetCenter !== undefined && !targetCenter.equals(this.center)) {
+            // Animate center directly with custom interpolation
+            const start = this.center.clone();
+            const end = targetCenter.clone();
 
-            this._customKeys.set("radius", [
-                { frame: 0, value: this.radius },
-                { frame: midFrame, value: overshootRadius },
-                { frame: totalFrames, value: targetRadius },
-            ]);
+            overrideAnimationFunction = (key: string, animation: Animation): void => {
+                if (key === "center") {
+                    // Override the Vector3 interpolation to use SLERP + hop
+                    animation.vector3InterpolateFunction = (startValue, endValue, gradient) => {
+                        // gradient is the eased value (0 to 1) after easing function is applied
+
+                        // Slerp between start and end
+                        const newCenter = Vector3.SlerpToRef(start, end, gradient, this._tempCenter);
+
+                        // Apply parabolic hop if requested
+                        if (centerHopScale && centerHopScale > 0) {
+                            // Parabolic formula: peaks at t=0.5, returns to 0 at gradient=0 and gradient=1
+                            // if hopPeakT = .5 the denominator would be hopPeakT * hopPeakT - hopPeakT, which = -.25
+                            const hopPeakOffset = centerHopScale * Vector3Distance(start, end);
+                            const hopOffset = hopPeakOffset * Clamp((gradient * gradient - gradient) / -0.25);
+                            // Scale the center outward (away from origin)
+                            newCenter.scaleInPlace(1 + hopOffset / newCenter.length());
+                        }
+
+                        return newCenter;
+                    };
+                }
+            };
         }
-        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction, this._customKeys);
+
+        return await this._flyingBehavior.animatePropertiesAsync(this._flyToTargets, flightDurationMs, easingFunction, overrideAnimationFunction);
     }
 
     /**

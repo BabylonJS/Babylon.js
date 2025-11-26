@@ -5,7 +5,6 @@ import type { Animatable } from "../../Animations/animatable.core";
 import { Animation } from "../../Animations/animation";
 import type { Camera } from "../../Cameras/camera";
 import type { IColor3Like, IColor4Like, IMatrixLike, IQuaternionLike, IVector2Like, IVector3Like } from "../../Maths/math.like";
-import type { IAnimationKey } from "../../Animations/animationKey";
 
 export type AllowedAnimValue = number | IVector2Like | IVector3Like | IQuaternionLike | IMatrixLike | IColor3Like | IColor4Like | SizeLike | undefined;
 
@@ -110,7 +109,7 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
         properties: Map<K, AllowedAnimValue>,
         transitionDuration: number = this.transitionDuration,
         easingFn: EasingFunction = this.easingFunction,
-        customKeys?: Map<K, IAnimationKey[]>
+        updateAnimation?: (key: string, animation: Animation) => void
     ): Promise<void> {
         const promise = new Promise<void>((resolve) => {
             this.stopAllAnimations();
@@ -139,22 +138,14 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
             };
 
             properties.forEach((value, key) => {
-                if (value !== undefined) {
+                if (value !== undefined && camera[key] !== value) {
                     const propertyName = String(key);
                     const animation = Animation.CreateAnimation(propertyName, GetAnimationType(value), 60, easingFn);
+                    // Optionally allow caller to further customize the animation
+                    updateAnimation?.(propertyName, animation);
+
                     // Pass false for stopCurrent so that we can interpolate multiple properties at once
-                    const animatable = Animation.TransitionTo(
-                        propertyName,
-                        value,
-                        camera,
-                        scene,
-                        60,
-                        animation,
-                        transitionDuration,
-                        () => checkClear(propertyName),
-                        false,
-                        customKeys?.get(key)
-                    );
+                    const animatable = Animation.TransitionTo(propertyName, value, camera, scene, 60, animation, transitionDuration, () => checkClear(propertyName), false);
                     if (animatable) {
                         this._animatables.set(propertyName, animatable);
                     }
