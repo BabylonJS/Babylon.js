@@ -13,13 +13,13 @@ precision highp sampler2DArray;
 uniform sampler2DArray aerialPerspectiveLut;
 #endif
 
-#include<core/helperFunctions>
-#include<depthFunctions>
-#include<atmosphereFunctions>
-
 uniform sampler2D depthTexture;
 uniform sampler2D transmittanceLut;
 uniform sampler2D multiScatteringLut;
+
+#include<core/helperFunctions>
+#include<depthFunctions>
+#include<atmosphereFunctions>
 
 varying vec2 uv;
 varying vec3 positionOnNearPlane;
@@ -85,8 +85,6 @@ void main() {
         integrateScatteredRadiance(
             isAerialPerspectiveLut, // isAerialPerspectiveLut
             atmosphereExposure * lightIntensity,
-            transmittanceLut,
-            multiScatteringLut,
             multiScatteringIntensity,
             cameraPositionGlobalClampedToTopOfAtmosphere,
             rayDirection,

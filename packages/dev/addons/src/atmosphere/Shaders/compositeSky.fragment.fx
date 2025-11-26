@@ -1,17 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // MIT License
 
+#define SAMPLE_SKY_VIEW_LUT
+#if USE_SKY_VIEW_LUT
+    #define EXCLUDE_RAY_MARCHING_FUNCTIONS
+    #define EXCLUDE_TRANSMITTANCE_SAMPLING_FUNCTIONS
+#endif
+
 precision highp float;
 precision highp sampler2D;
 
 #include<__decl__atmosphereFragment>
-
-#include<core/helperFunctions>
-#include<depthFunctions>
-#include<atmosphereFunctions>
-
-varying vec2 uv;
-varying vec3 positionOnNearPlane;
 
 #if USE_SKY_VIEW_LUT
 uniform sampler2D skyViewLut;
@@ -19,6 +18,13 @@ uniform sampler2D skyViewLut;
 uniform sampler2D transmittanceLut;
 uniform sampler2D multiScatteringLut;
 #endif
+
+#include<core/helperFunctions>
+#include<depthFunctions>
+#include<atmosphereFunctions>
+
+varying vec2 uv;
+varying vec3 positionOnNearPlane;
 
 void main() {
 
@@ -34,7 +40,6 @@ void main() {
         bool isRayIntersectingGround;
         vec4 skyColor =
             sampleSkyViewLut(
-                skyViewLut,
                 clampedCameraRadius,
                 cameraGeocentricNormal,
                 rayDirection,
@@ -74,8 +79,6 @@ void main() {
         integrateScatteredRadiance(
             false, // isAerialPerspectiveLut
             atmosphereExposure * lightIntensity,
-            transmittanceLut,
-            multiScatteringLut,
             multiScatteringIntensity,
             cameraPositionGlobalClampedToTopOfAtmosphere,
             rayDirection,
