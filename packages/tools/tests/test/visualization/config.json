@@ -10,6 +10,7 @@
         {
             "title": "Gaussian Splatting Shadows",
             "playgroundId": "#OE54M5#16",
+            "renderCount": 15,
             "referenceImage": "gsplat-shadows.png"
         },
         {
