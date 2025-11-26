@@ -2,7 +2,7 @@
 import type { DeviceType } from "../../DeviceInput/InputDevices/deviceEnums";
 import type { IDeviceInputSystem } from "../../DeviceInput/inputInterfaces";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { Matrix } from "../../Maths";
+import type { Matrix } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { ICanvas, IImage, IPath2D } from "../ICanvas";
 import type { NativeData, NativeDataStream } from "./nativeDataStream";
