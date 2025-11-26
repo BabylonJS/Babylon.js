@@ -1,21 +1,23 @@
 import type { IDisposable, Scene } from "core/index";
-
 import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../components/extensibleAccordion";
 import type { IService, ServiceDefinition } from "../../modularity/serviceDefinition";
 import type { ISceneContext } from "../sceneContext";
+import type { ISettingsContext } from "../settingsContext";
 import type { IShellService } from "../shellService";
 
 import { SettingsRegular } from "@fluentui/react-icons";
 
 import { DataStorage } from "core/Misc/dataStorage";
 import { Observable } from "core/Misc/observable";
+import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { AccordionSection } from "shared-ui-components/fluent/primitives/accordion";
 import { ExtensibleAccordion } from "../../components/extensibleAccordion";
 import { useObservableCollection, useObservableState, useOrderedObservableCollection } from "../../hooks/observableHooks";
+import { useCompactMode, useSidePaneDockOverrides } from "../../hooks/settingsHooks";
 import { ObservableCollection } from "../../misc/observableCollection";
 import { SceneContextIdentity } from "../sceneContext";
-import { SettingsContextIdentity, type ISettingsContext } from "../settingsContext";
+import { SettingsContextIdentity } from "../settingsContext";
 import { ShellServiceIdentity } from "../shellService";
 
 export const SettingsServiceIdentity = Symbol("SettingsService");
@@ -45,8 +47,10 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
         const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
         const sectionContentCollection = new ObservableCollection<DynamicAccordionSectionContent<Scene>>();
 
-        let useDegrees = DataStorage.ReadBoolean("settings_useDegrees", false);
-        let ignoreBackfacesForPicking = DataStorage.ReadBoolean("settings_ignoreBackfacesForPicking", false);
+        let useDegrees = DataStorage.ReadBoolean("Babylon/Settings/UseDegrees", false);
+        let ignoreBackfacesForPicking = DataStorage.ReadBoolean("Babylon/Settings/IgnoreBackfacesForPicking", false);
+        let showPropertiesOnEntitySelection = DataStorage.ReadBoolean("Babylon/Settings/ShowPropertiesOnEntitySelection", true);
+
         const settings = {
             get useDegrees() {
                 return useDegrees;
@@ -57,7 +61,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 }
                 useDegrees = value;
 
-                DataStorage.WriteBoolean("settings_useDegrees", useDegrees);
+                DataStorage.WriteBoolean("Babylon/Settings/UseDegrees", useDegrees);
 
                 this.settingsChangedObservable.notifyObservers(this);
             },
@@ -70,7 +74,19 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 }
                 ignoreBackfacesForPicking = value;
 
-                DataStorage.WriteBoolean("settings_ignoreBackfacesForPicking", ignoreBackfacesForPicking);
+                DataStorage.WriteBoolean("Babylon/Settings/IgnoreBackfacesForPicking", ignoreBackfacesForPicking);
+                this.settingsChangedObservable.notifyObservers(this);
+            },
+            get showPropertiesOnEntitySelection() {
+                return showPropertiesOnEntitySelection;
+            },
+            set showPropertiesOnEntitySelection(value: boolean) {
+                if (showPropertiesOnEntitySelection === value) {
+                    return; // No change, no need to notify
+                }
+                showPropertiesOnEntitySelection = value;
+
+                DataStorage.WriteBoolean("Babylon/Settings/ShowPropertiesOnEntitySelection", showPropertiesOnEntitySelection);
                 this.settingsChangedObservable.notifyObservers(this);
             },
             settingsChangedObservable: new Observable<ISettingsContext>(),
@@ -84,6 +100,7 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
             title: "Settings",
             icon: SettingsRegular,
             horizontalLocation: "right",
+            verticalLocation: "top",
             order: 500,
             suppressTeachingMoment: true,
             content: () => {
@@ -91,11 +108,22 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                 const sectionContent = useObservableCollection(sectionContentCollection);
                 const scene = useObservableState(() => sceneContext.currentScene, sceneContext.currentSceneObservable);
 
+                const [compactMode, setCompactMode] = useCompactMode();
+                const [, , resetSidePaneLayout] = useSidePaneDockOverrides();
+
                 return (
                     <>
                         {scene && (
                             <ExtensibleAccordion sections={sections} sectionContent={sectionContent} context={scene}>
                                 <AccordionSection title="UI">
+                                    <SwitchPropertyLine
+                                        label="Compact Mode"
+                                        description="Use a more compact UI with less spacing."
+                                        value={compactMode}
+                                        onChange={(checked) => {
+                                            setCompactMode(checked);
+                                        }}
+                                    />
                                     <SwitchPropertyLine
                                         label="Use Degrees"
                                         description="Using degrees instead of radians."
@@ -112,6 +140,15 @@ export const SettingsServiceDefinition: ServiceDefinition<[ISettingsContext, ISe
                                             settings.ignoreBackfacesForPicking = checked;
                                         }}
                                     />
+                                    <SwitchPropertyLine
+                                        label="Show Properties on Selection"
+                                        description="Shows the Properties pane when an entity is selected."
+                                        value={settings.showPropertiesOnEntitySelection}
+                                        onChange={(checked) => {
+                                            settings.showPropertiesOnEntitySelection = checked;
+                                        }}
+                                    />
+                                    <ButtonLine label="Reset Layout" onClick={resetSidePaneLayout} />
                                 </AccordionSection>
                             </ExtensibleAccordion>
                         )}

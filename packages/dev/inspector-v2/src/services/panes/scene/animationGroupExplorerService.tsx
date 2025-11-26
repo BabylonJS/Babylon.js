@@ -9,7 +9,7 @@ import { AnimationGroup } from "core/Animations/animationGroup";
 import { Observable } from "core/Misc/observable";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
-import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
+import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplorerService, ISceneContext]> = {
@@ -53,8 +53,9 @@ export const AnimationGroupExplorerServiceDefinition: ServiceDefinition<[], [ISc
             getEntityRemovedObservables: () => [scene.onAnimationGroupRemovedObservable],
         });
 
-        const animationPlayPauseCommandRegistration = sceneExplorerService.addCommand({
+        const animationPlayPauseCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof AnimationGroup,
+            order: DefaultCommandsOrder.AnimationGroupPlay,
             getCommand: (animationGroup) => {
                 const onChangeObservable = new Observable<void>();
                 const playObserver = animationGroup.onAnimationGroupPlayObservable.add(() => onChangeObservable.notifyObservers());

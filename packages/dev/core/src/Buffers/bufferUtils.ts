@@ -282,7 +282,6 @@ export function GetFloatData(
  * @param type the component type
  * @param byteOffset the byte offset of the data
  * @param byteStride the byte stride of the data
- * @param normalized whether the data is normalized
  * @param totalVertices number of vertices in the buffer to take into account
  * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
  * @returns a typed array containing vertex data
@@ -293,7 +292,6 @@ export function GetTypedArrayData(
     type: number,
     byteOffset: number,
     byteStride: number,
-    normalized: boolean,
     totalVertices: number,
     forceCopy?: boolean
 ): VertexDataTypedArray {
@@ -320,7 +318,7 @@ export function GetTypedArrayData(
         }
         if (stride !== size) {
             const copy = new constructor(count);
-            EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, normalized, (values, index) => {
+            EnumerateFloatValues(data, byteOffset, byteStride, size, type, count, false, (values, index) => {
                 for (let i = 0; i < size; i++) {
                     copy[index + i] = values[i];
                 }
@@ -353,7 +351,7 @@ export function GetTypedArrayData(
     }
     if (byteStride !== tightlyPackedByteStride) {
         const copy = new constructor(count);
-        EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, normalized, (values, index) => {
+        EnumerateFloatValues(buffer, adjustedByteOffset, byteStride, size, type, count, false, (values, index) => {
             for (let i = 0; i < size; i++) {
                 copy[index + i] = values[i];
             }

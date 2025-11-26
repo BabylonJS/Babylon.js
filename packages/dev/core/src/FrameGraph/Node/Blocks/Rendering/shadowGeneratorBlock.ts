@@ -18,7 +18,7 @@ export class NodeRenderGraphShadowGeneratorBlock extends NodeRenderGraphBaseShad
 
         this._finalizeInputOutputRegistering();
 
-        this._frameGraphTask = new FrameGraphShadowGeneratorTask(this.name, frameGraph, scene);
+        this._frameGraphTask = new FrameGraphShadowGeneratorTask(this.name, frameGraph);
     }
 
     /**

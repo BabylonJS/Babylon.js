@@ -11,7 +11,7 @@ interface IPostProcessLike {
 }
 
 /**
- * @internal
+ * Base class for post process like blocks.
  */
 export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: IPostProcessLike & FrameGraphTask;
@@ -42,7 +42,7 @@ export class NodeRenderGraphBasePostProcessBlock extends NodeRenderGraphBlock {
     }
 
     /** Sampling mode used to sample from the source texture */
-    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "PROPERTIES")
+    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.SamplingMode, "BASE PROPERTIES")
     public get sourceSamplingMode() {
         return this._frameGraphTask.sourceSamplingMode;
     }

@@ -130,19 +130,19 @@ export class LayerSceneComponent implements ISceneComponent {
 
     private _drawRenderTargetBackground(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
-            return this._drawRenderTargetPredicate(layer, true, true, this.scene.activeCamera!.layerMask, renderTarget);
+            return this._drawRenderTargetPredicate(layer, true, true, this.scene.activeCamera ? this.scene.activeCamera.layerMask : 0, renderTarget);
         });
     }
 
     private _drawRenderTargetForegroundWithPostProcessing(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
-            return this._drawRenderTargetPredicate(layer, false, true, this.scene.activeCamera!.layerMask, renderTarget);
+            return this._drawRenderTargetPredicate(layer, false, true, this.scene.activeCamera ? this.scene.activeCamera.layerMask : 0, renderTarget);
         });
     }
 
     private _drawRenderTargetForegroundWithoutPostProcessing(renderTarget: RenderTargetTexture): void {
         this._draw((layer: Layer) => {
-            return this._drawRenderTargetPredicate(layer, false, false, this.scene.activeCamera!.layerMask, renderTarget);
+            return this._drawRenderTargetPredicate(layer, false, false, this.scene.activeCamera ? this.scene.activeCamera.layerMask : 0, renderTarget);
         });
     }
 

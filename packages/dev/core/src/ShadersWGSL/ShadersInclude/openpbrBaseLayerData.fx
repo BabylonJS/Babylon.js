@@ -43,7 +43,7 @@ var geometry_tangent: vec2f = vec2f(1.0, 0.0);
 #endif
 
 #ifdef GEOMETRY_OPACITY
-    let opacityFromTexture: vec4f = textureSample(opacitySampler, opacitySamplerSampler, fragmentInputs.vOpacityUV + uvOffset);
+    let opacityFromTexture: vec4f = textureSample(geometryOpacitySampler, geometryOpacitySamplerSampler, fragmentInputs.vGeometryOpacityUV + uvOffset);
 #endif
 
 #ifdef DECAL
@@ -66,7 +66,7 @@ var geometry_tangent: vec2f = vec2f(1.0, 0.0);
     #endif
 #endif
 
-#ifdef ANISOTROPIC
+#if defined(ANISOTROPIC) || defined(FUZZ)
     let noise = textureSample(blueNoiseSampler, blueNoiseSamplerSampler, fragmentInputs.position.xy / 256.0).xyz;
 #endif
 
@@ -79,10 +79,10 @@ var geometry_tangent: vec2f = vec2f(1.0, 0.0);
 // Initalize base layer properties from uniforms
 base_color = uniforms.vBaseColor.rgb;
 #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-    base_color *= uniforms.vColor.rgb;
+    base_color *= fragmentInputs.vColor.rgb;
 #endif
 #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-    alpha *= uniforms.vColor.a;
+    alpha *= fragmentInputs.vColor.a;
 #endif
 base_color *= vec3(uniforms.vBaseWeight);
 alpha = uniforms.vBaseColor.a;

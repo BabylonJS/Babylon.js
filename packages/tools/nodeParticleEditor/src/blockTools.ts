@@ -9,6 +9,7 @@ import { ParticleMathBlock, ParticleMathBlockOperations } from "core/Particles/N
 import { UpdateColorBlock } from "core/Particles/Node/Blocks/Update/updateColorBlock";
 import { ParticleLerpBlock } from "core/Particles/Node/Blocks/particleLerpBlock";
 import { UpdateScaleBlock } from "core/Particles/Node/Blocks/Update/updateScaleBlock";
+import { UpdateSizeBlock } from "core/Particles/Node/Blocks/Update/updateSizeBlock";
 import { ParticleGradientValueBlock } from "core/Particles/Node/Blocks/particleGradientValueBlock";
 import { ParticleGradientBlock } from "core/Particles/Node/Blocks/particleGradientBlock";
 import { ParticleConverterBlock } from "core/Particles/Node/Blocks/particleConverterBlock";
@@ -30,16 +31,19 @@ import { UpdateFlowMapBlock } from "core/Particles/Node/Blocks/Update/updateFlow
 import { ParticleConditionBlock, ParticleConditionBlockTests } from "core/Particles/Node/Blocks/Conditions/particleConditionBlock";
 import { CreateParticleBlock } from "core/Particles/Node/Blocks/Emitters/createParticleBlock";
 import { BoxShapeBlock } from "core/Particles/Node/Blocks/Emitters/boxShapeBlock";
-import { SphereShapeBlock } from "core/Particles/Node/Blocks/Emitters/sphereShapeBlock";
-import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeBlock";
-import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
+import { ConeShapeBlock } from "core/Particles/Node/Blocks/Emitters/coneShapeBlock";
 import { CylinderShapeBlock } from "core/Particles/Node/Blocks/Emitters/cylinderShapeBlock";
+import { CustomShapeBlock } from "core/Particles/Node/Blocks/Emitters/customShapeBlock";
 import { MeshShapeBlock } from "core/Particles/Node/Blocks/Emitters/meshShapeBlock";
+import { PointShapeBlock } from "core/Particles/Node/Blocks/Emitters/pointShapeBlock";
+import { SphereShapeBlock } from "core/Particles/Node/Blocks/Emitters/sphereShapeBlock";
 import { UpdateAttractorBlock } from "core/Particles/Node/Blocks/Update/updateAttractorBlock";
 import { AlignAngleBlock } from "core/Particles/Node/Blocks/Update/alignAngleBlock";
 import { BasicColorUpdateBlock } from "core/Particles/Node/Blocks/Update/basicColorUpdateBlock";
 import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleLocalVariableBlock";
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
+import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
+import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 
 /**
  * Static class for BlockTools
@@ -47,6 +51,8 @@ import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVe
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "FresnelBlock":
+                return new ParticleFresnelBlock("Fresnel");
             case "LocalVariableBlock":
                 return new ParticleLocalVariableBlock("Local variable");
             case "VectorLengthBlock":
@@ -136,6 +142,8 @@ export class BlockTools {
                 return new UpdateColorBlock("Update color");
             case "UpdateScaleBlock":
                 return new UpdateScaleBlock("Update scale");
+            case "UpdateSizeBlock":
+                return new UpdateSizeBlock("Update size");
             case "UpdateAngleBlock":
                 return new UpdateAngleBlock("Update angle");
             case "UpdateAgeBlock":
@@ -150,16 +158,18 @@ export class BlockTools {
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":
                 return new BoxShapeBlock("Box shape");
-            case "SphereShapeBlock":
-                return new SphereShapeBlock("Sphere shape");
-            case "PointShapeBlock":
-                return new PointShapeBlock("Point shape");
+            case "ConeShapeBlock":
+                return new ConeShapeBlock("Cone shape");
             case "CustomShapeBlock":
                 return new CustomShapeBlock("Custom shape");
             case "CylinderShapeBlock":
                 return new CylinderShapeBlock("Cylinder shape");
             case "MeshShapeBlock":
                 return new MeshShapeBlock("Mesh shape");
+            case "PointShapeBlock":
+                return new PointShapeBlock("Point shape");
+            case "SphereShapeBlock":
+                return new SphereShapeBlock("Sphere shape");
             case "PositionBlock": {
                 const block = new ParticleInputBlock("Position");
                 block.contextualValue = NodeParticleContextualSources.Position;
@@ -168,6 +178,11 @@ export class BlockTools {
             case "DirectionBlock": {
                 const block = new ParticleInputBlock("Direction");
                 block.contextualValue = NodeParticleContextualSources.Direction;
+                return block;
+            }
+            case "DirectionScaleBlock": {
+                const block = new ParticleInputBlock("Direction scale");
+                block.contextualValue = NodeParticleContextualSources.DirectionScale;
                 return block;
             }
             case "ScaledDirectionBlock": {
@@ -180,6 +195,11 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.Scale;
                 return block;
             }
+            case "SizeBlock": {
+                const block = new ParticleInputBlock("Size");
+                block.contextualValue = NodeParticleContextualSources.Size;
+                return block;
+            }
             case "ColorBlock": {
                 const block = new ParticleInputBlock("Color");
                 block.contextualValue = NodeParticleContextualSources.Color;
@@ -188,6 +208,11 @@ export class BlockTools {
             case "InitialColorBlock": {
                 const block = new ParticleInputBlock("Initial Color");
                 block.contextualValue = NodeParticleContextualSources.InitialColor;
+                return block;
+            }
+            case "InitialDirectionBlock": {
+                const block = new ParticleInputBlock("Initial Direction");
+                block.contextualValue = NodeParticleContextualSources.InitialDirection;
                 return block;
             }
             case "ColorDeadBlock": {
@@ -230,6 +255,21 @@ export class BlockTools {
                 block.contextualValue = NodeParticleContextualSources.SpriteCellStart;
                 return block;
             }
+            case "ColorStepBlock": {
+                const block = new ParticleInputBlock("Color Step");
+                block.contextualValue = NodeParticleContextualSources.ColorStep;
+                return block;
+            }
+            case "ScaledColorStepBlock": {
+                const block = new ParticleInputBlock("Scaled Color Step");
+                block.contextualValue = NodeParticleContextualSources.ScaledColorStep;
+                return block;
+            }
+            case "LocalPositionUpdatedBlock": {
+                const block = new ParticleInputBlock("Local Position Updated");
+                block.contextualValue = NodeParticleContextualSources.LocalPositionUpdated;
+                return block;
+            }
             case "TimeBlock": {
                 const block = new ParticleInputBlock("Time");
                 block.systemSource = NodeParticleSystemSources.Time;
@@ -243,6 +283,11 @@ export class BlockTools {
             case "EmitterPositionBlock": {
                 const block = new ParticleInputBlock("Emitter position");
                 block.systemSource = NodeParticleSystemSources.Emitter;
+                return block;
+            }
+            case "CameraPositionBlock": {
+                const block = new ParticleInputBlock("Camera position");
+                block.systemSource = NodeParticleSystemSources.CameraPosition;
                 return block;
             }
             case "AddBlock": {
@@ -382,6 +427,9 @@ export class BlockTools {
             }
             case "RandomBlock": {
                 return new ParticleRandomBlock("Random");
+            }
+            case "FloatToIntBlock": {
+                return new ParticleFloatToIntBlock("Float to Int");
             }
         }
 

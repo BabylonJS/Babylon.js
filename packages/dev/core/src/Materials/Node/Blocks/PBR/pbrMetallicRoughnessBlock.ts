@@ -453,6 +453,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._excludeVariableName("vClipSpacePosition");
         state._excludeVariableName("vDebugMode");
+        state._excludeVariableName("vViewDepth");
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._initShaderSourceAsync(state.shaderLanguage);
@@ -846,7 +847,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
                 uniformBuffers,
                 onlyUpdateBuffersList,
-                defines["IESLIGHTTEXTURE" + lightIndex]
+                defines["IESLIGHTTEXTURE" + lightIndex],
+                defines["CLUSTLIGHT" + lightIndex]
             );
         }
     }
@@ -969,6 +971,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             state.compilationString += `${state._declareLocalVar("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${worldPos.associatedVariableName};\n`;
             if (this.view.isConnected) {
                 state.compilationString += `${state._declareLocalVar("view", NodeMaterialBlockConnectionPointTypes.Matrix)} = ${this.view.associatedVariableName};\n`;
+                state._emitVaryingFromString("vViewDepth", NodeMaterialBlockConnectionPointTypes.Float);
+                state.compilationString +=
+                    (state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "") +
+                    `vViewDepth = (${this.view.associatedVariableName} * ${worldPos.associatedVariableName}).z;\n`;
             }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
@@ -1114,27 +1120,24 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const normalShading = this.perturbedNormal;
 
         let worldPosVarName = this.worldPosition.associatedVariableName;
+        let worldPosVarName4 = this.worldPosition.associatedVariableName;
         let worldNormalVarName = this.worldNormal.associatedVariableName;
         if (this.generateOnlyFragmentCode) {
             worldPosVarName = state._getFreeVariableName("globalWorldPos");
-            state._emitFunction(
-                "pbr_globalworldpos",
-                isWebGPU ? `var<private> ${worldPosVarName}:vec3${state.fSuffix};\n` : `vec3${state.fSuffix} ${worldPosVarName};\n`,
-                comments
-            );
+            state._emitFunction("pbr_globalworldpos", `${state._declareLocalVar(worldPosVarName, NodeMaterialBlockConnectionPointTypes.Vector3, false, true)};\n`, comments);
             state.compilationString += `${worldPosVarName} = ${this.worldPosition.associatedVariableName}.xyz;\n`;
 
+            worldPosVarName4 = state._getFreeVariableName("globalWorldPos4");
+            state._emitFunction("pbr_globalworldpos4", `${state._declareLocalVar(worldPosVarName4, NodeMaterialBlockConnectionPointTypes.Vector4, false, true)};\n`, comments);
+            state.compilationString += `${worldPosVarName4} = ${this.worldPosition.associatedVariableName};\n`;
+
             worldNormalVarName = state._getFreeVariableName("globalWorldNormal");
-            state._emitFunction(
-                "pbr_globalworldnorm",
-                isWebGPU ? `var<private> ${worldNormalVarName}:vec4${state.fSuffix};\n` : `vec4${state.fSuffix} ${worldNormalVarName};\n`,
-                comments
-            );
+            state._emitFunction("pbr_globalworldnorm", `${state._declareLocalVar(worldNormalVarName, NodeMaterialBlockConnectionPointTypes.Vector4, false, true)};\n`, comments);
             state.compilationString += `${worldNormalVarName} = ${this.worldNormal.associatedVariableName};\n`;
 
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
-                substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${this.worldPosition.associatedVariableName}` : undefined,
+                substitutionVars: `worldPos,${this.worldPosition.associatedVariableName}`,
             });
 
             state.compilationString += `#if DEBUGMODE > 0\n`;
@@ -1175,6 +1178,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // Includes
         //
         if (!this.light) {
+            if (this.generateOnlyFragmentCode && this.view.isConnected) {
+                state.compilationString += `${state._declareLocalVar("vViewDepth", NodeMaterialBlockConnectionPointTypes.Float)} = (${this.view.associatedVariableName} * ${worldPosVarName4}).z;\n`;
+            }
+
             // Emit for all lights
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
                 repeatKey: "maxSimultaneousLights",
@@ -1216,6 +1223,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("pbrBlockAmbientOcclusion", comments);
         state._emitFunctionFromInclude("pbrBlockAlphaFresnel", comments);
         state._emitFunctionFromInclude("pbrBlockAnisotropic", comments);
+
+        if (!isWebGPU) {
+            // In WebGPU, those functions are part of pbrDirectLightingFunctions
+            state._emitFunctionFromInclude("pbrClusteredLightingFunctions", comments);
+        }
 
         //
         // code
@@ -1410,9 +1422,18 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 ],
             });
         } else {
+            let substitutionVars = `vPositionW,${worldPosVarName}.xyz`;
+
+            if (isWebGPU) {
+                substitutionVars = "fragmentInputs." + substitutionVars;
+                if (this.generateOnlyFragmentCode) {
+                    substitutionVars += `,fragmentInputs.vViewDepth,vViewDepth`;
+                }
+            }
+
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",
-                substitutionVars: `${isWebGPU ? "fragmentInputs." : ""}vPositionW,${worldPosVarName}.xyz,uniforms.vReflectivityColor,vReflectivityColor`,
+                substitutionVars: substitutionVars + ",uniforms.vReflectivityColor,vReflectivityColor",
             });
         }
 

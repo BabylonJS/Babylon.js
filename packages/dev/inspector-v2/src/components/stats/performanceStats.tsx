@@ -5,6 +5,7 @@ import type { FunctionComponent } from "react";
 import { useEffect, useState } from "react";
 
 import { PerfCollectionStrategy } from "core/Misc/PerformanceViewer/performanceViewerCollectionStrategies";
+import "core/Misc/PerformanceViewer/performanceViewerSceneExtension";
 import { PressureObserverWrapper } from "core/Misc/pressureObserverWrapper";
 import { Tools } from "core/Misc/tools";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";

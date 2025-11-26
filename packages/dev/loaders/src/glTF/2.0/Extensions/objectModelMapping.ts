@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import type { TransformNode } from "core/Meshes/transformNode";
-import type { IAnimation, ICamera, IGLTF, IKHRLightsPunctual_Light, IMaterial, IMesh, INode } from "../glTFLoaderInterfaces";
+import type { IAnimation, ICamera, IGLTF, IKHRLightsPunctual_Light, IEXTLightsArea_Light, IMaterial, IMesh, INode } from "../glTFLoaderInterfaces";
 import type { Vector3 } from "core/Maths/math.vector";
 import { Matrix, Quaternion, Vector2 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
@@ -17,6 +17,7 @@ import type { IInterpolationPropertyInfo, IObjectAccessor } from "core/FlowGraph
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { AnimationGroup } from "core/Animations/animationGroup";
 import type { Mesh } from "core/Meshes/mesh";
+import type { RectAreaLight } from "core/Lights/rectAreaLight";
 
 export interface IGLTFObjectModelTree {
     cameras: IGLTFObjectModelTreeCamerasObject;
@@ -50,6 +51,9 @@ export interface IGLTFObjectModelTreeNodesObject<GLTFTargetType = INode, Babylon
             EXT_lights_ies?: {
                 multiplier: IObjectAccessor<INode, Light, number>;
                 color: IObjectAccessor<INode, Light, Color3>;
+            };
+            KHR_node_visibility?: {
+                visible: IObjectAccessor<INode, Mesh, boolean>;
             };
         };
     };
@@ -252,6 +256,20 @@ export interface IGLTFObjectModelTreeExtensionsObject {
             };
         };
     };
+    EXT_lights_area: {
+        lights: {
+            length: IObjectAccessor<IEXTLightsArea_Light[], Light[], number>;
+            __array__: {
+                __target__: boolean;
+                color: IObjectAccessor<IEXTLightsArea_Light, Light, Color3>;
+                intensity: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
+                size: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
+                rect: {
+                    aspect: IObjectAccessor<IEXTLightsArea_Light, Light, number>;
+                };
+            };
+        };
+    };
     EXT_lights_ies: {
         lights: {
             length: IObjectAccessor<IKHRLightsPunctual_Light[], Light[], number>;
@@ -382,6 +400,20 @@ const nodesTree: IGLTFObjectModelTreeNodesObject = {
                             if (light) {
                                 light.diffuse = value;
                             }
+                        }
+                    },
+                },
+            },
+            KHR_node_visibility: {
+                visible: {
+                    type: "boolean",
+                    get: (node: INode) => {
+                        return node._primitiveBabylonMeshes ? node._primitiveBabylonMeshes[0].isVisible : false;
+                    },
+                    getTarget: () => undefined, // TODO: what should this return?
+                    set: (value: boolean, node: INode) => {
+                        if (node._primitiveBabylonMeshes) {
+                            node._primitiveBabylonMeshes.forEach((mesh) => (mesh.isVisible = value));
                         }
                     },
                 },
@@ -898,6 +930,50 @@ const extensionsTree: IGLTFObjectModelTreeExtensionsObject = {
                         set: (value: number, light: IKHRLightsPunctual_Light) => (light._babylonLight ? ((light._babylonLight as SpotLight).angle = value) : undefined),
                         getTarget: (light: IKHRLightsPunctual_Light) => light._babylonLight,
                         getPropertyName: [(_light: IKHRLightsPunctual_Light) => "outerConeAngle"],
+                    },
+                },
+            },
+        },
+    },
+    EXT_lights_area: {
+        lights: {
+            length: {
+                type: "number",
+                get: (lights: IEXTLightsArea_Light[]) => lights.length,
+                getTarget: (lights: IEXTLightsArea_Light[]) => lights.map((light) => light._babylonLight!),
+                getPropertyName: [(_lights: IEXTLightsArea_Light[]) => "length"],
+            },
+            __array__: {
+                __target__: true,
+                color: {
+                    type: "Color3",
+                    get: (light: IEXTLightsArea_Light) => light._babylonLight?.diffuse,
+                    set: (value: Color3, light: IEXTLightsArea_Light) => light._babylonLight?.diffuse.copyFrom(value),
+                    getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
+                    getPropertyName: [(_light: IEXTLightsArea_Light) => "diffuse"],
+                },
+                intensity: {
+                    type: "number",
+                    get: (light: IEXTLightsArea_Light) => light._babylonLight?.intensity,
+                    set: (value: number, light: IEXTLightsArea_Light) => (light._babylonLight ? (light._babylonLight.intensity = value) : undefined),
+                    getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
+                    getPropertyName: [(_light: IEXTLightsArea_Light) => "intensity"],
+                },
+                size: {
+                    type: "number",
+                    get: (light: IEXTLightsArea_Light) => (light._babylonLight as RectAreaLight)?.height,
+                    set: (value: number, light: IEXTLightsArea_Light) => (light._babylonLight ? ((light._babylonLight as RectAreaLight).height = value) : undefined),
+                    getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
+                    getPropertyName: [(_light: IEXTLightsArea_Light) => "size"],
+                },
+                rect: {
+                    aspect: {
+                        type: "number",
+                        get: (light: IEXTLightsArea_Light) => (light._babylonLight as RectAreaLight)?.width / (light._babylonLight as RectAreaLight)?.height,
+                        set: (value: number, light: IEXTLightsArea_Light) =>
+                            light._babylonLight ? ((light._babylonLight as RectAreaLight).width = value * (light._babylonLight as RectAreaLight).height) : undefined,
+                        getTarget: (light: IEXTLightsArea_Light) => light._babylonLight,
+                        getPropertyName: [(_light: IEXTLightsArea_Light) => "aspect"],
                     },
                 },
             },

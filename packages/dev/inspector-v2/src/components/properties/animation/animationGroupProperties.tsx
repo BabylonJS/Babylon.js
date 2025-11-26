@@ -1,14 +1,17 @@
+import type { FunctionComponent } from "react";
+
+import { useCallback } from "react";
+
 import type { AnimationGroup } from "core/Animations/animationGroup";
-import { useCallback, type FunctionComponent } from "react";
 import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
-import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
-import { BoundProperty } from "../boundProperty";
-import { useObservableState } from "../../../hooks/observableHooks";
-import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
-import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { useProperty } from "../../../hooks/compoundPropertyHooks";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
+import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
+import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
+import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
+import { useProperty } from "../../../hooks/compoundPropertyHooks";
+import { useObservableState } from "../../../hooks/observableHooks";
+import { BoundProperty } from "../boundProperty";
 
 interface ICurrentFrameHolder {
     currentFrame: number;

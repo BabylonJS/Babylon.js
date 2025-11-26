@@ -17,6 +17,7 @@ type MessageBarProps = {
     intent: "info" | "success" | "warning" | "error";
 };
 export const MessageBar: FunctionComponent<MessageBarProps> = (props) => {
+    MessageBar.displayName = "MessageBar";
     const { message, title: header, intent, docLink } = props;
     const classes = useClasses();
 
@@ -29,9 +30,7 @@ export const MessageBar: FunctionComponent<MessageBarProps> = (props) => {
                     {docLink && (
                         <>
                             {" - "}
-                            <Link href={docLink} target="_blank" rel="noopener noreferrer">
-                                Learn More
-                            </Link>
+                            <Link url={docLink} value="Learn More" />
                         </>
                     )}
                 </MessageBarBody>

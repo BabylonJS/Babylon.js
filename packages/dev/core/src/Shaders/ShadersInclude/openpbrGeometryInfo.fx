@@ -6,7 +6,6 @@ struct geometryInfoOutParams
     float horizonOcclusion;
 };
 
-#ifdef ANISOTROPIC
 struct geometryInfoAnisoOutParams
 {
     float NdotV;
@@ -18,7 +17,6 @@ struct geometryInfoAnisoOutParams
     vec3 anisotropicBitangent;
     mat3 TBN;
 };
-#endif
 
 #define pbr_inline
 geometryInfoOutParams geometryInfo(
@@ -51,7 +49,6 @@ geometryInfoOutParams geometryInfo(
     return outParams;
 }
 
-#ifdef ANISOTROPIC
 #define pbr_inline
 geometryInfoAnisoOutParams geometryInfoAniso(
     in vec3 normalW, in vec3 viewDirectionW, in float roughness, in vec3 geometricNormalW
@@ -73,4 +70,3 @@ geometryInfoAnisoOutParams geometryInfoAniso(
 
     return outParams;
 }
-#endif

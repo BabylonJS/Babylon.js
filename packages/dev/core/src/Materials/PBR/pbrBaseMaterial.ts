@@ -283,6 +283,9 @@ export class PBRMaterialDefines extends ImageProcessingDefinesMixin(PBRMaterialD
     public DEBUGMODE = 0;
     public USE_VERTEX_PULLING = false;
 
+    public CLUSTLIGHT_SLICES = 0;
+    public CLUSTLIGHT_BATCH = 0;
+
     /**
      * Initializes the PBR Material defines.
      * @param externalProperties The external properties
@@ -1809,7 +1812,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                 this._applyDecalMapAfterDetailMap,
                 this._useVertexPulling,
                 renderingMesh,
-                this._setVertexOutputInvariant
+                this._isVertexOutputInvariant
             );
             defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
             defines.DEBUGMODE = this._debugMode;
@@ -2066,7 +2069,7 @@ export abstract class PBRBaseMaterial extends PBRBaseMaterialBase {
                         }
                     }
 
-                    BindIBLParameters(scene, defines, ubo, reflectionTexture, this.realTimeFiltering, true, true, true, true, true, this._reflectionColor);
+                    BindIBLParameters(scene, defines, ubo, this._reflectionColor, reflectionTexture, this.realTimeFiltering, true, true, true, true, true);
                 }
 
                 // Point size

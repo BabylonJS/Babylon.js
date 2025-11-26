@@ -11,6 +11,7 @@ type SyncedSliderPropertyProps = SyncedSliderProps & PropertyLineProps<number>;
  * @returns
  */
 export const SyncedSliderPropertyLine = forwardRef<HTMLDivElement, SyncedSliderPropertyProps>((props, ref): React.ReactElement => {
+    SyncedSliderPropertyLine.displayName = "SyncedSliderPropertyLine";
     const { label, description, ...sliderProps } = props;
     return (
         <PropertyLine ref={ref} {...props}>

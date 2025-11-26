@@ -188,15 +188,6 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
         }
 
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
-
-        this.onTexturesAllocatedObservable.add((context) => {
-            for (let i = 0; i < this._blurX.length; i++) {
-                this._blurX[i].onTexturesAllocatedObservable.notifyObservers(context);
-                this._blurY[i].onTexturesAllocatedObservable.notifyObservers(context);
-            }
-
-            context.setTextureSamplingMode(this._blurY[this._blurY.length - 1].targetTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
-        });
     }
 
     public override isReady() {
@@ -364,6 +355,8 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
             pass.setRenderTargetDepth(this.objectRendererTask.depthTexture);
         }
         pass.setExecuteFunc((context) => {
+            context.setTextureSamplingMode(this._blurY[this._blurY.length - 1].targetTexture!, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+
             if (!this.layer.bindTexturesForCompose) {
                 this.layer.bindTexturesForCompose = (effect: Effect) => {
                     for (let i = 0; i < this._blurY.length; i++) {

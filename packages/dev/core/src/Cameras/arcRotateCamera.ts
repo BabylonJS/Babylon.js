@@ -1040,8 +1040,10 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         this.inputs.checkInputs();
-
         let hasUserInteractions = false;
+
+        const inertialPanningLimit = this.speed * this._panningEpsilon;
+        const inertialRotationLimit = this.speed * this._rotationEpsilon;
 
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
@@ -1062,13 +1064,13 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialAlphaOffset *= this.inertia;
             this.inertialBetaOffset *= this.inertia;
             this.inertialRadiusOffset *= this.inertia;
-            if (Math.abs(this.inertialAlphaOffset) < Epsilon) {
+            if (Math.abs(this.inertialAlphaOffset) < inertialRotationLimit) {
                 this.inertialAlphaOffset = 0;
             }
-            if (Math.abs(this.inertialBetaOffset) < Epsilon) {
+            if (Math.abs(this.inertialBetaOffset) < inertialRotationLimit) {
                 this.inertialBetaOffset = 0;
             }
-            if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon) {
+            if (Math.abs(this.inertialRadiusOffset) < inertialRotationLimit) {
                 this.inertialRadiusOffset = 0;
             }
         }
@@ -1114,10 +1116,10 @@ export class ArcRotateCamera extends TargetCamera {
             this.inertialPanningX *= this.panningInertia;
             this.inertialPanningY *= this.panningInertia;
 
-            if (Math.abs(this.inertialPanningX) < this.speed * Epsilon) {
+            if (Math.abs(this.inertialPanningX) < inertialPanningLimit) {
                 this.inertialPanningX = 0;
             }
-            if (Math.abs(this.inertialPanningY) < this.speed * Epsilon) {
+            if (Math.abs(this.inertialPanningY) < inertialPanningLimit) {
                 this.inertialPanningY = 0;
             }
         }

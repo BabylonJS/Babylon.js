@@ -92,7 +92,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
             this.play(options);
         }
 
-        this.engine._addNode(this);
+        this.engine._addSound(this);
     }
 
     /** @internal */
@@ -127,7 +127,7 @@ export class _WebAudioStreamingSound extends StreamingSound implements IWebAudio
 
         this._subGraph.dispose();
 
-        this.engine._removeNode(this);
+        this.engine._removeSound(this);
     }
 
     /** @internal */
@@ -221,6 +221,8 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
             this._initFromUrls(sound._source);
         } else if (sound._source instanceof HTMLMediaElement) {
             this._initFromMediaElement(sound._source);
+        } else {
+            throw new Error(`Invalid streaming sound source (${sound._source}).`);
         }
     }
 
@@ -239,7 +241,7 @@ class _WebAudioStreamingSoundInstance extends _StreamingSoundInstance implements
 
         if (restart) {
             this._mediaElement.pause();
-            this._setState(SoundState.Stopped);
+            this._state = SoundState.Stopped;
         }
 
         this._options.startOffset = value;

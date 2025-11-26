@@ -586,6 +586,13 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the coat index of refraction (IOR).
+     */
+    public set coatIor(value: number) {
+        this._material.clearCoat.indexOfRefraction = value;
+    }
+
+    /**
      * Sets the coat darkening value.
      * Note: PBR doesn't have a direct coat darkening property, so this is a no-op.
      * @param value The coat darkening value (ignored for PBR)
@@ -842,6 +849,20 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Sets the fuzz weight texture.
+     * @param value The fuzz weight texture or null
+     */
+    public set fuzzWeightTexture(value: Nullable<BaseTexture>) {
+        // PBRMaterial sheen supports glTF-style sheen which doesn't
+        // use a separate texture for intensity. So we'll only set the
+        // weight texture if none is already assigned. If one's already
+        // assigned, we assume it contains the sheen color data.
+        if (!this._material.sheen.texture) {
+            this._material.sheen.texture = value;
+        }
+    }
+
+    /**
      * Sets the sheen color (mapped to PBR sheen.color).
      * Automatically enables sheen.
      * @param value The sheen color as a Color3
@@ -857,7 +878,6 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * @param value The sheen color texture or null
      */
     public set fuzzColorTexture(value: Nullable<BaseTexture>) {
-        this._material.sheen.isEnabled = true;
         this._material.sheen.texture = value;
     }
 
@@ -949,58 +969,48 @@ export class PBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
      * Automatically enables iridescence.
      * @param value The iridescence intensity value
      */
-    public set iridescenceWeight(value: number) {
-        this._material.iridescence.isEnabled = true;
+    public set thinFilmWeight(value: number) {
+        this._material.iridescence.isEnabled = value > 0;
         this._material.iridescence.intensity = value;
     }
 
     /**
      * Sets the iridescence IOR (mapped to PBR iridescence.indexOfRefraction).
-     * Automatically enables iridescence.
      * @param value The iridescence IOR value
      */
-    public set iridescenceIor(value: number) {
-        this._material.iridescence.isEnabled = true;
+    public set thinFilmIor(value: number) {
         this._material.iridescence.indexOfRefraction = value;
     }
 
     /**
      * Sets the iridescence thickness minimum (mapped to PBR iridescence.minimumThickness).
-     * Automatically enables iridescence.
      * @param value The minimum thickness value in nanometers
      */
-    public set iridescenceThicknessMinimum(value: number) {
-        this._material.iridescence.isEnabled = true;
+    public set thinFilmThicknessMinimum(value: number) {
         this._material.iridescence.minimumThickness = value;
     }
 
     /**
      * Sets the iridescence thickness maximum (mapped to PBR iridescence.maximumThickness).
-     * Automatically enables iridescence.
      * @param value The maximum thickness value in nanometers
      */
-    public set iridescenceThicknessMaximum(value: number) {
-        this._material.iridescence.isEnabled = true;
+    public set thinFilmThicknessMaximum(value: number) {
         this._material.iridescence.maximumThickness = value;
     }
 
     /**
-     * Sets the iridescence texture (mapped to PBR iridescence.texture).
-     * Automatically enables iridescence.
-     * @param value The iridescence intensity texture or null
+     * Sets the thin film weight texture (mapped to PBR iridescence.texture).
+     * @param value The thin film weight texture or null
      */
-    public set iridescenceTexture(value: Nullable<BaseTexture>) {
-        this._material.iridescence.isEnabled = true;
+    public set thinFilmWeightTexture(value: Nullable<BaseTexture>) {
         this._material.iridescence.texture = value;
     }
 
     /**
      * Sets the iridescence thickness texture (mapped to PBR iridescence.thicknessTexture).
-     * Automatically enables iridescence.
      * @param value The iridescence thickness texture or null
      */
-    public set iridescenceThicknessTexture(value: Nullable<BaseTexture>) {
-        this._material.iridescence.isEnabled = true;
+    public set thinFilmThicknessTexture(value: Nullable<BaseTexture>) {
         this._material.iridescence.thicknessTexture = value;
     }
 

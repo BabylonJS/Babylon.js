@@ -133,6 +133,12 @@ export class Particle {
     public _currentVelocity2 = 0;
 
     /** @internal */
+    public _directionScale: number;
+
+    /** @internal */
+    public _scaledDirection = Vector3.Zero();
+
+    /** @internal */
     public _currentLimitVelocityGradient: Nullable<FactorGradient>;
     /** @internal */
     public _currentLimitVelocity1 = 0;

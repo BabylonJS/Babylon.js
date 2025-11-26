@@ -105,9 +105,9 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         var NdotH: f32 = saturateEps(dot(N, info.H));
         var roughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(roughness);
-
+        var modifiedFresnel: vec3f = fresnel;
         #ifdef IRIDESCENCE
-            fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
+            modifiedFresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
         #endif
 
         var distribution: f32 = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
@@ -118,7 +118,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             var smithVisibility: f32 = smithVisibility_TrowbridgeReitzGGXFast(info.NdotL, info.NdotV, alphaG);
         #endif
 
-        var specTerm: vec3f = fresnel * distribution * smithVisibility;
+        var specTerm: vec3f = modifiedFresnel * distribution * smithVisibility;
         return specTerm * info.attenuation * info.NdotL * lightColor;
     }
 
@@ -128,6 +128,34 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
             return specularColor * fresnel * info.areaLightSpecular;
         }
     #endif
+#endif
+
+#ifdef FUZZ
+fn evalFuzz(L: vec3f, NdotL: f32, NdotV: f32, T: vec3f, B: vec3f, ltcLut: vec3f) -> f32
+{
+    // Cosine terms
+    if (NdotL <= 0.0f || NdotV <= 0.0f) {
+        return 0.0f;
+    }
+
+    // === 3. Build LTC transform ===
+    // This matrix warps the hemisphere to match the BRDF shape
+    let M = mat3x3f(
+        vec3f(ltcLut.r, 0.0f, 0.0f),
+        vec3f(ltcLut.g, 1.0f, 0.0f),
+        vec3f(0.0f, 0.0f, 1.0f)
+    );
+
+    // === 4. Transform light direction to local tangent space ===
+    let Llocal: vec3f = vec3f(dot(L, T), dot(L, B), NdotL);
+
+    // Apply the LTC transform
+    let Lwarp: vec3f = normalize(M * Llocal);
+
+    // === 5. Compute projected cosine term ===
+    let cosThetaWarp: f32 = max(Lwarp.z, 0.0f);
+    return cosThetaWarp * NdotL;
+}
 #endif
 
 #if defined(ANISOTROPIC) && defined(ANISOTROPIC_OPENPBR)
@@ -226,7 +254,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     }
 #endif
 
-#ifdef CLUSTLIGHT_BATCH
+#if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
 #include<clusteredLightingFunctions>
 
     fn computeClusteredLighting(

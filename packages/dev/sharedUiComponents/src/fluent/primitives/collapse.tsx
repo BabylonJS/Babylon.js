@@ -27,6 +27,7 @@ const useCollapseStyles = makeStyles({
  * @returns
  */
 export const Collapse: FunctionComponent<PropsWithChildren<CollapseProps>> = (props) => {
+    Collapse.displayName = "Collapse";
     const classes = useCollapseStyles();
     return (
         <FluentCollapse visible={props.visible} orientation={props.orientation}>

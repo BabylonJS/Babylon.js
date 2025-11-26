@@ -338,13 +338,19 @@ export class SceneSerializer {
         // Particles Systems
         serializationObject.particleSystems = [];
         for (index = 0; index < scene.particleSystems.length; index++) {
-            serializationObject.particleSystems.push(scene.particleSystems[index].serialize(false));
+            const particleSystem = scene.particleSystems[index];
+            if (!particleSystem.doNotSerialize) {
+                serializationObject.particleSystems.push(particleSystem.serialize(false));
+            }
         }
 
         // Post processes
         serializationObject.postProcesses = [];
         for (index = 0; index < scene.postProcesses.length; index++) {
-            serializationObject.postProcesses.push(scene.postProcesses[index].serialize());
+            const postProcess = scene.postProcesses[index];
+            if (!postProcess.doNotSerialize) {
+                serializationObject.postProcesses.push(postProcess.serialize());
+            }
         }
 
         // Action Manager
@@ -361,7 +367,10 @@ export class SceneSerializer {
         if (scene.spriteManagers) {
             serializationObject.spriteManagers = [];
             for (index = 0; index < scene.spriteManagers.length; index++) {
-                serializationObject.spriteManagers.push(scene.spriteManagers[index].serialize(true));
+                const spriteManager = scene.spriteManagers[index];
+                if (!spriteManager.doNotSerialize) {
+                    serializationObject.spriteManagers.push(spriteManager.serialize(true));
+                }
             }
         }
 

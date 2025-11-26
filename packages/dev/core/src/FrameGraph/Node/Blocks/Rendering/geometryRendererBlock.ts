@@ -12,6 +12,8 @@ import { Constants } from "core/Engines/constants";
 export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     protected override _frameGraphTask: FrameGraphGeometryRendererTask;
 
+    public override _additionalConstructionParameters: [boolean, boolean];
+
     /**
      * Gets the frame graph task associated with this block
      */
@@ -25,11 +27,12 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
      * @param frameGraph defines the hosting frame graph
      * @param scene defines the hosting scene
      * @param doNotChangeAspectRatio True (default) to not change the aspect ratio of the scene in the RTT
+     * @param enableClusteredLights True (default) to enable clustered lights
      */
-    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, doNotChangeAspectRatio = true) {
+    public constructor(name: string, frameGraph: FrameGraph, scene: Scene, doNotChangeAspectRatio = true, enableClusteredLights = true) {
         super(name, frameGraph, scene);
 
-        this._additionalConstructionParameters = [doNotChangeAspectRatio];
+        this._additionalConstructionParameters = [doNotChangeAspectRatio, enableClusteredLights];
 
         this.registerInput("depth", NodeRenderGraphBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("camera", NodeRenderGraphBlockConnectionPointTypes.Camera);
@@ -55,7 +58,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
         this.outputDepth._typeConnectionSource = this.depth;
 
-        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, frameGraph, scene, { doNotChangeAspectRatio });
+        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, frameGraph, scene, { doNotChangeAspectRatio, enableClusteredLights });
     }
 
     /** Indicates if depth testing must be enabled or disabled */
@@ -78,12 +81,6 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.depthWrite = value;
     }
 
-    /** True (default) to not change the aspect ratio of the scene in the RTT */
-    @editableInPropertyPage("Do not change aspect ratio", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get doNotChangeAspectRatio() {
-        return this._frameGraphTask.objectRenderer.options.doNotChangeAspectRatio;
-    }
-
     /** Indicates if layer mask check must be forced */
     @editableInPropertyPage("Force layer mask check", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public get forceLayerMaskCheck() {
@@ -94,30 +91,55 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.forceLayerMaskCheck = value;
     }
 
-    public set doNotChangeAspectRatio(value: boolean) {
+    protected _recreateFrameGraphObject(doNotChangeAspectRatio: boolean, enableClusteredLights: boolean): void {
         const disabled = this._frameGraphTask.disabled;
         const depthTest = this.depthTest;
         const depthWrite = this.depthWrite;
         const width = this.width;
         const height = this.height;
+        const forceLayerMaskCheck = this.forceLayerMaskCheck;
         const sizeInPercentage = this.sizeInPercentage;
         const samples = this.samples;
         const reverseCulling = this.reverseCulling;
         const dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
 
         this._frameGraphTask.dispose();
-        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, this._frameGraph, this._scene, { doNotChangeAspectRatio: value });
-        this._additionalConstructionParameters = [value];
+        this._frameGraphTask = new FrameGraphGeometryRendererTask(this.name, this._frameGraph, this._scene, {
+            doNotChangeAspectRatio: doNotChangeAspectRatio,
+            enableClusteredLights: enableClusteredLights,
+        });
+        this._additionalConstructionParameters = [doNotChangeAspectRatio, enableClusteredLights];
 
         this.depthTest = depthTest;
         this.depthWrite = depthWrite;
         this.width = width;
         this.height = height;
+        this.forceLayerMaskCheck = forceLayerMaskCheck;
         this.sizeInPercentage = sizeInPercentage;
         this.samples = samples;
         this.reverseCulling = reverseCulling;
         this.dontRenderWhenMaterialDepthWriteIsDisabled = dontRenderWhenMaterialDepthWriteIsDisabled;
         this._frameGraphTask.disabled = disabled;
+    }
+
+    /** True (default) to not change the aspect ratio of the scene in the RTT */
+    @editableInPropertyPage("Do not change aspect ratio", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get doNotChangeAspectRatio() {
+        return this._frameGraphTask.objectRenderer.options.doNotChangeAspectRatio;
+    }
+
+    public set doNotChangeAspectRatio(value: boolean) {
+        this._recreateFrameGraphObject(value, this.enableClusteredLights);
+    }
+
+    /** True (default) to enable clustered lights */
+    @editableInPropertyPage("Enable clustered lights", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get enableClusteredLights() {
+        return this._frameGraphTask.objectRenderer.options.enableClusteredLights;
+    }
+
+    public set enableClusteredLights(value: boolean) {
+        this._recreateFrameGraphObject(this.doNotChangeAspectRatio, value);
     }
 
     /** Width of the geometry texture */
@@ -178,6 +200,26 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
 
     public set dontRenderWhenMaterialDepthWriteIsDisabled(value: boolean) {
         this._frameGraphTask.dontRenderWhenMaterialDepthWriteIsDisabled = value;
+    }
+
+    /** If true, MSAA color textures will be resolved at the end of the render pass (default: true) */
+    @editableInPropertyPage("Resolve MSAA colors", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get resolveMSAAColors() {
+        return this._frameGraphTask.resolveMSAAColors;
+    }
+
+    public set resolveMSAAColors(value: boolean) {
+        this._frameGraphTask.resolveMSAAColors = value;
+    }
+
+    /** If true, MSAA depth texture will be resolved at the end of the render pass (default: false) */
+    @editableInPropertyPage("Resolve MSAA depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
+    public get resolveMSAADepth() {
+        return this._frameGraphTask.resolveMSAADepth;
+    }
+
+    public set resolveMSAADepth(value: boolean) {
+        this._frameGraphTask.resolveMSAADepth = value;
     }
 
     // View depth
@@ -255,7 +297,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
     public linearVelocityFormat = Constants.TEXTUREFORMAT_RGBA;
 
     @editableInPropertyPage("Linear velocity type", PropertyTypeForEdition.TextureType, "GEOMETRY BUFFERS")
-    public linearVelocityType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    public linearVelocityType = Constants.TEXTURETYPE_HALF_FLOAT;
 
     /**
      * Gets the current class name
@@ -461,6 +503,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.depthTest = ${this.depthTest};`);
         codes.push(`${this._codeVariableName}.depthWrite = ${this.depthWrite};`);
+        codes.push(`${this._codeVariableName}.forceLayerMaskCheck = ${this.forceLayerMaskCheck};`);
         codes.push(`${this._codeVariableName}.samples = ${this.samples};`);
         codes.push(`${this._codeVariableName}.reverseCulling = ${this.reverseCulling};`);
         codes.push(`${this._codeVariableName}.dontRenderWhenMaterialDepthWriteIsDisabled = ${this.dontRenderWhenMaterialDepthWriteIsDisabled};`);
@@ -486,6 +529,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         codes.push(`${this._codeVariableName}.velocityType = ${this.velocityType};`);
         codes.push(`${this._codeVariableName}.linearVelocityFormat = ${this.linearVelocityFormat};`);
         codes.push(`${this._codeVariableName}.linearVelocityType = ${this.linearVelocityType};`);
+        codes.push(`${this._codeVariableName}.resolveMSAAColors = ${this.resolveMSAAColors};`);
+        codes.push(`${this._codeVariableName}.resolveMSAADepth = ${this.resolveMSAADepth};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -493,6 +538,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         const serializationObject = super.serialize();
         serializationObject.depthTest = this.depthTest;
         serializationObject.depthWrite = this.depthWrite;
+        serializationObject.forceLayerMaskCheck = this.forceLayerMaskCheck;
         serializationObject.samples = this.samples;
         serializationObject.reverseCulling = this.reverseCulling;
         serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled = this.dontRenderWhenMaterialDepthWriteIsDisabled;
@@ -518,6 +564,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         serializationObject.velocityType = this.velocityType;
         serializationObject.linearVelocityFormat = this.linearVelocityFormat;
         serializationObject.linearVelocityType = this.linearVelocityType;
+        serializationObject.resolveMSAAColors = this.resolveMSAAColors;
+        serializationObject.resolveMSAADepth = this.resolveMSAADepth;
         return serializationObject;
     }
 
@@ -525,6 +573,7 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         super._deserialize(serializationObject);
         this.depthTest = serializationObject.depthTest;
         this.depthWrite = serializationObject.depthWrite;
+        this.forceLayerMaskCheck = !!serializationObject.forceLayerMaskCheck;
         this.samples = serializationObject.samples;
         this.reverseCulling = serializationObject.reverseCulling;
         this.dontRenderWhenMaterialDepthWriteIsDisabled = serializationObject.dontRenderWhenMaterialDepthWriteIsDisabled;
@@ -550,6 +599,8 @@ export class NodeRenderGraphGeometryRendererBlock extends NodeRenderGraphBlock {
         this.velocityType = serializationObject.velocityType;
         this.linearVelocityFormat = serializationObject.linearVelocityFormat;
         this.linearVelocityType = serializationObject.linearVelocityType;
+        this.resolveMSAAColors = serializationObject.resolveMSAAColors ?? true;
+        this.resolveMSAADepth = serializationObject.resolveMSAADepth ?? false;
     }
 }
 

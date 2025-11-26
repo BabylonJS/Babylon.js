@@ -70,8 +70,7 @@ export * from "./snapshotRenderingHelper";
 // eslint-disable-next-line import/export
 export * from "./observableCoroutine";
 export * from "./copyTextureToTexture";
-/** @deprecated Use individual exports */
-export { DumpTools } from "./dumpTools";
+export { DumpTools, EncodeImageAsync } from "./dumpTools";
 export * from "./greasedLineTools";
 export * from "./equirectangularCapture";
 export * from "./decorators.serialization";
@@ -89,3 +88,5 @@ export * from "../ShadersWGSL/rgbdEncode.fragment";
 // CopyTextureToTexture
 export * from "../Shaders/copyTextureToTexture.fragment";
 export * from "../ShadersWGSL/copyTextureToTexture.fragment";
+
+export * from "./tools.internals";

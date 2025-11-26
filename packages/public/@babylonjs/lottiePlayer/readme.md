@@ -42,12 +42,14 @@ script-src is used by the scripts the worker references, like the classes it nee
 
 - Prefer to use the class Player that uses an Offscreen canvas and the worker thread. If for some reason that is not available to you, you can use LocalPlayer and call playAnimationAsync which renders in the main JS thread.
 
-- Only certain features of the Lottie format are currently supported.
-    - Layers: null, shape, text
-    - Animations: translation, rotation, scale, opacity on layers (no animations supported on shapes/fills/text themselves)
-    - Shapes: rectangle, rounded corner rectangle, vector path
-    - Fills: regular fill, gradient fill, radial fill, stroke fill
-    - Text: each text layer should contain a single line of text, and the same styling and animations should be applying to the whole line
-- More features may be added in the future but there is no timeline for them.
+- Only certain features of the Lottie format are currently supported:
+  - Layers: null, shape, text
+  - Parenting: layers with layers, layers with groups
+  - Layer Animations: translation, rotation, scale, opacity (we apply animations to the layer rather than the individual shapes/fills/text within the layer)
+  - Shapes: rectangle, rounded corner rectangle, vector path
+  - Shapes fills: regular fill, gradient fill, radial fill, stroke fill
+  - Text: font, size, weight, alignment, fill color. Each text layer must contain a single line of text
+  - Variables: for text strings and text fill color (useful for localization and themes)
+- More features may be added in the future but there is no timeline for them
 
 **- This is a highly experimental feature, use it at your own risk :)**

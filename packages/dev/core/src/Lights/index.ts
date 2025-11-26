@@ -10,3 +10,5 @@ export * from "./areaLight";
 export * from "./rectAreaLight";
 export * from "./Clustered/index";
 export * from "./IES/iesLoader";
+export * from "./lightConstants";
+export * from "./lightingVolume";

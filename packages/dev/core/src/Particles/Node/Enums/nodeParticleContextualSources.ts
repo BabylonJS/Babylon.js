@@ -33,4 +33,16 @@ export enum NodeParticleContextualSources {
     InitialColor = 0x0013,
     /** Color Dead*/
     ColorDead = 0x0014,
+    /** Initial Direction */
+    InitialDirection = 0x0015,
+    /** Color Step */
+    ColorStep = 0x0016,
+    /** Scaled Color Step */
+    ScaledColorStep = 0x0017,
+    /** Local Position Updated */
+    LocalPositionUpdated = 0x0018,
+    /** Size */
+    Size = 0x0019,
+    /** Direction Scale */
+    DirectionScale = 0x0020,
 }

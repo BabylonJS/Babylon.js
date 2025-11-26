@@ -81,7 +81,7 @@ export interface INativeEngine {
         bufferLength: number
     ): Promise<ArrayBuffer>;
 
-    createImageBitmap(data: ArrayBufferView | IImage): ImageBitmap;
+    createImageBitmap(data: ArrayBuffer | IImage): ImageBitmap;
     resizeImageBitmap(image: ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array;
 
     createFrameBuffer(
@@ -414,14 +414,35 @@ interface INativeDataStreamConstructor {
     readonly VALIDATION_BOOLEAN: number;
 }
 
+// Note: These values need to match those in Babylon Native's NativeTracing plugin.
+export const enum NativeTraceLevel {
+    Mark = 1,
+    Log = 2,
+}
+
 /** @internal */
 export interface INative {
+    // NativeEngine plugin
     Engine: INativeEngineConstructor;
-    Camera: INativeCameraConstructor;
-    Canvas: INativeCanvasConstructor;
-    Image: INativeImageConstructor;
-    Path2D: INativePath2DConstructor;
-    XMLHttpRequest: any; // TODO: how to do this?
-    DeviceInputSystem: IDeviceInputSystemConstructor;
     NativeDataStream: INativeDataStreamConstructor;
+
+    // NativeCamera plugin
+    Camera?: INativeCameraConstructor;
+
+    // NativeCanvas plugin
+    Canvas?: INativeCanvasConstructor;
+    Image?: INativeImageConstructor;
+    Path2D?: INativePath2DConstructor;
+
+    // Native XMLHttpRequest polyfill
+    XMLHttpRequest?: typeof XMLHttpRequest;
+
+    // NativeInput plugin
+    DeviceInputSystem?: IDeviceInputSystemConstructor;
+
+    // NativeTracing plugin
+    enablePerformanceLogging?(level?: NativeTraceLevel): void;
+    disablePerformanceLogging?(): void;
+    startPerformanceCounter?(counter: string): unknown;
+    endPerformanceCounter?(counter: unknown): void;
 }

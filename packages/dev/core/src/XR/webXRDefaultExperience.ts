@@ -190,17 +190,15 @@ export class WebXRDefaultExperience {
                     renderingGroupId: options.renderingGroupId,
                 };
 
-                result.pointerSelection = <WebXRControllerPointerSelection>(
-                    result.baseExperience.featuresManager.enableFeature(
-                        WebXRControllerPointerSelection.Name,
-                        options.useStablePlugins ? "stable" : "latest",
-                        <IWebXRControllerPointerSelectionOptions>pointerSelectionOptions
-                    )
+                result.pointerSelection = result.baseExperience.featuresManager.enableFeature(
+                    WebXRControllerPointerSelection.Name,
+                    options.useStablePlugins ? "stable" : "latest",
+                    <IWebXRControllerPointerSelectionOptions>pointerSelectionOptions
                 );
 
                 if (!options.disableTeleportation) {
                     // Add default teleportation, including rotation
-                    result.teleportation = <WebXRMotionControllerTeleportation>result.baseExperience.featuresManager.enableFeature(
+                    result.teleportation = result.baseExperience.featuresManager.enableFeature(
                         WebXRMotionControllerTeleportation.Name,
                         options.useStablePlugins ? "stable" : "latest",
                         <IWebXRTeleportationOptions>{
@@ -216,18 +214,16 @@ export class WebXRDefaultExperience {
 
             if (!options.disableNearInteraction) {
                 // Add default pointer selection
-                result.nearInteraction = <WebXRNearInteraction>result.baseExperience.featuresManager.enableFeature(
-                    WebXRNearInteraction.Name,
-                    options.useStablePlugins ? "stable" : "latest",
-                    <IWebXRNearInteractionOptions>{
-                        xrInput: result.input,
-                        farInteractionFeature: result.pointerSelection,
-                        renderingGroupId: options.renderingGroupId,
-                        useUtilityLayer: true,
-                        enableNearInteractionOnAllControllers: true,
-                        ...options.nearInteractionOptions,
-                    }
-                );
+                result.nearInteraction = result.baseExperience.featuresManager.enableFeature(WebXRNearInteraction.Name, options.useStablePlugins ? "stable" : "latest", <
+                    IWebXRNearInteractionOptions
+                >{
+                    xrInput: result.input,
+                    farInteractionFeature: result.pointerSelection,
+                    renderingGroupId: options.renderingGroupId,
+                    useUtilityLayer: true,
+                    enableNearInteractionOnAllControllers: true,
+                    ...options.nearInteractionOptions,
+                });
             }
 
             if (!options.disableHandTracking) {

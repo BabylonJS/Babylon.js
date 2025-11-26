@@ -16,6 +16,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
+import { ThinScreenSpaceCurvaturePostProcess } from "./thinScreenSpaceCurvaturePostProcess";
 
 /**
  * The Screen Space curvature effect can help highlighting ridge and valley of a model.
@@ -25,13 +26,25 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
      * Defines how much ridge the curvature effect displays.
      */
     @serialize()
-    public ridge: number = 1;
+    public get ridge() {
+        return this._effectWrapper.ridge;
+    }
+
+    public set ridge(value: number) {
+        this._effectWrapper.ridge = value;
+    }
 
     /**
      * Defines how much valley the curvature effect displays.
      */
     @serialize()
-    public valley: number = 1;
+    public get valley() {
+        return this._effectWrapper.valley;
+    }
+
+    public set valley(value: number) {
+        this._effectWrapper.valley = value;
+    }
 
     private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
@@ -42,6 +55,8 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
     public override getClassName(): string {
         return "ScreenSpaceCurvaturePostProcess";
     }
+
+    protected override _effectWrapper: ThinScreenSpaceCurvaturePostProcess;
 
     /**
      * Creates a new instance ScreenSpaceCurvaturePostProcess
@@ -66,22 +81,23 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false
     ) {
-        super(
-            name,
-            "screenSpaceCurvature",
-            ["curvature_ridge", "curvature_valley"],
-            ["textureSampler", "normalSampler"],
-            options,
+        const localOptions = {
+            uniforms: ThinScreenSpaceCurvaturePostProcess.Uniforms,
+            samplers: ThinScreenSpaceCurvaturePostProcess.Samplers,
+            size: typeof options === "number" ? options : undefined,
             camera,
             samplingMode,
             engine,
             reusable,
-            undefined,
             textureType,
-            undefined,
-            null,
-            blockCompilation
-        );
+            blockCompilation,
+            ...(options as PostProcessOptions),
+        };
+
+        super(name, ThinScreenSpaceCurvaturePostProcess.FragmentUrl, {
+            effectWrapper: typeof options === "number" || !options.effectWrapper ? new ThinScreenSpaceCurvaturePostProcess(name, engine, localOptions) : undefined,
+            ...localOptions,
+        });
 
         this._geometryBufferRenderer = scene.enableGeometryBufferRenderer();
 
@@ -95,9 +111,6 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
 
             // Geometry buffer renderer is supported.
             this.onApply = (effect: Effect) => {
-                effect.setFloat("curvature_ridge", 0.5 / Math.max(this.ridge * this.ridge, 1e-4));
-                effect.setFloat("curvature_valley", 0.7 / Math.max(this.valley * this.valley, 1e-4));
-
                 const normalTexture = this._geometryBufferRenderer!.getGBuffer().textures[1];
                 effect.setTexture("normalSampler", normalTexture);
             };

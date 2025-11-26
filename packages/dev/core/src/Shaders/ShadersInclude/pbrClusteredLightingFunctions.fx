@@ -1,6 +1,7 @@
 #if defined(CLUSTLIGHT_BATCH) && CLUSTLIGHT_BATCH > 0
 #include<clusteredLightingFunctions>
 
+#define inline
     lightingInfo computeClusteredLighting(
         sampler2D lightDataTexture,
         sampler2D tileMaskTexture,

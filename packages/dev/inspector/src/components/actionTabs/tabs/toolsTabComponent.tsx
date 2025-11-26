@@ -54,6 +54,7 @@ interface IGlbExportOptions {
     exportSkyboxes: boolean;
     exportCameras: boolean;
     exportLights: boolean;
+    dracoCompression: boolean;
 }
 
 export class ToolsTabComponent extends PaneComponent {
@@ -63,7 +64,7 @@ export class ToolsTabComponent extends PaneComponent {
     private _gifOptions = { width: 512, frequency: 200 };
     private _useWidthHeight = false;
     private _isExportingGltf = false;
-    private _gltfExportOptions: IGlbExportOptions = { exportDisabledNodes: false, exportSkyboxes: false, exportCameras: false, exportLights: false };
+    private _gltfExportOptions: IGlbExportOptions = { exportDisabledNodes: false, exportSkyboxes: false, exportCameras: false, exportLights: false, dracoCompression: false };
     private _gifWorkerBlob: Blob;
     private _gifRecorder: any;
     private _previousRenderingScale: number;
@@ -135,6 +136,10 @@ export class ToolsTabComponent extends PaneComponent {
 
     captureRender() {
         const scene = this.props.scene;
+        const currentActiveCamera = scene.activeCamera;
+        if (!currentActiveCamera && scene.frameGraph) {
+            scene.activeCamera = FrameGraphUtils.FindMainCamera(scene.frameGraph);
+        }
         const oldScreenshotSize: IScreenshotSize = {
             height: this._screenShotSize.height,
             width: this._screenShotSize.width,
@@ -146,9 +151,8 @@ export class ToolsTabComponent extends PaneComponent {
         }
         if (scene.activeCamera) {
             Tools.CreateScreenshotUsingRenderTarget(scene.getEngine(), scene.activeCamera, this._screenShotSize, undefined, undefined, 4);
-        } else if (scene.frameGraph) {
-            alert("Capture with RTT is not yet implemented for frame graphs");
         }
+        scene.activeCamera = currentActiveCamera;
         this._screenShotSize = oldScreenshotSize;
     }
 
@@ -300,7 +304,10 @@ export class ToolsTabComponent extends PaneComponent {
             return true;
         };
 
-        GLTF2Export.GLBAsync(scene, "scene", { shouldExportNode: (node) => shouldExport(node) })
+        GLTF2Export.GLBAsync(scene, "scene", {
+            meshCompressionMethod: this._gltfExportOptions.dracoCompression ? "Draco" : undefined,
+            shouldExportNode: (node) => shouldExport(node),
+        })
             // eslint-disable-next-line github/no-then
             .then((glb: GLTFData) => {
                 this._isExportingGltf = false;
@@ -529,6 +536,11 @@ export class ToolsTabComponent extends PaneComponent {
                                 label="Export Lights"
                                 isSelected={() => this._gltfExportOptions.exportLights}
                                 onSelect={(value) => (this._gltfExportOptions.exportLights = value)}
+                            />
+                            <CheckBoxLineComponent
+                                label="Draco Compression"
+                                isSelected={() => this._gltfExportOptions.dracoCompression}
+                                onSelect={(value) => (this._gltfExportOptions.dracoCompression = value)}
                             />
                             <ButtonLineComponent label="Export to GLB" onClick={() => this.exportGLTF()} />
                         </>

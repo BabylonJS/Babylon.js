@@ -91,6 +91,21 @@ uniform vec2 vCoatDarkeningInfos;
 uniform mat4 coatDarkeningMatrix;
 #endif
 
+#ifdef FUZZ_WEIGHT
+uniform vec2 vFuzzWeightInfos;
+uniform mat4 fuzzWeightMatrix;
+#endif
+
+#ifdef FUZZ_COLOR
+uniform vec2 vFuzzColorInfos;
+uniform mat4 fuzzColorMatrix;
+#endif
+
+#ifdef FUZZ_ROUGHNESS
+uniform vec2 vFuzzRoughnessInfos;
+uniform mat4 fuzzRoughnessMatrix;
+#endif
+
 #ifdef GEOMETRY_NORMAL
 uniform vec2 vGeometryNormalInfos;
 uniform mat4 geometryNormalMatrix;
@@ -104,6 +119,16 @@ uniform mat4 geometryTangentMatrix;
 #ifdef GEOMETRY_COAT_NORMAL
 uniform vec2 vGeometryCoatNormalInfos;
 uniform mat4 geometryCoatNormalMatrix;
+#endif
+
+#ifdef THIN_FILM_WEIGHT
+uniform vec2 vThinFilmWeightInfos;
+uniform mat4 thinFilmWeightMatrix;
+#endif
+
+#ifdef THIN_FILM_THICKNESS
+uniform vec2 vThinFilmThicknessInfos;
+uniform mat4 thinFilmThicknessMatrix;
 #endif
 
 #ifdef GEOMETRY_OPACITY

@@ -60,5 +60,9 @@ export abstract class _AbstractSoundInstance extends AbstractAudioNode {
 
         this._state = value;
         this.onStateChangedObservable.notifyObservers(this);
+
+        if (this._state === SoundState.Stopped) {
+            this.onEndedObservable.notifyObservers(this);
+        }
     }
 }

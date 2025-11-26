@@ -20,6 +20,97 @@ struct Splat {
 #endif
 };
 
+fn getSplatIndex(localIndex: i32, splatIndex0: vec4f, splatIndex1: vec4f, splatIndex2: vec4f, splatIndex3: vec4f) -> f32 {
+    var splatIndex: f32;
+    switch (localIndex)
+    {
+        case 0:
+        {
+            splatIndex = splatIndex0.x;
+            break;
+        }
+        case 1:
+        {
+            splatIndex = splatIndex0.y;
+            break;
+        }
+        case 2:
+        {
+            splatIndex = splatIndex0.z;
+            break;
+        }
+        case 3:
+        {
+            splatIndex = splatIndex0.w;
+            break;
+        }
+
+        case 4:
+        {
+            splatIndex = splatIndex1.x;
+            break;
+        }
+        case 5:
+        {
+            splatIndex = splatIndex1.y;
+            break;
+        }
+        case 6:
+        {
+            splatIndex = splatIndex1.z;
+            break;
+        }
+        case 7:
+        {
+            splatIndex = splatIndex1.w;
+            break;
+        }
+
+        case 8:
+        {
+            splatIndex = splatIndex2.x;
+            break;
+        }
+        case 9:
+        {
+            splatIndex = splatIndex2.y;
+            break;
+        }
+        case 10:
+        {
+            splatIndex = splatIndex2.z;
+            break;
+        }
+        case 11:
+        {
+            splatIndex = splatIndex2.w;
+            break;
+        }
+
+        case 12:
+        {
+            splatIndex = splatIndex3.x;
+            break;
+        }
+        case 13:
+        {
+            splatIndex = splatIndex3.y;
+            break;
+        }
+        case 14:
+        {
+            splatIndex = splatIndex3.z;
+            break;
+        }
+        default:
+        {
+            splatIndex = splatIndex3.w;
+            break;
+        }
+    }
+    return splatIndex;
+}
+
 fn readSplat(splatIndex: f32, dataTextureSize: vec2f) -> Splat {
     var splat: Splat;
     let splatUV = getDataUV(splatIndex, dataTextureSize);
@@ -185,11 +276,26 @@ fn gaussianSplatting(
         covA.z, covB.y, covB.z
     );
 
-    let J = mat3x3<f32>(
-        focal.x / camspace.z, 0.0, -(focal.x * camspace.x) / (camspace.z * camspace.z),
-        0.0, focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z),
-        0.0, 0.0, 0.0
-    );
+    // Detect if projection is orthographic (projectionMatrix[3][3] == 1.0)
+    let isOrtho = abs(projectionMatrix[3][3] - 1.0) < 0.001;
+    
+    var J: mat3x3<f32>;
+    if (isOrtho) {
+        // Orthographic projection: no perspective division needed
+        // Just the focal/scale terms without z-dependence
+        J = mat3x3<f32>(
+            focal.x, 0.0, 0.0,
+            0.0, focal.y, 0.0,
+            0.0, 0.0, 0.0
+        );
+    } else {
+        // Perspective projection: original Jacobian with z-dependence
+        J = mat3x3<f32>(
+            focal.x / camspace.z, 0.0, -(focal.x * camspace.x) / (camspace.z * camspace.z),
+            0.0, focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z),
+            0.0, 0.0, 0.0
+        );
+    }
 
     let invy = mat3x3<f32>(
         1.0, 0.0, 0.0,
@@ -211,7 +317,7 @@ fn gaussianSplatting(
 #endif
 
     cov2d[0][0] += kernelSize;
-	cov2d[1][1] += kernelSize;
+    cov2d[1][1] += kernelSize;
 
 #if COMPENSATION
     let c2d: vec3f = vec3f(cov2d[0][0], c01, cov2d[1][1]);
@@ -234,8 +340,12 @@ fn gaussianSplatting(
     let minorAxis = min(sqrt(2.0 * lambda2), 1024.0) * vec2<f32>(diagonalVector.y, -diagonalVector.x);
 
     let vCenter = vec2<f32>(pos2d.x, pos2d.y);
+    
+    // For ortho projection, pos2d.w is 1.0r
+    let scaleFactor = select(pos2d.w, 1.0, isOrtho);
+    
     return vec4f(
-        vCenter + ((meshPos.x * majorAxis + meshPos.y * minorAxis) * invViewport * pos2d.w) * scale, 
+        vCenter + ((meshPos.x * majorAxis + meshPos.y * minorAxis) * invViewport * scaleFactor) * scale, 
         pos2d.z, 
         pos2d.w
     );

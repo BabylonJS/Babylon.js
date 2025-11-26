@@ -93,10 +93,17 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
         return Math.abs(this._cameraRotationSpeed) > 0;
     }
 
+    /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<ArcRotateCamera> {
+        return this._attachedCamera;
+    }
+
     // Default behavior functions
     private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
     private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
-    private _attachedCamera: Nullable<ArcRotateCamera>;
+    private _attachedCamera: Nullable<ArcRotateCamera> = null;
     private _isPointerDown = false;
     private _lastFrameTime: Nullable<number> = null;
     private _lastInteractionTime = -Infinity;

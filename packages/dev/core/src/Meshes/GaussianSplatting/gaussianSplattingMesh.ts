@@ -328,6 +328,13 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * Number of splats in the mesh
+     */
+    public get splatCount() {
+        return this._splatIndex?.length;
+    }
+
+    /**
      * returns the splats data array buffer that contains in order : postions (3 floats), size (3 floats), color (4 bytes), orientation quaternion (4 bytes)
      */
     public get splatsData() {
@@ -376,6 +383,23 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     /**
+     * Gets the kernel size
+     * Documentation and mathematical explanations here:
+     * https://github.com/graphdeco-inria/gaussian-splatting/issues/294#issuecomment-1772688093
+     * https://github.com/autonomousvision/mip-splatting/issues/18#issuecomment-1929388931
+     */
+    public get kernelSize() {
+        return this._material instanceof GaussianSplattingMaterial ? this._material.kernelSize : 0;
+    }
+
+    /**
+     * Get the compensation state
+     */
+    public get compensation() {
+        return this._material instanceof GaussianSplattingMaterial ? this._material.compensation : false;
+    }
+
+    /**
      * set rendering material
      */
     public override set material(value: Material) {
@@ -403,13 +427,29 @@ export class GaussianSplattingMesh extends Mesh {
         super(name, scene);
 
         const vertexData = new VertexData();
+        const originPositions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
+        const originIndices = [0, 1, 2, 0, 2, 3];
+        const positions = [];
+        const indices = [];
+        const batchSize = 16; // 16 splats per instance
+        for (let i = 0; i < batchSize; i++) {
+            for (let j = 0; j < 12; j++) {
+                if (j == 2 || j == 5 || j == 8 || j == 11) {
+                    positions.push(i); // local splat index
+                } else {
+                    positions.push(originPositions[j]);
+                }
+            }
+            indices.push(originIndices.map((v) => v + i * 4));
+        }
 
-        vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
-        vertexData.indices = [0, 1, 2, 0, 2, 3];
+        vertexData.positions = positions;
+        vertexData.indices = indices.flat();
+
         vertexData.applyToMesh(this);
 
         this.subMeshes = [];
-        new SubMesh(0, 0, 4, 0, 6, this);
+        new SubMesh(0, 0, 4 * batchSize, 0, 6 * batchSize, this);
 
         this.setEnabled(false);
         // webGL2 and webGPU support for RG texture with float16 is fine. not webGL1
@@ -743,13 +783,15 @@ export class GaussianSplattingMesh extends Mesh {
                 const [, typeName, name] = prop.split(" ");
 
                 const value = GaussianSplattingMesh._ValueNameToEnum(name);
-                // SH degree 1,2 or 3 for 9, 24 or 45 values
-                if (value >= PLYValue.SH_44) {
-                    shDegree = 3;
-                } else if (value >= PLYValue.SH_24) {
-                    shDegree = 2;
-                } else if (value >= PLYValue.SH_8) {
-                    shDegree = 1;
+                if (value != PLYValue.UNDEFINED) {
+                    // SH degree 1,2 or 3 for 9, 24 or 45 values
+                    if (value >= PLYValue.SH_44) {
+                        shDegree = 3;
+                    } else if (value >= PLYValue.SH_24) {
+                        shDegree = 2;
+                    } else if (value >= PLYValue.SH_8) {
+                        shDegree = 1;
+                    }
                 }
                 const type = GaussianSplattingMesh._TypeNameToEnum(typeName);
                 if (chunkMode == ElementMode.Chunk) {
@@ -1254,13 +1296,13 @@ export class GaussianSplattingMesh extends Mesh {
         const binfo = this.getBoundingInfo();
         newGS.getBoundingInfo().reConstruct(binfo.minimum, binfo.maximum, this.getWorldMatrix());
 
-        newGS.forcedInstanceCount = newGS._vertexCount;
+        newGS.forcedInstanceCount = this.forcedInstanceCount;
         newGS.setEnabled(true);
         return newGS;
     }
 
     private static _CreateWorker = function (self: Worker) {
-        let vertexCount = 0;
+        let vertexCountPadded = 0;
         let positions: Float32Array;
         let depthMix: BigInt64Array;
         let indices: Uint32Array;
@@ -1270,7 +1312,7 @@ export class GaussianSplattingMesh extends Mesh {
             // updated on init
             if (e.data.positions) {
                 positions = e.data.positions;
-                vertexCount = e.data.vertexCount;
+                vertexCountPadded = e.data.vertexCountPadded;
             }
             // udpate on view changed
             else {
@@ -1285,7 +1327,7 @@ export class GaussianSplattingMesh extends Mesh {
                 floatMix = new Float32Array(depthMix.buffer);
 
                 // Sort
-                for (let j = 0; j < vertexCount; j++) {
+                for (let j = 0; j < vertexCountPadded; j++) {
                     indices[2 * j] = j;
                 }
 
@@ -1294,7 +1336,7 @@ export class GaussianSplattingMesh extends Mesh {
                     depthFactor = 1;
                 }
 
-                for (let j = 0; j < vertexCount; j++) {
+                for (let j = 0; j < vertexCountPadded; j++) {
                     floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[4 * j + 0] + viewProj[6] * positions[4 * j + 1] + viewProj[10] * positions[4 * j + 2]) * depthFactor;
                 }
 
@@ -1304,6 +1346,21 @@ export class GaussianSplattingMesh extends Mesh {
             }
         };
     };
+
+    private _makeEmptySplat(index: number, covA: Uint16Array, covB: Uint16Array, colorArray: Uint8Array): void {
+        const covBSItemSize = this._useRGBACovariants ? 4 : 2;
+        this._splatPositions![4 * index + 0] = 0;
+        this._splatPositions![4 * index + 1] = 0;
+        this._splatPositions![4 * index + 2] = 0;
+
+        covA[index * 4 + 0] = ToHalfFloat(0);
+        covA[index * 4 + 1] = ToHalfFloat(0);
+        covA[index * 4 + 2] = ToHalfFloat(0);
+        covA[index * 4 + 3] = ToHalfFloat(0);
+        covB[index * covBSItemSize + 0] = ToHalfFloat(0);
+        covB[index * covBSItemSize + 1] = ToHalfFloat(0);
+        colorArray[index * 4 + 3] = 0;
+    }
 
     private _makeSplat(
         index: number,
@@ -1493,11 +1550,16 @@ export class GaussianSplattingMesh extends Mesh {
             }
             this._sortIsDirty = true;
         } else {
+            const paddedVertexCount = (vertexCount + 15) & ~0xf;
             for (let i = 0; i < vertexCount; i++) {
                 this._makeSplat(i, fBuffer, uBuffer, covA, covB, colorArray, minimum, maximum);
                 if (isAsync && i % GaussianSplattingMesh._SplatBatchSize === 0) {
                     yield;
                 }
+            }
+            // pad the rest
+            for (let i = vertexCount; i < paddedVertexCount; i++) {
+                this._makeEmptySplat(i, covA, covB, colorArray);
             }
             // textures
             this._updateTextures(covA, covB, colorArray, sh);
@@ -1539,12 +1601,13 @@ export class GaussianSplattingMesh extends Mesh {
 
     // in case size is different
     private _updateSplatIndexBuffer(vertexCount: number): void {
+        const paddedVertexCount = (vertexCount + 15) & ~0xf;
         if (!this._splatIndex || vertexCount > this._splatIndex.length) {
-            this._splatIndex = new Float32Array(vertexCount * 4);
+            this._splatIndex = new Float32Array(paddedVertexCount);
 
-            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 4, false);
+            this.thinInstanceSetBuffer("splatIndex", this._splatIndex, 16, false);
         }
-        this.forcedInstanceCount = vertexCount;
+        this.forcedInstanceCount = paddedVertexCount >> 4;
     }
 
     private _updateSubTextures(centers: Float32Array, covA: Uint16Array, covB: Uint16Array, colors: Uint8Array, lineStart: number, lineCount: number, sh?: Uint8Array[]): void {
@@ -1581,53 +1644,43 @@ export class GaussianSplattingMesh extends Mesh {
         // Start the worker thread
         this._worker?.terminate();
 
-        if (!_native) {
-            this._worker = new Worker(
-                URL.createObjectURL(
-                    new Blob(["(", GaussianSplattingMesh._CreateWorker.toString(), ")(self)"], {
-                        type: "application/javascript",
-                    })
-                )
-            );
+        const vertexCountPadded = (this._vertexCount + 15) & ~0xf;
+        this._depthMix = new BigInt64Array(vertexCountPadded);
+        const positions = Float32Array.from(this._splatPositions!);
 
-            this._depthMix = new BigInt64Array(this._vertexCount);
-            const positions = Float32Array.from(this._splatPositions!);
-            const vertexCount = this._vertexCount;
+        this._worker.postMessage({ positions, vertexCountPadded }, [positions.buffer]);
 
-            this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
-
-            this._worker.onmessage = (e) => {
-                this._depthMix = e.data.depthMix;
-                const indexMix = new Uint32Array(e.data.depthMix.buffer);
-                if (this._splatIndex) {
-                    for (let j = 0; j < this._vertexCount; j++) {
-                        this._splatIndex[j * 4] = indexMix[2 * j];
-                    }
+        this._worker.onmessage = (e) => {
+            this._depthMix = e.data.depthMix;
+            const indexMix = new Uint32Array(e.data.depthMix.buffer);
+            if (this._splatIndex) {
+                for (let j = 0; j < vertexCountPadded; j++) {
+                    this._splatIndex[j] = indexMix[2 * j];
                 }
-                if (this._delayedTextureUpdate) {
-                    const textureSize = this._getTextureSize(vertexCount);
-                    this._updateSubTextures(
-                        this._delayedTextureUpdate.centers,
-                        this._delayedTextureUpdate.covA,
-                        this._delayedTextureUpdate.covB,
-                        this._delayedTextureUpdate.colors,
-                        0,
-                        textureSize.y,
-                        this._delayedTextureUpdate.sh
-                    );
-                    this._delayedTextureUpdate = null;
-                }
-                this.thinInstanceBufferUpdated("splatIndex");
-                this._canPostToWorker = true;
-                this._readyToDisplay = true;
-                // sort is dirty when GS is visible for progressive update with a this message arriving but positions were partially filled
-                // another update needs to be kicked. The kick can't happen just when the position buffer is ready because _canPostToWorker might be false.
-                if (this._sortIsDirty) {
-                    this._postToWorker(true);
-                    this._sortIsDirty = false;
-                }
-            };
-        }
+            }
+            if (this._delayedTextureUpdate) {
+                const textureSize = this._getTextureSize(vertexCountPadded);
+                this._updateSubTextures(
+                    this._delayedTextureUpdate.centers,
+                    this._delayedTextureUpdate.covA,
+                    this._delayedTextureUpdate.covB,
+                    this._delayedTextureUpdate.colors,
+                    0,
+                    textureSize.y,
+                    this._delayedTextureUpdate.sh
+                );
+                this._delayedTextureUpdate = null;
+            }
+            this.thinInstanceBufferUpdated("splatIndex");
+            this._canPostToWorker = true;
+            this._readyToDisplay = true;
+            // sort is dirty when GS is visible for progressive update with a this message arriving but positions were partially filled
+            // another update needs to be kicked. The kick can't happen just when the position buffer is ready because _canPostToWorker might be false.
+            if (this._sortIsDirty) {
+                this._postToWorker(true);
+                this._sortIsDirty = false;
+            }
+        };
     }
 
     private _getTextureSize(length: number): Vector2 {

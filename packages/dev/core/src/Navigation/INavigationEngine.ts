@@ -2,6 +2,7 @@ import type { TransformNode } from "../Meshes/transformNode";
 import type { Vector3 } from "../Maths/math";
 import type { Mesh } from "../Meshes/mesh";
 import type { Scene } from "../scene";
+import type { Nullable } from "../types";
 
 /**
  * Navigation plugin interface to add navigation constrained by a navigation mesh
@@ -173,7 +174,7 @@ export interface INavigationEnginePlugin {
      * @param height cylinder height
      * @returns the obstacle freshly created
      */
-    addCylinderObstacle(position: Vector3, radius: number, height: number): IObstacle;
+    addCylinderObstacle(position: Vector3, radius: number, height: number): Nullable<IObstacle>;
 
     /**
      * Creates an oriented box obstacle and add it to the navigation
@@ -182,7 +183,7 @@ export interface INavigationEnginePlugin {
      * @param angle angle in radians of the box orientation on Y axis
      * @returns the obstacle freshly created
      */
-    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): IObstacle;
+    addBoxObstacle(position: Vector3, extent: Vector3, angle: number): Nullable<IObstacle>;
 
     /**
      * Removes an obstacle created by addCylinderObstacle or addBoxObstacle
@@ -197,9 +198,24 @@ export interface INavigationEnginePlugin {
 }
 
 /**
- * Obstacle interface
+ * Obstacle type
  */
-export interface IObstacle {}
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export type IObstacle =
+    | {
+          type: "box";
+          ref: unknown;
+          position: Vector3;
+          halfExtents: Vector3;
+          angle: number;
+      }
+    | {
+          type: "cylinder";
+          ref: unknown;
+          position: Vector3;
+          radius: number;
+          height: number;
+      };
 
 /**
  * Crowd Interface. A Crowd is a collection of moving agents constrained by a navigation mesh

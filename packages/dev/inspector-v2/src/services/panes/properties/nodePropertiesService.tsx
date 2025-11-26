@@ -15,9 +15,11 @@ import {
     AbstractMeshOutlineOverlayProperties,
 } from "../../../components/properties/nodes/abstractMeshProperties";
 import { MeshDisplayProperties } from "../../../components/properties/nodes/meshProperties";
+import { GaussianSplattingDisplayProperties } from "../../../components/properties/nodes/gaussianSplattingProperties";
 import { NodeGeneralProperties } from "../../../components/properties/nodes/nodeProperties";
 import { SelectionServiceIdentity } from "../../selectionService";
 import { PropertiesServiceIdentity } from "./propertiesService";
+import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 
 export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IPropertiesService, ISelectionService]> = {
     friendlyName: "Mesh Properties",
@@ -81,11 +83,23 @@ export const NodePropertiesServiceDefinition: ServiceDefinition<[], [IProperties
             ],
         });
 
+        const gaussianSplattingContentRegistration = propertiesService.addSectionContent({
+            key: "Gaussian Splatting Properties",
+            predicate: (entity: unknown): entity is GaussianSplattingMesh => entity instanceof GaussianSplattingMesh && entity.getTotalVertices() > 0,
+            content: [
+                {
+                    section: "Gaussian Splatting",
+                    component: ({ context }) => <GaussianSplattingDisplayProperties mesh={context} />,
+                },
+            ],
+        });
+
         return {
             dispose: () => {
                 nodeContentRegistration.dispose();
                 abstractMeshContentRegistration.dispose();
                 meshContentRegistration.dispose();
+                gaussianSplattingContentRegistration.dispose();
             },
         };
     },

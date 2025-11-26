@@ -1,8 +1,16 @@
-import { EncodeArrayBufferToBase64, Logger } from "@dev/core";
+import { Logger } from "@dev/core";
 import type { GlobalState } from "../globalState";
 import { Utilities } from "./utilities";
+import { PackSnippetData } from "./snippet";
 
+/**
+ * Handles saving playground code and multi-file manifests.
+ */
 export class SaveManager {
+    /**
+     * Creates a new SaveManager.
+     * @param globalState Shared global state instance.
+     */
     public constructor(public globalState: GlobalState) {
         globalState.onSaveRequiredObservable.add(() => {
             if (!this.globalState.currentSnippetTitle || !this.globalState.currentSnippetDescription || !this.globalState.currentSnippetTags) {
@@ -31,34 +39,6 @@ export class SaveManager {
         });
     }
 
-    private _getSnippetData() {
-        const encoder = new TextEncoder();
-        const buffer = encoder.encode(this.globalState.currentCode);
-
-        // Check if we need to encode it to store the unicode characters
-        let testData = "";
-
-        for (let i = 0; i < buffer.length; i++) {
-            testData += String.fromCharCode(buffer[i]);
-        }
-        const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
-
-        const payLoad = JSON.stringify({
-            code: this.globalState.currentCode,
-            unicode: testData !== this.globalState.currentCode ? EncodeArrayBufferToBase64(buffer) : undefined,
-            engine: activeEngineVersion,
-        });
-
-        const dataToSend = {
-            payload: payLoad,
-            name: this.globalState.currentSnippetTitle,
-            description: this.globalState.currentSnippetDescription,
-            tags: this.globalState.currentSnippetTags,
-        };
-
-        return JSON.stringify(dataToSend);
-    }
-
     private async _saveJsonFileAsync(snippetData: string) {
         try {
             // Open "Save As" dialog
@@ -81,7 +61,7 @@ export class SaveManager {
 
             // Close the file
             await writable.close();
-        } catch (err) {
+        } catch (err: any) {
             if (err.name === "AbortError") {
                 Logger.Warn("User canceled save dialog");
             } else {
@@ -91,7 +71,11 @@ export class SaveManager {
     }
 
     private _localSaveSnippet() {
-        void this._saveJsonFileAsync(this._getSnippetData());
+        void this._saveJsonFileAsync(PackSnippetData(this.globalState));
+    }
+
+    private _replaceUrlSilently(newUrl: string) {
+        history.replaceState(null, "", newUrl);
     }
 
     private _saveSnippet() {
@@ -101,22 +85,23 @@ export class SaveManager {
                 if (xmlHttp.status === 200) {
                     const snippet = JSON.parse(xmlHttp.responseText);
                     if (location.pathname && location.pathname.indexOf("pg/") !== -1) {
-                        // full path with /pg/??????
+                        let newHref = location.href;
                         if (location.pathname.indexOf("revision") !== -1) {
-                            location.href = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
+                            newHref = location.href.replace(/revision\/(\d+)/, "revision/" + snippet.version);
                         } else {
-                            location.href = location.href + "/revision/" + snippet.version;
+                            newHref = location.href + "/revision/" + snippet.version;
                         }
+                        this._replaceUrlSilently(newHref);
                     } else if (location.search && location.search.indexOf("pg=") !== -1) {
-                        // query string with ?pg=??????
                         const currentQuery = Utilities.ParseQuery();
+                        let newHref = location.href;
                         if (currentQuery.revision) {
-                            location.href = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
+                            newHref = location.href.replace(/revision=(\d+)/, "revision=" + snippet.version);
                         } else {
-                            location.href = location.href + "&revision=" + snippet.version;
+                            newHref = location.href + "&revision=" + snippet.version;
                         }
+                        this._replaceUrlSilently(newHref);
                     } else {
-                        // default behavior!
                         const baseUrl = location.href.replace(location.hash, "");
                         let toolkit = "";
 
@@ -130,7 +115,8 @@ export class SaveManager {
                         if (snippet.version && snippet.version !== "0") {
                             newUrl += "#" + snippet.version;
                         }
-                        location.href = newUrl;
+                        this.globalState.currentSnippetRevision = `#${snippet.version}`;
+                        this._replaceUrlSilently(newUrl);
                     }
 
                     this.globalState.onSavedObservable.notifyObservers();
@@ -141,8 +127,9 @@ export class SaveManager {
         };
 
         xmlHttp.open("POST", this.globalState.SnippetServerUrl + (this.globalState.currentSnippetToken ? "/" + this.globalState.currentSnippetToken : ""), true);
+        xmlHttp.withCredentials = false;
         xmlHttp.setRequestHeader("Content-Type", "application/json");
 
-        xmlHttp.send(this._getSnippetData());
+        xmlHttp.send(PackSnippetData(this.globalState));
     }
 }

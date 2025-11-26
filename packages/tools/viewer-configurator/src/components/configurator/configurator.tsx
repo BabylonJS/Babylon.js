@@ -23,7 +23,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
-import { DefaultViewerOptions } from "viewer/viewer";
+import { DefaultViewerOptions, SSAOOptions } from "viewer/viewer";
 import { HTML3DAnnotationElement } from "viewer/viewerAnnotationElement";
 
 import { PointerEventTypes } from "core/Events/pointerEvents";
@@ -61,6 +61,12 @@ const ShadowQualityOptions = [
     { label: "Normal", value: "normal" },
     { label: "High", value: "high" },
 ] as const satisfies IInspectableOptions[] & { label: string; value: ShadowQuality }[];
+
+const SSAOOptions = [
+    { label: "Disabled", value: "disabled" },
+    { label: "Enabled", value: "enabled" },
+    { label: "Auto", value: "auto" },
+] as const satisfies IInspectableOptions[] & { label: string; value: SSAOOptions }[];
 
 const ToneMappingOptions = [
     { label: "Standard", value: "standard" },
@@ -571,6 +577,20 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         [viewer]
     );
 
+    const ssaoConfig = useConfiguration(
+        DefaultViewerOptions.postProcessing.ssao,
+        viewerOptions.postProcessing?.ssao ?? DefaultViewerOptions.postProcessing.ssao,
+        () => viewer.postProcessing.ssao,
+        (ssao) => (viewer.postProcessing = { ssao }),
+        undefined,
+        [viewer.onPostProcessingChanged],
+        [viewer]
+    );
+    // This is only needed because the select expects to "bind" to an object and a property.
+    const ssaoOptionsWrapper = useMemo(() => {
+        return { ssaoOptions: ssaoConfig.configuredState } as const;
+    }, [ssaoConfig.configuredState]);
+
     const autoOrbitConfig = useConfiguration(
         DefaultViewerOptions.cameraAutoOrbit.enabled,
         viewerOptions.cameraAutoOrbit?.enabled ?? DefaultViewerOptions.cameraAutoOrbit.enabled,
@@ -785,6 +805,10 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             attributes.push(`exposure="${exposureConfig.configuredState.toFixed(1)}"`);
         }
 
+        if (ssaoConfig.canReset) {
+            attributes.push(`ssao="${ssaoConfig.configuredState}"`);
+        }
+
         if (cameraConfig.canReset) {
             const { alpha, beta, radius, target } = cameraConfig.configuredState;
             attributes.push(`camera-orbit="${alpha.toFixed(3)} ${beta.toFixed(3)} ${radius.toFixed(3)}"`);
@@ -837,6 +861,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.configuredState,
         contrastConfig.configuredState,
         exposureConfig.configuredState,
+        ssaoConfig.configuredState,
         cameraConfig.configuredState,
         autoOrbitConfig.configuredState,
         autoOrbitSpeedConfig.configuredState,
@@ -906,6 +931,9 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         if (exposureConfig.canReset) {
             postProcessingProperties.push(`"exposure": ${exposureConfig.configuredState.toFixed(1)}`);
         }
+        if (ssaoConfig.canReset) {
+            postProcessingProperties.push(`"ssao": ${ssaoConfig.configuredState}`);
+        }
         if (postProcessingProperties.length > 0) {
             properties.push(`"postProcessing": {${postProcessingProperties.map((property) => `\n    ${property}`).join(",")}\n  }`);
         }
@@ -974,6 +1002,7 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
         toneMappingConfig.configuredState,
         contrastConfig.configuredState,
         exposureConfig.configuredState,
+        ssaoConfig.configuredState,
         shadowQualityConfig.configuredState,
         cameraConfig.configuredState,
         autoOrbitConfig.configuredState,
@@ -1126,6 +1155,13 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
             toneMappingConfig.update(value as ToneMapping);
         },
         [toneMappingConfig.update]
+    );
+
+    const onSSAOOptionChange = useCallback(
+        (value: string | number) => {
+            ssaoConfig.update(value as SSAOOptions);
+        },
+        [ssaoConfig.update]
     );
 
     const onAddHotspotClick = useCallback(() => {
@@ -1485,6 +1521,19 @@ export const Configurator: FunctionComponent<{ viewerOptions: ViewerOptions; vie
                         />
                     </div>
                     <FontAwesomeIconButton title="Reset exposure" icon={faTrashCan} disabled={!exposureConfig.canReset} onClick={exposureConfig.reset} />
+                </div>
+                <div>
+                    <div style={{ flex: 1 }}>
+                        <OptionsLine
+                            label="SSAO (Ambient Occlusion)"
+                            valuesAreStrings={true}
+                            options={SSAOOptions}
+                            target={ssaoOptionsWrapper}
+                            propertyName={"ssaoOptions"}
+                            noDirectUpdate={true}
+                            onSelect={onSSAOOptionChange}
+                        />
+                    </div>
                 </div>
             </LineContainerComponent>
             <LineContainerComponent title="CAMERA">

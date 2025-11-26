@@ -94,10 +94,14 @@ void main(void) {
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
 
+    #include<openpbrThinFilmLayerData>
+
+    // _____________________________ Read Fuzz Layer properties ______________________
+    #include<openpbrFuzzLayerData>
+
     // TEMP
     float subsurface_weight = 0.0;
     float transmission_weight = 0.0;
-    float fuzz_weight = 0.0;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
@@ -146,6 +150,17 @@ void main(void) {
         );
     #endif
 
+    #ifdef FUZZ
+        // _____________________________ Compute Geometry info for fuzz layer _________________________
+        vec3 fuzzNormalW = normalize(mix(normalW, coatNormalW, coat_weight));
+        vec3 fuzzTangent = normalize(TBN[0]);
+        fuzzTangent = normalize(fuzzTangent - dot(fuzzTangent, fuzzNormalW) * fuzzNormalW);
+        vec3 fuzzBitangent = cross(fuzzNormalW, fuzzTangent);
+        geometryInfoOutParams fuzzGeoInfo = geometryInfo(
+            fuzzNormalW, viewDirectionW.xyz, fuzz_roughness, geometricNormalW
+        );
+    #endif
+
     // _______________________ F0 and F90 Reflectance _______________________________
     
     // Coat
@@ -156,6 +171,11 @@ void main(void) {
         , vec3(1.0)
         , coat_weight
     );
+
+#ifdef THIN_FILM
+    // Thin Film
+    float thin_film_outside_ior = mix(1.0, coat_ior, coat_weight);
+#endif
 
     // Base Dielectric
     ReflectanceParams baseDielectricReflectance;
@@ -172,7 +192,7 @@ void main(void) {
     // Base Metallic
     ReflectanceParams baseConductorReflectance;
     baseConductorReflectance = conductorReflectance(base_color, specular_color, specular_weight);
-    
+
     // ________________________ Environment (IBL) Lighting ____________________________
     vec3 material_surface_ibl = vec3(0., 0., 0.);
     #include<openpbrEnvironmentLighting>

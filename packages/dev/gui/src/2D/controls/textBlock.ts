@@ -367,14 +367,23 @@ export class TextBlock extends Control {
     }
 
     protected override _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        super._processMeasures(parentMeasure, context);
+
+        // Apply states so we can use the right font to measure
+        context.save();
+        this._applyStates(context);
+
+        // Measure the font
         if (!this._fontOffset || this.isDirty) {
             this._fontOffset = Control._GetFontOffset(context.font, this._host.getScene()?.getEngine());
         }
-        super._processMeasures(parentMeasure, context);
 
         // Prepare lines
         this._lines = this._breakLines(this._currentMeasure.width, this._currentMeasure.height, context);
         this.onLinesReadyObservable.notifyObservers(this);
+
+        // Restore context now that we're done measuring the font
+        context.restore();
 
         let maxLineWidth: number = 0;
 
@@ -432,8 +441,9 @@ export class TextBlock extends Control {
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowColor = this.shadowColor;
             context.shadowBlur = this.shadowBlur;
-            context.shadowOffsetX = this.shadowOffsetX;
-            context.shadowOffsetY = this.shadowOffsetY;
+            const idealRatio = this.host.idealRatio;
+            context.shadowOffsetX = this.shadowOffsetX * idealRatio;
+            context.shadowOffsetY = this.shadowOffsetY * idealRatio;
         }
 
         if (this.outlineWidth) {
@@ -728,6 +738,8 @@ export class TextBlock extends Control {
             // Should abstract platform instead of using LastCreatedEngine
             const context = EngineStore.LastCreatedEngine?.createCanvas(0, 0).getContext("2d");
             if (context) {
+                // This is a temporary context, no need to save/restore
+                // eslint-disable-next-line babylonjs/require-context-save-before-apply-states
                 this._applyStates(context);
                 if (!this._fontOffset) {
                     this._fontOffset = Control._GetFontOffset(context.font, this._host.getScene()?.getEngine());

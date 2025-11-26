@@ -15,7 +15,6 @@ import type {
     ITextureInfo,
     ISkin,
     ICamera,
-    ImageMimeType,
 } from "babylonjs-gltf2interface";
 import { AccessorComponentType, AccessorType, CameraType } from "babylonjs-gltf2interface";
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
@@ -52,7 +51,7 @@ import {
     IsChildCollapsible,
     FloatsNeed16BitInteger,
     IsStandardVertexAttribute,
-    IndicesArrayToTypedArray,
+    IndicesArrayToTypedSubarray,
     GetVertexBufferInfo,
     CollapseChildIntoParent,
     Rotate180Y,
@@ -80,7 +79,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { TargetCamera } from "core/Cameras/targetCamera";
 import { Epsilon } from "core/Maths/math.constants";
 import { DataWriter } from "./dataWriter";
-import { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 class ExporterState {
     // Babylon indices array, start, count, offset, flip -> glTF accessor index
@@ -243,7 +242,7 @@ export class GLTFExporter {
     public readonly _textures: ITexture[] = [];
 
     public readonly _babylonScene: Scene;
-    public readonly _imageData: { [fileName: string]: { data: ArrayBuffer; mimeType: ImageMimeType } } = {};
+    public readonly _imageData: { [fileName: string]: Blob } = {};
 
     /**
      * Baked animation sample rate
@@ -277,6 +276,7 @@ export class GLTFExporter {
 
     private static readonly _ExtensionNames = new Array<string>();
     private static readonly _ExtensionFactories: { [name: string]: (exporter: GLTFExporter) => IGLTFExporterExtensionV2 } = {};
+    private static readonly _ExtensionOrders: { [name: string]: number } = {};
 
     // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/promise-function-async
     private _ApplyExtension<T>(
@@ -452,13 +452,29 @@ export class GLTFExporter {
         return this._options;
     }
 
-    public static RegisterExtension(name: string, factory: (exporter: GLTFExporter) => IGLTFExporterExtensionV2): void {
+    public static RegisterExtension(name: string, factory: (exporter: GLTFExporter) => IGLTFExporterExtensionV2, order: number = 100): void {
         if (GLTFExporter.UnregisterExtension(name)) {
             Tools.Warn(`Extension with the name ${name} already exists`);
         }
 
         GLTFExporter._ExtensionFactories[name] = factory;
-        GLTFExporter._ExtensionNames.push(name);
+        const extensionOrder = order ?? 0; // Use provided order or default to 0
+        GLTFExporter._ExtensionOrders[name] = extensionOrder;
+
+        // Find the correct position to insert the extension based on order
+        let insertIndex = GLTFExporter._ExtensionNames.length;
+        for (let i = 0; i < GLTFExporter._ExtensionNames.length; i++) {
+            const existingName = GLTFExporter._ExtensionNames[i];
+            const existingOrder = GLTFExporter._ExtensionOrders[existingName];
+
+            // If the order is less, insert before.
+            if (extensionOrder < existingOrder) {
+                insertIndex = i;
+                break;
+            }
+        }
+
+        GLTFExporter._ExtensionNames.splice(insertIndex, 0, name);
     }
 
     public static UnregisterExtension(name: string): boolean {
@@ -466,6 +482,7 @@ export class GLTFExporter {
             return false;
         }
         delete GLTFExporter._ExtensionFactories[name];
+        delete GLTFExporter._ExtensionOrders[name];
 
         const index = GLTFExporter._ExtensionNames.indexOf(name);
         if (index !== -1) {
@@ -543,7 +560,7 @@ export class GLTFExporter {
 
         if (this._imageData) {
             for (const image in this._imageData) {
-                container.files[image] = new Blob([this._imageData[image].data], { type: this._imageData[image].mimeType });
+                container.files[image] = this._imageData[image];
             }
         }
 
@@ -673,15 +690,27 @@ export class GLTFExporter {
     }
 
     private _setCameraTransformation(node: INode, babylonCamera: TargetCamera, convertToRightHanded: boolean): void {
-        if (!babylonCamera.position.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
-            const translation = TmpVectors.Vector3[0].copyFrom(babylonCamera.position);
+        // Camera types store rotation differently (e.g., ArcRotateCamera uses alpha/beta, others use rotationQuaternion).
+        // Extract the transform from the world matrix instead of handling each case separately.
+        const translation = TmpVectors.Vector3[0];
+        const rotationQuaternion = TmpVectors.Quaternion[0];
+        const cameraWorldMatrix = babylonCamera.getWorldMatrix();
+
+        if (babylonCamera.parent) {
+            // Camera.getWorldMatrix returns global coordinates. GLTF node must use local coordinates. If camera has parent we need to use local translation/rotation.
+            const parentInvWorldMatrix = babylonCamera.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
+            const cameraLocal = cameraWorldMatrix.multiplyToRef(parentInvWorldMatrix, TmpVectors.Matrix[1]);
+            cameraLocal.decompose(undefined, rotationQuaternion, translation);
+        } else {
+            cameraWorldMatrix.decompose(undefined, rotationQuaternion, translation);
+        }
+
+        if (!translation.equalsWithEpsilon(DefaultTranslation, Epsilon)) {
             if (convertToRightHanded) {
                 ConvertToRightHandedPosition(translation);
             }
             node.translation = translation.asArray();
         }
-
-        const rotationQuaternion = babylonCamera.rotationQuaternion || Quaternion.FromEulerAngles(babylonCamera.rotation.x, babylonCamera.rotation.y, babylonCamera.rotation.z);
 
         if (convertToRightHanded) {
             ConvertToRightHandedRotation(rotationQuaternion);
@@ -1353,7 +1382,7 @@ export class GLTFExporter {
         if (indicesToExport) {
             let accessorIndex = state.getIndicesAccessor(indices, start, count, offset, flip);
             if (accessorIndex === undefined) {
-                const bytes = IndicesArrayToTypedArray(indicesToExport, 0, count, is32Bits);
+                const bytes = IndicesArrayToTypedSubarray(indicesToExport, start, count, is32Bits);
                 const bufferView = this._bufferManager.createBufferView(bytes);
 
                 const componentType = is32Bits ? AccessorComponentType.UNSIGNED_INT : AccessorComponentType.UNSIGNED_SHORT;

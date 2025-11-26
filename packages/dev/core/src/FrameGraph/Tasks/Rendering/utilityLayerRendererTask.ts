@@ -11,10 +11,20 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
      */
     public targetTexture: FrameGraphTextureHandle;
 
+    private _camera: Camera;
     /**
      * The camera used to render the utility layer.
      */
-    public camera: Camera;
+    public get camera() {
+        return this._camera;
+    }
+
+    public set camera(value: Camera) {
+        this._camera = value;
+
+        this.layer.setRenderCamera(value);
+        this.layer.utilityLayerScene.activeCamera = value;
+    }
 
     /**
      * The output texture of the task.
@@ -45,7 +55,7 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
 
     public record(): void {
         if (!this.targetTexture || !this.camera) {
-            throw new Error("FrameGraphUtilityLayerRendererTask: targetTexture and camera are required");
+            throw new Error(`FrameGraphUtilityLayerRendererTask "${this.name}": targetTexture and camera are required`);
         }
 
         this._frameGraph.textureManager.resolveDanglingHandle(this.outputTexture, this.targetTexture);
@@ -54,8 +64,6 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
 
         pass.setRenderTarget(this.outputTexture);
         pass.setExecuteFunc((context) => {
-            this.layer.setRenderCamera(this.camera);
-
             context.render(this.layer);
         });
 

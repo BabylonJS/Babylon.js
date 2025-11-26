@@ -1,23 +1,24 @@
 import type { SliderOnChangeData } from "@fluentui/react-components";
-import { makeStyles, Slider, tokens } from "@fluentui/react-components";
+import { makeStyles, Slider } from "@fluentui/react-components";
 import { SpinButton } from "./spinButton";
 import type { ChangeEvent, FunctionComponent } from "react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import type { PrimitiveProps } from "./primitive";
+import { InfoLabel } from "./infoLabel";
+import { CustomTokens } from "./utils";
+import { ToolContext } from "../hoc/fluentToolWrapper";
 
 const useSyncedSliderStyles = makeStyles({
+    container: { display: "flex" },
     syncedSlider: {
+        flex: "1 1 0",
+        flexDirection: "row",
         display: "flex",
         alignItems: "center",
-        gap: tokens.spacingHorizontalXXS, // 2px
-        width: "100%", // Only fill available space
     },
     slider: {
-        flexGrow: 1, // Let slider grow
-        minWidth: "40px", // Minimum width for slider to remain usable
-    },
-    spinButton: {
-        width: "60px",
+        minWidth: CustomTokens.sliderMinWidth, // Minimum width for slider to remain usable
+        maxWidth: CustomTokens.sliderMaxWidth,
     },
 });
 
@@ -40,7 +41,10 @@ export type SyncedSliderProps = PrimitiveProps<number> & {
  * @returns SyncedSlider component
  */
 export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) => {
+    SyncedSliderInput.displayName = "SyncedSliderInput";
+    const { infoLabel, ...passthroughProps } = props;
     const classes = useSyncedSliderStyles();
+    const { size } = useContext(ToolContext);
     const [value, setValue] = useState<number>(props.value);
     const pendingValueRef = useRef<number>(undefined);
     const isDraggingRef = useRef(false);
@@ -87,22 +91,25 @@ export const SyncedSliderInput: FunctionComponent<SyncedSliderProps> = (props) =
     };
 
     return (
-        <div className={classes.syncedSlider}>
-            {props.min !== undefined && props.max !== undefined && (
-                <Slider
-                    {...props}
-                    size="small"
-                    className={classes.slider}
-                    min={min / step}
-                    max={max / step}
-                    step={undefined}
-                    value={value / step}
-                    onChange={handleSliderChange}
-                    onPointerDown={handleSliderPointerDown}
-                    onPointerUp={handleSliderPointerUp}
-                />
-            )}
-            <SpinButton {...props} className={classes.spinButton} value={Math.round(value / step) * step} onChange={handleInputChange} step={props.step} />
+        <div className={classes.container}>
+            {infoLabel && <InfoLabel {...infoLabel} htmlFor={"syncedSlider"} />}
+            <div id="syncedSlider" className={classes.syncedSlider}>
+                {props.min !== undefined && props.max !== undefined && (
+                    <Slider
+                        {...passthroughProps}
+                        className={classes.slider}
+                        size={size}
+                        min={min / step}
+                        max={max / step}
+                        step={undefined}
+                        value={value / step}
+                        onChange={handleSliderChange}
+                        onPointerDown={handleSliderPointerDown}
+                        onPointerUp={handleSliderPointerUp}
+                    />
+                )}
+                <SpinButton {...passthroughProps} value={value} onChange={handleInputChange} step={props.step} />
+            </div>
         </div>
     );
 };

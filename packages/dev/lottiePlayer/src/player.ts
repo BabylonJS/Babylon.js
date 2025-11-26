@@ -4,6 +4,7 @@ import type {
     AnimationSizeMessagePayload,
     AnimationUrlMessage,
     ContainerResizeMessage,
+    DisposeMessage,
     Message,
     StartAnimationMessage,
     PreWarmMessage,
@@ -141,8 +142,6 @@ export class Player {
      * Disposes the LottiePlayer instance, cleaning up resources and event listeners.
      */
     public dispose(): void {
-        window.removeEventListener("beforeunload", this._onBeforeUnload);
-
         if (this._resizeObserver) {
             this._resizeObserver.disconnect();
             this._resizeObserver = null;
@@ -162,7 +161,17 @@ export class Player {
         this._preWarmReject = null;
         this._preWarmPromise = null;
 
-        this._onBeforeUnload();
+        if (this._worker) {
+            // Try graceful shutdown first
+            const disposeMessage: DisposeMessage = {
+                type: "dispose",
+                payload: {},
+            };
+
+            this._worker.postMessage(disposeMessage);
+            this._worker = null;
+            window.removeEventListener("beforeunload", this._onBeforeUnload);
+        }
 
         if (this._input && this._canvas) {
             this._input.container.removeChild(this._canvas);
@@ -203,13 +212,6 @@ export class Player {
         // Create the canvas element
         this._canvas = document.createElement("canvas");
         this._canvas.id = "babylon-canvas";
-
-        // Center the canvas in the container
-        this._canvas.style.position = "absolute";
-        this._canvas.style.left = "50%";
-        this._canvas.style.top = "50%";
-        this._canvas.style.transform = "translate(-50%, -50%)";
-        this._canvas.style.display = "block";
 
         // The size of the canvas is the relation between the size of the container div and the size of the animation
         this._scaleFactor = CalculateScaleFactor(this._animationWidth, this._animationHeight, this._input.container);

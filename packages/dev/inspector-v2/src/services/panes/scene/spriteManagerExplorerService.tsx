@@ -9,7 +9,7 @@ import { Observable } from "core/Misc/observable";
 import { Sprite } from "core/Sprites/sprite";
 import { InterceptProperty } from "../../../instrumentation/propertyInstrumentation";
 import { SceneContextIdentity } from "../../sceneContext";
-import { DefaultSectionsOrder } from "./defaultSectionsMetadata";
+import { DefaultCommandsOrder, DefaultSectionsOrder } from "./defaultSectionsMetadata";
 import { SceneExplorerServiceIdentity } from "./sceneExplorerService";
 
 import "core/Sprites/spriteSceneComponent";
@@ -52,8 +52,9 @@ export const SpriteManagerExplorerServiceDefinition: ServiceDefinition<[], [ISce
             getEntityRemovedObservables: () => [scene.onSpriteManagerRemovedObservable],
         });
 
-        const spritePlayStopCommandRegistration = sceneExplorerService.addCommand({
+        const spritePlayStopCommandRegistration = sceneExplorerService.addEntityCommand({
             predicate: (entity: unknown) => entity instanceof Sprite,
+            order: DefaultCommandsOrder.SpritePlay,
             getCommand: (sprite) => {
                 const onChangeObservable = new Observable<void>();
                 const playHook = InterceptFunction(sprite, "playAnimation", {

@@ -76,12 +76,13 @@
 
         grid-template-columns: 100%;
         height: 100%;
-        overflow-y: auto;
+        overflow: hidden;
     }
 
     #propertyTab {
         grid-row: 1;
         grid-column: 1;
+        overflow: auto;
     }
 
     .button {
@@ -468,4 +469,18 @@
     user-select: none;
 
     text-align: center;
+}
+
+.context-menu {
+    background: #222222;
+    z-index: 1000;
+
+    .react-contextmenu-item {
+        padding: 10px;
+        cursor: pointer;
+
+        &:hover {
+            background: #555555;
+        }
+    }
 }

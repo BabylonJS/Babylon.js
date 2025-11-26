@@ -16,13 +16,11 @@ import { CreateLineSystem } from "core/Meshes/Builders/linesBuilder";
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Tools } from "core/Misc/tools";
 import { RenderingManager } from "core/Rendering/renderingManager";
-import { ButtonLine } from "shared-ui-components/fluent/hoc/buttonLine";
 import { Collapse } from "shared-ui-components/fluent/primitives/collapse";
 import { BooleanBadgePropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/booleanBadgePropertyLine";
 import { Color3PropertyLine, Color4PropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/colorPropertyLine";
 import { NumberDropdownPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/dropdownPropertyLine";
 import { NumberInputPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/inputPropertyLine";
-import { PlaceholderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import { StringifiedPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/stringifiedPropertyLine";
 import { SwitchPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/switchPropertyLine";
 import { SyncedSliderPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/syncedSliderPropertyLine";
@@ -35,6 +33,7 @@ import { BoundProperty } from "../boundProperty";
 import "core/Rendering/edgesRenderer";
 import "core/Rendering/outlineRenderer";
 import { LinkToEntityPropertyLine } from "../linkToEntityPropertyLine";
+import { HexPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/hexPropertyLine";
 
 export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMesh; selectionService: ISelectionService }> = (props) => {
     const { mesh, selectionService } = props;
@@ -48,7 +47,6 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
 
     return (
         <>
-            <BoundProperty component={SwitchPropertyLine} label="Is Visible" target={mesh} propertyKey="isVisible" />
             <StringifiedPropertyLine label="Vertices" value={mesh.getTotalVertices()} />
             <StringifiedPropertyLine label="Faces" value={mesh.getTotalIndices() / 3} />
             <StringifiedPropertyLine label="Sub-Meshes" value={subMeshes.length} />
@@ -63,7 +61,6 @@ export const AbstractMeshGeneralProperties: FunctionComponent<{ mesh: AbstractMe
                     selectionService={selectionService}
                 />
             )}
-            <ButtonLine label="Dispose" onClick={() => mesh.dispose()} />
         </>
     );
 };
@@ -84,8 +81,7 @@ export const AbstractMeshDisplayProperties: FunctionComponent<{ mesh: AbstractMe
                 max={RenderingManager.MAX_RENDERINGGROUPS - 1}
                 step={1}
             />
-            {/* TODO: Placeholder should be a hex property line */}
-            <BoundProperty component={PlaceholderPropertyLine} label="TODO: Layer Mask" target={mesh} propertyKey="layerMask" />
+            <BoundProperty component={HexPropertyLine} label="Layer Mask" target={mesh} propertyKey="layerMask" />
         </>
     );
 };
@@ -134,6 +130,7 @@ export const AbstractMeshOutlineOverlayProperties: FunctionComponent<{ mesh: Abs
             <BoundProperty component={SwitchPropertyLine} label="Render Outline" target={mesh} propertyKey="renderOutline" />
             <Collapse visible={renderOutline}>
                 <BoundProperty label="Outline Color" component={Color3PropertyLine} target={mesh} propertyKey="outlineColor" />
+                <BoundProperty label="Outline Width" component={NumberInputPropertyLine} target={mesh} propertyKey="outlineWidth" step={0.001} />
             </Collapse>
         </>
     );

@@ -1,12 +1,13 @@
+import type { Color4 } from "core/Maths/math.color";
 import type { Vector2, Vector3 } from "core/Maths/math.vector";
-import { BlockTools } from "../../blockTools";
+import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+
+import { BlockTools } from "../../blockTools";
 import * as styles from "./inputDisplayManager.module.scss";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
 import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
-import type { Color4 } from "core/Maths/math.color";
 import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 export class InputDisplayManager implements IDisplayManager {
@@ -68,6 +69,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleSystemSources.Emitter:
                     value = "Emitter";
                     break;
+                case NodeParticleSystemSources.CameraPosition:
+                    value = "Camera Position";
+                    break;
             }
         } else if (inputBlock.isContextual) {
             switch (inputBlock.contextualValue) {
@@ -77,11 +81,17 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.Direction:
                     value = "Direction";
                     break;
+                case NodeParticleContextualSources.DirectionScale:
+                    value = "Direction Scale";
+                    break;
                 case NodeParticleContextualSources.ScaledDirection:
                     value = "Scaled Direction";
                     break;
                 case NodeParticleContextualSources.Scale:
                     value = "Scale";
+                    break;
+                case NodeParticleContextualSources.Size:
+                    value = "Size";
                     break;
                 case NodeParticleContextualSources.Age:
                     value = "Age";
@@ -101,6 +111,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeParticleContextualSources.InitialColor:
                     value = "Initial Color";
                     break;
+                case NodeParticleContextualSources.InitialDirection:
+                    value = "Initial Direction";
+                    break;
                 case NodeParticleContextualSources.ColorDead:
                     value = "Dead Color";
                     break;
@@ -112,6 +125,15 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeParticleContextualSources.SpriteCellStart:
                     value = "Sprite Cell Start";
+                    break;
+                case NodeParticleContextualSources.ColorStep:
+                    value = "Color Step";
+                    break;
+                case NodeParticleContextualSources.ScaledColorStep:
+                    value = "Scaled Color Step";
+                    break;
+                case NodeParticleContextualSources.LocalPositionUpdated:
+                    value = "Local Position Updated";
                     break;
             }
         } else {

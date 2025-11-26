@@ -17,7 +17,7 @@ import type { GlobalState } from "../../../../globalState";
 import "core/Materials/material.decalMap";
 import "core/Rendering/prePassRendererSceneComponent";
 import "core/Rendering/subSurfaceSceneComponent";
-import type { OpenPBRMaterial } from "core/Materials/PBR/openPbrMaterial";
+import type { OpenPBRMaterial } from "core/Materials/PBR/openpbrMaterial";
 
 interface IOpenPBRMaterialPropertyGridComponentProps {
     globalState: GlobalState;
@@ -177,6 +177,62 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                     label="Coat Roughness"
                     texture={material.coatRoughnessTexture}
                     propertyName="coatRoughnessTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Thin Film Weight"
+                    texture={material.thinFilmWeightTexture}
+                    propertyName="thinFilmWeightTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Thin Film Thickness"
+                    texture={material.thinFilmThicknessTexture}
+                    propertyName="thinFilmThicknessTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Coat Roughness Anisotropy"
+                    texture={material.coatRoughnessAnisotropyTexture}
+                    propertyName="coatRoughnessAnisotropyTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Fuzz Weight"
+                    texture={material.fuzzWeightTexture}
+                    propertyName="fuzzWeightTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Fuzz Color"
+                    texture={material.fuzzColorTexture}
+                    propertyName="fuzzColorTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Fuzz Roughness"
+                    texture={material.fuzzRoughnessTexture}
+                    propertyName="fuzzRoughnessTexture"
+                    material={material}
+                    onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                    onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
+                />
+                <TextureLinkLineComponent
+                    label="Emission Color"
+                    texture={material.emissionColorTexture}
+                    propertyName="emissionColorTexture"
                     material={material}
                     onSelectionChangedObservable={this.props.onSelectionChangedObservable}
                     onDebugSelectionChangeObservable={onDebugSelectionChangeObservable}
@@ -527,6 +583,60 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
                     />
                 </LineContainerComponent>
+                <LineContainerComponent title="FUZZ" selection={this.props.globalState}>
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Weight"
+                        target={material}
+                        propertyName="fuzzWeight"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Weight Texture"
+                        texture={material.fuzzWeightTexture}
+                        propertyName="fuzzWeightTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <Color3LineComponent
+                        lockObject={this.props.lockObject}
+                        label="Color"
+                        target={material}
+                        propertyName="fuzzColor"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        isLinear={true}
+                    />
+                    <TextureLinkLineComponent
+                        label="Color Texture"
+                        texture={material.fuzzColorTexture}
+                        propertyName="fuzzColorTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Roughness"
+                        target={material}
+                        propertyName="fuzzRoughness"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Roughness Texture"
+                        texture={material.fuzzRoughnessTexture}
+                        propertyName="fuzzRoughnessTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                </LineContainerComponent>
                 <LineContainerComponent title="EMISSION" selection={this.props.globalState}>
                     <Color3LineComponent
                         lockObject={this.props.lockObject}
@@ -551,6 +661,54 @@ export class OpenPBRMaterialPropertyGridComponent extends React.Component<IOpenP
                         propertyName="emissionLuminance"
                         minimum={0}
                         maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                </LineContainerComponent>
+                <LineContainerComponent title="THIN FILM" selection={this.props.globalState}>
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Weight"
+                        target={material}
+                        propertyName="thinFilmWeight"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Weight Texture"
+                        texture={material.thinFilmWeightTexture}
+                        propertyName="thinFilmWeightTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <TextureLinkLineComponent
+                        label="Thickness Texture"
+                        texture={material.thinFilmThicknessTexture}
+                        propertyName="thinFilmThicknessTexture"
+                        material={material}
+                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                        onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Thickness"
+                        target={material}
+                        propertyName="thinFilmThickness"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="IOR"
+                        target={material}
+                        propertyName="thinFilmIor"
+                        minimum={1}
+                        maximum={3}
                         step={0.01}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />

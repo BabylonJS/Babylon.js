@@ -68,6 +68,13 @@ export abstract class AbstractSound extends AbstractSoundSource {
     }
 
     /**
+     * The number of active instances of the sound that are currently playing.
+     */
+    public get activeInstancesCount(): number {
+        return this._instances.size;
+    }
+
+    /**
      * Whether the sound should start playing automatically. Defaults to `false`.
      */
     public get autoplay(): boolean {
@@ -245,5 +252,7 @@ export abstract class AbstractSound extends AbstractSoundSource {
             this._state = SoundState.Stopped;
             this.onEndedObservable.notifyObservers(this);
         }
+
+        instance.dispose();
     };
 }

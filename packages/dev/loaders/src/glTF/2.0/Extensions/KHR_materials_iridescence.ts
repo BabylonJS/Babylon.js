@@ -74,22 +74,17 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
         const promises = new Array<Promise<any>>();
 
         // Set non-texture properties immediately
-        const iridescenceWeight = properties.iridescenceFactor ?? 0;
-        const iridescenceIor = properties.iridescenceIor ?? (properties as any).iridescenceIOR ?? 1.3;
-        const iridescenceThicknessMinimum = properties.iridescenceThicknessMinimum ?? 100;
-        const iridescenceThicknessMaximum = properties.iridescenceThicknessMaximum ?? 400;
-
-        adapter.iridescenceWeight = iridescenceWeight;
-        adapter.iridescenceIor = iridescenceIor;
-        adapter.iridescenceThicknessMinimum = iridescenceThicknessMinimum;
-        adapter.iridescenceThicknessMaximum = iridescenceThicknessMaximum;
+        adapter.thinFilmWeight = properties.iridescenceFactor ?? 0;
+        adapter.thinFilmIor = properties.iridescenceIor ?? (properties as any).iridescenceIOR ?? 1.3;
+        adapter.thinFilmThicknessMinimum = properties.iridescenceThicknessMinimum ?? 100;
+        adapter.thinFilmThicknessMaximum = properties.iridescenceThicknessMaximum ?? 400;
 
         // Load textures
         if (properties.iridescenceTexture) {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/iridescenceTexture`, properties.iridescenceTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Iridescence)`;
-                    adapter.iridescenceTexture = texture;
+                    adapter.thinFilmWeightTexture = texture;
                 })
             );
         }
@@ -98,7 +93,7 @@ export class KHR_materials_iridescence implements IGLTFLoaderExtension {
             promises.push(
                 this._loader.loadTextureInfoAsync(`${context}/iridescenceThicknessTexture`, properties.iridescenceThicknessTexture, (texture) => {
                     texture.name = `${babylonMaterial.name} (Iridescence Thickness)`;
-                    adapter.iridescenceThicknessTexture = texture;
+                    adapter.thinFilmThicknessTexture = texture;
                 })
             );
         }

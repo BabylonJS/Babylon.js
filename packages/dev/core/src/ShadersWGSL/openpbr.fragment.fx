@@ -79,10 +79,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // _____________________________ Read Coat Layer properties ______________________
     #include<openpbrCoatLayerData>
 
+    #include<openpbrThinFilmLayerData>
+
+    // _____________________________ Read Fuzz Layer properties ______________________
+    #include<openpbrFuzzLayerData>
+
     // TEMP
     var subsurface_weight: f32 = 0.0f;
     var transmission_weight: f32 = 0.0f;
-    var fuzz_weight: f32 = 0.0f;
 
     #define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
@@ -131,6 +135,18 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         );
     #endif
 
+    #ifdef FUZZ
+        // _____________________________ Compute Geometry info for fuzz layer _________________________
+        let fuzzNormalW = normalize(mix(normalW, coatNormalW, coat_weight));
+        var fuzzTangent = normalize(TBN[0]);
+        fuzzTangent = normalize(fuzzTangent - dot(fuzzTangent, fuzzNormalW) * fuzzNormalW);
+        let fuzzBitangent = cross(fuzzNormalW, fuzzTangent);
+
+        let fuzzGeoInfo: geometryInfoOutParams = geometryInfo(
+            fuzzNormalW, viewDirectionW.xyz, fuzz_roughness, geometricNormalW
+        );
+    #endif
+
     // _______________________ F0 and F90 Reflectance _______________________________
     
     // Coat
@@ -140,6 +156,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         , vec3f(1.0f)
         , coat_weight
     );
+
+#ifdef THIN_FILM
+    // Thin Film
+    let thin_film_outside_ior: f32 = mix(1.0f, coat_ior, coat_weight);
+#endif
 
     // Base Dielectric
     let baseDielectricReflectance: ReflectanceParams = dielectricReflectance(

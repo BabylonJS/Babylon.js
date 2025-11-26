@@ -80,13 +80,15 @@ export class MotionBlurPostProcess extends PostProcess {
         this._applyMode();
     }
 
+    private _forcedGeometryBuffer: Nullable<GeometryBufferRenderer> = null;
+
     private _forceGeometryBuffer: boolean = false;
     private get _geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
         if (!this._forceGeometryBuffer) {
             return null;
         }
 
-        return this._scene.geometryBufferRenderer;
+        return this._forcedGeometryBuffer ?? this._scene.geometryBufferRenderer;
     }
 
     private get _prePassRenderer(): Nullable<PrePassRenderer> {
@@ -130,7 +132,7 @@ export class MotionBlurPostProcess extends PostProcess {
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_BYTE,
         blockCompilation = false,
-        forceGeometryBuffer = false
+        forceGeometryBuffer: boolean | GeometryBufferRenderer = false
     ) {
         const localOptions = {
             uniforms: ThinMotionBlurPostProcess.Uniforms,
@@ -151,11 +153,18 @@ export class MotionBlurPostProcess extends PostProcess {
             ...localOptions,
         });
 
-        this._forceGeometryBuffer = forceGeometryBuffer;
+        if (forceGeometryBuffer instanceof GeometryBufferRenderer) {
+            this._forceGeometryBuffer = true;
+            this._forcedGeometryBuffer = forceGeometryBuffer;
+        } else {
+            this._forceGeometryBuffer = forceGeometryBuffer;
+        }
 
         // Set up assets
         if (this._forceGeometryBuffer) {
-            scene.enableGeometryBufferRenderer();
+            if (!this._forcedGeometryBuffer) {
+                scene.enableGeometryBufferRenderer();
+            }
 
             if (this._geometryBufferRenderer) {
                 this._geometryBufferRenderer.enableVelocity = this.isObjectBased;
@@ -219,7 +228,7 @@ export class MotionBlurPostProcess extends PostProcess {
      * @param camera The camera to dispose the post process on.
      */
     public override dispose(camera?: Camera): void {
-        if (this._geometryBufferRenderer) {
+        if (this._geometryBufferRenderer && !this._forcedGeometryBuffer) {
             // Clear previous transformation matrices dictionary used to compute objects velocities
             this._geometryBufferRenderer._previousTransformationMatrices = {};
             this._geometryBufferRenderer._previousBonesTransformationMatrices = {};

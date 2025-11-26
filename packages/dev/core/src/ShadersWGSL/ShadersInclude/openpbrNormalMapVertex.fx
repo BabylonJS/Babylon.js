@@ -1,4 +1,4 @@
-#if defined(GEOMETRY_NORMAL) || defined(PARALLAX) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC)
+#if defined(GEOMETRY_NORMAL) || defined(PARALLAX) || defined(CLEARCOAT_BUMP) || defined(ANISOTROPIC) || defined(FUZZ)
 	#if defined(TANGENT) && defined(NORMAL)
 		var tbnNormal: vec3f = normalize(normalUpdated);
 		var tbnTangent: vec3f = normalize(tangentUpdated.xyz);

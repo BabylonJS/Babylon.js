@@ -211,6 +211,9 @@ export class StandardMaterialDefines extends ImageProcessingDefinesMixin(Standar
     public AREALIGHTSUPPORTED = true;
     public USE_VERTEX_PULLING = false;
 
+    public CLUSTLIGHT_SLICES = 0;
+    public CLUSTLIGHT_BATCH = 0;
+
     /**
      * If the reflection texture on this material is in linear color space
      * @internal
@@ -1006,7 +1009,7 @@ export class StandardMaterial extends StandardMaterialBase {
             this._applyDecalMapAfterDetailMap,
             this._useVertexPulling,
             subMesh.getRenderingMesh(),
-            this._setVertexOutputInvariant
+            this._isVertexOutputInvariant
         );
 
         // Values that need to be evaluated on every frame
@@ -1480,7 +1483,7 @@ export class StandardMaterial extends StandardMaterialBase {
                         ubo.updateFloat("alphaCutOff", this.alphaCutOff);
                     }
 
-                    BindIBLParameters(scene, defines, ubo, this._reflectionTexture, false, false, true);
+                    BindIBLParameters(scene, defines, ubo, Color3.White(), this._reflectionTexture, false, false, true, false, false, false, this.roughness);
                     if (!this._reflectionTexture || !StandardMaterial.ReflectionTextureEnabled) {
                         ubo.updateFloat2("vReflectionInfos", 0.0, this.roughness);
                     }

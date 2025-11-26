@@ -1,22 +1,23 @@
-import * as React from "react";
 import type { GlobalState } from "../../globalState";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
+import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+
+import * as React from "react";
 import { FloatPropertyTabComponent } from "../../components/propertyTab/properties/floatPropertyTabComponent";
 import { Vector2PropertyTabComponent } from "../../components/propertyTab/properties/vector2PropertyTabComponent";
 import { Vector3PropertyTabComponent } from "../../components/propertyTab/properties/vector3PropertyTabComponent";
-import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
-import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
+import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
+import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
+import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
+import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { NodeParticleBlockConnectionPointTypes } from "core/Particles/Node/Enums/nodeParticleBlockConnectionPointTypes";
-import type { ParticleInputBlock } from "core/Particles/Node/Blocks/particleInputBlock";
-import { Color4PropertyTabComponent } from "../../components/propertyTab/properties/color4PropertyTabComponent";
-import { NodeParticleContextualSources } from "core/Particles/Node/Enums/nodeParticleContextualSources";
-import { NodeParticleSystemSources } from "core/Particles/Node/Enums/nodeParticleSystemSources";
 
 export class InputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<ParticleInputBlock>>;
@@ -124,6 +125,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Lifetime", value: NodeParticleContextualSources.Lifetime },
                     { label: "Age gradient", value: NodeParticleContextualSources.AgeGradient },
                     { label: "Angle", value: NodeParticleContextualSources.Angle },
+                    { label: "Size", value: NodeParticleContextualSources.Size },
+                    { label: "Direction scale", value: NodeParticleContextualSources.DirectionScale },
                 ];
                 systemSourcesOptions = [
                     { label: "Time", value: NodeParticleSystemSources.Time },
@@ -143,8 +146,13 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Position", value: NodeParticleContextualSources.Position },
                     { label: "Direction", value: NodeParticleContextualSources.Direction },
                     { label: "Scaled direction", value: NodeParticleContextualSources.ScaledDirection },
+                    { label: "Initial Direction", value: NodeParticleContextualSources.InitialDirection },
+                    { label: "Local Position Updated", value: NodeParticleContextualSources.LocalPositionUpdated },
                 ];
-                systemSourcesOptions = [{ label: "Emitter", value: NodeParticleSystemSources.Emitter }];
+                systemSourcesOptions = [
+                    { label: "Emitter", value: NodeParticleSystemSources.Emitter },
+                    { label: "Camera Position", value: NodeParticleSystemSources.CameraPosition },
+                ];
                 break;
             case NodeParticleBlockConnectionPointTypes.Color4:
                 contextualSourcesOptions = [
@@ -158,16 +166,16 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         const modeOptions = [{ label: "User-defined", value: 0 }];
 
         if (contextualSourcesOptions.length > 0) {
-            modeOptions.push({ label: "Contextual value (Float)", value: 2 });
-            modeOptions.push({ label: "Contextual value (int)", value: 1 });
-            modeOptions.push({ label: "Contextual value (Vector2)", value: 4 });
-            modeOptions.push({ label: "Contextual value (Vector3)", value: 8 });
-            modeOptions.push({ label: "Contextual value (Color4)", value: 128 });
+            modeOptions.push({ label: "Contextual value (Float)", value: NodeParticleBlockConnectionPointTypes.Float });
+            modeOptions.push({ label: "Contextual value (Int)", value: NodeParticleBlockConnectionPointTypes.Int });
+            modeOptions.push({ label: "Contextual value (Vector2)", value: NodeParticleBlockConnectionPointTypes.Vector2 });
+            modeOptions.push({ label: "Contextual value (Vector3)", value: NodeParticleBlockConnectionPointTypes.Vector3 });
+            modeOptions.push({ label: "Contextual value (Color4)", value: NodeParticleBlockConnectionPointTypes.Color4 });
         }
 
         if (systemSourcesOptions.length > 0) {
-            modeOptions.push({ label: "System value (Float)", value: 2 });
-            modeOptions.push({ label: "System value (Vector3)", value: 8 });
+            modeOptions.push({ label: "System value (Float)", value: -NodeParticleBlockConnectionPointTypes.Float });
+            modeOptions.push({ label: "System value (Vector3)", value: -NodeParticleBlockConnectionPointTypes.Vector3 });
         }
 
         return (
@@ -189,32 +197,30 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         onSelect={(value: any) => {
                             switch (value) {
                                 case 0:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.None;
+                                    inputBlock.systemSource = NodeParticleSystemSources.None;
                                     this.setDefaultValue();
                                     break;
-                                default:
-                                    switch (value) {
-                                        case 1:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Age;
-                                            break;
-                                        case 2:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.SpriteCellIndex;
-                                            break;
-                                        case 3:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Scale;
-                                            break;
-                                        case 4:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Position;
-                                            break;
-                                        case 5:
-                                            inputBlock.contextualValue = NodeParticleContextualSources.Color;
-                                            break;
-                                        case 6:
-                                            inputBlock.systemSource = NodeParticleSystemSources.Time;
-                                            break;
-                                        case 7:
-                                            inputBlock.systemSource = NodeParticleSystemSources.Emitter;
-                                            break;
-                                    }
+                                case NodeParticleBlockConnectionPointTypes.Float:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.Age;
+                                    break;
+                                case NodeParticleBlockConnectionPointTypes.Int:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.SpriteCellIndex;
+                                    break;
+                                case NodeParticleBlockConnectionPointTypes.Vector2:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.Scale;
+                                    break;
+                                case NodeParticleBlockConnectionPointTypes.Vector3:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.Position;
+                                    break;
+                                case NodeParticleBlockConnectionPointTypes.Color4:
+                                    inputBlock.contextualValue = NodeParticleContextualSources.Color;
+                                    break;
+                                case -NodeParticleBlockConnectionPointTypes.Float:
+                                    inputBlock.systemSource = NodeParticleSystemSources.Time;
+                                    break;
+                                case -NodeParticleBlockConnectionPointTypes.Vector3:
+                                    inputBlock.systemSource = NodeParticleSystemSources.Emitter;
                                     break;
                             }
                             this.forceUpdate();

@@ -1,8 +1,12 @@
+import type { FunctionComponent } from "react";
+
 import type { PropertyLineProps } from "shared-ui-components/fluent/hoc/propertyLines/propertyLine";
 import type { ISelectionService } from "../../services/selectionService";
-import { useEffect, useState, type FunctionComponent } from "react";
-import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
+
+import { useEffect, useState } from "react";
+
 import type { Nullable } from "core/types";
+import { LinkPropertyLine } from "shared-ui-components/fluent/hoc/propertyLines/linkPropertyLine";
 
 type LinkToEntityProps = { entity: Nullable<{ name: string; reservedDataStore?: Record<PropertyKey, unknown> }>; selectionService: ISelectionService };
 

@@ -16,6 +16,7 @@ type PositionedPopoverProps = {
  * @returns The positioned popover component
  */
 export const PositionedPopover: FunctionComponent<PropsWithChildren<PositionedPopoverProps>> = (props) => {
+    PositionedPopover.displayName = "PositionedPopover";
     const [open, setOpen] = useState(false);
 
     useEffect(() => {

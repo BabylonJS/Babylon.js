@@ -50,7 +50,7 @@ export class TargetCamera extends Camera {
     /**
      * Define the current rotation of the camera as a quaternion to prevent Gimbal lock
      */
-    public rotationQuaternion: Quaternion;
+    public rotationQuaternion: Nullable<Quaternion>;
 
     /**
      * Define the current speed of the camera
@@ -74,6 +74,19 @@ export class TargetCamera extends Camera {
      * Speed multiplier for inverse camera panning
      */
     public inverseRotationSpeed = 0.2;
+
+    /**
+     * @internal
+     * @experimental
+     * Can be used to change clamping behavior for inertia. Hook into onBeforeRenderObservable to change the value per-frame
+     */
+    public _panningEpsilon = Epsilon;
+    /**
+     * @internal
+     * @experimental
+     * Can be used to change clamping behavior for inertia. Hook into onBeforeRenderObservable to change the value per-frame
+     */
+    public _rotationEpsilon = Epsilon;
 
     /**
      * Define the current target of the camera as an object or a position.
@@ -154,7 +167,7 @@ export class TargetCamera extends Camera {
 
     private _storedPosition: Vector3;
     private _storedRotation: Vector3;
-    private _storedRotationQuaternion: Quaternion;
+    private _storedRotationQuaternion: Nullable<Quaternion>;
 
     /**
      * Store current camera state of the camera (fov, position, rotation, etc..)
@@ -183,7 +196,7 @@ export class TargetCamera extends Camera {
         this.position = this._storedPosition.clone();
         this.rotation = this._storedRotation.clone();
 
-        if (this.rotationQuaternion) {
+        if (this.rotationQuaternion && this._storedRotationQuaternion) {
             this.rotationQuaternion = this._storedRotationQuaternion.clone();
         }
 
@@ -391,28 +404,30 @@ export class TargetCamera extends Camera {
             }
         }
 
+        const inertialPanningLimit = this.speed * this._panningEpsilon;
+        const inertialRotationLimit = this.speed * this._rotationEpsilon;
         // Inertia
         if (needToMove) {
-            if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.x) < inertialPanningLimit) {
                 this.cameraDirection.x = 0;
             }
 
-            if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.y) < inertialPanningLimit) {
                 this.cameraDirection.y = 0;
             }
 
-            if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.z) < inertialPanningLimit) {
                 this.cameraDirection.z = 0;
             }
 
             this.cameraDirection.scaleInPlace(this.inertia);
         }
         if (needToRotate) {
-            if (Math.abs(this.cameraRotation.x) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraRotation.x) < inertialRotationLimit) {
                 this.cameraRotation.x = 0;
             }
 
-            if (Math.abs(this.cameraRotation.y) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraRotation.y) < inertialRotationLimit) {
                 this.cameraRotation.y = 0;
             }
             this.cameraRotation.scaleInPlace(this.inertia);
@@ -485,12 +500,9 @@ export class TargetCamera extends Camera {
             const parentWorldMatrix = this.parent.getWorldMatrix();
             this._viewMatrix.invert();
             this._viewMatrix.multiplyToRef(parentWorldMatrix, this._viewMatrix);
-            this._viewMatrix.getTranslationToRef(this._globalPosition);
             this._viewMatrix.invert();
 
             this._markSyncedWithParent();
-        } else {
-            this._globalPosition.copyFrom(position);
         }
     }
 
@@ -545,7 +557,7 @@ export class TargetCamera extends Camera {
                 break;
             }
             case Camera.RIG_MODE_VR:
-                if (camLeft.rotationQuaternion) {
+                if (camLeft.rotationQuaternion && camRight.rotationQuaternion && this.rotationQuaternion) {
                     camLeft.rotationQuaternion.copyFrom(this.rotationQuaternion);
                     camRight.rotationQuaternion.copyFrom(this.rotationQuaternion);
                 } else {

@@ -78,6 +78,13 @@ export type WorkerLoadedMessage = {
     payload: WorkerLoadedMessagePayload;
 };
 
+export type DisposeMessage = {
+    /** The type of the message */
+    type: "dispose";
+    /** The payload of the message */
+    payload: DisposeMessagePayload;
+};
+
 /** Payload for the "animationUrl" message type. */
 export type AnimationUrlMessagePayload = {
     /** The URL of the animation to be loaded. */
@@ -123,10 +130,13 @@ export type WorkerLoadedMessagePayload = {
     error?: string;
 };
 
+/** Payload for the "dispose" message type */
+export type DisposeMessagePayload = {};
+
 /**
  * Valid message types that can be sent between the main thread and the worker.
  */
-export type MessageType = "animationUrl" | "animationSize" | "startAnimation" | "containerResize" | "preWarm" | "workerLoaded";
+export type MessageType = "animationUrl" | "animationSize" | "startAnimation" | "containerResize" | "preWarm" | "workerLoaded" | "dispose";
 
 /**
  * Valid payload types that can be sent between the main thread and the worker.
@@ -137,4 +147,5 @@ export type MessagePayload =
     | StartAnimationMessagePayload
     | ContainerResizeMessagePayload
     | PreWarmMessagePayload
-    | WorkerLoadedMessagePayload;
+    | WorkerLoadedMessagePayload
+    | DisposeMessagePayload;

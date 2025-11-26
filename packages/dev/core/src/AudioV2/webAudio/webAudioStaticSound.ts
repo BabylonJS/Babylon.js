@@ -90,7 +90,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
             this.play();
         }
 
-        this.engine._addNode(this);
+        this.engine._addSound(this);
     }
 
     /** @internal */
@@ -141,7 +141,7 @@ export class _WebAudioStaticSound extends StaticSound implements IWebAudioSuperN
 
         this._subGraph.dispose();
 
-        this.engine._removeNode(this);
+        this.engine._removeSound(this);
     }
 
     /** @internal */
@@ -358,8 +358,11 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
         const restart = this._state === SoundState.Starting || this._state === SoundState.Started;
 
         if (restart) {
-            this.stop();
+            // Stop source node without sending `onEndedObservable` so instance's `dispose` function is not called.
+            const sourceNode = this._sourceNode;
             this._deinitSourceNode();
+            sourceNode?.stop();
+            this._state = SoundState.Stopped;
         }
 
         this._options.startOffset = value;
@@ -467,12 +470,13 @@ class _WebAudioStaticSoundInstance extends _StaticSoundInstance implements IWebA
             return;
         }
 
-        this._setState(SoundState.Stopped);
-
         const engineStopTime = this.engine.currentTime + (options.waitTime ?? 0);
         this._sourceNode?.stop(engineStopTime);
 
-        this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+        if (options.waitTime === undefined || options.waitTime <= 0) {
+            this._setState(SoundState.Stopped);
+            this.engine.stateChangedObservable.removeCallback(this._onEngineStateChanged);
+        }
     }
 
     protected override _connect(node: AbstractAudioNode): boolean {
