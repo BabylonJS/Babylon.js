@@ -618,6 +618,11 @@ export class GaussianSplattingMesh extends Mesh {
     public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         this._postToWorker();
 
+        // geometry used for shadows, bind the first found in the camera view infos
+        if (!this._geometry && this._cameraViewInfos.size) {
+            this._geometry = this._cameraViewInfos.values().next().value.mesh.geometry;
+        }
+
         const cameraId = this._scene.activeCamera!.uniqueId;
         const cameraViewInfos = this._cameraViewInfos.get(cameraId);
         if (!cameraViewInfos || !cameraViewInfos.splatIndexBufferSet) {
@@ -635,7 +640,6 @@ export class GaussianSplattingMesh extends Mesh {
                 return PLYType.FLOAT;
             case "int":
                 return PLYType.INT;
-                break;
             case "uint":
                 return PLYType.UINT;
             case "double":
