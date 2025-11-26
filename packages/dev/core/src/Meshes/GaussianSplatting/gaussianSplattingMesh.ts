@@ -500,7 +500,29 @@ export class GaussianSplattingMesh extends Mesh {
     /** @internal */
     public _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
-        if ((forced || frameId !== this._frameIdLastUpdate) && ((this._worker && this._canPostToWorker) || _native) && this._scene.activeCamera) {
+        if (_native && _native.sortGS) {
+            if ((forced || frameId !== this._frameIdLastUpdate) && this._scene.activeCamera) {
+                const cameraMatrix = this._scene.activeCamera.getViewMatrix();
+                this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+                cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
+                this.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[1]);
+                Vector3.TransformNormalToRef(Vector3.Forward(this._scene.useRightHandedSystem), TmpVectors.Matrix[1], TmpVectors.Vector3[2]);
+                TmpVectors.Vector3[2].normalize();
+
+                const dot = Vector3.Dot(TmpVectors.Vector3[2], this._oldDirection);
+                if (forced || Math.abs(dot - 1) >= 0.01) {
+                    this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
+                    this._frameIdLastUpdate = frameId;
+
+                    _native.sortGS(this._modelViewMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                    this.thinInstanceBufferUpdated("splatIndex");
+                    this._canPostToWorker = true;
+                    this._readyToDisplay = true;
+                }
+            }
+            return;
+        }
+        if ((forced || frameId !== this._frameIdLastUpdate) && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             const cameraMatrix = this._scene.activeCamera.getViewMatrix();
             this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
             cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
@@ -512,18 +534,10 @@ export class GaussianSplattingMesh extends Mesh {
             if (forced || Math.abs(dot - 1) >= 0.01) {
                 this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
                 this._frameIdLastUpdate = frameId;
-                if (_native) {
-                    // @ts-expect-error: sortGS is a native function not recognized by TypeScript
-                    sortGS(this._modelViewMatrix, this._splatPositions, this._splatIndex, this._scene.useRightHandedSystem);
-                    this.thinInstanceBufferUpdated("splatIndex");
-                    this._canPostToWorker = true;
-                    this._readyToDisplay = true;
-                } else {
-                    this._canPostToWorker = false;
-                    this._worker!.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
-                        this._depthMix.buffer,
-                    ]);
-                }
+                this._canPostToWorker = false;
+                this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
+                    this._depthMix.buffer,
+                ]);
             }
         }
     }
@@ -1643,6 +1657,18 @@ export class GaussianSplattingMesh extends Mesh {
 
         // Start the worker thread
         this._worker?.terminate();
+
+        if (!this._worker) {
+            return;
+        }
+
+        this._worker = new Worker(
+            URL.createObjectURL(
+                new Blob(["(", GaussianSplattingMesh._CreateWorker.toString(), ")(self)"], {
+                    type: "application/javascript",
+                })
+            )
+        );
 
         const vertexCountPadded = (this._vertexCount + 15) & ~0xf;
         this._depthMix = new BigInt64Array(vertexCountPadded);
