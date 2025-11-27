@@ -93,7 +93,10 @@ export class LightingVolume {
         }
         this._buildFullVolume = value;
         this._createGeometry();
-        this._createComputeShader();
+        if (this._engine.isWebGPU) {
+            this._createComputeShader();
+        }
+        this._firstUpdate = true;
     }
 
     /**
