@@ -19,6 +19,10 @@ import type { Material } from "core/Materials/material";
 import { Scalar } from "core/Maths/math.scalar";
 import { runCoroutineSync, runCoroutineAsync, createYieldingScheduler, type Coroutine } from "core/Misc/coroutine";
 import { EngineStore } from "core/Engines/engineStore";
+import type { INative } from "core/Engines/Native/nativeInterfaces";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _native: INative;
 
 interface IDelayedTextureUpdate {
     covA: Uint16Array;
@@ -485,7 +489,7 @@ export class GaussianSplattingMesh extends Mesh {
             return false;
         }
 
-        if (!this._readyToDisplay) {
+        if (!_native && !this._readyToDisplay) {
             // mesh is ready when worker has done at least 1 sorting
             this._postToWorker(true);
             return false;
@@ -496,6 +500,28 @@ export class GaussianSplattingMesh extends Mesh {
     /** @internal */
     public _postToWorker(forced = false): void {
         const frameId = this.getScene().getFrameId();
+        if (_native && _native.sortGS) {
+            if ((forced || frameId !== this._frameIdLastUpdate) && this._scene.activeCamera) {
+                const cameraMatrix = this._scene.activeCamera.getViewMatrix();
+                this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
+                cameraMatrix.invertToRef(TmpVectors.Matrix[0]);
+                this.getWorldMatrix().multiplyToRef(TmpVectors.Matrix[0], TmpVectors.Matrix[1]);
+                Vector3.TransformNormalToRef(Vector3.Forward(this._scene.useRightHandedSystem), TmpVectors.Matrix[1], TmpVectors.Vector3[2]);
+                TmpVectors.Vector3[2].normalize();
+
+                const dot = Vector3.Dot(TmpVectors.Vector3[2], this._oldDirection);
+                if (forced || Math.abs(dot - 1) >= 0.01) {
+                    this._oldDirection.copyFrom(TmpVectors.Vector3[2]);
+                    this._frameIdLastUpdate = frameId;
+
+                    _native.sortGS(this._modelViewMatrix, this._splatPositions!, this._splatIndex!, this._scene.useRightHandedSystem);
+                    this.thinInstanceBufferUpdated("splatIndex");
+                    this._canPostToWorker = true;
+                    this._readyToDisplay = true;
+                }
+            }
+            return;
+        }
         if ((forced || frameId !== this._frameIdLastUpdate) && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             const cameraMatrix = this._scene.activeCamera.getViewMatrix();
             this.getWorldMatrix().multiplyToRef(cameraMatrix, this._modelViewMatrix);
@@ -1443,7 +1469,9 @@ export class GaussianSplattingMesh extends Mesh {
             this._delayedTextureUpdate = { covA: covA, covB: covB, colors: colorArray, centers: this._splatPositions!, sh: sh };
             const positions = Float32Array.from(this._splatPositions!);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
 
             this._postToWorker(true);
         } else {
@@ -1531,7 +1559,9 @@ export class GaussianSplattingMesh extends Mesh {
             // sort will be dirty here as just finished filled positions will not be sorted
             const positions = Float32Array.from(this._splatPositions);
             const vertexCount = this._vertexCount;
-            this._worker!.postMessage({ positions, vertexCount }, [positions.buffer]);
+            if (this._worker) {
+                this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+            }
             this._sortIsDirty = true;
         } else {
             const paddedVertexCount = (vertexCount + 15) & ~0xf;
@@ -1624,6 +1654,10 @@ export class GaussianSplattingMesh extends Mesh {
             return;
         }
         this._updateSplatIndexBuffer(this._vertexCount);
+
+        if (_native) {
+            return;
+        }
 
         // Start the worker thread
         this._worker?.terminate();
