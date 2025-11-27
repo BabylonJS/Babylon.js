@@ -2753,6 +2753,10 @@
             "excludeFromAutomaticTesting": true
         },
         {
+            "title": "FrameGraph volumetric lighting",
+            "playgroundId": "#QP1BU5#10"
+        },
+        {
             "title": "Render target texture with clustered lights",
             "playgroundId": "#1QCA2M#11"
         },
