@@ -199,7 +199,7 @@ export class PhysicsCharacterController {
     private _lastInvDeltaTime: number;
     private _scene: Scene;
     private _tmpMatrix = new Matrix();
-    private _tmpVecs: Vector3[] = BuildArray(31, Vector3.Zero);
+    private _tmpVecs: Vector3[] = BuildArray(32, Vector3.Zero);
 
     /**
      * minimum distance to make contact
@@ -500,7 +500,10 @@ export class PhysicsCharacterController {
         return numHitBodies;
     }
 
-    protected _createSurfaceConstraint(contact: IContact, timeTravelled: number): ISurfaceConstraintInfo {
+    // Store previous positions per body for velocity calculation
+    protected _bodyPositionTracking = new Map();
+
+    protected _createSurfaceConstraint(dt: number, contact: IContact, timeTravelled: number): ISurfaceConstraintInfo {
         const constraint = {
             //let distance = contact.distance - this.keepDistance;
             planeNormal: contact.normal.clone(),
@@ -540,7 +543,49 @@ export class PhysicsCharacterController {
         if (motionType == PhysicsMotionType.STATIC) {
             constraint.priority = 2;
         } else if (motionType == PhysicsMotionType.ANIMATED) {
-            constraint.priority = 1;
+            const bodyTransformNode = contact.bodyB.body.transformNode;
+            const bodyId = bodyTransformNode.uniqueId;
+
+            // Retrieve tracking data
+            let tracking = this._bodyPositionTracking.get(bodyId);
+
+            const currentFrameWorldMatrix = contact.bodyB.body.transformNode.getWorldMatrix();
+            const frameId = this._scene.getFrameId();
+
+            if (!tracking) {
+                // Initialize tracking
+                tracking = {
+                    prevWorldMatrix: currentFrameWorldMatrix.clone(),
+                    frameId: frameId,
+                };
+                this._bodyPositionTracking.set(bodyId, tracking);
+            } else {
+                // Only calculate velocity if this contact existed in the previous frame
+                // This avoids huge delta spikes when first making contact or after gaps
+                if (tracking.frameId + 1 === frameId) {
+                    const previousFrameWorldMatrix = tracking.prevWorldMatrix;
+
+                    const currentFrameWorldMatrixInverse = TmpVectors.Matrix[1];
+
+                    currentFrameWorldMatrix.invertToRef(currentFrameWorldMatrixInverse);
+
+                    const characterPosition = this.getPosition();
+                    // compute characterPosition in body local space at previous frame
+                    const characterLocalPosition = this._tmpVecs[21];
+                    Vector3.TransformCoordinatesToRef(characterPosition, currentFrameWorldMatrixInverse, characterLocalPosition);
+
+                    const characterWorldPosition = this._tmpVecs[22];
+                    Vector3.TransformCoordinatesToRef(characterLocalPosition, previousFrameWorldMatrix, characterWorldPosition);
+                    const playerDeltaPosition = this._tmpVecs[23];
+                    characterPosition.subtractToRef(characterWorldPosition, playerDeltaPosition);
+
+                    constraint.velocity.copyFrom(playerDeltaPosition);
+                    constraint.velocity.scaleInPlace(1 / dt);
+                    constraint.priority = 1;
+                }
+                tracking.prevWorldMatrix.copyFrom(currentFrameWorldMatrix);
+                tracking.frameId = frameId;
+            }
         }
 
         return constraint;
@@ -589,7 +634,7 @@ export class PhysicsCharacterController {
     protected _createConstraintsFromManifold(dt: number, timeTravelled: number): ISurfaceConstraintInfo[] {
         const constraints = [];
         for (let i = 0; i < this._manifold.length; i++) {
-            const surfaceConstraint = this._createSurfaceConstraint(this._manifold[i], timeTravelled);
+            const surfaceConstraint = this._createSurfaceConstraint(dt, this._manifold[i], timeTravelled);
             constraints.push(surfaceConstraint);
             this._addMaxSlopePlane(this.maxSlopeCosine, this.up, i, constraints, this._manifold[i].allowedPenetration);
             this._resolveConstraintPenetration(surfaceConstraint, this.penetrationRecoverySpeed);
