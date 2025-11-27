@@ -4,13 +4,12 @@
         {
             "title": "Gaussian Splatting viewports",
             "playgroundId": "#CG8GO3#1",
-            "renderCount": 15,
+            "renderCount": 5,
             "referenceImage": "gsplat-viewports.png"
         },
         {
             "title": "Gaussian Splatting Shadows",
             "playgroundId": "#OE54M5#16",
-            "renderCount": 15,
             "referenceImage": "gsplat-shadows.png"
         },
         {

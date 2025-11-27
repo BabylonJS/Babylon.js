@@ -26,6 +26,7 @@ export class UniformBuffer {
     private _buffer: Nullable<DataBuffer>;
     private _buffers: Array<[DataBuffer, Float32Array | undefined]>;
     private _bufferIndex: number;
+    private _bufferUpdatedLastFrame: boolean;
     private _createBufferOnWrite: boolean;
     private _data: number[];
     private _bufferData: Float32Array;
@@ -258,6 +259,7 @@ export class UniformBuffer {
         if ((trackUBOsInFrame === undefined && this._engine._features.trackUbosInFrame) || trackUBOsInFrame === true) {
             this._buffers = [];
             this._bufferIndex = -1;
+            this._bufferUpdatedLastFrame = false;
             this._createBufferOnWrite = false;
             this._currentFrameId = 0;
             this._trackUBOsInFrame = true;
@@ -691,6 +693,8 @@ export class UniformBuffer {
             }
         }
 
+        this._bufferUpdatedLastFrame = true;
+
         this._engine.updateUniformBuffer(this._buffer, this._bufferData);
 
         if (this._engine._features._collectUbosUpdatedInFrame) {
@@ -720,7 +724,11 @@ export class UniformBuffer {
             this._currentFrameId = this._engine.frameId;
             this._createBufferOnWrite = false;
             if (this._buffers && this._buffers.length > 0) {
-                this._needSync = this._bufferIndex !== 0;
+                if (this._buffers.length === 1) {
+                    this._needSync = !this._bufferUpdatedLastFrame;
+                } else {
+                    this._needSync = this._bufferIndex !== 0;
+                }
                 this._bufferIndex = 0;
                 this._buffer = this._buffers[this._bufferIndex][0];
             } else {

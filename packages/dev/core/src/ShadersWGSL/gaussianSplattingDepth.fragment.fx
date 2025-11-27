@@ -1,5 +1,4 @@
 #include<gaussianSplattingFragmentDeclaration>
-#include<shadowMapFragmentExtraDeclaration>
 varying vPosition: vec2f;
 varying vColor: vec4f;
 
