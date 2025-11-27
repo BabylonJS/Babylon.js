@@ -9,7 +9,7 @@ import { GeospatialLimits } from "./Limits/geospatialLimits";
 import { ClampCenterFromPolesInPlace, ComputeLocalBasisToRefs, GeospatialCameraMovement } from "./geospatialCameraMovement";
 import type { IVector3Like } from "../Maths/math.like";
 import { Vector3CopyToRef, Vector3Distance } from "../Maths/math.vector.functions";
-import { Clamp } from "../Maths/math.scalar.functions";
+import { Clamp, NormalizeRadians } from "../Maths/math.scalar.functions";
 import type { AllowedAnimValue } from "../Behaviors/Cameras/interpolatingBehavior";
 import { InterpolatingBehavior } from "../Behaviors/Cameras/interpolatingBehavior";
 import type { EasingFunction } from "../Animations/easing";
@@ -86,11 +86,11 @@ export class GeospatialCamera extends Camera {
     }
 
     /**
-     * Sets the camera's yaw (rotation around the geocentric normal)
+     * Sets the camera's yaw (rotation around the geocentric normal). Will wrap value to [-π, π)
      * @param yaw The desired yaw angle in radians (0 = north, π/2 = east)
      */
     public set yaw(yaw: number) {
-        this._setOrientation(yaw, this.pitch, this.radius, this.center);
+        yaw !== this._yaw && this._setOrientation(yaw, this.pitch, this.radius, this.center);
     }
 
     private _pitch: number = 0;
@@ -107,11 +107,11 @@ export class GeospatialCamera extends Camera {
     }
 
     /**
-     * Sets the camera's pitch (angle from looking straight at globe)
+     * Sets the camera's pitch (angle from looking straight at globe). Will wrap value to [-π, π)
      * @param pitch The desired pitch angle in radians (0 = looking at planet center, π/2 = looking at horizon)
      */
     public set pitch(pitch: number) {
-        this._setOrientation(this.yaw, pitch, this.radius, this.center);
+        pitch !== this._pitch && this._setOrientation(this.yaw, pitch, this.radius, this.center);
     }
 
     private _radius: number = 0;
@@ -124,7 +124,7 @@ export class GeospatialCamera extends Camera {
      * @param radius The desired radius
      */
     public set radius(radius: number) {
-        this._setOrientation(this.yaw, this.pitch, radius, this.center);
+        radius !== this._radius && this._setOrientation(this.yaw, this.pitch, radius, this.center);
     }
 
     protected _checkLimits() {
@@ -141,8 +141,9 @@ export class GeospatialCamera extends Camera {
     private _tempUp = new Vector3();
 
     private _setOrientation(yaw: number, pitch: number, radius: number, center: DeepImmutable<IVector3Like>): void {
-        this._yaw = yaw;
-        this._pitch = pitch;
+        // Wrap yaw and pitch to [-π, π)
+        this._yaw = NormalizeRadians(yaw);
+        this._pitch = NormalizeRadians(pitch);
         this._radius = radius;
 
         Vector3CopyToRef(center, this._center);
@@ -205,8 +206,8 @@ export class GeospatialCamera extends Camera {
     public updateFlyToDestination(targetYaw?: number, targetPitch?: number, targetRadius?: number, targetCenter?: Vector3): void {
         this._flyToTargets.clear();
 
-        this._flyToTargets.set("yaw", targetYaw);
-        this._flyToTargets.set("pitch", targetPitch);
+        this._flyToTargets.set("yaw", targetYaw != undefined ? NormalizeRadians(targetYaw) : undefined);
+        this._flyToTargets.set("pitch", targetPitch != undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
         this._flyToTargets.set("center", targetCenter);
 
@@ -235,8 +236,8 @@ export class GeospatialCamera extends Camera {
     ): Promise<void> {
         this._flyToTargets.clear();
 
-        this._flyToTargets.set("yaw", targetYaw);
-        this._flyToTargets.set("pitch", targetPitch);
+        this._flyToTargets.set("yaw", targetYaw !== undefined ? NormalizeRadians(targetYaw) : undefined);
+        this._flyToTargets.set("pitch", targetPitch !== undefined ? NormalizeRadians(targetPitch) : undefined);
         this._flyToTargets.set("radius", targetRadius);
         this._flyToTargets.set("center", targetCenter);
 
