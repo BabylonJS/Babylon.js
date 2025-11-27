@@ -270,6 +270,10 @@ export class PhysicsCharacterController {
     private _startCollector;
     private _castCollector;
 
+    // If the difference between the cast displacement and the simplex solver output position is less than this
+    // value (per component), do not do a second cast to check if it's possible to reach the output position.
+    private _displacementEps = 1e-4;
+
     /**
      * instanciate a new characterController
      * @param position Initial position
@@ -1388,49 +1392,12 @@ export class PhysicsCharacterController {
         return 1 / body.body.getMassProperties(body.index).mass!;
     }
 
-    /**
-     * Update internal state. Must be called once per frame
-     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
-     * @param surfaceInfo surface information returned by checkSupport
-     * @param gravity gravity applied to the character. Can be different that world gravity
-     */
-    public integrate(deltaTime: number, surfaceInfo: CharacterSurfaceInfo, gravity: Vector3) {
+    protected _integrateManifolds(deltaTime: number, gravity: Vector3): void {
         const hk = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as HavokPlugin;
-
-        const invDeltaTime = 1 / deltaTime;
-        let remainingTime = deltaTime;
-        let newVelocity = Vector3.Zero();
-
-        // If the difference between the cast displacement and the simplex solver output position is less than this
-        // value (per component), do not do a second cast to check if it's possible to reach the output position.
-        const displacementEps = 1e-4;
         const epsSqrd = 1e-8;
 
-        // Choose the first cast direction.  If velocity hasn't changed from the previous integrate, guess that the
-        // displacement will be the same as last integrate, scaled by relative step length.  Otherwise, guess based
-        // on current velocity.
-        {
-            const tolerance = displacementEps * invDeltaTime;
-            if (this._velocity.equalsWithEpsilon(this._lastVelocity, tolerance)) {
-                this._lastDisplacement.scaleInPlace(remainingTime * this._lastInvDeltaTime);
-            } else {
-                const displacementVelocity = this._velocity;
-                if (surfaceInfo.supportedState == CharacterSupportedState.SUPPORTED) {
-                    const relativeVelocity = this._tmpVecs[28];
-                    this._velocity.subtractToRef(surfaceInfo.averageSurfaceVelocity, relativeVelocity);
-                    const normalDotVelocity = surfaceInfo.averageSurfaceNormal.dot(relativeVelocity);
-                    if (normalDotVelocity < 0) {
-                        relativeVelocity.subtractInPlace(surfaceInfo.averageSurfaceNormal.scale(normalDotVelocity));
-                        displacementVelocity.copyFrom(relativeVelocity);
-                        displacementVelocity.addInPlace(surfaceInfo.averageSurfaceVelocity);
-                    }
-                }
-                this._lastDisplacement.copyFrom(displacementVelocity);
-                this._lastDisplacement.scaleInPlace(remainingTime);
-            }
-            this._lastVelocity.copyFrom(this._velocity);
-            this._lastInvDeltaTime = invDeltaTime;
-        }
+        let newVelocity = Vector3.Zero();
+        let remainingTime = deltaTime;
 
         // Make sure that contact with bodies that have been removed since the call to checkSupport() are removed from the
         // manifold
@@ -1458,7 +1425,7 @@ export class PhysicsCharacterController {
             // If castCollector had hits on different bodies (so we're not sure if some non-closest body could be in our way) OR
             // the simplex has given an output direction different from the cast guess
             // we re-cast to check we can move there. There is no need to get the start points again.
-            if (updateResult != 0 || (newDisplacement.lengthSquared() > epsSqrd && !this._lastDisplacement.equalsWithEpsilon(newDisplacement, displacementEps))) {
+            if (updateResult != 0 || (newDisplacement.lengthSquared() > epsSqrd && !this._lastDisplacement.equalsWithEpsilon(newDisplacement, this._displacementEps))) {
                 this._castWithCollectors(this._position, this._position.add(newDisplacement), this._castCollector, this._startCollector);
                 const hknp = hk._hknp;
                 const numCastHits = hknp.HP_QueryCollector_GetNumHits(this._castCollector)[1];
@@ -1500,6 +1467,65 @@ export class PhysicsCharacterController {
         }
 
         this._velocity.copyFrom(newVelocity);
+    }
+
+    /**
+     * Move the character with collisions
+     * @param displacement defines the requested displacement vector
+     */
+    public moveWithCollisions(displacement: Vector3): void {
+        if (this._scene.deltaTime == undefined) {
+            return;
+        }
+        const deltaTime = this._scene.deltaTime / 1000.0;
+        const invDeltaTime = 1 / deltaTime;
+
+        displacement.scaleToRef(1 / deltaTime, this._velocity);
+        this._lastDisplacement.copyFrom(displacement);
+
+        this._lastVelocity.copyFrom(this._velocity);
+        this._lastInvDeltaTime = invDeltaTime;
+
+        this._integrateManifolds(deltaTime, Vector3.ZeroReadOnly);
+    }
+
+    /**
+     * Update internal state. Must be called once per frame
+     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
+     * @param surfaceInfo surface information returned by checkSupport
+     * @param gravity gravity applied to the character. Can be different that world gravity
+     */
+    public integrate(deltaTime: number, surfaceInfo: CharacterSurfaceInfo, gravity: Vector3) {
+        const invDeltaTime = 1 / deltaTime;
+        const remainingTime = deltaTime;
+
+        // Choose the first cast direction.  If velocity hasn't changed from the previous integrate, guess that the
+        // displacement will be the same as last integrate, scaled by relative step length.  Otherwise, guess based
+        // on current velocity.
+        {
+            const tolerance = this._displacementEps * invDeltaTime;
+            if (this._velocity.equalsWithEpsilon(this._lastVelocity, tolerance)) {
+                this._lastDisplacement.scaleInPlace(remainingTime * this._lastInvDeltaTime);
+            } else {
+                const displacementVelocity = this._velocity;
+                if (surfaceInfo.supportedState == CharacterSupportedState.SUPPORTED) {
+                    const relativeVelocity = this._tmpVecs[28];
+                    this._velocity.subtractToRef(surfaceInfo.averageSurfaceVelocity, relativeVelocity);
+                    const normalDotVelocity = surfaceInfo.averageSurfaceNormal.dot(relativeVelocity);
+                    if (normalDotVelocity < 0) {
+                        relativeVelocity.subtractInPlace(surfaceInfo.averageSurfaceNormal.scale(normalDotVelocity));
+                        displacementVelocity.copyFrom(relativeVelocity);
+                        displacementVelocity.addInPlace(surfaceInfo.averageSurfaceVelocity);
+                    }
+                }
+                this._lastDisplacement.copyFrom(displacementVelocity);
+                this._lastDisplacement.scaleInPlace(remainingTime);
+            }
+            this._lastVelocity.copyFrom(this._velocity);
+            this._lastInvDeltaTime = invDeltaTime;
+        }
+
+        this._integrateManifolds(deltaTime, gravity);
     }
 
     /**
