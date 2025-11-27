@@ -13,6 +13,7 @@ import type {
     InternalTexture,
     UtilityLayerRenderer,
     IStencilState,
+    IStencilStateProperties,
 } from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
@@ -236,7 +237,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     public applyFullScreenEffect(
         drawWrapper: DrawWrapper,
         customBindings?: () => void,
-        stencilState?: IStencilState,
+        stencilState?: IStencilState | IStencilStateProperties,
         disableColorWrite?: boolean,
         drawBackFace?: boolean,
         depthTest?: boolean,

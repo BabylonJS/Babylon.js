@@ -27,7 +27,7 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import type { IMaterialContext } from "./IMaterialContext";
-import type { IStencilState } from "../States/IStencilState";
+import type { IStencilStateProperties, IStencilState } from "../States/IStencilState";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import type { IDrawContext } from "./IDrawContext";
 import type { VertexBuffer } from "../Meshes/buffer";
@@ -1363,7 +1363,7 @@ export abstract class AbstractEngine {
         force?: boolean,
         reverseSide?: boolean,
         cullBackFaces?: boolean,
-        stencil?: IStencilState,
+        stencil?: IStencilState | IStencilStateProperties,
         zOffsetUnits?: number
     ): void;
 
