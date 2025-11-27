@@ -2754,7 +2754,8 @@
         },
         {
             "title": "FrameGraph volumetric lighting",
-            "playgroundId": "#3VH0AC"
+            "playgroundId": "#3VH0AC",
+            "excludedEngines": ["webgl2"]
         },
         {
             "title": "Render target texture with clustered lights",
