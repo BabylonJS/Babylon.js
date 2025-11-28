@@ -46,6 +46,7 @@ void main() {
         bool isRayIntersectingGround;
         vec4 skyColor =
             sampleSkyViewLut(
+                skyViewLut,
                 clampedCameraRadius,
                 cameraGeocentricNormal,
                 rayDirection,

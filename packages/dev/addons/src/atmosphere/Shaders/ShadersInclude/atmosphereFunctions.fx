@@ -142,7 +142,9 @@ void getSkyViewUVFromParameters(
 
 #if USE_SKY_VIEW_LUT && SAMPLE_SKY_VIEW_LUT
 
+#define inline
 vec4 sampleSkyViewLut(
+    sampler2D skyViewLut,
     float positionRadius,
     vec3 geocentricNormal,
     vec3 rayDirection,
