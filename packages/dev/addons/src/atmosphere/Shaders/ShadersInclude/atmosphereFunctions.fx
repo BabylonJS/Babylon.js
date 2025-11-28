@@ -497,7 +497,7 @@ vec4 applyAerialPerspectiveRadianceBias(vec4 aerialPerspective) {
     if (originalRadiance > 0.) {
         aerialPerspective *= max(0., targetRadiance / originalRadiance);
     } else {
-        aerialPerspective = max(vec4(0.), vec4(vec3(aerialPerspectiveRadianceBias), aerialPerspectiveRadianceBias));
+        aerialPerspective = max(vec4(0.), vec4(aerialPerspectiveRadianceBias));
     }
 
     aerialPerspective.a = min(aerialPerspective.a, 1.);
