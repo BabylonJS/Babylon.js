@@ -3,6 +3,7 @@ export * from "./cullObjectsBlock";
 export * from "./elbowBlock";
 export * from "./executeBlock";
 export * from "./inputBlock";
+export * from "./lightingVolumeBlock";
 export * from "./outputBlock";
 export * from "./resourceContainerBlock";
 
@@ -33,6 +34,7 @@ export * from "./PostProcesses/ssao2PostProcessBlock";
 export * from "./PostProcesses/ssrPostProcessBlock";
 export * from "./PostProcesses/taaPostProcessBlock";
 export * from "./PostProcesses/tonemapPostProcessBlock";
+export * from "./PostProcesses/volumetricLightingBlock";
 
 export * from "./Rendering/csmShadowGeneratorBlock";
 export * from "./Rendering/geometryRendererBlock";

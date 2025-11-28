@@ -2694,6 +2694,10 @@
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {
+            "title": "FrameGraph nrge volumetric lighting",
+            "playgroundId": "#3VH0AC#2"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2758,6 +2762,10 @@
             "playgroundId": "#OWGOUN#18",
             "renderCount": 40,
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "FrameGraph volumetric lighting",
+            "playgroundId": "#3VH0AC"
         },
         {
             "title": "Render target texture with clustered lights",
