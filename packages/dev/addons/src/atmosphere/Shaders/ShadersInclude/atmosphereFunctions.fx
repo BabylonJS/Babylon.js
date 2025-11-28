@@ -331,10 +331,13 @@ vec3 sampleMultiScatteringLut(sampler2D multiScatteringLut, float radius, float 
 const float uniformPhase = RECIPROCAL_PI4;
 
 // Utilizes the transmittance LUT and multiple scattering LUT to compute the radiance and transmittance for a given ray.
+#define inline
 void integrateScatteredRadiance(
     bool isAerialPerspectiveLut,
     float lightIntensity,
+    sampler2D transmittanceLut,
     #ifndef COMPUTE_MULTI_SCATTERING
+        sampler2D multiScatteringLut,
         float multiScatteringIntensity,
     #endif
     vec3 rayOriginGlobal,
@@ -635,6 +638,7 @@ vec4 renderMultiScattering(vec2 uv, sampler2D transmittanceLut) {
             integrateScatteredRadiance(
                 false, // isAerialPerspectiveLut
                 1., // No light intensity; it will be applied in downstream LUTs (AerialPerspective, SkyView, and DiffuseSkyIrradiance).
+                transmittanceLut,
                 rayOrigin,
                 rayDirection,
                 directionToLight,
@@ -737,6 +741,8 @@ vec4 renderSkyView(vec2 uv, sampler2D transmittanceLut, sampler2D multiScatterin
     integrateScatteredRadiance(
         false, // isAerialPerspectiveLut
         atmosphereExposure * lightIntensity,
+        transmittanceLut,
+        multiScatteringLut,
         multiScatteringIntensity,
         cameraPositionGlobalClampedToTopOfAtmosphere,
         rayDirection,
@@ -802,6 +808,8 @@ vec4 renderCameraVolume(
     integrateScatteredRadiance(
         true, // isAerialPerspectiveLut
         lightIntensity,
+        transmittanceLut,
+        multiScatteringLut,
         multiScatteringIntensity,
         cameraPositionGlobalClampedToTopOfAtmosphere,
         rayDirection,

@@ -85,6 +85,8 @@ void main() {
         integrateScatteredRadiance(
             isAerialPerspectiveLut, // isAerialPerspectiveLut
             atmosphereExposure * lightIntensity,
+            transmittanceLut,
+            multiScatteringLut,
             multiScatteringIntensity,
             cameraPositionGlobalClampedToTopOfAtmosphere,
             rayDirection,

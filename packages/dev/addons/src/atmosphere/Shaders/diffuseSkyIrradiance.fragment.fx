@@ -20,6 +20,8 @@ vec3 integrateForIrradiance(vec3 directionToLight, vec3 rayDirection, vec3 rayOr
     integrateScatteredRadiance(
         false, // isAerialPerspectiveLut
         1.,
+        transmittanceLut,
+        multiScatteringLut,
         multiScatteringIntensity,
         rayOrigin,
         // Since the filtering assumes z-up and the atmosphere uses y-up, swap y and z.
