@@ -1,11 +1,12 @@
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { DeepImmutableObject } from "../../types";
-import type { PhysicsBody } from "./physicsBody";
+import { PhysicsBody } from "./physicsBody";
 import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { HavokPlugin } from "./Plugins/havokPlugin";
 import { BuildArray } from "core/Misc/arrayTools";
+import { TransformNode } from "../../Meshes";
 
 /**
  * Shape properties for the character controller
@@ -192,6 +193,8 @@ export class PhysicsCharacterController {
     private _velocity: Vector3;
     private _lastVelocity: Vector3;
     private _shape: PhysicsShape;
+    private _body: PhysicsBody;
+    private _transformNode: TransformNode;
     private _ownShape: boolean;
     private _manifold: IContact[] = [];
     private _lastDisplacement: Vector3;
@@ -290,6 +293,12 @@ export class PhysicsCharacterController {
         this._tmpVecs[1].set(0, -h * 0.5 + r, 0);
         this._ownShape = !characterShapeOptions.shape;
         this._shape = characterShapeOptions.shape ?? new PhysicsShapeCapsule(this._tmpVecs[0], this._tmpVecs[1], r, scene);
+        this._transformNode = new TransformNode("CCTransformNode", scene);
+        this._transformNode.position.copyFrom(this._position);
+        this._body = new PhysicsBody(this._transformNode, PhysicsMotionType.ANIMATED, false, scene);
+        this._body.setMassProperties({ inertia: Vector3.ZeroReadOnly });
+        this._body.shape = this._shape;
+        this._body.disablePreStep = false;
         this._lastInvDeltaTime = 1.0 / 60.0;
         this._lastDisplacement = Vector3.Zero();
         this._scene = scene;
@@ -312,6 +321,7 @@ export class PhysicsCharacterController {
      * Set shape used for collision
      */
     public set shape(value: PhysicsShape) {
+        this._body.shape = this._shape;
         if (this._ownShape) {
             this._shape.dispose();
         }
@@ -333,6 +343,7 @@ export class PhysicsCharacterController {
      */
     public setPosition(position: Vector3) {
         this._position.copyFrom(position);
+        this._transformNode.position.copyFrom(this._position);
     }
 
     /**
@@ -1306,7 +1317,7 @@ export class PhysicsCharacterController {
                 orientation,
                 this.keepDistance + this.keepContactTolerance, // max distance
                 false, // should hit triggers
-                [BigInt(0)], // body to ignore //<todo allow for a proxy body!
+                [this._body._pluginData.hpBodyId[0]], // body to ignore //<todo allow for a proxy body!
             ];
             hknp.HP_World_ShapeProximityWithCollector(hk.world, startCollector, query);
         }
@@ -1318,7 +1329,7 @@ export class PhysicsCharacterController {
                 startNative,
                 [endPos.x, endPos.y, endPos.z],
                 false, // should hit triggers
-                [BigInt(0)], // body to ignore //<todo allow for proxy body
+                [this._body._pluginData.hpBodyId[0]], // body to ignore //<todo allow for proxy body
             ];
             hknp.HP_World_ShapeCastWithCollector(hk.world, castCollector, query);
         }
@@ -1512,6 +1523,7 @@ export class PhysicsCharacterController {
         }
 
         this._velocity.copyFrom(newVelocity);
+        this._transformNode.position.copyFrom(this._position);
     }
 
     /**
