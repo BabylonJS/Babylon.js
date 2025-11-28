@@ -33,7 +33,6 @@ import { ControlledSize, SplitDirection } from "shared-ui-components/split/split
 import type { IShadowLight } from "core/Lights";
 import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
 import { HistoryStack } from "shared-ui-components/historyStack";
-import { Mesh } from "core/Meshes/mesh";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -70,7 +69,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _popUpWindow: Window;
 
     private _externalTextures: InternalTexture[] = [];
-    private _dummyMesh: Mesh;
 
     appendBlock(dataToAppend: NodeRenderGraphBlock | INodeData, recursion = true) {
         return this._graphCanvas.createNodeFromObject(
@@ -197,10 +195,6 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             message: "",
             isError: true,
         };
-
-        if (this.props.globalState.scene.meshes.length === 0) {
-            this._dummyMesh = new Mesh("nrge_dummy", this.props.globalState.scene);
-        }
 
         this._graphCanvasRef = React.createRef();
         this._diagramContainerRef = React.createRef();
