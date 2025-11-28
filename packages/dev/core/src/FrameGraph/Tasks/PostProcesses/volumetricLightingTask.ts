@@ -158,7 +158,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         this._renderLightingVolumeMaterial = new ShaderMaterial(`${name} - render lighting volume`, this._frameGraph.scene, "volumetricLightingRenderVolume", {
             attributes: ["position"],
             uniformBuffers: ["Scene", "Mesh"],
-            uniforms: ["world", "lightDir", "invViewProjection", "outputTextureSize", "extinctionPhaseG", "lightPower"],
+            uniforms: ["world", "viewProjection", "vEyePosition", "lightDir", "invViewProjection", "outputTextureSize", "extinctionPhaseG", "lightPower"],
             samplers: ["depthTexture"],
             defines: enableExtinction ? ["USE_EXTINCTION"] : [],
             shaderLanguage: isWebGPU ? ShaderLanguage.WGSL : ShaderLanguage.GLSL,
@@ -171,6 +171,9 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         this._renderLightingVolumeMaterial.stencil.func = Constants.ALWAYS;
         this._renderLightingVolumeMaterial.stencil.backFunc = Constants.ALWAYS;
         this._renderLightingVolumeMaterial.stencil.funcRef = 1;
+        this._renderLightingVolumeMaterial.onBindObservable.add(() => {
+            this._renderLightingVolumeMaterial.bindEyePosition(this._renderLightingVolumeMaterial.getEffect());
+        });
 
         this._clearLightingVolumeTextureTask = new FrameGraphClearTextureTask(`${name} - clear lighting volume texture`, frameGraph);
         this._renderLightingVolumeTask = new FrameGraphObjectRendererTask(`${name} - render lighting volume`, frameGraph, frameGraph.scene);

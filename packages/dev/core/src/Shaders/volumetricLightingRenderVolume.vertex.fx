@@ -1,5 +1,5 @@
-#include<sceneUboDeclaration>
-#include<meshUboDeclaration>
+#include<__decl__sceneVertex>
+#include<__decl__meshVertex>
 
 attribute vec3 position;
 

@@ -1,5 +1,4 @@
-#include<sceneUboDeclaration>
-#include<meshUboDeclaration>
+#include<__decl__sceneFragment>
 
 uniform mat4 invViewProjection;
 uniform vec3 lightDir; // must be normalized
