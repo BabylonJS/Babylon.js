@@ -275,7 +275,7 @@ vec3 computeTransmittance(vec3 rayOriginGlobal, vec3 rayDirection, float tMax, f
 
 }
 
-#ifndef EXCLUDE_TRANSMITTANCE_SAMPLING_FUNCTIONS
+#if defined(SAMPLE_TRANSMITTANCE_LUT) || !defined(EXCLUDE_RAY_MARCHING_FUNCTIONS)
 
 vec2 getTransmittanceUV(float radius, float cosAngleLightToZenith, out float distanceToHorizon) {
 

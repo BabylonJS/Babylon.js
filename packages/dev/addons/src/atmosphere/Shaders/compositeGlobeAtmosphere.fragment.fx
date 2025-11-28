@@ -4,7 +4,6 @@
 #define SAMPLE_SKY_VIEW_LUT
 #if USE_SKY_VIEW_LUT
     #define EXCLUDE_RAY_MARCHING_FUNCTIONS
-    #define EXCLUDE_TRANSMITTANCE_SAMPLING_FUNCTIONS
 #endif
 
 precision highp float;
