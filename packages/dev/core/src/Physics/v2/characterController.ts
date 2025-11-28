@@ -6,7 +6,8 @@ import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { HavokPlugin } from "./Plugins/havokPlugin";
 import { BuildArray } from "core/Misc/arrayTools";
-import { TransformNode } from "../../Meshes";
+import { TransformNode } from "../../Meshes/transformNode";
+import { Observable } from "../../Misc/observable";
 
 /**
  * Shape properties for the character controller
@@ -26,6 +27,29 @@ export interface CharacterShapeOptions {
      */
     capsuleRadius?: number;
 }
+
+/**
+ * Collision event data for the character controller
+ */
+export interface ICharacterControllerCollisionEvent {
+    /**
+     * The collider physics body
+     */
+    collider: PhysicsBody;
+    /**
+     *
+     */
+    colliderIndex: number;
+    /**
+     * Separation force applied to the collider
+     */
+    impulse: Vector3;
+    /**
+     * Position where the impulse is applied
+     */
+    impulsePosition: Vector3;
+}
+
 /**
  * State of the character on the surface
  */
@@ -270,6 +294,12 @@ export class PhysicsCharacterController {
      * default 0
      */
     public characterMass = 0;
+
+    /**
+     * Observable for trigger entered and trigger exited events
+     */
+    public onTriggerCollisionObservable = new Observable<ICharacterControllerCollisionEvent>();
+
     private _startCollector;
     private _castCollector;
 
@@ -308,6 +338,22 @@ export class PhysicsCharacterController {
 
         this._startCollector = hknp.HP_QueryCollector_Create(16)[1];
         this._castCollector = hknp.HP_QueryCollector_Create(16)[1];
+    }
+
+    /**
+     * Dispose the character controller
+     */
+    public dispose() {
+        if (this._ownShape) {
+            this._shape.dispose();
+        }
+        this._body.dispose();
+        this._transformNode.dispose();
+
+        const hk = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as HavokPlugin;
+        const hknp = hk._hknp;
+        hknp.HP_QueryCollector_Release(this._startCollector);
+        hknp.HP_QueryCollector_Release(this._castCollector);
     }
 
     /**
@@ -1317,7 +1363,7 @@ export class PhysicsCharacterController {
                 orientation,
                 this.keepDistance + this.keepContactTolerance, // max distance
                 false, // should hit triggers
-                [this._body._pluginData.hpBodyId[0]], // body to ignore //<todo allow for a proxy body!
+                [this._body._pluginData.hpBodyId[0]],
             ];
             hknp.HP_World_ShapeProximityWithCollector(hk.world, startCollector, query);
         }
@@ -1329,7 +1375,7 @@ export class PhysicsCharacterController {
                 startNative,
                 [endPos.x, endPos.y, endPos.z],
                 false, // should hit triggers
-                [this._body._pluginData.hpBodyId[0]], // body to ignore //<todo allow for proxy body
+                [this._body._pluginData.hpBodyId[0]],
             ];
             hknp.HP_World_ShapeCastWithCollector(hk.world, castCollector, query);
         }
@@ -1415,6 +1461,14 @@ export class PhysicsCharacterController {
                 }
 
                 //<todo Fire callback to allow user to change impulse + use the info / play sounds
+
+                const triggerCollisionInfo: ICharacterControllerCollisionEvent = {
+                    collider: bodyB.body,
+                    colliderIndex: bodyB.index,
+                    impulse: outputObjectImpulse,
+                    impulsePosition: outputImpulsePosition,
+                };
+                this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
 
                 bodyB.body.applyImpulse(outputObjectImpulse, outputImpulsePosition, bodyB.index);
             }
