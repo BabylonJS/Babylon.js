@@ -2687,6 +2687,10 @@
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {
+            "title": "FrameGraph nrge volumetric lighting",
+            "playgroundId": "#3VH0AC#2"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2

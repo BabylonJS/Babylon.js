@@ -33,6 +33,7 @@ import { ControlledSize, SplitDirection } from "shared-ui-components/split/split
 import type { IShadowLight } from "core/Lights";
 import type { NodeRenderGraphExecuteBlock } from "core/FrameGraph/Node/Blocks/executeBlock";
 import { HistoryStack } from "shared-ui-components/historyStack";
+import { Mesh } from "core/Meshes/mesh";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -69,6 +70,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     private _popUpWindow: Window;
 
     private _externalTextures: InternalTexture[] = [];
+    private _dummyMesh: Mesh;
 
     appendBlock(dataToAppend: NodeRenderGraphBlock | INodeData, recursion = true) {
         return this._graphCanvas.createNodeFromObject(
@@ -195,6 +197,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             message: "",
             isError: true,
         };
+
+        if (this.props.globalState.scene.meshes.length === 0) {
+            this._dummyMesh = new Mesh("nrge_dummy", this.props.globalState.scene);
+        }
 
         this._graphCanvasRef = React.createRef();
         this._diagramContainerRef = React.createRef();
@@ -333,7 +339,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else if (input.isCamera()) {
                 input.value = this.props.globalState.scene.activeCamera;
             } else if (input.isObjectList()) {
-                input.value = { meshes: [], particleSystems: [] };
+                input.value = { meshes: this.props.globalState.scene.meshes.slice(), particleSystems: this.props.globalState.scene.particleSystems.slice() };
             } else if (input.isShadowLight()) {
                 input.value = this.props.globalState.scene.lights[1] as IShadowLight;
             }

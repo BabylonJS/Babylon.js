@@ -81,7 +81,7 @@ export class LightingVolume {
 
     private _buildFullVolume = false;
     /**
-     * Indicates whether to build the full volume (true) or only the far plane (false). Default is false.
+     * Indicates whether to build the full volume (true) or only the near plane (false). Default is false.
      */
     public get buildFullVolume() {
         return this._buildFullVolume;
@@ -223,9 +223,9 @@ export class LightingVolume {
             this._uBuffer.updateMatrix("invViewProjMatrix", InvViewProjMatrix);
             this._uBuffer.update();
 
-            this._engine._debugPushGroup?.(`Generate lighting volume (${this._name})`);
+            this._engine._debugPushGroup?.(`Update lighting volume (${this._name})`, 1);
             this._cs.dispatch(dispatchSize, dispatchSize, 1);
-            this._engine._debugPopGroup?.();
+            this._engine._debugPopGroup?.(1);
 
             this._firstUpdate = false;
         } else {
@@ -367,8 +367,14 @@ export class LightingVolume {
         for (let y = 0; y < numTesselation + 1; ++y) {
             for (let x = 0; x < numTesselation + 1; ++x) {
                 let depth = depthValues[Math.floor(mapSize * Math.floor(stepY) + x * step) * factor];
-                if (!this._buildFullVolume && (depth === 1 || y === 0 || x === 0 || y === numTesselation || x === numTesselation)) {
-                    depth = 0;
+                if (!this._buildFullVolume) {
+                    if (y === 0 || x === 0 || y === numTesselation || x === numTesselation) {
+                        posIndex += 3;
+                        continue;
+                    }
+                    if (depth === 1) {
+                        depth = 0;
+                    }
                 }
 
                 TmpVec3.set((x - halfTesselation) / halfTesselation, (y - halfTesselation) / halfTesselation, -1 + 2 * depth);
@@ -513,7 +519,7 @@ export class LightingVolume {
             indices.push(2, 3, 1);
         }
 
-        // Tesselate the far plane
+        // Tesselate the near plane
         let y = min.y;
         for (let iy = 0; iy <= numTesselation; ++iy) {
             let x = min.x;
