@@ -299,6 +299,22 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                                     if (parsedPLY.compressed || !parsedPLY.rawSplat) {
                                         gaussianSplatting.viewDirectionFactor.set(-1, -1, 1);
                                     }
+
+                                    if (parsedPLY.chirality === "RightHanded") {
+                                        gaussianSplatting.scaling.y *= -1.0;
+                                    }
+
+                                    switch (parsedPLY.upAxis) {
+                                        case "X":
+                                            gaussianSplatting.rotation = new Vector3(0, 0, Math.PI / 2);
+                                            break;
+                                        case "Y":
+                                            gaussianSplatting.rotation = new Vector3(0, 0, Math.PI);
+                                            break;
+                                        case "Z":
+                                            gaussianSplatting.rotation = new Vector3(-Math.PI / 2, Math.PI, 0);
+                                            break;
+                                    }
                                 }
                                 break;
                             case Mode.PointCloud:
