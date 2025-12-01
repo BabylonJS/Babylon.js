@@ -173,11 +173,18 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      */
     public autoCorrectCameraLimitsAndSensibility = true;
 
+    /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<ArcRotateCamera> {
+        return this._attachedCamera;
+    }
+
     // Default behavior functions
     private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
     private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
     private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<TransformNode>>>;
-    private _attachedCamera: Nullable<ArcRotateCamera>;
+    private _attachedCamera: Nullable<ArcRotateCamera> = null;
     private _isPointerDown = false;
     private _lastInteractionTime = -Infinity;
 

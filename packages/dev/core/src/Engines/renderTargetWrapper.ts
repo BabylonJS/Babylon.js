@@ -266,7 +266,11 @@ export class RenderTargetWrapper {
      */
     public generateMipMaps(): void {
         if (this._engine._currentRenderTarget === this) {
-            this._engine.unBindFramebuffer(this, true);
+            if (this.isMulti) {
+                this._engine.unBindMultiColorAttachmentFramebuffer(this, true);
+            } else {
+                this._engine.unBindFramebuffer(this, true);
+            }
         }
         if (this.isMulti) {
             this._engine.generateMipMapsMultiFramebuffer(this);

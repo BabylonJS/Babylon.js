@@ -2,8 +2,15 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting viewports",
+            "playgroundId": "#CG8GO3#1",
+            "renderCount": 5,
+            "referenceImage": "gsplat-viewports.png"
+        },
+        {
             "title": "Gaussian Splatting Shadows",
             "playgroundId": "#OE54M5#16",
+            "renderCount": 5,
             "referenceImage": "gsplat-shadows.png"
         },
         {
@@ -2687,6 +2694,10 @@
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {
+            "title": "FrameGraph nrge volumetric lighting",
+            "playgroundId": "#3VH0AC#2"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
             "playgroundId": "#3LB017#3",
             "errorRatio": 2
@@ -2751,6 +2762,10 @@
             "playgroundId": "#OWGOUN#18",
             "renderCount": 40,
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "FrameGraph volumetric lighting",
+            "playgroundId": "#3VH0AC"
         },
         {
             "title": "Render target texture with clustered lights",
@@ -3159,6 +3174,10 @@
         {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
+        },
+        {
+            "title": "Lighting Volume",
+            "playgroundId": "#MU9P6L#1"
         }
     ]
 }
