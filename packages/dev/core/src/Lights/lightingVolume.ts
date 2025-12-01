@@ -31,12 +31,15 @@ export class LightingVolume {
     private _light?: DirectionalLight;
     private _fallbackTexture?: BaseTexture;
     private _storageBuffer?: StorageBuffer;
+    private _vertexBuffer?: VertexBuffer;
     private _depthCopy?: RenderTargetWrapper;
     private _readPixelPromise: Nullable<Promise<ArrayBufferView>> = null;
     private _readPixelAbortController: Nullable<AbortController> = null;
     private _numFrames = 0;
     private _firstUpdate = true;
     private _currentLightDirection = new Vector3();
+    private _positions: Float32Array;
+    private _indices: Uint32Array;
 
     private _shadowGenerator?: ShadowGenerator;
     /**
@@ -78,7 +81,7 @@ export class LightingVolume {
 
     public set tesselation(n: number) {
         this._tesselation = n;
-        this._createGeometry();
+        this._createGeometry(true);
     }
 
     /**
@@ -166,7 +169,7 @@ export class LightingVolume {
         }
 
         this._tesselation = tesselation;
-        this._createGeometry();
+        this._createGeometry(true);
     }
 
     /**
@@ -253,6 +256,7 @@ export class LightingVolume {
                 positions: { group: 0, binding: 2 },
             },
             defines: !this._buildFullVolume ? ["#define KEEP_EDGES", "#define MOVE_FAR_DEPTH_TO_NEAR"] : undefined,
+            entryPoint: "updateFromShadowmap",
         });
 
         if (this._shadowGenerator) {
@@ -388,7 +392,7 @@ export class LightingVolume {
         this._firstUpdate = false;
     }
 
-    private _createGeometry() {
+    private _createGeometry(recreateAll = false) {
         if (!this._light) {
             return;
         }
@@ -412,6 +416,11 @@ export class LightingVolume {
         const v = new Vector3();
 
         const startFarIndices = this._buildFullVolume ? (numTesselation + 1) * 4 : 4;
+
+        if (recreateAll || !this._positions || !this._indices) {
+            this._positions = new Float32Array(((numTesselation + 1) * (numTesselation + 1) + startFarIndices) * 3);
+            this._indices = new Uint32Array(3 * (this._tesselation * this._tesselation * 2 + (this._buildFullVolume ? 12 * this._tesselation - 2 : 2)));
+        }
 
         if (this._buildFullVolume) {
             let startIndices = 0;
@@ -560,7 +569,7 @@ export class LightingVolume {
 
             this._storageBuffer.update(positions);
 
-            const vertexBuffer = new VertexBuffer(webGPUEngine, this._storageBuffer.getBuffer(), "position");
+            const vertexBuffer = new VertexBuffer(webGPUEngine, this._storageBuffer.getBuffer(), "position", { takeBufferOwnership: false });
 
             this._mesh.setVerticesBuffer(vertexBuffer);
 
@@ -574,5 +583,7 @@ export class LightingVolume {
         }
 
         this._mesh.setIndices(indices, positions.length / 3);
+        console.log("Ok: ", indices.length, positions.length);
+        console.log("Calc: ", this._indices.length, this._positions.length);
     }
 }
