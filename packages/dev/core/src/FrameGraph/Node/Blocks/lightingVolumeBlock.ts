@@ -56,16 +56,6 @@ export class NodeRenderGraphLightingVolumeBlock extends NodeRenderGraphBlock {
         this._frameGraphTask.lightingVolume.frequency = value;
     }
 
-    /** Indicates whether to build the full volume (true) or only the far plane (false). Default is false. */
-    @editableInPropertyPage("Build full volume", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public get buildFullVolume(): boolean {
-        return this._frameGraphTask.lightingVolume.buildFullVolume;
-    }
-
-    public set buildFullVolume(value: boolean) {
-        this._frameGraphTask.lightingVolume.buildFullVolume = value;
-    }
-
     /**
      * Gets the current class name
      * @returns the class name
@@ -100,7 +90,6 @@ export class NodeRenderGraphLightingVolumeBlock extends NodeRenderGraphBlock {
         const codes: string[] = [];
         codes.push(`${this._codeVariableName}.tesselation = ${this.tesselation};`);
         codes.push(`${this._codeVariableName}.frequency = ${this.frequency};`);
-        codes.push(`${this._codeVariableName}.buildFullVolume = ${this.buildFullVolume};`);
         return super._dumpPropertiesCode() + codes.join("\n");
     }
 
@@ -108,7 +97,6 @@ export class NodeRenderGraphLightingVolumeBlock extends NodeRenderGraphBlock {
         const serializationObject = super.serialize();
         serializationObject.tesselation = this.tesselation;
         serializationObject.frequency = this.frequency;
-        serializationObject.buildFullVolume = this.buildFullVolume;
         return serializationObject;
     }
 
@@ -116,7 +104,6 @@ export class NodeRenderGraphLightingVolumeBlock extends NodeRenderGraphBlock {
         super._deserialize(serializationObject);
         this.tesselation = serializationObject.tesselation;
         this.frequency = serializationObject.frequency;
-        this.buildFullVolume = !!serializationObject.buildFullVolume;
     }
 }
 

@@ -166,11 +166,6 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         });
         this._renderLightingVolumeMaterial.backFaceCulling = false;
         this._renderLightingVolumeMaterial.alphaMode = Constants.ALPHA_ADD;
-        this._renderLightingVolumeMaterial.depthFunction = Constants.ALWAYS;
-        this._renderLightingVolumeMaterial.stencil.enabled = this.enableExtinction;
-        this._renderLightingVolumeMaterial.stencil.func = Constants.ALWAYS;
-        this._renderLightingVolumeMaterial.stencil.backFunc = Constants.ALWAYS;
-        this._renderLightingVolumeMaterial.stencil.funcRef = 1;
         this._renderLightingVolumeMaterial.onBindObservable.add(() => {
             this._renderLightingVolumeMaterial.bindEyePosition(this._renderLightingVolumeMaterial.getEffect());
         });
@@ -212,13 +207,12 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
 
         const textureManager = this._frameGraph.textureManager;
 
-        const targetTextureCreationOptions = textureManager.getTextureCreationOptions(this.targetTexture);
-        const targetTextureSamples = targetTextureCreationOptions.options.samples || 1;
-
         let lightingVolumeTexture = this.lightingVolumeTexture;
         if (!lightingVolumeTexture) {
+            const targetTextureCreationOptions = textureManager.getTextureCreationOptions(this.targetTexture);
+
             targetTextureCreationOptions.options.labels = ["InScattering"];
-            targetTextureCreationOptions.options.samples = this.enableExtinction ? targetTextureSamples : 1;
+            targetTextureCreationOptions.options.samples = 1;
 
             lightingVolumeTexture = textureManager.createRenderTargetTexture(`${this.name} - lighting volume texture`, targetTextureCreationOptions);
         }
@@ -238,28 +232,14 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
             this._renderLightingVolumeMaterial.setVector3("lightDir", this.light.direction.normalizeToRef(TmpVectors.Vector3[0]));
         });
 
-        const ligthingVolumeTextureCreationOptions = textureManager.getTextureCreationOptions(lightingVolumeTexture);
-
-        ligthingVolumeTextureCreationOptions.options.formats = [
-            this._frameGraph.engine.isWebGPU ? Constants.TEXTUREFORMAT_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8,
-        ];
-        ligthingVolumeTextureCreationOptions.options.labels = ["InScatteringStencil"];
-        ligthingVolumeTextureCreationOptions.options.samples = targetTextureSamples;
-
-        const lightingVolumeStencilTexture = this.enableExtinction
-            ? textureManager.createRenderTargetTexture(`${this.name} - lighting volume stencil texture`, ligthingVolumeTextureCreationOptions)
-            : undefined;
-
         this._clearLightingVolumeTextureTask.clearColor = true;
         this._clearLightingVolumeTextureTask.clearStencil = this.enableExtinction;
         this._clearLightingVolumeTextureTask.color = new Color4(0, 0, 0, 1);
         this._clearLightingVolumeTextureTask.stencilValue = 0;
         this._clearLightingVolumeTextureTask.targetTexture = lightingVolumeTexture;
-        this._clearLightingVolumeTextureTask.depthTexture = lightingVolumeStencilTexture;
         this._clearLightingVolumeTextureTask.record(true);
 
         this._renderLightingVolumeTask.targetTexture = this._clearLightingVolumeTextureTask.outputTexture;
-        this._renderLightingVolumeTask.depthTexture = this.enableExtinction ? this._clearLightingVolumeTextureTask.outputDepthTexture : undefined;
         this._renderLightingVolumeTask.objectList = this.lightingVolumeMesh;
         this._renderLightingVolumeTask.camera = this.camera;
         this._renderLightingVolumeTask.disableImageProcessing = true;
@@ -267,30 +247,10 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
         this._renderLightingVolumeTask.record(true);
 
         this._blendLightingVolumeTask.sourceTexture = this._renderLightingVolumeTask.outputTexture;
-        this._blendLightingVolumeTask.depthAttachmentTexture = this.enableExtinction ? this._renderLightingVolumeTask.outputDepthTexture : undefined;
         this._blendLightingVolumeTask.sourceSamplingMode = this.sourceSamplingMode;
         this._blendLightingVolumeTask.targetTexture = this.targetTexture;
         this._blendLightingVolumeTask.depthTexture = this.depthTexture;
         this._blendLightingVolumeTask.camera = this.camera;
-        this._blendLightingVolumeTask.depthTest = false;
-        this._blendLightingVolumeTask.stencilState = {
-            enabled: this.enableExtinction,
-
-            funcRef: 1,
-
-            mask: 0xff,
-            funcMask: 0xff,
-
-            func: Constants.EQUAL,
-            opStencilFail: Constants.KEEP,
-            opDepthFail: Constants.KEEP,
-            opStencilDepthPass: Constants.KEEP,
-
-            backFunc: Constants.EQUAL,
-            backOpStencilFail: Constants.KEEP,
-            backOpDepthFail: Constants.KEEP,
-            backOpStencilDepthPass: Constants.KEEP,
-        };
         this._blendLightingVolumeTask.record(true);
 
         if (!skipCreationOfDisabledPasses) {
