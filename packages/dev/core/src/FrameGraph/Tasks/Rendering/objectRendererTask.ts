@@ -304,7 +304,9 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
 
             const depthTextureDescription = this._frameGraph.textureManager.getTextureDescription(this.depthTexture);
             if (depthTextureDescription.options.samples !== outputTextureDescription.options.samples) {
-                throw new Error(`FrameGraphObjectRendererTask ${this.name}: the depth texture and the output texture must have the same number of samples`);
+                throw new Error(
+                    `FrameGraphObjectRendererTask ${this.name}: the depth texture "${depthTextureDescription.options.labels?.[0] ?? "noname"}" (${depthTextureDescription.options.samples} samples) and the output texture "${outputTextureDescription.options.labels?.[0] ?? "noname"}" (${outputTextureDescription.options.samples} samples) must have the same number of samples`
+                );
             }
 
             depthEnabled = true;

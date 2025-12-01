@@ -128,7 +128,7 @@ Scene.prototype.createDefaultCamera = function (createArcRotateCamera = false, r
         let camera: TargetCamera;
         let radius = worldSize.length() * 1.5;
         // empty scene scenario!
-        if (!isFinite(radius)) {
+        if (!isFinite(radius) || radius === 0) {
             radius = 1;
             worldCenter.copyFromFloats(0, 0, 0);
         }
