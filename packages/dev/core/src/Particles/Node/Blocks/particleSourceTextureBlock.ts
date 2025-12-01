@@ -7,7 +7,7 @@ import type { NodeParticleBuildState } from "../nodeParticleBuildState";
 import type { Nullable } from "core/types";
 import { TextureTools } from "core/Misc/textureTools";
 import type { BaseTexture } from "../../../Materials/Textures/baseTexture";
-import { ProceduralTexture } from "../../../Materials";
+import type { ProceduralTexture } from "../../../Materials";
 
 /**
  * Interface used to define texture data
