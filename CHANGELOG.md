@@ -1,5 +1,12 @@
 # Changelog
 
+## 8.39.2
+
+### Core
+
+- Volumetric Lighting: fix lighting volume when light direction changes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#17516](https://github.com/BabylonJS/Babylon.js/pull/17516))
+- Revert to old arcrotatecamera behavior where alpha/beta does not scale inertialLimit by speed - by [georginahalpern](https://github.com/georginahalpern) ([#17517](https://github.com/BabylonJS/Babylon.js/pull/17517))
+
 ## 8.39.1
 
 ### Core
