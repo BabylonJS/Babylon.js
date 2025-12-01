@@ -305,7 +305,11 @@
             // IF Transmission Scatter
             // ISO Scattering
             float density = sqrt(min(1.0 / transmission_depth * max3(extinction_coeff), 1.0));
-            vec3 isoscatterVector = mix(vReflectionDominantDirection, normalW, density);
+            #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
+                vec3 isoscatterVector = mix(vReflectionDominantDirection, normalW, density);
+            #else
+                vec3 isoscatterVector = normalW;
+            #endif
             vec3 isoScatteredEnvironmentLight = sampleIrradiance(
                 isoscatterVector
                 #if defined(NORMAL) && defined(USESPHERICALINVERTEX)

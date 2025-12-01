@@ -92,13 +92,11 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
         return new Promise((resolve) => {
             if (babylonMaterial instanceof OpenPBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
                 this._wasUsed = true;
-
                 const invDepth = 1.0 / babylonMaterial.transmissionDepth;
-                const linearTransmissionColor = babylonMaterial.transmissionColor.toLinearSpace();
                 const extinctionCoefficient = new Vector3(
-                    -Math.log(linearTransmissionColor.r) * invDepth,
-                    -Math.log(linearTransmissionColor.g) * invDepth,
-                    -Math.log(linearTransmissionColor.b) * invDepth
+                    -Math.log(babylonMaterial.transmissionColor.r) * invDepth,
+                    -Math.log(babylonMaterial.transmissionColor.g) * invDepth,
+                    -Math.log(babylonMaterial.transmissionColor.b) * invDepth
                 );
                 const scatteringCoefficient = new Vector3(
                     babylonMaterial.transmissionScatter.r * invDepth,
@@ -109,9 +107,10 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
                 const minCoeff = Math.min(absorptionCoefficient.x, absorptionCoefficient.y, absorptionCoefficient.z);
                 if (minCoeff < 0.0) {
                     absorptionCoefficient.subtractInPlace(new Vector3(minCoeff, minCoeff, minCoeff));
+                    // Set extinction coefficient after shifting the absorption to be non-negative.
+                    extinctionCoefficient.copyFrom(absorptionCoefficient).addInPlace(scatteringCoefficient);
                 }
-                // Set extinction coefficient after shifting the absorption to be non-negative.
-                extinctionCoefficient.copyFrom(absorptionCoefficient).addInPlace(scatteringCoefficient);
+
                 const ssAlbedo = new Vector3(
                     scatteringCoefficient.x / extinctionCoefficient.x,
                     scatteringCoefficient.y / extinctionCoefficient.y,
@@ -126,6 +125,18 @@ export class KHR_materials_volume_scatter implements IGLTFExporterExtensionV2 {
 
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = volumeInfo;
+
+                // Now go back and set the extinction coefficient in the volume info.
+                if (node.extensions["KHR_materials_volume"]) {
+                    const volumeExt = node.extensions["KHR_materials_volume"] as any;
+                    const maxExtinction = Math.max(extinctionCoefficient.x, extinctionCoefficient.y, extinctionCoefficient.z);
+                    volumeExt.attenuationDistance = 1.0 / Math.max(maxExtinction, 0.0001);
+                    volumeExt.attenuationColor = new Color3(
+                        Math.exp(-extinctionCoefficient.x * volumeExt.attenuationDistance),
+                        Math.exp(-extinctionCoefficient.y * volumeExt.attenuationDistance),
+                        Math.exp(-extinctionCoefficient.z * volumeExt.attenuationDistance)
+                    ).asArray();
+                }
             }
             resolve(node);
         });

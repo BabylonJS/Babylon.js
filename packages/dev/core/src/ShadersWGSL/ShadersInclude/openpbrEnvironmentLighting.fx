@@ -314,7 +314,11 @@
             // IF Transmission Scatter
             // ISO Scattering
             let density: f32 = sqrt(min(1.0f / transmission_depth * max3(extinction_coeff), 1.0f));
+            #if defined(USEIRRADIANCEMAP) && defined(USE_IRRADIANCE_DOMINANT_DIRECTION)
             let isoscatterVector: vec3f = mix(uniforms.vReflectionDominantDirection, normalW, density);
+            #else
+            let isoscatterVector: vec3f = normalW;
+            #endif
             var isoScatteredEnvironmentLight: vec3f = sampleIrradiance(
                 isoscatterVector
                 #if defined(NORMAL) && defined(USESPHERICALINVERTEX)

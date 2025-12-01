@@ -6,6 +6,13 @@ uniform float vBaseDiffuseRoughness;
 uniform vec4 vReflectanceInfo;
 uniform vec4 vSpecularColor;
 uniform vec3 vSpecularAnisotropy;
+uniform float vTransmissionWeight;
+uniform vec3 vTransmissionColor;
+uniform float vTransmissionDepth;
+uniform vec3 vTransmissionScatter;
+uniform float vTransmissionScatterAnisotropy;
+uniform float vTransmissionDispersionScale;
+uniform float vTransmissionDispersionAbbeNumber;
 uniform float vCoatWeight;
 uniform vec3 vCoatColor;
 uniform float vCoatRoughness;
@@ -16,6 +23,7 @@ uniform float vFuzzWeight;
 uniform vec3 vFuzzColor;
 uniform float vFuzzRoughness;
 uniform vec2 vGeometryCoatTangent;
+uniform float vGeometryThickness;
 uniform vec3 vEmissionColor;
 uniform float vThinFilmWeight;
 uniform vec2 vThinFilmThickness;
@@ -160,7 +168,7 @@ uniform vec2 vThinFilmThicknessInfos;
 #endif
 
 // Refraction Reflection
-#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(SS_REFRACTION) || defined(PREPASS)
+#if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTED_BACKGROUND) || defined(REFRACTED_ENVIRONMENT) || defined(REFRACTED_LIGHTS) || defined(PREPASS)
 uniform mat4 view;
 #endif
 
@@ -221,6 +229,11 @@ uniform mat4 view;
         uniform vec3 vSphericalYZ;
         uniform vec3 vSphericalZX;
     #endif
+#endif
+
+#ifdef REFRACTED_BACKGROUND
+    mat4 backgroundRefractionMatrix;
+    vec3 vBackgroundRefractionInfos;
 #endif
 
 #define ADDITIONAL_FRAGMENT_DECLARATION

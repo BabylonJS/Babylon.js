@@ -691,6 +691,10 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._material.transmissionScatter = value;
     }
 
+    /**
+     * Gets the transmission scatter coefficient.
+     * @returns The scatter coefficient as a Vector3
+     */
     public get transmissionScatter(): Color3 {
         return this._material.transmissionScatter;
     }
@@ -719,10 +723,6 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         this._material.transmissionDispersionScale = value;
     }
 
-    // ========================================
-    // VOLUME PROPERTIES (Subsurface Scattering)
-    // ========================================
-
     /**
      * Sets the attenuation distance for volume scattering.
      * @param value The attenuation distance value
@@ -739,6 +739,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
     }
 
     /**
+     * Gets the attenuation distance for volume scattering.
+     */
+    public get transmissionDepth(): number {
+        return this._material.transmissionDepth;
+    }
+
+    /**
      * Sets the attenuation color for volume scattering.
      * @param value The attenuation color as a Color3
      */
@@ -749,6 +756,13 @@ export class OpenPBRMaterialLoadingAdapter implements IMaterialLoadingAdapter {
         if (!value.equals(Color3.White())) {
             this._material.transmissionColor = value;
         }
+    }
+
+    /**
+     * Gets the attenuation color for volume scattering.
+     */
+    public get transmissionColor(): Color3 {
+        return this._material.transmissionColor;
     }
 
     /**

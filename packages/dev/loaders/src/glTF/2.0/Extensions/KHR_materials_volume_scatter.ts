@@ -109,18 +109,14 @@ export class KHR_materials_volume_scatter implements IGLTFLoaderExtension {
         // We'll apply them to both, as appropriate.
         if (adapter.transmissionWeight > 0) {
             const singleScatterAlbedo = multiScatterToSingleScatterAlbedo(scatterColor);
-            const absorptionCoefficient = adapter.extinctionCoefficient.multiplyByFloats(1.0 - singleScatterAlbedo.x, 1.0 - singleScatterAlbedo.y, 1.0 - singleScatterAlbedo.z);
-            const scatteringCoefficient = adapter.extinctionCoefficient.multiply(singleScatterAlbedo);
 
-            const maxVal = Math.max(absorptionCoefficient.x, absorptionCoefficient.y, absorptionCoefficient.z);
-            const absorptionDistance = maxVal !== 0.0 ? 1.0 / maxVal : 1.0;
+            const extinctionCoefficient = new Vector3(-Math.log(adapter.transmissionColor.r), -Math.log(adapter.transmissionColor.g), -Math.log(adapter.transmissionColor.b));
+            extinctionCoefficient.scaleInPlace(1 / Math.max(adapter.transmissionDepth, 0.001));
 
-            adapter.transmissionColor = new Color3(
-                Math.exp(-absorptionCoefficient.x * absorptionDistance),
-                Math.exp(-absorptionCoefficient.y * absorptionDistance),
-                Math.exp(-absorptionCoefficient.z * absorptionDistance)
-            );
-            adapter.transmissionDepth = absorptionDistance;
+            const scatteringCoefficient = extinctionCoefficient.multiply(singleScatterAlbedo);
+
+            // The scattering coefficient in OpenPBR is defined as per unit distance, so we need to scale it back up by the depth.
+            scatteringCoefficient.scaleInPlace(adapter.transmissionDepth);
             adapter.transmissionScatter.set(scatteringCoefficient.x, scatteringCoefficient.y, scatteringCoefficient.z);
             adapter.transmissionScatterAnisotropy = scatterAnisotropy;
         }
