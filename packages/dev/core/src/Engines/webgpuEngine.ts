@@ -3136,6 +3136,7 @@ export class WebGPUEngine extends ThinWebGPUEngine {
         // We use the MSAA texture format (if available) to determine if it has a stencil aspect or not because, for MSAA depth textures,
         // the format of the "resolve" texture (gpuDepthStencilWrapper.format) is a single red channel format, not a depth-stencil format.
         const depthTextureHasStencil = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilMSAATexture?.format ?? gpuDepthStencilWrapper.format) : false;
+        const depthTextureHasDepth = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasDepthAspect(gpuDepthStencilMSAATexture?.format ?? gpuDepthStencilWrapper.format) : false;
 
         const colorAttachments: (GPURenderPassColorAttachment | null)[] = [];
 
@@ -3240,18 +3241,17 @@ export class WebGPUEngine extends ThinWebGPUEngine {
                     ? {
                           view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
                           depthClearValue: mustClearDepth ? (this.useReverseDepthBuffer ? this._clearReverseDepthValue : this._clearDepthValue) : undefined,
-                          depthLoadOp: rtWrapper.depthReadOnly ? undefined : mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
-                          depthStoreOp: rtWrapper.depthReadOnly ? undefined : WebGPUConstants.StoreOp.Store,
+                          depthLoadOp: rtWrapper.depthReadOnly || !depthTextureHasDepth ? undefined : mustClearDepth ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
+                          depthStoreOp: rtWrapper.depthReadOnly || !depthTextureHasDepth ? undefined : WebGPUConstants.StoreOp.Store,
                           depthReadOnly: rtWrapper.depthReadOnly,
                           stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? this._clearStencilValue : undefined,
-                          stencilLoadOp: rtWrapper.stencilReadOnly
-                              ? undefined
-                              : !depthTextureHasStencil
-                                ? undefined
-                                : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                                  ? WebGPUConstants.LoadOp.Clear
-                                  : WebGPUConstants.LoadOp.Load,
-                          stencilStoreOp: rtWrapper.stencilReadOnly ? undefined : !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
+                          stencilLoadOp:
+                              rtWrapper.stencilReadOnly || !depthTextureHasStencil
+                                  ? undefined
+                                  : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
+                                    ? WebGPUConstants.LoadOp.Clear
+                                    : WebGPUConstants.LoadOp.Load,
+                          stencilStoreOp: rtWrapper.stencilReadOnly || !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
                           stencilReadOnly: rtWrapper.stencilReadOnly,
                       }
                     : undefined,

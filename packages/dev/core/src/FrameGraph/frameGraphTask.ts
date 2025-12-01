@@ -204,10 +204,10 @@ export abstract class FrameGraphTask {
                     throw new Error(`The output texture of the task "${this.name}" is different when it is enabled or disabled.`);
                 }
             }
-            if (outputDepthTexture !== disabledOutputDepthTexture) {
+            if (outputDepthTexture !== disabledOutputDepthTexture && disabledOutputDepthTexture !== null) {
                 throw new Error(`The output depth texture of the task "${this.name}" is different when it is enabled or disabled.`);
             }
-            if (outputObjectList !== disabledOutputObjectList) {
+            if (outputObjectList !== disabledOutputObjectList && disabledOutputObjectList !== null) {
                 throw new Error(`The output object list of the task "${this.name}" is different when it is enabled or disabled.`);
             }
         }
