@@ -25,7 +25,7 @@ export abstract class AbstractAudioOutNode extends AbstractNamedAudioNode {
     }
 
     /**
-     * The analyzer features of the bus.
+     * The audio analyzer features.
      */
     public get analyzer(): AbstractAudioAnalyzer {
         return this._analyzer ?? (this._analyzer = new _AudioAnalyzer(this._subGraph));
@@ -34,7 +34,6 @@ export abstract class AbstractAudioOutNode extends AbstractNamedAudioNode {
     /**
      * The audio output volume.
      */
-
     public get volume(): number {
         return _GetVolumeAudioProperty(this._subGraph, "volume");
     }

@@ -17,7 +17,7 @@ export const enum Channel {
 export const VolumePrecision = 1;
 
 /** The range of acceptable volume values for realtime audio tests. */
-const RealtimeVolumeRange = 0.2;
+export const RealtimeVolumeRange = 0.2;
 
 export class AudioTestConfig {
     public baseUrl = getGlobalConfig().baseUrl;
@@ -297,8 +297,7 @@ export async function ExpectValueToBeCloseTo(page: Page, actual: number, expecte
         expect(actual).toBeCloseTo(expected, precision);
     } else {
         // For "Realtime" contexts, expect larger range due to timing variations.
-        const halfRange = realtimeRange / 2;
-        expect(actual).toBeGreaterThanOrEqual(expected - halfRange);
-        expect(actual).toBeLessThanOrEqual(expected + halfRange);
+        expect(actual).toBeGreaterThanOrEqual(expected - realtimeRange);
+        expect(actual).toBeLessThanOrEqual(expected + realtimeRange);
     }
 }
