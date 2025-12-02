@@ -81,19 +81,10 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
             return;
         }
 
-        let noiseData: INodeParticleTextureData;
-
-        // eslint-disable-next-line github/no-then
-        void noiseTexture.extractTextureContentAsync().then((textureContent: Nullable<INodeParticleTextureData>) => {
+        const processNoiseAsync = async (particle: Particle) => {
+            // eslint-disable-next-line github/no-then
+            const textureContent: Nullable<INodeParticleTextureData> = await noiseTexture.extractTextureContentAsync();
             if (!textureContent) {
-                return;
-            }
-            noiseData = textureContent;
-        });
-
-        const processNoise = (particle: Particle) => {
-            if (!noiseData) {
-                // If the noise data is not ready, we skip processing
                 return;
             }
 
@@ -105,9 +96,27 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
                 particle._randomNoiseCoordinates2 = new Vector3(Math.random(), Math.random(), Math.random());
             }
 
-            const fetchedColorR = system._fetchR(particle._randomNoiseCoordinates1.x, particle._randomNoiseCoordinates1.y, noiseData.width, noiseData.height, noiseData.data);
-            const fetchedColorG = system._fetchR(particle._randomNoiseCoordinates1.z, particle._randomNoiseCoordinates2.x, noiseData.width, noiseData.height, noiseData.data);
-            const fetchedColorB = system._fetchR(particle._randomNoiseCoordinates2.y, particle._randomNoiseCoordinates2.z, noiseData.width, noiseData.height, noiseData.data);
+            const fetchedColorR = system._fetchR(
+                particle._randomNoiseCoordinates1.x,
+                particle._randomNoiseCoordinates1.y,
+                textureContent.width,
+                textureContent.height,
+                textureContent.data
+            );
+            const fetchedColorG = system._fetchR(
+                particle._randomNoiseCoordinates1.z,
+                particle._randomNoiseCoordinates2.x,
+                textureContent.width,
+                textureContent.height,
+                textureContent.data
+            );
+            const fetchedColorB = system._fetchR(
+                particle._randomNoiseCoordinates2.y,
+                particle._randomNoiseCoordinates2.z,
+                textureContent.width,
+                textureContent.height,
+                textureContent.data
+            );
 
             const force = TmpVectors.Vector3[0];
             const scaledForce = TmpVectors.Vector3[1];
@@ -119,7 +128,7 @@ export class UpdateNoiseBlock extends NodeParticleBlock {
         };
 
         const noiseProcessing = {
-            process: processNoise,
+            process: processNoiseAsync,
             previousItem: null,
             nextItem: null,
         };
