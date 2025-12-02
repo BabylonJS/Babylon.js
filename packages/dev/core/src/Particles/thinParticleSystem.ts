@@ -1398,7 +1398,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /** @internal */
-    public _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array): number {
+    public _fetchR(u: number, v: number, width: number, height: number, pixels: Uint8Array | Uint8ClampedArray): number {
         u = Math.abs(u) * 0.5 + 0.5;
         v = Math.abs(v) * 0.5 + 0.5;
 
