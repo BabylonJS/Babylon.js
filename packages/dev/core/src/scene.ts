@@ -5852,10 +5852,12 @@ export class Scene implements IAnimatable, IClipPlanesHolder, IAssetContainer {
             Vector3.CheckExtends(maxBox, min, max);
         }
 
-        return {
-            min: min,
-            max: max,
-        };
+        return min.x === Number.MAX_VALUE
+            ? { min: Vector3.Zero(), max: Vector3.Zero() }
+            : {
+                  min: min,
+                  max: max,
+              };
     }
 
     // Picking
