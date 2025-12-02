@@ -46,7 +46,24 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
         const sectionRegistration = sceneExplorerService.addSection({
             displayName: "Nodes",
             order: DefaultSectionsOrder.Nodes,
-            getRootEntities: () => scene.rootNodes,
+            getRootEntities: () => {
+                const rootNodes = [...scene.rootNodes];
+                // If any non-root node has a parent and that parent is not one of the node types shown in the Nodes section,
+                // then we should treat it as a root node, otherwise it won't show up anywhere in scene explorer.
+                // An example of this is when a Mesh or a TransformNode is parented under a Bone.
+                for (const node of [...scene.meshes, ...scene.transformNodes, ...scene.cameras, ...scene.lights]) {
+                    if (
+                        node.parent &&
+                        !(node.parent instanceof AbstractMesh) &&
+                        !(node.parent instanceof TransformNode) &&
+                        !(node.parent instanceof Camera) &&
+                        !(node.parent instanceof Light)
+                    ) {
+                        rootNodes.push(node);
+                    }
+                }
+                return rootNodes;
+            },
             getEntityChildren: (node) => node.getChildren(),
             getEntityDisplayInfo: (node) => {
                 const onChangeObservable = new Observable<void>();
