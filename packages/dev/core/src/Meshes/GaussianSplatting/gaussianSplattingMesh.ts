@@ -550,7 +550,7 @@ export class GaussianSplattingMesh extends Mesh {
             }
         });
 
-        if ((forced || outdated) && this._worker && (this._scene.activeCameras || this._scene.activeCamera) && this._canPostToWorker) {
+        if ((forced || outdated) && this._worker && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             // array of cameras used for rendering
             const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
             // list view infos for active cameras
