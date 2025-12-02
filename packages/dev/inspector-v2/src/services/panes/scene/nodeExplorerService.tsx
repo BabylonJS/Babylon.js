@@ -19,6 +19,7 @@ import {
 } from "@fluentui/react-icons";
 
 import { Camera } from "core/Cameras/camera";
+import { ClusteredLightContainer } from "core/Lights/Clustered";
 import { Light } from "core/Lights/light";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { TransformNode } from "core/Meshes/transformNode";
@@ -48,6 +49,7 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
             order: DefaultSectionsOrder.Nodes,
             getRootEntities: () => {
                 const rootNodes = [...scene.rootNodes];
+
                 // If any non-root node has a parent and that parent is not one of the node types shown in the Nodes section,
                 // then we should treat it as a root node, otherwise it won't show up anywhere in scene explorer.
                 // An example of this is when a Mesh or a TransformNode is parented under a Bone.
@@ -62,6 +64,19 @@ export const NodeExplorerServiceDefinition: ServiceDefinition<[], [ISceneExplore
                         rootNodes.push(node);
                     }
                 }
+
+                // Lights within a clustered light container are not included in Scene.lights or Scene.rootNodes.
+                // If they also have no parent, then they won't show up anywhere, so show them as root nodes.
+                for (const light of scene.lights) {
+                    if (light instanceof ClusteredLightContainer) {
+                        for (const childLight of light.lights) {
+                            if (!childLight.parent && !rootNodes.includes(childLight)) {
+                                rootNodes.push(childLight);
+                            }
+                        }
+                    }
+                }
+
                 return rootNodes;
             },
             getEntityChildren: (node) => node.getChildren(),
