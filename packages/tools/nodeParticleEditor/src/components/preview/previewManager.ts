@@ -17,6 +17,7 @@ import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { ParticleSystemSet } from "core/Particles/particleSystemSet";
 import { EngineStore } from "core/Engines";
 import type { ParticleSystem } from "core/Particles";
+import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import { DirectionalLight } from "core/Lights";
 
 export class PreviewManager {
@@ -79,6 +80,13 @@ export class PreviewManager {
             (this._scene.particleSystems as ThinParticleSystem[]).forEach((ps) => {
                 totalParticleCount += ps.particles.length;
             });
+            if (this._particleSystemSet) {
+                this._particleSystemSet.systems.forEach((system) => {
+                    if (system instanceof SolidParticleSystem) {
+                        totalParticleCount += system.nbParticles;
+                    }
+                });
+            }
             if (globalState.updateState) {
                 globalState.updateState(
                     "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms",

@@ -35,5 +35,5 @@ export interface ISolidParticleInitData {
     scaling?: () => Vector3;
     rotation?: () => Vector3;
     lifeTime?: () => number;
-    updateBlock?: ISolidParticleUpdateData | null;
+    updateData?: ISolidParticleUpdateData | null;
 }

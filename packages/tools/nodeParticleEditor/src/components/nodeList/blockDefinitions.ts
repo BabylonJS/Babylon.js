@@ -54,12 +54,11 @@ export const BlockDefinitions: IBlockDefinition[] = [
     { name: "UpdateAttractorBlock", category: "Updates", modes: [NodeParticleModes.Particle], tooltip: "Block used to update particle position based on an attractor" },
     { name: "AlignAngleBlock", category: "Updates", modes: [NodeParticleModes.Particle], tooltip: "Block used to align the angle of a particle to its direction" },
     // Updates (SolidParticle only)
-    {
-        name: "UpdateSolidParticleBlock",
-        category: "Updates",
-        modes: [NodeParticleModes.SolidParticle],
-        tooltip: "Update solid particle - connect SolidParticleSystemBlock output here",
-    },
+    { name: "UpdateSolidParticlePositionBlock", category: "Updates", modes: [NodeParticleModes.SolidParticle], tooltip: "Update the position of a solid particle" },
+    { name: "UpdateSolidParticleVelocityBlock", category: "Updates", modes: [NodeParticleModes.SolidParticle], tooltip: "Update the velocity of a solid particle" },
+    { name: "UpdateSolidParticleColorBlock", category: "Updates", modes: [NodeParticleModes.SolidParticle], tooltip: "Update the color of a solid particle" },
+    { name: "UpdateSolidParticleScalingBlock", category: "Updates", modes: [NodeParticleModes.SolidParticle], tooltip: "Update the scaling of a solid particle" },
+    { name: "UpdateSolidParticleRotationBlock", category: "Updates", modes: [NodeParticleModes.SolidParticle], tooltip: "Update the rotation of a solid particle" },
     {
         name: "BasicSpriteUpdateBlock",
         category: "Updates",
@@ -79,8 +78,8 @@ export const BlockDefinitions: IBlockDefinition[] = [
         tooltip: "Block used to create a particle with properties such as emit power, lifetime, color, scale, and angle",
     },
     { name: "SetupSpriteSheetBlock", category: "Setup", modes: [NodeParticleModes.Particle], tooltip: "Block used to setup a sprite sheet for particles" },
-    { name: "CreateSolidParticleBlock", category: "Setup", modes: [NodeParticleModes.SolidParticle], tooltip: "Create Solid Particle System - outputs SolidParticleSystem" },
-    { name: "InitSolidParticleBlock", category: "Setup", modes: [NodeParticleModes.SolidParticle], tooltip: "Configure solid particle: mesh, count, material, init/update" },
+    { name: "CreateSolidParticleBlock", category: "Setup", modes: [NodeParticleModes.SolidParticle], tooltip: "Create a solid particle configuration: mesh, count, material, init properties" },
+    { name: "MergeSolidParticlesBlock", category: "Setup", modes: [NodeParticleModes.SolidParticle], tooltip: "Merge multiple solid particle configurations into an array" },
 
     // Math - Standard
     { name: "AddBlock", category: "Math__Standard", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Math block set to Add" },

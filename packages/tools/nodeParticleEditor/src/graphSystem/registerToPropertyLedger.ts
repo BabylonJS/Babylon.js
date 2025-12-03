@@ -17,9 +17,13 @@ export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.RegisteredControls["MeshShapeBlock"] = MeshShapePropertyTabComponent;
 
     PropertyLedger.RegisteredControls["MeshSourceBlock"] = MeshSourcePropertyTabComponent;
-    PropertyLedger.RegisteredControls["InitSolidParticleBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["CreateSolidParticleBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["MergeSolidParticlesBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["SolidParticleSystemBlock"] = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["UpdateSolidParticleBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticlePositionBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleVelocityBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleColorBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleScalingBlock"] = GenericPropertyComponent;
+    PropertyLedger.RegisteredControls["UpdateSolidParticleRotationBlock"] = GenericPropertyComponent;
     PropertyLedger.RegisteredControls["NodeMaterialSourceBlock"] = NodeMaterialSourcePropertyTabComponent;
 };

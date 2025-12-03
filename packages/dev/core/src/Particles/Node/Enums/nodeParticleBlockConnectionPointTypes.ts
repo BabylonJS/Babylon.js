@@ -30,8 +30,6 @@ export enum NodeParticleBlockConnectionPointTypes {
     System = 0x1000,
     /** Solid Particle */
     SolidParticle = 0x2000,
-    /** Solid Particle Config */
-    SolidParticleConfig = 0x4000,
     /** Mesh */
     Mesh = 0x8000,
     /** Material */

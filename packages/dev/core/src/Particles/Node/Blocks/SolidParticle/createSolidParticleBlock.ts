@@ -1,86 +1,69 @@
+import { Color4, Vector3 } from "../../../../Maths";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
-import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
 import type { ISolidParticleInitData } from "./ISolidParticleData";
-import { Mesh } from "core/Meshes/mesh";
-import type { SolidParticle } from "../../../solidParticle";
-import type { Observer } from "core/Misc/observable";
 
 /**
- * Block used to create SolidParticleSystem and collect all Create blocks
+ * Block used to create a solid particle configuration (mesh, count, material, position, velocity, color, scaling, rotation)
  */
 export class CreateSolidParticleBlock extends NodeParticleBlock {
-    private _connectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
-    private _disconnectionObservers = new Map<number, Observer<NodeParticleConnectionPoint>>();
-
     public constructor(name: string) {
         super(name);
-        this.registerInput(`config-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticleConfig);
-        this.registerOutput("solidParticle", NodeParticleBlockConnectionPointTypes.SolidParticle);
 
-        this._manageExtendedInputs(0);
+        this.registerInput("count", NodeParticleBlockConnectionPointTypes.Int, true, 1);
+        this.registerInput("lifeTime", NodeParticleBlockConnectionPointTypes.Float, true, Infinity);
+        this.registerInput("position", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("velocity", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("color", NodeParticleBlockConnectionPointTypes.Color4, true);
+        this.registerInput("scaling", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("rotation", NodeParticleBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
+        this.registerInput("material", NodeParticleBlockConnectionPointTypes.Material, true);
+
+        this.registerOutput("solidParticle", NodeParticleBlockConnectionPointTypes.SolidParticle);
     }
 
     public override getClassName() {
         return "CreateSolidParticleBlock";
     }
 
-    private _entryCount = 1;
-
-    private _extend() {
-        this._entryCount++;
-        this.registerInput(`config-${this._entryCount - 1}`, NodeParticleBlockConnectionPointTypes.SolidParticleConfig, true);
-        this._manageExtendedInputs(this._entryCount - 1);
+    public get count(): NodeParticleConnectionPoint {
+        return this._inputs[0];
     }
 
-    private _shrink() {
-        if (this._entryCount > 1) {
-            this._unmanageExtendedInputs(this._entryCount - 1);
-            this._entryCount--;
-            this.unregisterInput(`config-${this._entryCount}`);
-        }
+    public get lifeTime(): NodeParticleConnectionPoint {
+        return this._inputs[1];
     }
 
-    private _manageExtendedInputs(index: number) {
-        const connectionObserver = this._inputs[index].onConnectionObservable.add(() => {
-            if (this._entryCount - 1 > index) {
-                return;
-            }
-            this._extend();
-        });
-
-        const disconnectionObserver = this._inputs[index].onDisconnectionObservable.add(() => {
-            if (this._entryCount - 1 > index) {
-                return;
-            }
-            this._shrink();
-        });
-
-        // Store observers for later removal
-        this._connectionObservers.set(index, connectionObserver);
-        this._disconnectionObservers.set(index, disconnectionObserver);
+    public get position(): NodeParticleConnectionPoint {
+        return this._inputs[2];
     }
 
-    private _unmanageExtendedInputs(index: number) {
-        const connectionObserver = this._connectionObservers.get(index);
-        const disconnectionObserver = this._disconnectionObservers.get(index);
-
-        if (connectionObserver) {
-            this._inputs[index].onConnectionObservable.remove(connectionObserver);
-            this._connectionObservers.delete(index);
-        }
-
-        if (disconnectionObserver) {
-            this._inputs[index].onDisconnectionObservable.remove(disconnectionObserver);
-            this._disconnectionObservers.delete(index);
-        }
+    public get velocity(): NodeParticleConnectionPoint {
+        return this._inputs[3];
     }
 
-    public get config(): NodeParticleConnectionPoint {
-        return this._inputs[this._entryCount - 1];
+    public get color(): NodeParticleConnectionPoint {
+        return this._inputs[4];
+    }
+
+    public get scaling(): NodeParticleConnectionPoint {
+        return this._inputs[5];
+    }
+
+    public get rotation(): NodeParticleConnectionPoint {
+        return this._inputs[6];
+    }
+
+    public get mesh(): NodeParticleConnectionPoint {
+        return this._inputs[7];
+    }
+
+    public get material(): NodeParticleConnectionPoint {
+        return this._inputs[8];
     }
 
     public get solidParticle(): NodeParticleConnectionPoint {
@@ -88,145 +71,45 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
     }
 
     public override _build(state: NodeParticleBuildState) {
-        if (!state.scene) {
-            throw new Error("Scene is not initialized in NodeParticleBuildState");
-        }
+        const meshData = this.mesh.getConnectedValue(state);
+        const count = this.count.getConnectedValue(state) ?? 1;
 
-        const sps = new SolidParticleSystem(this.name, state.scene, {
-            useModelMaterial: true,
-        });
+        const material = this.material.getConnectedValue(state);
 
-        const createBlocks = new Map<number, ISolidParticleInitData>();
-        for (let i = 0; i < this._inputs.length; i++) {
-            const creatData = this._inputs[i].getConnectedValue(state) as ISolidParticleInitData;
-            if (!this._inputs[i].isConnected || !creatData || !creatData.meshData || !creatData.count) {
-                continue;
-            }
-
-            if (!creatData.meshData.vertexData) {
-                continue;
-            }
-
-            const mesh = new Mesh(`${this.name}_shape_${i}`, state.scene);
-            creatData.meshData.vertexData.applyToMesh(mesh, true);
-            if (creatData.material) {
-                mesh.material = creatData.material;
-            }
-
-            const shapeId = sps.addShape(mesh, creatData.count);
-            createBlocks.set(shapeId, creatData);
-            mesh.dispose();
-        }
-
-        sps.initParticles = () => {
-            if (!sps) {
-                return;
-            }
-
-            const originalContext = state.particleContext;
-            const originalSystemContext = state.systemContext;
-
-            try {
-                for (let p = 0; p < sps.nbParticles; p++) {
-                    const particle = sps.particles[p];
-                    const particleCreateData = createBlocks.get(particle.shapeId);
-                    if (!particleCreateData) {
-                        continue;
-                    }
-                    const { lifeTime, position, velocity, color, scaling, rotation } = particleCreateData;
-
-                    state.particleContext = particle;
-                    state.systemContext = sps;
-
-                    if (lifeTime) {
-                        particle.lifeTime = lifeTime();
-                        particle.age = 0;
-                        particle.alive = true;
-                    }
-
-                    if (position) {
-                        particle.position.copyFrom(position());
-                    }
-                    if (velocity) {
-                        particle.velocity.copyFrom(velocity());
-                    }
-                    if (color) {
-                        const particleColor = particle.color;
-                        if (particleColor) {
-                            particleColor.copyFrom(color());
-                        }
-                    }
-                    if (scaling) {
-                        particle.scaling.copyFrom(scaling());
-                    }
-                    if (rotation) {
-                        particle.rotation.copyFrom(rotation());
-                    }
-                }
-            } finally {
-                state.particleContext = originalContext;
-                state.systemContext = originalSystemContext;
-            }
+        const lifeTime = () => {
+            return this.lifeTime.isConnected ? this.lifeTime.getConnectedValue(state) : Infinity;
         };
 
-        sps.updateParticle = (particle: SolidParticle) => {
-            if (!sps) {
-                return particle;
-            }
-
-            const particleCreateData = createBlocks.get(particle.shapeId);
-            const updateBlock = particleCreateData?.updateBlock;
-            if (!updateBlock) {
-                return particle;
-            }
-            // Set particle context in state for PerParticle lock mode
-            const originalContext = state.particleContext;
-            const originalSystemContext = state.systemContext;
-
-            // Temporarily set particle context for PerParticle lock mode
-            state.particleContext = particle;
-            state.systemContext = sps;
-
-            try {
-                if (updateBlock.position) {
-                    particle.position.copyFrom(updateBlock.position());
-                }
-                if (updateBlock.velocity) {
-                    particle.velocity.copyFrom(updateBlock.velocity());
-                }
-                if (updateBlock.color) {
-                    particle.color?.copyFrom(updateBlock.color());
-                }
-                if (updateBlock.scaling) {
-                    particle.scaling.copyFrom(updateBlock.scaling());
-                }
-                if (updateBlock.rotation) {
-                    particle.rotation.copyFrom(updateBlock.rotation());
-                }
-            } finally {
-                // Restore original context
-                state.particleContext = originalContext;
-                state.systemContext = originalSystemContext;
-            }
-            return particle;
+        const position = () => {
+            return this.position.isConnected ? this.position.getConnectedValue(state) : Vector3.Zero();
+        };
+        const velocity = () => {
+            return this.velocity.isConnected ? this.velocity.getConnectedValue(state) : Vector3.Zero();
+        };
+        const color = () => {
+            return this.color.isConnected ? this.color.getConnectedValue(state) : new Color4(1, 1, 1, 1);
+        };
+        const scaling = () => {
+            return this.scaling.isConnected ? this.scaling.getConnectedValue(state) : Vector3.One();
+        };
+        const rotation = () => {
+            return this.rotation.isConnected ? this.rotation.getConnectedValue(state) : Vector3.Zero();
         };
 
-        this.solidParticle._storedValue = sps;
-    }
+        const particleConfig: ISolidParticleInitData = {
+            meshData,
+            count,
+            material,
+            lifeTime,
+            position,
+            velocity,
+            color,
+            scaling,
+            rotation,
+            updateData: null,
+        };
 
-    public override serialize(): any {
-        const serializationObject = super.serialize();
-        serializationObject._entryCount = this._entryCount;
-        return serializationObject;
-    }
-
-    public override _deserialize(serializationObject: any) {
-        super._deserialize(serializationObject);
-        if (serializationObject._entryCount && serializationObject._entryCount > 1) {
-            for (let i = 1; i < serializationObject._entryCount; i++) {
-                this._extend();
-            }
-        }
+        this.solidParticle._storedValue = particleConfig;
     }
 }
 

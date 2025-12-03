@@ -36,15 +36,35 @@ export class NodeParticleBuildState {
     /** Gets or sets a boolean indicating that verbose mode is on */
     public verbose: boolean;
 
+    private _particleContext: Nullable<Particle | SolidParticle> = null;
+    private _isSolidParticle: boolean = false;
+
     /**
      * Gets or sets the particle context for contextual data
      */
-    public particleContext: Nullable<Particle | SolidParticle> = null;
+    public get particleContext(): Nullable<Particle | SolidParticle> {
+        return this._particleContext;
+    }
+
+    public set particleContext(value: Nullable<Particle | SolidParticle>) {
+        this._particleContext = value;
+        this._isSolidParticle = value instanceof SolidParticle;
+    }
+
+    private _systemContext: Nullable<ThinParticleSystem | SolidParticleSystem> = null;
+    private _isSolidParticleSystem: boolean = false;
 
     /**
      * Gets or sets the system context for contextual data
      */
-    public systemContext: Nullable<ThinParticleSystem | SolidParticleSystem> = null;
+    public get systemContext(): Nullable<ThinParticleSystem | SolidParticleSystem> {
+        return this._systemContext;
+    }
+
+    public set systemContext(value: Nullable<ThinParticleSystem | SolidParticleSystem>) {
+        this._systemContext = value;
+        this._isSolidParticleSystem = value instanceof SolidParticleSystem;
+    }
 
     /**
      * Gets or sets the index of the gradient to use
@@ -116,95 +136,100 @@ export class NodeParticleBuildState {
             case NodeParticleContextualSources.Position:
                 return this.particleContext.position;
             case NodeParticleContextualSources.Direction:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext.direction;
+                return (this.particleContext as Particle).direction;
             case NodeParticleContextualSources.DirectionScale:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext._directionScale;
+                return (this.particleContext as Particle)._directionScale;
             case NodeParticleContextualSources.ScaledDirection:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
-                return this.particleContext._scaledDirection;
+                const particle = this.particleContext as Particle;
+                particle.direction.scaleToRef(particle._directionScale, particle._scaledDirection);
+                return particle._scaledDirection;
             case NodeParticleContextualSources.Color:
                 return this.particleContext.color;
             case NodeParticleContextualSources.InitialColor:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext.initialColor;
+                return (this.particleContext as Particle).initialColor;
             case NodeParticleContextualSources.ColorDead:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext.colorDead;
+                return (this.particleContext as Particle).colorDead;
             case NodeParticleContextualSources.Age:
                 return this.particleContext.age;
             case NodeParticleContextualSources.Lifetime:
                 return this.particleContext.lifeTime;
             case NodeParticleContextualSources.Angle:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext.angle;
+                return (this.particleContext as Particle).angle;
             case NodeParticleContextualSources.Scale:
                 return this.particleContext.scale;
             case NodeParticleContextualSources.Size:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext.size;
+                return (this.particleContext as Particle).size;
             case NodeParticleContextualSources.AgeGradient:
                 return this.particleContext.age / this.particleContext.lifeTime;
             case NodeParticleContextualSources.SpriteCellEnd:
-                if (this.systemContext instanceof SolidParticleSystem) {
+                if (this._isSolidParticleSystem) {
                     return null;
                 }
-                return this.systemContext.endSpriteCellID;
+                return (this.systemContext as ThinParticleSystem).endSpriteCellID;
             case NodeParticleContextualSources.SpriteCellIndex:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext.cellIndex;
+                return (this.particleContext as Particle).cellIndex;
             case NodeParticleContextualSources.SpriteCellStart:
-                if (this.systemContext instanceof SolidParticleSystem) {
+                if (this._isSolidParticleSystem) {
                     return null;
                 }
-                return this.systemContext.startSpriteCellID;
+                return (this.systemContext as ThinParticleSystem).startSpriteCellID;
             case NodeParticleContextualSources.SolidParticleIndex:
-                if (!(this.particleContext instanceof SolidParticle)) {
+                if (!this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext.idx;
+                return (this.particleContext as SolidParticle).idx;
             case NodeParticleContextualSources.InitialDirection:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext._initialDirection;
+                return (this.particleContext as Particle)._initialDirection;
             case NodeParticleContextualSources.ColorStep:
-                if (this.particleContext instanceof SolidParticle) {
+                if (this._isSolidParticle) {
                     return null;
                 }
-                return this.particleContext.colorStep;
+                return (this.particleContext as Particle).colorStep;
             case NodeParticleContextualSources.ScaledColorStep:
-                if (this.particleContext instanceof SolidParticle || this.systemContext instanceof SolidParticleSystem) {
+                if (this._isSolidParticle || this._isSolidParticleSystem) {
                     return null;
                 }
-                this.particleContext.colorStep.scaleToRef(this.systemContext._scaledUpdateSpeed, this.systemContext._scaledColorStep);
-                return this.systemContext._scaledColorStep;
+                const particleForColor = this.particleContext as Particle;
+                const systemForColor = this.systemContext as ThinParticleSystem;
+                particleForColor.colorStep.scaleToRef(systemForColor._scaledUpdateSpeed, systemForColor._scaledColorStep);
+                return systemForColor._scaledColorStep;
             case NodeParticleContextualSources.LocalPositionUpdated:
-                if (this.particleContext instanceof SolidParticle || this.systemContext instanceof SolidParticleSystem) {
+                if (this._isSolidParticle || this._isSolidParticleSystem) {
                     return this.particleContext.position;
                 }
-                this.particleContext.direction.scaleToRef(this.particleContext._directionScale, this.particleContext._scaledDirection);
-                this.particleContext._localPosition!.addInPlace(this.particleContext._scaledDirection);
-                Vector3.TransformCoordinatesToRef(this.particleContext._localPosition!, this.systemContext._emitterWorldMatrix, this.particleContext.position);
-                return this.particleContext.position;
+                const particleForLocal = this.particleContext as Particle;
+                const systemForLocal = this.systemContext as ThinParticleSystem;
+                particleForLocal.direction.scaleToRef(particleForLocal._directionScale, particleForLocal._scaledDirection);
+                particleForLocal._localPosition!.addInPlace(particleForLocal._scaledDirection);
+                Vector3.TransformCoordinatesToRef(particleForLocal._localPosition!, systemForLocal._emitterWorldMatrix, particleForLocal.position);
+                return particleForLocal.position;
         }
 
         return null;
@@ -217,14 +242,14 @@ export class NodeParticleBuildState {
         if (!this.systemContext) {
             return null;
         }
-        if (this.systemContext instanceof SolidParticleSystem) {
-            const worldMatrix = this.systemContext.mesh?.getWorldMatrix();
+        if (this._isSolidParticleSystem) {
+            const worldMatrix = (this.systemContext as SolidParticleSystem).mesh?.getWorldMatrix();
             if (!worldMatrix) {
                 return Matrix.Identity();
             }
             return worldMatrix;
         }
-        return this.systemContext._emitterWorldMatrix;
+        return (this.systemContext as ThinParticleSystem)._emitterWorldMatrix;
     }
 
     /**
@@ -234,14 +259,14 @@ export class NodeParticleBuildState {
         if (!this.systemContext) {
             return null;
         }
-        if (this.systemContext instanceof SolidParticleSystem) {
-            const worldMatrix = this.systemContext.mesh?.getWorldMatrix();
+        if (this._isSolidParticleSystem) {
+            const worldMatrix = (this.systemContext as SolidParticleSystem).mesh?.getWorldMatrix();
             if (!worldMatrix) {
                 return Matrix.Identity();
             }
             return worldMatrix.invert();
         }
-        return this.systemContext._emitterInverseWorldMatrix;
+        return (this.systemContext as ThinParticleSystem)._emitterInverseWorldMatrix;
     }
 
     /**
@@ -252,19 +277,20 @@ export class NodeParticleBuildState {
             return null;
         }
 
-        if (this.systemContext instanceof SolidParticleSystem) {
-            return this.systemContext.mesh?.absolutePosition || Vector3.Zero();
+        if (this._isSolidParticleSystem) {
+            return (this.systemContext as SolidParticleSystem).mesh?.absolutePosition || Vector3.Zero();
         }
 
-        if (!this.systemContext.emitter) {
+        const thinSystem = this.systemContext as ThinParticleSystem;
+        if (!thinSystem.emitter) {
             return null;
         }
 
-        if (this.systemContext.emitter instanceof Vector3) {
-            return this.systemContext.emitter;
+        if (thinSystem.emitter instanceof Vector3) {
+            return thinSystem.emitter;
         }
 
-        return (<AbstractMesh>this.systemContext.emitter).absolutePosition;
+        return (<AbstractMesh>thinSystem.emitter).absolutePosition;
     }
 
     /**

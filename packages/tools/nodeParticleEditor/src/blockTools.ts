@@ -44,9 +44,13 @@ import { ParticleLocalVariableBlock } from "core/Particles/Node/Blocks/particleL
 import { ParticleVectorLengthBlock } from "core/Particles/Node/Blocks/particleVectorLengthBlock";
 import { ParticleFresnelBlock } from "core/Particles/Node/Blocks/particleFresnelBlock";
 import { MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
-import { InitSolidParticleBlock } from "core/Particles/Node/Blocks/SolidParticle/initSolidParticleBlock";
-import { UpdateSolidParticleBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleBlock";
+import { UpdateSolidParticlePositionBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticlePositionBlock";
+import { UpdateSolidParticleVelocityBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleVelocityBlock";
+import { UpdateSolidParticleColorBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleColorBlock";
+import { UpdateSolidParticleScalingBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleScalingBlock";
+import { UpdateSolidParticleRotationBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleRotationBlock";
 import { CreateSolidParticleBlock } from "core/Particles/Node/Blocks/SolidParticle/createSolidParticleBlock";
+import { MergeSolidParticlesBlock } from "core/Particles/Node/Blocks/SolidParticle/mergeSolidParticlesBlock";
 import { NodeMaterialSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/nodeMaterialSourceBlock";
 import { SolidParticleSystemBlock } from "core/Particles/Node/Blocks/SolidParticle/solidParticleSystemBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
@@ -162,16 +166,24 @@ export class BlockTools {
                 return new SystemBlock("System");
             case "MeshSourceBlock":
                 return new MeshSourceBlock("Mesh Source for SPS");
-            case "InitSolidParticleBlock":
-                return new InitSolidParticleBlock("Init Solid Particle");
             case "NodeMaterialSourceBlock":
                 return new NodeMaterialSourceBlock("Node Material Source for SPS");
             case "SolidParticleSystemBlock":
                 return new SolidParticleSystemBlock("SPS System");
             case "CreateSolidParticleBlock":
                 return new CreateSolidParticleBlock("Create Solid Particle");
-            case "UpdateSolidParticleBlock":
-                return new UpdateSolidParticleBlock("SPS Update");
+            case "MergeSolidParticlesBlock":
+                return new MergeSolidParticlesBlock("Merge Solid Particles");
+            case "UpdateSolidParticlePositionBlock":
+                return new UpdateSolidParticlePositionBlock("Update SPS Position");
+            case "UpdateSolidParticleVelocityBlock":
+                return new UpdateSolidParticleVelocityBlock("Update SPS Velocity");
+            case "UpdateSolidParticleColorBlock":
+                return new UpdateSolidParticleColorBlock("Update SPS Color");
+            case "UpdateSolidParticleScalingBlock":
+                return new UpdateSolidParticleScalingBlock("Update SPS Scaling");
+            case "UpdateSolidParticleRotationBlock":
+                return new UpdateSolidParticleRotationBlock("Update SPS Rotation");
             case "TextureBlock":
                 return new ParticleTextureSourceBlock("Texture");
             case "BoxShapeBlock":
@@ -494,10 +506,7 @@ export class BlockTools {
                 color = "#f20a2e";
                 break;
             case NodeParticleBlockConnectionPointTypes.SolidParticle:
-                color = "#2e8b57";
-                break;
-            case NodeParticleBlockConnectionPointTypes.SolidParticleConfig:
-                color = "#1f6f5a";
+                color = "#84995c";
                 break;
             case NodeParticleBlockConnectionPointTypes.Mesh:
                 color = "#4682b4";
@@ -526,8 +535,6 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.Matrix;
             case "SolidParticle":
                 return NodeParticleBlockConnectionPointTypes.SolidParticle;
-            case "SolidParticleConfig":
-                return NodeParticleBlockConnectionPointTypes.SolidParticleConfig;
             case "Mesh":
                 return NodeParticleBlockConnectionPointTypes.Mesh;
             case "Material":
@@ -553,8 +560,6 @@ export class BlockTools {
                 return "Matrix";
             case NodeParticleBlockConnectionPointTypes.SolidParticle:
                 return "SolidParticle";
-            case NodeParticleBlockConnectionPointTypes.SolidParticleConfig:
-                return "SolidParticleConfig";
             case NodeParticleBlockConnectionPointTypes.Mesh:
                 return "Mesh";
             case NodeParticleBlockConnectionPointTypes.Material:
