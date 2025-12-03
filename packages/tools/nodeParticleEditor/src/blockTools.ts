@@ -51,7 +51,6 @@ import { UpdateSolidParticleScalingBlock } from "core/Particles/Node/Blocks/Soli
 import { UpdateSolidParticleRotationBlock } from "core/Particles/Node/Blocks/SolidParticle/updateSolidParticleRotationBlock";
 import { CreateSolidParticleBlock } from "core/Particles/Node/Blocks/SolidParticle/createSolidParticleBlock";
 import { MergeSolidParticlesBlock } from "core/Particles/Node/Blocks/SolidParticle/mergeSolidParticlesBlock";
-import { NodeMaterialSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/nodeMaterialSourceBlock";
 import { SolidParticleSystemBlock } from "core/Particles/Node/Blocks/SolidParticle/solidParticleSystemBlock";
 import { ParticleFloatToIntBlock } from "core/Particles/Node/Blocks/particleFloatToIntBlock";
 
@@ -166,8 +165,6 @@ export class BlockTools {
                 return new SystemBlock("System");
             case "MeshSourceBlock":
                 return new MeshSourceBlock("Mesh Source for SPS");
-            case "NodeMaterialSourceBlock":
-                return new NodeMaterialSourceBlock("Node Material Source for SPS");
             case "SolidParticleSystemBlock":
                 return new SolidParticleSystemBlock("SPS System");
             case "CreateSolidParticleBlock":
@@ -511,9 +508,6 @@ export class BlockTools {
             case NodeParticleBlockConnectionPointTypes.Mesh:
                 color = "#4682b4";
                 break;
-            case NodeParticleBlockConnectionPointTypes.Material:
-                color = "#daa520";
-                break;
         }
 
         return color;
@@ -537,8 +531,6 @@ export class BlockTools {
                 return NodeParticleBlockConnectionPointTypes.SolidParticle;
             case "Mesh":
                 return NodeParticleBlockConnectionPointTypes.Mesh;
-            case "Material":
-                return NodeParticleBlockConnectionPointTypes.Material;
         }
 
         return NodeParticleBlockConnectionPointTypes.AutoDetect;
@@ -562,8 +554,6 @@ export class BlockTools {
                 return "SolidParticle";
             case NodeParticleBlockConnectionPointTypes.Mesh:
                 return "Mesh";
-            case NodeParticleBlockConnectionPointTypes.Material:
-                return "Material";
         }
 
         return "";

@@ -1,6 +1,5 @@
 import type { Vector3 } from "core/Maths/math.vector";
 import type { Color4 } from "core/Maths/math.color";
-import type { Material } from "core/Materials/material";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
 
 /**
@@ -28,7 +27,6 @@ export interface ISolidParticleUpdateData {
 export interface ISolidParticleInitData {
     meshData: ISolidParticleMeshSourceData | null;
     count: number;
-    material?: Material;
     position?: () => Vector3;
     velocity?: () => Vector3;
     color?: () => Color4;

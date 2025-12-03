@@ -44,4 +44,3 @@ export * from "./SolidParticle/updateSolidParticleVelocityBlock";
 export * from "./SolidParticle/updateSolidParticleColorBlock";
 export * from "./SolidParticle/updateSolidParticleScalingBlock";
 export * from "./SolidParticle/updateSolidParticleRotationBlock";
-export * from "./SolidParticle/nodeMaterialSourceBlock";

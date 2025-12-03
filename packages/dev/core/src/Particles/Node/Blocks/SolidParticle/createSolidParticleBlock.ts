@@ -7,7 +7,7 @@ import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import type { ISolidParticleInitData } from "./ISolidParticleData";
 
 /**
- * Block used to create a solid particle configuration (mesh, count, material, position, velocity, color, scaling, rotation)
+ * Block used to create a solid particle configuration (mesh, count, position, velocity, color, scaling, rotation)
  */
 export class CreateSolidParticleBlock extends NodeParticleBlock {
     public constructor(name: string) {
@@ -21,7 +21,6 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
         this.registerInput("scaling", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("rotation", NodeParticleBlockConnectionPointTypes.Vector3, true);
         this.registerInput("mesh", NodeParticleBlockConnectionPointTypes.Mesh);
-        this.registerInput("material", NodeParticleBlockConnectionPointTypes.Material, true);
 
         this.registerOutput("solidParticle", NodeParticleBlockConnectionPointTypes.SolidParticle);
     }
@@ -62,10 +61,6 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
         return this._inputs[7];
     }
 
-    public get material(): NodeParticleConnectionPoint {
-        return this._inputs[8];
-    }
-
     public get solidParticle(): NodeParticleConnectionPoint {
         return this._outputs[0];
     }
@@ -73,8 +68,6 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
     public override _build(state: NodeParticleBuildState) {
         const meshData = this.mesh.getConnectedValue(state);
         const count = this.count.getConnectedValue(state) ?? 1;
-
-        const material = this.material.getConnectedValue(state);
 
         const lifeTime = () => {
             return this.lifeTime.isConnected ? this.lifeTime.getConnectedValue(state) : Infinity;
@@ -99,7 +92,6 @@ export class CreateSolidParticleBlock extends NodeParticleBlock {
         const particleConfig: ISolidParticleInitData = {
             meshData,
             count,
-            material,
             lifeTime,
             position,
             velocity,

@@ -28,7 +28,6 @@ export const BlockDefinitions: IBlockDefinition[] = [
     { name: "TextureBlock", category: "Inputs", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Provide a texture" },
     { name: "Color4", category: "Inputs", modes: [NodeParticleModes.Particle, NodeParticleModes.SolidParticle], tooltip: "Input block set to a Color4 value" },
     { name: "MeshSourceBlock", category: "Inputs", modes: [NodeParticleModes.SolidParticle], tooltip: "Mesh source for SPS - load custom geometry from the inspector" },
-    { name: "NodeMaterialSourceBlock", category: "Inputs", modes: [NodeParticleModes.SolidParticle], tooltip: "Load a Node Material for SPS particles" },
 
     // Updates (Particle only - use _updateQueueStart)
     { name: "UpdateDirectionBlock", category: "Updates", modes: [NodeParticleModes.Particle], tooltip: "Update the direction of a particle" },

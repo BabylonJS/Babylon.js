@@ -1,4 +1,4 @@
-import * as React from "react";
+import { Component } from "react";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
@@ -14,7 +14,7 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { MeshSourceBlock } from "core/Particles/Node/Blocks";
 import type { Observer } from "core/Misc/observable";
 
-export class MeshSourcePropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
+export class MeshSourcePropertyTabComponent extends Component<IPropertyComponentProps, { isLoading: boolean }> {
     private _onValueChangedObserver: Nullable<Observer<MeshSourceBlock>> = null;
 
     constructor(props: IPropertyComponentProps) {
@@ -34,12 +34,23 @@ export class MeshSourcePropertyTabComponent extends React.Component<IPropertyCom
         return (this.props.nodeData as any).__spsMeshScene || null;
     }
 
+    private _getLoadedMeshes(): Mesh[] {
+        return (this.props.nodeData as any).__spsLoadedMeshes || [];
+    }
+
     private _setNodeScene(scene: Nullable<Scene>) {
         const nodeData = this.props.nodeData as any;
         if (nodeData.__spsMeshScene) {
             nodeData.__spsMeshScene.dispose();
         }
         nodeData.__spsMeshScene = scene || null;
+
+        // Store meshes from loaded scene
+        if (scene) {
+            nodeData.__spsLoadedMeshes = scene.meshes.filter((m) => !!m.name && m.getTotalVertices() > 0) as Mesh[];
+        } else {
+            nodeData.__spsLoadedMeshes = [];
+        }
     }
 
     async loadMeshAsync(file: File) {
@@ -69,7 +80,9 @@ export class MeshSourcePropertyTabComponent extends React.Component<IPropertyCom
     removeData() {
         const block = this.props.nodeData.data as MeshSourceBlock;
         block.clearCustomMesh();
+        const nodeData = this.props.nodeData as any;
         this._setNodeScene(null);
+        nodeData.__spsLoadedMeshes = [];
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         this.forceUpdate();
     }
@@ -86,7 +99,9 @@ export class MeshSourcePropertyTabComponent extends React.Component<IPropertyCom
         if (scene) {
             scene.dispose();
         }
-        (this.props.nodeData as any).__spsMeshScene = null;
+        const nodeData = this.props.nodeData as any;
+        nodeData.__spsMeshScene = null;
+        nodeData.__spsLoadedMeshes = null;
         const block = this.props.nodeData.data as MeshSourceBlock;
         if (this._onValueChangedObserver) {
             block.onValueChangedObservable.remove(this._onValueChangedObserver);
@@ -96,18 +111,17 @@ export class MeshSourcePropertyTabComponent extends React.Component<IPropertyCom
 
     override render() {
         const block = this.props.nodeData.data as MeshSourceBlock;
-        const scene = this._getNodeScene();
+        const loadedMeshes = this._getLoadedMeshes();
 
-        const meshes = scene ? (scene.meshes.filter((m) => !!m.name && m.getTotalVertices() > 0) as Mesh[]) : [];
         const meshOptions = [{ label: "None", value: -1 }];
         meshOptions.push(
-            ...meshes.map((mesh, index) => ({
+            ...loadedMeshes.map((mesh, index) => ({
                 label: mesh.name,
                 value: index,
             }))
         );
 
-        const selectedMeshIndex = block.hasCustomMesh ? meshes.findIndex((m) => m.name === block.customMeshName) : -1;
+        const selectedMeshIndex = block.hasCustomMesh ? loadedMeshes.findIndex((m) => m.name === block.customMeshName) : -1;
 
         return (
             <div>
@@ -116,7 +130,7 @@ export class MeshSourcePropertyTabComponent extends React.Component<IPropertyCom
                     {block.hasCustomMesh ? <TextLineComponent label="Active" value={block.customMeshName || "Custom mesh"} /> : <TextLineComponent label="Active" value="None" />}
                     {this.state.isLoading && <TextLineComponent label="Status" value="Loading..." ignoreValue={true} />}
                     {!this.state.isLoading && <FileButtonLine label="Load" accept=".glb,.gltf,.babylon" onClick={async (file) => await this.loadMeshAsync(file)} />}
-                    {scene && meshOptions.length > 1 && (
+                    {loadedMeshes.length > 0 && meshOptions.length > 1 && (
                         <OptionsLine
                             label="Loaded Mesh"
                             options={meshOptions}
@@ -130,7 +144,7 @@ export class MeshSourcePropertyTabComponent extends React.Component<IPropertyCom
                                     this.applyMesh(null);
                                     return;
                                 }
-                                this.applyMesh(meshes[index]);
+                                this.applyMesh(loadedMeshes[index]);
                                 this.forceUpdate();
                             }}
                         />

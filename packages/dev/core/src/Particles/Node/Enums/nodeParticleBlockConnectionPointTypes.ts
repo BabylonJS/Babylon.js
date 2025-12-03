@@ -32,8 +32,6 @@ export enum NodeParticleBlockConnectionPointTypes {
     SolidParticle = 0x2000,
     /** Mesh */
     Mesh = 0x8000,
-    /** Material */
-    Material = 0x10000,
     /** Detect type based on connection */
     AutoDetect = 0x20000,
     /** Output type that will be defined by input type */

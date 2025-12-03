@@ -39,7 +39,6 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["SystemBlock"] = SystemDisplayManager;
 
     DisplayLedger.RegisteredControls["MeshSourceBlock"] = EmitterDisplayManager;
-    DisplayLedger.RegisteredControls["NodeMaterialBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["CreateSolidParticleBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["MergeSolidParticlesBlock"] = EmitterDisplayManager;
     DisplayLedger.RegisteredControls["SolidParticleSystemBlock"] = SystemDisplayManager;

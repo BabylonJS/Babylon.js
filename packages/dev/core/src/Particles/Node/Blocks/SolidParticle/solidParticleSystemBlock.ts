@@ -78,9 +78,6 @@ export class SolidParticleSystemBlock extends NodeParticleBlock {
 
             const mesh = new Mesh(`${this.name}_shape_${i}`, state.scene);
             creatData.meshData.vertexData.applyToMesh(mesh, true);
-            if (creatData.material) {
-                mesh.material = creatData.material;
-            }
 
             const shapeId = sps.addShape(mesh, creatData.count);
             createBlocks.set(shapeId, creatData);
