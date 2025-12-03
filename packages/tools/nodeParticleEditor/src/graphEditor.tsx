@@ -451,7 +451,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const data = event.dataTransfer.getData("babylonjs-particle-node");
 
         const container = this._diagramContainerRef.current!;
-        this.emitNewBlock(data, event.clientX - container.offsetLeft, event.clientY - container.offsetTop);
+        const rect = container.getBoundingClientRect();
+        const targetX = event.clientX - rect.left;
+        const targetY = event.clientY - rect.top;
+
+        this.emitNewBlock(data, targetX, targetY);
     }
 
     handlePopUp = () => {
