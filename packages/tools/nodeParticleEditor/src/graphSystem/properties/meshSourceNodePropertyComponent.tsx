@@ -11,7 +11,7 @@ import { EngineStore } from "core/Engines/engineStore";
 import type { Nullable } from "core/types";
 import type { Scene } from "core/scene";
 import type { Mesh } from "core/Meshes/mesh";
-import type { MeshSourceBlock } from "core/Particles/Node/Blocks";
+import type { MeshSourceBlock } from "core/Particles/Node/Blocks/SolidParticle/meshSourceBlock";
 import type { Observer } from "core/Misc/observable";
 
 export class MeshSourcePropertyTabComponent extends Component<IPropertyComponentProps, { isLoading: boolean }> {

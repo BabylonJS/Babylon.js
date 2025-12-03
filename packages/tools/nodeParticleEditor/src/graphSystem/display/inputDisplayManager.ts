@@ -137,47 +137,28 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
             }
         } else {
-            const block = nodeData.data as any;
-            const blockValue = block.displayValue !== undefined ? block.displayValue : (inputBlock as any).value;
-            const isStringValue = typeof blockValue === "string";
-
             switch (inputBlock.type) {
                 case NodeParticleBlockConnectionPointTypes.Int:
-                    value = isStringValue ? blockValue : inputBlock.value.toFixed(0);
+                    value = inputBlock.value.toFixed(0);
                     break;
                 case NodeParticleBlockConnectionPointTypes.Float:
-                    value = isStringValue ? blockValue : inputBlock.value.toFixed(4);
+                    value = inputBlock.value.toFixed(4);
                     break;
                 case NodeParticleBlockConnectionPointTypes.Vector2: {
-                    if (isStringValue) {
-                        value = blockValue;
-                    } else {
-                        const vec2Value = inputBlock.value as Vector2;
-                        value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
-                    }
+                    const vec2Value = inputBlock.value as Vector2;
+                    value = `(${vec2Value.x.toFixed(2)}, ${vec2Value.y.toFixed(2)})`;
                     break;
                 }
                 case NodeParticleBlockConnectionPointTypes.Vector3: {
-                    if (isStringValue) {
-                        value = blockValue;
-                    } else {
-                        const vec3Value = inputBlock.value as Vector3;
-                        value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
-                    }
+                    const vec3Value = inputBlock.value as Vector3;
+                    value = `(${vec3Value.x.toFixed(2)}, ${vec3Value.y.toFixed(2)}, ${vec3Value.z.toFixed(2)})`;
                     break;
                 }
                 case NodeParticleBlockConnectionPointTypes.Color4: {
-                    if (isStringValue) {
-                        value = blockValue;
-                    } else {
-                        const col4Value = inputBlock.value as Color4;
-                        value = `(${col4Value.r.toFixed(2)}, ${col4Value.g.toFixed(2)}, ${col4Value.b.toFixed(2)}, ${col4Value.a.toFixed(2)})`;
-                    }
+                    const col4Value = inputBlock.value as Color4;
+                    value = `(${col4Value.r.toFixed(2)}, ${col4Value.g.toFixed(2)}, ${col4Value.b.toFixed(2)}, ${col4Value.a.toFixed(2)})`;
                     break;
                 }
-                default:
-                    value = isStringValue ? blockValue : String(blockValue);
-                    break;
             }
         }
         contentArea.innerHTML = value;

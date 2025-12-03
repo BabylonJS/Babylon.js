@@ -186,20 +186,6 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                     );
                     break;
                 }
-                case PropertyTypeForEdition.String: {
-                    components.push(
-                        <TextInputLineComponent
-                            key={`text-${propertyName}`}
-                            lockObject={this.props.stateManager.lockObject}
-                            label={displayName}
-                            propertyName={propertyName}
-                            target={block}
-                            onChange={() => ForceRebuild(block, this.props.stateManager, propertyName, options.notifiers)}
-                            throttlePropertyChangedNotification={true}
-                        />
-                    );
-                    break;
-                }
                 case PropertyTypeForEdition.Float: {
                     const cantDisplaySlider = isNaN(options.min as number) || isNaN(options.max as number) || options.min === options.max;
                     if (cantDisplaySlider) {
