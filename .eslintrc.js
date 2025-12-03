@@ -607,6 +607,7 @@ const rules = {
         "no-throw-literal": "error",
         curly: "error",
         "babylonjs/no-cross-package-relative-imports": "error",
+        "babylonjs/no-directory-barrel-imports": "error",
     },
 };
 
