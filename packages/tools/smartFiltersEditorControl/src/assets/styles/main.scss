@@ -114,7 +114,7 @@
         grid-row: 2;
         grid-column: 1;
         display: grid;
-        grid-template-columns: auto auto 50px 50px 1fr 40px;
+        grid-template-columns: auto auto auto auto 1fr 40px;
         align-items: center;
         background-color: #555555;
 
@@ -296,18 +296,8 @@
             grid-column: 3;
         }
 
-        :nth-child(3) input {
-            width: calc(100% - 13px);
-            margin-left: 5px;
-        }
-
         :nth-child(4) {
             grid-column: 4;
-        }
-
-        :nth-child(4) input {
-            width: calc(100% - 13px);
-            margin-left: 5px;
         }
 
         :nth-child(5) {
@@ -319,8 +309,16 @@
         }
 
         select {
-            background-color: #a3a3a3;
-            color: #333333;
+            background-color: #c3c3c3;
+            color: #333;
+        }
+
+        input {
+            height: 15px;
+            margin-bottom: 1px;
+            border: 1px solid #767676;
+            width: 50px;
+            margin-left: 5px;
         }
     }
 
