@@ -97,6 +97,11 @@ export class GlobalState {
                     }
                 } else if (isInspectorV2Enabled && !this._isInspectorV2ModeEnabled) {
                     (await ImportInspectorV2()).Inspector.Hide();
+                    // Wait two frames for all the React async work to finish. This is ugly,
+                    // but we'll remove it when we remove Inspector v1 as Inspector v2 handles
+                    // the asynchrony for itself internally.
+                    await new Promise((resolve) => setTimeout(resolve));
+                    await new Promise((resolve) => setTimeout(resolve));
                     await this.currentScene.debugLayer.show();
                 }
             }

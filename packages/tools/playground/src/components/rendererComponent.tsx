@@ -135,6 +135,11 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             }
 
             if (!isInspectorV1Enabled && !isInspectorV2ModeEnabled && action === "enable") {
+                // Wait two frames for all the React async work to finish. This is ugly,
+                // but we'll remove it when we remove Inspector v1 as Inspector v2 handles
+                // the asynchrony for itself internally.
+                await new Promise((resolve) => setTimeout(resolve));
+                await new Promise((resolve) => setTimeout(resolve));
                 this._scene.debugLayer.show({
                     embedMode: true,
                 });
