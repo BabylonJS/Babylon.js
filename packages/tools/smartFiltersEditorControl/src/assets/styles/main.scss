@@ -114,7 +114,7 @@
         grid-row: 2;
         grid-column: 1;
         display: grid;
-        grid-template-columns: auto auto auto 1fr 40px;
+        grid-template-columns: auto auto 50px 50px 1fr 40px;
         align-items: center;
         background-color: #555555;
 
@@ -296,8 +296,26 @@
             grid-column: 3;
         }
 
-        #preview-new-window {
+        :nth-child(3) input {
+            width: calc(100% - 13px);
+            margin-left: 5px;
+        }
+
+        :nth-child(4) {
+            grid-column: 4;
+        }
+
+        :nth-child(4) input {
+            width: calc(100% - 13px);
+            margin-left: 5px;
+        }
+
+        :nth-child(5) {
             grid-column: 5;
+        }
+
+        #preview-new-window {
+            grid-column: 6;
         }
 
         select {

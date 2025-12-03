@@ -3,7 +3,7 @@
 import * as react from "react";
 import * as reactDOM from "react-dom";
 
-import { PreviewAspectRatioKey, PreviewFillContainerKey, type GlobalState } from "./globalState.js";
+import { type GlobalState } from "./globalState.js";
 import "./assets/styles/main.scss";
 
 import { Portal } from "./portal.js";
@@ -149,7 +149,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         window.addEventListener("wheel", this.onWheel, { passive: false });
 
         this._canvasResizeObserver = new ResizeObserver(() => {
-            if (this.props.globalState.engine) {
+            if (this.props.globalState.engine && this.props.globalState.previewSizeManager.shouldAutoResize) {
                 setTimeout(() => {
                     this.props.globalState.engine?.resize();
                 }, 0);
@@ -197,13 +197,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         });
 
         this.props.globalState.onlyShowCustomBlocksObservable.notifyObservers(DataStorage.ReadBoolean("OnlyShowCustomBlocks", OnlyShowCustomBlocksDefaultValue));
-        this.props.globalState.previewAspectRatio.onChangedObservable.add((newValue: string) => {
-            localStorage.setItem(PreviewAspectRatioKey, newValue);
-        });
-        this.props.globalState.previewFillContainer.onChangedObservable.add((newValue: boolean) => {
-            localStorage.setItem(PreviewFillContainerKey, newValue ? "true" : "");
-        });
-
         this.props.globalState.onClearUndoStack.notifyObservers();
 
         this.build();
