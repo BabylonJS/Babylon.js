@@ -21,7 +21,6 @@ interface INodeListComponentProps {
 
 export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
-
     private _customFrameList: { [key: string]: string };
 
     constructor(props: INodeListComponentProps) {

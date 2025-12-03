@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable jsdoc/require-jsdoc */
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import { typescript } from "monaco-editor";
+import type * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 import { setupTypeAcquisition } from "@typescript/ata";
 import { CreateTsShim } from "./tsService";
@@ -64,7 +65,7 @@ export class TypingsService {
         };
 
         const ts = CreateTsShim({
-            libNames: monaco.languages.typescript.typescriptDefaults.getCompilerOptions().lib ?? undefined,
+            libNames: typescript.typescriptDefaults.getCompilerOptions().lib ?? undefined,
         });
 
         const fetcherAsync: (input: RequestInfo, init?: RequestInit) => Promise<Response> = async (input, init) => {
@@ -191,8 +192,8 @@ export class TypingsService {
                     }
 
                     const vuri = toVfsUriFromAtaPath(path);
-                    const d1 = monaco.languages.typescript.typescriptDefaults.addExtraLib(code, vuri);
-                    const d2 = monaco.languages.typescript.javascriptDefaults.addExtraLib(code, vuri);
+                    const d1 = typescript.typescriptDefaults.addExtraLib(code, vuri);
+                    const d2 = typescript.javascriptDefaults.addExtraLib(code, vuri);
                     this._typeLibDisposables.push(d1, d2);
 
                     if (!isEntryDts(path)) {
@@ -510,10 +511,7 @@ export class TypingsService {
         for (const f of files) {
             const normPath = f.path.replace(/\\/g, "/");
             const vuri = `file:///local/${dirName}/${normPath}`;
-            perSpecDisposables.push(
-                monaco.languages.typescript.typescriptDefaults.addExtraLib(f.content, vuri),
-                monaco.languages.typescript.javascriptDefaults.addExtraLib(f.content, vuri)
-            );
+            perSpecDisposables.push(typescript.typescriptDefaults.addExtraLib(f.content, vuri), typescript.javascriptDefaults.addExtraLib(f.content, vuri));
         }
         this._localLibsBySpec.set(fullSpec, perSpecDisposables);
         this._localDirBySpec.set(fullSpec, dirName);
@@ -589,16 +587,16 @@ export class TypingsService {
         text += `}\n`;
 
         const fname = `pg-bare/${spec.replace(/[^\w@/.-]/g, "_")}.d.ts`;
-        const tsDisp = monaco.languages.typescript.typescriptDefaults.addExtraLib(text, fname);
-        const jsDisp = monaco.languages.typescript.javascriptDefaults.addExtraLib(text, fname);
+        const tsDisp = typescript.typescriptDefaults.addExtraLib(text, fname);
+        const jsDisp = typescript.javascriptDefaults.addExtraLib(text, fname);
         this._bareStubBySpec.set(spec, { ts: tsDisp, js: jsDisp });
 
         if (!spec.endsWith("/*")) {
             const w = `${spec}/*`;
             const wText = `declare module "${w}" { const __any: any; export default __any; }\n`;
             const wFname = `pg-bare/${w.replace(/[^\w@/.-]/g, "_")}.d.ts`;
-            const wTs = monaco.languages.typescript.typescriptDefaults.addExtraLib(wText, wFname);
-            const wJs = monaco.languages.typescript.javascriptDefaults.addExtraLib(wText, wFname);
+            const wTs = typescript.typescriptDefaults.addExtraLib(wText, wFname);
+            const wJs = typescript.javascriptDefaults.addExtraLib(wText, wFname);
             this._bareStubBySpec.set(w, { ts: wTs, js: wJs });
         }
     }

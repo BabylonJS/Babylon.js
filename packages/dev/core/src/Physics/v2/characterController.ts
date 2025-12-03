@@ -1,11 +1,13 @@
 import { Vector3, Quaternion, Matrix, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { DeepImmutableObject } from "../../types";
-import type { PhysicsBody } from "./physicsBody";
+import { PhysicsBody } from "./physicsBody";
 import { PhysicsShapeCapsule, type PhysicsShape } from "./physicsShape";
 import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { HavokPlugin } from "./Plugins/havokPlugin";
 import { BuildArray } from "core/Misc/arrayTools";
+import { TransformNode } from "../../Meshes/transformNode";
+import { Observable } from "../../Misc/observable";
 
 /**
  * Shape properties for the character controller
@@ -25,6 +27,29 @@ export interface CharacterShapeOptions {
      */
     capsuleRadius?: number;
 }
+
+/**
+ * Collision event data for the character controller
+ */
+export interface ICharacterControllerCollisionEvent {
+    /**
+     * The collider physics body
+     */
+    collider: PhysicsBody;
+    /**
+     *
+     */
+    colliderIndex: number;
+    /**
+     * Separation force applied to the collider
+     */
+    impulse: Vector3;
+    /**
+     * Position where the impulse is applied
+     */
+    impulsePosition: Vector3;
+}
+
 /**
  * State of the character on the surface
  */
@@ -192,6 +217,8 @@ export class PhysicsCharacterController {
     private _velocity: Vector3;
     private _lastVelocity: Vector3;
     private _shape: PhysicsShape;
+    private _body: PhysicsBody;
+    private _transformNode: TransformNode;
     private _ownShape: boolean;
     private _manifold: IContact[] = [];
     private _lastDisplacement: Vector3;
@@ -199,7 +226,7 @@ export class PhysicsCharacterController {
     private _lastInvDeltaTime: number;
     private _scene: Scene;
     private _tmpMatrix = new Matrix();
-    private _tmpVecs: Vector3[] = BuildArray(31, Vector3.Zero);
+    private _tmpVecs: Vector3[] = BuildArray(32, Vector3.Zero);
 
     /**
      * minimum distance to make contact
@@ -267,8 +294,18 @@ export class PhysicsCharacterController {
      * default 0
      */
     public characterMass = 0;
+
+    /**
+     * Observable for trigger entered and trigger exited events
+     */
+    public onTriggerCollisionObservable = new Observable<ICharacterControllerCollisionEvent>();
+
     private _startCollector;
     private _castCollector;
+
+    // If the difference between the cast displacement and the simplex solver output position is less than this
+    // value (per component), do not do a second cast to check if it's possible to reach the output position.
+    private _displacementEps = 1e-4;
 
     /**
      * instanciate a new characterController
@@ -286,6 +323,12 @@ export class PhysicsCharacterController {
         this._tmpVecs[1].set(0, -h * 0.5 + r, 0);
         this._ownShape = !characterShapeOptions.shape;
         this._shape = characterShapeOptions.shape ?? new PhysicsShapeCapsule(this._tmpVecs[0], this._tmpVecs[1], r, scene);
+        this._transformNode = new TransformNode("CCTransformNode", scene);
+        this._transformNode.position.copyFrom(this._position);
+        this._body = new PhysicsBody(this._transformNode, PhysicsMotionType.ANIMATED, false, scene);
+        this._body.setMassProperties({ inertia: Vector3.ZeroReadOnly });
+        this._body.shape = this._shape;
+        this._body.disablePreStep = false;
         this._lastInvDeltaTime = 1.0 / 60.0;
         this._lastDisplacement = Vector3.Zero();
         this._scene = scene;
@@ -295,6 +338,22 @@ export class PhysicsCharacterController {
 
         this._startCollector = hknp.HP_QueryCollector_Create(16)[1];
         this._castCollector = hknp.HP_QueryCollector_Create(16)[1];
+    }
+
+    /**
+     * Dispose the character controller
+     */
+    public dispose() {
+        if (this._ownShape) {
+            this._shape.dispose();
+        }
+        this._body.dispose();
+        this._transformNode.dispose();
+
+        const hk = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as HavokPlugin;
+        const hknp = hk._hknp;
+        hknp.HP_QueryCollector_Release(this._startCollector);
+        hknp.HP_QueryCollector_Release(this._castCollector);
     }
 
     /**
@@ -308,6 +367,7 @@ export class PhysicsCharacterController {
      * Set shape used for collision
      */
     public set shape(value: PhysicsShape) {
+        this._body.shape = this._shape;
         if (this._ownShape) {
             this._shape.dispose();
         }
@@ -329,6 +389,7 @@ export class PhysicsCharacterController {
      */
     public setPosition(position: Vector3) {
         this._position.copyFrom(position);
+        this._transformNode.position.copyFrom(this._position);
     }
 
     /**
@@ -496,7 +557,10 @@ export class PhysicsCharacterController {
         return numHitBodies;
     }
 
-    protected _createSurfaceConstraint(contact: IContact, timeTravelled: number): ISurfaceConstraintInfo {
+    // Store previous positions per body for velocity calculation
+    protected _bodyPositionTracking = new Map();
+
+    protected _createSurfaceConstraint(dt: number, contact: IContact, timeTravelled: number): ISurfaceConstraintInfo {
         const constraint = {
             //let distance = contact.distance - this.keepDistance;
             planeNormal: contact.normal.clone(),
@@ -536,7 +600,49 @@ export class PhysicsCharacterController {
         if (motionType == PhysicsMotionType.STATIC) {
             constraint.priority = 2;
         } else if (motionType == PhysicsMotionType.ANIMATED) {
-            constraint.priority = 1;
+            const bodyTransformNode = contact.bodyB.body.transformNode;
+            const bodyId = bodyTransformNode.uniqueId;
+
+            // Retrieve tracking data
+            let tracking = this._bodyPositionTracking.get(bodyId);
+
+            const currentFrameWorldMatrix = contact.bodyB.body.transformNode.getWorldMatrix();
+            const frameId = this._scene.getFrameId();
+
+            if (!tracking) {
+                // Initialize tracking
+                tracking = {
+                    prevWorldMatrix: currentFrameWorldMatrix.clone(),
+                    frameId: frameId,
+                };
+                this._bodyPositionTracking.set(bodyId, tracking);
+            } else {
+                // Only calculate velocity if this contact existed in the previous frame
+                // This avoids huge delta spikes when first making contact or after gaps
+                if (tracking.frameId + 1 === frameId) {
+                    const previousFrameWorldMatrix = tracking.prevWorldMatrix;
+
+                    const currentFrameWorldMatrixInverse = TmpVectors.Matrix[1];
+
+                    currentFrameWorldMatrix.invertToRef(currentFrameWorldMatrixInverse);
+
+                    const characterPosition = this.getPosition();
+                    // compute characterPosition in body local space at previous frame
+                    const characterLocalPosition = this._tmpVecs[21];
+                    Vector3.TransformCoordinatesToRef(characterPosition, currentFrameWorldMatrixInverse, characterLocalPosition);
+
+                    const characterWorldPosition = this._tmpVecs[22];
+                    Vector3.TransformCoordinatesToRef(characterLocalPosition, previousFrameWorldMatrix, characterWorldPosition);
+                    const playerDeltaPosition = this._tmpVecs[23];
+                    characterPosition.subtractToRef(characterWorldPosition, playerDeltaPosition);
+
+                    constraint.velocity.copyFrom(playerDeltaPosition);
+                    constraint.velocity.scaleInPlace(1 / dt);
+                    constraint.priority = 1;
+                }
+                tracking.prevWorldMatrix.copyFrom(currentFrameWorldMatrix);
+                tracking.frameId = frameId;
+            }
         }
 
         return constraint;
@@ -585,7 +691,7 @@ export class PhysicsCharacterController {
     protected _createConstraintsFromManifold(dt: number, timeTravelled: number): ISurfaceConstraintInfo[] {
         const constraints = [];
         for (let i = 0; i < this._manifold.length; i++) {
-            const surfaceConstraint = this._createSurfaceConstraint(this._manifold[i], timeTravelled);
+            const surfaceConstraint = this._createSurfaceConstraint(dt, this._manifold[i], timeTravelled);
             constraints.push(surfaceConstraint);
             this._addMaxSlopePlane(this.maxSlopeCosine, this.up, i, constraints, this._manifold[i].allowedPenetration);
             this._resolveConstraintPenetration(surfaceConstraint, this.penetrationRecoverySpeed);
@@ -1257,7 +1363,7 @@ export class PhysicsCharacterController {
                 orientation,
                 this.keepDistance + this.keepContactTolerance, // max distance
                 false, // should hit triggers
-                [BigInt(0)], // body to ignore //<todo allow for a proxy body!
+                [this._body._pluginData.hpBodyId[0]],
             ];
             hknp.HP_World_ShapeProximityWithCollector(hk.world, startCollector, query);
         }
@@ -1269,7 +1375,7 @@ export class PhysicsCharacterController {
                 startNative,
                 [endPos.x, endPos.y, endPos.z],
                 false, // should hit triggers
-                [BigInt(0)], // body to ignore //<todo allow for proxy body
+                [this._body._pluginData.hpBodyId[0]],
             ];
             hknp.HP_World_ShapeCastWithCollector(hk.world, castCollector, query);
         }
@@ -1356,6 +1462,14 @@ export class PhysicsCharacterController {
 
                 //<todo Fire callback to allow user to change impulse + use the info / play sounds
 
+                const triggerCollisionInfo: ICharacterControllerCollisionEvent = {
+                    collider: bodyB.body,
+                    colliderIndex: bodyB.index,
+                    impulse: outputObjectImpulse,
+                    impulsePosition: outputImpulsePosition,
+                };
+                this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
+
                 bodyB.body.applyImpulse(outputObjectImpulse, outputImpulsePosition, bodyB.index);
             }
         }
@@ -1388,49 +1502,12 @@ export class PhysicsCharacterController {
         return 1 / body.body.getMassProperties(body.index).mass!;
     }
 
-    /**
-     * Update internal state. Must be called once per frame
-     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
-     * @param surfaceInfo surface information returned by checkSupport
-     * @param gravity gravity applied to the character. Can be different that world gravity
-     */
-    public integrate(deltaTime: number, surfaceInfo: CharacterSurfaceInfo, gravity: Vector3) {
+    protected _integrateManifolds(deltaTime: number, gravity: Vector3): void {
         const hk = this._scene.getPhysicsEngine()!.getPhysicsPlugin() as HavokPlugin;
-
-        const invDeltaTime = 1 / deltaTime;
-        let remainingTime = deltaTime;
-        let newVelocity = Vector3.Zero();
-
-        // If the difference between the cast displacement and the simplex solver output position is less than this
-        // value (per component), do not do a second cast to check if it's possible to reach the output position.
-        const displacementEps = 1e-4;
         const epsSqrd = 1e-8;
 
-        // Choose the first cast direction.  If velocity hasn't changed from the previous integrate, guess that the
-        // displacement will be the same as last integrate, scaled by relative step length.  Otherwise, guess based
-        // on current velocity.
-        {
-            const tolerance = displacementEps * invDeltaTime;
-            if (this._velocity.equalsWithEpsilon(this._lastVelocity, tolerance)) {
-                this._lastDisplacement.scaleInPlace(remainingTime * this._lastInvDeltaTime);
-            } else {
-                const displacementVelocity = this._velocity;
-                if (surfaceInfo.supportedState == CharacterSupportedState.SUPPORTED) {
-                    const relativeVelocity = this._tmpVecs[28];
-                    this._velocity.subtractToRef(surfaceInfo.averageSurfaceVelocity, relativeVelocity);
-                    const normalDotVelocity = surfaceInfo.averageSurfaceNormal.dot(relativeVelocity);
-                    if (normalDotVelocity < 0) {
-                        relativeVelocity.subtractInPlace(surfaceInfo.averageSurfaceNormal.scale(normalDotVelocity));
-                        displacementVelocity.copyFrom(relativeVelocity);
-                        displacementVelocity.addInPlace(surfaceInfo.averageSurfaceVelocity);
-                    }
-                }
-                this._lastDisplacement.copyFrom(displacementVelocity);
-                this._lastDisplacement.scaleInPlace(remainingTime);
-            }
-            this._lastVelocity.copyFrom(this._velocity);
-            this._lastInvDeltaTime = invDeltaTime;
-        }
+        let newVelocity = Vector3.Zero();
+        let remainingTime = deltaTime;
 
         // Make sure that contact with bodies that have been removed since the call to checkSupport() are removed from the
         // manifold
@@ -1458,7 +1535,7 @@ export class PhysicsCharacterController {
             // If castCollector had hits on different bodies (so we're not sure if some non-closest body could be in our way) OR
             // the simplex has given an output direction different from the cast guess
             // we re-cast to check we can move there. There is no need to get the start points again.
-            if (updateResult != 0 || (newDisplacement.lengthSquared() > epsSqrd && !this._lastDisplacement.equalsWithEpsilon(newDisplacement, displacementEps))) {
+            if (updateResult != 0 || (newDisplacement.lengthSquared() > epsSqrd && !this._lastDisplacement.equalsWithEpsilon(newDisplacement, this._displacementEps))) {
                 this._castWithCollectors(this._position, this._position.add(newDisplacement), this._castCollector, this._startCollector);
                 const hknp = hk._hknp;
                 const numCastHits = hknp.HP_QueryCollector_GetNumHits(this._castCollector)[1];
@@ -1500,6 +1577,66 @@ export class PhysicsCharacterController {
         }
 
         this._velocity.copyFrom(newVelocity);
+        this._transformNode.position.copyFrom(this._position);
+    }
+
+    /**
+     * Move the character with collisions
+     * @param displacement defines the requested displacement vector
+     */
+    public moveWithCollisions(displacement: Vector3): void {
+        if (this._scene.deltaTime == undefined) {
+            return;
+        }
+        const deltaTime = this._scene.deltaTime / 1000.0;
+        const invDeltaTime = 1 / deltaTime;
+
+        displacement.scaleToRef(1 / deltaTime, this._velocity);
+        this._lastDisplacement.copyFrom(displacement);
+
+        this._lastVelocity.copyFrom(this._velocity);
+        this._lastInvDeltaTime = invDeltaTime;
+
+        this._integrateManifolds(deltaTime, Vector3.ZeroReadOnly);
+    }
+
+    /**
+     * Update internal state. Must be called once per frame
+     * @param deltaTime frame delta time in seconds. When using scene.deltaTime divide by 1000.0
+     * @param surfaceInfo surface information returned by checkSupport
+     * @param gravity gravity applied to the character. Can be different that world gravity
+     */
+    public integrate(deltaTime: number, surfaceInfo: CharacterSurfaceInfo, gravity: Vector3) {
+        const invDeltaTime = 1 / deltaTime;
+        const remainingTime = deltaTime;
+
+        // Choose the first cast direction.  If velocity hasn't changed from the previous integrate, guess that the
+        // displacement will be the same as last integrate, scaled by relative step length.  Otherwise, guess based
+        // on current velocity.
+        {
+            const tolerance = this._displacementEps * invDeltaTime;
+            if (this._velocity.equalsWithEpsilon(this._lastVelocity, tolerance)) {
+                this._lastDisplacement.scaleInPlace(remainingTime * this._lastInvDeltaTime);
+            } else {
+                const displacementVelocity = this._velocity;
+                if (surfaceInfo.supportedState == CharacterSupportedState.SUPPORTED) {
+                    const relativeVelocity = this._tmpVecs[28];
+                    this._velocity.subtractToRef(surfaceInfo.averageSurfaceVelocity, relativeVelocity);
+                    const normalDotVelocity = surfaceInfo.averageSurfaceNormal.dot(relativeVelocity);
+                    if (normalDotVelocity < 0) {
+                        relativeVelocity.subtractInPlace(surfaceInfo.averageSurfaceNormal.scale(normalDotVelocity));
+                        displacementVelocity.copyFrom(relativeVelocity);
+                        displacementVelocity.addInPlace(surfaceInfo.averageSurfaceVelocity);
+                    }
+                }
+                this._lastDisplacement.copyFrom(displacementVelocity);
+                this._lastDisplacement.scaleInPlace(remainingTime);
+            }
+            this._lastVelocity.copyFrom(this._velocity);
+            this._lastInvDeltaTime = invDeltaTime;
+        }
+
+        this._integrateManifolds(deltaTime, gravity);
     }
 
     /**

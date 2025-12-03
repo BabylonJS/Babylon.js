@@ -26,6 +26,7 @@ module.exports = (env) => {
                 new MonacoWebpackPlugin({
                     languages: ["typescript", "javascript"],
                     filename: "[name].[contenthash].worker.js",
+                    monacoEditorPath: path.resolve("../../../node_modules/monaco-editor"),
                 }),
             ]
         ),

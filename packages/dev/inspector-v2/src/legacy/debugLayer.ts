@@ -18,10 +18,6 @@ Object.defineProperty(Scene.prototype, "debugLayer", {
 });
 
 class DebugLayerEx extends DebugLayer {
-    override get openedPanes() {
-        throw new Error("Not Implemented");
-    }
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
     override async show(config?: IInspectorOptions): Promise<DebugLayer> {
         // If a custom inspector URL is not provided, default to a lazy dynamic import of the inspector module.
@@ -29,9 +25,5 @@ class DebugLayerEx extends DebugLayer {
             this.BJSINSPECTOR = await LazyInspectorModule.value;
         }
         return await super.show(config);
-    }
-
-    override setAsActiveScene() {
-        throw new Error("Not Implemented");
     }
 }

@@ -50,6 +50,7 @@ export const BlockDefinitions: IBlockDefinition[] = [
         tooltip: "Block used to update the position of a particle with a basic update (eg. direction * delta)",
     },
     { name: "UpdateFlowMapBlock", category: "Updates", modes: [NodeParticleModes.Particle], tooltip: "Block used to update particle position based on a flow map" },
+    { name: "UpdateNoiseBlock", category: "Updates", modes: [NodeParticleModes.Particle], tooltip: "Block used to update particle position based on a noise texture" },
     { name: "UpdateAttractorBlock", category: "Updates", modes: [NodeParticleModes.Particle], tooltip: "Block used to update particle position based on an attractor" },
     { name: "AlignAngleBlock", category: "Updates", modes: [NodeParticleModes.Particle], tooltip: "Block used to align the angle of a particle to its direction" },
     // Updates (SolidParticle only)
@@ -77,7 +78,12 @@ export const BlockDefinitions: IBlockDefinition[] = [
         tooltip: "Block used to create a particle with properties such as emit power, lifetime, color, scale, and angle",
     },
     { name: "SetupSpriteSheetBlock", category: "Setup", modes: [NodeParticleModes.Particle], tooltip: "Block used to setup a sprite sheet for particles" },
-    { name: "CreateSolidParticleBlock", category: "Setup", modes: [NodeParticleModes.SolidParticle], tooltip: "Create a solid particle configuration: mesh, count, material, init properties" },
+    {
+        name: "CreateSolidParticleBlock",
+        category: "Setup",
+        modes: [NodeParticleModes.SolidParticle],
+        tooltip: "Create a solid particle configuration: mesh, count, material, init properties",
+    },
     { name: "MergeSolidParticlesBlock", category: "Setup", modes: [NodeParticleModes.SolidParticle], tooltip: "Merge multiple solid particle configurations into an array" },
 
     // Math - Standard

@@ -218,7 +218,11 @@ checkBabylonVersionAsync().then(() => {
                 let engine;
 
                 if (useWebGPU && (await BABYLON.WebGPUEngine.IsSupportedAsync)) {
-                    engine = new BABYLON.WebGPUEngine(canvas);
+                    engine = new BABYLON.WebGPUEngine(canvas, {
+                        enableGPUDebugMarkers: true,
+                        enableAllFeatures: true,
+                        setMaximumLimits: true,
+                    });
                     await engine.initAsync();
                 } else {
                     localStorage.setItem("Engine", 0);

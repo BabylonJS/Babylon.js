@@ -1,14 +1,16 @@
+import type { Nullable } from "core/types";
 import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
-import { NodeParticleBlock } from "../../nodeParticleBlock";
 import type { NodeParticleConnectionPoint } from "../../nodeParticleBlockConnectionPoint";
 import type { NodeParticleBuildState } from "../../nodeParticleBuildState";
 import type { Particle } from "core/Particles/particle";
+import type { INodeParticleTextureData, ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
+
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
+import { NodeParticleBlock } from "../../nodeParticleBlock";
 import { _ConnectAtTheEnd } from "core/Particles/Queue/executionQueue";
 import { FlowMap } from "core/Particles/flowMap";
 import { editableInPropertyPage, PropertyTypeForEdition } from "core/Decorators/nodeDecorator";
-import type { ParticleTextureSourceBlock } from "../particleSourceTextureBlock";
 
 /**
  * Block used to update particle position based on a flow map
@@ -72,7 +74,7 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         let flowMap: FlowMap;
 
         // eslint-disable-next-line github/no-then
-        void flowMapTexture.extractTextureContentAsync().then((textureContent) => {
+        void flowMapTexture.extractTextureContentAsync().then((textureContent: Nullable<INodeParticleTextureData>) => {
             if (!textureContent) {
                 return;
             }
@@ -104,6 +106,10 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         this.output._storedValue = system;
     }
 
+    /**
+     * Serializes the block into a json object
+     * @returns The serialized object
+     */
     public override serialize(): any {
         const serializationObject = super.serialize();
 
@@ -112,6 +118,10 @@ export class UpdateFlowMapBlock extends NodeParticleBlock {
         return serializationObject;
     }
 
+    /**
+     * Deserializes the block from a json object
+     * @param serializationObject The object to deserialize from
+     */
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 

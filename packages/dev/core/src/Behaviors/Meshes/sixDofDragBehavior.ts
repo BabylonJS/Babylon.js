@@ -259,8 +259,6 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
      *  Detaches the behavior from the mesh
      */
     public override detach(): void {
-        super.detach();
-
         if (this._ownerNode) {
             this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
         }
@@ -268,5 +266,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         if (this._virtualTransformNode) {
             this._virtualTransformNode.dispose();
         }
+
+        super.detach();
     }
 }

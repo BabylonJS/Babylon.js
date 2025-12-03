@@ -21,6 +21,10 @@ export interface Behavior<T> {
      * Called when the behavior is detached from its target
      */
     detach(): void;
+    /**
+     * Gets the current attached target
+     */
+    attachedNode: Nullable<T>;
 }
 
 /**
