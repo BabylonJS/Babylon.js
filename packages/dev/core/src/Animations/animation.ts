@@ -546,6 +546,7 @@ export class Animation {
      * @param duration The duration of the animation, in milliseconds
      * @param onAnimationEnd Callback trigger at the end of the animation
      * @param stopCurrent If true, will stop the current animation on the property
+     * @param customKeys defines custom keys to use for the animation instead of the from-to keys
      * @returns Nullable animation
      */
     public static TransitionTo(
@@ -557,7 +558,8 @@ export class Animation {
         transition: Animation,
         duration: number,
         onAnimationEnd: Nullable<() => void> = null,
-        stopCurrent: boolean = true
+        stopCurrent: boolean = true,
+        customKeys?: IAnimationKey[]
     ): Nullable<Animatable> {
         if (duration <= 0) {
             host[property] = targetValue;
@@ -569,16 +571,18 @@ export class Animation {
 
         const endFrame: number = frameRate * (duration / 1000);
 
-        transition.setKeys([
-            {
-                frame: 0,
-                value: host[property].clone ? host[property].clone() : host[property],
-            },
-            {
-                frame: endFrame,
-                value: targetValue,
-            },
-        ]);
+        transition.setKeys(
+            customKeys ?? [
+                {
+                    frame: 0,
+                    value: host[property].clone ? host[property].clone() : host[property],
+                },
+                {
+                    frame: endFrame,
+                    value: targetValue,
+                },
+            ]
+        );
 
         if (!host.animations) {
             host.animations = [];

@@ -28,10 +28,21 @@ export interface IAudioBusOptions extends IAbstractAudioBusOptions, ISpatialAudi
  * Audio buses are created by the {@link CreateAudioBusAsync} function.
  */
 export abstract class AudioBus extends AbstractAudioBus {
+    private readonly _spatialAutoUpdate: boolean = true;
+    private readonly _spatialMinUpdateTime: number = 0;
     private _outBus: Nullable<PrimaryAudioBus> = null;
+    private _spatial: Nullable<AbstractSpatialAudio> = null;
 
-    protected constructor(name: string, engine: AudioEngineV2) {
+    protected constructor(name: string, engine: AudioEngineV2, options: Partial<IAudioBusOptions>) {
         super(name, engine);
+
+        if (typeof options.spatialAutoUpdate === "boolean") {
+            this._spatialAutoUpdate = options.spatialAutoUpdate;
+        }
+
+        if (typeof options.spatialMinUpdateTime === "number") {
+            this._spatialMinUpdateTime = options.spatialMinUpdateTime;
+        }
     }
 
     /**
@@ -66,9 +77,14 @@ export abstract class AudioBus extends AbstractAudioBus {
     }
 
     /**
-     * The spatial features of the audio bus.
+     * The spatial audio features.
      */
-    public abstract readonly spatial: AbstractSpatialAudio;
+    public get spatial(): AbstractSpatialAudio {
+        if (this._spatial) {
+            return this._spatial;
+        }
+        return this._initSpatialProperty();
+    }
 
     /**
      * The stereo features of the audio bus.
@@ -80,7 +96,17 @@ export abstract class AudioBus extends AbstractAudioBus {
      */
     public override dispose(): void {
         super.dispose();
+
+        this._spatial?.dispose();
+        this._spatial = null;
+
         this._outBus = null;
+    }
+
+    protected abstract _createSpatialProperty(autoUpdate: boolean, minUpdateTime: number): AbstractSpatialAudio;
+
+    protected _initSpatialProperty(): AbstractSpatialAudio {
+        return (this._spatial = this._createSpatialProperty(this._spatialAutoUpdate, this._spatialMinUpdateTime));
     }
 
     private _onOutBusDisposed = () => {

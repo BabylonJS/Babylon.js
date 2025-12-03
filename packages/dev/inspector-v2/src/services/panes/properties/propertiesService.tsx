@@ -1,12 +1,12 @@
 import type { IDisposable, IReadonlyObservable } from "core/index";
-import type { DynamicAccordionSection, DynamicAccordionSectionContent } from "../../../components/extensibleAccordion";
+import type { SectionsImperativeRef, DynamicAccordionSection, DynamicAccordionSectionContent } from "../../../components/extensibleAccordion";
 import type { PropertyChangeInfo } from "../../../contexts/propertyContext";
 import type { IService, ServiceDefinition } from "../../../modularity/serviceDefinition";
 import type { ISelectionService } from "../../selectionService";
 import type { IShellService } from "../../shellService";
 
 import { DocumentTextRegular } from "@fluentui/react-icons";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Observable } from "core/Misc/observable";
 import { PropertiesPane } from "../../../components/properties/propertiesPane";
@@ -49,6 +49,13 @@ export interface IPropertiesService extends IService<typeof PropertiesServiceIde
     addSectionContent<EntityT>(content: PropertiesSectionContent<EntityT>): IDisposable;
 
     /**
+     * Highlights the specified sections temporarily to draw the user's attention to them.
+     * @remarks All other sections are collapsed (but can be expanded by the user) until a different entity is selected.
+     * @param sectionIds The identities of the sections to highlight.
+     */
+    highlightSections(sectionIds: readonly string[]): void;
+
+    /**
      * An observable that notifies when a property has been changed by the user.
      * @remarks This observable only fires for changes made through the properties pane.
      */
@@ -66,6 +73,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
         const sectionsCollection = new ObservableCollection<DynamicAccordionSection>();
         const sectionContentCollection = new ObservableCollection<PropertiesSectionContent<unknown>>();
         const onPropertyChanged = new Observable<PropertyChangeInfo>();
+        const onHighlightSectionsRequested = new Observable<readonly string[]>();
 
         const registration = shellService.addSidePane({
             key: "Properties",
@@ -98,9 +106,28 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
                     [sectionContent, entity]
                 );
 
+                const sectionsRef = useRef<SectionsImperativeRef>(null);
+
+                // The selected entity may be set at the same time as a highlight is requested.
+                // To account for this, we need to wait for one React render to complete before
+                // requesting the section highlight.
+                const [pendingHighlight, setPendingHighlight] = useState<readonly string[]>();
+
+                useEffect(() => {
+                    const observer = onHighlightSectionsRequested.add(setPendingHighlight);
+                    return () => observer.remove();
+                }, []);
+
+                useEffect(() => {
+                    if (pendingHighlight && sectionsRef.current) {
+                        sectionsRef.current.highlightSections(pendingHighlight);
+                        setPendingHighlight(undefined);
+                    }
+                }, [pendingHighlight]);
+
                 return (
                     <PropertyContext.Provider value={{ onPropertyChanged }}>
-                        <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} />
+                        <PropertiesPane sections={sections} sectionContent={applicableContent} context={entity} sectionsRef={sectionsRef} />
                     </PropertyContext.Provider>
                 );
             },
@@ -110,6 +137,7 @@ export const PropertiesServiceDefinition: ServiceDefinition<[IPropertiesService]
             addSection: (section) => sectionsCollection.add(section),
             addSectionContent: (content) => sectionContentCollection.add(content as PropertiesSectionContent<unknown>),
             onPropertyChanged,
+            highlightSections: (sectionIds: readonly string[]) => onHighlightSectionsRequested.notifyObservers(sectionIds),
             dispose: () => registration.dispose(),
         };
     },

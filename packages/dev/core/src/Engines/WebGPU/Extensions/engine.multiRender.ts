@@ -50,8 +50,9 @@ declare module "../../abstractEngine" {
          * Resolves the MSAA textures of the (multi) render target into their non-MSAA version.
          * Note that if "texture" is not a MSAA render target, no resolve is performed.
          * @param texture The render target texture containing the MSAA textures to resolve
+         * @param resolveColors If true, resolve the color textures (default: true) - still subject to texture.resolveMSAAColors
          */
-        resolveMultiFramebuffer(texture: RenderTargetWrapper): void;
+        resolveMultiFramebuffer(texture: RenderTargetWrapper, resolveColors?: boolean): void;
 
         /**
          * Select a subsets of attachments to draw to.
@@ -91,6 +92,10 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
     }
 
     this._endCurrentRenderPass();
+
+    if (!rtWrapper.disableAutomaticMSAAResolve) {
+        this.resolveMultiFramebuffer(rtWrapper, false);
+    }
 
     if (!disableGenerateMipMaps) {
         this.generateMipMapsMultiFramebuffer(rtWrapper);
@@ -339,8 +344,8 @@ WebGPUEngine.prototype.generateMipMapsMultiFramebuffer = function (texture: Rend
     }
 };
 
-WebGPUEngine.prototype.resolveMultiFramebuffer = function (_texture: RenderTargetWrapper): void {
-    throw new Error("resolveMultiFramebuffer is not yet implemented in WebGPU!");
+WebGPUEngine.prototype.resolveMultiFramebuffer = function (texture: RenderTargetWrapper, resolveColors: boolean = true): void {
+    this.resolveFramebuffer(texture, resolveColors);
 };
 
 WebGPUEngine.prototype.bindAttachments = function (attachments: number[]): void {

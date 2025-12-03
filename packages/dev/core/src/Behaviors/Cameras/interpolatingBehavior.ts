@@ -35,6 +35,13 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
      */
     public transitionDuration = 450;
 
+    /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<C> {
+        return this._attachedCamera;
+    }
+
     private _attachedCamera: Nullable<C> = null;
     private _animatables: Map<string, Animatable> = new Map<string, Animatable>();
     private _promiseResolve?: () => void;
@@ -101,11 +108,13 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
     public async animatePropertiesAsync<K extends keyof C>(
         properties: Map<K, AllowedAnimValue>,
         transitionDuration: number = this.transitionDuration,
-        easingFn: EasingFunction = this.easingFunction
+        easingFn: EasingFunction = this.easingFunction,
+        updateAnimation?: (key: string, animation: Animation) => void
     ): Promise<void> {
         const promise = new Promise<void>((resolve) => {
-            this._promiseResolve = resolve;
             this.stopAllAnimations();
+
+            this._promiseResolve = resolve;
             if (!this._attachedCamera) {
                 this._promiseResolve = undefined;
                 return resolve();
@@ -129,9 +138,12 @@ export class InterpolatingBehavior<C extends Camera = Camera> implements Behavio
             };
 
             properties.forEach((value, key) => {
-                if (value !== undefined) {
+                if (value !== undefined && camera[key] !== value) {
                     const propertyName = String(key);
                     const animation = Animation.CreateAnimation(propertyName, GetAnimationType(value), 60, easingFn);
+                    // Optionally allow caller to further customize the animation
+                    updateAnimation?.(propertyName, animation);
+
                     // Pass false for stopCurrent so that we can interpolate multiple properties at once
                     const animatable = Animation.TransitionTo(propertyName, value, camera, scene, 60, animation, transitionDuration, () => checkClear(propertyName), false);
                     if (animatable) {

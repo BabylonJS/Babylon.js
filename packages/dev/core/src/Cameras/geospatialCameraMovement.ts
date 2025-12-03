@@ -31,7 +31,9 @@ import type { GeospatialCamera } from "./geospatialCamera";
 export class GeospatialCameraMovement extends CameraMovement {
     /** Predicate function to determine which meshes to pick against (e.g., globe mesh) */
     public pickPredicate?: MeshPredicate;
-    public computedPerFrameZoomVector: Vector3 = new Vector3();
+
+    /** World-space picked point under cursor for zoom-to-cursor behavior (may be undefined) */
+    public computedPerFrameZoomPickPoint?: Vector3;
 
     public zoomToCursor: boolean = true;
 
@@ -61,7 +63,6 @@ export class GeospatialCameraMovement extends CameraMovement {
         behavior?: InterpolatingBehavior<GeospatialCamera>
     ) {
         super(scene, cameraPosition, behavior);
-        this.computedPerFrameZoomVector.copyFrom(this._cameraLookAt);
         this.pickPredicate = pickPredicate;
         this._tempPickingRay = new Ray(this._cameraPosition, this._cameraLookAt);
         this.panInertia = 0;
@@ -156,8 +157,7 @@ export class GeospatialCameraMovement extends CameraMovement {
         }
 
         // If a pan drag is occurring, stop zooming.
-        const isDragging = this._hitPointRadius !== undefined;
-        if (isDragging) {
+        if (this.isDragging) {
             this._zoomSpeedMultiplier = 0;
             this._zoomVelocity = 0;
         } else {
@@ -170,6 +170,10 @@ export class GeospatialCameraMovement extends CameraMovement {
         super.computeCurrentFrameDeltas();
 
         this._handleZoom(activeZoom);
+    }
+
+    public get isDragging() {
+        return this._hitPointRadius !== undefined;
     }
 
     private _handleZoom(activeZoom: boolean) {
@@ -185,16 +189,16 @@ export class GeospatialCameraMovement extends CameraMovement {
                 const pickResult = this._scene.pick(this._scene.pointerX, this._scene.pointerY, this.pickPredicate);
 
                 if (pickResult.hit && pickResult.pickedPoint && pickResult.ray && this.zoomToCursor) {
-                    // Store both the zoom direction and the pick distance for use during inertia
-                    pickResult.ray.direction.normalizeToRef(this.computedPerFrameZoomVector);
+                    // Store both the zoom picked point and the pick distance for use during inertia
                     pickDistance = pickResult.distance;
                     this._storedZoomPickDistance = pickDistance;
+                    this.computedPerFrameZoomPickPoint = pickResult.pickedPoint;
                 } else {
                     // If no hit under cursor, zoom along lookVector instead
-                    this._cameraLookAt.normalizeToRef(this.computedPerFrameZoomVector);
-                    const lookPickResult = this.pickAlongVector(this.computedPerFrameZoomVector);
+                    const lookPickResult = this.pickAlongVector(this._cameraLookAt);
                     pickDistance = lookPickResult?.distance;
                     this._storedZoomPickDistance = pickDistance;
+                    this.computedPerFrameZoomPickPoint = undefined;
                 }
             }
 
@@ -233,7 +237,7 @@ export class GeospatialCameraMovement extends CameraMovement {
 }
 
 export function ClampCenterFromPolesInPlace(center: Vector3) {
-    const sineOfSphericalLatitudeLimit = 0.9999; // ~89.95 degrees
+    const sineOfSphericalLatitudeLimit = 0.998749218; // ~90 degrees
     const centerMagnitude = center.length(); // distance from planet origin
     if (centerMagnitude > Epsilon) {
         const sineSphericalLat = centerMagnitude === 0 ? 0 : center.z / centerMagnitude;
