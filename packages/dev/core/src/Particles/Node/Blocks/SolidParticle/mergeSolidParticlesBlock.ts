@@ -117,4 +117,3 @@ export class MergeSolidParticlesBlock extends NodeParticleBlock {
 }
 
 RegisterClass("BABYLON.MergeSolidParticlesBlock", MergeSolidParticlesBlock);
-
