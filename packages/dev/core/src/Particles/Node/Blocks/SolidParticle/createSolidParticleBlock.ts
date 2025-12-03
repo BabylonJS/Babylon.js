@@ -1,4 +1,5 @@
-import { Color4, Vector3 } from "../../../../Maths";
+import { Color4 } from "core/Maths/math.color";
+import { Vector3 } from "core/Maths/math.vector";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeParticleBlockConnectionPointTypes } from "../../Enums/nodeParticleBlockConnectionPointTypes";
 import { NodeParticleBlock } from "../../nodeParticleBlock";
