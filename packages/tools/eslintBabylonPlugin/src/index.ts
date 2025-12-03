@@ -515,7 +515,8 @@ const plugin: IPlugin = {
             meta: {
                 type: "problem",
                 docs: {
-                    description: "Prevent imports from directories with index files (barrel imports) when using path mappings, as these cause issues with .js extension appending during build",
+                    description:
+                        "Prevent imports from directories with index files (barrel imports) when using path mappings, as these cause issues with .js extension appending during build",
                 },
                 messages: {
                     noDirectoryBarrelImport:
