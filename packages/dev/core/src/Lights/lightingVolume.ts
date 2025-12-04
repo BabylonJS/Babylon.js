@@ -505,12 +505,16 @@ export class LightingVolume {
     private _updateGeometry() {
         const light = this._light;
 
-        if (!light || !this._shadowGenerator || this._engine.isWebGPU) {
+        if (!light || !this._shadowGenerator) {
             return;
         }
 
         if (this._indices.length === 0) {
             this._createGeometry();
+            return;
+        }
+
+        if (this._engine.isWebGPU) {
             return;
         }
 
