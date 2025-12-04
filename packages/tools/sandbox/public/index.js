@@ -43,6 +43,7 @@ const Versions = {
         { url: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
+        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.39.3" },
     ],
     local: [
         { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
@@ -52,6 +53,7 @@ const Versions = {
         { url: `//${window.location.hostname}:1337/materialsLibrary/babylonjs.materials.min.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
     ],
 };
 
@@ -143,12 +145,12 @@ let checkBabylonVersionAsync = function () {
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
         }
 
-        return version;
+        return { version, bundles: versions.map((v) => v.url) };
     });
 };
 
-checkBabylonVersionAsync().then((version) => {
+checkBabylonVersionAsync().then((versionInfo) => {
     loadScriptAsync("babylon.sandbox.js").then(() => {
-        BABYLON.Sandbox.Show(hostElement, version);
+        BABYLON.Sandbox.Show(hostElement, versionInfo);
     });
 });

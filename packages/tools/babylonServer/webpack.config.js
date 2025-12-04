@@ -89,6 +89,7 @@ module.exports = (env) => {
             babylon: `./src/core/index-${source}.ts`,
             "gui/babylon.gui.min": `./src/gui/index-${source}.ts`,
             "inspector/babylon.inspector.min": `./src/inspector/index.ts`,
+            "inspector/babylon.inspector-v2.bundle": `./src/inspector-v2/index.ts`,
             "serializers/babylonjs.serializers.min": `./src/serializers/index-${source}.ts`,
             "loaders/babylonjs.loaders.min": `./src/loaders/index-${source}.ts`,
             "materialsLibrary/babylonjs.materials.min": `./src/materials/index-${source}.ts`,
