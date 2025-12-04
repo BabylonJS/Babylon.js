@@ -232,12 +232,12 @@ export interface IShellService extends IService<typeof ShellServiceIdentity> {
     /**
      * The left side pane container.
      */
-    readonly leftSidePaneContainer: SidePaneContainer;
+    readonly leftSidePaneContainer: Nullable<SidePaneContainer>;
 
     /**
      * The right side pane container.
      */
-    readonly rightSidePaneContainer: SidePaneContainer;
+    readonly rightSidePaneContainer: Nullable<SidePaneContainer>;
 
     /**
      * The side panes currently present in the shell.
@@ -1167,15 +1167,17 @@ export function MakeShellServiceDefinition({
 
             const onDockChanged = new Observable<{ location: HorizontalLocation; dock: boolean }>(undefined, true);
             const leftSidePaneContainerState = {
-                isDocked: true as boolean,
+                isPresent: false,
+                isDocked: true,
                 dock: () => onDockChanged.notifyObservers({ location: "left", dock: true }),
                 undock: () => onDockChanged.notifyObservers({ location: "left", dock: false }),
-            } satisfies SidePaneContainer;
+            };
             const rightSidePaneContainerState = {
-                isDocked: true as boolean,
+                isPresent: false,
+                isDocked: true,
                 dock: () => onDockChanged.notifyObservers({ location: "right", dock: true }),
                 undock: () => onDockChanged.notifyObservers({ location: "right", dock: false }),
-            } satisfies SidePaneContainer;
+            };
 
             const rootComponent: FunctionComponent = () => {
                 const classes = useStyles();
@@ -1293,6 +1295,16 @@ export function MakeShellServiceDefinition({
 
                 const hasLeftPanes = coercedSidePanes.some((entry) => entry.horizontalLocation === "left");
                 const hasRightPanes = coercedSidePanes.some((entry) => entry.horizontalLocation === "right");
+
+                useEffect(() => {
+                    leftSidePaneContainerState.isPresent = hasLeftPanes;
+                    rightSidePaneContainerState.isPresent = hasRightPanes;
+
+                    return () => {
+                        leftSidePaneContainerState.isPresent = false;
+                        rightSidePaneContainerState.isPresent = false;
+                    };
+                }, [hasLeftPanes, hasRightPanes]);
 
                 // If we are in compact toolbar mode, we may need to move toolbar items from the left to the right or vice versa,
                 // depending on whether there are any side panes on that side.
@@ -1465,8 +1477,12 @@ export function MakeShellServiceDefinition({
                 },
                 addCentralContent: (entry) => centralContentCollection.add(entry),
                 resetSidePaneLayout: () => localStorage.removeItem("Babylon/Settings/SidePaneDockOverrides"),
-                leftSidePaneContainer: leftSidePaneContainerState,
-                rightSidePaneContainer: rightSidePaneContainerState,
+                get leftSidePaneContainer() {
+                    return leftSidePaneContainerState.isPresent ? leftSidePaneContainerState : null;
+                },
+                get rightSidePaneContainer() {
+                    return rightSidePaneContainerState.isPresent ? rightSidePaneContainerState : null;
+                },
                 onDockChanged,
                 get sidePanes() {
                     return [...sidePaneCollection.items].map((sidePaneDefinition) => {

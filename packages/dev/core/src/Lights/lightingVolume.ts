@@ -25,6 +25,7 @@ export class LightingVolume {
     private readonly _mesh: Mesh;
     private readonly _copyTexture?: CopyTextureToTexture;
     private readonly _uBuffer?: UniformBuffer;
+    private readonly _buildFullVolume = true;
     private _name: string;
     private _cs?: ComputeShader;
     private _light?: DirectionalLight;
@@ -35,6 +36,7 @@ export class LightingVolume {
     private _readPixelAbortController: Nullable<AbortController> = null;
     private _numFrames = 0;
     private _firstUpdate = true;
+    private _currentLightDirection = new Vector3();
 
     private _shadowGenerator?: ShadowGenerator;
     /**
@@ -76,24 +78,7 @@ export class LightingVolume {
 
     public set tesselation(n: number) {
         this._tesselation = n;
-        this._createGeometry();
-    }
-
-    private _buildFullVolume = false;
-    /**
-     * Indicates whether to build the full volume (true) or only the far plane (false). Default is false.
-     */
-    public get buildFullVolume() {
-        return this._buildFullVolume;
-    }
-
-    public set buildFullVolume(value: boolean) {
-        if (this._buildFullVolume === value) {
-            return;
-        }
-        this._buildFullVolume = value;
-        this._createGeometry();
-        this._createComputeShader();
+        this._createGeometry(true);
     }
 
     /**
@@ -181,7 +166,7 @@ export class LightingVolume {
         }
 
         this._tesselation = tesselation;
-        this._createGeometry();
+        this._createGeometry(true);
     }
 
     /**
@@ -212,6 +197,8 @@ export class LightingVolume {
         this._numFrames = 0;
 
         if (this._cs && this._uBuffer) {
+            this._recreateGeometry();
+
             const dispatchSize = Math.ceil((this._tesselation + 1) / 8);
 
             const viewProjMatrix = this._shadowGenerator.getTransformMatrix();
@@ -220,9 +207,9 @@ export class LightingVolume {
             this._uBuffer.updateMatrix("invViewProjMatrix", InvViewProjMatrix);
             this._uBuffer.update();
 
-            this._engine._debugPushGroup?.(`Generate lighting volume (${this._name})`);
+            this._engine._debugPushGroup?.(`Update lighting volume (${this._name})`, 1);
             this._cs.dispatch(dispatchSize, dispatchSize, 1);
-            this._engine._debugPopGroup?.();
+            this._engine._debugPopGroup?.(1);
 
             this._firstUpdate = false;
         } else {
@@ -249,6 +236,13 @@ export class LightingVolume {
         this._storageBuffer?.dispose();
         this._uBuffer?.dispose();
         this._depthCopy?.dispose();
+    }
+
+    private _recreateGeometry() {
+        if (this._light && !this._currentLightDirection.equals(this._light.direction)) {
+            this._currentLightDirection.copyFrom(this._light.direction);
+            this._createGeometry();
+        }
     }
 
     private _createComputeShader() {
@@ -359,13 +353,21 @@ export class LightingVolume {
 
         const factor = 4;
 
+        this._recreateGeometry();
+
         let posIndex = startPos;
         let stepY = 0;
         for (let y = 0; y < numTesselation + 1; ++y) {
             for (let x = 0; x < numTesselation + 1; ++x) {
                 let depth = depthValues[Math.floor(mapSize * Math.floor(stepY) + x * step) * factor];
-                if (!this._buildFullVolume && (depth === 1 || y === 0 || x === 0 || y === numTesselation || x === numTesselation)) {
-                    depth = 0;
+                if (!this._buildFullVolume) {
+                    if (y === 0 || x === 0 || y === numTesselation || x === numTesselation) {
+                        posIndex += 3;
+                        continue;
+                    }
+                    if (depth === 1) {
+                        depth = 0;
+                    }
                 }
 
                 TmpVec3.set((x - halfTesselation) / halfTesselation, (y - halfTesselation) / halfTesselation, -1 + 2 * depth);
@@ -386,7 +388,7 @@ export class LightingVolume {
         this._firstUpdate = false;
     }
 
-    private _createGeometry() {
+    private _createGeometry(_recreateAll = false) {
         if (!this._light) {
             return;
         }
@@ -414,6 +416,8 @@ export class LightingVolume {
         if (this._buildFullVolume) {
             let startIndices = 0;
 
+            const rightFaceStartIndex = startIndices;
+
             // Right faces of the frustum
             for (let i = 0; i <= numTesselation; ++i) {
                 v.set(max.x, min.y + i * stepY, min.z);
@@ -427,11 +431,9 @@ export class LightingVolume {
                 }
             }
 
-            const n0 = 0;
-            const n1 = positions.length / 3 - 1;
-            const n2 = n1 + 1;
-
             startIndices = positions.length / 3;
+
+            const leftFaceStartIndex = startIndices;
 
             // Left faces of the frustum
             for (let i = 0; i <= numTesselation; ++i) {
@@ -446,9 +448,9 @@ export class LightingVolume {
                 }
             }
 
-            const n3 = positions.length / 3 - 1;
-
             startIndices = positions.length / 3;
+
+            const bottomFaceStartIndex = startIndices;
 
             // Bottom faces of the frustum
             for (let i = 0; i <= numTesselation; ++i) {
@@ -464,6 +466,8 @@ export class LightingVolume {
             }
 
             startIndices = positions.length / 3;
+
+            const topFaceStartIndex = startIndices;
 
             // Top faces of the frustum
             for (let i = 0; i <= numTesselation; ++i) {
@@ -485,8 +489,19 @@ export class LightingVolume {
             startIndices = positions.length / 3;
 
             // Near faces of the frustum
-            indices.push(n0, n2, n1);
-            indices.push(n2, n3, n1);
+            for (let i = 0; i < numTesselation; ++i) {
+                indices.push(leftFaceStartIndex + i, leftFaceStartIndex + i + 1, topFaceStartIndex + numTesselation - i);
+                if (i < numTesselation - 1) {
+                    indices.push(leftFaceStartIndex + i + 1, topFaceStartIndex + numTesselation - i - 1, topFaceStartIndex + numTesselation - i);
+                }
+            }
+
+            for (let i = 0; i < numTesselation; ++i) {
+                indices.push(bottomFaceStartIndex + i, rightFaceStartIndex + numTesselation - i, rightFaceStartIndex + numTesselation - i - 1);
+                if (i < numTesselation - 1) {
+                    indices.push(bottomFaceStartIndex + i, rightFaceStartIndex + numTesselation - i - 1, bottomFaceStartIndex + i + 1);
+                }
+            }
         } else {
             let p: Vector3;
 
@@ -510,7 +525,7 @@ export class LightingVolume {
             indices.push(2, 3, 1);
         }
 
-        // Tesselate the far plane
+        // Tesselate the near plane
         let y = min.y;
         for (let iy = 0; iy <= numTesselation; ++iy) {
             let x = min.x;
@@ -545,7 +560,7 @@ export class LightingVolume {
 
             this._storageBuffer.update(positions);
 
-            const vertexBuffer = new VertexBuffer(webGPUEngine, this._storageBuffer.getBuffer(), "position");
+            const vertexBuffer = new VertexBuffer(webGPUEngine, this._storageBuffer.getBuffer(), "position", { takeBufferOwnership: false });
 
             this._mesh.setVerticesBuffer(vertexBuffer);
 

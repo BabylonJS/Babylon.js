@@ -62,7 +62,7 @@ export class _WebAudioParameterComponent {
         const startTime = this._engine.currentTime;
 
         if (shape === AudioParameterRampShape.None) {
-            this._param.cancelScheduledValues(startTime);
+            this._param.cancelScheduledValues(0);
             this._param.value = this._targetValue = value;
             this._rampEndTime = startTime;
             return;
@@ -75,7 +75,7 @@ export class _WebAudioParameterComponent {
             return;
         }
 
-        this._param.cancelScheduledValues(startTime);
+        this._param.cancelScheduledValues(0);
         this._param.setValueCurveAtTime(_GetAudioParamCurveValues(shape, this._param.value, (this._targetValue = value)), startTime, duration);
 
         this._rampEndTime = startTime + duration;

@@ -27,7 +27,7 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import type { IMaterialContext } from "./IMaterialContext";
-import type { IStencilState } from "../States/IStencilState";
+import type { IStencilStateProperties, IStencilState } from "../States/IStencilState";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import type { IDrawContext } from "./IDrawContext";
 import type { VertexBuffer } from "../Meshes/buffer";
@@ -1363,7 +1363,7 @@ export abstract class AbstractEngine {
         force?: boolean,
         reverseSide?: boolean,
         cullBackFaces?: boolean,
-        stencil?: IStencilState,
+        stencil?: IStencilState | IStencilStateProperties,
         zOffsetUnits?: number
     ): void;
 
@@ -1919,14 +1919,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@8.38.0";
+        return "babylonjs@8.39.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "8.38.0";
+        return "8.39.3";
     }
 
     /**

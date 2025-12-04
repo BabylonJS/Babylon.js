@@ -43,6 +43,8 @@ import { NodeRenderGraphFilterPostProcessBlock } from "core/FrameGraph/Node/Bloc
 import { NodeRenderGraphTonemapPostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/tonemapPostProcessBlock";
 import { NodeRenderGraphSSAO2PostProcessBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/ssao2PostProcessBlock";
 import { NodeRenderGraphComputeShaderBlock } from "core/FrameGraph/Node/Blocks/computeShaderBlock";
+import { NodeRenderGraphVolumetricLightingBlock } from "core/FrameGraph/Node/Blocks/PostProcesses/volumetricLightingBlock";
+import { NodeRenderGraphLightingVolumeBlock } from "core/FrameGraph/Node/Blocks/lightingVolumeBlock";
 
 /**
  * Static class for BlockTools
@@ -194,6 +196,12 @@ export class BlockTools {
             }
             case "ComputeShaderBlock": {
                 return new NodeRenderGraphComputeShaderBlock("Compute Shader", frameGraph, scene);
+            }
+            case "VolumetricLightingBlock": {
+                return new NodeRenderGraphVolumetricLightingBlock("Volumetric Lighting", frameGraph, scene);
+            }
+            case "LightingVolumeBlock": {
+                return new NodeRenderGraphLightingVolumeBlock("Lighting Volume", frameGraph, scene);
             }
         }
 
