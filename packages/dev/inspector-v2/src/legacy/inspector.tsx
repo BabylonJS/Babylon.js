@@ -41,6 +41,11 @@ type PropertyChangedEvent = {
     allowNullValue?: boolean;
 };
 
+/**
+ * Converts Inspector v1 options to Inspector v2 options.
+ * @param v1Options Inspector v1 options.
+ * @returns Inspector v2 options.
+ */
 export function ConvertOptions(v1Options: Partial<InspectorV1Options>): Partial<InspectorV2Options> {
     // Options not currently handled:
     // • enablePopup: Do users care about this one?
