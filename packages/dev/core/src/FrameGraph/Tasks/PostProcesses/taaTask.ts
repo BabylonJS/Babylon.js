@@ -42,6 +42,10 @@ export class FrameGraphTAATask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinTAAPostProcess(name, frameGraph.scene));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphTAATask";
+    }
+
     public override record(): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.objectRendererTask === undefined) {
             throw new Error(`FrameGraphPostProcessTask "${this.name}": sourceTexture and objectRendererTask are required`);

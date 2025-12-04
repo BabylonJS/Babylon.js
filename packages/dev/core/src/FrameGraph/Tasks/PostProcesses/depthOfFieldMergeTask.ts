@@ -15,6 +15,10 @@ export class FrameGraphDepthOfFieldMergeTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinDepthOfFieldMergePostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphDepthOfFieldMergeTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.circleOfConfusionTexture === undefined || this.blurSteps.length === 0) {
             throw new Error(`FrameGraphBloomMergeTask "${this.name}": sourceTexture, circleOfConfusionTexture and blurSteps are required`);
