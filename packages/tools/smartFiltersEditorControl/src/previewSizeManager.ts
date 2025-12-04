@@ -18,8 +18,6 @@ const AspectRatioMode = "aspectRatio";
 
 /**
  * Manages the size mode of the preview window, including loading and saving settings to local storage.
- * TODO: Still need to figure out how to store these values per project, for now they can be in local storage
- * Nice to have: right click on texture input block and set the preview to a fixed size to match the texture's size
  */
 export class PreviewSizeManager {
     private _mode: ObservableProperty<PreviewSizeMode>;

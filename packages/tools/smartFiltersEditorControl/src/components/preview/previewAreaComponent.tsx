@@ -58,9 +58,6 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
                 canvasStyle = { width: "100%", height: "100%" };
                 break;
             case FixedMode:
-                // divStyle = {
-                //     aspectRatio: this.props.globalState.previewSizeManager.fixedWidth.value / (this.props.globalState.previewSizeManager.fixedHeight.value || 0.1),
-                // };
                 canvasStyle = {
                     width: this.props.globalState.previewSizeManager.fixedWidth.value + "px",
                     height: this.props.globalState.previewSizeManager.fixedHeight.value + "px",
