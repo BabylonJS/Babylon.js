@@ -126,6 +126,18 @@ export class LightingVolume {
         return this._firstUpdate;
     }
 
+    /** @internal */
+    public _setComputeShaderFastMode(enabled: boolean) {
+        if (this._cs) {
+            this._cs.fastMode = enabled;
+            this._cs.triggerContextRebuild = enabled;
+        }
+        if (this._cs2) {
+            this._cs2.fastMode = enabled;
+            this._cs2.triggerContextRebuild = enabled;
+        }
+    }
+
     /**
      * Creates a new LightingVolume.
      * @param name The name of the lighting volume.
