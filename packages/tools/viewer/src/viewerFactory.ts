@@ -2,6 +2,7 @@ import type { AbstractEngine, AbstractEngineOptions, EngineOptions, IDisposable,
 import type { ViewerDetails, ViewerOptions } from "./viewer";
 
 import { Deferred } from "core/Misc/deferred";
+import { Logger } from "core/Misc/logger";
 import { Viewer } from "./viewer";
 
 /**
@@ -95,16 +96,21 @@ export async function CreateViewerForCanvas(
     // Create an engine instance.
     let engine: AbstractEngine;
     switch (options.engine ?? GetDefaultEngine()) {
-        case "WebGL": {
-            const { Engine } = await import("core/Engines/engine");
-            engine = new Engine(canvas, undefined, options);
-            break;
-        }
         case "WebGPU": {
             const { WebGPUEngine } = await import("core/Engines/webgpuEngine");
             const webGPUEngine = new WebGPUEngine(canvas, options);
-            await webGPUEngine.initAsync();
-            engine = webGPUEngine;
+            try {
+                await webGPUEngine.initAsync();
+                engine = webGPUEngine;
+                break;
+            } catch {
+                Logger.Warn("Failed to initialize WebGPU engine. Falling back to WebGL.");
+            }
+        }
+        // eslint-disable-next-line no-fallthrough
+        case "WebGL": {
+            const { Engine } = await import("core/Engines/engine");
+            engine = new Engine(canvas, undefined, options);
             break;
         }
     }
