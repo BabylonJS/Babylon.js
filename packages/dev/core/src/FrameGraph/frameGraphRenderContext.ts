@@ -417,7 +417,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
     /** @internal */
     public _isReady(): boolean {
-        return this._copyTexture.isReady();
+        return this._copyTexture.isReady() && this._copyDepthTexture.isReady();
     }
 
     /** @internal */
@@ -425,5 +425,6 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._effectRenderer.dispose();
         this._effectRendererBack.dispose();
         this._copyTexture.dispose();
+        this._copyDepthTexture.dispose();
     }
 }
