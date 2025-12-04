@@ -227,9 +227,13 @@ export abstract class FrameGraphTask {
 
         this.onBeforeTaskExecute.notifyObservers(this);
 
+        this._frameGraph.engine._debugPushGroup?.(`${this.getClassName()} (${this.name})`, 1);
+
         for (const pass of passes) {
             pass._execute();
         }
+
+        this._frameGraph.engine._debugPopGroup?.(1);
 
         this.onAfterTaskExecute.notifyObservers(this);
     }
