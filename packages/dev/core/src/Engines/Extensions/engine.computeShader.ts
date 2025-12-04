@@ -123,9 +123,6 @@ declare module "../../Engines/abstractEngine" {
          * @param effect The compute effect
          * @param context The compute context
          * @param bindings The list of resources to bind to the shader
-         * @param x The number of workgroups to execute on the X dimension
-         * @param y The number of workgroups to execute on the Y dimension
-         * @param z The number of workgroups to execute on the Z dimension
          * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
          * @param gpuPerfCounter GPU time computed for the compute shader will be assigned to this object
          */
