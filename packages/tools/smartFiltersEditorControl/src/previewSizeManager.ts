@@ -24,21 +24,21 @@ export class PreviewSizeManager {
     private _selectedModeOption: string;
 
     /**
-     * The currently selected preview mode
+     * The currently selected mode (e.g. aspectRatio, fixed, fill)
      */
     public get mode(): ReadOnlyObservableProperty<PreviewSizeMode> {
         return this._mode;
     }
 
     /**
-     * The mode used in the UI to represent the preview size mode
+     * The option selected in the UI, which could be a specific aspect ratio or one of the modes (fill, fixed)
      */
     public get selectedModeOption(): string {
         return this._selectedModeOption;
     }
 
     /**
-     * The mode used in the UI to represent the preview size mode
+     * The options selected in the UI, which could be a specific aspect ratio or one of the modes (fill, fixed)
      */
     public set selectedModeOption(value: string) {
         this._selectedModeOption = value;
@@ -62,12 +62,12 @@ export class PreviewSizeManager {
     }
 
     /**
-     * If the mode is "fixedSize", the width to use for preview
+     * If the mode is "fixed", the width to use for preview
      */
     public fixedWidth: ObservableProperty<number>;
 
     /**
-     * If the mode is "fixedSize", the height to use for preview
+     * If the mode is "fixed", the height to use for preview
      */
     public fixedHeight: ObservableProperty<number>;
 
