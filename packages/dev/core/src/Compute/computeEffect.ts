@@ -422,7 +422,11 @@ export class ComputeEffect {
                 this._checkIsReady(previousPipelineContext);
             }
         } catch (e) {
-            this._processCompilationErrors(e, previousPipelineContext);
+            let err = "" + e;
+            if (e instanceof Error && e.stack) {
+                err = e.stack;
+            }
+            this._processCompilationErrors(err, previousPipelineContext);
         }
     }
 

@@ -115,6 +115,11 @@ export class ComputeShader {
     public readonly gpuTimeInFrame?: WebGPUPerfCounter;
 
     /**
+     * If set to true, the compute context will be rebuilt at the next dispatch even if in fast mode
+     */
+    public triggerContextRebuild = false;
+
+    /**
      * Instantiates a new compute shader.
      * @param name Defines the name of the compute shader in the scene
      * @param engine Defines the engine the compute shader belongs to
@@ -368,7 +373,7 @@ export class ComputeShader {
      * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
      */
     public dispatch(x: number, y?: number, z?: number): boolean {
-        if (!this.fastMode && !this._checkContext()) {
+        if ((!this.fastMode || this.triggerContextRebuild) && !this._checkContext()) {
             return false;
         }
         this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping, this.gpuTimeInFrame);
@@ -383,7 +388,7 @@ export class ComputeShader {
      * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
      */
     public dispatchIndirect(buffer: StorageBuffer | DataBuffer, offset: number = 0): boolean {
-        if (!this.fastMode && !this._checkContext()) {
+        if ((!this.fastMode || this.triggerContextRebuild) && !this._checkContext()) {
             return false;
         }
         const dataBuffer = ComputeShader._BufferIsDataBuffer(buffer) ? buffer : buffer.getBuffer();
@@ -440,6 +445,7 @@ export class ComputeShader {
         }
 
         if (this._contextIsDirty) {
+            this.triggerContextRebuild = false;
             this._contextIsDirty = false;
             this._context.clear();
         }
