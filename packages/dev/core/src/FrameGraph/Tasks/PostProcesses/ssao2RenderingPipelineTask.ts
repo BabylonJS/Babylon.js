@@ -137,6 +137,10 @@ export class FrameGraphSSAO2RenderingPipelineTask extends FrameGraphTask {
         return this.ssao.isReady();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphSSAO2RenderingPipelineTask";
+    }
+
     public record(): void {
         if (this.sourceTexture === undefined || this.depthTexture === undefined || this.normalTexture === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphSSAO2RenderingPipelineTask "${this.name}": sourceTexture, depthTexture, normalTexture and camera are required`);

@@ -17,4 +17,8 @@ export class FrameGraphTonemapTask extends FrameGraphPostProcessTask {
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinTonemapPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinTonemapPostProcess(name, frameGraph.engine));
     }
+
+    public override getClassName(): string {
+        return "FrameGraphTonemapTask";
+    }
 }

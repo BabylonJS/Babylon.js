@@ -523,6 +523,91 @@ const plugin: IPlugin = {
                 };
             },
         },
+        "no-directory-barrel-imports": {
+            meta: {
+                type: "problem",
+                docs: {
+                    description:
+                        "Prevent imports from directories with index files (barrel imports) when using path mappings, as these cause issues with .js extension appending during build",
+                },
+                messages: {
+                    noDirectoryBarrelImport:
+                        'Import "{{importPath}}" resolves to a directory with an index file. Import directly from the specific file instead to avoid build issues with .js extension appending.',
+                },
+            },
+            create(context) {
+                const filename = context.filename;
+                const projectRoot = filename.split("packages")[0];
+
+                return {
+                    Program() {
+                        // Load tsconfig (it will only be loaded upon first request).
+                        tsConfig = loadTsConfig(projectRoot);
+                    },
+
+                    ImportDeclaration(node) {
+                        // Skip type-only imports as they are erased during compilation
+                        // The importKind property is added by TypeScript-ESLint parser
+                        if ((node as any).importKind === "type") {
+                            return;
+                        }
+
+                        const importPath = node.source.value as string;
+
+                        // Skip relative imports and node_modules imports
+                        if (importPath.startsWith(".") || importPath.startsWith("@") || !tsConfig?.compilerOptions?.paths) {
+                            return;
+                        }
+
+                        const { baseUrl = ".", paths } = tsConfig.compilerOptions;
+
+                        // Check if the import matches a path mapping
+                        for (const [pathKey, pathValues] of Object.entries(paths)) {
+                            // Handle patterns like "core/*"
+                            const pathPrefix = pathKey.replace("/*", "");
+                            if (!importPath.startsWith(pathPrefix + "/")) {
+                                continue;
+                            }
+
+                            // Get the rest of the path after the mapping prefix
+                            const restOfPath = importPath.slice(pathPrefix.length + 1);
+
+                            // Resolve the actual directory path
+                            for (const pathValue of pathValues) {
+                                const resolvedBase = path.resolve(projectRoot, baseUrl, pathValue.replace("/*", ""));
+                                const targetPath = path.join(resolvedBase, restOfPath);
+
+                                // Check if this is a directory with an index.ts file
+                                const indexTsPath = path.join(targetPath, "index.ts");
+                                try {
+                                    if (fs.existsSync(indexTsPath) && fs.statSync(targetPath).isDirectory()) {
+                                        // Before flagging, check if a file with the same name exists.
+                                        // Module resolution prefers files over directories, so if i.e.
+                                        // abstractEngine.ts exists alongside AbstractEngine/, the import
+                                        // will correctly resolve to the file.
+                                        const filePath = targetPath + ".ts";
+                                        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+                                            return; // File exists, module resolution will prefer it
+                                        }
+
+                                        context.report({
+                                            node,
+                                            messageId: "noDirectoryBarrelImport",
+                                            data: {
+                                                importPath,
+                                            },
+                                        });
+                                        return;
+                                    }
+                                } catch {
+                                    // Path doesn't exist, that's fine
+                                }
+                            }
+                        }
+                    },
+                };
+            },
+        },
         "require-context-save-before-apply-states": {
             meta: {
                 type: "problem",

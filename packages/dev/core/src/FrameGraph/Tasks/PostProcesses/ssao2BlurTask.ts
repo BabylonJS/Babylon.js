@@ -20,6 +20,10 @@ export class FrameGraphSSAO2BlurTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinSSAO2BlurPostProcess(name, frameGraph.engine, _isHorizontal));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphSSAO2BlurTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.depthTexture === undefined) {
             throw new Error(`FrameGraphSSAO2BlurTask "${this.name}": sourceTexture and depthTexture are required`);

@@ -24,6 +24,10 @@ export class FrameGraphScreenSpaceCurvatureTask extends FrameGraphPostProcessTas
         super(name, frameGraph, thinPostProcess || new ThinScreenSpaceCurvaturePostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphScreenSpaceCurvatureTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.normalTexture === undefined) {
             throw new Error(`FrameGraphScreenSpaceCurvatureTask "${this.name}": sourceTexture and normalTexture are required`);
