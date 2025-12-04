@@ -18,6 +18,10 @@ export class FrameGraphImageProcessingTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinImageProcessingPostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphImageProcessingTask";
+    }
+
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,

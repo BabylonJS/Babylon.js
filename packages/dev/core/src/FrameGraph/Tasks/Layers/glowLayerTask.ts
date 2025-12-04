@@ -23,4 +23,8 @@ export class FrameGraphGlowLayerTask extends FrameGraphBaseLayerTask {
 
         this.layer._renderPassId = this._objectRendererForLayer.objectRenderer.renderPassId;
     }
+
+    public override getClassName(): string {
+        return "FrameGraphGlowLayerTask";
+    }
 }

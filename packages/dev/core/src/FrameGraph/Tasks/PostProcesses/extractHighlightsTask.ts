@@ -17,4 +17,8 @@ export class FrameGraphExtractHighlightsTask extends FrameGraphPostProcessTask {
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinExtractHighlightsPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinExtractHighlightsPostProcess(name, frameGraph.engine));
     }
+
+    public override getClassName(): string {
+        return "FrameGraphExtractHighlightsTask";
+    }
 }
