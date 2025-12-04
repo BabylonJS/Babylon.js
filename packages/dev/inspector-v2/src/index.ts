@@ -41,6 +41,7 @@ export type { IShellService, ToolbarItemDefinition, SidePaneDefinition, CentralC
 export { ShellServiceIdentity } from "./services/shellService";
 export * from "./inspector";
 export { Inspector } from "./legacy/inspector";
+export { AttachDebugLayer, DetachDebugLayer } from "./legacy/debugLayer";
 
 // Export the shared primitive UI controls that can be used for extending the inspector.
 export * from "shared-ui-components/fluent/primitives/accordion";
@@ -89,6 +90,7 @@ export * from "shared-ui-components/fluent/hoc/propertyLines/textAreaPropertyLin
 export * from "shared-ui-components/fluent/hoc/propertyLines/textPropertyLine";
 export * from "shared-ui-components/fluent/hoc/propertyLines/vectorPropertyLine";
 
-// TODO: Enable this for back compat, but only after we remove runtime switching between inspector v1 and v2
-//       in Playground and Sandbox (otherwise this will break that functionality as it will stomp on Scene.debugLayer).
-// import "./legacy/debugLayer";
+import { AttachDebugLayer } from "./legacy/debugLayer";
+
+// Attach Inspector v2 to Scene.debugLayer as a side effect for back compat.
+AttachDebugLayer();
