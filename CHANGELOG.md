@@ -1,5 +1,11 @@
 # Changelog
 
+## 8.40.0
+
+### Core
+
+- ThinEngine: Replace window with globalThis - by [alexchuber](https://github.com/alexchuber) ([#17524](https://github.com/BabylonJS/Babylon.js/pull/17524))
+
 ## 8.39.3
 
 ### Core
