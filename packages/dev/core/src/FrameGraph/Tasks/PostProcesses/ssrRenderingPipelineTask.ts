@@ -135,6 +135,10 @@ export class FrameGraphSSRRenderingPipelineTask extends FrameGraphTask {
         return this.ssr.isReady();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphSSRRenderingPipelineTask";
+    }
+
     public record(): void {
         if (
             this.sourceTexture === undefined ||

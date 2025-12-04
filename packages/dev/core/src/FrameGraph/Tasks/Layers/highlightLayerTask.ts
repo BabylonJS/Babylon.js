@@ -26,6 +26,10 @@ export class FrameGraphHighlightLayerTask extends FrameGraphBaseLayerTask {
         super(name, frameGraph, scene, new ThinHighlightLayer(name, scene, options, true), 1, alphaBlendingMode === Constants.ALPHA_COMBINE, true, true);
     }
 
+    public override getClassName(): string {
+        return "FrameGraphHighlightLayerTask";
+    }
+
     public override record() {
         if (!this.objectRendererTask.depthTexture) {
             throw new Error(`FrameGraphHighlightLayerTask "${this.name}": objectRendererTask must have a depthTexture input`);

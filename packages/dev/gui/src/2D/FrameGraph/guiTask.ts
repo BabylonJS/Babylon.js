@@ -60,6 +60,10 @@ export class FrameGraphGUITask extends FrameGraphTask {
         return this._adt.guiIsReady() && this._adt._layerToDispose!.isReady();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphGUITask";
+    }
+
     public record(): void {
         if (this.targetTexture === undefined) {
             throw new Error("FrameGraphGUITask: targetTexture is required");

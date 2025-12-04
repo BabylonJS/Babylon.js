@@ -301,6 +301,10 @@ export class FrameGraphShadowGeneratorTask extends FrameGraphTask {
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphShadowGeneratorTask";
+    }
+
     public record() {
         if (this.light === undefined || this.objectList === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphShadowGeneratorTask ${this.name}: light, objectList and camera are required`);

@@ -69,6 +69,10 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphClearTextureTask";
+    }
+
     public record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.targetTexture === undefined && this.depthTexture === undefined) {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: targetTexture and depthTexture can't both be undefined.`);

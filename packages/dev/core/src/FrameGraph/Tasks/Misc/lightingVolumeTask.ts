@@ -57,6 +57,10 @@ export class FrameGraphLightingVolumeTask extends FrameGraphTask {
         return isReady;
     }
 
+    public override getClassName(): string {
+        return "FrameGraphLightingVolumeTask";
+    }
+
     public record() {
         if (this.shadowGenerator === undefined) {
             throw new Error(`FrameGraphLightingVolumeTask ${this.name}: shadowGenerator is required`);

@@ -44,6 +44,10 @@ export class FrameGraphCopyToTextureTask extends FrameGraphTask {
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphCopyToTextureTask";
+    }
+
     public record() {
         if (this.sourceTexture === undefined || this.targetTexture === undefined) {
             throw new Error(`FrameGraphCopyToTextureTask "${this.name}": sourceTexture and targetTexture are required`);
