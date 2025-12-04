@@ -123,7 +123,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         this._frameGraphRenderTarget =
             this._frameGraphRenderTarget || this._context.createRenderTarget(this.name, this._renderTarget, this._renderTargetDepth, this.depthReadOnly, this.stencilReadOnly);
 
-        this._context.bindRenderTarget(this._frameGraphRenderTarget, `frame graph render pass - ${this.name}`);
+        this._context.bindRenderTarget(this._frameGraphRenderTarget);
 
         super._execute();
 
@@ -132,7 +132,7 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
         const renderTargetWrapper = this._frameGraphRenderTarget.renderTargetWrapper;
         if (renderTargetWrapper && (renderTargetWrapper.resolveMSAAColors || renderTargetWrapper.resolveMSAADepth || renderTargetWrapper.resolveMSAAStencil)) {
             // Unbinding the render target will trigger resolving MSAA textures.
-            this._context.bindRenderTarget(undefined, `frame graph render pass - ${this.name} - resolve MSAA`, true);
+            this._context.bindRenderTarget(undefined, `Resolve MSAA${this.name ? " (" + this.name + ")" : ""}`, true);
             this._context._flushDebugMessages();
         }
     }
@@ -145,5 +145,10 @@ export class FrameGraphRenderPass extends FrameGraphPass<FrameGraphRenderContext
             : this._renderTarget !== undefined || this.renderTargetDepth !== undefined
               ? null
               : "Render target and render target depth cannot both be undefined.";
+    }
+
+    /** @internal */
+    public override _dispose() {
+        this._frameGraphRenderTarget?.dispose();
     }
 }

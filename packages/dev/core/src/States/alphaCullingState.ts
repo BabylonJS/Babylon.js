@@ -33,6 +33,10 @@ export class AlphaState {
         return this._numTargetEnabled > 0;
     }
 
+    public set alphaBlend(value: boolean) {
+        this.setAlphaBlend(value);
+    }
+
     public setAlphaBlend(value: boolean, targetIndex: number = 0): void {
         if (this._alphaBlend[targetIndex] === value) {
             return;

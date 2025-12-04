@@ -333,7 +333,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             } else if (input.isCamera()) {
                 input.value = this.props.globalState.scene.activeCamera;
             } else if (input.isObjectList()) {
-                input.value = { meshes: [], particleSystems: [] };
+                input.value = { meshes: this.props.globalState.scene.meshes.slice(), particleSystems: this.props.globalState.scene.particleSystems.slice() };
             } else if (input.isShadowLight()) {
                 input.value = this.props.globalState.scene.lights[1] as IShadowLight;
             }
@@ -361,11 +361,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const nodeRenderGraph = this.props.globalState.nodeRenderGraph;
 
         try {
-            nodeRenderGraph.build();
             if (this.props.globalState.hostScene) {
                 // We wait for the graph to be ready only if the editor is linked to a host scene (most probabaly a playground).
                 // Else, the node render graph is a dummy one for editing purpose only.
-                await nodeRenderGraph.whenReadyAsync();
+                await nodeRenderGraph.buildAsync();
+            } else {
+                await nodeRenderGraph.buildAsync(false, false);
             }
         } catch (err) {
             if (LogErrorTrace) {

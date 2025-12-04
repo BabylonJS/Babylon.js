@@ -287,11 +287,15 @@ export function MakeModularTool(options: ModularToolOptions): IDisposable {
     const reactRoot = createRoot(containerElement);
     reactRoot.render(createElement(modularToolRootComponent));
 
+    let disposed = false;
     return {
         dispose: () => {
             // Unmount and restore the original container element display.
-            reactRoot.unmount();
-            containerElement.style.display = originalContainerElementDisplay;
+            if (!disposed) {
+                disposed = true;
+                reactRoot.unmount();
+                containerElement.style.display = originalContainerElementDisplay;
+            }
         },
     };
 }

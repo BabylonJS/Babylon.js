@@ -69,6 +69,10 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
         this.outputDepthTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphClearTextureTask";
+    }
+
     public record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.targetTexture === undefined && this.depthTexture === undefined) {
             throw new Error(`FrameGraphClearTextureTask ${this.name}: targetTexture and depthTexture can't both be undefined.`);
@@ -89,7 +93,9 @@ export class FrameGraphClearTextureTask extends FrameGraphTask {
         }
 
         if (textureSamples !== depthSamples && textureSamples !== 0 && depthSamples !== 0) {
-            throw new Error(`FrameGraphClearTextureTask ${this.name}: the depth texture and the target texture must have the same number of samples.`);
+            throw new Error(
+                `FrameGraphClearTextureTask ${this.name}: the depth texture (${depthSamples} samples) and the target texture (${textureSamples} samples) must have the same number of samples.`
+            );
         }
 
         const attachments = this._frameGraph.engine.buildTextureLayout(

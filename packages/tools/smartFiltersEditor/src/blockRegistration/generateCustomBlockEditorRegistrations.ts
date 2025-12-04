@@ -49,7 +49,8 @@ export function CreateBlockRegistration(
                 engine,
                 blockDefinition,
                 null, // use default name
-                deserializer
+                deserializer,
+                null // no additional data, this is a fresh instance
             );
         },
         tooltip: blockDefinition.blockType,

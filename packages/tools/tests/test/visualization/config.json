@@ -2,8 +2,15 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Gaussian Splatting viewports",
+            "playgroundId": "#CG8GO3#1",
+            "renderCount": 5,
+            "referenceImage": "gsplat-viewports.png"
+        },
+        {
             "title": "Gaussian Splatting Shadows",
             "playgroundId": "#OE54M5#16",
+            "renderCount": 5,
             "referenceImage": "gsplat-shadows.png"
         },
         {
@@ -2596,161 +2603,169 @@
         },
         {
             "title": "FrameGraph nrge shadows",
-            "playgroundId": "#JWKDME#28",
+            "playgroundId": "#JWKDME#185",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge csm shadows",
-            "playgroundId": "#JWKDME#29",
+            "playgroundId": "#JWKDME#186",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge csm shadows with autoCalcDepthBounds",
-            "playgroundId": "#JWKDME#88",
+            "playgroundId": "#JWKDME#187",
             "renderCount": 10
         },
         {
             "title": "FrameGraph nrge custom rendering",
-            "playgroundId": "#1QCA2M#1",
+            "playgroundId": "#1QCA2M#35",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge depth of field",
-            "playgroundId": "#GAGVQO#3",
+            "playgroundId": "#GAGVQO#18",
             "errorRatio": 3
         },
         {
             "title": "FrameGraph nrge glow layer",
-            "playgroundId": "#IG8NRC#15",
+            "playgroundId": "#IG8NRC#84",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge highlight layer",
-            "playgroundId": "#QZYNMK#1",
+            "playgroundId": "#QZYNMK#3",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph nrge SSR cube",
-            "playgroundId": "#PIZ1GK#2090",
+            "playgroundId": "#PIZ1GK#2380",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge SSR HillValley",
-            "playgroundId": "#PIZ1GK#2091",
+            "playgroundId": "#PIZ1GK#2381",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge SSR neon",
-            "playgroundId": "#Z6C5EF#1",
+            "playgroundId": "#Z6C5EF#4",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "FrameGraph nrge motion blur",
-            "playgroundId": "#YB006J#753",
+            "playgroundId": "#YB006J#786",
             "excludedEngines": ["webgl1"],
             "renderCount": 40
         },
         {
             "title": "FrameGraph nrge bounding boxes",
-            "playgroundId": "#IG8NRC#24",
+            "playgroundId": "#IG8NRC#85",
             "errorRatio": 14
         },
         {
             "title": "FrameGraph nrge frozen meshes",
-            "playgroundId": "#9SDNZF#32"
+            "playgroundId": "#9SDNZF#34"
         },
         {
             "title": "FrameGraph nrge TAA",
-            "playgroundId": "#IG8NRC#77",
+            "playgroundId": "#IG8NRC#87",
             "renderCount": 15
         },
         {
             "title": "FrameGraph nrge rig camera",
-            "playgroundId": "#ATL1CS#16"
+            "playgroundId": "#ATL1CS#19"
         },
         {
             "title": "FrameGraph nrge clustered lights",
-            "playgroundId": "#1QCA2M#12",
+            "playgroundId": "#1QCA2M#36",
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {
             "title": "FrameGraph nrge clustered lights (simple)",
-            "playgroundId": "#1QCA2M#26"
+            "playgroundId": "#1QCA2M#37"
         },
         {
             "title": "FrameGraph nrge multiple post processes",
-            "playgroundId": "#SYQW69#1339"
+            "playgroundId": "#SYQW69#1363"
         },
         {
             "title": "FrameGraph nrge SSAO",
-            "playgroundId": "#SYQW69#1350",
+            "playgroundId": "#SYQW69#1364",
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {
+            "title": "FrameGraph nrge volumetric lighting",
+            "playgroundId": "#3VH0AC#2"
+        },
+        {
             "title": "FrameGraph nrg gui bloom",
-            "playgroundId": "#3LB017#1",
+            "playgroundId": "#3LB017#3",
             "errorRatio": 2
         },
         {
             "title": "FrameGraph glow layer",
-            "playgroundId": "#9YU4C5#110",
+            "playgroundId": "#9YU4C5#111",
             "referenceImage": "FrameGraph-nrg-glow-layer.png",
             "errorRatio": 1
         },
         {
             "title": "FrameGraph highlight layer",
-            "playgroundId": "#PV8OLY#31"
+            "playgroundId": "#PV8OLY#33"
         },
         {
             "title": "FrameGraph custom rendering",
-            "playgroundId": "#RM56RY#23"
+            "playgroundId": "#RM56RY#25"
         },
         {
             "title": "FrameGraph gui bloom",
-            "playgroundId": "#RM56RY#24"
+            "playgroundId": "#RM56RY#26"
         },
         {
             "title": "FrameGraph image processing",
-            "playgroundId": "#PV8OLY#32"
+            "playgroundId": "#PV8OLY#34"
         },
         {
             "title": "FrameGraph motion blur screen based",
-            "playgroundId": "#YB006J#783",
+            "playgroundId": "#YB006J#787",
             "renderCount": 10
         },
         {
             "title": "FrameGraph motion blur object based",
-            "playgroundId": "#YB006J#784",
+            "playgroundId": "#YB006J#788",
             "renderCount": 10
         },
         {
             "title": "FrameGraph motion blur skinned",
-            "playgroundId": "#YB006J#785",
+            "playgroundId": "#YB006J#789",
             "renderCount": 40
         },
         {
             "title": "FrameGraph convolution post process",
-            "playgroundId": "#SYQW69#1359"
+            "playgroundId": "#SYQW69#1365"
         },
         {
             "title": "FrameGraph screen space curvature post process",
-            "playgroundId": "#SYQW69#1360",
+            "playgroundId": "#SYQW69#1366",
             "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "FrameGraph sharpen post process",
-            "playgroundId": "#SYQW69#1361",
+            "playgroundId": "#SYQW69#1367",
             "errorRatio": 6
         },
         {
             "title": "FrameGraph custom post process",
-            "playgroundId": "#R33LVG#4"
+            "playgroundId": "#R33LVG#5"
         },
         {
             "title": "FrameGraph TAA reproject history",
-            "playgroundId": "#OWGOUN#17",
+            "playgroundId": "#OWGOUN#18",
             "renderCount": 40,
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "FrameGraph volumetric lighting",
+            "playgroundId": "#3VH0AC"
         },
         {
             "title": "Render target texture with clustered lights",
@@ -3159,6 +3174,10 @@
         {
             "title": "Background material blur",
             "playgroundId": "#UU7RQ#4458"
+        },
+        {
+            "title": "Lighting Volume",
+            "playgroundId": "#MU9P6L#1"
         }
     ]
 }

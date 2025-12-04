@@ -13,11 +13,13 @@ import type {
     InternalTexture,
     UtilityLayerRenderer,
     IStencilState,
+    IStencilStateProperties,
 } from "core/index";
 import { Constants } from "../Engines/constants";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
 import { FrameGraphContext } from "./frameGraphContext";
+import { IsDepthTexture } from "../Materials/Textures/textureHelper.functions";
 
 const SamplingModeHasMipMapFiltering = [
     false, // not used
@@ -47,6 +49,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     private _debugMessageHasBeenPushed = false;
     private _renderTargetIsBound = true;
     private readonly _copyTexture: CopyTextureToTexture;
+    private readonly _copyDepthTexture: CopyTextureToTexture;
 
     private static _IsObjectRenderer(value: Layer | ObjectRenderer | UtilityLayerRenderer): value is ObjectRenderer {
         return (value as ObjectRenderer).initRender !== undefined;
@@ -61,6 +64,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             indices: [0, 2, 1, 0, 3, 2],
         });
         this._copyTexture = new CopyTextureToTexture(this._engine);
+        this._copyDepthTexture = new CopyTextureToTexture(this._engine, true);
     }
 
     /**
@@ -236,7 +240,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
     public applyFullScreenEffect(
         drawWrapper: DrawWrapper,
         customBindings?: () => void,
-        stencilState?: IStencilState,
+        stencilState?: IStencilState | IStencilStateProperties,
         disableColorWrite?: boolean,
         drawBackFace?: boolean,
         depthTest?: boolean,
@@ -249,6 +253,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._applyRenderTarget();
 
         const engineDepthMask = this._engine.getDepthWrite(); // for some reasons, depthWrite is not restored by EffectRenderer.restoreStates
+        const engineDepthFunc = this._engine.getDepthFunction();
 
         const effectRenderer = drawBackFace ? this._effectRendererBack : this._effectRenderer;
 
@@ -273,6 +278,9 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             this._engine.setColorWrite(true);
         }
         this._engine.setDepthWrite(engineDepthMask);
+        if (engineDepthFunc) {
+            this._engine.setDepthFunction(engineDepthFunc);
+        }
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
         return true;
@@ -290,13 +298,16 @@ export class FrameGraphRenderContext extends FrameGraphContext {
             this.bindRenderTarget();
         }
 
-        this._copyTexture.source = this._textureManager.getTextureFromHandle(sourceTexture, true)!;
-        this._copyTexture.lodLevel = lodLevel;
+        const texture = this._textureManager.getTextureFromHandle(sourceTexture, true)!;
+        const copyTexture = IsDepthTexture(texture.format) ? this._copyDepthTexture : this._copyTexture;
+
+        copyTexture.source = texture;
+        copyTexture.lodLevel = lodLevel;
 
         this.applyFullScreenEffect(
-            this._copyTexture.effectWrapper.drawWrapper,
+            copyTexture.effectWrapper.drawWrapper,
             () => {
-                this._copyTexture.effectWrapper.onApplyObservable.notifyObservers({});
+                copyTexture.effectWrapper.onApplyObservable.notifyObservers({});
             },
             undefined,
             undefined,
@@ -406,7 +417,7 @@ export class FrameGraphRenderContext extends FrameGraphContext {
 
     /** @internal */
     public _isReady(): boolean {
-        return this._copyTexture.isReady();
+        return this._copyTexture.isReady() && this._copyDepthTexture.isReady();
     }
 
     /** @internal */
@@ -414,5 +425,6 @@ export class FrameGraphRenderContext extends FrameGraphContext {
         this._effectRenderer.dispose();
         this._effectRendererBack.dispose();
         this._copyTexture.dispose();
+        this._copyDepthTexture.dispose();
     }
 }

@@ -38,6 +38,10 @@ class FrameGraphGlowBlurTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinGlowBlurPostProcess(name, frameGraph.engine, new Vector2(1, 0), 1));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphGlowBlurTask";
+    }
+
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,
@@ -192,6 +196,10 @@ export class FrameGraphBaseLayerTask extends FrameGraphTask {
 
     public override isReady() {
         return this._objectRendererForLayer.isReady() && this.layer.isLayerReady();
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphBaseLayerTask";
     }
 
     public record() {

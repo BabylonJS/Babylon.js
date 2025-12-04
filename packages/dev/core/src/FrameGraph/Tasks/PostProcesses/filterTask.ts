@@ -17,4 +17,8 @@ export class FrameGraphFilterTask extends FrameGraphPostProcessTask {
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinFilterPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinFilterPostProcess(name, frameGraph.engine));
     }
+
+    public override getClassName(): string {
+        return "FrameGraphFilterTask";
+    }
 }

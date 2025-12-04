@@ -139,9 +139,17 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
     public lerpTime = 100;
 
     /**
+     * Attached node of this behavior
+     */
+    public get attachedNode(): Nullable<TransformNode> {
+        return this._node;
+    }
+
+    /**
      * Builds a hand constraint behavior
      */
     constructor() {
+        this._node = null!;
         // For a right hand
         this._zoneAxis[HandConstraintZone.ABOVE_FINGER_TIPS] = new Vector3(0, 1, 0);
         this._zoneAxis[HandConstraintZone.RADIAL_SIDE] = new Vector3(-1, 0, 0);
@@ -337,6 +345,7 @@ export class HandConstraintBehavior implements Behavior<TransformNode> {
      */
     public detach(): void {
         this._scene.onBeforeRenderObservable.remove(this._sceneRenderObserver);
+        this._node = null!;
     }
 
     /**

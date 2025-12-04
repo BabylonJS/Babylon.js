@@ -11,6 +11,7 @@ import {
     createStrongRef,
     PropertyTypeForEdition,
     editableInPropertyPage,
+    CloneShaderProgram,
 } from "smart-filters";
 import { compositionBlockType } from "../../../blockTypes.js";
 import { babylonDemoEffectsNamespace } from "../../../blockNamespaces.js";
@@ -40,7 +41,6 @@ export class CompositionShaderBinding extends DisableableShaderBinding {
     private readonly _foregroundWidth: RuntimeData<ConnectionPointType.Float>;
     private readonly _foregroundHeight: RuntimeData<ConnectionPointType.Float>;
     private readonly _foregroundAlphaScale: RuntimeData<ConnectionPointType.Float>;
-    private readonly _alphaMode: number;
 
     /**
      * Creates a new shader binding instance for the Composition block.
@@ -52,7 +52,6 @@ export class CompositionShaderBinding extends DisableableShaderBinding {
      * @param foregroundWidth - the width of the foreground texture
      * @param foregroundHeight - the height of the foreground texture
      * @param foregroundAlphaScale - the alpha scale of the foreground texture
-     * @param alphaMode - the alpha mode to use
      */
     constructor(
         parentBlock: IDisableableBlock,
@@ -62,8 +61,7 @@ export class CompositionShaderBinding extends DisableableShaderBinding {
         foregroundLeft: RuntimeData<ConnectionPointType.Float>,
         foregroundWidth: RuntimeData<ConnectionPointType.Float>,
         foregroundHeight: RuntimeData<ConnectionPointType.Float>,
-        foregroundAlphaScale: RuntimeData<ConnectionPointType.Float>,
-        alphaMode: number
+        foregroundAlphaScale: RuntimeData<ConnectionPointType.Float>
     ) {
         super(parentBlock);
         this._backgroundTexture = backgroundTexture;
@@ -73,7 +71,6 @@ export class CompositionShaderBinding extends DisableableShaderBinding {
         this._foregroundWidth = foregroundWidth;
         this._foregroundHeight = foregroundHeight;
         this._foregroundAlphaScale = foregroundAlphaScale;
-        this._alphaMode = alphaMode;
     }
 
     /**
@@ -92,9 +89,7 @@ export class CompositionShaderBinding extends DisableableShaderBinding {
         const foregroundWidth = this._foregroundWidth.value;
         const foregroundHeight = this._foregroundHeight.value;
         const foregroundAlphaScale = this._foregroundAlphaScale.value;
-        const alphaMode = this._alphaMode;
 
-        effect.setFloat(this.getRemappedName(uniforms.alphaMode), alphaMode);
         effect.setTexture(this.getRemappedName(uniforms.background), background);
         effect.setTexture(this.getRemappedName(uniforms.foreground), foreground);
 
@@ -184,6 +179,22 @@ export class CompositionBlock extends DisableableShaderBlock {
     public static override ShaderCode = shaderProgram;
 
     /**
+     * Gets the shader program to use to render the block.
+     * This adds the per-instance const values to the shader program.
+     * @returns The shader program to use to render the block
+     */
+    public override getShaderProgram() {
+        const staticShaderProgram = super.getShaderProgram();
+
+        // Since we are making changes only for this instance of the block, and
+        // the disableableShaderProgram is static, we make a copy and modify that.
+        const shaderProgramForThisInstance = CloneShaderProgram(staticShaderProgram);
+        shaderProgramForThisInstance.fragment.constPerInstance = `const float _alphaMode_ = ${this.alphaMode.toFixed(1)};`;
+
+        return shaderProgramForThisInstance;
+    }
+
+    /**
      * Instantiates a new Block.
      * @param smartFilter - The smart filter this block belongs to
      * @param name - The friendly name of the block
@@ -204,8 +215,7 @@ export class CompositionBlock extends DisableableShaderBlock {
         const foregroundHeight = this.foregroundHeight.runtimeData;
         const foregroundTop = this.foregroundTop.runtimeData;
         const foregroundAlphaScale = this.foregroundAlphaScale.runtimeData;
-        const alphaMode = this.alphaMode;
 
-        return new CompositionShaderBinding(this, background, foreground, foregroundTop, foregroundLeft, foregroundWidth, foregroundHeight, foregroundAlphaScale, alphaMode);
+        return new CompositionShaderBinding(this, background, foreground, foregroundTop, foregroundLeft, foregroundWidth, foregroundHeight, foregroundAlphaScale);
     }
 }

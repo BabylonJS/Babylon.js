@@ -53,6 +53,11 @@ export interface IEditablePropertyOption {
     valuesAreStrings?: boolean;
     /** If supplied, the sub property to read/write */
     subPropertyName?: string;
+    /**
+     * If supplied, scope this to a specific block type - useful for the
+     * CustomShaderBlock where multiple block types are implemented with the same class
+     */
+    blockType?: string;
 }
 
 /**
@@ -94,13 +99,22 @@ export function EditableInPropertyPage(
             target._propStore = propStore;
         }
 
-        propStore.push({
+        const propToAdd: IPropertyDescriptionForEdition = {
             propertyName: propertyKey,
             displayName: displayName,
             type: propertyType,
             groupName: groupName,
             options: options ?? {},
             className: target.constructor.name,
-        });
+        };
+
+        // If the property already exists, overwrite it, otherwise add it
+        // Note: It may have been redefined since the application started
+        const existingIndex = propStore.findIndex((p) => p.propertyName === propertyKey && p.className === target.constructor.name && options?.blockType === p.options?.blockType);
+        if (existingIndex !== -1) {
+            propStore[existingIndex] = propToAdd;
+        } else {
+            propStore.push(propToAdd);
+        }
     };
 }

@@ -510,6 +510,15 @@ const rules = {
                 "babylonjs/require-context-save-before-apply-states": "error",
             },
         },
+        {
+            // Dev packages produce the public packages that use add-js-to-es6 post-processing,
+            // which appends .js to imports. Directory imports like "core/Foo" become "core/Foo.js"
+            // which fails if Foo is a directory. This rule catches those cases.
+            files: ["packages/dev/**/*.{ts,tsx}"],
+            rules: {
+                "babylonjs/no-directory-barrel-imports": "error",
+            },
+        },
     ],
     env: {
         browser: true,
