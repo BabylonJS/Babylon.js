@@ -147,6 +147,7 @@ export class ComputeShader {
         this._options = {
             bindingsMapping: {},
             defines: [],
+            entryPoint: "main",
             ...options,
         };
     }
@@ -327,7 +328,7 @@ export class ComputeShader {
             }
         }
 
-        const defines = [];
+        const defines = ["#define " + this._options.entryPoint];
 
         const shaderName = this._shaderPath;
 
