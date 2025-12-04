@@ -149,7 +149,7 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
         window.addEventListener("wheel", this.onWheel, { passive: false });
 
         this._canvasResizeObserver = new ResizeObserver(() => {
-            if (this.props.globalState.engine && this.props.globalState.previewSizeManager.shouldAutoResize) {
+            if (this.props.globalState.engine) {
                 setTimeout(() => {
                     this.props.globalState.engine?.resize();
                 }, 0);

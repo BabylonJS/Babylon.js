@@ -55,13 +55,6 @@ export class PreviewSizeManager {
     }
 
     /**
-     * If the preview window should automatically resize to match the size of its spot in the DOM.
-     */
-    public get shouldAutoResize(): boolean {
-        return this.selectedModeOption !== FixedMode;
-    }
-
-    /**
      * If the mode is "fixed", the width to use for preview
      */
     public fixedWidth: ObservableProperty<number>;
