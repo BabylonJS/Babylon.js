@@ -84,6 +84,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     /**
      * The extinction coefficient for the volumetric lighting effect (default: (0, 0, 0) - no extinction).
      * This parameter controls how much light is absorbed and scattered as it travels through the medium.
+     * Will only have an effect if enableExtinction is set to true in the constructor!
      */
     public get extinction() {
         return this._blendLightingVolumeTask.postProcess.extinction;
@@ -133,7 +134,7 @@ export class FrameGraphVolumetricLightingTask extends FrameGraphTask {
     }
 
     /**
-     * The output texture of the task.
+     * The output texture of the task. It will be the same as targetTexture.
      */
     public readonly outputTexture: FrameGraphTextureHandle;
 
