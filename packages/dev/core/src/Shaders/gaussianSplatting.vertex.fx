@@ -17,6 +17,7 @@ uniform vec2 focal;
 uniform float kernelSize;
 uniform vec3 eyePosition;
 uniform vec3 viewDirectionFactor;
+uniform float alpha;
 
 uniform sampler2D covariancesATexture;
 uniform sampler2D covariancesBTexture;
@@ -58,6 +59,7 @@ void main () {
     dir *= viewDirectionFactor;
     vColor.xyz = splat.color.xyz + computeSH(splat, dir);
 #endif
+    vColor.w *= alpha;
 
     gl_Position = gaussianSplatting(position.xy, worldPos.xyz, vec2(1.,1.), covA, covB, world, view, projection);
 
