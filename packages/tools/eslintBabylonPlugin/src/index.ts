@@ -569,6 +569,15 @@ const plugin: IPlugin = {
                                 const indexTsPath = path.join(targetPath, "index.ts");
                                 try {
                                     if (fs.existsSync(indexTsPath) && fs.statSync(targetPath).isDirectory()) {
+                                        // Before flagging, check if a file with the same name exists.
+                                        // Module resolution prefers files over directories, so if i.e.
+                                        // abstractEngine.ts exists alongside AbstractEngine/, the import
+                                        // will correctly resolve to the file.
+                                        const filePath = targetPath + ".ts";
+                                        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+                                            return; // File exists, module resolution will prefer it
+                                        }
+
                                         context.report({
                                             node,
                                             messageId: "noDirectoryBarrelImport",
