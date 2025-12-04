@@ -9,6 +9,10 @@ interface IPreviewAreaComponentProps {
     allowPreviewFillMode: boolean;
 }
 
+/**
+ * Creates the canvas for preview, sets the size based on the PreviewSizeManager's state, and tells the engine to resize
+ * when the canvas changes natural size.
+ */
 export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentProps, { isLoading: boolean }> {
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
     private _onPreviewResetRequiredObserver: Nullable<Observer<void>>;
@@ -16,9 +20,25 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
     private _fixedWidthObserver: Nullable<Observer<number>>;
     private _fixedHeightObserver: Nullable<Observer<number>>;
     private _aspectRatioObserver: Nullable<Observer<string>>;
+    private _canvasRef = react.createRef<HTMLCanvasElement>();
+    private _canvasResizeObserver: ResizeObserver;
 
+    /**
+     * Creates a new PreviewAreaComponent.
+     * @param props The component props.
+     */
     constructor(props: IPreviewAreaComponentProps) {
         super(props);
+
+        this.state = { isLoading: false };
+
+        this._canvasResizeObserver = new ResizeObserver(() => {
+            if (this.props.globalState.engine) {
+                setTimeout(() => {
+                    this.props.globalState.engine?.resize();
+                }, 0);
+            }
+        });
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
@@ -40,6 +60,23 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
         });
     }
 
+    /**
+     * When the component mounts, attach the observer if the canvas is ready.
+     */
+    override componentDidMount() {
+        this._attachObserverToCanvas();
+    }
+
+    /**
+     * When the component updates, ensure the observer is attached to the canvas.
+     */
+    override componentDidUpdate() {
+        this._attachObserverToCanvas();
+    }
+
+    /**
+     * Lifecycle cleanup for observers.
+     */
     override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
         this.props.globalState.onPreviewResetRequiredObservable.remove(this._onPreviewResetRequiredObserver);
@@ -47,8 +84,16 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
         this.props.globalState.previewSizeManager.fixedWidth.onChangedObservable.remove(this._fixedWidthObserver);
         this.props.globalState.previewSizeManager.fixedHeight.onChangedObservable.remove(this._fixedHeightObserver);
         this.props.globalState.previewSizeManager.aspectRatio.onChangedObservable.remove(this._aspectRatioObserver);
+
+        if (this._canvasRef.current) {
+            this._canvasResizeObserver.unobserve(this._canvasRef.current);
+        }
     }
 
+    /**
+     * Renders the preview area and canvas.
+     * @returns The preview JSX element.
+     */
     override render() {
         let divStyle: any;
         let canvasStyle: any;
@@ -71,10 +116,18 @@ export class PreviewAreaComponent extends react.Component<IPreviewAreaComponentP
         return (
             <>
                 <div id="preview" style={divStyle}>
-                    <canvas id="sfe-preview-canvas" style={canvasStyle} className={"preview-background-" + this.props.globalState.previewBackground} />
+                    <canvas id="sfe-preview-canvas" style={canvasStyle} className={"preview-background-" + this.props.globalState.previewBackground} ref={this._canvasRef} />
                     {!this.props.globalState.smartFilter ? <div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div> : <></>}
                 </div>
             </>
         );
+    }
+
+    private _attachObserverToCanvas() {
+        const canvas = this._canvasRef.current;
+
+        if (canvas) {
+            this._canvasResizeObserver.observe(canvas);
+        }
     }
 }

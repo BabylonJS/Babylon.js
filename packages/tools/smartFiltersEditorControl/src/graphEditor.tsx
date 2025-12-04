@@ -66,7 +66,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     private _diagramContainerRef: react.RefObject<HTMLDivElement>;
     private _graphCanvas!: GraphCanvasComponent;
     private _diagramContainer!: HTMLDivElement;
-    private _canvasResizeObserver: Nullable<ResizeObserver> = null;
     private _historyStack: Nullable<HistoryStack> = null;
 
     private _mouseLocationX = 0;
@@ -148,14 +147,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
     override componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
 
-        this._canvasResizeObserver = new ResizeObserver(() => {
-            if (this.props.globalState.engine) {
-                setTimeout(() => {
-                    this.props.globalState.engine?.resize();
-                }, 0);
-            }
-        });
-
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this.prepareHistoryStack();
@@ -167,7 +158,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 Logger.Log(versionToLog);
                 this.props.globalState.engine = engine;
                 this.props.globalState.onNewEngine(engine);
-                this._canvasResizeObserver.observe(canvas);
             }
         }
 
@@ -204,8 +194,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
 
     override componentWillUnmount() {
         window.removeEventListener("wheel", this.onWheel);
-
-        this._canvasResizeObserver?.disconnect();
 
         if (this.props.globalState.hostDocument) {
             this.props.globalState.hostDocument!.removeEventListener("keyup", this._onWidgetKeyUpPointer, false);
@@ -588,9 +576,6 @@ export class GraphEditor extends react.Component<IGraphEditorProps, IGraphEditor
                 popUpWindow = w;
                 if (popUpWindow) {
                     popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
-                    popUpWindow.addEventListener("resize", () => {
-                        this.props.globalState.engine?.resize();
-                    });
                     const parentControl = popUpWindow.document.getElementById("filter-editor-graph-root");
                     this.createPreviewAreaControlHost(options, parentControl);
                     this.createPreviewHost(options, parentControl);
