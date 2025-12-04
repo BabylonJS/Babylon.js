@@ -27,6 +27,6 @@
         "@types/eslint": "^9.6.0"
     },
     "peerDependencies": {
-        "eslint": ">=9.0.0"
+        "eslint": "^9.0.0"
     }
 }
