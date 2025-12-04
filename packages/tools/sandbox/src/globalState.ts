@@ -115,7 +115,7 @@ export class GlobalState {
             if (isInspectorEnabled) {
                 if (isInspectorV1Enabled && this._isInspectorV2ModeRequested) {
                     if (!this._isInspectorV2ModeEnabled) {
-                        alert("Inspector v2 is only supported with the latest version of Babylon.js at this time. Falling back to Inspector V1.");
+                        alert("Inspector v2 is not supported in this version of Babylon.js. Falling back to Inspector V1.");
                     } else {
                         this.currentScene.debugLayer.hide();
                         await this._showInspectorV2Async();

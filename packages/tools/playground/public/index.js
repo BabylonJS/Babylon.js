@@ -7,6 +7,7 @@ var Versions = {
         { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: false },
         { url: "https://preview.babylonjs.com/addons/babylonjs.addons.min.js", instantResolve: false, minVersion: "7.32.4" },
         { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
+        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.39.3" },
         { url: "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/nodeGeometryEditor/babylon.nodeGeometryEditor.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js", instantResolve: true },
@@ -25,6 +26,7 @@ var Versions = {
         { url: `//${window.location.hostname}:1337/gui/babylon.gui.min.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/addons/babylonjs.addons.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/inspector/babylon.inspector.bundle.js`, instantResolve: false },
+        { url: `//${window.location.hostname}:1337/inspector/babylon.inspector-v2.bundle.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/nodeEditor/babylon.nodeEditor.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/nodeGeometryEditor/babylon.nodeGeometryEditor.js`, instantResolve: false },
         { url: `//${window.location.hostname}:1337/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js`, instantResolve: false },
@@ -219,26 +221,27 @@ let checkBabylonVersionAsync = async function () {
     return new Promise((resolve) => {
         loadInSequenceAsync(frameworkScripts, 0, resolve);
     }).then(() => {
+        const bundles = frameworkScripts.map((v) => v.url);
         // if local, set the default base URL
         if (snapshot) {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot;
-            return "";
+            return { version: "", bundles };
         } else if (version) {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = "https://cdn.babylonjs.com/v" + version;
-            return version;
+            return { version, bundles };
         } else if (activeVersion === "local") {
             // eslint-disable-next-line no-undef
             globalThis.BABYLON.Tools.ScriptBaseUrl = window.location.protocol + `//${window.location.hostname}:1337/`;
-            return "";
+            return { version: "", bundles };
         }
 
         return activeVersion.includes(".") ? activeVersion : "";
     });
 };
 
-checkBabylonVersionAsync().then((version) => {
+checkBabylonVersionAsync().then((versionInfo) => {
     const bundle = (globalThis && globalThis.__PLAYGROUND_BUNDLE__) || "babylon.playground.js";
     loadScriptAsync(bundle).then(() => {
         var hostElement = document.getElementById("host-element");
@@ -249,6 +252,6 @@ checkBabylonVersionAsync().then((version) => {
             mode = 2;
         }
         // eslint-disable-next-line no-undef
-        BABYLON.Playground.Show(hostElement, mode, version);
+        BABYLON.Playground.Show(hostElement, mode, versionInfo.version, versionInfo.bundles);
     });
 });
