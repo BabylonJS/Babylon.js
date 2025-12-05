@@ -527,68 +527,73 @@ const plugin: IPlugin = {
                 const filename = context.filename;
                 const projectRoot = filename.split("packages")[0];
 
+                // Check if path is a directory with index.ts but no same-name .ts file
+                function isBarrelDirectory(targetPath: string): boolean {
+                    try {
+                        if (!fs.statSync(targetPath).isDirectory()) {
+                            return false;
+                        }
+                        if (!fs.existsSync(path.join(targetPath, "index.ts"))) {
+                            return false;
+                        }
+                        // Before flagging, check if a file with the same name exists.
+                        // Module resolution prefers files over directories, so if i.e.
+                        // abstractEngine.ts exists alongside AbstractEngine/, the import
+                        // will correctly resolve to the file.
+                        if (fs.existsSync(targetPath + ".ts") && fs.statSync(targetPath + ".ts").isFile()) {
+                            return false;
+                        }
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                }
+
+                function reportIfBarrel(targetPath: string, node: any, importPath: string) {
+                    if (isBarrelDirectory(targetPath)) {
+                        context.report({ node, messageId: "noDirectoryBarrelImport", data: { importPath } });
+                        return true;
+                    }
+                    return false;
+                }
+
                 return {
                     Program() {
-                        // Load tsconfig (it will only be loaded upon first request).
                         tsConfig = loadTsConfig(projectRoot);
                     },
 
                     ImportDeclaration(node) {
-                        // Skip type-only imports as they are erased during compilation
-                        // The importKind property is added by TypeScript-ESLint parser
                         if ((node as any).importKind === "type") {
                             return;
                         }
 
                         const importPath = node.source.value as string;
 
-                        // Skip relative imports and node_modules imports
-                        if (importPath.startsWith(".") || importPath.startsWith("@") || !tsConfig?.compilerOptions?.paths) {
+                        // Relative imports
+                        if (importPath.startsWith(".")) {
+                            reportIfBarrel(path.resolve(path.dirname(filename), importPath), node, importPath);
                             return;
                         }
 
+                        // Path-mapped imports - if no mappings defined, remaining imports are bare node_modules
+                        if (!tsConfig?.compilerOptions?.paths) {
+                            return;
+                        }
                         const { baseUrl = ".", paths } = tsConfig.compilerOptions;
 
-                        // Check if the import matches a path mapping
                         for (const [pathKey, pathValues] of Object.entries(paths)) {
-                            // Handle patterns like "core/*"
                             const pathPrefix = pathKey.replace("/*", "");
                             if (!importPath.startsWith(pathPrefix + "/")) {
                                 continue;
                             }
 
-                            // Get the rest of the path after the mapping prefix
                             const restOfPath = importPath.slice(pathPrefix.length + 1);
 
-                            // Resolve the actual directory path
+                            // Check mapped path(s). pathValues is an array, though generally of length 1 in BabylonJS
                             for (const pathValue of pathValues) {
                                 const resolvedBase = path.resolve(projectRoot, baseUrl, pathValue.replace("/*", ""));
-                                const targetPath = path.join(resolvedBase, restOfPath);
-
-                                // Check if this is a directory with an index.ts file
-                                const indexTsPath = path.join(targetPath, "index.ts");
-                                try {
-                                    if (fs.existsSync(indexTsPath) && fs.statSync(targetPath).isDirectory()) {
-                                        // Before flagging, check if a file with the same name exists.
-                                        // Module resolution prefers files over directories, so if i.e.
-                                        // abstractEngine.ts exists alongside AbstractEngine/, the import
-                                        // will correctly resolve to the file.
-                                        const filePath = targetPath + ".ts";
-                                        if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-                                            return; // File exists, module resolution will prefer it
-                                        }
-
-                                        context.report({
-                                            node,
-                                            messageId: "noDirectoryBarrelImport",
-                                            data: {
-                                                importPath,
-                                            },
-                                        });
-                                        return;
-                                    }
-                                } catch {
-                                    // Path doesn't exist, that's fine
+                                if (reportIfBarrel(path.join(resolvedBase, restOfPath), node, importPath)) {
+                                    return;
                                 }
                             }
                         }
