@@ -7,7 +7,7 @@ var Versions = {
         { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: false },
         { url: "https://preview.babylonjs.com/addons/babylonjs.addons.min.js", instantResolve: false, minVersion: "7.32.4" },
         { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
-        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.39.3" },
+        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
         { url: "https://preview.babylonjs.com/nodeEditor/babylon.nodeEditor.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/nodeGeometryEditor/babylon.nodeGeometryEditor.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/nodeRenderGraphEditor/babylon.nodeRenderGraphEditor.js", instantResolve: true },
@@ -103,6 +103,8 @@ let loadScriptAsync = async function (url, instantResolve) {
         let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
         const script = document.createElement("script");
         script.src = urlToLoad;
+        // Scripts will still download in parallel, but will execute in the sequence they are added to the DOM
+        script.async = false;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
@@ -237,7 +239,7 @@ let checkBabylonVersionAsync = async function () {
             return { version: "", bundles };
         }
 
-        return activeVersion.includes(".") ? activeVersion : "";
+        return { version: activeVersion.includes(".") ? activeVersion : "", bundles };
     });
 };
 

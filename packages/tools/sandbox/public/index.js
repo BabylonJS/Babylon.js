@@ -10,6 +10,8 @@ let loadScriptAsync = function (url, instantResolve) {
         let urlToLoad = typeof globalThis !== "undefined" && globalThis.__babylonSnapshotTimestamp__ ? url + "?t=" + globalThis.__babylonSnapshotTimestamp__ : url;
         const script = document.createElement("script");
         script.src = urlToLoad;
+        // Scripts will still download in parallel, but will execute in the sequence they are added to the DOM
+        script.async = false;
         script.onload = () => {
             if (!instantResolve) {
                 resolve();
@@ -43,7 +45,7 @@ const Versions = {
         { url: "https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/gui/babylon.gui.min.js", instantResolve: true },
         { url: "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js", instantResolve: true },
-        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.39.3" },
+        { url: "https://preview.babylonjs.com/inspector/babylon.inspector-v2.bundle.js", instantResolve: true, minVersion: "8.40.1" },
     ],
     local: [
         { url: `//${window.location.hostname}:1337/babylon.js`, instantResolve: false },
