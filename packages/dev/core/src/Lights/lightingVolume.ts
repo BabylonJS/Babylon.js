@@ -11,8 +11,6 @@ import { StorageBuffer } from "core/Buffers/storageBuffer";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { VertexBuffer } from "core/Buffers/buffer";
 
-import "core/ShadersWGSL/lightingVolume.compute";
-
 const TmpVec3 = new Vector3();
 
 /**
@@ -40,6 +38,7 @@ export class LightingVolume {
     private _positions: Float32Array;
     private _indices: number[];
     private _needFullUpdateUBO = true;
+    private _webGPUReady = false;
 
     private _shadowGenerator?: ShadowGenerator;
     /**
@@ -65,11 +64,7 @@ export class LightingVolume {
             this._createFallbackTextures();
         }
 
-        const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
-        if (this._engine.isWebGPU && depthTexture) {
-            this._cs!.setInternalTexture("shadowMap", depthTexture);
-            this._cs2!.setInternalTexture("shadowMap", depthTexture);
-        }
+        this._setComputeShaderInputs();
     }
 
     private _tesselation = 0;
@@ -168,6 +163,15 @@ export class LightingVolume {
         scene.meshes.splice(scene.meshes.indexOf(this._mesh), 1);
 
         if (this._engine.isWebGPU) {
+            // eslint-disable-next-line github/no-then
+            void import("../ShadersWGSL/lightingVolume.compute").then(() => {
+                this._webGPUReady = true;
+                this._createComputeShader();
+                if (this._indices.length === 0) {
+                    this._createGeometry();
+                }
+            });
+
             this._uBuffer = new UniformBuffer(this._engine);
 
             this._uBuffer.addUniform("invViewProjMatrix", 16);
@@ -178,8 +182,6 @@ export class LightingVolume {
             this._uBuffer.addUniform("orthoMin", 3);
             this._uBuffer.addUniform("orthoMax", 3);
             this._uBuffer.update();
-
-            this._createComputeShader();
         } else {
             this._copyTexture = new CopyTextureToTexture(this._engine, false, true);
             this._createFallbackTextures();
@@ -201,6 +203,9 @@ export class LightingVolume {
         if (this._cs2) {
             isReady = this._cs2.isReady() && isReady;
         }
+        if (this._engine.isWebGPU && !this._webGPUReady) {
+            isReady = false;
+        }
         return isReady;
     }
 
@@ -209,7 +214,7 @@ export class LightingVolume {
      * @param forceUpdate If true, forces the update even if the frequency condition is not met.
      */
     public update(forceUpdate = false) {
-        if (this._tesselation === 0 || !this._shadowGenerator) {
+        if (this._tesselation === 0 || !this._shadowGenerator || (this._engine.isWebGPU && !this._webGPUReady)) {
             return;
         }
 
@@ -300,21 +305,29 @@ export class LightingVolume {
             entryPoint: "updatePlaneVertices",
         });
 
+        this._setComputeShaderInputs();
+    }
+
+    private _setComputeShaderInputs() {
+        if (!this._engine.isWebGPU) {
+            return;
+        }
+
         if (this._shadowGenerator) {
             const depthTexture = this._shadowGenerator.getShadowMap()?.depthStencilTexture;
             if (depthTexture) {
-                this._cs.setInternalTexture("shadowMap", depthTexture);
-                this._cs2.setInternalTexture("shadowMap", depthTexture);
+                this._cs?.setInternalTexture("shadowMap", depthTexture);
+                this._cs2?.setInternalTexture("shadowMap", depthTexture);
             }
         }
 
         if (this._uBuffer) {
-            this._cs.setUniformBuffer("params", this._uBuffer);
-            this._cs2.setUniformBuffer("params", this._uBuffer);
+            this._cs?.setUniformBuffer("params", this._uBuffer);
+            this._cs2?.setUniformBuffer("params", this._uBuffer);
         }
         if (this._storageBuffer) {
-            this._cs.setStorageBuffer("positions", this._storageBuffer);
-            this._cs2.setStorageBuffer("positions", this._storageBuffer);
+            this._cs?.setStorageBuffer("positions", this._storageBuffer);
+            this._cs2?.setStorageBuffer("positions", this._storageBuffer);
         }
     }
 
@@ -466,7 +479,7 @@ export class LightingVolume {
     private _createGeometry() {
         const light = this._light;
 
-        if (!light) {
+        if (!light || (this._engine.isWebGPU && !this._webGPUReady)) {
             return;
         }
 
@@ -490,8 +503,7 @@ export class LightingVolume {
 
             this._mesh.setVerticesBuffer(new VertexBuffer(webGPUEngine, this._storageBuffer.getBuffer(), "position", { takeBufferOwnership: false }), true, vertexNumber);
 
-            this._cs!.setStorageBuffer("positions", this._storageBuffer);
-            this._cs2!.setStorageBuffer("positions", this._storageBuffer);
+            this._setComputeShaderInputs();
 
             this._cs!.triggerContextRebuild = true;
             this._cs2!.triggerContextRebuild = true;
@@ -505,7 +517,7 @@ export class LightingVolume {
     private _updateGeometry() {
         const light = this._light;
 
-        if (!light || !this._shadowGenerator) {
+        if (!light || !this._shadowGenerator || (this._engine.isWebGPU && !this._webGPUReady)) {
             return;
         }
 
