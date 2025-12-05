@@ -149,6 +149,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         "eyePosition",
         "kernelSize",
         "viewDirectionFactor",
+        "alpha",
     ];
     private _sourceMesh: GaussianSplattingMesh | null = null;
     /**
@@ -329,6 +330,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
         effect.setFloat2("focal", focal, focal);
         effect.setVector3("viewDirectionFactor", gsMesh.viewDirectionFactor);
         effect.setFloat("kernelSize", gsMaterial && gsMaterial.kernelSize ? gsMaterial.kernelSize : GaussianSplattingMaterial.KernelSize);
+        effect.setFloat("alpha", gsMaterial.alpha);
         scene.bindEyePosition(effect, "eyePosition", true);
 
         if (gsMesh.covariancesATexture) {
