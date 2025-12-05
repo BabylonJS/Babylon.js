@@ -23,6 +23,10 @@ export class FrameGraphSSRTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinSSRPostProcess(name, frameGraph.scene));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphSSRTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (
             this.sourceTexture === undefined ||

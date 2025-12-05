@@ -275,6 +275,10 @@ export class FrameGraphObjectRendererTask extends FrameGraphTask {
         return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
 
+    public override getClassName(): string {
+        return "FrameGraphObjectRendererTask";
+    }
+
     public record(skipCreationOfDisabledPasses = false, additionalExecute?: (context: FrameGraphRenderContext) => void): FrameGraphRenderPass {
         if (this.targetTexture === undefined || this.objectList === undefined) {
             throw new Error(`FrameGraphObjectRendererTask ${this.name}: targetTexture and objectList are required`);

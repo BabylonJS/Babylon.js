@@ -35,6 +35,10 @@ export class FrameGraphCircleOfConfusionTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinCircleOfConfusionPostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphCircleOfConfusionTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.depthTexture === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphCircleOfConfusionTask "${this.name}": sourceTexture, depthTexture and camera are required`);

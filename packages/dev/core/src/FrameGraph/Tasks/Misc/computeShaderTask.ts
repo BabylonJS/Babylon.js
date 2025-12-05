@@ -183,6 +183,10 @@ export class FrameGraphComputeShaderTask extends FrameGraphTask {
         this._cs.setTextureSampler(name, sampler);
     }
 
+    public override getClassName(): string {
+        return "FrameGraphComputeShaderTask";
+    }
+
     public record(skipCreationOfDisabledPasses?: boolean): FrameGraphPass<FrameGraphContext> {
         const pass = this._frameGraph.addPass(this.name);
 
