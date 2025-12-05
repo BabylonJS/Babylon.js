@@ -771,7 +771,7 @@ function _UpdateParticleGravityBlockGroup(inputParticle: NodeParticleConnectionP
  * @param randomStartCell Whether the start cell is random or not
  * @param changeSpeed The speed at which to change the sprite cell
  * @param loop Whether the sprite cell animation should loop
- * @returns The output of the group of blocks that represent the particle sprite cell update
+ * @returns The output of the group of blocks that represent the particle sprite cell update #2MI0A1#3
  */
 function _UpdateParticleSpriteCellBlockGroup(
     inputParticle: NodeParticleConnectionPoint,
