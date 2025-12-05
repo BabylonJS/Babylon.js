@@ -528,7 +528,7 @@ const plugin: IPlugin = {
                 const projectRoot = filename.split("packages")[0];
 
                 // Check if path is a directory with index.ts but no same-name .ts file
-                function isBarrelDirectory(targetPath: string): boolean {
+                function reportIfBarrel(targetPath: string, node: ESTree.Node, importPath: string): boolean {
                     try {
                         if (!fs.statSync(targetPath).isDirectory()) {
                             return false;
@@ -543,26 +543,23 @@ const plugin: IPlugin = {
                         if (fs.existsSync(targetPath + ".ts") && fs.statSync(targetPath + ".ts").isFile()) {
                             return false;
                         }
-                        return true;
-                    } catch {
-                        return false;
-                    }
-                }
-
-                function reportIfBarrel(targetPath: string, node: any, importPath: string) {
-                    if (isBarrelDirectory(targetPath)) {
                         context.report({ node, messageId: "noDirectoryBarrelImport", data: { importPath } });
                         return true;
+                    } catch {
+                        // Path doesn't exist, that's fine
                     }
                     return false;
                 }
 
                 return {
                     Program() {
+                        // Load tsconfig (it will only be loaded upon first request).
                         tsConfig = loadTsConfig(projectRoot);
                     },
 
                     ImportDeclaration(node) {
+                        // Skip type-only imports as they are erased during compilation
+                        // The importKind property is added by TypeScript-ESLint parser
                         if ((node as any).importKind === "type") {
                             return;
                         }
@@ -582,14 +579,17 @@ const plugin: IPlugin = {
                         const { baseUrl = ".", paths } = tsConfig.compilerOptions;
 
                         for (const [pathKey, pathValues] of Object.entries(paths)) {
+                            // Handle patterns like "core/*"
                             const pathPrefix = pathKey.replace("/*", "");
                             if (!importPath.startsWith(pathPrefix + "/")) {
                                 continue;
                             }
 
+                            // Get the rest of the path after the mapping prefix
                             const restOfPath = importPath.slice(pathPrefix.length + 1);
 
-                            // Check mapped path(s). pathValues is an array, though generally of length 1 in BabylonJS
+                            // Resolve the actual directory path(s)
+                            // pathValues is an array, though generally of length 1 in BabylonJS
                             for (const pathValue of pathValues) {
                                 const resolvedBase = path.resolve(projectRoot, baseUrl, pathValue.replace("/*", ""));
                                 if (reportIfBarrel(path.join(resolvedBase, restOfPath), node, importPath)) {
