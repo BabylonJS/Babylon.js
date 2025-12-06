@@ -1119,18 +1119,6 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                    {material.clearCoat.tintTexture && false /* level is not used for the clear coat tint texture */ && (
-                        <SliderLineComponent
-                            lockObject={this.props.lockObject}
-                            label="Clear coat tint"
-                            target={material.clearCoat.tintTexture}
-                            propertyName="level"
-                            minimum={0}
-                            maximum={1}
-                            step={0.01}
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        />
-                    )}
                     {material.anisotropy.texture && (
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
