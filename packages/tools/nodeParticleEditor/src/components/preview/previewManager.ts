@@ -17,6 +17,8 @@ import type { ThinParticleSystem } from "core/Particles/thinParticleSystem";
 import type { ParticleSystemSet } from "core/Particles/particleSystemSet";
 import { EngineStore } from "core/Engines";
 import type { ParticleSystem } from "core/Particles";
+import { SolidParticleSystem } from "core/Particles/solidParticleSystem";
+import { DirectionalLight } from "core/Lights";
 
 export class PreviewManager {
     private _nodeParticleSystemSet: NodeParticleSystemSet;
@@ -51,6 +53,11 @@ export class PreviewManager {
         this._scene.ambientColor = new Color3(1, 1, 1);
         this._camera = new ArcRotateCamera("Camera", 0, 0.8, 4, Vector3.Zero(), this._scene);
 
+        const sunLight = new DirectionalLight("sun", new Vector3(-1, -1, -1), this._scene);
+        sunLight.intensity = 1.0;
+        sunLight.diffuse = new Color3(1, 1, 1);
+        sunLight.specular = new Color3(1, 1, 1);
+
         this._camera.doNotSerialize = true;
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
@@ -73,6 +80,13 @@ export class PreviewManager {
             (this._scene.particleSystems as ThinParticleSystem[]).forEach((ps) => {
                 totalParticleCount += ps.particles.length;
             });
+            if (this._particleSystemSet) {
+                this._particleSystemSet.systems.forEach((system) => {
+                    if (system instanceof SolidParticleSystem) {
+                        totalParticleCount += system.nbParticles;
+                    }
+                });
+            }
             if (globalState.updateState) {
                 globalState.updateState(
                     "Update loop: " + sceneInstrumentation.particlesRenderTimeCounter.lastSecAverage.toFixed(2) + " ms",
