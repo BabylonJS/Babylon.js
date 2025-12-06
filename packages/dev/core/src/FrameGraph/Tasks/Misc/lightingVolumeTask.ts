@@ -14,6 +14,7 @@ export class FrameGraphLightingVolumeTask extends FrameGraphTask {
 
     /**
      * The output object list containing the lighting volume mesh.
+     * You can get the mesh by doing  outputMeshLightingVolume.meshes[0]
      */
     public readonly outputMeshLightingVolume: FrameGraphObjectList;
 

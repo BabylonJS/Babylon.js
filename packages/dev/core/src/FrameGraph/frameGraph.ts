@@ -10,9 +10,6 @@ import { _RetryWithInterval } from "core/Misc/timingTools";
 import { Logger } from "core/Misc/logger";
 import { UniqueIdGenerator } from "core/Misc/uniqueIdGenerator";
 
-import "core/Engines/Extensions/engine.multiRender";
-import "core/Engines/WebGPU/Extensions/engine.multiRender";
-
 enum FrameGraphPassType {
     Normal = 0,
     Render = 1,
@@ -37,6 +34,7 @@ export class FrameGraph implements IDisposable {
     private readonly _initAsyncPromises: Promise<void>[] = [];
     private _currentProcessedTask: FrameGraphTask | null = null;
     private _whenReadyAsyncCancel: Nullable<() => void> = null;
+    private _importPromise: Promise<any>;
 
     /**
      * Name of the frame graph
@@ -105,6 +103,7 @@ export class FrameGraph implements IDisposable {
     ) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        this._importPromise = this._engine.isWebGPU ? import("../Engines/WebGPU/Extensions/engine.multiRender") : import("../Engines/Extensions/engine.multiRender");
         this.textureManager = new FrameGraphTextureManager(this._engine, debugTextures, scene);
         this._passContext = new FrameGraphContext(this._engine, this.textureManager, scene);
         this._renderContext = new FrameGraphRenderContext(this._engine, this.textureManager, scene);
@@ -234,6 +233,8 @@ export class FrameGraph implements IDisposable {
         this._built = false;
 
         try {
+            await this._importPromise;
+
             await this._whenAsynchronousInitializationDoneAsync();
 
             for (const task of this._tasks) {
