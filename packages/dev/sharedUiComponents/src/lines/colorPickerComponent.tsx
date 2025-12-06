@@ -22,6 +22,7 @@ interface IColorPickerComponentState {
 export class ColorPickerLine extends React.Component<IColorPickerLineProps, IColorPickerComponentState> {
     private _floatRef: React.RefObject<HTMLDivElement>;
     private _floatHostRef: React.RefObject<HTMLDivElement>;
+    private _coverRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: IColorPickerLineProps) {
         super(props);
@@ -30,6 +31,7 @@ export class ColorPickerLine extends React.Component<IColorPickerLineProps, ICol
 
         this._floatRef = React.createRef();
         this._floatHostRef = React.createRef();
+        this._coverRef = React.createRef();
     }
 
     syncPositions() {
@@ -89,8 +91,9 @@ export class ColorPickerLine extends React.Component<IColorPickerLineProps, ICol
                     <>
                         <div
                             className="color-picker-cover"
+                            ref={this._coverRef}
                             onClick={(evt) => {
-                                if (evt.target !== this._floatRef.current?.ownerDocument?.querySelector(".color-picker-cover")) {
+                                if (evt.target !== this._coverRef.current) {
                                     return;
                                 }
                                 this.setState({ pickerEnabled: false });
