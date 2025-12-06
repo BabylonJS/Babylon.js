@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { AtmospherePBRMaterialPlugin } from "./atmospherePBRMaterialPlugin";

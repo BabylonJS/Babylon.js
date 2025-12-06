@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 // Portions from https://github.com/sebh/UnrealEngineSkyAtmosphere
 // MIT License

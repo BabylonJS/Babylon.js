@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 #define RENDER_MULTI_SCATTERING
 #define COMPUTE_MULTI_SCATTERING

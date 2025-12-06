@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 #define SAMPLE_SKY_VIEW_LUT
 #if USE_SKY_VIEW_LUT
