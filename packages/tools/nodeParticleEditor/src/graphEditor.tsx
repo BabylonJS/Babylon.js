@@ -130,13 +130,16 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     override componentDidMount() {
-        window.addEventListener("wheel", this.onWheel, { passive: false });
+        this.props.globalState.hostWindow?.addEventListener("wheel", this.onWheel, { passive: false });
 
         if (this.props.globalState.hostDocument) {
             this._graphCanvas = this._graphCanvasRef.current!;
             this.prepareHistoryStack();
-            this._previewManager = new PreviewManager(this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement, this.props.globalState);
-            (this.props.globalState as any)._previewManager = this._previewManager;
+            const previewCanvas = this.props.globalState.hostElement.querySelector("#preview-canvas") as HTMLCanvasElement;
+            if (previewCanvas) {
+                this._previewManager = new PreviewManager(previewCanvas, this.props.globalState);
+                (this.props.globalState as any)._previewManager = this._previewManager;
+            }
         }
 
         this.props.globalState.onPopupClosedObservable.addOnce(() => {
@@ -148,7 +151,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     override componentWillUnmount() {
-        window.removeEventListener("wheel", this.onWheel);
+        this.props.globalState.hostWindow?.removeEventListener("wheel", this.onWheel);
         const globalState = this.props.globalState;
 
         if (globalState.hostDocument) {
@@ -274,7 +277,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
                     return this.appendBlock(clone, false);
                 },
-                this.props.globalState.hostDocument.querySelector(".diagram-container") as HTMLDivElement
+                this.props.globalState.hostElement.querySelector(".diagram-container") as HTMLDivElement
             );
         });
 
@@ -342,11 +345,11 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     showWaitScreen() {
-        this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.remove("hidden");
+        this.props.globalState.hostElement.querySelector(".wait-screen")?.classList.remove("hidden");
     }
 
     hideWaitScreen() {
-        this.props.globalState.hostDocument.querySelector(".wait-screen")?.classList.add("hidden");
+        this.props.globalState.hostElement.querySelector(".wait-screen")?.classList.add("hidden");
     }
 
     reOrganize(editorData: Nullable<IEditorData> = null, isImportingAFrame = false) {
@@ -479,7 +482,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         );
     };
 
-    initiatePreviewArea = (canvas: HTMLCanvasElement = this.props.globalState.hostDocument.getElementById("preview-canvas") as HTMLCanvasElement) => {
+    initiatePreviewArea = (canvas: HTMLCanvasElement = this.props.globalState.hostElement.querySelector("#preview-canvas") as HTMLCanvasElement) => {
+        if (!canvas) {
+            return;
+        }
         this._previewManager = new PreviewManager(canvas, this.props.globalState);
     };
 

@@ -57,6 +57,16 @@ export class NodeParticleEditor {
             })!;
         }
 
+        const shadowRoot = hostElement?.attachShadow({ mode: "open" });
+        if (shadowRoot) {
+            const shadowHost = document.createElement("div");
+            shadowHost.style.width = "100%";
+            shadowHost.style.height = "100%";
+            shadowRoot.appendChild(shadowHost);
+            this._injectStylesIntoShadowRoot(shadowRoot, hostElement.ownerDocument);
+            hostElement = shadowHost;
+        }
+
         const globalState = new GlobalState();
         globalState.nodeParticleSet = options.nodeParticleSet;
         globalState.hostElement = hostElement;
@@ -103,5 +113,12 @@ export class NodeParticleEditor {
                 }
             };
         }
+    }
+
+    private static _injectStylesIntoShadowRoot(shadowRoot: ShadowRoot, ownerDocument: Document) {
+        const styleNodes = ownerDocument.querySelectorAll('style, link[rel="stylesheet"]');
+        styleNodes.forEach((node) => {
+            shadowRoot.appendChild(node.cloneNode(true));
+        });
     }
 }
