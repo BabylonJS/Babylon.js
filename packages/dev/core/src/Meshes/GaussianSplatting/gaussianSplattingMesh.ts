@@ -550,7 +550,7 @@ export class GaussianSplattingMesh extends Mesh {
             }
         });
 
-        if ((forced || outdated) && this._worker && (this._scene.activeCameras || this._scene.activeCamera) && this._canPostToWorker) {
+        if ((forced || outdated) && this._worker && (this._scene.activeCameras?.length || this._scene.activeCamera) && this._canPostToWorker) {
             // array of cameras used for rendering
             const cameras = this._scene.activeCameras?.length ? this._scene.activeCameras : [this._scene.activeCamera!];
             // list view infos for active cameras
@@ -591,7 +591,7 @@ export class GaussianSplattingMesh extends Mesh {
 
                 const previousCameraDirection = cameraViewInfos.cameraDirection;
                 const dot = Vector3.Dot(cameraDirection, previousCameraDirection);
-                if ((forced || cameraViewInfos.frameIdLastUpdate !== frameId || Math.abs(dot - 1) >= 0.01) && this._canPostToWorker) {
+                if ((forced || Math.abs(dot - 1) >= 0.01) && this._canPostToWorker) {
                     cameraViewInfos.cameraDirection.copyFrom(cameraDirection);
                     cameraViewInfos.frameIdLastUpdate = frameId;
                     this._canPostToWorker = false;

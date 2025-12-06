@@ -3,7 +3,7 @@ import { Scalar } from "core/Maths/math.scalar";
 import type { Scene } from "core/scene";
 import type { SPLATLoadingOptions } from "./splatLoadingOptions";
 import { Mode } from "./splatDefs";
-import type { IParsedPLY } from "./splatDefs";
+import type { IParsedSplat } from "./splatDefs";
 
 /**
  * Parses SPZ data and returns a promise resolving to an IParsedPLY object.
@@ -12,7 +12,7 @@ import type { IParsedPLY } from "./splatDefs";
  * @param loadingOptions Options for loading Gaussian Splatting files.
  * @returns A promise resolving to the parsed SPZ data.
  */
-export function ParseSpz(data: ArrayBuffer, scene: Scene, loadingOptions: SPLATLoadingOptions): Promise<IParsedPLY> {
+export function ParseSpz(data: ArrayBuffer, scene: Scene, loadingOptions: SPLATLoadingOptions): Promise<IParsedSplat> {
     const ubuf = new Uint8Array(data);
     const ubufu32 = new Uint32Array(data.slice(0, 12)); // Only need ubufu32[0] to [2]
     // debug infos

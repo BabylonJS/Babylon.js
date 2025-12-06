@@ -18,6 +18,10 @@ export class FrameGraphPassTask extends FrameGraphPostProcessTask {
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinPassPostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinPassPostProcess(name, frameGraph.engine));
     }
+
+    public override getClassName(): string {
+        return "FrameGraphPassTask";
+    }
 }
 
 /**
@@ -34,5 +38,9 @@ export class FrameGraphPassCubeTask extends FrameGraphPostProcessTask {
      */
     constructor(name: string, frameGraph: FrameGraph, thinPostProcess?: ThinPassCubePostProcess) {
         super(name, frameGraph, thinPostProcess || new ThinPassCubePostProcess(name, frameGraph.engine));
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphPassCubeTask";
     }
 }

@@ -16,6 +16,10 @@ export class FrameGraphDepthOfFieldBlurTask extends FrameGraphBlurTask {
         super(name, frameGraph, thinPostProcess || new ThinDepthOfFieldBlurPostProcess(name, frameGraph.engine, new Vector2(1, 0), 10));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphDepthOfFieldBlurTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.circleOfConfusionTexture === undefined) {
             throw new Error(`FrameGraphDepthOfFieldBlurTask "${this.name}": sourceTexture and circleOfConfusionTexture are required`);

@@ -329,6 +329,10 @@ export class FrameGraphGeometryRendererTask extends FrameGraphTask {
         return this._renderer.isReadyForRendering(this._textureWidth, this._textureHeight);
     }
 
+    public override getClassName(): string {
+        return "FrameGraphGeometryRendererTask";
+    }
+
     public record() {
         if (this.objectList === undefined) {
             throw new Error(`FrameGraphGeometryRendererTask ${this.name}: object list must be provided`);

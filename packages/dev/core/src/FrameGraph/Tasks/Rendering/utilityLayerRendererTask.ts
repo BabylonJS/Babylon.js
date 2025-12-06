@@ -53,6 +53,10 @@ export class FrameGraphUtilityLayerRendererTask extends FrameGraphTask {
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphUtilityLayerRendererTask";
+    }
+
     public record(): void {
         if (!this.targetTexture || !this.camera) {
             throw new Error(`FrameGraphUtilityLayerRendererTask "${this.name}": targetTexture and camera are required`);

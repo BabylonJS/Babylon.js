@@ -18,6 +18,10 @@ export class FrameGraphFXAATask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinFXAAPostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphFXAATask";
+    }
+
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,

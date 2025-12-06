@@ -27,7 +27,7 @@
         <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
         <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
         <script src="https://cdn.babylonjs.com/addons/babylonjs.addons.min.js"></script>
-        <!-- <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script> -->
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
         <script src="babylon.inspector-v2.bundle.js"></script>
 
         <script>
@@ -74,8 +74,9 @@
                 engine.resize();
             });
 
-            // scene.debugLayer.show();
-            BABYLON.Inspector.Show();
+            // INSPECTOR.DetachInspectorGlobals();
+            scene.debugLayer.show();
+            // BABYLON.Inspector.Show();
         </script>
     </body>
 </html>
