@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
