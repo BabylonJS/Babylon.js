@@ -29,6 +29,9 @@ const AspectRatioOptions = [
     { label: "Fixed", value: FixedMode },
 ];
 
+const MaxWidth = 4096;
+const MaxHeight = 4096;
+
 /**
  * The control bar above the preview canvas.
  */
@@ -97,14 +100,14 @@ export class PreviewAreaControlComponent extends react.Component<IPreviewAreaCon
                             value={this.props.globalState.previewSizeManager.fixedWidth.value.toString()}
                             numbersOnly={true}
                             onChange={(newValue: string) => {
-                                this.props.globalState.previewSizeManager.fixedWidth.value = Number.parseInt(newValue);
+                                this.props.globalState.previewSizeManager.fixedWidth.value = Math.min(MaxWidth, Number.parseInt(newValue));
                             }}
                         />
                         <TextInputLineComponent
                             value={this.props.globalState.previewSizeManager.fixedHeight.value.toString()}
                             numbersOnly={true}
                             onChange={(newValue: string) => {
-                                this.props.globalState.previewSizeManager.fixedHeight.value = Number.parseInt(newValue);
+                                this.props.globalState.previewSizeManager.fixedHeight.value = Math.min(MaxHeight, Number.parseInt(newValue));
                             }}
                         />
                     </>
