@@ -2752,6 +2752,9 @@ export class Viewer implements IDisposable {
                     this._sceneMutated = false;
                     this._scene.render();
 
+                    // NOTE: this logic to adjust camera parameters based on radius is copied in renderingZone.tsx (for sandbox).
+                    // Please keep them in sync.
+
                     // Update the camera panning sensitivity based on the camera's distance from the target.
                     this._camera.panningSensibility = 5000 / this._camera.radius;
 

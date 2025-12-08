@@ -26,7 +26,6 @@ import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { setOpenGLOrientationForUV, useOpenGLOrientationForUV } from "core/Compat/compatibilityOptions";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
-import { Epsilon } from "core/Maths/math.constants";
 
 function GetFileExtension(str: string): string {
     return str.split(".").pop() || "";
@@ -317,13 +316,13 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
         this._scene.executeWhenReady(() => {
             this._engine.runRenderLoop(() => {
+                // NOTE: this logic to adjust camera parameters based on radius is copied in viewer.ts.
+                // Please keep them in sync.
                 // Adapt the camera sensibility based on the distance to the object
                 camera.panningSensibility = 5000 / camera.radius;
-
-                // Ensure the panning epsilon is always small enough (no bigger than a 10th of the smallest amount
-                // of movement the user can cause) so that even when the panningSensibility is very high and the
-                // user pans very slowly, we can still get inertia during the pan without it being clamped to 0 too quickly.
-                camera._panningEpsilon = Math.min(Epsilon, 1 / camera.panningSensibility / 10);
+                // Update the camera speed based on the camera's distance from the target.
+                // TODO: This makes mouse wheel zooming behave well, but makes mouse based rotation a bit worse.
+                camera.speed = camera.radius * 0.2;
                 this._scene.render();
             });
         });
