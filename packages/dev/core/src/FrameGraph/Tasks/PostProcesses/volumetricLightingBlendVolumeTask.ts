@@ -64,6 +64,10 @@ export class FrameGraphVolumetricLightingBlendVolumeTask extends FrameGraphPostP
         super(name, frameGraph, new VolumetricLightingBlendVolumeThinPostProcess(name, frameGraph.engine, enableExtinction));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphVolumetricLightingBlendVolumeTask";
+    }
+
     public override record(skipCreationOfDisabledPasses = false): FrameGraphRenderPass {
         if (this.sourceTexture === undefined || this.depthTexture === undefined || this.camera === undefined) {
             throw new Error(`FrameGraphVolumetricLightingBlendVolumeTask "${this.name}": sourceTexture, depthTexture and camera are required`);

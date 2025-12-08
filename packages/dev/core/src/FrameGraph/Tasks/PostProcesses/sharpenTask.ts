@@ -18,6 +18,10 @@ export class FrameGraphSharpenTask extends FrameGraphPostProcessTask {
         super(name, frameGraph, thinPostProcess || new ThinSharpenPostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphSharpenTask";
+    }
+
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,

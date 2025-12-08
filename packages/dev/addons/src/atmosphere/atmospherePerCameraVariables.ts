@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { Camera } from "core/Cameras/camera";
 import type { IMatrixLike, IVector3Like, IVector4Like } from "core/Maths/math.like";

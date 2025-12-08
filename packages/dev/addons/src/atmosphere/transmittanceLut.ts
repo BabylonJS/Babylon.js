@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { Atmosphere } from "./atmosphere";
 import type { AtmospherePhysicalProperties } from "./atmospherePhysicalProperties";
@@ -132,15 +132,16 @@ export class TransmittanceLut {
         renderTarget.anisotropicFilteringLevel = 1;
         renderTarget.skipInitialClear = true;
 
-        const useUbo = this._atmosphere.uniformBuffer.useUbo;
+        const atmosphereUbo = atmosphere.uniformBuffer;
+        const useUbo = atmosphereUbo.useUbo;
         this._effectWrapper = new EffectWrapper({
             engine,
             name,
             vertexShader: "fullscreenTriangle",
             fragmentShader: "transmittance",
             attributeNames: ["position"],
-            uniformNames: ["depth", ...(useUbo ? [] : this._atmosphere.uniformBuffer.getUniformNames())],
-            uniformBuffers: useUbo ? [this._atmosphere.uniformBuffer.name] : [],
+            uniformNames: ["depth", ...(useUbo ? [] : atmosphereUbo.getUniformNames())],
+            uniformBuffers: useUbo ? [atmosphereUbo.name] : [],
             defines: ["#define POSITION_VEC2"],
             useShaderStore: true,
         });

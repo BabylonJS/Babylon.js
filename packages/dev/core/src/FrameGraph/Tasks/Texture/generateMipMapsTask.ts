@@ -26,6 +26,10 @@ export class FrameGraphGenerateMipMapsTask extends FrameGraphTask {
         this.outputTexture = this._frameGraph.textureManager.createDanglingHandle();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphGenerateMipMapsTask";
+    }
+
     public record() {
         if (this.targetTexture === undefined) {
             throw new Error(`FrameGraphGenerateMipMapsTask ${this.name}: targetTexture is required`);

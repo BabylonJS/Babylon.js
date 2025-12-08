@@ -134,6 +134,10 @@ export class FrameGraphPostProcessTask extends FrameGraphTask {
         return this.postProcess.isReady();
     }
 
+    public override getClassName(): string {
+        return "FrameGraphPostProcessTask";
+    }
+
     public record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,

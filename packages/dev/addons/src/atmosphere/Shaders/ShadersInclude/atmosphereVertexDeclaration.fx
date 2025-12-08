@@ -1,4 +1,4 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 uniform mat4 inverseViewProjectionWithoutTranslation;

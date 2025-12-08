@@ -50,7 +50,15 @@ export class FrameGraphLightingVolumeTask extends FrameGraphTask {
     }
 
     public override isReady() {
-        return this.lightingVolume.isReady();
+        const isReady = this.lightingVolume.isReady();
+        if (isReady) {
+            this.lightingVolume._setComputeShaderFastMode(true);
+        }
+        return isReady;
+    }
+
+    public override getClassName(): string {
+        return "FrameGraphLightingVolumeTask";
     }
 
     public record() {

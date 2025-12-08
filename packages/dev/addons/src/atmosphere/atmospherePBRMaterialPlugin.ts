@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// MIT License
+// Licensed under the MIT License.
 
 import type { Atmosphere } from "./atmosphere";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
@@ -17,6 +17,10 @@ class AtmospherePBRMaterialDefines extends MaterialDefines {
     public APPLY_AERIAL_PERSPECTIVE_INTENSITY = false;
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS = false;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public SAMPLE_TRANSMITTANCE_LUT = true;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public EXCLUDE_RAY_MARCHING_FUNCTIONS = true;
 
     /**
      * Constructs the {@link AtmospherePBRMaterialDefines}.
@@ -76,6 +80,10 @@ export class AtmospherePBRMaterialPlugin extends MaterialPluginBase {
                 APPLY_AERIAL_PERSPECTIVE_INTENSITY: _isAerialPerspectiveEnabled && _atmosphere.aerialPerspectiveIntensity !== 1.0,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 APPLY_AERIAL_PERSPECTIVE_RADIANCE_BIAS: _isAerialPerspectiveEnabled && _atmosphere.aerialPerspectiveRadianceBias !== 0.0,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                SAMPLE_TRANSMITTANCE_LUT: true,
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                EXCLUDE_RAY_MARCHING_FUNCTIONS: true,
             },
             false, // addPluginToList -- false because we need to control when this is added to the list
             true, // enable

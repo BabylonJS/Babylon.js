@@ -11,6 +11,10 @@ export class FrameGraphCopyToBackbufferColorTask extends FrameGraphTask {
      */
     public sourceTexture: FrameGraphTextureHandle;
 
+    public override getClassName(): string {
+        return "FrameGraphCopyToBackbufferColorTask";
+    }
+
     public record() {
         if (this.sourceTexture === undefined) {
             throw new Error(`FrameGraphCopyToBackbufferColorTask "${this.name}": sourceTexture is required`);

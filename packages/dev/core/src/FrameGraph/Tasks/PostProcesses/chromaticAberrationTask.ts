@@ -18,6 +18,10 @@ export class FrameGraphChromaticAberrationTask extends FrameGraphPostProcessTask
         super(name, frameGraph, thinPostProcess || new ThinChromaticAberrationPostProcess(name, frameGraph.engine));
     }
 
+    public override getClassName(): string {
+        return "FrameGraphChromaticAberrationTask";
+    }
+
     public override record(
         skipCreationOfDisabledPasses = false,
         additionalExecute?: (context: FrameGraphRenderContext) => void,
